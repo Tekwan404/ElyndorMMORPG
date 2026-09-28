@@ -335,7 +335,8 @@ export interface CharacterSnapshot {
   level: number
   experience: number
   xpToNextLevel: number
-  gold: number
+  /** One balance in bronze units; large bigint balances are exact decimal strings. */
+  gold: number | string
   primaryAttribute: 'STRENGTH' | 'AGILITY' | 'INTELLECT'
   classProfileVersion: string
   knownAbilityIds: string[]
@@ -565,7 +566,7 @@ export interface MerchantSnapshot {
   id: string
   name: string
   description: string
-  gold: number
+  gold: number | string
   items: MerchantItem[]
 }
 

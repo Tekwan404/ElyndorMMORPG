@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatMoney } from '@/shared/money'
 import { computed, ref, watch } from 'vue'
 
 import { monsterArtUrl } from '@/assets/monsterArt'
@@ -274,7 +275,7 @@ watch(
               <p v-if="resident.description">{{ resident.description }}</p>
               <small>
                 +{{ resident.xpReward }} XP
-                <template v-if="resident.goldRewardMax > 0"> · {{ resident.goldRewardMin }}–{{ resident.goldRewardMax }} зол.</template>
+                <template v-if="resident.goldRewardMax > 0"> · {{ formatMoney(resident.goldRewardMin) }}–{{ formatMoney(resident.goldRewardMax) }}</template>
               </small>
             </div>
           </article>
@@ -351,7 +352,7 @@ watch(
         </label>
         <div v-if="afkPreview" class="location-overview__afk-preview">
           <span>Примерно {{ afkPreview.kills }} побед</span>
-          <strong>+{{ afkPreview.estimatedXp }} опыта · +{{ afkPreview.estimatedGold }} золота</strong>
+          <strong>+{{ afkPreview.estimatedXp }} опыта · +{{ formatMoney(afkPreview.estimatedGold) }}</strong>
           <small>{{ afkPreview.potentialLootRolls }} возможных розыгрышей добычи · эффективность: {{ afkPreview.efficiencyPercent }}%</small>
         </div>
         <p v-else-if="afkPreviewLoading">Рассчитываем результат…</p>

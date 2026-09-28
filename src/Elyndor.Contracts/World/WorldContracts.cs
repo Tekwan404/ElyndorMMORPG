@@ -92,7 +92,7 @@ public sealed record BootstrapCharacterResponse(
     int Level,
     long Experience,
     long XpToNextLevel,
-    long Gold,
+    [property: global::System.Text.Json.Serialization.JsonConverter(typeof(Elyndor.Contracts.Economy.MoneyJsonConverter))] long Gold,
     string PrimaryAttribute,
     string ClassProfileVersion,
     IReadOnlyList<string> KnownAbilityIds,

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MoneyAmount from '@/ui/components/MoneyAmount.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 
 import { gameArt } from '@/assets/gameArt'
@@ -200,9 +201,8 @@ onMounted(() => {
         </button>
 
         <div class="hud__meta">
-          <div class="hud__wallet" aria-label="Золото">
-            <span aria-hidden="true">●</span>
-            <strong>{{ character.gold }}</strong>
+          <div class="hud__wallet" aria-label="Кошелёк">
+            <strong><MoneyAmount :amount="character.gold" /></strong>
           </div>
           <div class="server-state" :data-state="session.state" aria-live="polite">
             <i aria-hidden="true" /><span>{{ connectionLabel }}</span>

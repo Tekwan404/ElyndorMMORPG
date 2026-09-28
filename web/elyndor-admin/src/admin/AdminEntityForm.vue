@@ -392,8 +392,8 @@ function isRecord(value: unknown): value is JsonRecord {
     <fieldset>
       <legend>Награды и представление</legend>
       <label><span>XP</span><input type="number" min="0" :value="numberValue(['xpReward'])" @input="setNumber(['xpReward'], $event)" /></label>
-      <label><span>Gold min</span><input type="number" min="0" :value="numberValue(['goldRewardMin'])" @input="setNumber(['goldRewardMin'], $event)" /></label>
-      <label><span>Gold max</span><input type="number" min="0" :value="numberValue(['goldRewardMax'])" @input="setNumber(['goldRewardMax'], $event)" /></label>
+      <label><span>Bronze min</span><input type="number" min="0" :value="numberValue(['goldRewardMin'])" @input="setNumber(['goldRewardMin'], $event)" /></label>
+      <label><span>Bronze max</span><input type="number" min="0" :value="numberValue(['goldRewardMax'])" @input="setNumber(['goldRewardMax'], $event)" /></label>
       <label>
         <span>Loot table</span>
         <select data-testid="monster-loot-table" :value="text(['lootTableId'])" @change="setOptionalSelection(['lootTableId'], $event)">
@@ -667,8 +667,8 @@ function isRecord(value: unknown): value is JsonRecord {
 
     <fieldset>
       <legend>Экономика</legend>
-      <label><span>Buy price</span><input type="number" min="0" :value="numberValue(['buyPriceGold'])" @input="setNumber(['buyPriceGold'], $event)" /></label>
-      <label><span>Sell price</span><input type="number" min="0" :value="numberValue(['sellPriceGold'])" @input="setNumber(['sellPriceGold'], $event)" /></label>
+      <label><span>Buy price (bronze)</span><input type="number" min="0" :value="numberValue(['buyPriceGold'])" @input="setNumber(['buyPriceGold'], $event)" /></label>
+      <label><span>Sell price (bronze)</span><input type="number" min="0" :value="numberValue(['sellPriceGold'])" @input="setNumber(['sellPriceGold'], $event)" /></label>
     </fieldset>
   </div>
 </template>

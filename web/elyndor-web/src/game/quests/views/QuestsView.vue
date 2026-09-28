@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatMoney } from '@/shared/money'
 import { computed } from 'vue'
 
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -43,7 +44,7 @@ async function accept(contractId: string): Promise<void> {
         <span>{{ contract.status }}</span>
       </div>
       <p>{{ contract.description }}</p>
-      <div class="quest-card__reward">Награда: +{{ contract.rewardXp }} опыта · +{{ contract.rewardGold }} золота</div>
+      <div class="quest-card__reward">Награда: +{{ contract.rewardXp }} опыта · +{{ formatMoney(contract.rewardGold) }}</div>
       <UIButton v-if="contract.status === 'AVAILABLE'" :loading="session.mutationPending" @click="accept(contract.id)">Взять квест</UIButton>
     </UICard>
   </section>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatMoney } from '@/shared/money'
 import { computed, ref, watch } from 'vue'
 
 import type { Quest } from '@/api/contracts'
@@ -316,7 +317,7 @@ async function claim(quest: Quest): Promise<void> {
 
           <div class="guild-contract__reward">
             <small>НАГРАДА</small>
-            <strong>+{{ selectedContract.rewardXp }} опыта · +{{ selectedContract.rewardGold }} золота</strong>
+            <strong>+{{ selectedContract.rewardXp }} опыта · +{{ formatMoney(selectedContract.rewardGold) }}</strong>
             <span v-if="selectedContract.unlockLocationId">Открывает новую область</span>
           </div>
 

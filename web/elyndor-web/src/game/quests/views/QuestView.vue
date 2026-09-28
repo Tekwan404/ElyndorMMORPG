@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatMoney } from '@/shared/money'
 import { computed, onMounted, ref } from 'vue'
 
 import type { Quest, QuestObjective } from '@/api/contracts'
@@ -193,7 +194,7 @@ onMounted(async () => {
           <small>НАГРАДА</small>
           <div>
             <span v-if="quest.rewardXp">+{{ quest.rewardXp }} опыта</span>
-            <span v-if="quest.rewardGold">+{{ quest.rewardGold }} золота</span>
+            <span v-if="quest.rewardGold">+{{ formatMoney(quest.rewardGold) }}</span>
             <span v-for="item in quest.rewardItems" :key="item.itemId" class="quest-reward-item">
               <ItemIcon :icon-id="item.iconId" :item-id="item.itemId" :name="item.name" :type="item.type" :rarity="item.rarity" />
               {{ item.name }} ×{{ item.quantity }}

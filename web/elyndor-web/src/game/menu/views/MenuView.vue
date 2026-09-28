@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatMoney } from '@/shared/money'
 import { computed, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 
@@ -66,7 +67,7 @@ function updateTrainingDummyCombatLogPreference(): void {
       <div class="menu-profile__identity">
         <small>ГЕРОЙ · УР. {{ character.level }}</small>
         <strong>{{ character.name }}</strong>
-        <span>{{ classLabel(character.classId) }} · {{ character.gold }} золота</span>
+        <span>{{ classLabel(character.classId) }} · {{ formatMoney(character.gold) }}</span>
       </div>
       <div class="menu-profile__code">
         <small>КОД ГЕРОЯ</small>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import MoneyAmount from '@/ui/components/MoneyAmount.vue'
+import { canAffordMoney, formatMoney } from '@/shared/money'
 import { computed, ref, watch } from 'vue'
 
 import { apiClient } from '@/api/apiClient'
@@ -109,14 +111,14 @@ const canAffordEnhancement = computed(() => {
   const previewState = enhancementPreview.value
   const cost = enhancementCost.value
   if (!previewState || !cost || previewState.isMaximumEnhancement) return false
-  return gold.value >= cost.gold
+  return canAffordMoney(gold.value, cost.gold)
     && enhancementMaterialAvailable.value >= cost.enhancementMaterialQuantity
     && enhancementCatalystsAvailable.value >= cost.catalystQuantity
 })
 const enhancementShortage = computed(() => {
   const cost = enhancementCost.value
   if (!cost || enhancementPreview.value?.isMaximumEnhancement) return null
-  if (gold.value < cost.gold) return `Не хватает золота: нужно ${cost.gold}, у вас ${gold.value}.`
+  if (!canAffordMoney(gold.value, cost.gold)) return `Не хватает монет: нужно ${formatMoney(cost.gold)}, у вас ${formatMoney(gold.value)}.`
   if (enhancementMaterialAvailable.value < cost.enhancementMaterialQuantity) {
     return `Не хватает ${materialLabel(cost.enhancementMaterialItemId)}: нужно ${cost.enhancementMaterialQuantity}, доступно ${enhancementMaterialAvailable.value}.`
   }
@@ -126,7 +128,7 @@ const enhancementShortage = computed(() => {
 const canAffordReforge = computed(() => {
   const cost = preview.value?.cost
   if (!cost) return false
-  if (gold.value < cost.gold || reforgeStones.value < cost.materialQuantity) return false
+  if (!canAffordMoney(gold.value, cost.gold) || reforgeStones.value < cost.materialQuantity) return false
   if (cost.catalystQuantity > 0 && cost.catalystItemId) {
     return availableForgeMaterialQuantity(inventoryItems.value, cost.catalystItemId) >= cost.catalystQuantity
   }
@@ -135,7 +137,7 @@ const canAffordReforge = computed(() => {
 const reforgeShortage = computed(() => {
   const cost = preview.value?.cost
   if (!cost) return null
-  if (gold.value < cost.gold) return `Не хватает золота: нужно ${cost.gold}, у вас ${gold.value}.`
+  if (!canAffordMoney(gold.value, cost.gold)) return `Не хватает монет: нужно ${formatMoney(cost.gold)}, у вас ${formatMoney(gold.value)}.`
   if (reforgeStones.value < cost.materialQuantity) return `Не хватает Камней перековки: нужно ${cost.materialQuantity}, доступно ${reforgeStones.value}.`
   if (cost.catalystQuantity > 0 && cost.catalystItemId) {
     const available = availableForgeMaterialQuantity(inventoryItems.value, cost.catalystItemId)
@@ -469,7 +471,7 @@ function rarityLabel(item: InventoryItem): string {
       <div class="forge-wallet" aria-label="Ресурсы кузницы">
         <div class="forge-wallet__resource forge-wallet__resource--gold">
           <span class="forge-wallet__coin" aria-hidden="true">◆</span>
-          <span><small>Золото</small><strong>{{ gold }}</strong></span>
+          <span><small>Монеты</small><strong><MoneyAmount :amount="gold" /></strong></span>
         </div>
         <div class="forge-wallet__resource">
           <span class="forge-wallet__icon"><IconGenerator :config="{ id: 'forge-stone', glyph: 'ore', category: 'resource' }" /></span>
@@ -635,7 +637,7 @@ function rarityLabel(item: InventoryItem): string {
                 <template v-else-if="preview">
                   <header class="forge-section-heading forge-section-heading--compact"><span>ШАГ 2</span><strong>Подтвердите перековку</strong><small v-if="selectedAffix">Выбрано: {{ forgeStatLabel(selectedAffix.statId) }} {{ format(selectedAffix.value) }}</small></header>
                   <div class="forge-costs">
-                    <div :class="{ insufficient: gold < preview.cost.gold }"><small>Золото</small><strong>{{ preview.cost.gold }}</strong><span>у вас {{ gold }}</span></div>
+                    <div :class="{ insufficient: !canAffordMoney(gold, preview.cost.gold) }"><small>Монеты</small><strong><MoneyAmount :amount="preview.cost.gold" /></strong><span>у вас <MoneyAmount :amount="gold" /></span></div>
                     <div :class="{ insufficient: reforgeStones < preview.cost.materialQuantity }"><small>Камни перековки</small><strong>{{ preview.cost.materialQuantity }}</strong><span>доступно {{ reforgeStones }}</span></div>
                   </div>
                   <p class="forge-preview__hint">После оплаты появится новая характеристика. Сравните её с текущей и выберите вариант.</p>
@@ -660,7 +662,7 @@ function rarityLabel(item: InventoryItem): string {
             <div v-if="loadingEnhancementPreview" class="forge-preview__loading"><span class="forge-spinner" /> Получаем состояние усиления…</div>
             <template v-else-if="enhancementPreview && !enhancementPreview.isMaximumEnhancement && enhancementCost">
               <div class="forge-costs">
-                <div :class="{ insufficient: gold < enhancementCost.gold }"><small>Золото</small><strong>{{ enhancementCost.gold }}</strong><span>у вас {{ gold }}</span></div>
+                <div :class="{ insufficient: !canAffordMoney(gold, enhancementCost.gold) }"><small>Монеты</small><strong><MoneyAmount :amount="enhancementCost.gold" /></strong><span>у вас <MoneyAmount :amount="gold" /></span></div>
                 <div :class="{ insufficient: enhancementMaterialAvailable < enhancementCost.enhancementMaterialQuantity }"><small>{{ materialLabel(enhancementCost.enhancementMaterialItemId) }}</small><strong>{{ enhancementCost.enhancementMaterialQuantity }}</strong><span>доступно {{ enhancementMaterialAvailable }}</span></div>
                 <div v-if="enhancementCost.catalystQuantity > 0" :class="{ insufficient: enhancementCatalystsAvailable < enhancementCost.catalystQuantity }"><small>{{ enhancementCost.catalystItemId ? materialLabel(enhancementCost.catalystItemId) : 'Катализатор' }}</small><strong>{{ enhancementCost.catalystQuantity }}</strong><span>доступно {{ enhancementCatalystsAvailable }}</span></div>
               </div>

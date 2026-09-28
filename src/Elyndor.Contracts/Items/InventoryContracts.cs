@@ -197,7 +197,7 @@ public sealed record MerchantResponse(
     string Id,
     string Name,
     string Description,
-    long Gold,
+    [property: global::System.Text.Json.Serialization.JsonConverter(typeof(Elyndor.Contracts.Economy.MoneyJsonConverter))] long Gold,
     IReadOnlyList<MerchantItemResponse> Items);
 
 public sealed record BuyMerchantItemRequest(
