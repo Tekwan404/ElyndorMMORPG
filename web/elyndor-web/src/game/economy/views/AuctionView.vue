@@ -34,7 +34,7 @@ const statLabels: Record<string, string> = {
   ACCURACY: 'Меткость', DODGE: 'Уклонение', BLOCK_CHANCE: 'Шанс блока', BLOCK_VALUE: 'Сила блока',
   ARMOR_PENETRATION: 'Пробивание брони', MAGIC_PENETRATION: 'Маг. пробивание', ATTACK_SPEED: 'Скорость атаки',
 }
-function statLabel(id: string): string { return statLabels[id.toUpperCase()] ?? id.replaceAll('_', ' ').toLowerCase() }
+function statLabel(id: string): string { return statLabels[id.toUpperCase()] ?? id.replace(/_/g, ' ').toLowerCase() }
 function compactNumber(value: number): string { return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, '') }
 function rolledStatsText(lot: AuctionLot): string {
   if (!lot.rolledStats) return ''
