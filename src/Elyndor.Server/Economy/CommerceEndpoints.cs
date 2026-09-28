@@ -12,6 +12,8 @@ public static class CommerceEndpoints
         var group = endpoints.MapGroup("/api/v1").RequireAuthorization().WithTags("Commerce");
         group.MapGet("/auction", async (string? search, string? type, bool? mine, int? page, ClaimsPrincipal user, AuctionSettlementService service, CancellationToken ct) =>
             Account(user) is { } account ? Results.Ok(await service.ListingsAsync(account, mine == true, search, type, page ?? 0, ct)) : Results.Unauthorized());
+        group.MapPost("/auction/preview", async (AuctionPreviewRequest request, ClaimsPrincipal user, AuctionSettlementService service, CancellationToken ct) =>
+            Account(user) is { } account ? Result(await service.PreviewAsync(account, request, ct)) : Results.Unauthorized());
         group.MapPost("/auction", async (AuctionCreateRequest request, ClaimsPrincipal user, AuctionSettlementService service, CancellationToken ct) =>
             Account(user) is { } account ? Result(await service.CreateAsync(account, request, ct)) : Results.Unauthorized());
         group.MapPost("/auction/{id:guid}/buy", async (Guid id, CommerceRequest request, ClaimsPrincipal user, AuctionSettlementService service, CancellationToken ct) =>
