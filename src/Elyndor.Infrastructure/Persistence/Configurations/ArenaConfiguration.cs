@@ -5,6 +5,25 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Elyndor.Infrastructure.Persistence.Configurations;
 
+public sealed class ArenaQueueEntryConfiguration : IEntityTypeConfiguration<ArenaQueueEntry>
+{
+    public void Configure(EntityTypeBuilder<ArenaQueueEntry> builder)
+    {
+        builder.ToTable("arena_queue_entries", table =>
+        {
+            table.HasCheckConstraint("ck_arena_queue_level_positive", "\"Level\" > 0");
+            table.HasCheckConstraint("ck_arena_queue_rating_non_negative", "\"RatingSnapshot\" >= 0");
+        });
+        builder.HasKey(x => x.CharacterId).HasName("pk_arena_queue_entries");
+        builder.Property(x => x.Mode).HasConversion<string>().HasMaxLength(16).IsRequired();
+        builder.HasOne<Character>().WithMany().HasForeignKey(x => x.CharacterId).OnDelete(DeleteBehavior.Cascade);
+        builder.HasIndex(x => new { x.Mode, x.JoinedAtUtc })
+            .HasDatabaseName("ix_arena_queue_mode_joined");
+        builder.HasIndex(x => new { x.Mode, x.RatingSnapshot, x.JoinedAtUtc })
+            .HasDatabaseName("ix_arena_queue_mode_rating_joined");
+    }
+}
+
 public sealed class ArenaMatchConfiguration : IEntityTypeConfiguration<ArenaMatch>
 {
     public void Configure(EntityTypeBuilder<ArenaMatch> builder)
@@ -13,11 +32,16 @@ public sealed class ArenaMatchConfiguration : IEntityTypeConfiguration<ArenaMatc
             "ck_arena_matches_distinct_characters", "\"CharacterAId\" <> \"CharacterBId\""));
         builder.HasKey(x => x.Id).HasName("pk_arena_matches");
         builder.Property(x => x.SeasonId).HasMaxLength(16).IsRequired();
+        builder.Property(x => x.Mode).HasConversion<string>().HasMaxLength(16).IsRequired();
         builder.Property(x => x.Outcome).HasConversion<string>().HasMaxLength(16).IsRequired();
         builder.HasOne<Character>().WithMany().HasForeignKey(x => x.CharacterAId).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne<Character>().WithMany().HasForeignKey(x => x.CharacterBId).OnDelete(DeleteBehavior.Cascade);
         builder.HasIndex(x => x.CharacterAId).HasDatabaseName("ix_arena_matches_character_a");
         builder.HasIndex(x => x.CharacterBId).HasDatabaseName("ix_arena_matches_character_b");
+        builder.HasIndex(x => new { x.Outcome, x.CharacterAId })
+            .HasDatabaseName("ix_arena_matches_active_character_a");
+        builder.HasIndex(x => new { x.Outcome, x.CharacterBId })
+            .HasDatabaseName("ix_arena_matches_active_character_b");
     }
 }
 

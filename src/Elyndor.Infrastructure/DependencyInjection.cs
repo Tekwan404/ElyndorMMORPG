@@ -16,6 +16,7 @@ using Elyndor.Infrastructure.Dungeons;
 using Elyndor.Infrastructure.Quests;
 using Elyndor.Infrastructure.Economy;
 using Elyndor.Infrastructure.Professions;
+using Elyndor.Infrastructure.Pvp;
 using Elyndor.Core.Combat.Randomness;
 using Microsoft.Extensions.Hosting;
 
@@ -45,6 +46,10 @@ public static class DependencyInjection
         builder.Services.AddScoped<CombatRewardService>();
         builder.Services.AddScoped<CombatLootRollService>();
         builder.Services.AddHostedService<CombatLootRollExpiryWorker>();
+        builder.Services.AddScoped<ArenaQueueService>();
+        builder.Services.AddScoped<ArenaMatchmakingService>();
+        builder.Services.AddScoped<ArenaSettlementService>();
+        builder.Services.AddHostedService<ArenaMatchmakingWorker>();
         builder.Services.AddScoped<InventoryEquipmentService>();
         builder.Services.AddScoped<SpatialInventoryService>();
         builder.Services.AddScoped<ItemReforgeService>();

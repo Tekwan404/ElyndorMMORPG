@@ -1,11 +1,42 @@
 namespace Elyndor.Core.Pvp;
 
+public enum ArenaQueueMode
+{
+    Ranked,
+    Unranked
+}
+
+public sealed class ArenaQueueEntry
+{
+    private ArenaQueueEntry() { }
+
+    public ArenaQueueEntry(Guid characterId, ArenaQueueMode mode, int level, int ratingSnapshot,
+        DateTimeOffset joinedAtUtc)
+    {
+        if (characterId == Guid.Empty) throw new ArgumentException("Arena queue character cannot be empty.");
+        if (level <= 0) throw new ArgumentOutOfRangeException(nameof(level));
+        if (ratingSnapshot < 0) throw new ArgumentOutOfRangeException(nameof(ratingSnapshot));
+        if (joinedAtUtc.Offset != TimeSpan.Zero) throw new ArgumentException("Arena queue time must be UTC.");
+        CharacterId = characterId;
+        Mode = mode;
+        Level = level;
+        RatingSnapshot = ratingSnapshot;
+        JoinedAtUtc = joinedAtUtc;
+    }
+
+    public Guid CharacterId { get; private set; }
+    public ArenaQueueMode Mode { get; private set; }
+    public int Level { get; private set; }
+    public int RatingSnapshot { get; private set; }
+    public DateTimeOffset JoinedAtUtc { get; private set; }
+}
+
 public sealed class ArenaMatch
 {
     private ArenaMatch() { }
 
     public ArenaMatch(Guid id, Guid characterAId, Guid characterBId, DateTimeOffset startedAtUtc,
-        string seasonId = ArenaSeason.CurrentId)
+        string seasonId = ArenaSeason.CurrentId, ArenaQueueMode mode = ArenaQueueMode.Ranked)
     {
         if (id == Guid.Empty || characterAId == Guid.Empty || characterBId == Guid.Empty
             || characterAId == characterBId) throw new ArgumentException("Arena participants must be distinct.");
@@ -15,26 +46,28 @@ public sealed class ArenaMatch
         CharacterBId = characterBId;
         StartedAtUtc = startedAtUtc;
         SeasonId = seasonId;
+        Mode = mode;
     }
 
     public Guid Id { get; private set; }
     public Guid CharacterAId { get; private set; }
     public Guid CharacterBId { get; private set; }
     public string SeasonId { get; private set; } = null!;
+    public ArenaQueueMode Mode { get; private set; } = ArenaQueueMode.Ranked;
     public DateTimeOffset StartedAtUtc { get; private set; }
     public DateTimeOffset? CompletedAtUtc { get; private set; }
     public DateTimeOffset? SettledAtUtc { get; private set; }
     public ArenaMatchOutcome Outcome { get; private set; } = ArenaMatchOutcome.Active;
     public bool EligibleForProgression { get; private set; } = true;
 
-    public void Complete(ArenaMatchOutcome outcome, DateTimeOffset now, bool eligibleForProgression = true)
+    public void Complete(ArenaMatchOutcome outcome, DateTimeOffset now, bool? eligibleForProgression = null)
     {
         if (outcome == ArenaMatchOutcome.Active) throw new ArgumentException("Match outcome must be terminal.");
         if (now.Offset != TimeSpan.Zero || now < StartedAtUtc) throw new ArgumentException("Completion time must be UTC and after start.");
         if (Outcome != ArenaMatchOutcome.Active) return;
         Outcome = outcome;
         CompletedAtUtc = now;
-        EligibleForProgression = eligibleForProgression;
+        EligibleForProgression = eligibleForProgression ?? Mode == ArenaQueueMode.Ranked;
     }
 
     public void MarkSettled(DateTimeOffset now)
