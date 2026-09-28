@@ -82,7 +82,11 @@ public sealed class ArenaCombatSession
     {
         if (accountId != _first.AccountId && accountId != _second.AccountId)
             return false;
-        if (now.Offset != TimeSpan.Zero || now < _advancedTo || Outcome != ArenaMatchOutcome.Active)
+        if (now.Offset != TimeSpan.Zero || now < _advancedTo)
+            return false;
+        // Resolve everything that happened before the forfeit so an earlier death/timeout wins.
+        AdvanceTo(now);
+        if (Outcome != ArenaMatchOutcome.Active)
             return false;
         Outcome = accountId == _first.AccountId ? ArenaMatchOutcome.WinnerB : ArenaMatchOutcome.WinnerA;
         _advancedTo = now;

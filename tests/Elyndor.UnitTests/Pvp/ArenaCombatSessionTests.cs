@@ -39,6 +39,15 @@ public sealed class ArenaCombatSessionTests
     }
 
     [Fact]
+    public void ForfeitDoesNotOverrideAnEarlierDeath()
+    {
+        ArenaCombatSession session = Create(strikeDamage: 200, castTime: TimeSpan.FromSeconds(2));
+        Assert.True(session.UseAbility(AccountA, "cast", "STRIKE", ActorB, Start).Succeeded);
+        Assert.False(session.Forfeit(AccountA, Start.AddSeconds(3)));
+        Assert.Equal(ArenaMatchOutcome.WinnerA, session.Snapshot.Outcome);
+    }
+
+    [Fact]
     public void DuplicateCommandCannotDealDamageTwice()
     {
         ArenaCombatSession session = Create();

@@ -55,7 +55,11 @@ public static class DependencyInjection
         builder.Services.AddScoped<ArenaQueueService>();
         builder.Services.AddScoped<ArenaMatchmakingService>();
         builder.Services.AddScoped<ArenaSettlementService>();
-        builder.Services.AddHostedService<ArenaMatchmakingWorker>();
+        if (bool.TryParse(builder.Configuration["Arena:Enabled"], out bool arenaEnabled) && arenaEnabled)
+        {
+            builder.Services.AddHostedService<ArenaRecoveryService>();
+            builder.Services.AddHostedService<ArenaMatchmakingWorker>();
+        }
         builder.Services.AddScoped<InventoryEquipmentService>();
         builder.Services.AddScoped<SpatialInventoryService>();
         builder.Services.AddScoped<ItemReforgeService>();
