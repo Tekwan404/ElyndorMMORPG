@@ -6,11 +6,17 @@ import { classLabel } from '@/game/character/characterPresentation'
 import { socialErrorMessage } from '@/game/social/socialPresentation'
 import { useSocialStore } from '@/game/social/socialStore'
 import { useGameSessionStore } from '@/stores/gameSession'
+import { useTradeStore } from '@/game/economy/tradeStore'
 import { UIButton, UIPanel } from '@/ui/components'
 
 const social = useSocialStore()
 const party = usePartyStore()
 const session = useGameSessionStore()
+const trade = useTradeStore()
+const emit = defineEmits<{ 'open-trade': [] }>()
+async function openTrade(characterId: string): Promise<void> {
+  if (await trade.open(characterId)) emit('open-trade')
+}
 const query = ref('')
 const searching = ref(false)
 const currentCharacterId = computed(() => session.snapshot?.character?.id ?? '')
@@ -82,6 +88,7 @@ onMounted(() => {
             <small>ур. {{ player.level }} · {{ classLabel(player.classId) }} · код {{ player.publicCode }}</small>
           </div>
           <div class="actions">
+            <UIButton variant="secondary" :disabled="trade.pending || !!trade.current && trade.current.state === 'OPEN'" @click="openTrade(player.characterId)">Обмен</UIButton>
             <UIButton
               v-if="player.relationship === 'NONE'"
               variant="secondary"
@@ -150,6 +157,7 @@ onMounted(() => {
           <small>ур. {{ friend.level }} · {{ classLabel(friend.classId) }}</small>
         </div>
         <div class="actions">
+          <UIButton variant="secondary" :disabled="trade.pending || !!trade.current && trade.current.state === 'OPEN'" @click="openTrade(friend.characterId)">Обмен</UIButton>
           <UIButton v-if="canInvite(friend.characterId)" data-party-invite :disabled="inviting !== null" @click="inviteToParty(friend.characterId)">В группу</UIButton>
           <UIButton
             variant="secondary"

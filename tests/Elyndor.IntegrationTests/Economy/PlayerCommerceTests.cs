@@ -8,7 +8,14 @@ using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Economy;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.IntegrationTests.Postgres;
+using Elyndor.Server.Identity;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Elyndor.IntegrationTests.Economy;
@@ -75,6 +82,66 @@ public sealed class PlayerCommerceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
+    public async Task RecipientCanDeclineBeforeJoiningAndOfferLocksAreReleased()
+    {
+        var a = await Player(); var b = await Player(); var item = await Item(a);
+        await using var db = postgres.CreateDbContext();
+        var service = Trade(db);
+        var opened = await service.OpenAsync(a.Account, b.Character, Guid.NewGuid(), a.Connection, default);
+        var id = opened.Snapshot!.Id;
+        Assert.True((await service.ActAsync(a.Account, id, Guid.NewGuid(), "OFFER", 0, [item], 10, a.Connection, default)).Succeeded);
+        var declined = await service.ActAsync(b.Account, id, Guid.NewGuid(), "DECLINE", 1, null, 0, b.Connection, default);
+        Assert.Equal("CANCELLED", declined.Snapshot!.State);
+        Assert.Null((await db.CharacterItems.FindAsync(item))!.TransactionLockId);
+        Assert.Equal(100, (await db.Characters.FindAsync(a.Character))!.Gold);
+        Assert.Equal(100, (await db.Characters.FindAsync(b.Character))!.Gold);
+    }
+
+    [Fact]
+    public async Task OpeningTradePushesInvitationToOtherAccountThroughAuthenticatedHub()
+    {
+        var a = await Player(); var b = await Player(); var stranger = await Player();
+        await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Development");
+            builder.UseSetting("ConnectionStrings:game", postgres.ConnectionString);
+            builder.UseSetting("Authentication:Issuer", "Elyndor.Tests");
+            builder.UseSetting("Authentication:Audience", "Elyndor.Tests.Client");
+            builder.UseSetting("Authentication:SigningKey", "player-commerce-test-signing-key-with-more-than-32-bytes");
+            builder.UseSetting("Authentication:Telegram:BotToken", "123456:TEST_TOKEN");
+            builder.UseSetting("Authentication:Development:Enabled", "false");
+            builder.ConfigureServices(services =>
+            {
+                services.RemoveAll<TimeProvider>();
+                services.AddSingleton<TimeProvider>(_clock);
+            });
+        });
+        var issuer = factory.Services.GetRequiredService<JwtTokenIssuer>();
+        async Task<HubConnection> Connect(Guid account)
+        {
+            var token = issuer.Issue(account, Random.Shared.NextInt64(1, long.MaxValue));
+            var hub = new HubConnectionBuilder().WithUrl("http://localhost/hubs/trade", options =>
+            {
+                options.AccessTokenProvider = () => Task.FromResult<string?>(token.AccessToken);
+                options.HttpMessageHandlerFactory = _ => factory.Server.CreateHandler();
+                options.Transports = HttpTransportType.LongPolling;
+            }).Build();
+            await hub.StartAsync();
+            return hub;
+        }
+        await using var sender = await Connect(a.Account);
+        await using var recipient = await Connect(b.Account);
+        await using var unrelated = await Connect(stranger.Account);
+        var received = new TaskCompletionSource<TradeResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+        recipient.On<TradeResponse>("TradeUpdated", snapshot => received.TrySetResult(snapshot));
+        var result = await sender.InvokeAsync<CommerceResult<TradeResponse>>("Open", b.Character, Guid.NewGuid());
+        Assert.True(result.Succeeded, result.ErrorCode);
+        Assert.Equal(result.Snapshot!.Id, (await received.Task.WaitAsync(TimeSpan.FromSeconds(5))).Id);
+        var denied = await Assert.ThrowsAnyAsync<Exception>(() => unrelated.InvokeAsync<TradeResponse>("Get", result.Snapshot.Id));
+        Assert.Contains("trade_not_participant", denied.Message);
+    }
+
+    [Fact]
     public async Task ConcurrentConfirmationsSettleOnce()
     {
         var (a, b, id, _) = await PreparedTrade();
@@ -119,9 +186,33 @@ public sealed class PlayerCommerceTests(PostgresFixture postgres) : IAsyncLifeti
         var mailbox = await service.MailAsync(buyer.Account, default);
         Assert.Equal("SMALL_HEALING_POTION", Assert.Single(mailbox).ItemDefinitionId);
         Assert.Equal(1, mailbox[0].Quantity);
+        Assert.Equal("PURCHASE", mailbox[0].Source);
         Assert.True((await service.ClaimAsync(buyer.Account, lot.Id, Guid.NewGuid(), default)).Succeeded);
         Assert.True((await service.ClaimAsync(buyer.Account, lot.Id, Guid.NewGuid(), default)).Succeeded);
         Assert.Single(await db.CharacterItems.ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task AuctionCatalogExposesOnlyActiveOwnedEscrowWithItemPresentation()
+    {
+        var seller = await Player(); var buyer = await Player();
+        var item = await Item(seller);
+        var lot = await Listing(seller, item);
+        await using var db = postgres.CreateDbContext();
+        var service = Auction(db);
+        var row = Assert.Single(await service.ListingsAsync(buyer.Account, false, null, null, 0, default));
+        Assert.Equal(lot.Id, row.Id);
+        Assert.Equal("100", row.Price);
+        Assert.Equal(item, row.ItemId);
+        Assert.Equal("SMALL_HEALING_POTION", row.ItemDefinitionId);
+        Assert.False(string.IsNullOrWhiteSpace(row.Name));
+        Assert.Empty(await service.ListingsAsync(buyer.Account, true, null, null, 0, default));
+        Assert.Single(await service.ListingsAsync(seller.Account, true, row.Name, row.Type, 0, default));
+        Assert.Empty(await service.ListingsAsync(buyer.Account, false, "not-a-real-item", null, 0, default));
+        Assert.Empty(await service.ListingsAsync(buyer.Account, false, null, "Equipment", 0, default));
+        Assert.Empty(await service.ListingsAsync(buyer.Account, false, null, null, 1, default));
+        Assert.True((await service.BuyAsync(buyer.Account, lot.Id, Guid.NewGuid(), default)).Succeeded);
+        Assert.Empty(await service.ListingsAsync(buyer.Account, false, null, null, 0, default));
     }
 
     [Fact]
@@ -235,6 +326,7 @@ public sealed class PlayerCommerceTests(PostgresFixture postgres) : IAsyncLifeti
         Assert.Equal("EXPIRED", result.Snapshot!.State);
         Assert.Single(await db.CommerceMails.ToArrayAsync());
         Assert.Equal("MAILBOX", (await db.CharacterItems.IgnoreQueryFilters().SingleAsync(x => x.Id == item)).Storage);
+        Assert.Equal("RETURN", Assert.Single(await Auction(db).MailAsync(seller.Account, default)).Source);
     }
 
     [Fact]

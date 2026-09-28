@@ -14,6 +14,7 @@ import WorldMapView from '@/game/world/views/WorldMapView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
+import { useTradeStore } from '@/game/economy/tradeStore'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { UIButton, UIHealthBar, UILoadingState, UIModal } from '@/ui/components'
@@ -22,6 +23,7 @@ type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
+const trade = useTradeStore()
 const activeView = ref<ShellView>('location')
 const contentElement = ref<HTMLElement | null>(null)
 const openGuildOnLocation = ref(false)
@@ -162,6 +164,7 @@ watch(
     } catch {
       // The combat store retains the connection error and supports retry/reconnect.
     }
+    try { await trade.connect() } catch { /* Trade actions surface connection errors in their own panel. */ }
   },
   { immediate: true },
 )
@@ -182,6 +185,10 @@ onMounted(() => {
 
 <template>
   <div class="game-shell">
+    <button v-if="session.state === 'world' && trade.current?.state === 'OPEN' && !trade.joined && !combat.isActive"
+      class="trade-notice" type="button" @click="openMenu('trade')">
+      Вам предложили обмен · Открыть
+    </button>
     <section
       v-if="session.state === 'world' && character && !combat.isActive"
       class="hud"
@@ -349,6 +356,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.trade-notice { position:fixed; z-index:50; top:calc(env(safe-area-inset-top, 0px) + 8px); left:50%; transform:translateX(-50%); max-width:calc(100vw - 24px); min-height:44px; padding:8px 14px; border:1px solid var(--ui-color-gold); border-radius:var(--ui-radius-md); background:#16130f; color:var(--ui-color-gold); font:700 .8rem var(--ui-font-display); box-shadow:0 6px 24px #0009; }
 .game-shell {
   position: relative;
   display: grid;

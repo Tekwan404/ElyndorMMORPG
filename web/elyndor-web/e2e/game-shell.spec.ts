@@ -33,6 +33,19 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await expect(page.getByText('КОД ГЕРОЯ', { exact: true })).toBeVisible()
   await page.screenshot({ path: '../../output/playwright/session-2a-menu.png', fullPage: true })
 
+  if (process.env.ELYNDOR_E2E_REAL !== 'true') {
+    await page.route('**/api/v1/auction?*', route => route.fulfill({ json: [] }))
+    await page.route('**/api/v1/mailbox', route => route.fulfill({ json: [] }))
+    await page.locator('[data-open-auction]').click()
+    await expect(page.locator('[data-auction-view]')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Мои лоты' })).toBeVisible()
+    await page.screenshot({ path: '../../output/playwright/commerce-auction-mobile.png', fullPage: true })
+    await page.getByRole('button', { name: 'Назад в меню' }).click()
+    await page.locator('[data-open-mailbox]').click()
+    await expect(page.locator('[data-mailbox-view]')).toBeVisible()
+    await page.screenshot({ path: '../../output/playwright/commerce-mailbox-mobile.png', fullPage: true })
+    await page.getByRole('button', { name: 'Назад в меню' }).click()
+  }
   await page.getByRole('button', { name: 'Группа Состав и поход' }).click()
   await expect(page.getByRole('heading', { name: 'Группа' })).toBeVisible()
   await page.locator('[data-party-open-dungeons]').click()
@@ -327,7 +340,7 @@ async function installMockApiUnlessReal(page: Page): Promise<void> {
 }
 
 function isMockRealtimeRequest(url: string): boolean {
-  return process.env.ELYNDOR_E2E_REAL !== 'true' && url.includes('/hubs/combat')
+  return process.env.ELYNDOR_E2E_REAL !== 'true' && (url.includes('/hubs/combat') || url.includes('/hubs/trade'))
 }
 
 function isExpectedNavigationAbort(request: { failure(): { errorText?: string } | null }): boolean {
@@ -336,7 +349,7 @@ function isExpectedNavigationAbort(request: { failure(): { errorText?: string } 
 
 function isExpectedMockRealtimeFailure(message: string, sourceUrl = ''): boolean {
   if (process.env.ELYNDOR_E2E_REAL === 'true') return false
-  return sourceUrl.includes('/hubs/combat')
+  return sourceUrl.includes('/hubs/combat') || sourceUrl.includes('/hubs/trade')
     || message.includes('[combat-realtime]')
     || message.includes('Failed to complete negotiation with the server')
     || message.includes('Failed to start the connection')

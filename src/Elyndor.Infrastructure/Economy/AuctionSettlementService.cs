@@ -18,6 +18,44 @@ public sealed class AuctionOptions
 public sealed class AuctionSettlementService(GameDbContext db, CommerceTransaction transactions,
     IContentSnapshotProvider content, TimeProvider time, IOptions<AuctionOptions> options)
 {
+    public async Task<AuctionListingView[]> ListingsAsync(Guid account, bool mine, string? search, string? type, int page, CancellationToken ct)
+    {
+        if (page < 0 || page > 10_000 || search?.Length > 100) return [];
+        var owner = await transactions.CharacterIdAsync(account, ct);
+        if (owner is null) return [];
+        var definitions = content.GetCurrent().Package.Items?.ToDictionary(x => x.Id, StringComparer.Ordinal);
+        if (definitions is null) return [];
+        var query = db.AuctionListings.AsNoTracking().Where(x => x.State == "ACTIVE" && x.ExpiresAt > time.GetUtcNow());
+        if (mine) query = query.Where(x => x.SellerId == owner);
+        else query = query.Where(x => x.SellerId != owner);
+        if (!string.IsNullOrWhiteSpace(search) || !string.IsNullOrWhiteSpace(type))
+        {
+            var matches = definitions.Values.Where(x =>
+                    (string.IsNullOrWhiteSpace(search) || x.Name.Contains(search.Trim(), StringComparison.OrdinalIgnoreCase))
+                    && (string.IsNullOrWhiteSpace(type) || x.Type.ToString().Equals(type, StringComparison.OrdinalIgnoreCase)))
+                .Select(x => x.Id).ToArray();
+            if (matches.Length == 0) return [];
+            query = from lot in query
+                    join item in db.CharacterItems.IgnoreQueryFilters() on lot.ItemId equals item.Id
+                    where matches.Contains(item.ItemDefinitionId)
+                    select lot;
+        }
+        var rows = await (from lot in query.OrderBy(x => x.ExpiresAt).ThenBy(x => x.Id).Skip(page * 50).Take(50)
+                          join item in db.CharacterItems.IgnoreQueryFilters().AsNoTracking() on lot.ItemId equals item.Id
+                          join seller in db.Characters.AsNoTracking() on lot.SellerId equals seller.Id
+                          where item.Storage == "AUCTION" && item.CharacterId == lot.SellerId
+                          select new { lot, item.ItemDefinitionId, item.Quantity, SellerName = seller.Name })
+            .ToArrayAsync(ct);
+        return rows.Select(row =>
+        {
+            var definition = definitions.GetValueOrDefault(row.ItemDefinitionId);
+            return new AuctionListingView(row.lot.Id, row.lot.SellerId, row.SellerName, row.lot.ItemId,
+                row.ItemDefinitionId, definition?.Name ?? row.ItemDefinitionId, definition?.IconId,
+                definition?.Type.ToString() ?? "Other", definition?.Rarity.ToString() ?? "Common",
+                row.Quantity, row.lot.Price.ToString(System.Globalization.CultureInfo.InvariantCulture), row.lot.ExpiresAt);
+        }).ToArray();
+    }
+
     public async Task<CommerceResult<AuctionResponse>> CreateAsync(Guid account, AuctionCreateRequest request, CancellationToken ct)
     {
         var character = await transactions.CharacterIdAsync(account, ct);
@@ -112,21 +150,26 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
         if (owner is null) return [];
         var entries = await (from mail in db.CommerceMails.AsNoTracking()
                 join item in db.CharacterItems.IgnoreQueryFilters().AsNoTracking() on mail.ItemId equals item.Id
+                join lot in db.AuctionListings.AsNoTracking() on mail.Id equals lot.Id
                 where mail.CharacterId == owner && mail.ClaimedAt == null && item.Storage == "MAILBOX"
                 orderby mail.CreatedAt
-                select new { mail.Id, mail.ItemId, mail.CreatedAt, item.ItemDefinitionId, item.Quantity })
+                select new { mail.Id, mail.ItemId, mail.CreatedAt, item.ItemDefinitionId, item.Quantity, lot.BuyerId })
             .Take(100).ToArrayAsync(ct);
         var definitions = content.GetCurrent().Package.Items?.ToDictionary(x => x.Id, StringComparer.Ordinal);
         return entries.Select(entry =>
         {
             var definition = definitions?.GetValueOrDefault(entry.ItemDefinitionId);
             return new MailResponse(entry.Id, entry.ItemId, entry.CreatedAt,
-                entry.ItemDefinitionId, definition?.Name ?? entry.ItemDefinitionId, definition?.IconId, entry.Quantity);
+                entry.ItemDefinitionId, definition?.Name ?? entry.ItemDefinitionId, definition?.IconId, entry.Quantity,
+                entry.BuyerId == owner ? "PURCHASE" : "RETURN");
         }).ToArray();
     }
 
     private async Task<AuctionListing> LockAsync(Guid id, CancellationToken ct) =>
         await db.AuctionListings.FromSqlInterpolated($"SELECT * FROM game.auction_listings WHERE \"Id\" = {id} FOR UPDATE")
             .SingleOrDefaultAsync(ct) ?? throw new CommerceRuleException("auction_not_found");
-    public static AuctionResponse Response(AuctionListing x) => new(x.Id, x.State, x.SellerId, x.ItemId, x.Price, x.Fee, x.Tax, x.BuyerId, x.ExpiresAt);
+    public static AuctionResponse Response(AuctionListing x) => new(x.Id, x.State, x.SellerId, x.ItemId,
+        x.Price.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        x.Fee.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        x.Tax.ToString(System.Globalization.CultureInfo.InvariantCulture), x.BuyerId, x.ExpiresAt);
 }
