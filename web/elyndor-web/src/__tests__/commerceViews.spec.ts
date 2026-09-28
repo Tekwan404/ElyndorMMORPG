@@ -39,7 +39,8 @@ describe('commerce views', () => {
     await flushPromises()
     finishBuy([{ id: 'stale', sellerId: 'other', sellerName: 'Other', itemId: 'item',
       itemDefinitionId: 'ITEM', name: 'Stale lot', iconId: null, type: 'Equipment', rarity: 'Rare',
-      quantity: 1, price: '100', expiresAt: '2027-01-01T00:00:00Z' }])
+      quantity: 1, itemLevel: 25, itemPower: 72.5, rollQuality: .8, stars: 3, isPerfect: false,
+      enhancementLevel: 2, rolledStats: null, affixes: [], price: '100', expiresAt: '2027-01-01T00:00:00Z' }])
     await flushPromises()
     expect(wrapper.text()).not.toContain('Stale lot')
     wrapper.unmount()
