@@ -90,7 +90,7 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
                 : null;
             return new AuctionListingView(row.lot.Id, row.lot.SellerId, row.SellerName, row.lot.ItemId,
                 row.ItemDefinitionId,
-                string.IsNullOrWhiteSpace(row.GeneratedDisplayName) ? definition?.Name ?? row.ItemDefinitionId : row.GeneratedDisplayName,
+                string.IsNullOrWhiteSpace(row.GeneratedDisplayName) ? definition?.Name ?? row.ItemDefinitionId : row.GeneratedDisplayName!,
                 definition?.IconId,
                 definition?.Type.ToString() ?? "Other", definition?.Rarity.ToString() ?? "Common",
                 row.Quantity, row.ItemLevel, row.ActualItemPower, row.RollQuality, row.Stars, row.IsPerfect,
@@ -136,7 +136,8 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
                 throw new CommerceRuleException("auction_listing_limit");
             var item = await transactions.ItemAsync(request.ItemId, character.Value, null, false, ct);
             var (fee, tax) = Quote(request.Price);
-            if (request.ExpectedFee != fee || request.ExpectedTax != tax)
+            if ((request.ExpectedFee.HasValue || request.ExpectedTax.HasValue)
+                && (request.ExpectedFee != fee || request.ExpectedTax != tax))
                 throw new CommerceRuleException("auction_quote_changed");
             var listing = new AuctionListing(id, character.Value, item.Id, request.Price, fee, tax, time.GetUtcNow());
             if (!characters[0].TrySpendGold(fee)) throw new CommerceRuleException("commerce_insufficient_funds");
