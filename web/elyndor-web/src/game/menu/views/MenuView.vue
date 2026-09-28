@@ -11,6 +11,9 @@ import {
 } from '@/game/combat/trainingDummyCombatLogSettings'
 import CombatHotbarSettings from '@/game/combat/CombatHotbarSettings.vue'
 import PremiumStoreView from '@/game/economy/views/PremiumStoreView.vue'
+import AuctionView from '@/game/economy/views/AuctionView.vue'
+import MailboxView from '@/game/economy/views/MailboxView.vue'
+import TradePanel from '@/game/economy/views/TradePanel.vue'
 import ProfessionView from '@/game/professions/views/ProfessionView.vue'
 import FriendsView from '@/game/social/views/FriendsView.vue'
 import PartyView from '@/game/party/views/PartyView.vue'
@@ -19,7 +22,7 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import { UIButton } from '@/ui/components'
 
-export type MenuSection = 'profile' | 'friends' | 'party' | 'store' | 'hotbar' | 'professions' | 'updates'
+export type MenuSection = 'profile' | 'friends' | 'party' | 'store' | 'hotbar' | 'professions' | 'updates' | 'auction' | 'mailbox' | 'trade'
 
 const props = defineProps<{ initialSection: MenuSection }>()
 const emit = defineEmits<{ 'open-world': [] }>()
@@ -59,7 +62,7 @@ function updateTrainingDummyCombatLogPreference(): void {
       <span>ELYNDOR</span>
     </header>
 
-    <section v-if="character" class="menu-profile" aria-label="Профиль героя">
+    <section v-if="character && activeSection === 'profile'" class="menu-profile" aria-label="Профиль героя">
       <div class="menu-profile__portrait">
         <img v-if="portraitArt" :src="portraitArt" alt="" aria-hidden="true" />
         <span v-else>{{ character.name.slice(0, 1).toUpperCase() }}</span>
@@ -106,6 +109,14 @@ function updateTrainingDummyCombatLogPreference(): void {
       <button class="menu-tile menu-tile--violet" type="button" @click="activeSection = 'store'">
         <span class="menu-tile__icon" aria-hidden="true"><IconGenerator :config="{ id: 'menu-store', glyph: 'ore', category: 'resource' }" /></span>
         <span><strong>Магазин</strong><small>Материалы за кристаллы</small></span><b aria-hidden="true">›</b>
+      </button>
+      <button class="menu-tile menu-tile--gold" type="button" data-open-auction @click="activeSection = 'auction'">
+        <span class="menu-tile__icon" aria-hidden="true"><IconGenerator :config="{ id: 'menu-auction', glyph: 'ring', category: 'utility' }" /></span>
+        <span><strong>Аукцион</strong><small>Покупка и продажа вещей</small></span><b aria-hidden="true">›</b>
+      </button>
+      <button class="menu-tile menu-tile--violet" type="button" data-open-mailbox @click="activeSection = 'mailbox'">
+        <span class="menu-tile__icon" aria-hidden="true"><IconGenerator :config="{ id: 'menu-mailbox', glyph: 'scroll', category: 'utility' }" /></span>
+        <span><strong>Почта</strong><small>Покупки и возвраты лотов</small></span><b aria-hidden="true">›</b>
       </button>
       <button class="menu-tile menu-tile--violet" type="button" data-open-hotbar-settings @click="activeSection = 'hotbar'">
         <span class="menu-tile__icon" aria-hidden="true">
@@ -158,7 +169,10 @@ function updateTrainingDummyCombatLogPreference(): void {
         <IconGenerator :config="{ id: 'menu-back', glyph: 'chevronLeft', category: 'utility' }" />
         Назад в меню
       </button>
-      <FriendsView v-if="activeSection === 'friends'" />
+      <FriendsView v-if="activeSection === 'friends'" @open-trade="activeSection = 'trade'" />
+      <TradePanel v-else-if="activeSection === 'trade'" />
+      <AuctionView v-else-if="activeSection === 'auction'" />
+      <MailboxView v-else-if="activeSection === 'mailbox'" />
       <PartyView v-else-if="activeSection === 'party'" embedded @open-world="emit('open-world')" />
       <ProfessionView v-else-if="activeSection === 'professions'" />
       <PremiumStoreView v-else-if="activeSection === 'store'" />

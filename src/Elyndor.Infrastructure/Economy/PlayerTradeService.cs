@@ -53,6 +53,7 @@ public sealed class PlayerTradeService(GameDbContext db, CommerceTransaction tra
                 if (replay) return Response(trade);
                 if (time.GetUtcNow() >= trade.ExpiresAt) { trade.Cancel(); await ReleaseAsync(trade, ct); return Response(trade); }
                 if (action == "CONNECT") { trade.Connect(actor.Id, connection); return Response(trade); }
+                if (action == "DECLINE") { trade.Cancel(); await ReleaseAsync(trade, ct); return Response(trade); }
                 trade.RequireConnection(actor.Id, connection);
                 if (action == "CANCEL") { trade.Cancel(); await ReleaseAsync(trade, ct); return Response(trade); }
                 await transactions.EligibleAsync([trade.CharacterAId, trade.CharacterBId], ct);
@@ -113,5 +114,7 @@ public sealed class PlayerTradeService(GameDbContext db, CommerceTransaction tra
         foreach (var item in items) item.ReleaseTransactionLock(trade.Id);
     }
     public static TradeResponse Response(PlayerTrade t) => new(t.Id, t.State, t.Revision, t.CharacterAId, t.CharacterBId,
-        t.ItemsA, t.ItemsB, t.GoldA, t.GoldB, t.LockedA, t.LockedB, t.ConfirmedA, t.ConfirmedB);
+        t.ItemsA, t.ItemsB, t.GoldA.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        t.GoldB.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        t.LockedA, t.LockedB, t.ConfirmedA, t.ConfirmedB);
 }
