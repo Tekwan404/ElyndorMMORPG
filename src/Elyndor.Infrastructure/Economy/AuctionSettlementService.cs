@@ -44,16 +44,83 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
                           join item in db.CharacterItems.IgnoreQueryFilters().AsNoTracking() on lot.ItemId equals item.Id
                           join seller in db.Characters.AsNoTracking() on lot.SellerId equals seller.Id
                           where item.Storage == "AUCTION" && item.CharacterId == lot.SellerId
-                          select new { lot, item.ItemDefinitionId, item.Quantity, SellerName = seller.Name })
+                          select new
+                          {
+                              lot,
+                              item.ItemDefinitionId,
+                              item.Quantity,
+                              item.GeneratedDisplayName,
+                              item.ItemLevel,
+                              item.ActualItemPower,
+                              item.RollQuality,
+                              item.Stars,
+                              item.IsPerfect,
+                              item.EnhancementLevel,
+                              item.RolledStrength,
+                              item.RolledAgility,
+                              item.RolledIntellect,
+                              item.RolledStamina,
+                              SellerName = seller.Name
+                          })
             .ToArrayAsync(ct);
+        if (rows.Length == 0) return [];
+
+        Guid[] itemIds = rows.Select(row => row.lot.ItemId).ToArray();
+        var affixes = await db.CharacterItemAffixes.AsNoTracking()
+            .Where(affix => itemIds.Contains(affix.ItemInstanceId))
+            .OrderBy(affix => affix.ItemInstanceId)
+            .ThenBy(affix => affix.GenerationOrdinal)
+            .ToArrayAsync(ct);
+        var affixesByItem = affixes.GroupBy(affix => affix.ItemInstanceId).ToDictionary(
+            group => group.Key,
+            group => group.Select(affix => new AuctionAffixView(
+                affix.SlotKey,
+                affix.StatId,
+                affix.Value,
+                affix.AffixTier,
+                affix.IsGuaranteed,
+                affix.IsReforgeSlot)).ToArray());
+
         return rows.Select(row =>
         {
             var definition = definitions.GetValueOrDefault(row.ItemDefinitionId);
+            var rolledStats = row.RolledStrength.HasValue || row.RolledAgility.HasValue
+                || row.RolledIntellect.HasValue || row.RolledStamina.HasValue
+                ? new AuctionRolledStatsView(row.RolledStrength, row.RolledAgility, row.RolledIntellect, row.RolledStamina)
+                : null;
             return new AuctionListingView(row.lot.Id, row.lot.SellerId, row.SellerName, row.lot.ItemId,
-                row.ItemDefinitionId, definition?.Name ?? row.ItemDefinitionId, definition?.IconId,
+                row.ItemDefinitionId,
+                string.IsNullOrWhiteSpace(row.GeneratedDisplayName) ? definition?.Name ?? row.ItemDefinitionId : row.GeneratedDisplayName,
+                definition?.IconId,
                 definition?.Type.ToString() ?? "Other", definition?.Rarity.ToString() ?? "Common",
-                row.Quantity, row.lot.Price.ToString(System.Globalization.CultureInfo.InvariantCulture), row.lot.ExpiresAt);
+                row.Quantity, row.ItemLevel, row.ActualItemPower, row.RollQuality, row.Stars, row.IsPerfect,
+                row.EnhancementLevel, rolledStats, affixesByItem.GetValueOrDefault(row.lot.ItemId) ?? [],
+                Money(row.lot.Price), row.lot.ExpiresAt);
         }).ToArray();
+    }
+
+    public async Task<CommerceResult<AuctionFeePreviewView>> PreviewAsync(Guid account, AuctionPreviewRequest request, CancellationToken ct)
+    {
+        var character = await transactions.CharacterIdAsync(account, ct);
+        if (character is null) return CommerceResult.Failure<AuctionFeePreviewView>("commerce_character_not_found");
+        try
+        {
+            if (await db.AuctionListings.CountAsync(x => x.SellerId == character && x.State == "ACTIVE", ct)
+                >= options.Value.MaxActiveListings)
+                throw new CommerceRuleException("auction_listing_limit");
+            _ = await transactions.ItemAsync(request.ItemId, character.Value, null, false, ct);
+            var (fee, tax) = Quote(request.Price);
+            return CommerceResult.Success(new AuctionFeePreviewView(
+                request.ItemId, Money(request.Price), Money(fee), Money(tax), Money(request.Price - tax)));
+        }
+        catch (CommerceRuleException exception)
+        {
+            return CommerceResult.Failure<AuctionFeePreviewView>(exception.Code);
+        }
+        catch (OverflowException)
+        {
+            return CommerceResult.Failure<AuctionFeePreviewView>("auction_invalid_listing");
+        }
     }
 
     public async Task<CommerceResult<AuctionResponse>> CreateAsync(Guid account, AuctionCreateRequest request, CancellationToken ct)
@@ -68,8 +135,9 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
                 >= options.Value.MaxActiveListings)
                 throw new CommerceRuleException("auction_listing_limit");
             var item = await transactions.ItemAsync(request.ItemId, character.Value, null, false, ct);
-            long fee = checked((long)Math.Max(options.Value.MinimumListingFee, decimal.Ceiling(request.Price * options.Value.ListingFeeRate)));
-            long tax = checked((long)decimal.Ceiling(request.Price * options.Value.SaleTaxRate));
+            var (fee, tax) = Quote(request.Price);
+            if (request.ExpectedFee != fee || request.ExpectedTax != tax)
+                throw new CommerceRuleException("auction_quote_changed");
             var listing = new AuctionListing(id, character.Value, item.Id, request.Price, fee, tax, time.GetUtcNow());
             if (!characters[0].TrySpendGold(fee)) throw new CommerceRuleException("commerce_insufficient_funds");
             item.AcquireTransactionLock(listing.Id);
@@ -165,11 +233,20 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
         }).ToArray();
     }
 
+    private (long Fee, long Tax) Quote(long price)
+    {
+        if (price <= 0) throw new CommerceRuleException("auction_invalid_listing");
+        long fee = checked((long)Math.Max(options.Value.MinimumListingFee, decimal.Ceiling(price * options.Value.ListingFeeRate)));
+        long tax = checked((long)decimal.Ceiling(price * options.Value.SaleTaxRate));
+        if (fee < 0 || tax < 0 || tax > price) throw new CommerceRuleException("auction_invalid_listing");
+        return (fee, tax);
+    }
+
+    private static string Money(long value) => value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
     private async Task<AuctionListing> LockAsync(Guid id, CancellationToken ct) =>
         await db.AuctionListings.FromSqlInterpolated($"SELECT * FROM game.auction_listings WHERE \"Id\" = {id} FOR UPDATE")
             .SingleOrDefaultAsync(ct) ?? throw new CommerceRuleException("auction_not_found");
     public static AuctionResponse Response(AuctionListing x) => new(x.Id, x.State, x.SellerId, x.ItemId,
-        x.Price.ToString(System.Globalization.CultureInfo.InvariantCulture),
-        x.Fee.ToString(System.Globalization.CultureInfo.InvariantCulture),
-        x.Tax.ToString(System.Globalization.CultureInfo.InvariantCulture), x.BuyerId, x.ExpiresAt);
+        Money(x.Price), Money(x.Fee), Money(x.Tax), x.BuyerId, x.ExpiresAt);
 }
