@@ -69,6 +69,28 @@ public sealed class ArenaCombatSession
     public IReadOnlyList<CombatEvent> GetEventsAfter(long sequence) =>
         _events.Where(x => x.Sequence > sequence).ToArray();
 
+    public IReadOnlyDictionary<string, DateTimeOffset> CooldownsFor(Guid accountId) =>
+        new Dictionary<string, DateTimeOffset>(RuntimeFor(accountId).Cooldowns, StringComparer.Ordinal);
+
+    public ActiveCast? ActiveCastFor(Guid accountId) => RuntimeFor(accountId).ActiveCast;
+
+    private CombatRuntimeState RuntimeFor(Guid accountId) => accountId == _first.AccountId
+        ? _firstRuntime : accountId == _second.AccountId
+            ? _secondRuntime : throw new ArgumentException("Account is not an arena participant.");
+
+    public bool Forfeit(Guid accountId, DateTimeOffset now)
+    {
+        if (accountId != _first.AccountId && accountId != _second.AccountId)
+            return false;
+        if (now.Offset != TimeSpan.Zero || now < _advancedTo || Outcome != ArenaMatchOutcome.Active)
+            return false;
+        Outcome = accountId == _first.AccountId ? ArenaMatchOutcome.WinnerB : ArenaMatchOutcome.WinnerA;
+        _advancedTo = now;
+        Append(new CombatEvent(CombatEventType.CombatEnded, now, _first.Actor.ActorId,
+            Outcome.ToString()));
+        return true;
+    }
+
     public ArenaCommandResult UseAbility(Guid accountId, string commandId, string abilityId,
         Guid targetActorId, DateTimeOffset now)
     {
@@ -221,7 +243,7 @@ public sealed class ArenaCombatSession
     }
     private void Append(CombatEvent combatEvent) => _events.Add(combatEvent with { Sequence = ++_sequence });
 
-    private static void ValidateAbilities(IReadOnlyDictionary<string, AbilityDefinition> abilities)
+    public static void ValidateAbilities(IReadOnlyDictionary<string, AbilityDefinition> abilities)
     {
         foreach (AbilityDefinition ability in abilities.Values)
         {

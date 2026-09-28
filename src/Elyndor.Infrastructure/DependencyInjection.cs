@@ -18,6 +18,7 @@ using Elyndor.Infrastructure.Economy;
 using Elyndor.Infrastructure.Professions;
 using Elyndor.Infrastructure.Pvp;
 using Elyndor.Core.Combat.Randomness;
+using Elyndor.Core.Pvp;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -43,6 +44,11 @@ public static class DependencyInjection
         builder.Services.AddScoped<CombatSessionFactory>();
         builder.Services.AddScoped<CombatDurabilityService>();
         builder.Services.AddScoped<CombatApplicationService>();
+        builder.Services.AddSingleton<ArenaTestRegistry>(services =>
+            new ArenaTestRegistry(services.GetRequiredService<TimeProvider>(),
+                services.GetRequiredService<IGameRandomFactory>().Create));
+        builder.Services.AddScoped<ArenaTestService>();
+        builder.Services.AddOptions<ArenaTestOptions>().BindConfiguration("ArenaTest");
         builder.Services.AddScoped<CombatRewardService>();
         builder.Services.AddScoped<CombatLootRollService>();
         builder.Services.AddHostedService<CombatLootRollExpiryWorker>();

@@ -139,6 +139,18 @@ public sealed class ArenaCombatSessionTests
         Assert.Throws<NotSupportedException>(() => Create(extraAbility: unsupported));
     }
 
+    [Fact]
+    public void ForfeitFinishesTheMatchWithoutMoreGameplayOrDuplicateEnding()
+    {
+        ArenaCombatSession session = Create();
+        Assert.True(session.Forfeit(AccountA, Start.AddSeconds(1)));
+        Assert.False(session.Forfeit(AccountA, Start.AddSeconds(2)));
+        Assert.Equal(ArenaMatchOutcome.WinnerB, session.Snapshot.Outcome);
+        Assert.False(session.UseAbility(AccountB, "late", "STRIKE", ActorA,
+            Start.AddSeconds(3)).Succeeded);
+        Assert.Single(session.GetEventsAfter(0), x => x.Type == CombatEventType.CombatEnded);
+    }
+
     private static ArenaCombatSession Create(decimal strikeDamage = 20, TimeSpan? castTime = null,
         bool withShield = false, AbilityDefinition? extraAbility = null)
     {
