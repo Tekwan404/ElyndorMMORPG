@@ -1,6 +1,22 @@
 import { apiClient } from '@/api/apiClient'
 import { moneyUnits, type MoneyValue } from '@/shared/money'
 
+export interface AuctionAffix {
+  slotKey: string
+  statId: string
+  value: number
+  affixTier: number
+  isGuaranteed: boolean
+  isReforgeSlot: boolean
+}
+
+export interface AuctionRolledStats {
+  strength: number | null
+  agility: number | null
+  intellect: number | null
+  stamina: number | null
+}
+
 export interface AuctionLot {
   id: string
   sellerId: string
@@ -12,7 +28,35 @@ export interface AuctionLot {
   type: string
   rarity: string
   quantity: number
+  itemLevel: number | null
+  itemPower: number | null
+  rollQuality: number | null
+  stars: number | null
+  isPerfect: boolean
+  enhancementLevel: number
+  rolledStats: AuctionRolledStats | null
+  affixes: AuctionAffix[]
   price: MoneyValue
+  expiresAt: string
+}
+
+export interface AuctionFeePreview {
+  itemId: string
+  price: MoneyValue
+  fee: MoneyValue
+  tax: MoneyValue
+  sellerProceeds: MoneyValue
+}
+
+export interface AuctionMutation {
+  id: string
+  state: string
+  sellerId: string
+  itemId: string
+  price: MoneyValue
+  fee: MoneyValue
+  tax: MoneyValue
+  buyerId: string | null
   expiresAt: string
 }
 
@@ -74,6 +118,8 @@ const errorText: Record<string, string> = {
   trade_closed: 'Этот обмен уже завершён.',
   auction_unavailable: 'Лот больше недоступен.',
   auction_listing_limit: 'Достигнут лимит активных лотов.',
+  auction_quote_changed: 'Комиссия аукциона изменилась. Проверьте новый расчёт и подтвердите ещё раз.',
+  auction_invalid_listing: 'Проверьте цену лота.',
   mail_item_unavailable: 'Посылка больше недоступна.',
 }
 
@@ -105,10 +151,20 @@ export async function loadAuction(mine: boolean, search = '', type = '', page = 
   return apiClient.request<AuctionLot[]>(`/api/v1/auction?${query}`)
 }
 
-export async function createAuction(itemId: string, price: number): Promise<void> {
-  await apiClient.request('/api/v1/auction', {
+export async function previewAuction(itemId: string, price: number): Promise<AuctionFeePreview> {
+  return apiClient.request<AuctionFeePreview>('/api/v1/auction/preview', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ requestId: crypto.randomUUID(), itemId, price }),
+    body: JSON.stringify({ itemId, price }),
+  })
+}
+
+export async function createAuction(itemId: string, price: number, preview: AuctionFeePreview): Promise<AuctionMutation> {
+  const fee = moneyUnits(preview.fee)
+  const tax = moneyUnits(preview.tax)
+  if (fee > BigInt(Number.MAX_SAFE_INTEGER) || tax > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('Комиссия слишком велика')
+  return apiClient.request<AuctionMutation>('/api/v1/auction', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requestId: crypto.randomUUID(), itemId, price, expectedFee: Number(fee), expectedTax: Number(tax) }),
   })
 }
 
