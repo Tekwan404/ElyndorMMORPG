@@ -56,7 +56,7 @@ function removeItem(id: string): void {
 
 function itemLabel(id: string): string {
   const item = props.items.find(candidate => candidate.id === id)
-  return item ? `${item.id} · ${item.name} · ${item.buyPriceGold}g` : id
+  return item ? `${item.id} · ${item.name} · ${item.buyPriceGold}b` : id
 }
 
 function setString(key: string, event: Event): void {
@@ -96,7 +96,7 @@ function cloneRecord(value: JsonRecord): JsonRecord {
         <select v-model="newItemId" data-testid="merchant-new-item">
           <option value="">Выбери предмет…</option>
           <option v-for="item in availableItems" :key="item.id" :value="item.id">
-            {{ item.id }} · {{ item.name }} · {{ item.buyPriceGold }}g
+            {{ item.id }} · {{ item.name }} · {{ item.buyPriceGold }}b
           </option>
         </select>
         <button type="button" :disabled="availableItems.length === 0" @click="addItem">+ В ассортимент</button>

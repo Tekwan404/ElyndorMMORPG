@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import MoneyAmount from '@/ui/components/MoneyAmount.vue'
+import { canAffordMoney } from '@/shared/money'
 import { computed, ref, watch } from 'vue'
 
 import type { InventoryItem, MerchantItem, MerchantSnapshot } from '@/api/contracts'
@@ -133,8 +135,8 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
           <p>{{ merchant?.description ?? 'Здесь можно купить лечебные припасы и продать добытые материалы.' }}</p>
         </div>
         <div class="merchant__wallet">
-          <small>Ваше золото</small>
-          <strong>● {{ merchant?.gold ?? session.snapshot?.character?.gold ?? 0 }}</strong>
+          <small>Ваш кошелёк</small>
+          <strong><MoneyAmount :amount="merchant?.gold ?? session.snapshot?.character?.gold ?? 0" /></strong>
         </div>
       </header>
 
@@ -203,7 +205,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
               <span class="offer-card__copy">
                 <small>{{ rarityLabel(item) }}</small>
                 <strong>{{ item.name }}</strong>
-                <b>● {{ item.buyPriceGold }}</b>
+                <b><MoneyAmount :amount="item.buyPriceGold" /></b>
               </span>
             </button>
           </div>
@@ -229,15 +231,15 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
             <footer class="merchant-detail__purchase">
               <div>
                 <small>Цена</small>
-                <strong>● {{ selectedOffer.buyPriceGold }}</strong>
+                <strong><MoneyAmount :amount="selectedOffer.buyPriceGold" /></strong>
               </div>
               <UIButton
                 data-buy-selected
                 :loading="buyPending"
-                :disabled="buyPending || (merchant?.gold ?? 0) < selectedOffer.buyPriceGold"
+                :disabled="buyPending || !canAffordMoney(merchant?.gold ?? 0, selectedOffer.buyPriceGold)"
                 @click="buy(selectedOffer.definitionId)"
               >
-                Купить · ● {{ selectedOffer.buyPriceGold }}
+                Купить · <MoneyAmount :amount="selectedOffer.buyPriceGold" />
               </UIButton>
             </footer>
           </article>
@@ -274,7 +276,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
             </div>
             <div class="sell-card__price">
               <small>за штуку</small>
-              <strong>● {{ item.sellPriceGold }}</strong>
+              <strong><MoneyAmount :amount="item.sellPriceGold" /></strong>
             </div>
             <div class="sell-card__actions">
               <UIButton variant="ghost" :disabled="sellPending" @click="sell(item, 1)">
@@ -284,7 +286,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
                 :disabled="sellPending"
                 @click="sell(item, item.quantity)"
               >
-                {{ item.quantity > 1 ? 'Всё' : 'Продать' }} · {{ item.sellPriceGold * item.quantity }}
+                {{ item.quantity > 1 ? 'Всё' : 'Продать' }} · <MoneyAmount :amount="item.sellPriceGold * item.quantity" />
               </UIButton>
             </div>
           </article>

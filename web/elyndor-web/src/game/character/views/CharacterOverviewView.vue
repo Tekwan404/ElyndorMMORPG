@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MoneyAmount from '@/ui/components/MoneyAmount.vue'
 import { computed, ref } from 'vue'
 
 import type { EquipmentSlot, InventoryItem, KnownAbility } from '@/api/contracts'
@@ -181,7 +182,7 @@ function abilityInitials(ability: KnownAbility): string {
         </div>
         <div class="paperdoll__meta">
           <strong>Уровень {{ character.level }}</strong>
-          <span class="gold">● {{ character.gold }}</span>
+          <span class="gold"><MoneyAmount :amount="character.gold" /></span>
         </div>
       </header>
 

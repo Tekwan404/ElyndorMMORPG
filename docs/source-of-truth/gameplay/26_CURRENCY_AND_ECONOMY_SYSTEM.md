@@ -85,6 +85,11 @@ CRYSTAL
 
 ## GOLD
 
+Runtime balance and all existing `*Gold` content/API amounts are integer bronze units. The
+player-facing denominations are 100 bronze = 1 silver and 100 silver = 1 gold; they are views
+of one BIGINT balance, not separate wallets. Existing values retain their purchasing power.
+See `docs/development/money-denominations.md` for compatibility and JavaScript precision rules.
+
 Основная игровая валюта.
 
 Назначение:

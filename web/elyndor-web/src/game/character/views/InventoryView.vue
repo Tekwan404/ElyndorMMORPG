@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatMoney } from '@/shared/money'
 import { computed, ref, watch } from 'vue'
 
 import { apiClient, ApiRequestError } from '@/api/apiClient'
@@ -828,7 +829,7 @@ async function toggleSelectedLock(): Promise<void> {
         <p v-if="selectedItem.weaponBaseAttackIntervalSeconds" class="item-detail__hint">Базовый интервал автоатаки: {{ selectedItem.weaponBaseAttackIntervalSeconds }} сек.</p>
         <p v-if="selectedItem.setId" class="item-detail__hint">Часть комплекта Следопыта. Бонусы активируются за 3 и 6 надетых предметов.</p>
         <p v-if="selectedItem.sellPriceGold > 0 && !selectedItem.isLocked && !selectedItem.equippedSlot" class="item-detail__hint">
-          Маркус купит {{ selectedItem.type === 'Equipment' ? 'этот предмет' : 'этот предмет за штуку' }} за {{ selectedItem.sellPriceGold }} золота.
+          Маркус купит {{ selectedItem.type === 'Equipment' ? 'этот предмет' : 'этот предмет за штуку' }} за {{ formatMoney(selectedItem.sellPriceGold) }}.
         </p>
         <p v-if="selectedItem.isLocked" class="item-detail__hint item-detail__hint--locked">Предмет защищён от продажи торговцу. Снимите защиту, если захотите его продать.</p>
         <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">{{ consumableSummary(selectedItem.consumableActions, selectedItem.consumableCooldownSeconds) }}</p>

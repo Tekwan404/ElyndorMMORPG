@@ -74,6 +74,7 @@ public sealed class Character
 
     public long Experience { get; private set; }
 
+    // Legacy property name: one balance in bronze units (100 bronze = 1 silver, 10,000 = 1 gold).
     public long Gold { get; private set; }
 
     public DateTimeOffset CreatedAtUtc { get; private set; }

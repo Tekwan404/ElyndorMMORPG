@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatMoney } from '@/shared/money'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { gameArt } from '@/assets/gameArt'
@@ -375,7 +376,7 @@ onMounted(() => {
     <UICard v-if="activeAfkFarm" class="afk-status" data-afk-active>
       <div>
         <small>АВТОМАТИЧЕСКАЯ ОХОТА</small>
-        <strong>{{ activeAfkFarm.kills }} побед · +{{ activeAfkFarm.xpEarned }} опыта · +{{ activeAfkFarm.goldEarned }} золота</strong>
+        <strong>{{ activeAfkFarm.kills }} побед · +{{ activeAfkFarm.xpEarned }} опыта · +{{ formatMoney(activeAfkFarm.goldEarned) }}</strong>
         <p>До {{ new Date(activeAfkFarm.endsAtUtc).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) }}</p>
       </div>
       <UIButton variant="secondary" :loading="session.mutationPending" @click="stopAfkFarm">Остановить</UIButton>
@@ -401,7 +402,7 @@ onMounted(() => {
         <strong>{{ lastEnemyName ?? 'Противник' }} повержен</strong>
       </div>
       <div v-if="combat.reward" class="reward-card__summary">
-        <strong>+{{ combat.reward.xpEarned }} опыта · +{{ combat.reward.goldEarned }} золота</strong>
+        <strong>+{{ combat.reward.xpEarned }} опыта · +{{ formatMoney(combat.reward.goldEarned) }}</strong>
         <p v-if="combat.reward.completedContractIds?.includes('CONTRACT_BROODMOTHER_GATE')" class="contract-completed">
           <IconGenerator :config="{ id: 'contract-completed', glyph: 'star', category: 'utility' }" />
           Контракт выполнен: Прародительница. Путь в Осквернённую чащу открыт.
@@ -475,7 +476,7 @@ onMounted(() => {
             <small>{{ quest.type === 'SIDE' ? 'ПОРУЧЕНИЕ' : 'СЮЖЕТ' }} · ур. {{ quest.requiredLevel }}</small>
             <strong>{{ quest.displayName }}</strong>
             <p>{{ quest.description }}</p>
-            <span class="story-card__reward">+{{ quest.rewardXp }} опыта · +{{ quest.rewardGold }} золота</span>
+            <span class="story-card__reward">+{{ quest.rewardXp }} опыта · +{{ formatMoney(quest.rewardGold) }}</span>
           </div>
           <UIButton
             data-accept-world-quest
@@ -534,7 +535,7 @@ onMounted(() => {
             <p>{{ contract.description }}</p>
             <div class="contract-card__reward">
               <span>Награда</span>
-              <b>+{{ contract.rewardXp }} опыта · +{{ contract.rewardGold }} золота</b>
+              <b>+{{ contract.rewardXp }} опыта · +{{ formatMoney(contract.rewardGold) }}</b>
               <em>Открывает: {{ displayLocationName(contract.unlockLocationId) }}</em>
             </div>
           </div>
@@ -654,7 +655,7 @@ onMounted(() => {
         </label>
         <div v-if="afkPreview" class="afk-preview">
           <span>Примерно {{ afkPreview.kills }} побед</span>
-          <strong>+{{ afkPreview.estimatedXp }} опыта · +{{ afkPreview.estimatedGold }} золота</strong>
+          <strong>+{{ afkPreview.estimatedXp }} опыта · +{{ formatMoney(afkPreview.estimatedGold) }}</strong>
           <small>{{ afkPreview.potentialLootRolls }} возможных розыгрышей добычи · эффективность: {{ afkPreview.efficiencyPercent }}%</small>
         </div>
         <p v-else-if="afkPreviewLoading">Рассчитываем результат…</p>
