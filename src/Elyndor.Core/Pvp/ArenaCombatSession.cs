@@ -10,7 +10,8 @@ namespace Elyndor.Core.Pvp;
 
 public sealed record ArenaFighter(Guid AccountId, Guid CharacterId, CombatActorState Actor,
     IReadOnlyDictionary<string, AbilityDefinition> Abilities, AutoAttackProfile AutoAttack,
-    ResolvedTalentModifiers? TalentModifiers = null)
+    ResolvedTalentModifiers? TalentModifiers = null, decimal ResourceRegenPerSecond = 0,
+    bool CanAutoAttack = true)
 {
     public ResolvedTalentModifiers EffectiveTalentModifiers =>
         TalentModifiers ?? ResolvedTalentModifiers.Empty;
@@ -58,6 +59,8 @@ public sealed class ArenaCombatSession
         if (startedAt.Offset != TimeSpan.Zero) throw new ArgumentException("Start time must be UTC.");
         if (first.AutoAttack.Interval <= TimeSpan.Zero || second.AutoAttack.Interval <= TimeSpan.Zero)
             throw new ArgumentException("Auto attack interval must be positive.");
+        if (first.ResourceRegenPerSecond < 0 || second.ResourceRegenPerSecond < 0)
+            throw new ArgumentOutOfRangeException(nameof(first), "Resource regeneration cannot be negative.");
         ValidateAbilities(first.Abilities);
         ValidateAbilities(second.Abilities);
         MatchId = matchId;
@@ -66,8 +69,12 @@ public sealed class ArenaCombatSession
         _random = random;
         _startedAt = startedAt;
         _advancedTo = startedAt;
-        _firstAutoAttackAt = startedAt + first.AutoAttack.Interval;
-        _secondAutoAttackAt = startedAt + second.AutoAttack.Interval;
+        _firstAutoAttackAt = first.CanAutoAttack
+            ? startedAt + first.AutoAttack.Interval
+            : DateTimeOffset.MaxValue;
+        _secondAutoAttackAt = second.CanAutoAttack
+            ? startedAt + second.AutoAttack.Interval
+            : DateTimeOffset.MaxValue;
         _firstRuntime = new CombatRuntimeState(first.Actor);
         _firstRuntime.AddActor(second.Actor);
         _secondRuntime = new CombatRuntimeState(second.Actor);
@@ -216,11 +223,14 @@ public sealed class ArenaCombatSession
         if (now.Offset != TimeSpan.Zero || now < _advancedTo)
             throw new ArgumentOutOfRangeException(nameof(now));
         int steps = 0;
+        DateTimeOffset resourceAdvancedTo = _advancedTo;
         while (Outcome == ArenaMatchOutcome.Active && ++steps <= MaximumAdvanceSteps)
         {
             DateTimeOffset? next = NextExecutionAt();
             if (next is null || next > now) break;
             DateTimeOffset due = next.Value;
+            RegenerateResources(resourceAdvancedTo, due);
+            resourceAdvancedTo = due;
             CompleteCast(_firstRuntime, due);
             CompleteCast(_secondRuntime, due);
             ResolvePendingActions(_firstRuntime, due);
@@ -235,7 +245,32 @@ public sealed class ArenaCombatSession
         }
         if (steps > MaximumAdvanceSteps)
             throw new InvalidOperationException("Arena execution exceeded the safe step limit.");
+        if (Outcome == ArenaMatchOutcome.Active)
+            RegenerateResources(resourceAdvancedTo, now);
         _advancedTo = now;
+    }
+
+    private void RegenerateResources(DateTimeOffset from, DateTimeOffset to)
+    {
+        if (to <= from) return;
+        decimal elapsedSeconds = (decimal)(to - from).TotalSeconds;
+        RegenerateResource(_first, elapsedSeconds, to);
+        RegenerateResource(_second, elapsedSeconds, to);
+    }
+
+    private void RegenerateResource(ArenaFighter fighter, decimal elapsedSeconds, DateTimeOffset now)
+    {
+        if (fighter.ResourceRegenPerSecond <= 0 || fighter.Actor.IsDead) return;
+        decimal actual = fighter.Actor.AddResource(fighter.ResourceRegenPerSecond * elapsedSeconds);
+        if (actual == 0) return;
+        Append(new CombatEvent(
+            CombatEventType.ResourceChanged,
+            now,
+            fighter.Actor.ActorId,
+            "COMBAT_REGEN",
+            actual,
+            SourceActorId: fighter.Actor.ActorId,
+            TargetActorId: fighter.Actor.ActorId));
     }
 
     private void CompleteCast(CombatRuntimeState runtime, DateTimeOffset due)
@@ -479,7 +514,7 @@ public sealed class ArenaCombatSession
     private void ResolveAutoAttack(ArenaFighter source, ArenaFighter target,
         ref DateTimeOffset nextAttack, DateTimeOffset due)
     {
-        if (nextAttack > due || source.Actor.IsDead || target.Actor.IsDead) return;
+        if (!source.CanAutoAttack || nextAttack > due || source.Actor.IsDead || target.Actor.IsDead) return;
         ScheduleNextAutoAttack(source, ref nextAttack, due);
         if (EffectEngine.HasControl(source.Actor, EffectKind.Stun, due))
         {
