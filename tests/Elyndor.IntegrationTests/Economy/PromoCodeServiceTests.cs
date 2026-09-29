@@ -35,6 +35,7 @@ public sealed class PromoCodeServiceTests(PostgresFixture postgres) : IAsyncLife
         Assert.Equal(30, first.CrystalBalance);
         await using GameDbContext verify = postgres.CreateDbContext();
         Assert.Equal(3, await verify.CharacterItems.Where(item => item.CharacterId == first.CharacterId && item.ItemDefinitionId == "REFORGE_STONE").SumAsync(item => item.Quantity));
+        Assert.Equal(2500, await verify.Characters.Where(character => character.Id == first.CharacterId).Select(character => character.Gold).SingleAsync());
         Assert.Single(await verify.PromoCodeRedemptions.ToArrayAsync());
         Assert.Single(await verify.CrystalLedgerEntries.Where(entry => entry.EntryType == CrystalLedgerEntryType.PromoCode).ToArrayAsync());
     }
@@ -96,7 +97,7 @@ public sealed class PromoCodeServiceTests(PostgresFixture postgres) : IAsyncLife
     private static GameContentPackage CreateContent() => new(
         "test", "test", Now, [], [], Items: [
             new ItemDefinition("REFORGE_STONE", "Камень перековки", ItemType.Material, ItemRarity.Common, 1, true, 99, null, new PrimaryStats(0, 0, 0, 0), "")],
-        PromoCodes: [new PromoCodeDefinition("WELCOME_2026", 30, [new PromoItemRewardDefinition("REFORGE_STONE", 3)])]);
+        PromoCodes: [new PromoCodeDefinition("WELCOME_2026", 30, [new PromoItemRewardDefinition("REFORGE_STONE", 3)], GoldAmount: 2500)]);
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
     {
