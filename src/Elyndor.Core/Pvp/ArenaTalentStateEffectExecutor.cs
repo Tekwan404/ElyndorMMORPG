@@ -29,6 +29,20 @@ public static class ArenaTalentStateEffectExecutor
             : runtime.ModifyCooldown(effect.AbilityId, effect.CooldownDelta, now);
     }
 
+    public static bool SupportsStatusEffect(ArenaTalentRuntimeEffect effect)
+    {
+        ArgumentNullException.ThrowIfNull(effect);
+        if (effect.Kind is not (ArenaTalentEffectKind.ApplyBuff or ArenaTalentEffectKind.ApplyDebuff)
+            || effect.Effect is null
+            || CrowdControlCategoryResolver.TryResolve(effect.Effect.Kind, out _))
+        {
+            return false;
+        }
+
+        return effect.Effect.Kind == EffectKind.StatModifier
+            && effect.Effect.ModifiedStat is not null;
+    }
+
     public static IReadOnlyList<CombatEvent> ExecuteStatusEffect(
         CombatActorState target,
         ArenaTalentRuntimeEffect effect,
@@ -36,6 +50,7 @@ public static class ArenaTalentStateEffectExecutor
     {
         ArgumentNullException.ThrowIfNull(target);
         ArgumentNullException.ThrowIfNull(effect);
+
         if (effect.Kind is not (ArenaTalentEffectKind.ApplyBuff or ArenaTalentEffectKind.ApplyDebuff)
             || effect.Effect is null)
         {
@@ -46,6 +61,12 @@ public static class ArenaTalentStateEffectExecutor
         {
             throw new NotSupportedException(
                 "Crowd-control talent effects must execute through the arena CC/DR path.");
+        }
+
+        if (!SupportsStatusEffect(effect))
+        {
+            throw new NotSupportedException(
+                "Arena talent status effect has unsupported non-CC semantics.");
         }
 
         return EffectEngine.Apply(target, effect.SourceActorId, effect.Effect, now);
