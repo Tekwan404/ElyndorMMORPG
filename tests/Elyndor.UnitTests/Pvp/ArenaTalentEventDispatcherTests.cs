@@ -29,10 +29,10 @@ public sealed class ArenaTalentEventDispatcherTests
         IReadOnlyList<ArenaTalentCombatEvent> result =
             ArenaTalentEventDispatcher.FromSuccessfulAbility(source, target, ability, events, now);
 
-        Assert.Single(result.Where(x => x.Type == ArenaTalentEventType.OnCast));
-        ArenaTalentCombatEvent hit = Assert.Single(result.Where(x => x.Type == ArenaTalentEventType.OnHit));
-        ArenaTalentCombatEvent crit = Assert.Single(result.Where(x => x.Type == ArenaTalentEventType.OnCrit));
-        ArenaTalentCombatEvent taken = Assert.Single(result.Where(x => x.Type == ArenaTalentEventType.OnDamageTaken));
+        Assert.Single(result, x => x.Type == ArenaTalentEventType.OnCast);
+        ArenaTalentCombatEvent hit = Assert.Single(result, x => x.Type == ArenaTalentEventType.OnHit);
+        ArenaTalentCombatEvent crit = Assert.Single(result, x => x.Type == ArenaTalentEventType.OnCrit);
+        ArenaTalentCombatEvent taken = Assert.Single(result, x => x.Type == ArenaTalentEventType.OnDamageTaken);
         Assert.True(hit.WasBlocked);
         Assert.True(hit.WasCritical);
         Assert.True(crit.WasCritical);
@@ -58,7 +58,7 @@ public sealed class ArenaTalentEventDispatcherTests
         IReadOnlyList<ArenaTalentCombatEvent> result =
             ArenaTalentEventDispatcher.FromSuccessfulAbility(source, target, DamageAbility(), events, now);
 
-        Assert.Single(result.Where(x => x.Type == ArenaTalentEventType.OnCast));
+        Assert.Single(result, x => x.Type == ArenaTalentEventType.OnCast);
         Assert.DoesNotContain(result, x => x.Type == ArenaTalentEventType.OnHit);
         Assert.DoesNotContain(result, x => x.Type == ArenaTalentEventType.OnCrit);
         Assert.DoesNotContain(result, x => x.Type == ArenaTalentEventType.OnDamageTaken);
@@ -78,9 +78,8 @@ public sealed class ArenaTalentEventDispatcherTests
                 SourceActorId: source, TargetActorId: target, DamageType: DamageType.Physical)
         ];
 
-        ArenaTalentCombatEvent taken = Assert.Single(
-            ArenaTalentEventDispatcher.FromDamageEvents(events)
-                .Where(x => x.Type == ArenaTalentEventType.OnDamageTaken));
+        IReadOnlyList<ArenaTalentCombatEvent> result = ArenaTalentEventDispatcher.FromDamageEvents(events);
+        ArenaTalentCombatEvent taken = Assert.Single(result, x => x.Type == ArenaTalentEventType.OnDamageTaken);
         Assert.True(taken.WasBlocked);
         Assert.Equal(0m, taken.FinalDamage);
     }
