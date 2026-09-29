@@ -76,6 +76,7 @@ public sealed class PromoCodeService(GameDbContext dbContext, IContentSnapshotPr
             if (!await CanGrantAsync(character.Id, rewards, content, cancellationToken)) return PromoCodeRedemptionResult.Failure(PromoCodeErrorCodes.InventoryFull);
             foreach ((ItemDefinition definition, int quantity) in rewards)
                 await GrantAsync(character.Id, definition, quantity, operationId, code, content, cancellationToken);
+            if (promo.GoldAmount > 0) character.AddGold(promo.GoldAmount);
             long balance = await CreditCrystalsAsync(accountId, operationId, code, promo.CrystalAmount, cancellationToken);
             dbContext.PromoCodeRedemptions.Add(new PromoCodeRedemption(operationId, accountId, character.Id, code, fingerprint, now));
             await dbContext.SaveChangesAsync(cancellationToken);
