@@ -22,7 +22,7 @@ public sealed class TelegramAdminOptions
 
     public bool MonitoringEnabled { get; init; }
 
-    public int ReportIntervalMinutes { get; init; } = 15;
+    public int ReportIntervalMinutes { get; init; } = 60;
 
     public int CpuWarningPercent { get; init; } = 80;
 

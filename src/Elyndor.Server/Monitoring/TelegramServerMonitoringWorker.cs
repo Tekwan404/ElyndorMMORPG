@@ -18,6 +18,7 @@ public sealed partial class TelegramServerMonitoringWorker(
     IServiceScopeFactory scopeFactory,
     ILogger<TelegramServerMonitoringWorker> logger) : BackgroundService
 {
+    private const string HealthyState = "🟢 OK";
     private string? _lastState;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -64,10 +65,18 @@ public sealed partial class TelegramServerMonitoringWorker(
     private async Task SendReportAsync(TelegramAdminOptions configured, CancellationToken cancellationToken)
     {
         ServerMetricsSnapshot metrics = await metricsCollector.CollectAsync(cancellationToken);
-        int errors15m = errors.GetCount(TimeSpan.FromMinutes(15));
-        int errors1h = errors.GetCount(TimeSpan.FromHours(1));
         HealthData health = await CheckDatabaseAsync(cancellationToken);
         string state = GetState(metrics, health.Healthy, configured);
+        string? previousState = _lastState;
+        bool stateChanged = previousState is not null
+            && !string.Equals(previousState, state, StringComparison.Ordinal);
+        _lastState = state;
+
+        if (!ShouldSendReport(metrics.OnlinePlayers, health.Healthy, previousState, state))
+            return;
+
+        int errors15m = errors.GetCount(TimeSpan.FromMinutes(15));
+        int errors1h = errors.GetCount(TimeSpan.FromHours(1));
         string environmentName = environment.EnvironmentName;
         string now = timeProvider.GetUtcNow().ToString("yyyy-MM-dd HH:mm:ss 'UTC'", CultureInfo.InvariantCulture);
 
@@ -93,9 +102,6 @@ public sealed partial class TelegramServerMonitoringWorker(
             + $"🚨 Errors: {errors15m} / 15m  | {errors1h} / 1h\n"
             + "Команды: /status /health /resources /errors /help";
 
-        bool stateChanged = _lastState is not null && !string.Equals(_lastState, state, StringComparison.Ordinal);
-        string previousState = _lastState ?? state;
-        _lastState = state;
         if (stateChanged)
             text = $"⚠️ Состояние сервера изменилось: {previousState} → {state}\n\n{text}";
 
@@ -103,6 +109,21 @@ public sealed partial class TelegramServerMonitoringWorker(
             text = "🚨 PostgreSQL health check failed\n\n" + text;
 
         await SendMonitoringMessageAsync(configured, text, cancellationToken);
+    }
+
+    public static bool ShouldSendReport(
+        int onlinePlayers,
+        bool databaseHealthy,
+        string? previousState,
+        string currentState)
+    {
+        if (onlinePlayers > 0 || !databaseHealthy)
+            return true;
+
+        if (previousState is null)
+            return !string.Equals(currentState, HealthyState, StringComparison.Ordinal);
+
+        return !string.Equals(previousState, currentState, StringComparison.Ordinal);
     }
 
     private async Task SendMonitoringMessageAsync(
@@ -181,7 +202,7 @@ public sealed partial class TelegramServerMonitoringWorker(
             || metrics.DiskPercent >= options.DiskWarningPercent)
             return "🟡 WARNING";
 
-        return "🟢 OK";
+        return HealthyState;
     }
 
     private static string FormatPercent(double? value) => value.HasValue ? $"{value.Value:F0}%" : "n/a";
