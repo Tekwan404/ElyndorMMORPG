@@ -480,10 +480,7 @@ public sealed class ArenaCombatSession
         ref DateTimeOffset nextAttack, DateTimeOffset due)
     {
         if (nextAttack > due || source.Actor.IsDead || target.Actor.IsDead) return;
-        decimal attackSpeed = Math.Max(0.01m, EffectEngine.CalculateStat(
-            source.Actor, EffectStat.AttackSpeed, 1m, due));
-        double adjustedTicks = source.AutoAttack.Interval.Ticks / (double)attackSpeed;
-        nextAttack = due + TimeSpan.FromTicks(Math.Max(1, (long)Math.Ceiling(adjustedTicks)));
+        ScheduleNextAutoAttack(source, ref nextAttack, due);
         if (EffectEngine.HasControl(source.Actor, EffectKind.Stun, due))
         {
             Append(new CombatEvent(
@@ -501,9 +498,38 @@ public sealed class ArenaCombatSession
         DamageResult damage = DamagePipeline.Resolve(new DamageRequest(source.Actor, target.Actor,
             baseDamage, source.AutoAttack.DamageType), _random, due);
         Append(damage.Events);
+        bool successfulAutoAttack = damage.Avoidance == DamageAvoidance.None && damage.HpDamage > 0;
+        if (successfulAutoAttack)
+        {
+            DispatchTalentEvents(
+            [
+                new ArenaTalentCombatEvent(
+                    ArenaTalentEventType.OnAutoAttack,
+                    source.Actor.ActorId,
+                    target.Actor.ActorId,
+                    due,
+                    FinalDamage: damage.HpDamage,
+                    DamageType: source.AutoAttack.DamageType,
+                    WasCritical: damage.IsCritical,
+                    WasBlocked: damage.WasBlocked)
+            ], due);
+        }
         DispatchDamageTalentEvents(damage.Events, due);
+        if (successfulAutoAttack)
+            ScheduleNextAutoAttack(source, ref nextAttack, due);
         if (damage.HpDamage > 0 && source.AutoAttack.ResourceOnHit > 0)
             source.Actor.AddResource(source.AutoAttack.ResourceOnHit);
+    }
+
+    private static void ScheduleNextAutoAttack(
+        ArenaFighter source,
+        ref DateTimeOffset nextAttack,
+        DateTimeOffset due)
+    {
+        decimal attackSpeed = Math.Max(0.01m, EffectEngine.CalculateStat(
+            source.Actor, EffectStat.AttackSpeed, 1m, due));
+        double adjustedTicks = source.AutoAttack.Interval.Ticks / (double)attackSpeed;
+        nextAttack = due + TimeSpan.FromTicks(Math.Max(1, (long)Math.Ceiling(adjustedTicks)));
     }
 
     private PreparedCrowdControlAbility PrepareCrowdControlAbility(
