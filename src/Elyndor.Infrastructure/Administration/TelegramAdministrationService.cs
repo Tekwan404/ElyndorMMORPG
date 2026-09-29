@@ -457,7 +457,6 @@ public sealed class TelegramAdministrationService(
         await dbContext.SaveChangesAsync(cancellationToken);
         return result;
     }
-
     private static bool TryParseItemGrant(
         string? rawSpec,
         out string itemId,
@@ -499,7 +498,7 @@ public sealed class TelegramAdministrationService(
         out string errorMessage)
     {
         promo = null;
-        errorMessage = "Формат: promocode create <CODE> crystals=<amount> [item=<ITEM_ID>:<qty>] [global=<N>] [per=<N>] [hours=<N>].";
+        errorMessage = "Формат: promocode create <CODE> [crystals=<amount>] [gold=<amount>] [item=<ITEM_ID>:<qty>] [global=<N>] [per=<N>] [hours=<N>].";
         string[] tokens = rawSpec?.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
         if (tokens.Length < 2) return false;
 
@@ -511,10 +510,12 @@ public sealed class TelegramAdministrationService(
         }
 
         long crystals = 0;
+        long gold = 0;
         int? globalLimit = null;
         int perAccountLimit = 1;
         int? hours = null;
         bool crystalsSeen = false;
+        bool goldSeen = false;
         bool globalSeen = false;
         bool perSeen = false;
         bool hoursSeen = false;
@@ -532,6 +533,11 @@ public sealed class TelegramAdministrationService(
                     if (crystalsSeen || !long.TryParse(value, out crystals) || crystals is < 0 or > 1_000_000_000)
                         return false;
                     crystalsSeen = true;
+                    break;
+                case "gold":
+                    if (goldSeen || !long.TryParse(value, out gold) || gold is < 0 or > 1_000_000_000)
+                        return false;
+                    goldSeen = true;
                     break;
                 case "global":
                     if (globalSeen || !int.TryParse(value, out int parsedGlobal) || parsedGlobal is < 1 or > 1_000_000)
@@ -572,9 +578,9 @@ public sealed class TelegramAdministrationService(
             }
         }
 
-        if (crystals <= 0 && itemRewards.Count == 0)
+        if (crystals <= 0 && gold <= 0 && itemRewards.Count == 0)
         {
-            errorMessage = "У промокода должна быть награда: crystals>0 и/или item=ITEM_ID:qty.";
+            errorMessage = "У промокода должна быть награда: crystals>0, gold>0 и/или item=ITEM_ID:qty.";
             return false;
         }
 
@@ -586,7 +592,8 @@ public sealed class TelegramAdministrationService(
             StartsAtUtc: null,
             ExpiresAtUtc: hours.HasValue ? now.AddHours(hours.Value) : null,
             GlobalRedemptionLimit: globalLimit,
-            PerAccountRedemptionLimit: perAccountLimit);
+            PerAccountRedemptionLimit: perAccountLimit,
+            GoldAmount: gold);
         return true;
     }
 
@@ -606,6 +613,7 @@ public sealed class TelegramAdministrationService(
     {
         List<string> parts = [];
         if (promo.CrystalAmount > 0) parts.Add($"{promo.CrystalAmount} кристаллов");
+        if (promo.GoldAmount > 0) parts.Add($"{promo.GoldAmount} золота");
         parts.AddRange((promo.ItemRewards ?? []).Select(reward => $"{reward.ItemDefinitionId} ×{reward.Quantity}"));
         return string.Join(", ", parts);
     }
