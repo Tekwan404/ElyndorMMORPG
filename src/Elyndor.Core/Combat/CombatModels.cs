@@ -208,7 +208,9 @@ public enum CombatEventType
     DamageBlocked,
     UnblockableHit,
     Dodge,
-    ActorDied
+    ActorDied,
+    EffectImmune,
+    ActionRejected
 }
 
 public sealed record CombatEvent(
