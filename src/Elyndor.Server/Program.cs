@@ -121,7 +121,8 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
             {
                 string? token = context.Request.Query["access_token"].FirstOrDefault();
                 if (!string.IsNullOrWhiteSpace(token) && (context.HttpContext.Request.Path.StartsWithSegments("/hubs/combat")
-                    || context.HttpContext.Request.Path.StartsWithSegments("/hubs/trade")))
+                    || context.HttpContext.Request.Path.StartsWithSegments("/hubs/trade")
+                    || context.HttpContext.Request.Path.StartsWithSegments("/hubs/arena")))
                     context.Token = token;
                 return Task.CompletedTask;
             }
