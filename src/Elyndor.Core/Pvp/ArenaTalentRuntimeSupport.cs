@@ -29,7 +29,7 @@ public static class ArenaTalentRuntimeSupport
     {
         ArgumentNullException.ThrowIfNull(hook);
 
-        return PyromancerImpactRuntime.SupportsArenaHook(hook)
+        return ArenaTalentEventDispatcher.Supports(hook)
             || PyromancerStaticAbilityHookResolver.Supports(hook)
             || MageStaticAbilityHookResolver.Supports(hook)
             || ArcherStaticAbilityHookResolver.Supports(hook);
