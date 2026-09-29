@@ -1,6 +1,7 @@
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Damage;
+using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Talents;
 
@@ -19,13 +20,17 @@ public enum ArenaTalentConditionKind
 {
     None,
     WasCritical,
-    WasBlocked
+    WasBlocked,
+    SelfHealthBelowPercent
 }
 
 public enum ArenaTalentEffectKind
 {
     GainResource,
     ModifyIncomingDamage,
+    ModifyCooldown,
+    ApplyBuff,
+    ApplyDebuff,
     ApplyAbilityAction
 }
 
@@ -39,7 +44,8 @@ public sealed record ArenaTalentCombatEvent(
     DamageType? DamageType = null,
     bool WasCritical = false,
     bool WasBlocked = false,
-    decimal CurrentDamage = 0);
+    decimal CurrentDamage = 0,
+    decimal TargetHealthPercent = 100);
 
 public sealed record ArenaTalentRuntimeEffect(
     ArenaTalentEffectKind Kind,
@@ -47,7 +53,11 @@ public sealed record ArenaTalentRuntimeEffect(
     Guid SourceActorId,
     Guid TargetActorId,
     decimal Amount = 0,
-    AbilityActionDefinition? Action = null);
+    AbilityActionDefinition? Action = null,
+    string? AbilityId = null,
+    TimeSpan CooldownDelta = default,
+    bool ResetCooldown = false,
+    EffectDefinition? Effect = null);
 
 public sealed record ArenaTalentEventRule(
     ArenaTalentEventType Trigger,
@@ -65,6 +75,8 @@ public static class ArenaTalentEventDispatcher
     public const string IncomingCriticalDamageTargetId = "INCOMING_CRITICAL_DAMAGE";
     public const string GuardianShieldFuryTalentId = "G-2-5";
     public const string BlockTargetId = "BLOCK";
+    public const string ArcherSurvivalInstinctTalentId = "S-6-4";
+    public const string LowHpReductionTargetId = "LOW_HP_REDUCTION";
 
     public static bool Supports(ResolvedTalentEventHook hook)
     {
@@ -87,6 +99,19 @@ public static class ArenaTalentEventDispatcher
             rule = new ArenaTalentEventRule(
                 ArenaTalentEventType.OnIncomingDamage,
                 ArenaTalentConditionKind.WasCritical,
+                ArenaTalentEffectKind.ModifyIncomingDamage,
+                hook);
+            return true;
+        }
+
+        if (string.Equals(hook.TalentId, ArcherSurvivalInstinctTalentId, StringComparison.Ordinal)
+            && string.Equals(hook.Key, TalentModifierKeys.OnHpThreshold, StringComparison.Ordinal)
+            && string.Equals(hook.TargetId, LowHpReductionTargetId, StringComparison.Ordinal)
+            && hook.Threshold > 0)
+        {
+            rule = new ArenaTalentEventRule(
+                ArenaTalentEventType.OnIncomingDamage,
+                ArenaTalentConditionKind.SelfHealthBelowPercent,
                 ArenaTalentEffectKind.ModifyIncomingDamage,
                 hook);
             return true;
@@ -117,6 +142,9 @@ public static class ArenaTalentEventDispatcher
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(random);
 
+        decimal healthPercent = context.Target.MaxHp <= 0
+            ? 0
+            : context.Target.CurrentHp / context.Target.MaxHp * 100m;
         var combatEvent = new ArenaTalentCombatEvent(
             ArenaTalentEventType.OnIncomingDamage,
             context.Source.ActorId,
@@ -124,7 +152,8 @@ public static class ArenaTalentEventDispatcher
             context.OccurredAtUtc,
             DamageType: context.DamageType,
             WasCritical: context.WasCritical,
-            CurrentDamage: context.CurrentAmount);
+            CurrentDamage: context.CurrentAmount,
+            TargetHealthPercent: healthPercent);
 
         decimal damage = Math.Max(0, context.CurrentAmount);
         foreach (ArenaTalentRuntimeEffect effect in Dispatch(talents, combatEvent, random))
@@ -174,7 +203,7 @@ public static class ArenaTalentEventDispatcher
         {
             if (!TryNormalize(hook, out ArenaTalentEventRule rule)
                 || rule.Trigger != combatEvent.Type
-                || !ConditionMatches(rule.Condition, combatEvent)
+                || !ConditionMatches(rule, combatEvent)
                 || !ProcSucceeds(hook, random))
             {
                 continue;
@@ -310,12 +339,14 @@ public static class ArenaTalentEventDispatcher
     };
 
     private static bool ConditionMatches(
-        ArenaTalentConditionKind condition,
-        ArenaTalentCombatEvent combatEvent) => condition switch
+        ArenaTalentEventRule rule,
+        ArenaTalentCombatEvent combatEvent) => rule.Condition switch
     {
         ArenaTalentConditionKind.None => true,
         ArenaTalentConditionKind.WasCritical => combatEvent.WasCritical,
         ArenaTalentConditionKind.WasBlocked => combatEvent.WasBlocked,
+        ArenaTalentConditionKind.SelfHealthBelowPercent =>
+            combatEvent.TargetHealthPercent < rule.Hook.Threshold,
         _ => false
     };
 
