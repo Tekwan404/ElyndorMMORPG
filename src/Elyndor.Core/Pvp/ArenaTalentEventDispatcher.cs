@@ -45,22 +45,48 @@ public sealed record ArenaTalentRuntimeEffect(
     decimal Amount = 0,
     AbilityActionDefinition? Action = null);
 
+public sealed record ArenaTalentEventRule(
+    ArenaTalentEventType Trigger,
+    ArenaTalentConditionKind Condition,
+    ArenaTalentEffectKind Effect,
+    ResolvedTalentEventHook Hook);
+
 /// <summary>
-/// Small typed Arena dispatcher for combat talent events. Content-specific adapters may
-/// normalize a talent into one of the generic effects below, while execution remains
-/// independent from talent IDs.
+/// Content-key registration is isolated in normalization. Once a hook is normalized,
+/// matching and execution depend only on trigger, condition and effect semantics.
 /// </summary>
 public static class ArenaTalentEventDispatcher
 {
+    public const string GuardianShieldFuryTalentId = "G-2-5";
     public const string BlockTargetId = "BLOCK";
 
     public static bool Supports(ResolvedTalentEventHook hook)
     {
         ArgumentNullException.ThrowIfNull(hook);
+        return PyromancerImpactRuntime.SupportsArenaHook(hook) || TryNormalize(hook, out _);
+    }
 
-        return PyromancerImpactRuntime.SupportsArenaHook(hook)
-            || string.Equals(hook.Key, TalentModifierKeys.OnDamageTaken, StringComparison.Ordinal)
-            && string.Equals(hook.TargetId, BlockTargetId, StringComparison.Ordinal);
+    public static bool TryNormalize(
+        ResolvedTalentEventHook hook,
+        out ArenaTalentEventRule rule)
+    {
+        ArgumentNullException.ThrowIfNull(hook);
+
+        // Talent ID is only the content key here. Runtime execution below never branches on it.
+        if (string.Equals(hook.TalentId, GuardianShieldFuryTalentId, StringComparison.Ordinal)
+            && string.Equals(hook.Key, TalentModifierKeys.OnDamageTaken, StringComparison.Ordinal)
+            && string.Equals(hook.TargetId, BlockTargetId, StringComparison.Ordinal))
+        {
+            rule = new ArenaTalentEventRule(
+                ArenaTalentEventType.OnDamageTaken,
+                ArenaTalentConditionKind.WasBlocked,
+                ArenaTalentEffectKind.GainResource,
+                hook);
+            return true;
+        }
+
+        rule = null!;
+        return false;
     }
 
     public static IReadOnlyList<ArenaTalentRuntimeEffect> Dispatch(
@@ -91,22 +117,17 @@ public static class ArenaTalentEventDispatcher
             }
         }
 
-        if (combatEvent.Type == ArenaTalentEventType.OnDamageTaken && combatEvent.WasBlocked)
+        foreach (ResolvedTalentEventHook hook in talents.EventHooks)
         {
-            foreach (ResolvedTalentEventHook hook in talents.EventHooks.Where(hook =>
-                         string.Equals(hook.Key, TalentModifierKeys.OnDamageTaken, StringComparison.Ordinal)
-                         && string.Equals(hook.TargetId, BlockTargetId, StringComparison.Ordinal)))
+            if (!TryNormalize(hook, out ArenaTalentEventRule rule)
+                || rule.Trigger != combatEvent.Type
+                || !ConditionMatches(rule.Condition, combatEvent)
+                || !ProcSucceeds(hook, random))
             {
-                if (!ProcSucceeds(hook, random))
-                    continue;
-
-                effects.Add(new ArenaTalentRuntimeEffect(
-                    ArenaTalentEffectKind.GainResource,
-                    hook.TalentId,
-                    combatEvent.TargetActorId,
-                    combatEvent.TargetActorId,
-                    Math.Max(0, hook.Value)));
+                continue;
             }
+
+            effects.Add(ExecuteRule(rule, combatEvent));
         }
 
         return effects;
@@ -215,6 +236,28 @@ public static class ArenaTalentEventDispatcher
 
         return result;
     }
+
+    private static ArenaTalentRuntimeEffect ExecuteRule(
+        ArenaTalentEventRule rule,
+        ArenaTalentCombatEvent combatEvent) => rule.Effect switch
+    {
+        ArenaTalentEffectKind.GainResource => new ArenaTalentRuntimeEffect(
+            ArenaTalentEffectKind.GainResource,
+            rule.Hook.TalentId,
+            combatEvent.TargetActorId,
+            combatEvent.TargetActorId,
+            Math.Max(0, rule.Hook.Value)),
+        _ => throw new NotSupportedException($"Arena talent effect {rule.Effect} has no executor.")
+    };
+
+    private static bool ConditionMatches(
+        ArenaTalentConditionKind condition,
+        ArenaTalentCombatEvent combatEvent) => condition switch
+    {
+        ArenaTalentConditionKind.None => true,
+        ArenaTalentConditionKind.WasBlocked => combatEvent.WasBlocked,
+        _ => false
+    };
 
     private static bool ProcSucceeds(ResolvedTalentEventHook hook, IGameRandom random)
     {
