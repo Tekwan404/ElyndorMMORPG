@@ -67,6 +67,33 @@ export const useTradeStore = defineStore('playerTrade', () => {
     else items.value = []
   }
 
+  async function openTelegramLinkedTrade(): Promise<void> {
+    if (hub?.state !== HubConnectionState.Connected) return
+    const url = new URL(window.location.href)
+    const tradeId = url.searchParams.get('trade')
+    if (!tradeId) return
+
+    try {
+      const snapshot = await hub.invoke<TradeSnapshot | null>('Get', tradeId)
+      if (!snapshot || snapshot.state !== 'OPEN') {
+        error.value = commerceMessage('trade_not_found')
+        return
+      }
+
+      apply(snapshot)
+      joined.value = false
+      await loadItems(snapshot.id, snapshot.revision)
+      window.requestAnimationFrame(() => {
+        document.querySelector<HTMLButtonElement>('.trade-notice')?.click()
+      })
+    } catch {
+      error.value = commerceMessage('trade_not_found')
+    } finally {
+      url.searchParams.delete('trade')
+      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}${url.hash}`)
+    }
+  }
+
   async function connect(): Promise<void> {
     if (hub?.state === HubConnectionState.Connected) return
     if (starting) return starting
@@ -85,6 +112,7 @@ export const useTradeStore = defineStore('playerTrade', () => {
       await hub.start()
       connected.value = true
       await refresh()
+      await openTelegramLinkedTrade()
     })().finally(() => { starting = null })
     return starting
   }
