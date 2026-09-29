@@ -109,6 +109,7 @@ public static class ArenaTalentEventDispatcher
 
     private static bool SupportsRuntimeTrigger(ArenaTalentEventType trigger) => trigger is
         ArenaTalentEventType.OnIncomingDamage
+        or ArenaTalentEventType.OnAutoAttack
         or ArenaTalentEventType.OnCast
         or ArenaTalentEventType.OnHit
         or ArenaTalentEventType.OnCrit
