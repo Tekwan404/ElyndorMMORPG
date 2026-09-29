@@ -39,7 +39,7 @@ public sealed class ArenaTestRegistry(TimeProvider time, Func<IGameRandom> rando
                 throw new InvalidOperationException("Character is already in a test arena.");
 
             Entry entry = new(entrant);
-            Entry? opponent = _queue.FirstOrDefault(candidate => ArenaMatchRules.CanPair(
+            Entry? opponent = _queue.FirstOrDefault(candidate => ArenaMatchRules.CanPairTest(
                 candidate.Entrant.Fighter.CharacterId, candidate.Entrant.Level,
                 entrant.Fighter.CharacterId, entrant.Level));
             if (opponent is not null)

@@ -227,9 +227,13 @@ public sealed class ArenaMatchmakingService(GameDbContext db, TimeProvider timeP
             {
                 ArenaQueueEntry? opponent = waiting
                     .Where(x => x.CharacterId != candidate.CharacterId
-                        && !recentPairs.Contains(PairKey(candidate.CharacterId, x.CharacterId))
-                        && ArenaMatchRules.CanPair(candidate.CharacterId, candidate.Level,
-                            x.CharacterId, x.Level))
+                        && (mode == ArenaQueueMode.Unranked
+                            || !recentPairs.Contains(PairKey(candidate.CharacterId, x.CharacterId)))
+                        && (mode == ArenaQueueMode.Unranked
+                            ? ArenaMatchRules.CanPairTest(candidate.CharacterId, candidate.Level,
+                                x.CharacterId, x.Level)
+                            : ArenaMatchRules.CanPair(candidate.CharacterId, candidate.Level,
+                                x.CharacterId, x.Level)))
                     .OrderBy(x => mode == ArenaQueueMode.Ranked
                         ? Math.Abs(x.RatingSnapshot - candidate.RatingSnapshot)
                         : 0)
@@ -293,7 +297,7 @@ public sealed class ArenaMatchmakingService(GameDbContext db, TimeProvider timeP
     private static (Guid, Guid) PairKey(Guid a, Guid b) => a.CompareTo(b) < 0 ? (a, b) : (b, a);
 }
 
-public sealed class ArenaMatchmakingWorker(
+public sealed partial class ArenaMatchmakingWorker(
     IServiceScopeFactory scopeFactory,
     ArenaPresenceTracker presence,
     IOptions<ArenaOptions> options,
@@ -322,10 +326,13 @@ public sealed class ArenaMatchmakingWorker(
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Arena matchmaking iteration failed.");
+                LogMatchmakingFailed(logger, exception);
             }
 
             await Task.Delay(TimeSpan.FromMilliseconds(500), stoppingToken);
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Arena matchmaking iteration failed.")]
+    private static partial void LogMatchmakingFailed(ILogger logger, Exception exception);
 }

@@ -2,6 +2,7 @@ using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Randomness;
+using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Pvp;
 using Elyndor.Infrastructure.Pvp;
 using Microsoft.Extensions.Options;

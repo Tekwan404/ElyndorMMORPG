@@ -10,7 +10,7 @@ namespace Elyndor.Infrastructure.Pvp;
 /// fighters were assembled and registered; any failure cancels it (no rating/Honor) and returns
 /// the healthy participant to the queue.
 /// </summary>
-public sealed class ArenaMatchStarter(
+public sealed partial class ArenaMatchStarter(
     GameDbContext db,
     ArenaEligibilityService eligibility,
     ArenaMatchRuntime runtime,
@@ -45,7 +45,7 @@ public sealed class ArenaMatchStarter(
         }
         catch (InvalidOperationException exception)
         {
-            logger.LogWarning(exception, "Arena match {MatchId} could not be registered.", created.MatchId);
+            LogRegistrationFailed(logger, created.MatchId, exception);
             await CancelAsync(created, true, true, cancellationToken);
             return;
         }
@@ -58,7 +58,7 @@ public sealed class ArenaMatchStarter(
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
-                logger.LogWarning(exception, "Arena match-found notification failed for {MatchId}.", created.MatchId);
+                LogNotificationFailed(logger, created.MatchId, exception);
             }
         }
     }
@@ -71,7 +71,7 @@ public sealed class ArenaMatchStarter(
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            logger.LogError(exception, "Arena eligibility check failed.");
+            LogEligibilityFailed(logger, exception);
             return new ArenaEligibilityResult(null, "arena_start_failed");
         }
     }
@@ -84,4 +84,13 @@ public sealed class ArenaMatchStarter(
         if (requeueA) await queue.RequeueAsync(created.CharacterAId, created.Mode, cancellationToken);
         if (requeueB) await queue.RequeueAsync(created.CharacterBId, created.Mode, cancellationToken);
     }
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Arena match {MatchId} could not be registered.")]
+    private static partial void LogRegistrationFailed(ILogger logger, Guid matchId, Exception exception);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Arena match-found notification failed for {MatchId}.")]
+    private static partial void LogNotificationFailed(ILogger logger, Guid matchId, Exception exception);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Arena eligibility check failed.")]
+    private static partial void LogEligibilityFailed(ILogger logger, Exception exception);
 }

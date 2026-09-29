@@ -26,14 +26,14 @@ public sealed class ArenaTestRegistryTests
     }
 
     [Fact]
-    public void FarLevelsWaitForCompatibleOpponent()
+    public void TestQueuePairsPlayersAtAnyLevel()
     {
         var registry = new ArenaTestRegistry(TimeProvider.System, () => new SeededGameRandom(42));
         var first = Entrant(10);
         var distant = Entrant(30);
         registry.Join(first);
-        Assert.Equal(ArenaTestStatus.Searching, registry.Join(distant).Status);
-        Assert.Equal(ArenaTestStatus.Searching, registry.Get(first.Fighter.AccountId)!.Status);
+        Assert.Equal(ArenaTestStatus.Active, registry.Join(distant).Status);
+        Assert.Equal(ArenaTestStatus.Active, registry.Get(first.Fighter.AccountId)!.Status);
     }
 
     [Fact]

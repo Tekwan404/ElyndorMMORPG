@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Arena;
 using Elyndor.Core.Content;
+using Elyndor.Core.Pvp;
 using Elyndor.Infrastructure.Pvp;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;

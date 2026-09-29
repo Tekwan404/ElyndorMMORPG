@@ -11,7 +11,7 @@ namespace Elyndor.Infrastructure.Pvp;
 /// Combat runtime is in-memory, so after a process start every Active match row is orphaned.
 /// Cancel them without rating/Honor changes so characters are not locked out of the queue.
 /// </summary>
-public sealed class ArenaRecoveryService(
+public sealed partial class ArenaRecoveryService(
     IServiceScopeFactory scopeFactory,
     TimeProvider timeProvider,
     ILogger<ArenaRecoveryService> logger) : IHostedService
@@ -32,8 +32,11 @@ public sealed class ArenaRecoveryService(
             match.MarkSettled(now);
         }
         await db.SaveChangesAsync(cancellationToken);
-        logger.LogWarning("Cancelled {Count} orphaned arena matches after restart.", orphaned.Length);
+        LogOrphanedMatches(logger, orphaned.Length);
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Cancelled {Count} orphaned arena matches after restart.")]
+    private static partial void LogOrphanedMatches(ILogger logger, int count);
 }

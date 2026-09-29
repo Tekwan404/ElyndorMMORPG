@@ -10,12 +10,16 @@ public sealed class ArenaMatchRulesTests
     [Theory]
     [InlineData(30, 30, true)]
     [InlineData(30, 33, true)]
-    [InlineData(30, 34, false)]
-    [InlineData(1, 5, false)]
-    public void PairingRequiresNearbyLevels(int firstLevel, int secondLevel, bool expected)
+    [InlineData(30, 34, true)]
+    [InlineData(1, 50, true)]
+    public void TestPairingAllowsAnyPositiveLevels(int firstLevel, int secondLevel, bool expected)
     {
-        Assert.Equal(expected, ArenaMatchRules.CanPair(First, firstLevel, Second, secondLevel));
+        Assert.Equal(expected, ArenaMatchRules.CanPairTest(First, firstLevel, Second, secondLevel));
     }
+
+    [Fact]
+    public void RankedPairingStillRequiresNearbyLevels() =>
+        Assert.False(ArenaMatchRules.CanPair(First, 1, Second, 50));
 
     [Fact]
     public void PairingRejectsSameCharacter()

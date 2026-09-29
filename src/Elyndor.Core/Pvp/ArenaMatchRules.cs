@@ -11,15 +11,18 @@ public enum ArenaMatchOutcome
 
 public static class ArenaMatchRules
 {
-    public const int MaximumLevelDifference = 3;
+    public const int MaximumRankedLevelDifference = 3;
 
     public static bool CanPair(Guid firstCharacterId, int firstLevel, Guid secondCharacterId, int secondLevel) =>
+        CanPairTest(firstCharacterId, firstLevel, secondCharacterId, secondLevel)
+        && Math.Abs(firstLevel - secondLevel) <= MaximumRankedLevelDifference;
+
+    public static bool CanPairTest(Guid firstCharacterId, int firstLevel, Guid secondCharacterId, int secondLevel) =>
         firstCharacterId != Guid.Empty
         && secondCharacterId != Guid.Empty
         && firstCharacterId != secondCharacterId
         && firstLevel > 0
-        && secondLevel > 0
-        && Math.Abs(firstLevel - secondLevel) <= MaximumLevelDifference;
+        && secondLevel > 0;
 
     public static ArenaMatchOutcome Resolve(ArenaMatchOutcome current, bool firstAlive,
         bool secondAlive, bool timedOut)

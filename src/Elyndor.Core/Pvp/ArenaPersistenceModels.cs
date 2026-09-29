@@ -14,8 +14,8 @@ public sealed class ArenaQueueEntry
         DateTimeOffset joinedAtUtc)
     {
         if (characterId == Guid.Empty) throw new ArgumentException("Arena queue character cannot be empty.");
-        if (level <= 0) throw new ArgumentOutOfRangeException(nameof(level));
-        if (ratingSnapshot < 0) throw new ArgumentOutOfRangeException(nameof(ratingSnapshot));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(level);
+        ArgumentOutOfRangeException.ThrowIfNegative(ratingSnapshot);
         if (joinedAtUtc.Offset != TimeSpan.Zero) throw new ArgumentException("Arena queue time must be UTC.");
         CharacterId = characterId;
         Mode = mode;
@@ -39,7 +39,7 @@ public sealed class ArenaMatch
         string seasonId = ArenaSeason.CurrentId, ArenaQueueMode mode = ArenaQueueMode.Ranked,
         int formulaVersion = ArenaProgressionRules.FormulaVersion)
     {
-        if (formulaVersion <= 0) throw new ArgumentOutOfRangeException(nameof(formulaVersion));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(formulaVersion);
         if (id == Guid.Empty || characterAId == Guid.Empty || characterBId == Guid.Empty
             || characterAId == characterBId) throw new ArgumentException("Arena participants must be distinct.");
         if (startedAtUtc.Offset != TimeSpan.Zero) throw new ArgumentException("Arena time must be UTC.");

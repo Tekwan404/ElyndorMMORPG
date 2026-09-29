@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace Elyndor.Infrastructure.Pvp;
 
 /// <summary>Ticks live arena matches, settles finished ones and pushes update notifications.</summary>
-public sealed class ArenaRuntimeWorker(
+public sealed partial class ArenaRuntimeWorker(
     ArenaMatchRuntime runtime,
     IServiceScopeFactory scopeFactory,
     IArenaUpdatePublisher publisher,
@@ -32,7 +32,7 @@ public sealed class ArenaRuntimeWorker(
             }
             catch (Exception exception)
             {
-                logger.LogError(exception, "Arena runtime iteration failed.");
+                LogIterationFailed(logger, exception);
             }
 
             await Task.Delay(Interval, stoppingToken);
@@ -51,13 +51,13 @@ public sealed class ArenaRuntimeWorker(
         catch (InvalidOperationException exception)
         {
             // Unsettleable (e.g. participant deleted): stop retrying, never guess a result.
-            logger.LogError(exception, "Arena match {MatchId} cannot be settled.", finished.MatchId);
+            LogUnsettleable(logger, finished.MatchId, exception);
             runtime.MarkFinalized(finished.MatchId);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             // Transient (DB) failure: the match stays unfinalized and is retried next tick.
-            logger.LogError(exception, "Arena match {MatchId} settlement failed; will retry.", finished.MatchId);
+            LogSettlementRetry(logger, finished.MatchId, exception);
             return;
         }
 
@@ -74,7 +74,19 @@ public sealed class ArenaRuntimeWorker(
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            logger.LogWarning(exception, "Arena update notification failed for match {MatchId}.", matchId);
+            LogNotificationFailed(logger, matchId, exception);
         }
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Arena runtime iteration failed.")]
+    private static partial void LogIterationFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Arena match {MatchId} cannot be settled.")]
+    private static partial void LogUnsettleable(ILogger logger, Guid matchId, Exception exception);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Arena match {MatchId} settlement failed; will retry.")]
+    private static partial void LogSettlementRetry(ILogger logger, Guid matchId, Exception exception);
+
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Arena update notification failed for match {MatchId}.")]
+    private static partial void LogNotificationFailed(ILogger logger, Guid matchId, Exception exception);
 }

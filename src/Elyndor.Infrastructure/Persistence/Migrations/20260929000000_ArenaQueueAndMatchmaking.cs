@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
+#pragma warning disable IDE0161, CA1861 // EF Core migration follows the repository's migration format.
 
 namespace Elyndor.Infrastructure.Persistence.Migrations
 {
