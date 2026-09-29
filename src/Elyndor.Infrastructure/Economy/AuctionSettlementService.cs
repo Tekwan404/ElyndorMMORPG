@@ -1,8 +1,10 @@
 using Elyndor.Core.Content;
 using Elyndor.Core.Economy;
+using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Elyndor.Infrastructure.Economy;
@@ -16,7 +18,8 @@ public sealed class AuctionOptions
 }
 
 public sealed class AuctionSettlementService(GameDbContext db, CommerceTransaction transactions,
-    IContentSnapshotProvider content, TimeProvider time, IOptions<AuctionOptions> options)
+    IContentSnapshotProvider content, TimeProvider time, IOptions<AuctionOptions> options,
+    ITelegramMessageSender? messageSender = null, ILogger<AuctionSettlementService>? logger = null)
 {
     public async Task<AuctionListingView[]> ListingsAsync(Guid account, bool mine, string? search, string? type, int page, CancellationToken ct)
     {
@@ -153,9 +156,13 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
         var listing = await db.AuctionListings.AsNoTracking().SingleOrDefaultAsync(x => x.Id == id, ct);
         var buyerId = await transactions.CharacterIdAsync(account, ct);
         if (listing is null || buyerId is null) return CommerceResult.Failure<AuctionResponse>("auction_not_found");
-        return await transactions.RunAsync(account, request, "AUCTION_BUY", new { id }, [listing.SellerId, buyerId.Value],
+
+        AuctionSaleNotification? notification = null;
+        CommerceResult<AuctionResponse> result = await transactions.RunAsync(account, request, "AUCTION_BUY", new { id }, [listing.SellerId, buyerId.Value],
             async (characters, replay) =>
             {
+                // Execution strategy retries and idempotent replays must never duplicate Telegram notifications.
+                notification = null;
                 var lot = await LockAsync(id, ct);
                 if (replay) return Response(lot);
                 var item = await transactions.ItemAsync(lot.ItemId, lot.SellerId, id, true, ct);
@@ -167,8 +174,35 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
                 // Delivery is durable in the same transaction, including when the buyer's bag is full.
                 item.Transfer(id, buyer.Id, "MAILBOX");
                 db.CommerceMails.Add(new CommerceMail(id, buyer.Id, item.Id, time.GetUtcNow()));
+
+                long sellerTelegramUserId = await db.Accounts.AsNoTracking()
+                    .Where(candidate => candidate.Id == seller.AccountId)
+                    .Select(candidate => candidate.TelegramUserId)
+                    .SingleAsync(ct);
+                notification = new AuctionSaleNotification(sellerTelegramUserId, ResolveItemName(item));
                 return Response(lot);
             }, ct);
+
+        if (result.Succeeded && notification is not null && messageSender is not null)
+        {
+            try
+            {
+                await messageSender.SendAsync(
+                    notification.TelegramUserId,
+                    $"Ваш предмет «{notification.ItemName}» был куплен.",
+                    CancellationToken.None);
+            }
+            catch (Exception exception)
+            {
+                // The auction settlement is already committed. Telegram delivery is best-effort and must not roll it back.
+                logger?.LogWarning(exception,
+                    "Failed to notify Telegram user {TelegramUserId} about auction sale {AuctionListingId}.",
+                    notification.TelegramUserId,
+                    id);
+            }
+        }
+
+        return result;
     }
 
     public async Task<CommerceResult<AuctionResponse>> ReturnAsync(Guid account, Guid id, Guid request, bool expired, CancellationToken ct)
@@ -234,6 +268,14 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
         }).ToArray();
     }
 
+    private string ResolveItemName(Elyndor.Core.Items.CharacterItem item)
+    {
+        if (!string.IsNullOrWhiteSpace(item.GeneratedDisplayName)) return item.GeneratedDisplayName;
+        return content.GetCurrent().Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out var definition)
+            ? definition.Name
+            : item.ItemDefinitionId;
+    }
+
     private (long Fee, long Tax) Quote(long price)
     {
         if (price <= 0) throw new CommerceRuleException("auction_invalid_listing");
@@ -250,4 +292,6 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
             .SingleOrDefaultAsync(ct) ?? throw new CommerceRuleException("auction_not_found");
     public static AuctionResponse Response(AuctionListing x) => new(x.Id, x.State, x.SellerId, x.ItemId,
         Money(x.Price), Money(x.Fee), Money(x.Tax), x.BuyerId, x.ExpiresAt);
+
+    private sealed record AuctionSaleNotification(long TelegramUserId, string ItemName);
 }
