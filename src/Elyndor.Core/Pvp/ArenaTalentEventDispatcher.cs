@@ -10,6 +10,7 @@ namespace Elyndor.Core.Pvp;
 public enum ArenaTalentEventType
 {
     OnIncomingDamage,
+    OnAutoAttack,
     OnCast,
     OnHit,
     OnCrit,
@@ -91,6 +92,8 @@ public static class ArenaTalentEventDispatcher
     public const string BlockTargetId = "BLOCK";
     public const string ArcherSurvivalInstinctTalentId = "S-6-4";
     public const string LowHpReductionTargetId = "LOW_HP_REDUCTION";
+    public const string ArcherHawkSpiritTalentId = "M-2-4";
+    public const string HawkSpiritTargetId = "HAWK_SPIRIT";
     public const string PyromancerBlastWaveTalentId = "F-5-1";
     public const string MageBlastWaveAbilityId = "MAGE_BLAST_WAVE";
 
@@ -148,6 +151,33 @@ public static class ArenaTalentEventDispatcher
                 hook,
                 EffectSource: ArenaTalentActorRole.Target,
                 EffectTarget: ArenaTalentActorRole.Target);
+            return true;
+        }
+
+        if (string.Equals(hook.TalentId, ArcherHawkSpiritTalentId, StringComparison.Ordinal)
+            && string.Equals(hook.Key, TalentModifierKeys.OnAutoAttack, StringComparison.Ordinal)
+            && string.Equals(hook.TargetId, HawkSpiritTargetId, StringComparison.Ordinal)
+            && hook.Duration > TimeSpan.Zero
+            && hook.Value > 0
+            && hook.ChancePercent > 0)
+        {
+            rule = new ArenaTalentEventRule(
+                ArenaTalentEventType.OnAutoAttack,
+                ArenaTalentConditionKind.None,
+                ArenaTalentEffectKind.ApplyBuff,
+                hook,
+                EffectSource: ArenaTalentActorRole.Source,
+                EffectTarget: ArenaTalentActorRole.Source,
+                StatusEffect: new EffectDefinition(
+                    $"ARENA_TALENT_{hook.TalentId}_ATTACK_SPEED",
+                    EffectKind.StatModifier,
+                    hook.Duration,
+                    1,
+                    EffectStackPolicy.Refresh,
+                    1 + hook.Value / 100m,
+                    ModifiedStat: EffectStat.AttackSpeed,
+                    ModifierMode: EffectModifierMode.Multiplicative,
+                    SourceSpecific: true));
             return true;
         }
 
