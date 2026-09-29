@@ -36,7 +36,7 @@ public sealed class ArenaTalentRuntimeSupportTests
     }
 
     [Fact]
-    public void CapabilityRegistryAcceptsKnownRuntimeAndStaticHooks()
+    public void CapabilityRegistryAcceptsKnownRuntimeStaticAndGenericEventHooks()
     {
         ResolvedTalentEventHook impact = Hook(
             PyromancerImpactRuntime.TalentId,
@@ -49,19 +49,25 @@ public sealed class ArenaTalentRuntimeSupportTests
             TalentModifierKeys.OnAbilityUsed,
             "PHYSICAL_FOCUS_COST",
             10);
+        ResolvedTalentEventHook blockResource = Hook(
+            "G-2-5",
+            TalentModifierKeys.OnDamageTaken,
+            "BLOCK",
+            3);
 
         Assert.True(ArenaTalentRuntimeSupport.SupportsEventHook(impact));
         Assert.True(ArenaTalentRuntimeSupport.SupportsEventHook(archerStatic));
+        Assert.True(ArenaTalentRuntimeSupport.SupportsEventHook(blockResource));
     }
 
     [Fact]
-    public void UnknownGameplayHookRemainsUnsupportedAndReportsMechanic()
+    public void KnownTriggerWithUnsupportedEffectRemainsUnsupportedAndReportsMechanic()
     {
         ResolvedTalentEventHook unsupported = Hook(
-            "TEST-1",
+            "G-1-5",
             TalentModifierKeys.OnDamageTaken,
-            "BLOCK",
-            5);
+            "INCOMING_CRITICAL_DAMAGE",
+            10);
         ResolvedTalentModifiers talents = Talents(unsupported);
 
         IReadOnlyList<ResolvedTalentEventHook> result =
@@ -69,8 +75,28 @@ public sealed class ArenaTalentRuntimeSupportTests
 
         ResolvedTalentEventHook hook = Assert.Single(result);
         Assert.Same(unsupported, hook);
-        Assert.Equal($"{TalentModifierKeys.OnDamageTaken}:BLOCK",
+        Assert.Equal($"{TalentModifierKeys.OnDamageTaken}:INCOMING_CRITICAL_DAMAGE",
             ArenaTalentRuntimeSupport.DescribeUnsupportedHook(hook));
+    }
+
+    [Fact]
+    public void MixedSupportedAndUnsupportedHooksRemainRejectedByCapabilitySet()
+    {
+        ResolvedTalentEventHook supported = Hook(
+            "G-2-5",
+            TalentModifierKeys.OnDamageTaken,
+            "BLOCK",
+            3);
+        ResolvedTalentEventHook unsupported = Hook(
+            "TEST-1",
+            TalentModifierKeys.OnDamageTaken,
+            "THREAT",
+            5);
+
+        IReadOnlyList<ResolvedTalentEventHook> result =
+            ArenaTalentRuntimeSupport.UnsupportedEventHooks(Talents(supported, unsupported));
+
+        Assert.Same(unsupported, Assert.Single(result));
     }
 
     private static ResolvedTalentModifiers Talents(params ResolvedTalentEventHook[] hooks) => new(
