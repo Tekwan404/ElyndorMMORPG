@@ -21,7 +21,8 @@ public enum ArenaTalentConditionKind
     None,
     WasCritical,
     WasBlocked,
-    SelfHealthBelowPercent
+    SelfHealthBelowPercent,
+    AbilityId
 }
 
 public enum ArenaTalentEffectKind
@@ -63,7 +64,8 @@ public sealed record ArenaTalentEventRule(
     ArenaTalentEventType Trigger,
     ArenaTalentConditionKind Condition,
     ArenaTalentEffectKind Effect,
-    ResolvedTalentEventHook Hook);
+    ResolvedTalentEventHook Hook,
+    string? ConditionValue = null);
 
 /// <summary>
 /// Content-key registration is isolated in normalization. Once a hook is normalized,
@@ -77,6 +79,8 @@ public static class ArenaTalentEventDispatcher
     public const string BlockTargetId = "BLOCK";
     public const string ArcherSurvivalInstinctTalentId = "S-6-4";
     public const string LowHpReductionTargetId = "LOW_HP_REDUCTION";
+    public const string PyromancerBlastWaveTalentId = "F-5-1";
+    public const string MageBlastWaveAbilityId = "MAGE_BLAST_WAVE";
 
     public static bool Supports(ResolvedTalentEventHook hook)
     {
@@ -126,6 +130,20 @@ public static class ArenaTalentEventDispatcher
                 ArenaTalentConditionKind.WasBlocked,
                 ArenaTalentEffectKind.GainResource,
                 hook);
+            return true;
+        }
+
+        if (string.Equals(hook.TalentId, PyromancerBlastWaveTalentId, StringComparison.Ordinal)
+            && string.Equals(hook.Key, TalentModifierKeys.OnAbilityUsed, StringComparison.Ordinal)
+            && hook.Duration > TimeSpan.Zero
+            && hook.Value > 0)
+        {
+            rule = new ArenaTalentEventRule(
+                ArenaTalentEventType.OnCast,
+                ArenaTalentConditionKind.AbilityId,
+                ArenaTalentEffectKind.ApplyDebuff,
+                hook,
+                MageBlastWaveAbilityId);
             return true;
         }
 
@@ -335,6 +353,21 @@ public static class ArenaTalentEventDispatcher
             combatEvent.TargetActorId,
             combatEvent.TargetActorId,
             Math.Max(0, rule.Hook.Value)),
+        ArenaTalentEffectKind.ApplyDebuff => new ArenaTalentRuntimeEffect(
+            ArenaTalentEffectKind.ApplyDebuff,
+            rule.Hook.TalentId,
+            combatEvent.SourceActorId,
+            combatEvent.TargetActorId,
+            Effect: new EffectDefinition(
+                $"ARENA_TALENT_{rule.Hook.TalentId}_ATTACK_SPEED",
+                EffectKind.StatModifier,
+                rule.Hook.Duration,
+                1,
+                EffectStackPolicy.Refresh,
+                Math.Max(0, 1 - rule.Hook.Value / 100m),
+                ModifiedStat: EffectStat.AttackSpeed,
+                ModifierMode: EffectModifierMode.Multiplicative,
+                SourceSpecific: true)),
         _ => throw new NotSupportedException($"Arena talent effect {rule.Effect} has no executor.")
     };
 
@@ -347,6 +380,9 @@ public static class ArenaTalentEventDispatcher
         ArenaTalentConditionKind.WasBlocked => combatEvent.WasBlocked,
         ArenaTalentConditionKind.SelfHealthBelowPercent =>
             combatEvent.TargetHealthPercent < rule.Hook.Threshold,
+        ArenaTalentConditionKind.AbilityId =>
+            combatEvent.Ability is not null
+            && string.Equals(combatEvent.Ability.Id, rule.ConditionValue, StringComparison.Ordinal),
         _ => false
     };
 
