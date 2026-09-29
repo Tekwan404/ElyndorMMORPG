@@ -118,8 +118,10 @@ public sealed class ArenaTalentEventDispatcherTests
     {
         Assert.True(ArenaTalentEventDispatcher.Supports(
             Hook("G-2-5", TalentModifierKeys.OnDamageTaken, "BLOCK", 3)));
-        Assert.False(ArenaTalentEventDispatcher.Supports(
+        Assert.True(ArenaTalentEventDispatcher.Supports(
             Hook("G-1-5", TalentModifierKeys.OnDamageTaken, "INCOMING_CRITICAL_DAMAGE", 20)));
+        Assert.False(ArenaTalentEventDispatcher.Supports(
+            Hook("G-6-5", TalentModifierKeys.OnDamageTaken, "GUARDIAN_CAPSTONE", 1)));
     }
 
     private static AbilityDefinition DamageAbility() => new(

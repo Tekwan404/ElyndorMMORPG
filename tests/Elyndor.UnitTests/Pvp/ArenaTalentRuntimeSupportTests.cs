@@ -54,20 +54,26 @@ public sealed class ArenaTalentRuntimeSupportTests
             TalentModifierKeys.OnDamageTaken,
             "BLOCK",
             3);
+        ResolvedTalentEventHook incomingCritical = Hook(
+            "G-1-5",
+            TalentModifierKeys.OnDamageTaken,
+            "INCOMING_CRITICAL_DAMAGE",
+            20);
 
         Assert.True(ArenaTalentRuntimeSupport.SupportsEventHook(impact));
         Assert.True(ArenaTalentRuntimeSupport.SupportsEventHook(archerStatic));
         Assert.True(ArenaTalentRuntimeSupport.SupportsEventHook(blockResource));
+        Assert.True(ArenaTalentRuntimeSupport.SupportsEventHook(incomingCritical));
     }
 
     [Fact]
-    public void KnownTriggerWithUnsupportedEffectRemainsUnsupportedAndReportsMechanic()
+    public void MixedGuardianCapstoneRemainsUnsupportedAndReportsMechanic()
     {
         ResolvedTalentEventHook unsupported = Hook(
-            "G-1-5",
+            "G-6-5",
             TalentModifierKeys.OnDamageTaken,
-            "INCOMING_CRITICAL_DAMAGE",
-            10);
+            "GUARDIAN_CAPSTONE",
+            1);
         ResolvedTalentModifiers talents = Talents(unsupported);
 
         IReadOnlyList<ResolvedTalentEventHook> result =
@@ -75,7 +81,7 @@ public sealed class ArenaTalentRuntimeSupportTests
 
         ResolvedTalentEventHook hook = Assert.Single(result);
         Assert.Same(unsupported, hook);
-        Assert.Equal($"{TalentModifierKeys.OnDamageTaken}:INCOMING_CRITICAL_DAMAGE",
+        Assert.Equal($"{TalentModifierKeys.OnDamageTaken}:GUARDIAN_CAPSTONE",
             ArenaTalentRuntimeSupport.DescribeUnsupportedHook(hook));
     }
 
