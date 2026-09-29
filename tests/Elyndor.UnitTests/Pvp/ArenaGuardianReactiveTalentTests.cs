@@ -38,9 +38,9 @@ public sealed class ArenaGuardianReactiveTalentTests
             now);
         Assert.True(first.Succeeded);
         Assert.Equal(8m, first.Snapshot.ActorB.CurrentResource);
-        CombatEvent resource = Assert.Single(first.Events.Where(x =>
+        CombatEvent resource = Assert.Single(first.Events, x =>
             x.Type == CombatEventType.ResourceChanged
-            && x.DefinitionId == "G-2-5"));
+            && x.DefinitionId == "G-2-5");
         Assert.Equal(3m, resource.Amount);
 
         ArenaCommandResult second = session.UseAbility(
@@ -51,9 +51,9 @@ public sealed class ArenaGuardianReactiveTalentTests
             now + TimeSpan.FromSeconds(1));
         Assert.True(second.Succeeded);
         Assert.Equal(10m, second.Snapshot.ActorB.CurrentResource);
-        CombatEvent capped = Assert.Single(second.Events.Where(x =>
+        CombatEvent capped = Assert.Single(second.Events, x =>
             x.Type == CombatEventType.ResourceChanged
-            && x.DefinitionId == "G-2-5"));
+            && x.DefinitionId == "G-2-5");
         Assert.Equal(2m, capped.Amount);
     }
 
