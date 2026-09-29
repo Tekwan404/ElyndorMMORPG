@@ -34,6 +34,45 @@ public sealed class ArenaTalentStateEffectExecutorTests
     }
 
     [Fact]
+    public void ModifyCooldownMutatesOnlyTheSuppliedActorsRuntime()
+    {
+        DateTimeOffset now = DateTimeOffset.UnixEpoch;
+        var owner = new CombatRuntimeState(Actor());
+        var other = new CombatRuntimeState(Actor());
+        owner.Cooldowns["A"] = now + TimeSpan.FromSeconds(10);
+        other.Cooldowns["A"] = now + TimeSpan.FromSeconds(10);
+        var reduce = new ArenaTalentRuntimeEffect(
+            ArenaTalentEffectKind.ModifyCooldown,
+            "TEST",
+            owner.Actor.ActorId,
+            owner.Actor.ActorId,
+            AbilityId: "A",
+            CooldownDelta: TimeSpan.FromSeconds(-3));
+
+        Assert.True(ArenaTalentStateEffectExecutor.ExecuteCooldownMutation(owner, reduce, now));
+
+        Assert.Equal(now + TimeSpan.FromSeconds(7), owner.Cooldowns["A"]);
+        Assert.Equal(now + TimeSpan.FromSeconds(10), other.Cooldowns["A"]);
+    }
+
+    [Fact]
+    public void MissingCooldownFollowsCanonicalNoOpRule()
+    {
+        DateTimeOffset now = DateTimeOffset.UnixEpoch;
+        var runtime = new CombatRuntimeState(Actor());
+        var reduce = new ArenaTalentRuntimeEffect(
+            ArenaTalentEffectKind.ModifyCooldown,
+            "TEST",
+            runtime.Actor.ActorId,
+            runtime.Actor.ActorId,
+            AbilityId: "A",
+            CooldownDelta: TimeSpan.FromSeconds(-4));
+
+        Assert.False(ArenaTalentStateEffectExecutor.ExecuteCooldownMutation(runtime, reduce, now));
+        Assert.Empty(runtime.Cooldowns);
+    }
+
+    [Fact]
     public void ResetCooldownUsesCanonicalRuntimeStateApi()
     {
         DateTimeOffset now = DateTimeOffset.UnixEpoch;
@@ -59,11 +98,14 @@ public sealed class ArenaTalentStateEffectExecutorTests
         CombatActorState actor = Actor();
         var definition = new EffectDefinition(
             "TEST_BUFF",
-            EffectKind.Buff,
+            EffectKind.StatModifier,
             TimeSpan.FromSeconds(5),
             1,
             EffectStackPolicy.Refresh,
-            0);
+            1.10m,
+            ModifiedStat: EffectStat.AttackPower,
+            ModifierMode: EffectModifierMode.Multiplicative,
+            SourceSpecific: true);
         var effect = new ArenaTalentRuntimeEffect(
             ArenaTalentEffectKind.ApplyBuff,
             "TEST",
@@ -71,17 +113,20 @@ public sealed class ArenaTalentStateEffectExecutorTests
             actor.ActorId,
             Effect: definition);
 
+        Assert.True(ArenaTalentStateEffectExecutor.SupportsStatusEffect(effect));
         IReadOnlyList<CombatEvent> applied =
             ArenaTalentStateEffectExecutor.ExecuteStatusEffect(actor, effect, now);
         Assert.Contains(applied, x => x.Type == CombatEventType.EffectApplied);
-        Assert.Single(actor.ActiveEffects);
+        ActiveEffect active = Assert.Single(actor.ActiveEffects);
+        Assert.Equal(actor.ActorId, active.SourceId);
+        Assert.Equal(now + TimeSpan.FromSeconds(5), active.ExpiresAtUtc);
 
         IReadOnlyList<CombatEvent> refreshed = ArenaTalentStateEffectExecutor.ExecuteStatusEffect(
             actor,
             effect,
             now + TimeSpan.FromSeconds(2));
         Assert.Contains(refreshed, x => x.Type == CombatEventType.EffectRefreshed);
-        ActiveEffect active = Assert.Single(actor.ActiveEffects);
+        active = Assert.Single(actor.ActiveEffects);
         Assert.Equal(now + TimeSpan.FromSeconds(7), active.ExpiresAtUtc);
 
         IReadOnlyList<CombatEvent> expired =
@@ -103,16 +148,22 @@ public sealed class ArenaTalentStateEffectExecutorTests
             target.ActorId,
             Effect: new EffectDefinition(
                 "TEST_DEBUFF",
-                EffectKind.Debuff,
+                EffectKind.StatModifier,
                 TimeSpan.FromSeconds(4),
                 1,
                 EffectStackPolicy.Refresh,
-                0));
+                0.85m,
+                ModifiedStat: EffectStat.AttackSpeed,
+                ModifierMode: EffectModifierMode.Multiplicative,
+                SourceSpecific: true));
 
+        Assert.True(ArenaTalentStateEffectExecutor.SupportsStatusEffect(debuff));
         IReadOnlyList<CombatEvent> events =
             ArenaTalentStateEffectExecutor.ExecuteStatusEffect(target, debuff, now);
         Assert.Contains(events, x => x.Type == CombatEventType.EffectApplied);
-        Assert.Single(target.ActiveEffects);
+        ActiveEffect active = Assert.Single(target.ActiveEffects);
+        Assert.Equal(source.ActorId, active.SourceId);
+        Assert.Equal(now + TimeSpan.FromSeconds(4), active.ExpiresAtUtc);
 
         var crowdControl = debuff with
         {
@@ -124,8 +175,31 @@ public sealed class ArenaTalentStateEffectExecutorTests
                 EffectStackPolicy.Refresh,
                 0)
         };
+        Assert.False(ArenaTalentStateEffectExecutor.SupportsStatusEffect(crowdControl));
         Assert.Throws<NotSupportedException>(() =>
             ArenaTalentStateEffectExecutor.ExecuteStatusEffect(target, crowdControl, now));
+    }
+
+    [Fact]
+    public void NoOpStatusKindIsNotAcceptedAsArenaCapability()
+    {
+        CombatActorState actor = Actor();
+        var noOp = new ArenaTalentRuntimeEffect(
+            ArenaTalentEffectKind.ApplyBuff,
+            "TEST",
+            actor.ActorId,
+            actor.ActorId,
+            Effect: new EffectDefinition(
+                "TEST_NO_OP",
+                EffectKind.Buff,
+                TimeSpan.FromSeconds(5),
+                1,
+                EffectStackPolicy.Refresh,
+                0));
+
+        Assert.False(ArenaTalentStateEffectExecutor.SupportsStatusEffect(noOp));
+        Assert.Throws<NotSupportedException>(() =>
+            ArenaTalentStateEffectExecutor.ExecuteStatusEffect(actor, noOp, DateTimeOffset.UnixEpoch));
     }
 
     private static CombatActorState Actor() => new(
