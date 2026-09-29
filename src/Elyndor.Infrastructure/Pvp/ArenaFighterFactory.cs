@@ -45,8 +45,7 @@ public sealed class ArenaFighterFactory(
             var combatPlayer = await combatFactory.CreateArenaPlayerAsync(player, snapshot,
                 cancellationToken);
             ArenaTestEntrant entrant = ArenaFighterAssembler.Create(combatPlayer, character.Level,
-                abilities, derived.ActiveTalentRanks.Count > 0,
-                derived.ActiveCompanionProfile is not null);
+                abilities, derived.ActiveCompanionProfile is not null);
             return new ArenaFighterResult(entrant, null);
         }
         catch (NotSupportedException)

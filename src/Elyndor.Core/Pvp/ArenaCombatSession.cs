@@ -4,11 +4,17 @@ using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Pvp;
 
 public sealed record ArenaFighter(Guid AccountId, Guid CharacterId, CombatActorState Actor,
-    IReadOnlyDictionary<string, AbilityDefinition> Abilities, AutoAttackProfile AutoAttack);
+    IReadOnlyDictionary<string, AbilityDefinition> Abilities, AutoAttackProfile AutoAttack,
+    ResolvedTalentModifiers? TalentModifiers = null)
+{
+    public ResolvedTalentModifiers EffectiveTalentModifiers =>
+        TalentModifiers ?? ResolvedTalentModifiers.Empty;
+}
 
 public sealed record ArenaActorSnapshot(Guid ActorId, decimal CurrentHp, decimal MaxHp,
     decimal CurrentResource, decimal MaxResource);
@@ -184,8 +190,11 @@ public sealed class ArenaCombatSession
             Append(prepared.ImmuneEvents);
         }
         if (executableAbility.Type != AbilityType.Casted)
+        {
             ApplyInterrupt(executableAbility, isFirst ? _secondRuntime : _firstRuntime,
                 fighter.Actor.ActorId, now);
+            ResolveTalentProcs(fighter, opponent.Actor, ability, execution, now);
+        }
         ResolveOutcome(now);
         return Result(true, null, before);
     }
@@ -222,6 +231,7 @@ public sealed class ArenaCombatSession
         if (runtime.Actor.IsDead || runtime.ActiveCast?.ResolvesAtUtc > due || runtime.ActiveCast is null) return;
         ActiveCast cast = runtime.ActiveCast;
         CombatActorState target = runtime.Actors[cast.TargetId];
+        ArenaFighter fighter = runtime == _firstRuntime ? _first : _second;
         PreparedCrowdControlAbility prepared = PrepareCrowdControlAbility(
             cast.Ability,
             runtime.Actor.ActorId,
@@ -236,6 +246,7 @@ public sealed class ArenaCombatSession
         Append(prepared.ImmuneEvents);
         ApplyInterrupt(prepared.Ability, runtime == _firstRuntime ? _secondRuntime : _firstRuntime,
             runtime.Actor.ActorId, due);
+        ResolveTalentProcs(fighter, target, cast.Ability, execution, due);
     }
 
     private void ResolvePendingActions(CombatRuntimeState runtime, DateTimeOffset due)
@@ -311,6 +322,66 @@ public sealed class ArenaCombatSession
                 due);
         }
         Append(immuneEvents);
+    }
+
+    private void ResolveTalentProcs(
+        ArenaFighter fighter,
+        CombatActorState target,
+        AbilityDefinition ability,
+        AbilityExecutionResult execution,
+        DateTimeOffset now)
+    {
+        bool hitTarget = execution.Events.Any(combatEvent =>
+            combatEvent.Type == CombatEventType.DamageDealt
+            && combatEvent.TargetActorId == target.ActorId
+            && combatEvent.Amount > 0);
+        if (!hitTarget)
+            return;
+
+        AbilityActionDefinition? proc = PyromancerImpactRuntime.TryResolveStunAction(
+            fighter.EffectiveTalentModifiers,
+            ability,
+            _random);
+        if (proc is not null)
+            ApplyGeneratedEffectAction(fighter.Actor.ActorId, target, proc, now);
+    }
+
+    private void ApplyGeneratedEffectAction(
+        Guid sourceActorId,
+        CombatActorState target,
+        AbilityActionDefinition action,
+        DateTimeOffset now)
+    {
+        if (action.Type != AbilityActionType.ApplyEffect || action.Effect is null)
+            throw new NotSupportedException("Arena talent proc produced an unsupported action.");
+
+        var generated = new AbilityDefinition(
+            $"ARENA_PROC_{action.Effect.Id}",
+            AbilityType.Instant,
+            AbilityTargetType.SingleEnemy,
+            0,
+            TimeSpan.Zero,
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            true,
+            "NONE",
+            Actions: [action]);
+        PreparedCrowdControlAbility prepared = PrepareCrowdControlAbility(
+            generated,
+            sourceActorId,
+            target,
+            now);
+
+        foreach (AbilityActionDefinition preparedAction in prepared.Ability.Actions ?? [])
+        {
+            if (preparedAction.Type != AbilityActionType.ApplyEffect || preparedAction.Effect is null)
+                throw new NotSupportedException("Arena talent proc produced an unsupported action.");
+            Append(EffectEngine.Apply(target, sourceActorId, preparedAction.Effect, now));
+        }
+
+        CommitPreparedCrowdControl(prepared, now);
+        Append(prepared.ImmuneEvents);
     }
 
     private void ApplyInterrupt(AbilityDefinition ability, CombatRuntimeState targetRuntime,
