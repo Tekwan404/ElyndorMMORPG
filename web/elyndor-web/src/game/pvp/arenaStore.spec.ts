@@ -5,13 +5,33 @@ import { apiClient } from '@/api/apiClient'
 import { useArenaStore } from './arenaStore'
 import type { ArenaStatus } from './arenaContracts'
 
+const signalR = vi.hoisted(() => ({
+  start: vi.fn(),
+  stop: vi.fn(),
+  invoke: vi.fn(async () => null),
+}))
+
 vi.mock('@microsoft/signalr', () => ({
   HubConnectionBuilder: class {
     withUrl() { return this }
     withAutomaticReconnect() { return this }
     configureLogging() { return this }
     build() {
-      return { state: 'Disconnected', on() {}, onreconnected() {}, start: async () => {}, stop: async () => {} }
+      const connection = {
+        state: 'Disconnected',
+        on() {},
+        onreconnected() {},
+        start: async () => {
+          signalR.start()
+          connection.state = 'Connected'
+        },
+        stop: async () => {
+          signalR.stop()
+          connection.state = 'Disconnected'
+        },
+        invoke: signalR.invoke,
+      }
+      return connection
     }
   },
   HubConnectionState: { Disconnected: 'Disconnected', Connected: 'Connected' },
@@ -24,7 +44,14 @@ const status = (patch: Partial<ArenaStatus> = {}): ArenaStatus => ({
 })
 
 describe('arenaStore', () => {
-  beforeEach(() => setActivePinia(createPinia()))
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    signalR.start.mockClear()
+    signalR.stop.mockClear()
+    signalR.invoke.mockClear()
+    signalR.invoke.mockResolvedValue(null)
+    setActivePinia(createPinia())
+  })
 
   it('reports disabled arena without touching the hub', async () => {
     vi.spyOn(apiClient, 'request').mockResolvedValueOnce(status({ enabled: false }))
@@ -32,6 +59,49 @@ describe('arenaStore', () => {
     await arena.refresh()
     expect(arena.enabled).toBe(false)
     expect(arena.inMatch).toBe(false)
+    expect(signalR.start).not.toHaveBeenCalled()
+  })
+
+  it('reconnects the hub when refresh restores a queued status', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValueOnce(status({ isQueued: true, activeMatchId: null }))
+    const arena = useArenaStore()
+
+    await arena.refresh()
+
+    expect(signalR.start).toHaveBeenCalledTimes(1)
+    expect(signalR.invoke).not.toHaveBeenCalled()
+  })
+
+  it('reconnects the hub and loads an active match', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValueOnce(status({ activeMatchId: 'match-1' }))
+    const arena = useArenaStore()
+
+    await arena.refresh()
+
+    expect(signalR.start).toHaveBeenCalledTimes(1)
+    expect(signalR.invoke).toHaveBeenCalledWith('GetMatch', 'match-1', 0)
+  })
+
+  it('does not connect an idle enabled arena status', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValueOnce(status())
+    const arena = useArenaStore()
+
+    await arena.refresh()
+
+    expect(signalR.start).not.toHaveBeenCalled()
+  })
+
+  it('keeps queued reload presence connected across subsequent refreshes', async () => {
+    vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce(status({ isQueued: true }))
+      .mockResolvedValueOnce(status({ isQueued: true }))
+    const arena = useArenaStore()
+
+    await arena.refresh()
+    await arena.refresh()
+
+    expect(signalR.start).toHaveBeenCalledTimes(1)
+    expect(signalR.stop).not.toHaveBeenCalled()
   })
 
   it('surfaces the server error code when joining the queue fails', async () => {
