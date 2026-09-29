@@ -8,6 +8,7 @@ namespace Elyndor.Core.Pvp;
 
 public enum ArenaTalentEventType
 {
+    OnIncomingDamage,
     OnCast,
     OnHit,
     OnCrit,
@@ -17,12 +18,14 @@ public enum ArenaTalentEventType
 public enum ArenaTalentConditionKind
 {
     None,
+    WasCritical,
     WasBlocked
 }
 
 public enum ArenaTalentEffectKind
 {
     GainResource,
+    ModifyIncomingDamage,
     ApplyAbilityAction
 }
 
@@ -35,7 +38,8 @@ public sealed record ArenaTalentCombatEvent(
     decimal FinalDamage = 0,
     DamageType? DamageType = null,
     bool WasCritical = false,
-    bool WasBlocked = false);
+    bool WasBlocked = false,
+    decimal CurrentDamage = 0);
 
 public sealed record ArenaTalentRuntimeEffect(
     ArenaTalentEffectKind Kind,
@@ -57,6 +61,8 @@ public sealed record ArenaTalentEventRule(
 /// </summary>
 public static class ArenaTalentEventDispatcher
 {
+    public const string GuardianAnticipationTalentId = "G-1-5";
+    public const string IncomingCriticalDamageTargetId = "INCOMING_CRITICAL_DAMAGE";
     public const string GuardianShieldFuryTalentId = "G-2-5";
     public const string BlockTargetId = "BLOCK";
 
@@ -72,7 +78,20 @@ public static class ArenaTalentEventDispatcher
     {
         ArgumentNullException.ThrowIfNull(hook);
 
-        // Talent ID is only the content key here. Runtime execution below never branches on it.
+        // Talent IDs are content keys only at this legacy-content normalization boundary.
+        // Runtime matching and execution below use semantic trigger/condition/effect descriptors.
+        if (string.Equals(hook.TalentId, GuardianAnticipationTalentId, StringComparison.Ordinal)
+            && string.Equals(hook.Key, TalentModifierKeys.OnDamageTaken, StringComparison.Ordinal)
+            && string.Equals(hook.TargetId, IncomingCriticalDamageTargetId, StringComparison.Ordinal))
+        {
+            rule = new ArenaTalentEventRule(
+                ArenaTalentEventType.OnIncomingDamage,
+                ArenaTalentConditionKind.WasCritical,
+                ArenaTalentEffectKind.ModifyIncomingDamage,
+                hook);
+            return true;
+        }
+
         if (string.Equals(hook.TalentId, GuardianShieldFuryTalentId, StringComparison.Ordinal)
             && string.Equals(hook.Key, TalentModifierKeys.OnDamageTaken, StringComparison.Ordinal)
             && string.Equals(hook.TargetId, BlockTargetId, StringComparison.Ordinal))
@@ -87,6 +106,40 @@ public static class ArenaTalentEventDispatcher
 
         rule = null!;
         return false;
+    }
+
+    public static decimal ApplyIncomingDamageModifiers(
+        ResolvedTalentModifiers talents,
+        IncomingDamageContext context,
+        IGameRandom random)
+    {
+        ArgumentNullException.ThrowIfNull(talents);
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(random);
+
+        var combatEvent = new ArenaTalentCombatEvent(
+            ArenaTalentEventType.OnIncomingDamage,
+            context.Source.ActorId,
+            context.Target.ActorId,
+            context.OccurredAtUtc,
+            DamageType: context.DamageType,
+            WasCritical: context.WasCritical,
+            CurrentDamage: context.CurrentAmount);
+
+        decimal damage = Math.Max(0, context.CurrentAmount);
+        foreach (ArenaTalentRuntimeEffect effect in Dispatch(talents, combatEvent, random))
+        {
+            if (effect.Kind != ArenaTalentEffectKind.ModifyIncomingDamage)
+            {
+                throw new NotSupportedException(
+                    $"Arena pre-damage event produced unsupported effect {effect.Kind}.");
+            }
+
+            decimal reductionPercent = Math.Clamp(effect.Amount, 0, 100);
+            damage = Math.Max(0, damage * (1 - reductionPercent / 100m));
+        }
+
+        return damage;
     }
 
     public static IReadOnlyList<ArenaTalentRuntimeEffect> Dispatch(
@@ -247,6 +300,12 @@ public static class ArenaTalentEventDispatcher
             combatEvent.TargetActorId,
             combatEvent.TargetActorId,
             Math.Max(0, rule.Hook.Value)),
+        ArenaTalentEffectKind.ModifyIncomingDamage => new ArenaTalentRuntimeEffect(
+            ArenaTalentEffectKind.ModifyIncomingDamage,
+            rule.Hook.TalentId,
+            combatEvent.TargetActorId,
+            combatEvent.TargetActorId,
+            Math.Max(0, rule.Hook.Value)),
         _ => throw new NotSupportedException($"Arena talent effect {rule.Effect} has no executor.")
     };
 
@@ -255,6 +314,7 @@ public static class ArenaTalentEventDispatcher
         ArenaTalentCombatEvent combatEvent) => condition switch
     {
         ArenaTalentConditionKind.None => true,
+        ArenaTalentConditionKind.WasCritical => combatEvent.WasCritical,
         ArenaTalentConditionKind.WasBlocked => combatEvent.WasBlocked,
         _ => false
     };

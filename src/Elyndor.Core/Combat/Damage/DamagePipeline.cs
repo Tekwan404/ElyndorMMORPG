@@ -178,6 +178,21 @@ public static class DamagePipeline
             * incomingPhysicalMultiplier
             * Math.Max(0, talentDamageMultiplier)
             * talentIncomingMultiplier;
+        if (request.Target.IncomingDamageModifier is { } incomingDamageModifier)
+        {
+            modified = Math.Max(0, incomingDamageModifier(
+                new IncomingDamageContext(
+                    request.Source,
+                    request.Target,
+                    request.Type,
+                    request.BaseAmount,
+                    raw,
+                    afterMitigation,
+                    modified,
+                    critical,
+                    occurredAtUtc),
+                random));
+        }
         decimal minimumApplied = modified > 0
             ? Math.Max(modified, Math.Max(0, request.MinimumDamage))
             : 0;

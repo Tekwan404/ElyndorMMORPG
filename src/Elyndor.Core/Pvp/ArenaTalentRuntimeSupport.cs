@@ -1,3 +1,4 @@
+using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Talents;
 
@@ -11,6 +12,17 @@ namespace Elyndor.Core.Pvp;
 /// </summary>
 public static class ArenaTalentRuntimeSupport
 {
+    public static void ConfigureActorRuntime(
+        CombatActorState actor,
+        ResolvedTalentModifiers talents)
+    {
+        ArgumentNullException.ThrowIfNull(actor);
+        ArgumentNullException.ThrowIfNull(talents);
+
+        actor.IncomingDamageModifier = (context, random) =>
+            ArenaTalentEventDispatcher.ApplyIncomingDamageModifiers(talents, context, random);
+    }
+
     public static AbilityDefinition ApplyAbilityDefinitionModifiers(
         AbilityDefinition ability,
         ResolvedTalentModifiers talents)

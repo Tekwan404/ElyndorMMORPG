@@ -17,6 +17,9 @@ public static class ArenaFighterAssembler
             throw new NotSupportedException("This build has PvE-only arena mechanics.");
 
         ValidateTalentRuntime(player);
+        ArenaTalentRuntimeSupport.ConfigureActorRuntime(
+            player.Participant.Actor,
+            player.TalentModifiers);
 
         var known = new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal);
         foreach (string abilityId in player.Participant.KnownAbilityIds)

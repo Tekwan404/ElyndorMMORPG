@@ -92,10 +92,10 @@ public sealed class ArenaGuardianReactiveTalentTests
     }
 
     [Fact]
-    public void BlockHookIsAcceptedButIncomingCriticalDamageHookRemainsFailClosed()
+    public void BlockAndIncomingCriticalDamageHooksAreAccepted()
     {
         Assert.True(ArenaTalentRuntimeSupport.SupportsEventHook(BlockHook(3)));
-        Assert.False(ArenaTalentRuntimeSupport.SupportsEventHook(new ResolvedTalentEventHook(
+        Assert.True(ArenaTalentRuntimeSupport.SupportsEventHook(new ResolvedTalentEventHook(
             "G-1-5",
             TalentModifierKeys.OnDamageTaken,
             1,
