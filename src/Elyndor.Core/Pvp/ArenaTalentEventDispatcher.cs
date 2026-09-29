@@ -35,6 +35,12 @@ public enum ArenaTalentEffectKind
     ApplyAbilityAction
 }
 
+public enum ArenaTalentActorRole
+{
+    Source,
+    Target
+}
+
 public sealed record ArenaTalentCombatEvent(
     ArenaTalentEventType Type,
     Guid SourceActorId,
@@ -65,7 +71,13 @@ public sealed record ArenaTalentEventRule(
     ArenaTalentConditionKind Condition,
     ArenaTalentEffectKind Effect,
     ResolvedTalentEventHook Hook,
-    string? ConditionValue = null);
+    string? ConditionValue = null,
+    ArenaTalentActorRole EffectSource = ArenaTalentActorRole.Source,
+    ArenaTalentActorRole EffectTarget = ArenaTalentActorRole.Target,
+    string? AbilityId = null,
+    TimeSpan CooldownDelta = default,
+    bool ResetCooldown = false,
+    EffectDefinition? StatusEffect = null);
 
 /// <summary>
 /// Content-key registration is isolated in normalization. Once a hook is normalized,
@@ -104,7 +116,9 @@ public static class ArenaTalentEventDispatcher
                 ArenaTalentEventType.OnIncomingDamage,
                 ArenaTalentConditionKind.WasCritical,
                 ArenaTalentEffectKind.ModifyIncomingDamage,
-                hook);
+                hook,
+                EffectSource: ArenaTalentActorRole.Target,
+                EffectTarget: ArenaTalentActorRole.Target);
             return true;
         }
 
@@ -117,7 +131,9 @@ public static class ArenaTalentEventDispatcher
                 ArenaTalentEventType.OnIncomingDamage,
                 ArenaTalentConditionKind.SelfHealthBelowPercent,
                 ArenaTalentEffectKind.ModifyIncomingDamage,
-                hook);
+                hook,
+                EffectSource: ArenaTalentActorRole.Target,
+                EffectTarget: ArenaTalentActorRole.Target);
             return true;
         }
 
@@ -129,7 +145,9 @@ public static class ArenaTalentEventDispatcher
                 ArenaTalentEventType.OnDamageTaken,
                 ArenaTalentConditionKind.WasBlocked,
                 ArenaTalentEffectKind.GainResource,
-                hook);
+                hook,
+                EffectSource: ArenaTalentActorRole.Target,
+                EffectTarget: ArenaTalentActorRole.Target);
             return true;
         }
 
@@ -143,7 +161,17 @@ public static class ArenaTalentEventDispatcher
                 ArenaTalentConditionKind.AbilityId,
                 ArenaTalentEffectKind.ApplyDebuff,
                 hook,
-                MageBlastWaveAbilityId);
+                ConditionValue: MageBlastWaveAbilityId,
+                StatusEffect: new EffectDefinition(
+                    $"ARENA_TALENT_{hook.TalentId}_ATTACK_SPEED",
+                    EffectKind.StatModifier,
+                    hook.Duration,
+                    1,
+                    EffectStackPolicy.Refresh,
+                    Math.Max(0, 1 - hook.Value / 100m),
+                    ModifiedStat: EffectStat.AttackSpeed,
+                    ModifierMode: EffectModifierMode.Multiplicative,
+                    SourceSpecific: true));
             return true;
         }
 
@@ -339,36 +367,52 @@ public static class ArenaTalentEventDispatcher
 
     private static ArenaTalentRuntimeEffect ExecuteRule(
         ArenaTalentEventRule rule,
-        ArenaTalentCombatEvent combatEvent) => rule.Effect switch
+        ArenaTalentCombatEvent combatEvent)
     {
-        ArenaTalentEffectKind.GainResource => new ArenaTalentRuntimeEffect(
-            ArenaTalentEffectKind.GainResource,
-            rule.Hook.TalentId,
-            combatEvent.TargetActorId,
-            combatEvent.TargetActorId,
-            Math.Max(0, rule.Hook.Value)),
-        ArenaTalentEffectKind.ModifyIncomingDamage => new ArenaTalentRuntimeEffect(
-            ArenaTalentEffectKind.ModifyIncomingDamage,
-            rule.Hook.TalentId,
-            combatEvent.TargetActorId,
-            combatEvent.TargetActorId,
-            Math.Max(0, rule.Hook.Value)),
-        ArenaTalentEffectKind.ApplyDebuff => new ArenaTalentRuntimeEffect(
-            ArenaTalentEffectKind.ApplyDebuff,
-            rule.Hook.TalentId,
-            combatEvent.SourceActorId,
-            combatEvent.TargetActorId,
-            Effect: new EffectDefinition(
-                $"ARENA_TALENT_{rule.Hook.TalentId}_ATTACK_SPEED",
-                EffectKind.StatModifier,
-                rule.Hook.Duration,
-                1,
-                EffectStackPolicy.Refresh,
-                Math.Max(0, 1 - rule.Hook.Value / 100m),
-                ModifiedStat: EffectStat.AttackSpeed,
-                ModifierMode: EffectModifierMode.Multiplicative,
-                SourceSpecific: true)),
-        _ => throw new NotSupportedException($"Arena talent effect {rule.Effect} has no executor.")
+        Guid sourceActorId = ResolveActor(rule.EffectSource, combatEvent);
+        Guid targetActorId = ResolveActor(rule.EffectTarget, combatEvent);
+
+        return rule.Effect switch
+        {
+            ArenaTalentEffectKind.GainResource => new ArenaTalentRuntimeEffect(
+                ArenaTalentEffectKind.GainResource,
+                rule.Hook.TalentId,
+                sourceActorId,
+                targetActorId,
+                Math.Max(0, rule.Hook.Value)),
+            ArenaTalentEffectKind.ModifyIncomingDamage => new ArenaTalentRuntimeEffect(
+                ArenaTalentEffectKind.ModifyIncomingDamage,
+                rule.Hook.TalentId,
+                sourceActorId,
+                targetActorId,
+                Math.Max(0, rule.Hook.Value)),
+            ArenaTalentEffectKind.ModifyCooldown when !string.IsNullOrWhiteSpace(rule.AbilityId) =>
+                new ArenaTalentRuntimeEffect(
+                    ArenaTalentEffectKind.ModifyCooldown,
+                    rule.Hook.TalentId,
+                    sourceActorId,
+                    targetActorId,
+                    AbilityId: rule.AbilityId,
+                    CooldownDelta: rule.CooldownDelta,
+                    ResetCooldown: rule.ResetCooldown),
+            ArenaTalentEffectKind.ApplyBuff or ArenaTalentEffectKind.ApplyDebuff
+                when rule.StatusEffect is not null => new ArenaTalentRuntimeEffect(
+                    rule.Effect,
+                    rule.Hook.TalentId,
+                    sourceActorId,
+                    targetActorId,
+                    Effect: rule.StatusEffect),
+            _ => throw new NotSupportedException($"Arena talent effect {rule.Effect} has no executable descriptor.")
+        };
+    }
+
+    private static Guid ResolveActor(
+        ArenaTalentActorRole role,
+        ArenaTalentCombatEvent combatEvent) => role switch
+    {
+        ArenaTalentActorRole.Source => combatEvent.SourceActorId,
+        ArenaTalentActorRole.Target => combatEvent.TargetActorId,
+        _ => throw new NotSupportedException($"Arena talent actor role {role} is unsupported.")
     };
 
     private static bool ConditionMatches(
