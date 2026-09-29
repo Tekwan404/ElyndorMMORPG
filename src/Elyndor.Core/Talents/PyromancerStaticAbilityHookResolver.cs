@@ -66,14 +66,14 @@ public static class PyromancerStaticAbilityHookResolver
             castTime = Reduce(castTime, improvedFireball.Value);
         }
         else if (string.Equals(ability.Id, ScorchId, StringComparison.Ordinal)
-            && TryGet(talents, IncinerationTalentId, out ResolvedTalentEventHook incineration))
+            && TryGet(talents, IncinerationTalentId, out ResolvedTalentEventHook scorchIncineration))
         {
-            criticalChanceBonus += incineration.Value;
+            criticalChanceBonus += scorchIncineration.Value;
         }
         else if (string.Equals(ability.Id, FireBlastId, StringComparison.Ordinal))
         {
-            if (TryGet(talents, IncinerationTalentId, out ResolvedTalentEventHook incineration))
-                criticalChanceBonus += incineration.Value;
+            if (TryGet(talents, IncinerationTalentId, out ResolvedTalentEventHook fireBlastIncineration))
+                criticalChanceBonus += fireBlastIncineration.Value;
             if (TryGet(talents, ImprovedFireBlastTalentId, out ResolvedTalentEventHook improvedBlast))
             {
                 cooldown = Reduce(cooldown, improvedBlast.Value);

@@ -25,6 +25,7 @@ public static class ArenaFighterAssembler
                 throw new NotSupportedException($"Ability {abilityId} is missing from arena content.");
             AbilityDefinition resolved = TalentAbilityResolver.Apply(ability, player.TalentModifiers);
             resolved = PyromancerStaticAbilityHookResolver.Apply(resolved, player.TalentModifiers);
+            resolved = MageStaticAbilityHookResolver.Apply(resolved, player.TalentModifiers);
             known.Add(abilityId, resolved);
         }
         ArenaCombatSession.ValidateAbilities(known);
@@ -50,7 +51,8 @@ public static class ArenaFighterAssembler
                 StringComparison.Ordinal)
             && talents.EventHooks.All(hook =>
                 PyromancerImpactRuntime.SupportsArenaHook(hook)
-                || PyromancerStaticAbilityHookResolver.Supports(hook));
+                || PyromancerStaticAbilityHookResolver.Supports(hook)
+                || MageStaticAbilityHookResolver.Supports(hook));
 
         if (!supportedMageHooks)
             throw new NotSupportedException("This build has unsupported arena talent hooks.");
