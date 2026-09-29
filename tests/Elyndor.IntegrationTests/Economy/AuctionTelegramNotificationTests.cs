@@ -1,5 +1,4 @@
 using Elyndor.Core.Characters;
-using Elyndor.Core.Content;
 using Elyndor.Core.Economy;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Items;
@@ -18,7 +17,7 @@ namespace Elyndor.IntegrationTests.Economy;
 public sealed class AuctionTelegramNotificationTests(PostgresFixture postgres) : IAsyncLifetime
 {
     private readonly Clock _clock = new();
-    private IContentSnapshotProvider _content = null!;
+    private StaticContentSnapshotProvider _content = null!;
 
     public async Task InitializeAsync()
     {
