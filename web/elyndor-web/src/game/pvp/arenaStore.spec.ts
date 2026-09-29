@@ -6,9 +6,9 @@ import { useArenaStore } from './arenaStore'
 import type { ArenaStatus } from './arenaContracts'
 
 const signalR = vi.hoisted(() => ({
-  start: vi.fn(),
-  stop: vi.fn(),
-  invoke: vi.fn(async () => null),
+  start: vi.fn<() => void>(),
+  stop: vi.fn<() => void>(),
+  invoke: vi.fn<(...args: unknown[]) => Promise<null>>(async () => null),
 }))
 
 vi.mock('@microsoft/signalr', () => ({
