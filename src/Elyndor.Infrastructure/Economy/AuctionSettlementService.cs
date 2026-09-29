@@ -4,7 +4,6 @@ using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Elyndor.Infrastructure.Economy;
@@ -19,7 +18,7 @@ public sealed class AuctionOptions
 
 public sealed class AuctionSettlementService(GameDbContext db, CommerceTransaction transactions,
     IContentSnapshotProvider content, TimeProvider time, IOptions<AuctionOptions> options,
-    ITelegramMessageSender? messageSender = null, ILogger<AuctionSettlementService>? logger = null)
+    ITelegramMessageSender? messageSender = null)
 {
     public async Task<AuctionListingView[]> ListingsAsync(Guid account, bool mine, string? search, string? type, int page, CancellationToken ct)
     {
@@ -192,13 +191,9 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
                     $"Ваш предмет «{notification.ItemName}» был куплен.",
                     CancellationToken.None);
             }
-            catch (Exception exception)
+            catch
             {
                 // The auction settlement is already committed. Telegram delivery is best-effort and must not roll it back.
-                logger?.LogWarning(exception,
-                    "Failed to notify Telegram user {TelegramUserId} about auction sale {AuctionListingId}.",
-                    notification.TelegramUserId,
-                    id);
             }
         }
 
