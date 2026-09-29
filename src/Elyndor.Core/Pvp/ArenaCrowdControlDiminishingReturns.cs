@@ -29,8 +29,7 @@ public sealed class CrowdControlDiminishingReturns
         TimeSpan baseDuration,
         DateTimeOffset now)
     {
-        if (baseDuration <= TimeSpan.Zero)
-            throw new ArgumentOutOfRangeException(nameof(baseDuration));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(baseDuration, TimeSpan.Zero);
 
         int level = GetLevel(category, now);
         if (level >= 3)
