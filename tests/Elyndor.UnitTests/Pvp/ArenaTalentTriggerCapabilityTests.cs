@@ -7,7 +7,7 @@ namespace Elyndor.UnitTests.Pvp;
 public sealed class ArenaTalentTriggerCapabilityTests
 {
     [Fact]
-    public void HawkSpiritDescriptorRemainsFailClosedUntilAutoAttackTriggerIsDispatched()
+    public void HawkSpiritDescriptorIsSupportedAfterAutoAttackTriggerIsDispatched()
     {
         ResolvedTalentEventHook hook = HawkSpiritHook();
 
@@ -23,6 +23,16 @@ public sealed class ArenaTalentTriggerCapabilityTests
         Assert.Equal(1.10m, rule.StatusEffect.Magnitude);
         Assert.Equal(TimeSpan.FromSeconds(6), rule.StatusEffect.Duration);
 
+        Assert.True(ArenaTalentEventDispatcher.Supports(hook));
+        Assert.True(ArenaTalentRuntimeSupport.SupportsEventHook(hook));
+    }
+
+    [Fact]
+    public void LookalikeAutoAttackHookWithUnsupportedSemanticsRemainsRejected()
+    {
+        ResolvedTalentEventHook hook = HawkSpiritHook() with { TalentId = "TEST-AUTO-ATTACK" };
+
+        Assert.False(ArenaTalentEventDispatcher.TryNormalize(hook, out _));
         Assert.False(ArenaTalentEventDispatcher.Supports(hook));
         Assert.False(ArenaTalentRuntimeSupport.SupportsEventHook(hook));
     }
