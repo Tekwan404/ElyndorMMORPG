@@ -19,6 +19,7 @@ using Elyndor.Infrastructure.Professions;
 using Elyndor.Infrastructure.Pvp;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Pvp;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -52,12 +53,23 @@ public static class DependencyInjection
         builder.Services.AddScoped<CombatRewardService>();
         builder.Services.AddScoped<CombatLootRollService>();
         builder.Services.AddHostedService<CombatLootRollExpiryWorker>();
+        builder.Services.AddOptions<ArenaOptions>().BindConfiguration("Arena");
+        builder.Services.AddSingleton<ArenaPresenceTracker>();
+        builder.Services.AddSingleton<ArenaMatchRuntime>();
+        builder.Services.TryAddSingleton<IArenaUpdatePublisher, NullArenaUpdatePublisher>();
+        builder.Services.AddScoped<ArenaFighterFactory>();
+        builder.Services.AddScoped<ArenaEligibilityService>();
         builder.Services.AddScoped<ArenaQueueService>();
         builder.Services.AddScoped<ArenaMatchmakingService>();
         builder.Services.AddScoped<ArenaSettlementService>();
+        builder.Services.AddScoped<ArenaMatchStarter>();
+        builder.Services.AddScoped<ArenaReadService>();
+        builder.Services.AddScoped<ArenaLobbyService>();
         if (bool.TryParse(builder.Configuration["Arena:Enabled"], out bool arenaEnabled) && arenaEnabled)
         {
+            // Order matters: recovery cancels orphaned matches before matchmaking starts.
             builder.Services.AddHostedService<ArenaRecoveryService>();
+            builder.Services.AddHostedService<ArenaRuntimeWorker>();
             builder.Services.AddHostedService<ArenaMatchmakingWorker>();
         }
         builder.Services.AddScoped<InventoryEquipmentService>();

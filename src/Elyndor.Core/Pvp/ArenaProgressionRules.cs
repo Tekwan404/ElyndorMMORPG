@@ -7,10 +7,14 @@ public static class ArenaProgressionRules
     public const int InitialRating = 1000;
     public const int RatingChangeFactor = 24;
     public const long VictoryHonor = 10;
+    public const int FormulaVersion = 1;
 
     public static ArenaProgression Calculate(int ratingA, int ratingB, ArenaMatchOutcome outcome,
-        bool eligibleForProgression = true)
+        bool eligibleForProgression = true, int ratingChangeFactor = RatingChangeFactor,
+        long victoryHonor = VictoryHonor)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(ratingChangeFactor);
+        ArgumentOutOfRangeException.ThrowIfNegative(victoryHonor);
         ArgumentOutOfRangeException.ThrowIfNegative(ratingA);
         ArgumentOutOfRangeException.ThrowIfNegative(ratingB);
 
@@ -19,13 +23,13 @@ public static class ArenaProgressionRules
 
         double expectedA = 1d / (1d + Math.Pow(10d, (ratingB - ratingA) / 400d));
         double scoreA = outcome == ArenaMatchOutcome.WinnerA ? 1d : 0d;
-        int deltaA = (int)Math.Round(RatingChangeFactor * (scoreA - expectedA), MidpointRounding.AwayFromZero);
-        int deltaB = (int)Math.Round(RatingChangeFactor * (expectedA - scoreA), MidpointRounding.AwayFromZero);
+        int deltaA = (int)Math.Round(ratingChangeFactor * (scoreA - expectedA), MidpointRounding.AwayFromZero);
+        int deltaB = (int)Math.Round(ratingChangeFactor * (expectedA - scoreA), MidpointRounding.AwayFromZero);
 
         return new ArenaProgression(
             (int)Math.Clamp((long)ratingA + deltaA, 0, int.MaxValue),
             (int)Math.Clamp((long)ratingB + deltaB, 0, int.MaxValue),
-            outcome == ArenaMatchOutcome.WinnerA ? VictoryHonor : 0,
-            outcome == ArenaMatchOutcome.WinnerB ? VictoryHonor : 0);
+            outcome == ArenaMatchOutcome.WinnerA ? victoryHonor : 0,
+            outcome == ArenaMatchOutcome.WinnerB ? victoryHonor : 0);
     }
 }

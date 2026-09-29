@@ -17,16 +17,20 @@ import TradePanel from '@/game/economy/views/TradePanel.vue'
 import ProfessionView from '@/game/professions/views/ProfessionView.vue'
 import FriendsView from '@/game/social/views/FriendsView.vue'
 import PartyView from '@/game/party/views/PartyView.vue'
+import ArenaView from '@/game/pvp/views/ArenaView.vue'
+import { useArenaStore } from '@/game/pvp/arenaStore'
 import ReleaseNotesView from '@/game/releases/ReleaseNotesView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import { UIButton } from '@/ui/components'
 
-export type MenuSection = 'profile' | 'friends' | 'party' | 'store' | 'hotbar' | 'professions' | 'updates' | 'auction' | 'mailbox' | 'trade'
+export type MenuSection = 'profile' | 'friends' | 'party' | 'store' | 'hotbar' | 'professions' | 'updates' | 'auction' | 'mailbox' | 'trade' | 'arena'
 
 const props = defineProps<{ initialSection: MenuSection }>()
 const emit = defineEmits<{ 'open-world': [] }>()
 const session = useGameSessionStore()
+const arena = useArenaStore()
+void arena.refresh()
 const activeSection = ref<MenuSection>(props.initialSection)
 const copied = ref(false)
 const sendTrainingDummyCombatLogs = ref(isTrainingDummyCombatLogEnabled())
@@ -90,6 +94,13 @@ function updateTrainingDummyCombatLogPreference(): void {
           <IconGenerator :config="{ id: 'menu-friends', glyph: 'scroll', category: 'utility' }" />
         </span>
         <span><strong>Друзья</strong><small>Поиск и заявки</small></span>
+        <b aria-hidden="true">›</b>
+      </button>
+      <button v-if="arena.enabled" class="menu-tile menu-tile--violet" type="button" @click="activeSection = 'arena'">
+        <span class="menu-tile__icon" aria-hidden="true">
+          <IconGenerator :config="{ id: 'menu-arena', glyph: 'sword', category: 'utility' }" />
+        </span>
+        <span><strong>Арена</strong><small>Бои 1×1 и рейтинг</small></span>
         <b aria-hidden="true">›</b>
       </button>
       <button class="menu-tile menu-tile--violet" type="button" @click="activeSection = 'party'">
@@ -170,6 +181,7 @@ function updateTrainingDummyCombatLogPreference(): void {
         Назад в меню
       </button>
       <FriendsView v-if="activeSection === 'friends'" @open-trade="activeSection = 'trade'" />
+      <ArenaView v-else-if="activeSection === 'arena'" />
       <TradePanel v-else-if="activeSection === 'trade'" />
       <AuctionView v-else-if="activeSection === 'auction'" />
       <MailboxView v-else-if="activeSection === 'mailbox'" />

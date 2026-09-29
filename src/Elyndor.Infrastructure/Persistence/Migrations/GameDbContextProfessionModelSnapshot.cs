@@ -1985,6 +1985,14 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.Property<bool>("EligibleForProgression")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("FormulaVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Mode")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
                     b.Property<string>("Outcome")
                         .IsRequired()
                         .HasMaxLength(16)
@@ -2010,9 +2018,51 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.HasIndex("CharacterBId")
                         .HasDatabaseName("ix_arena_matches_character_b");
 
+                    b.HasIndex("Outcome", "CharacterAId")
+                        .HasDatabaseName("ix_arena_matches_active_character_a");
+
+                    b.HasIndex("Outcome", "CharacterBId")
+                        .HasDatabaseName("ix_arena_matches_active_character_b");
+
                     b.ToTable("arena_matches", "game", t =>
                         {
                             t.HasCheckConstraint("ck_arena_matches_distinct_characters", "\"CharacterAId\" <> \"CharacterBId\"");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Pvp.ArenaQueueEntry", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("JoinedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Mode")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<int>("RatingSnapshot")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CharacterId")
+                        .HasName("pk_arena_queue_entries");
+
+                    b.HasIndex("Mode", "JoinedAtUtc")
+                        .HasDatabaseName("ix_arena_queue_mode_joined");
+
+                    b.HasIndex("Mode", "RatingSnapshot", "JoinedAtUtc")
+                        .HasDatabaseName("ix_arena_queue_mode_rating_joined");
+
+                    b.ToTable("arena_queue_entries", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_arena_queue_level_positive", "\"Level\" > 0");
+
+                            t.HasCheckConstraint("ck_arena_queue_rating_non_negative", "\"RatingSnapshot\" >= 0");
                         });
                 });
 
@@ -2982,6 +3032,15 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.HasOne("Elyndor.Core.Characters.Character", null)
                         .WithMany()
                         .HasForeignKey("CharacterBId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Pvp.ArenaQueueEntry", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

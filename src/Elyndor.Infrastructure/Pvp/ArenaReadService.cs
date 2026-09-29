@@ -19,6 +19,10 @@ public sealed class ArenaReadService(GameDbContext db)
              standing.Wins, standing.Losses, standing.Draws))
         .Take(50).ToListAsync(cancellationToken);
 
+    public async Task<Guid?> CharacterIdForAccountAsync(Guid accountId, CancellationToken cancellationToken) =>
+        await db.Characters.AsNoTracking().Where(x => x.AccountId == accountId)
+            .Select(x => (Guid?)x.Id).SingleOrDefaultAsync(cancellationToken);
+
     public async Task<ArenaStatus> StatusAsync(Guid characterId, CancellationToken cancellationToken)
     {
         if (!await db.Characters.AsNoTracking().AnyAsync(x => x.Id == characterId, cancellationToken))

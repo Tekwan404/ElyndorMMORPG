@@ -1,10 +1,13 @@
 using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Elyndor.Infrastructure.Persistence.Migrations
 {
+    [DbContext(typeof(GameDbContext))]
+    [Migration("20260929000000_ArenaQueueAndMatchmaking")]
     public partial class ArenaQueueAndMatchmaking : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)

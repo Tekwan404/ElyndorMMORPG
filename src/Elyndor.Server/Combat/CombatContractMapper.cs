@@ -51,7 +51,7 @@ internal static class CombatContractMapper
         result.FullResyncRequired);
     }
 
-    private static CombatSnapshotResponse ToResponse(
+    internal static CombatSnapshotResponse ToResponse(
         CombatSessionSnapshot snapshot,
         GameContentPackage content)
     {
@@ -236,7 +236,7 @@ internal static class CombatContractMapper
         return string.Join(" ", parts);
     }
 
-    private static CombatEventResponse ToResponse(CombatEvent combatEvent) => new(
+    internal static CombatEventResponse ToResponse(CombatEvent combatEvent) => new(
         combatEvent.Sequence,
         combatEvent.Type.ToString(),
         combatEvent.ActorId,

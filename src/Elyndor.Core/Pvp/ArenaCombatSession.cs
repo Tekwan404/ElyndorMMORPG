@@ -33,10 +33,16 @@ public sealed class ArenaCombatSession
     private long _sequence;
     private readonly List<CombatEvent> _events = [];
     private const int MaximumAdvanceSteps = 10_000;
+    private const int MaximumTrackedCommands = 512;
+    public static readonly TimeSpan DefaultDuration = TimeSpan.FromMinutes(5);
+    private readonly TimeSpan _duration;
+    private readonly HashSet<(Guid AccountId, string CommandId)> _seenCommands = [];
 
     public ArenaCombatSession(Guid matchId, ArenaFighter first, ArenaFighter second,
-        IGameRandom random, DateTimeOffset startedAt)
+        IGameRandom random, DateTimeOffset startedAt, TimeSpan? duration = null)
     {
+        _duration = duration ?? DefaultDuration;
+        if (_duration <= TimeSpan.Zero) throw new ArgumentOutOfRangeException(nameof(duration));
         if (matchId == Guid.Empty || first.AccountId == Guid.Empty || second.AccountId == Guid.Empty
             || first.AccountId == second.AccountId || first.CharacterId == Guid.Empty
             || second.CharacterId == Guid.Empty || first.CharacterId == second.CharacterId
@@ -63,6 +69,10 @@ public sealed class ArenaCombatSession
     }
 
     public Guid MatchId { get; }
+    public DateTimeOffset StartedAtUtc => _startedAt;
+    public DateTimeOffset TimeoutAtUtc => _startedAt + _duration;
+    public Guid FirstAccountId => _first.AccountId;
+    public Guid SecondAccountId => _second.AccountId;
     public ArenaMatchOutcome Outcome { get; private set; } = ArenaMatchOutcome.Active;
     public ArenaCombatSnapshot Snapshot => new(MatchId, _sequence, Outcome,
         ActorSnapshot(_first.Actor), ActorSnapshot(_second.Actor));
@@ -95,6 +105,18 @@ public sealed class ArenaCombatSession
         return true;
     }
 
+    /// <summary>Infrastructure cancellation (e.g. both players gone): no winner, no rewards.</summary>
+    public bool Cancel(DateTimeOffset now)
+    {
+        if (now.Offset != TimeSpan.Zero || now < _advancedTo || Outcome != ArenaMatchOutcome.Active)
+            return false;
+        Outcome = ArenaMatchOutcome.Cancelled;
+        _advancedTo = now;
+        Append(new CombatEvent(CombatEventType.CombatEnded, now, _first.Actor.ActorId,
+            Outcome.ToString()));
+        return true;
+    }
+
     public ArenaCommandResult UseAbility(Guid accountId, string commandId, string abilityId,
         Guid targetActorId, DateTimeOffset now)
     {
@@ -103,9 +125,13 @@ public sealed class ArenaCombatSession
             return Result(false, "arena_not_participant", _sequence);
         if (now.Offset != TimeSpan.Zero || now < _advancedTo)
             return Result(false, "arena_invalid_time", _sequence);
+        if (string.IsNullOrWhiteSpace(commandId) || commandId.Length > 64)
+            return Result(false, "arena_invalid_command", _sequence);
         AdvanceTo(now);
         long before = _sequence;
         if (Outcome != ArenaMatchOutcome.Active) return Result(false, "arena_ended", before);
+        if (_seenCommands.Contains((accountId, commandId)))
+            return Result(false, "arena_duplicate_command", before);
         ArenaFighter fighter = isFirst ? _first : _second;
         ArenaFighter opponent = isFirst ? _second : _first;
         CombatRuntimeState runtime = isFirst ? _firstRuntime : _secondRuntime;
@@ -126,6 +152,8 @@ public sealed class ArenaCombatSession
             new AbilityIntent(commandId, abilityId, targetActorId, targetIds), now, _random);
         if (!execution.Succeeded)
             return Result(false, execution.ErrorCode.ToString(), before);
+        if (_seenCommands.Count >= MaximumTrackedCommands) _seenCommands.Clear();
+        _seenCommands.Add((accountId, commandId));
         Append(execution.Events);
         if (ability.Type != AbilityType.Casted)
             ApplyInterrupt(ability, isFirst ? _secondRuntime : _firstRuntime,
@@ -210,7 +238,7 @@ public sealed class ArenaCombatSession
     private DateTimeOffset? NextExecutionAt()
     {
         DateTimeOffset next = _firstAutoAttackAt < _secondAutoAttackAt ? _firstAutoAttackAt : _secondAutoAttackAt;
-        DateTimeOffset timeout = _startedAt + TimeSpan.FromMinutes(5);
+        DateTimeOffset timeout = TimeoutAtUtc;
         if (timeout < next) next = timeout;
         foreach (CombatRuntimeState runtime in new[] { _firstRuntime, _secondRuntime })
         {
@@ -229,7 +257,7 @@ public sealed class ArenaCombatSession
     private void ResolveOutcome(DateTimeOffset now)
     {
         ArenaMatchOutcome next = ArenaMatchRules.Resolve(Outcome, !_first.Actor.IsDead,
-            !_second.Actor.IsDead, timedOut: now - _startedAt >= TimeSpan.FromMinutes(5));
+            !_second.Actor.IsDead, timedOut: now >= TimeoutAtUtc);
         if (next == Outcome) return;
         Outcome = next;
         Append(new CombatEvent(CombatEventType.CombatEnded, now, _first.Actor.ActorId, next.ToString()));

@@ -5,6 +5,7 @@ using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Pvp;
 using Elyndor.IntegrationTests.Postgres;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace Elyndor.IntegrationTests.Pvp;
 
@@ -96,6 +97,134 @@ public sealed class ArenaSettlementTests(PostgresFixture postgres) : IAsyncLifet
         Assert.Equal(1000, winner.Rating);
         Assert.Equal(0, winner.Wins);
         Assert.Equal(0, loser.Losses);
+    }
+
+    [Fact]
+    public async Task CompleteAndSettleFinishesAnActiveMatchOnceAndIsReplaySafe()
+    {
+        Guid matchId, first;
+        await using (var db = postgres.CreateDbContext())
+        {
+            first = AddPlayer(db, "First");
+            Guid second = AddPlayer(db, "Second");
+            var match = new ArenaMatch(Guid.NewGuid(), first, second, Now);
+            db.ArenaMatches.Add(match);
+            await db.SaveChangesAsync();
+            matchId = match.Id;
+        }
+
+        await using (var db = postgres.CreateDbContext())
+        {
+            var service = new ArenaSettlementService(db, new FixedTime(Now.AddMinutes(3)));
+            Assert.True((await service.CompleteAndSettleAsync(matchId, ArenaMatchOutcome.WinnerA, null, default)).Applied);
+            Assert.False((await service.CompleteAndSettleAsync(matchId, ArenaMatchOutcome.WinnerB, null, default)).Applied);
+        }
+
+        await using var verify = postgres.CreateDbContext();
+        ArenaMatch stored = await verify.ArenaMatches.SingleAsync(x => x.Id == matchId);
+        Assert.Equal(ArenaMatchOutcome.WinnerA, stored.Outcome);
+        Assert.NotNull(stored.SettledAtUtc);
+        Assert.Equal(10, (await verify.ArenaHonorWallets.SingleAsync(x => x.CharacterId == first)).Balance);
+    }
+
+    [Fact]
+    public async Task CancelledCompletionAwardsNothingEvenForRankedMatches()
+    {
+        Guid matchId, first;
+        await using (var db = postgres.CreateDbContext())
+        {
+            first = AddPlayer(db, "First");
+            Guid second = AddPlayer(db, "Second");
+            var match = new ArenaMatch(Guid.NewGuid(), first, second, Now);
+            db.ArenaMatches.Add(match);
+            await db.SaveChangesAsync();
+            matchId = match.Id;
+        }
+
+        await using (var db = postgres.CreateDbContext())
+            await new ArenaSettlementService(db, new FixedTime(Now.AddMinutes(1)))
+                .CompleteAndSettleAsync(matchId, ArenaMatchOutcome.Cancelled, true, default);
+
+        await using var verify = postgres.CreateDbContext();
+        Assert.False((await verify.ArenaMatches.SingleAsync(x => x.Id == matchId)).EligibleForProgression);
+        Assert.Empty(await verify.ArenaHonorWallets.ToListAsync());
+        Assert.Empty(await verify.ArenaHonorLedgerEntries.ToListAsync());
+    }
+
+    [Fact]
+    public async Task HonorIsCappedPerOpponentButRatingStillMoves()
+    {
+        Guid first, second;
+        await using (var db = postgres.CreateDbContext())
+        {
+            first = AddPlayer(db, "First");
+            second = AddPlayer(db, "Second");
+            await db.SaveChangesAsync();
+        }
+
+        var options = Options.Create(new ArenaOptions { MaxHonorWinsPerOpponentInWindow = 2 });
+        for (int i = 0; i < 3; i++)
+        {
+            Guid matchId;
+            await using (var db = postgres.CreateDbContext())
+            {
+                var match = new ArenaMatch(Guid.NewGuid(), first, second, Now.AddMinutes(i));
+                match.Complete(ArenaMatchOutcome.WinnerA, Now.AddMinutes(i + 1));
+                db.ArenaMatches.Add(match);
+                await db.SaveChangesAsync();
+                matchId = match.Id;
+            }
+
+            await using var settle = postgres.CreateDbContext();
+            await new ArenaSettlementService(settle, TimeProvider.System, options).SettleAsync(matchId, default);
+        }
+
+        await using var verify = postgres.CreateDbContext();
+        Assert.Equal(20, (await verify.ArenaHonorWallets.SingleAsync(x => x.CharacterId == first)).Balance);
+        Assert.Equal(2, await verify.ArenaHonorLedgerEntries.CountAsync(x => x.CharacterId == first));
+        ArenaStanding winner = await verify.ArenaStandings.SingleAsync(x => x.CharacterId == first);
+        Assert.Equal(3, winner.Wins);
+        Assert.True(winner.Rating > 1012 + 10);
+    }
+
+    [Fact]
+    public async Task RecentRematchIsSkippedByMatchmakingUntilCooldownPasses()
+    {
+        Guid first, second;
+        await using (var db = postgres.CreateDbContext())
+        {
+            first = AddPlayer(db, "First");
+            second = AddPlayer(db, "Second");
+            var previous = new ArenaMatch(Guid.NewGuid(), first, second, Now.AddMinutes(1));
+            previous.Complete(ArenaMatchOutcome.WinnerA, Now.AddMinutes(2));
+            db.ArenaMatches.Add(previous);
+            db.ArenaQueueEntries.Add(new ArenaQueueEntry(first, ArenaQueueMode.Ranked, 1, 1000, Now.AddMinutes(2)));
+            db.ArenaQueueEntries.Add(new ArenaQueueEntry(second, ArenaQueueMode.Ranked, 1, 1000, Now.AddMinutes(2)));
+            await db.SaveChangesAsync();
+        }
+
+        var time = new FixedTime(Now.AddMinutes(3));
+        await using (var db = postgres.CreateDbContext())
+        {
+            var blocked = new ArenaMatchmakingService(db, time,
+                Options.Create(new ArenaOptions { RematchCooldown = TimeSpan.FromMinutes(3) }));
+            Assert.Null(await blocked.TryCreateMatchAsync(ArenaQueueMode.Ranked, default));
+        }
+
+        await using (var db = postgres.CreateDbContext())
+        {
+            var allowed = new ArenaMatchmakingService(db, time,
+                Options.Create(new ArenaOptions { RematchCooldown = TimeSpan.Zero }));
+            ArenaMatchCreated? created = await allowed.TryCreateMatchAsync(ArenaQueueMode.Ranked, default);
+            Assert.NotNull(created);
+            Assert.Equal(ArenaProgressionRules.FormulaVersion,
+                (await db.ArenaMatches.AsNoTracking().SingleAsync(x => x.Id == created!.MatchId)).FormulaVersion);
+        }
+    }
+
+    private sealed class FixedTime(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
     }
 
     private async Task<(Guid MatchId, Guid First, Guid Second)> CompletedMatch(ArenaMatchOutcome outcome,

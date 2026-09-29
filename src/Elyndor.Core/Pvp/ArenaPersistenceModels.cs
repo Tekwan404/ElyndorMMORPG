@@ -36,8 +36,10 @@ public sealed class ArenaMatch
     private ArenaMatch() { }
 
     public ArenaMatch(Guid id, Guid characterAId, Guid characterBId, DateTimeOffset startedAtUtc,
-        string seasonId = ArenaSeason.CurrentId, ArenaQueueMode mode = ArenaQueueMode.Ranked)
+        string seasonId = ArenaSeason.CurrentId, ArenaQueueMode mode = ArenaQueueMode.Ranked,
+        int formulaVersion = ArenaProgressionRules.FormulaVersion)
     {
+        if (formulaVersion <= 0) throw new ArgumentOutOfRangeException(nameof(formulaVersion));
         if (id == Guid.Empty || characterAId == Guid.Empty || characterBId == Guid.Empty
             || characterAId == characterBId) throw new ArgumentException("Arena participants must be distinct.");
         if (startedAtUtc.Offset != TimeSpan.Zero) throw new ArgumentException("Arena time must be UTC.");
@@ -47,6 +49,7 @@ public sealed class ArenaMatch
         StartedAtUtc = startedAtUtc;
         SeasonId = seasonId;
         Mode = mode;
+        FormulaVersion = formulaVersion;
     }
 
     public Guid Id { get; private set; }
@@ -59,6 +62,7 @@ public sealed class ArenaMatch
     public DateTimeOffset? SettledAtUtc { get; private set; }
     public ArenaMatchOutcome Outcome { get; private set; } = ArenaMatchOutcome.Active;
     public bool EligibleForProgression { get; private set; } = true;
+    public int FormulaVersion { get; private set; } = ArenaProgressionRules.FormulaVersion;
 
     public void Complete(ArenaMatchOutcome outcome, DateTimeOffset now, bool? eligibleForProgression = null)
     {

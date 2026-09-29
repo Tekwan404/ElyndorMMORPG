@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Elyndor.Infrastructure.Pvp;
 
@@ -127,6 +128,48 @@ public sealed class ArenaQueueService(GameDbContext db, TimeProvider timeProvide
                 BuildStatus(character.Id, null, active));
         });
 
+    /// <summary>Removes queue entries whose owner has no live arena connection past the grace period.</summary>
+    public async Task<int> PurgeOfflineAsync(ArenaPresenceTracker presence, TimeSpan grace,
+        CancellationToken cancellationToken)
+    {
+        DateTimeOffset now = timeProvider.GetUtcNow();
+        var entries = await (from entry in db.ArenaQueueEntries
+                             join character in db.Characters.AsNoTracking() on entry.CharacterId equals character.Id
+                             select new { Entry = entry, character.AccountId })
+            .ToListAsync(cancellationToken);
+        var stale = entries.Where(x =>
+        {
+            if (presence.IsConnected(x.AccountId)) return false;
+            DateTimeOffset since = presence.LastSeenUtc(x.AccountId) is { } seen && seen > x.Entry.JoinedAtUtc
+                ? seen : x.Entry.JoinedAtUtc;
+            return now - since >= grace;
+        }).Select(x => x.Entry).ToArray();
+        if (stale.Length == 0) return 0;
+        db.ArenaQueueEntries.RemoveRange(stale);
+        await db.SaveChangesAsync(cancellationToken);
+        return stale.Length;
+    }
+
+    /// <summary>Puts a character back into the queue (e.g. after the opponent failed to start).</summary>
+    public async Task RequeueAsync(Guid characterId, ArenaQueueMode mode, CancellationToken cancellationToken)
+    {
+        db.ChangeTracker.Clear();
+        Character? character = await db.Characters.AsNoTracking()
+            .SingleOrDefaultAsync(x => x.Id == characterId, cancellationToken);
+        if (character is null
+            || await db.ArenaQueueEntries.AnyAsync(x => x.CharacterId == characterId, cancellationToken)
+            || await db.ArenaMatches.AnyAsync(x => x.Outcome == ArenaMatchOutcome.Active
+                && (x.CharacterAId == characterId || x.CharacterBId == characterId), cancellationToken))
+            return;
+        int rating = await db.ArenaStandings.AsNoTracking()
+            .Where(x => x.CharacterId == characterId && x.SeasonId == ArenaSeason.CurrentId)
+            .Select(x => (int?)x.Rating).SingleOrDefaultAsync(cancellationToken)
+            ?? ArenaProgressionRules.InitialRating;
+        db.ArenaQueueEntries.Add(new ArenaQueueEntry(characterId, mode, character.Level, rating,
+            timeProvider.GetUtcNow()));
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
     private Task<ArenaMatch?> FindActiveMatchAsync(Guid characterId, CancellationToken cancellationToken) =>
         db.ArenaMatches
             .Where(x => x.Outcome == ArenaMatchOutcome.Active
@@ -145,8 +188,11 @@ public sealed class ArenaQueueService(GameDbContext db, TimeProvider timeProvide
         new(Guid.Empty, false, null, null, null, null);
 }
 
-public sealed class ArenaMatchmakingService(GameDbContext db, TimeProvider timeProvider)
+public sealed class ArenaMatchmakingService(GameDbContext db, TimeProvider timeProvider,
+    IOptions<ArenaOptions>? options = null)
 {
+    private readonly ArenaOptions _options = options?.Value ?? new ArenaOptions();
+
     public Task<ArenaMatchCreated?> TryCreateMatchAsync(
         ArenaQueueMode mode,
         CancellationToken cancellationToken) =>
@@ -165,12 +211,23 @@ public sealed class ArenaMatchmakingService(GameDbContext db, TimeProvider timeP
                 return null;
             }
 
+            Guid[] waitingIds = waiting.Select(x => x.CharacterId).ToArray();
+            DateTimeOffset recentSince = timeProvider.GetUtcNow() - _options.RematchCooldown;
+            var recentPairs = (await db.ArenaMatches.AsNoTracking()
+                    .Where(x => x.StartedAtUtc >= recentSince
+                        && waitingIds.Contains(x.CharacterAId) && waitingIds.Contains(x.CharacterBId))
+                    .Select(x => new { x.CharacterAId, x.CharacterBId })
+                    .ToArrayAsync(cancellationToken))
+                .Select(x => PairKey(x.CharacterAId, x.CharacterBId))
+                .ToHashSet();
+
             ArenaQueueEntry? first = null;
             ArenaQueueEntry? second = null;
             foreach (ArenaQueueEntry candidate in waiting.OrderBy(x => x.JoinedAtUtc))
             {
                 ArenaQueueEntry? opponent = waiting
                     .Where(x => x.CharacterId != candidate.CharacterId
+                        && !recentPairs.Contains(PairKey(candidate.CharacterId, x.CharacterId))
                         && ArenaMatchRules.CanPair(candidate.CharacterId, candidate.Level,
                             x.CharacterId, x.Level))
                     .OrderBy(x => mode == ArenaQueueMode.Ranked
@@ -224,7 +281,7 @@ public sealed class ArenaMatchmakingService(GameDbContext db, TimeProvider timeP
 
             DateTimeOffset now = timeProvider.GetUtcNow();
             var match = new ArenaMatch(Guid.NewGuid(), first.CharacterId, second.CharacterId,
-                now, ArenaSeason.CurrentId, mode);
+                now, ArenaSeason.CurrentId, mode, ArenaProgressionRules.FormulaVersion);
             db.ArenaMatches.Add(match);
             db.ArenaQueueEntries.RemoveRange(first, second);
             await db.SaveChangesAsync(cancellationToken);
@@ -232,10 +289,14 @@ public sealed class ArenaMatchmakingService(GameDbContext db, TimeProvider timeP
             return new ArenaMatchCreated(match.Id, match.CharacterAId, match.CharacterBId,
                 match.Mode, match.StartedAtUtc);
         });
+
+    private static (Guid, Guid) PairKey(Guid a, Guid b) => a.CompareTo(b) < 0 ? (a, b) : (b, a);
 }
 
 public sealed class ArenaMatchmakingWorker(
     IServiceScopeFactory scopeFactory,
+    ArenaPresenceTracker presence,
+    IOptions<ArenaOptions> options,
     ILogger<ArenaMatchmakingWorker> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -245,12 +306,14 @@ public sealed class ArenaMatchmakingWorker(
             try
             {
                 using IServiceScope scope = scopeFactory.CreateScope();
+                var queue = scope.ServiceProvider.GetRequiredService<ArenaQueueService>();
                 var matchmaking = scope.ServiceProvider.GetRequiredService<ArenaMatchmakingService>();
+                var starter = scope.ServiceProvider.GetRequiredService<ArenaMatchStarter>();
+                await queue.PurgeOfflineAsync(presence, options.Value.QueueOfflineGrace, stoppingToken);
                 foreach (ArenaQueueMode mode in Enum.GetValues<ArenaQueueMode>())
                 {
-                    while (await matchmaking.TryCreateMatchAsync(mode, stoppingToken) is not null)
-                    {
-                    }
+                    while (await matchmaking.TryCreateMatchAsync(mode, stoppingToken) is { } created)
+                        await starter.StartAsync(created, stoppingToken);
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)

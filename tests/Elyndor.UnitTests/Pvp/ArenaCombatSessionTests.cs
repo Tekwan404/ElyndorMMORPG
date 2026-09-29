@@ -39,6 +39,49 @@ public sealed class ArenaCombatSessionTests
     }
 
     [Fact]
+    public void ReusedCommandIdIsRejectedWithExplicitError()
+    {
+        ArenaCombatSession session = Create();
+        Assert.True(session.UseAbility(AccountA, "same", "STRIKE", ActorB, Start).Succeeded);
+        decimal hp = session.Snapshot.ActorB.CurrentHp;
+        ArenaCommandResult replay = session.UseAbility(AccountA, "same", "STRIKE", ActorB, Start.AddSeconds(1));
+        Assert.False(replay.Succeeded);
+        Assert.Equal("arena_duplicate_command", replay.ErrorCode);
+        Assert.Equal(hp, session.Snapshot.ActorB.CurrentHp);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void BlankCommandIdIsRejected(string commandId)
+    {
+        ArenaCombatSession session = Create();
+        Assert.Equal("arena_invalid_command",
+            session.UseAbility(AccountA, commandId, "STRIKE", ActorB, Start).ErrorCode);
+    }
+
+    [Fact]
+    public void ConfiguredDurationDecidesTimeoutDraw()
+    {
+        ArenaCombatSession session = Create(duration: TimeSpan.FromSeconds(10));
+        session.AdvanceTo(Start.AddSeconds(9));
+        Assert.Equal(ArenaMatchOutcome.Active, session.Snapshot.Outcome);
+        session.AdvanceTo(Start.AddSeconds(10));
+        Assert.Equal(ArenaMatchOutcome.Draw, session.Snapshot.Outcome);
+    }
+
+    [Fact]
+    public void CancelEndsWithoutWinnerOnlyOnce()
+    {
+        ArenaCombatSession session = Create();
+        Assert.True(session.Cancel(Start.AddSeconds(1)));
+        Assert.False(session.Cancel(Start.AddSeconds(2)));
+        Assert.Equal(ArenaMatchOutcome.Cancelled, session.Snapshot.Outcome);
+        Assert.False(session.UseAbility(AccountA, "late", "STRIKE", ActorB, Start.AddSeconds(3)).Succeeded);
+        Assert.Single(session.GetEventsAfter(0), x => x.Type == CombatEventType.CombatEnded);
+    }
+
+    [Fact]
     public void ForfeitDoesNotOverrideAnEarlierDeath()
     {
         ArenaCombatSession session = Create(strikeDamage: 200, castTime: TimeSpan.FromSeconds(2));
@@ -161,7 +204,7 @@ public sealed class ArenaCombatSessionTests
     }
 
     private static ArenaCombatSession Create(decimal strikeDamage = 20, TimeSpan? castTime = null,
-        bool withShield = false, AbilityDefinition? extraAbility = null)
+        bool withShield = false, AbilityDefinition? extraAbility = null, TimeSpan? duration = null)
     {
         var strike = new AbilityDefinition("STRIKE", castTime is null ? AbilityType.Instant : AbilityType.Casted,
             AbilityTargetType.SingleEnemy, 0, TimeSpan.Zero, castTime ?? TimeSpan.Zero,
@@ -198,6 +241,6 @@ public sealed class ArenaCombatSessionTests
         return new ArenaCombatSession(Guid.NewGuid(),
             new ArenaFighter(AccountA, ActorA, new CombatActorState(ActorA, 100, 100, 100, 100, CombatStats.Default), abilities, auto),
             new ArenaFighter(AccountB, ActorB, secondActor, abilities, auto),
-            new SeededGameRandom(42), Start);
+            new SeededGameRandom(42), Start, duration);
     }
 }
