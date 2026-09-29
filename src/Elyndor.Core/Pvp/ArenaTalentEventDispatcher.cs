@@ -100,8 +100,19 @@ public static class ArenaTalentEventDispatcher
     public static bool Supports(ResolvedTalentEventHook hook)
     {
         ArgumentNullException.ThrowIfNull(hook);
-        return PyromancerImpactRuntime.SupportsArenaHook(hook) || TryNormalize(hook, out _);
+        if (PyromancerImpactRuntime.SupportsArenaHook(hook))
+            return true;
+
+        return TryNormalize(hook, out ArenaTalentEventRule rule)
+            && SupportsRuntimeTrigger(rule.Trigger);
     }
+
+    private static bool SupportsRuntimeTrigger(ArenaTalentEventType trigger) => trigger is
+        ArenaTalentEventType.OnIncomingDamage
+        or ArenaTalentEventType.OnCast
+        or ArenaTalentEventType.OnHit
+        or ArenaTalentEventType.OnCrit
+        or ArenaTalentEventType.OnDamageTaken;
 
     public static bool TryNormalize(
         ResolvedTalentEventHook hook,
