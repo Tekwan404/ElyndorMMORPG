@@ -104,6 +104,10 @@ public sealed class ArenaCombatSession
         ? _firstRuntime : actorId == _second.Actor.ActorId
             ? _secondRuntime : throw new ArgumentException("Actor is not an arena participant.");
 
+    private ArenaFighter FighterForActor(Guid actorId) => actorId == _first.Actor.ActorId
+        ? _first : actorId == _second.Actor.ActorId
+            ? _second : throw new ArgumentException("Actor is not an arena participant.");
+
     public bool Forfeit(Guid accountId, DateTimeOffset now)
     {
         if (accountId != _first.AccountId && accountId != _second.AccountId)
@@ -193,7 +197,12 @@ public sealed class ArenaCombatSession
         {
             ApplyInterrupt(executableAbility, isFirst ? _secondRuntime : _firstRuntime,
                 fighter.Actor.ActorId, now);
-            ResolveTalentProcs(fighter, opponent.Actor, ability, execution, now);
+            DispatchSuccessfulAbilityTalentEvents(
+                fighter,
+                targetActorId,
+                ability,
+                execution.Events,
+                now);
         }
         ResolveOutcome(now);
         return Result(true, null, before);
@@ -246,7 +255,12 @@ public sealed class ArenaCombatSession
         Append(prepared.ImmuneEvents);
         ApplyInterrupt(prepared.Ability, runtime == _firstRuntime ? _secondRuntime : _firstRuntime,
             runtime.Actor.ActorId, due);
-        ResolveTalentProcs(fighter, target, cast.Ability, execution, due);
+        DispatchSuccessfulAbilityTalentEvents(
+            fighter,
+            cast.TargetId,
+            cast.Ability,
+            execution.Events,
+            due);
     }
 
     private void ResolvePendingActions(CombatRuntimeState runtime, DateTimeOffset due)
@@ -310,6 +324,7 @@ public sealed class ArenaCombatSession
 
         IReadOnlyList<CombatEvent> events = AbilityEngine.ResolvePendingActions(runtime, due, _random);
         Append(events);
+        DispatchDamageTalentEvents(events, due);
         foreach ((Guid targetActorId, CrowdControlDiminishingReturns staged) in stagedStates)
         {
             _crowdControlDr[targetActorId].ReplaceWith(staged);
@@ -324,26 +339,78 @@ public sealed class ArenaCombatSession
         Append(immuneEvents);
     }
 
-    private void ResolveTalentProcs(
-        ArenaFighter fighter,
-        CombatActorState target,
+    private void DispatchSuccessfulAbilityTalentEvents(
+        ArenaFighter source,
+        Guid targetActorId,
         AbilityDefinition ability,
-        AbilityExecutionResult execution,
+        IReadOnlyList<CombatEvent> combatEvents,
         DateTimeOffset now)
     {
-        bool hitTarget = execution.Events.Any(combatEvent =>
-            combatEvent.Type == CombatEventType.DamageDealt
-            && combatEvent.TargetActorId == target.ActorId
-            && combatEvent.Amount > 0);
-        if (!hitTarget)
-            return;
+        IReadOnlyList<ArenaTalentCombatEvent> talentEvents =
+            ArenaTalentEventDispatcher.FromSuccessfulAbility(
+                source.Actor.ActorId,
+                targetActorId,
+                ability,
+                combatEvents,
+                now);
+        DispatchTalentEvents(talentEvents, now);
+    }
 
-        AbilityActionDefinition? proc = PyromancerImpactRuntime.TryResolveStunAction(
-            fighter.EffectiveTalentModifiers,
-            ability,
-            _random);
-        if (proc is not null)
-            ApplyGeneratedEffectAction(fighter.Actor.ActorId, target, proc, now);
+    private void DispatchDamageTalentEvents(
+        IReadOnlyList<CombatEvent> combatEvents,
+        DateTimeOffset now)
+    {
+        DispatchTalentEvents(ArenaTalentEventDispatcher.FromDamageEvents(combatEvents), now);
+    }
+
+    private void DispatchTalentEvents(
+        IReadOnlyList<ArenaTalentCombatEvent> talentEvents,
+        DateTimeOffset now)
+    {
+        foreach (ArenaTalentCombatEvent talentEvent in talentEvents)
+        {
+            ArenaFighter owner = talentEvent.Type == ArenaTalentEventType.OnDamageTaken
+                ? FighterForActor(talentEvent.TargetActorId)
+                : FighterForActor(talentEvent.SourceActorId);
+            IReadOnlyList<ArenaTalentRuntimeEffect> effects = ArenaTalentEventDispatcher.Dispatch(
+                owner.EffectiveTalentModifiers,
+                talentEvent,
+                _random);
+            foreach (ArenaTalentRuntimeEffect effect in effects)
+                ExecuteTalentEffect(effect, now);
+        }
+    }
+
+    private void ExecuteTalentEffect(ArenaTalentRuntimeEffect effect, DateTimeOffset now)
+    {
+        switch (effect.Kind)
+        {
+            case ArenaTalentEffectKind.GainResource:
+            {
+                CombatActorState target = RuntimeForActor(effect.TargetActorId).Actor;
+                decimal actual = target.AddResource(effect.Amount);
+                Append(new CombatEvent(
+                    CombatEventType.ResourceChanged,
+                    now,
+                    target.ActorId,
+                    effect.SourceTalentId,
+                    actual,
+                    SourceActorId: effect.SourceActorId,
+                    TargetActorId: target.ActorId));
+                break;
+            }
+            case ArenaTalentEffectKind.ApplyAbilityAction:
+                if (effect.Action is null)
+                    throw new NotSupportedException("Arena talent effect is missing its ability action.");
+                ApplyGeneratedEffectAction(
+                    effect.SourceActorId,
+                    RuntimeForActor(effect.TargetActorId).Actor,
+                    effect.Action,
+                    now);
+                break;
+            default:
+                throw new NotSupportedException($"Arena talent effect {effect.Kind} is unsupported.");
+        }
     }
 
     private void ApplyGeneratedEffectAction(
@@ -417,6 +484,7 @@ public sealed class ArenaCombatSession
         DamageResult damage = DamagePipeline.Resolve(new DamageRequest(source.Actor, target.Actor,
             baseDamage, source.AutoAttack.DamageType), _random, due);
         Append(damage.Events);
+        DispatchDamageTalentEvents(damage.Events, due);
         if (damage.HpDamage > 0 && source.AutoAttack.ResourceOnHit > 0)
             source.Actor.AddResource(source.AutoAttack.ResourceOnHit);
     }
