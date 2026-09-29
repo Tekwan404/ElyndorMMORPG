@@ -23,12 +23,13 @@ public static class ArenaFighterAssembler
         {
             if (!availableAbilities.TryGetValue(abilityId, out AbilityDefinition? ability))
                 throw new NotSupportedException($"Ability {abilityId} is missing from arena content.");
-            AbilityDefinition resolved = TalentAbilityResolver.Apply(ability, player.TalentModifiers);
-            resolved = PyromancerStaticAbilityHookResolver.Apply(resolved, player.TalentModifiers);
-            resolved = MageStaticAbilityHookResolver.Apply(resolved, player.TalentModifiers);
-            resolved = ArcherStaticAbilityHookResolver.Apply(resolved, player.TalentModifiers);
+
+            AbilityDefinition resolved = ArenaTalentRuntimeSupport.ApplyAbilityDefinitionModifiers(
+                ability,
+                player.TalentModifiers);
             known.Add(abilityId, resolved);
         }
+
         ArenaCombatSession.ValidateAbilities(known);
         var fighter = new ArenaFighter(player.AccountId, player.Participant.Actor.ActorId,
             player.Participant.Actor, known, player.Participant.AutoAttack, player.TalentModifiers);
@@ -43,25 +44,15 @@ public static class ArenaFighterAssembler
         if (talents.DeferredHooks.Count > 0)
             throw new NotSupportedException("This build has unsupported deferred talent hooks.");
 
-        if (talents.EventHooks.Count == 0)
+        IReadOnlyList<ResolvedTalentEventHook> unsupported =
+            ArenaTalentRuntimeSupport.UnsupportedEventHooks(talents);
+        if (unsupported.Count == 0)
             return;
 
-        bool supportedMageHooks = string.Equals(
-                player.Participant.DefinitionId,
-                "MAGE",
-                StringComparison.Ordinal)
-            && talents.EventHooks.All(hook =>
-                PyromancerImpactRuntime.SupportsArenaHook(hook)
-                || PyromancerStaticAbilityHookResolver.Supports(hook)
-                || MageStaticAbilityHookResolver.Supports(hook));
-
-        bool supportedArcherHooks = string.Equals(
-                player.Participant.DefinitionId,
-                "ARCHER",
-                StringComparison.Ordinal)
-            && talents.EventHooks.All(ArcherStaticAbilityHookResolver.Supports);
-
-        if (!supportedMageHooks && !supportedArcherHooks)
-            throw new NotSupportedException("This build has unsupported arena talent hooks.");
+        string mechanics = string.Join(", ", unsupported
+            .Select(ArenaTalentRuntimeSupport.DescribeUnsupportedHook)
+            .Distinct(StringComparer.Ordinal));
+        throw new NotSupportedException(
+            $"This build has unsupported arena talent hooks: {mechanics}.");
     }
 }
