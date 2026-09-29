@@ -45,9 +45,9 @@ public sealed class ArenaPyromancerImpactTests
         Assert.True(fireballStart.Succeeded);
         session.AdvanceTo(Start.AddSeconds(5.1));
 
-        ActiveEffect impact = Assert.Single(secondActor.ActiveEffects.Where(effect =>
+        ActiveEffect impact = Assert.Single(secondActor.ActiveEffects, effect =>
             effect.Definition.Id == PyromancerImpactRuntime.StunEffectId
-            && effect.ExpiresAtUtc > Start.AddSeconds(5.1)));
+            && effect.ExpiresAtUtc > Start.AddSeconds(5.1));
         Assert.Equal(EffectKind.Stun, impact.Definition.Kind);
         Assert.Equal(TimeSpan.FromSeconds(2), impact.Definition.Duration);
         Assert.Equal(Start.AddSeconds(7.1), impact.ExpiresAtUtc);
