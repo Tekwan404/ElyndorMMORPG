@@ -35,7 +35,8 @@ public static class ArenaFighterAssembler
 
         ArenaCombatSession.ValidateAbilities(known);
         var fighter = new ArenaFighter(player.AccountId, player.Participant.Actor.ActorId,
-            player.Participant.Actor, known, player.Participant.AutoAttack, player.TalentModifiers);
+            player.Participant.Actor, known, player.Participant.AutoAttack, player.TalentModifiers,
+            player.Participant.ResourceRegenPerSecond, player.Participant.CanAutoAttack);
         return new ArenaTestEntrant(fighter, level, player.Participant.Name,
             player.Participant.DefinitionId, player.Participant.GenderId ?? "UNKNOWN",
             player.Participant.SkinId, player.Participant.ResourceType);
