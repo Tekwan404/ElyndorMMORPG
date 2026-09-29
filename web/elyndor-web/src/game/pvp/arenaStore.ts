@@ -46,9 +46,9 @@ export const useArenaStore = defineStore('arena', () => {
   async function refresh(): Promise<void> {
     try {
       status.value = await apiClient.request<ArenaStatus>('/api/v1/arena/status')
-      if (status.value.enabled && status.value.activeMatchId) {
+      if (status.value.enabled && (status.value.isQueued || status.value.activeMatchId)) {
         await connect()
-        await loadMatch(status.value.activeMatchId)
+        if (status.value.activeMatchId) await loadMatch(status.value.activeMatchId)
       }
     } catch (error) {
       fail(error, 'arena_load_failed')
