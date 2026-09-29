@@ -96,6 +96,9 @@ public sealed class ArenaCombatSession
 
     public ActiveCast? ActiveCastFor(Guid accountId) => RuntimeFor(accountId).ActiveCast;
 
+    public IReadOnlyList<ActiveEffect> ActiveEffectsFor(Guid accountId) =>
+        RuntimeFor(accountId).Actor.ActiveEffects.ToArray();
+
     private CombatRuntimeState RuntimeFor(Guid accountId) => accountId == _first.AccountId
         ? _firstRuntime : accountId == _second.AccountId
             ? _secondRuntime : throw new ArgumentException("Account is not an arena participant.");
@@ -399,6 +402,17 @@ public sealed class ArenaCombatSession
                     TargetActorId: target.ActorId));
                 break;
             }
+            case ArenaTalentEffectKind.ModifyCooldown:
+                ArenaTalentStateEffectExecutor.ExecuteCooldownMutation(
+                    RuntimeForActor(effect.TargetActorId), effect, now);
+                break;
+            case ArenaTalentEffectKind.ApplyBuff:
+            case ArenaTalentEffectKind.ApplyDebuff:
+                Append(ArenaTalentStateEffectExecutor.ExecuteStatusEffect(
+                    RuntimeForActor(effect.TargetActorId).Actor,
+                    effect,
+                    now));
+                break;
             case ArenaTalentEffectKind.ApplyAbilityAction:
                 if (effect.Action is null)
                     throw new NotSupportedException("Arena talent effect is missing its ability action.");
@@ -466,7 +480,10 @@ public sealed class ArenaCombatSession
         ref DateTimeOffset nextAttack, DateTimeOffset due)
     {
         if (nextAttack > due || source.Actor.IsDead || target.Actor.IsDead) return;
-        nextAttack = due + source.AutoAttack.Interval;
+        decimal attackSpeed = Math.Max(0.01m, EffectEngine.CalculateStat(
+            source.Actor, EffectStat.AttackSpeed, 1m, due));
+        double adjustedTicks = source.AutoAttack.Interval.Ticks / (double)attackSpeed;
+        nextAttack = due + TimeSpan.FromTicks(Math.Max(1, (long)Math.Ceiling(adjustedTicks)));
         if (EffectEngine.HasControl(source.Actor, EffectKind.Stun, due))
         {
             Append(new CombatEvent(
