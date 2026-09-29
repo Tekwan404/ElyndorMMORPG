@@ -51,6 +51,96 @@ public sealed class ArenaFighterAssemblerTests
     }
 
     [Fact]
+    public void StatOnlyTalentBuildIsAccepted()
+    {
+        var talents = new ResolvedTalentModifiers(
+            new TalentStatModifiers(IntellectPercent: 10, CriticalChancePercent: 5),
+            new TalentCombatModifiers(DamageDealtPercent: 3),
+            new HashSet<string>(StringComparer.Ordinal),
+            new Dictionary<string, TalentAbilityModifiers>(StringComparer.Ordinal),
+            [],
+            []);
+        CombatPlayerDefinition player = Player(new HashSet<string> { "FIREBALL" }, talents);
+
+        ArenaTestEntrant entrant = ArenaFighterAssembler.Create(
+            player,
+            15,
+            new Dictionary<string, AbilityDefinition> { ["FIREBALL"] = Ability("FIREBALL") },
+            hasCompanion: false);
+
+        Assert.Same(talents, entrant.Fighter.EffectiveTalentModifiers);
+    }
+
+    [Fact]
+    public void StatelessPyromancerFireballHooksAreAppliedBeforeQueueEntry()
+    {
+        ResolvedTalentModifiers talents = Talents(
+            Hook(PyromancerStaticAbilityHookResolver.ImprovedFireballTalentId, 0.5m),
+            Hook(PyromancerStaticAbilityHookResolver.EfficientMagicTalentId, 10),
+            Hook(PyromancerStaticAbilityHookResolver.CriticalMassTalentId, 5),
+            Hook(PyromancerStaticAbilityHookResolver.FirePowerTalentId, 20));
+        CombatPlayerDefinition player = Player(
+            new HashSet<string> { "MAGE_FIREBALL" }, talents);
+        var fireball = new AbilityDefinition(
+            "MAGE_FIREBALL",
+            AbilityType.Casted,
+            AbilityTargetType.SingleEnemy,
+            100,
+            TimeSpan.FromSeconds(8),
+            TimeSpan.FromSeconds(3),
+            false,
+            GlobalCooldownCategory.None,
+            true,
+            "FIRE",
+            Actions: [new AbilityActionDefinition(AbilityActionType.Damage, 10)]);
+
+        ArenaTestEntrant entrant = ArenaFighterAssembler.Create(
+            player,
+            15,
+            new Dictionary<string, AbilityDefinition> { [fireball.Id] = fireball },
+            hasCompanion: false);
+
+        AbilityDefinition resolved = entrant.Fighter.Abilities[fireball.Id];
+        Assert.Equal(90m, resolved.ResourceCost);
+        Assert.Equal(TimeSpan.FromSeconds(2.5), resolved.CastTime);
+        Assert.Equal(1.2m, resolved.DamageMultiplier);
+        Assert.Equal(5m, resolved.CriticalChanceBonus);
+    }
+
+    [Fact]
+    public void StatelessPyromancerFireBlastHooksCompose()
+    {
+        ResolvedTalentModifiers talents = Talents(
+            Hook(PyromancerStaticAbilityHookResolver.IncinerationTalentId, 3),
+            Hook(PyromancerStaticAbilityHookResolver.ImprovedFireBlastTalentId, 2,
+                secondaryValue: 4));
+        CombatPlayerDefinition player = Player(
+            new HashSet<string> { "MAGE_FIRE_BLAST" }, talents);
+        var fireBlast = new AbilityDefinition(
+            "MAGE_FIRE_BLAST",
+            AbilityType.Instant,
+            AbilityTargetType.SingleEnemy,
+            20,
+            TimeSpan.FromSeconds(8),
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            true,
+            "FIRE",
+            Actions: [new AbilityActionDefinition(AbilityActionType.Damage, 10)]);
+
+        ArenaTestEntrant entrant = ArenaFighterAssembler.Create(
+            player,
+            15,
+            new Dictionary<string, AbilityDefinition> { [fireBlast.Id] = fireBlast },
+            hasCompanion: false);
+
+        AbilityDefinition resolved = entrant.Fighter.Abilities[fireBlast.Id];
+        Assert.Equal(TimeSpan.FromSeconds(6), resolved.Cooldown);
+        Assert.Equal(7m, resolved.CriticalChanceBonus);
+    }
+
+    [Fact]
     public void ImpactTalentHookIsAcceptedBeforeQueueEntry()
     {
         CombatPlayerDefinition player = Player(
@@ -122,6 +212,19 @@ public sealed class ArenaFighterAssemblerTests
         new Dictionary<string, TalentAbilityModifiers>(StringComparer.Ordinal),
         hooks,
         []);
+
+    private static ResolvedTalentEventHook Hook(
+        string talentId,
+        decimal value,
+        decimal secondaryValue = 0) => new(
+            talentId,
+            TalentModifierKeys.OnAbilityUsed,
+            1,
+            value,
+            null,
+            TimeSpan.Zero,
+            false,
+            SecondaryValue: secondaryValue);
 
     private static AbilityDefinition Ability(string id) => new(id, AbilityType.Instant,
         AbilityTargetType.SingleEnemy, 0, TimeSpan.Zero, TimeSpan.Zero, false,
