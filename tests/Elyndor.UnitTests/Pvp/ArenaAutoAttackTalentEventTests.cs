@@ -24,8 +24,9 @@ public sealed class ArenaAutoAttackTalentEventTests
     public void SuccessfulAutoAttackProcsHawkSpiritExactlyOnceAndAcceleratesNextSwing()
     {
         TimeSpan interval = TimeSpan.FromSeconds(4);
+        CombatActorState source = SourceActor();
         ArenaCombatSession session = Create(
-            SourceActor(),
+            source,
             TargetActor(),
             interval,
             Talents(HawkSpiritHook()),
@@ -42,7 +43,7 @@ public sealed class ArenaAutoAttackTalentEventTests
         Assert.Equal(ActorA, active.TargetId);
         Assert.Equal(firstAttackAt + TimeSpan.FromSeconds(6), active.ExpiresAtUtc);
         Assert.Equal(1.10m, EffectEngine.CalculateStat(
-            SourceFor(session), EffectStat.AttackSpeed, 1m, firstAttackAt));
+            source, EffectStat.AttackSpeed, 1m, firstAttackAt));
         Assert.DoesNotContain(session.ActiveEffectsFor(AccountB), effect =>
             effect.Definition.Id == HawkEffectId);
         Assert.Single(session.GetEventsAfter(0), combatEvent =>
@@ -214,8 +215,9 @@ public sealed class ArenaAutoAttackTalentEventTests
     [Fact]
     public void HawkSpiritExpiresAndAttackSpeedReturnsToBaseline()
     {
+        CombatActorState source = SourceActor();
         ArenaCombatSession session = Create(
-            SourceActor(),
+            source,
             TargetActor(),
             TimeSpan.FromSeconds(30),
             Talents(HawkSpiritHook()),
@@ -224,7 +226,7 @@ public sealed class ArenaAutoAttackTalentEventTests
 
         session.AdvanceTo(procAt);
         Assert.Equal(1.10m, EffectEngine.CalculateStat(
-            SourceFor(session), EffectStat.AttackSpeed, 1m, procAt));
+            source, EffectStat.AttackSpeed, 1m, procAt));
 
         DateTimeOffset afterExpiration = procAt.AddSeconds(6).AddTicks(1);
         session.AdvanceTo(afterExpiration);
@@ -232,7 +234,7 @@ public sealed class ArenaAutoAttackTalentEventTests
         Assert.DoesNotContain(session.ActiveEffectsFor(AccountA), effect =>
             effect.Definition.Id == HawkEffectId);
         Assert.Equal(1m, EffectEngine.CalculateStat(
-            SourceFor(session), EffectStat.AttackSpeed, 1m, afterExpiration));
+            source, EffectStat.AttackSpeed, 1m, afterExpiration));
         Assert.Contains(session.GetEventsAfter(0), combatEvent =>
             combatEvent.Type == CombatEventType.EffectExpired
             && combatEvent.DefinitionId == HawkEffectId);
@@ -242,8 +244,9 @@ public sealed class ArenaAutoAttackTalentEventTests
     public void HawkSpiritReapplyRefreshesSingleSourceSpecificBuff()
     {
         TimeSpan interval = TimeSpan.FromSeconds(4);
+        CombatActorState source = SourceActor();
         ArenaCombatSession session = Create(
-            SourceActor(),
+            source,
             TargetActor(),
             interval,
             Talents(HawkSpiritHook()),
@@ -262,7 +265,7 @@ public sealed class ArenaAutoAttackTalentEventTests
             effect.Definition.Id == HawkEffectId);
         Assert.Equal(secondAttackAt + TimeSpan.FromSeconds(6), active.ExpiresAtUtc);
         Assert.Equal(1.10m, EffectEngine.CalculateStat(
-            SourceFor(session), EffectStat.AttackSpeed, 1m, secondAttackAt));
+            source, EffectStat.AttackSpeed, 1m, secondAttackAt));
     }
 
     private static ArenaCombatSession Create(
@@ -335,23 +338,6 @@ public sealed class ArenaAutoAttackTalentEventTests
             BlockChance: blockChance,
             BlockValueMin: blockValue,
             BlockValueMax: blockValue));
-
-    private static CombatActorState SourceFor(ArenaCombatSession session) =>
-        session.Snapshot.ActorA.ActorId == ActorA
-            ? GetSourceActor(session)
-            : throw new InvalidOperationException("Unexpected source actor.");
-
-    private static CombatActorState GetSourceActor(ArenaCombatSession session)
-    {
-        ActiveEffect? active = session.ActiveEffectsFor(AccountA).FirstOrDefault();
-        if (active is not null && active.TargetId == ActorA)
-        {
-            // The session owns the same actor instance supplied by SourceActor().
-            // EffectEngine stat calculation needs that actor instance, not the snapshot.
-        }
-
-        throw new InvalidOperationException("Source actor instance is not exposed by ArenaCombatSession.");
-    }
 
     private static ResolvedTalentEventHook HawkSpiritHook() => new(
         ArenaTalentEventDispatcher.ArcherHawkSpiritTalentId,
