@@ -26,6 +26,7 @@ public static class ArenaFighterAssembler
             AbilityDefinition resolved = TalentAbilityResolver.Apply(ability, player.TalentModifiers);
             resolved = PyromancerStaticAbilityHookResolver.Apply(resolved, player.TalentModifiers);
             resolved = MageStaticAbilityHookResolver.Apply(resolved, player.TalentModifiers);
+            resolved = ArcherStaticAbilityHookResolver.Apply(resolved, player.TalentModifiers);
             known.Add(abilityId, resolved);
         }
         ArenaCombatSession.ValidateAbilities(known);
@@ -54,7 +55,13 @@ public static class ArenaFighterAssembler
                 || PyromancerStaticAbilityHookResolver.Supports(hook)
                 || MageStaticAbilityHookResolver.Supports(hook));
 
-        if (!supportedMageHooks)
+        bool supportedArcherHooks = string.Equals(
+                player.Participant.DefinitionId,
+                "ARCHER",
+                StringComparison.Ordinal)
+            && talents.EventHooks.All(ArcherStaticAbilityHookResolver.Supports);
+
+        if (!supportedMageHooks && !supportedArcherHooks)
             throw new NotSupportedException("This build has unsupported arena talent hooks.");
     }
 }
