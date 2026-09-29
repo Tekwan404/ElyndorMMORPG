@@ -31,7 +31,7 @@ public sealed class TelegramAdminUpdateProcessor(
         /class <telegramId> WARRIOR|ARCHER|MAGE
         /race <telegramId> <raceId>
         /giveitem <telegramId> <itemId> [quantity] [NORMAL|ELITE|BOSS]
-        /promocode create <CODE> crystals=<amount> [item=<ITEM_ID>:<qty>] [global=<N>] [per=<N>] [hours=<N>]
+        /promocode create <CODE> [crystals=<amount>] [gold=<amount>] [item=<ITEM_ID>:<qty>] [global=<N>] [per=<N>] [hours=<N>]
         /delete <telegramId> <exact name> CONFIRM
         /msg <telegramId> <text>
 
