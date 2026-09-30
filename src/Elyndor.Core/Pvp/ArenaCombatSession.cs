@@ -179,14 +179,22 @@ public sealed class ArenaCombatSession
         Guid expectedTarget = ability.TargetType switch
         {
             AbilityTargetType.Self or AbilityTargetType.SingleAlly => fighter.Actor.ActorId,
+            AbilityTargetType.SelfAndPartyMembersInCombat when IsSupportedSoloPartyAbility(ability) =>
+                fighter.Actor.ActorId,
             AbilityTargetType.SingleEnemy or AbilityTargetType.AllEnemiesInCombat
                 or AbilityTargetType.NEnemiesInCombat => opponent.Actor.ActorId,
             _ => Guid.Empty
         };
         if (expectedTarget == Guid.Empty || targetActorId != expectedTarget)
             return Result(false, "arena_invalid_target", before);
-        IReadOnlyList<Guid>? targetIds = ability.TargetType is AbilityTargetType.AllEnemiesInCombat
-            or AbilityTargetType.NEnemiesInCombat ? [opponent.Actor.ActorId] : null;
+        IReadOnlyList<Guid>? targetIds = ability.TargetType switch
+        {
+            AbilityTargetType.AllEnemiesInCombat or AbilityTargetType.NEnemiesInCombat =>
+                [opponent.Actor.ActorId],
+            AbilityTargetType.SelfAndPartyMembersInCombat when IsSupportedSoloPartyAbility(ability) =>
+                [fighter.Actor.ActorId],
+            _ => null
+        };
 
         PreparedCrowdControlAbility? prepared = null;
         AbilityDefinition executableAbility = ability;
@@ -974,6 +982,7 @@ public sealed class ArenaCombatSession
                 || ability.TargetType is not (AbilityTargetType.Self or AbilityTargetType.SingleAlly
                 or AbilityTargetType.SingleEnemy or AbilityTargetType.AllEnemiesInCombat
                 or AbilityTargetType.NEnemiesInCombat)
+                && !IsSupportedSoloPartyAbility(ability)
                 || ability.TargetType == AbilityTargetType.SingleAlly && !ability.AllowSelfTarget
                 || ability.Actions?.Any(action => action.Type is AbilityActionType.Taunt
                     or AbilityActionType.AddThreat or AbilityActionType.DropThreatPercent
@@ -984,6 +993,15 @@ public sealed class ArenaCombatSession
                 throw new NotSupportedException($"Ability {ability.Id} is not supported in the arena runtime.");
         }
     }
+
+    private static bool IsSupportedSoloPartyAbility(AbilityDefinition ability) =>
+        ability.Type == AbilityType.Instant
+        && ability.TargetType == AbilityTargetType.SelfAndPartyMembersInCombat
+        && ability.Actions is { Count: 1 }
+        && ability.Actions[0].Type == AbilityActionType.ApplyEffect
+        && (ability.Id, ability.Actions[0].Effect?.Id) is
+            ("AURA_MASTERY", "PALADIN_AURA_MASTERY_DEFENSE")
+            or ("DEVOTION_AURA", "PALADIN_DEVOTION_AURA");
 
     private sealed record TimestampBatchEntry(
         ArenaFighter Fighter,

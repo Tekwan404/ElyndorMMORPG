@@ -179,6 +179,59 @@ public sealed class ArenaCombatSessionTests
     }
 
     [Fact]
+    public void AuraMasteryInSoloArenaAppliesOnlyToCaster()
+    {
+        var effect = new EffectDefinition("PALADIN_AURA_MASTERY_DEFENSE", EffectKind.StatModifier,
+            TimeSpan.FromSeconds(8), 1, EffectStackPolicy.StrongestWins, 0.90m,
+            ModifiedStat: EffectStat.IncomingDamageMultiplier,
+            ModifierMode: EffectModifierMode.Multiplicative);
+        var mastery = new AbilityDefinition("AURA_MASTERY", AbilityType.Instant,
+            AbilityTargetType.SelfAndPartyMembersInCombat, 0, TimeSpan.Zero, TimeSpan.Zero,
+            false, GlobalCooldownCategory.None, true, "HOLY",
+            Actions: [new AbilityActionDefinition(AbilityActionType.ApplyEffect, Effect: effect)]);
+        ArenaCombatSession session = Create(extraAbility: mastery);
+
+        ArenaCommandResult invalid = session.UseAbility(AccountA, "enemy", mastery.Id, ActorB, Start);
+        Assert.False(invalid.Succeeded);
+        Assert.Equal("arena_invalid_target", invalid.ErrorCode);
+
+        ArenaCommandResult result = session.UseAbility(AccountA, "self", mastery.Id, ActorA, Start);
+        Assert.True(result.Succeeded);
+        Assert.Contains(session.ActiveEffectsFor(AccountA), active => active.Definition.Id == effect.Id);
+        Assert.DoesNotContain(session.ActiveEffectsFor(AccountB), active => active.Definition.Id == effect.Id);
+    }
+
+    [Fact]
+    public void BasePaladinDevotionAuraAppliesOnlyToCasterInSoloArena()
+    {
+        var effect = new EffectDefinition("PALADIN_DEVOTION_AURA", EffectKind.StatModifier,
+            TimeSpan.FromMinutes(30), 1, EffectStackPolicy.StrongestWins, 0.10m,
+            ModifiedStat: EffectStat.Armor, ModifierMode: EffectModifierMode.Percent);
+        var devotion = new AbilityDefinition("DEVOTION_AURA", AbilityType.Instant,
+            AbilityTargetType.SelfAndPartyMembersInCombat, 0, TimeSpan.Zero, TimeSpan.Zero,
+            false, GlobalCooldownCategory.None, true, "HOLY",
+            Actions: [new AbilityActionDefinition(AbilityActionType.ApplyEffect, Effect: effect)]);
+
+        ArenaCombatSession session = Create(extraAbility: devotion);
+        Assert.True(session.UseAbility(AccountA, "devotion", devotion.Id, ActorA, Start).Succeeded);
+        Assert.Contains(session.ActiveEffectsFor(AccountA), active => active.Definition.Id == effect.Id);
+        Assert.DoesNotContain(session.ActiveEffectsFor(AccountB), active => active.Definition.Id == effect.Id);
+    }
+
+    [Fact]
+    public void AuraWithoutSupportedRuntimeSemanticsIsStillRejected()
+    {
+        var concentration = new AbilityDefinition("CONCENTRATION_AURA", AbilityType.Instant,
+            AbilityTargetType.SelfAndPartyMembersInCombat, 0, TimeSpan.Zero, TimeSpan.Zero,
+            false, GlobalCooldownCategory.None, true, "HOLY",
+            Actions: [new AbilityActionDefinition(AbilityActionType.ApplyEffect, Effect:
+                new EffectDefinition("PALADIN_CONCENTRATION_AURA", EffectKind.Buff,
+                    TimeSpan.FromMinutes(30), 1, EffectStackPolicy.StrongestWins, 0.08m))]);
+
+        Assert.Throws<NotSupportedException>(() => Create(extraAbility: concentration));
+    }
+
+    [Fact]
     public void BuildWithOnExpireEffectIsRejectedUntilExpirationActionsAreSupported()
     {
         var effect = new EffectDefinition("EXPLOSIVE", EffectKind.Debuff, TimeSpan.FromSeconds(2),
