@@ -231,16 +231,7 @@ public sealed class ArenaCombatSession
             DateTimeOffset due = next.Value;
             RegenerateResources(resourceAdvancedTo, due);
             resourceAdvancedTo = due;
-            CompleteCast(_firstRuntime, due);
-            CompleteCast(_secondRuntime, due);
-            ResolvePendingActions(_firstRuntime, due);
-            ResolvePendingActions(_secondRuntime, due);
-            Append(EffectEngine.Process(_first.Actor, due,
-                (effect, tick) => ResolvePeriodicDamage(effect, _first.Actor, tick)));
-            Append(EffectEngine.Process(_second.Actor, due,
-                (effect, tick) => ResolvePeriodicDamage(effect, _second.Actor, tick)));
-            ResolveAutoAttack(_first, _second, ref _firstAutoAttackAt, due);
-            ResolveAutoAttack(_second, _first, ref _secondAutoAttackAt, due);
+            ResolveTimestampBatch(due);
             ResolveOutcome(due);
         }
         if (steps > MaximumAdvanceSteps)
@@ -248,6 +239,169 @@ public sealed class ArenaCombatSession
         if (Outcome == ArenaMatchOutcome.Active)
             RegenerateResources(resourceAdvancedTo, now);
         _advancedTo = now;
+    }
+
+    private void ResolveTimestampBatch(DateTimeOffset due)
+    {
+        TimestampBatchEntry[] entries =
+        [
+            SnapshotTimestampEntry(
+                _first,
+                _second,
+                _firstRuntime,
+                _firstAutoAttackAt,
+                due,
+                isFirst: true),
+            SnapshotTimestampEntry(
+                _second,
+                _first,
+                _secondRuntime,
+                _secondAutoAttackAt,
+                due,
+                isFirst: false)
+        ];
+        Array.Sort(entries, static (left, right) =>
+            left.Fighter.Actor.ActorId.CompareTo(right.Fighter.Actor.ActorId));
+
+        long batchStartSequence = _sequence;
+        foreach (TimestampBatchEntry entry in entries)
+        {
+            if (entry.DueCast is not null
+                && entry.Runtime.ActiveCast?.ResolvesAtUtc <= due)
+            {
+                // A cast that was already due at T is committed to this batch. Remove it from
+                // mutable runtime state so another action at T cannot retroactively interrupt it.
+                entry.Runtime.ActiveCast = null;
+            }
+        }
+
+        IDisposable? firstDeathDeferral = entries.Single(entry => entry.IsFirst).WasAlive
+            ? _first.Actor.DeferDeathForCurrentBatch()
+            : null;
+        IDisposable? secondDeathDeferral = entries.Single(entry => !entry.IsFirst).WasAlive
+            ? _second.Actor.DeferDeathForCurrentBatch()
+            : null;
+        try
+        {
+            // Effects are processed from the batch-start snapshot before casts can dispel or
+            // replace a tick that was already due at this timestamp.
+            foreach (TimestampBatchEntry entry in entries)
+            {
+                Append(EffectEngine.Process(
+                    entry.Fighter.Actor,
+                    due,
+                    (effect, tick) => ResolvePeriodicDamage(effect, entry.Fighter.Actor, tick)));
+            }
+
+            foreach (TimestampBatchEntry entry in entries)
+                CompleteCast(entry.Runtime, entry.DueCast, entry.WasAlive, due);
+
+            foreach (TimestampBatchEntry entry in entries)
+                ResolvePendingActions(entry.Runtime, entry.DuePendingActions, entry.WasAlive, due);
+
+            foreach (TimestampBatchEntry entry in entries)
+            {
+                if (entry.IsFirst)
+                {
+                    ResolveAutoAttack(
+                        entry.Fighter,
+                        entry.Opponent,
+                        ref _firstAutoAttackAt,
+                        due,
+                        entry.AutoAttackWasDue,
+                        entry.WasAlive,
+                        entry.OpponentWasAlive,
+                        entry.WasStunned);
+                }
+                else
+                {
+                    ResolveAutoAttack(
+                        entry.Fighter,
+                        entry.Opponent,
+                        ref _secondAutoAttackAt,
+                        due,
+                        entry.AutoAttackWasDue,
+                        entry.WasAlive,
+                        entry.OpponentWasAlive,
+                        entry.WasStunned);
+                }
+            }
+        }
+        finally
+        {
+            secondDeathDeferral?.Dispose();
+            firstDeathDeferral?.Dispose();
+        }
+
+        AppendDeferredDeathIfNeeded(_first.Actor, entries.Single(entry => entry.IsFirst).WasAlive,
+            due, batchStartSequence);
+        AppendDeferredDeathIfNeeded(_second.Actor, entries.Single(entry => !entry.IsFirst).WasAlive,
+            due, batchStartSequence);
+    }
+
+    private TimestampBatchEntry SnapshotTimestampEntry(
+        ArenaFighter fighter,
+        ArenaFighter opponent,
+        CombatRuntimeState runtime,
+        DateTimeOffset nextAutoAttackAt,
+        DateTimeOffset due,
+        bool isFirst)
+    {
+        bool wasAlive = !fighter.Actor.IsDead;
+        bool opponentWasAlive = !opponent.Actor.IsDead;
+        ActiveCast? dueCast = runtime.ActiveCast is { } cast && cast.ResolvesAtUtc <= due
+            ? cast
+            : null;
+        PendingAbilityAction[] duePendingActions = runtime.PendingActions
+            .Where(action => action.ExecuteAtUtc <= due)
+            .OrderBy(action => action.ExecuteAtUtc)
+            .ThenBy(action => action.Sequence)
+            .ToArray();
+        return new TimestampBatchEntry(
+            fighter,
+            opponent,
+            runtime,
+            dueCast,
+            duePendingActions,
+            wasAlive,
+            opponentWasAlive,
+            fighter.CanAutoAttack && nextAutoAttackAt <= due,
+            wasAlive && EffectEngine.HasControl(fighter.Actor, EffectKind.Stun, due),
+            isFirst);
+    }
+
+    private void AppendDeferredDeathIfNeeded(
+        CombatActorState actor,
+        bool wasAlive,
+        DateTimeOffset due,
+        long batchStartSequence)
+    {
+        if (!wasAlive || !actor.IsDead)
+            return;
+        if (_events.Any(combatEvent => combatEvent.Sequence > batchStartSequence
+            && combatEvent.Type == CombatEventType.ActorDied
+            && combatEvent.ActorId == actor.ActorId
+            && combatEvent.OccurredAtUtc == due))
+        {
+            return;
+        }
+
+        CombatEvent? cause = _events
+            .Where(combatEvent => combatEvent.Sequence > batchStartSequence
+                && combatEvent.OccurredAtUtc == due
+                && combatEvent.TargetActorId == actor.ActorId
+                && combatEvent.Type == CombatEventType.DamageDealt
+                && combatEvent.Amount > 0)
+            .LastOrDefault();
+        Append(new CombatEvent(
+            CombatEventType.ActorDied,
+            due,
+            actor.ActorId,
+            cause?.DefinitionId,
+            SourceActorId: cause?.SourceActorId,
+            TargetActorId: actor.ActorId,
+            IsPeriodic: cause?.IsPeriodic ?? false,
+            DamageType: cause?.DamageType));
     }
 
     private void RegenerateResources(DateTimeOffset from, DateTimeOffset to)
@@ -273,10 +427,18 @@ public sealed class ArenaCombatSession
             TargetActorId: fighter.Actor.ActorId));
     }
 
-    private void CompleteCast(CombatRuntimeState runtime, DateTimeOffset due)
+    private void CompleteCast(
+        CombatRuntimeState runtime,
+        ActiveCast? committedCast,
+        bool wasAlive,
+        DateTimeOffset due)
     {
-        if (runtime.Actor.IsDead || runtime.ActiveCast?.ResolvesAtUtc > due || runtime.ActiveCast is null) return;
-        ActiveCast cast = runtime.ActiveCast;
+        if (committedCast is null)
+            return;
+        if (!wasAlive)
+            return;
+
+        ActiveCast cast = committedCast;
         CombatActorState target = runtime.Actors[cast.TargetId];
         ArenaFighter fighter = runtime == _firstRuntime ? _first : _second;
         PreparedCrowdControlAbility prepared = PrepareCrowdControlAbility(
@@ -301,21 +463,26 @@ public sealed class ArenaCombatSession
             due);
     }
 
-    private void ResolvePendingActions(CombatRuntimeState runtime, DateTimeOffset due)
+    private void ResolvePendingActions(
+        CombatRuntimeState runtime,
+        IReadOnlyList<PendingAbilityAction> committedActions,
+        bool wasAlive,
+        DateTimeOffset due)
     {
-        PendingAbilityAction[] dueActions = runtime.PendingActions
-            .Where(action => action.ExecuteAtUtc <= due)
-            .OrderBy(action => action.ExecuteAtUtc)
-            .ThenBy(action => action.Sequence)
-            .ToArray();
-        if (dueActions.Length == 0)
+        if (committedActions.Count == 0)
             return;
+        if (!wasAlive)
+        {
+            foreach (PendingAbilityAction pending in committedActions)
+                runtime.PendingActions.Remove(pending);
+            return;
+        }
 
         Dictionary<Guid, CrowdControlDiminishingReturns> stagedStates = [];
         Dictionary<Guid, HashSet<CrowdControlCategory>> appliedCategories = [];
         List<CombatEvent> immuneEvents = [];
 
-        foreach (PendingAbilityAction pending in dueActions)
+        foreach (PendingAbilityAction pending in committedActions)
         {
             EffectDefinition? effect = pending.Action.Type == AbilityActionType.ApplyEffect
                 ? pending.Action.Effect
@@ -511,12 +678,26 @@ public sealed class ArenaCombatSession
             TargetActorId = targetRuntime.Actor.ActorId }));
     }
 
-    private void ResolveAutoAttack(ArenaFighter source, ArenaFighter target,
-        ref DateTimeOffset nextAttack, DateTimeOffset due)
+    private void ResolveAutoAttack(
+        ArenaFighter source,
+        ArenaFighter target,
+        ref DateTimeOffset nextAttack,
+        DateTimeOffset due,
+        bool wasDue,
+        bool sourceWasAlive,
+        bool targetWasAlive,
+        bool wasStunned)
     {
-        if (!source.CanAutoAttack || nextAttack > due || source.Actor.IsDead || target.Actor.IsDead) return;
+        if (!wasDue || !source.CanAutoAttack)
+            return;
+        if (!sourceWasAlive || !targetWasAlive)
+        {
+            nextAttack = DateTimeOffset.MaxValue;
+            return;
+        }
+
         ScheduleNextAutoAttack(source, ref nextAttack, due);
-        if (EffectEngine.HasControl(source.Actor, EffectKind.Stun, due))
+        if (wasStunned)
         {
             Append(new CombatEvent(
                 CombatEventType.ActionRejected,
@@ -767,6 +948,18 @@ public sealed class ArenaCombatSession
                 throw new NotSupportedException($"Ability {ability.Id} is not supported in the arena runtime.");
         }
     }
+
+    private sealed record TimestampBatchEntry(
+        ArenaFighter Fighter,
+        ArenaFighter Opponent,
+        CombatRuntimeState Runtime,
+        ActiveCast? DueCast,
+        PendingAbilityAction[] DuePendingActions,
+        bool WasAlive,
+        bool OpponentWasAlive,
+        bool AutoAttackWasDue,
+        bool WasStunned,
+        bool IsFirst);
 
     private sealed record PreparedCrowdControlAbility(
         AbilityDefinition Ability,
