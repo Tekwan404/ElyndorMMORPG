@@ -19,8 +19,11 @@ public static class ArenaTalentRuntimeSupport
         ArgumentNullException.ThrowIfNull(actor);
         ArgumentNullException.ThrowIfNull(talents);
 
+        ArenaArcherDefensiveTalentRuntime.ConfigureActor(actor, talents);
         actor.IncomingDamageModifier = (context, random) =>
-            ArenaTalentEventDispatcher.ApplyIncomingDamageModifiers(talents, context, random);
+            ArenaArcherDefensiveTalentRuntime.ApplyIncomingDamage(
+                talents, context,
+                ArenaTalentEventDispatcher.ApplyIncomingDamageModifiers(talents, context, random));
     }
 
     public static AbilityDefinition ApplyAbilityDefinitionModifiers(
@@ -34,6 +37,7 @@ public static class ArenaTalentRuntimeSupport
         resolved = PyromancerStaticAbilityHookResolver.Apply(resolved, talents);
         resolved = MageStaticAbilityHookResolver.Apply(resolved, talents);
         resolved = ArcherStaticAbilityHookResolver.Apply(resolved, talents);
+        resolved = WarlordStaticAbilityHookResolver.Apply(resolved, talents);
         return resolved;
     }
 
@@ -44,7 +48,9 @@ public static class ArenaTalentRuntimeSupport
         return ArenaTalentEventDispatcher.Supports(hook)
             || PyromancerStaticAbilityHookResolver.Supports(hook)
             || MageStaticAbilityHookResolver.Supports(hook)
-            || ArcherStaticAbilityHookResolver.Supports(hook);
+            || ArcherStaticAbilityHookResolver.Supports(hook)
+            || ArenaArcherDefensiveTalentRuntime.Supports(hook)
+            || WarlordStaticAbilityHookResolver.Supports(hook);
     }
 
     public static IReadOnlyList<ResolvedTalentEventHook> UnsupportedEventHooks(
