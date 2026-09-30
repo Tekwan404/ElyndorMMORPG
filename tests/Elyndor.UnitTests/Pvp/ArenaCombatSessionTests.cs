@@ -203,8 +203,204 @@ public sealed class ArenaCombatSessionTests
         Assert.Single(session.GetEventsAfter(0), x => x.Type == CombatEventType.CombatEnded);
     }
 
-    private static ArenaCombatSession Create(decimal strikeDamage = 20, TimeSpan? castTime = null,
-        bool withShield = false, AbilityDefinition? extraAbility = null, TimeSpan? duration = null)
+    [Fact]
+    public void SimultaneousLethalCastsResolveToDraw()
+    {
+        ArenaCombatSession session = Create(
+            strikeDamage: 200,
+            castTime: TimeSpan.FromSeconds(1));
+        Assert.True(session.UseAbility(AccountA, "cast-a", "STRIKE", ActorB, Start).Succeeded);
+        Assert.True(session.UseAbility(AccountB, "cast-b", "STRIKE", ActorA, Start).Succeeded);
+
+        session.AdvanceTo(Start.AddSeconds(1));
+
+        Assert.Equal(ArenaMatchOutcome.Draw, session.Snapshot.Outcome);
+        Assert.Equal(0, session.Snapshot.ActorA.CurrentHp);
+        Assert.Equal(0, session.Snapshot.ActorB.CurrentHp);
+        Assert.Single(session.GetEventsAfter(0), combatEvent =>
+            combatEvent.Type == CombatEventType.CombatEnded);
+    }
+
+    [Fact]
+    public void SwappingFirstAndSecondDoesNotChangeSimultaneousLethalOutcome()
+    {
+        ArenaCombatSession normal = Create(
+            strikeDamage: 200,
+            castTime: TimeSpan.FromSeconds(1));
+        ArenaCombatSession swapped = Create(
+            strikeDamage: 200,
+            castTime: TimeSpan.FromSeconds(1),
+            swapFighters: true);
+
+        Assert.True(normal.UseAbility(AccountA, "cast-a", "STRIKE", ActorB, Start).Succeeded);
+        Assert.True(normal.UseAbility(AccountB, "cast-b", "STRIKE", ActorA, Start).Succeeded);
+        Assert.True(swapped.UseAbility(AccountA, "cast-a", "STRIKE", ActorB, Start).Succeeded);
+        Assert.True(swapped.UseAbility(AccountB, "cast-b", "STRIKE", ActorA, Start).Succeeded);
+
+        normal.AdvanceTo(Start.AddSeconds(1));
+        swapped.AdvanceTo(Start.AddSeconds(1));
+
+        Assert.Equal(ArenaMatchOutcome.Draw, normal.Snapshot.Outcome);
+        Assert.Equal(normal.Snapshot.Outcome, swapped.Snapshot.Outcome);
+        Assert.Equal(0, swapped.Snapshot.ActorA.CurrentHp);
+        Assert.Equal(0, swapped.Snapshot.ActorB.CurrentHp);
+    }
+
+    [Fact]
+    public void SimultaneousLethalAutoAttacksResolveToDraw()
+    {
+        var lethalAuto = new AutoAttackProfile(
+            TimeSpan.FromSeconds(1),
+            200,
+            0,
+            0);
+        ArenaCombatSession session = Create(autoAttack: lethalAuto);
+
+        session.AdvanceTo(Start.AddSeconds(1));
+
+        Assert.Equal(ArenaMatchOutcome.Draw, session.Snapshot.Outcome);
+        Assert.Equal(0, session.Snapshot.ActorA.CurrentHp);
+        Assert.Equal(0, session.Snapshot.ActorB.CurrentHp);
+    }
+
+    [Fact]
+    public void SimultaneousLethalPendingActionsResolveToDraw()
+    {
+        var delayedLethal = new AbilityDefinition(
+            "DELAYED_LETHAL",
+            AbilityType.Instant,
+            AbilityTargetType.SingleEnemy,
+            0,
+            TimeSpan.Zero,
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            false,
+            "Physical",
+            Actions:
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.Damage,
+                    200,
+                    DamageType.Physical,
+                    CanMiss: false,
+                    CanCrit: false,
+                    CanDodge: false,
+                    Delay: TimeSpan.FromSeconds(1))
+            ]);
+        ArenaCombatSession session = Create(extraAbility: delayedLethal);
+        Assert.True(session.UseAbility(
+            AccountA, "delay-a", delayedLethal.Id, ActorB, Start).Succeeded);
+        Assert.True(session.UseAbility(
+            AccountB, "delay-b", delayedLethal.Id, ActorA, Start).Succeeded);
+
+        session.AdvanceTo(Start.AddSeconds(1));
+
+        Assert.Equal(ArenaMatchOutcome.Draw, session.Snapshot.Outcome);
+        Assert.Equal(0, session.Snapshot.ActorA.CurrentHp);
+        Assert.Equal(0, session.Snapshot.ActorB.CurrentHp);
+    }
+
+    [Fact]
+    public void SimultaneousLethalPeriodicDamageResolvesToDraw()
+    {
+        ArenaCombatSession session = Create(dotDamage: 200);
+        Assert.True(session.UseAbility(AccountA, "dot-a", "DOT", ActorB, Start).Succeeded);
+        Assert.True(session.UseAbility(AccountB, "dot-b", "DOT", ActorA, Start).Succeeded);
+
+        session.AdvanceTo(Start.AddSeconds(1));
+
+        Assert.Equal(ArenaMatchOutcome.Draw, session.Snapshot.Outcome);
+        Assert.Equal(0, session.Snapshot.ActorA.CurrentHp);
+        Assert.Equal(0, session.Snapshot.ActorB.CurrentHp);
+    }
+
+    [Fact]
+    public void ActionAfterLethalTimestampIsSuppressed()
+    {
+        ArenaCombatSession session = Create(
+            strikeDamage: 200,
+            castTime: TimeSpan.FromSeconds(1));
+        Assert.True(session.UseAbility(AccountA, "cast-a", "STRIKE", ActorB, Start).Succeeded);
+        Assert.True(session.UseAbility(
+            AccountB,
+            "cast-b",
+            "STRIKE",
+            ActorA,
+            Start.AddMilliseconds(1)).Succeeded);
+
+        session.AdvanceTo(Start.AddSeconds(1).AddMilliseconds(1));
+
+        Assert.Equal(ArenaMatchOutcome.WinnerA, session.Snapshot.Outcome);
+        Assert.Equal(100, session.Snapshot.ActorA.CurrentHp);
+        Assert.DoesNotContain(session.GetEventsAfter(0), combatEvent =>
+            combatEvent.Type == CombatEventType.AbilityCompleted
+            && combatEvent.ActorId == ActorB);
+    }
+
+    [Fact]
+    public void RepeatedAdvanceDoesNotReplayBatchAndCombatEndedIsEmittedOnce()
+    {
+        ArenaCombatSession session = Create(
+            strikeDamage: 200,
+            castTime: TimeSpan.FromSeconds(1));
+        Assert.True(session.UseAbility(AccountA, "cast-a", "STRIKE", ActorB, Start).Succeeded);
+        Assert.True(session.UseAbility(AccountB, "cast-b", "STRIKE", ActorA, Start).Succeeded);
+        DateTimeOffset due = Start.AddSeconds(1);
+
+        session.AdvanceTo(due);
+        long sequenceAfterFirstAdvance = session.Snapshot.Sequence;
+        session.AdvanceTo(due);
+
+        Assert.Equal(sequenceAfterFirstAdvance, session.Snapshot.Sequence);
+        Assert.Single(session.GetEventsAfter(0), combatEvent =>
+            combatEvent.Type == CombatEventType.CombatEnded);
+    }
+
+    [Fact]
+    public void TimestampBatchEventSequenceIsDeterministic()
+    {
+        ArenaCombatSession first = Create(
+            strikeDamage: 200,
+            castTime: TimeSpan.FromSeconds(1));
+        ArenaCombatSession second = Create(
+            strikeDamage: 200,
+            castTime: TimeSpan.FromSeconds(1));
+        Assert.True(first.UseAbility(AccountA, "cast-a", "STRIKE", ActorB, Start).Succeeded);
+        Assert.True(first.UseAbility(AccountB, "cast-b", "STRIKE", ActorA, Start).Succeeded);
+        Assert.True(second.UseAbility(AccountA, "cast-a", "STRIKE", ActorB, Start).Succeeded);
+        Assert.True(second.UseAbility(AccountB, "cast-b", "STRIKE", ActorA, Start).Succeeded);
+
+        first.AdvanceTo(Start.AddSeconds(1));
+        second.AdvanceTo(Start.AddSeconds(1));
+
+        var firstEvents = first.GetEventsAfter(0).Select(ProjectEvent).ToArray();
+        var secondEvents = second.GetEventsAfter(0).Select(ProjectEvent).ToArray();
+        Assert.Equal(firstEvents, secondEvents);
+    }
+
+    private static object ProjectEvent(CombatEvent combatEvent) => new
+    {
+        combatEvent.Type,
+        combatEvent.OccurredAtUtc,
+        combatEvent.ActorId,
+        combatEvent.DefinitionId,
+        combatEvent.Amount,
+        combatEvent.SourceActorId,
+        combatEvent.TargetActorId,
+        combatEvent.IsPeriodic,
+        combatEvent.DamageType
+    };
+
+    private static ArenaCombatSession Create(
+        decimal strikeDamage = 20,
+        TimeSpan? castTime = null,
+        bool withShield = false,
+        AbilityDefinition? extraAbility = null,
+        TimeSpan? duration = null,
+        decimal dotDamage = 20,
+        AutoAttackProfile? autoAttack = null,
+        bool swapFighters = false)
     {
         var strike = new AbilityDefinition("STRIKE", castTime is null ? AbilityType.Instant : AbilityType.Casted,
             AbilityTargetType.SingleEnemy, 0, TimeSpan.Zero, castTime ?? TimeSpan.Zero,
@@ -218,7 +414,7 @@ public sealed class ArenaCombatSessionTests
             0, TimeSpan.Zero, TimeSpan.Zero, false, GlobalCooldownCategory.None, true, "Shadow",
             Actions: [new AbilityActionDefinition(AbilityActionType.ApplyEffect, Effect: new EffectDefinition(
                 "ARENA_DOT", EffectKind.DamageOverTime, TimeSpan.FromSeconds(3), 1,
-                EffectStackPolicy.Replace, 20, TimeSpan.FromSeconds(1),
+                EffectStackPolicy.Replace, dotDamage, TimeSpan.FromSeconds(1),
                 PeriodicDamageType: DamageType.Magical))]);
         var kick = new AbilityDefinition("KICK", AbilityType.Instant, AbilityTargetType.SingleEnemy,
             0, TimeSpan.Zero, TimeSpan.Zero, false, GlobalCooldownCategory.None, false, "Physical",
@@ -234,13 +430,20 @@ public sealed class ArenaCombatSessionTests
                     DamageType.Magical, CanMiss: false, CanCrit: false, CanDodge: false)])
         };
         if (extraAbility is not null) abilities.Add(extraAbility.Id, extraAbility);
-        var auto = new AutoAttackProfile(TimeSpan.FromHours(1), 1, 0, 0);
-        var secondActor = new CombatActorState(ActorB, 100, 100, 100, 100, CombatStats.Default);
-        if (withShield) EffectEngine.Apply(secondActor, ActorB, new EffectDefinition("SHIELD",
+        AutoAttackProfile auto = autoAttack ?? new AutoAttackProfile(TimeSpan.FromHours(1), 1, 0, 0);
+        CombatStats stats = CombatStats.Default with { Accuracy = 100 };
+        var actorA = new CombatActorState(ActorA, 100, 100, 100, 100, stats);
+        var actorB = new CombatActorState(ActorB, 100, 100, 100, 100, stats);
+        if (withShield) EffectEngine.Apply(actorB, ActorB, new EffectDefinition("SHIELD",
             EffectKind.Shield, TimeSpan.FromSeconds(10), 1, EffectStackPolicy.Replace, 30), Start);
-        return new ArenaCombatSession(Guid.NewGuid(),
-            new ArenaFighter(AccountA, ActorA, new CombatActorState(ActorA, 100, 100, 100, 100, CombatStats.Default), abilities, auto),
-            new ArenaFighter(AccountB, ActorB, secondActor, abilities, auto),
-            new SeededGameRandom(42), Start, duration);
+        var fighterA = new ArenaFighter(AccountA, ActorA, actorA, abilities, auto);
+        var fighterB = new ArenaFighter(AccountB, ActorB, actorB, abilities, auto);
+        return new ArenaCombatSession(
+            Guid.NewGuid(),
+            swapFighters ? fighterB : fighterA,
+            swapFighters ? fighterA : fighterB,
+            new SeededGameRandom(42),
+            Start,
+            duration);
     }
 }
