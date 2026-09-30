@@ -42,10 +42,9 @@ function healthState(actor: CombatActorSnapshot): 'normal' | 'low' | 'critical' 
 }
 
 function displayLevel(actor: CombatActorSnapshot, local: boolean): number {
-  if (actor.level && actor.level > 0) return actor.level
   const character = session.snapshot?.character
   if (local && actor.kind === 'Player' && character?.id === actor.actorId) return character.level
-  return 1
+  return actor.level && actor.level > 0 ? actor.level : 1
 }
 </script>
 
