@@ -74,7 +74,7 @@ describe('ArenaBattlefield', () => {
 
     expect(wrapper.get('[data-character-figure="player-a"]').text()).toContain('Tekwan')
     expect(wrapper.get('[data-character-figure="player-b"]').text()).toContain('Mini tekwan')
-    expect(wrapper.get('[data-arena-battlefield]').exists()).toBe(true)
+    expect(wrapper.find('[data-arena-battlefield]').exists()).toBe(true)
 
     wrapper.unmount()
   })
