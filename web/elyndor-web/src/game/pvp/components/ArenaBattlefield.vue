@@ -6,6 +6,7 @@ import { gameArt } from '@/assets/gameArt'
 import { isAuraAbility } from '@/game/combat/combatAbilityGroups'
 import { orderCombatAbilities } from '@/game/combat/combatHotbarSettings'
 import { projectBattleEvents } from '@/game/combat/battleEventPresentation'
+import BattleControls from '@/game/combat/components/BattleControls.vue'
 import BattleHeader from '@/game/combat/components/BattleHeader.vue'
 import CharacterFigure from '@/game/combat/components/CharacterFigure.vue'
 import CombatLog from '@/game/combat/components/CombatLog.vue'
@@ -20,12 +21,17 @@ const props = defineProps<{
   events: readonly CombatEvent[]
   active: boolean
   resultLabel: string | null
+  pending?: boolean
+  rating?: number | null
+  ratingDelta?: number | null
+  honorDelta?: number | null
 }>()
 
 const emit = defineEmits<{
   useAbility: [abilityId: string, targetActorId: string]
   surrender: []
   dismiss: []
+  nextOpponent: []
 }>()
 
 const session = useGameSessionStore()
@@ -102,129 +108,148 @@ onUnmounted(() => window.clearInterval(timer))
 
 <template>
   <Teleport to="body">
-    <section class="arena-battle-screen" data-arena-battle-screen data-battle-screen>
-      <BattleHeader
-        :local-actor="localActor"
-        :enemy="enemyActor"
-        :allies="[]"
-        :selected-friendly-actor-id="null"
-        :aggro-actor-ids="[]"
-        :disabled="!active"
-      />
+    <div class="arena-battle-overlay">
+      <section class="arena-battle-screen" data-arena-battle-screen data-battle-screen>
+        <BattleHeader
+          :local-actor="localActor"
+          :enemy="enemyActor"
+          :allies="[]"
+          :selected-friendly-actor-id="null"
+          :aggro-actor-ids="[]"
+          :disabled="!active"
+        />
 
-      <div class="arena-battle-screen__field-wrap">
-        <section
-          class="arena-battlefield"
-          :style="{ backgroundImage: `linear-gradient(180deg, rgb(5 7 13 / 8%), rgb(4 6 10 / 58%)), url(${gameArt.world.combatWhispering})` }"
-          aria-label="Поле боя арены"
-          data-arena-battlefield
-        >
-          <div class="arena-battlefield__vignette" aria-hidden="true" />
+        <div class="arena-battle-screen__field-wrap">
+          <section
+            class="arena-battlefield"
+            :style="{ backgroundImage: `linear-gradient(180deg, rgb(5 7 13 / 8%), rgb(4 6 10 / 58%)), url(${gameArt.world.combatWhispering})` }"
+            aria-label="Поле боя арены"
+            data-arena-battlefield
+          >
+            <div class="arena-battlefield__vignette" aria-hidden="true" />
 
-          <div class="arena-battlefield__fighter arena-battlefield__fighter--player">
-            <CharacterFigure
-              :actor="localActor"
-              :selected="false"
-              :aggro="false"
-              :local="true"
-              :disabled="!active"
-              :frontline="true"
-            />
-            <CombatNumbers :actor-id="localActor.actorId" :entries="eventProjection.numbers" />
-            <CombatEffectStrip
-              v-if="localActor.effects.length"
-              class="arena-battlefield__effects"
-              :effects="localActor.effects"
-              :now="now"
-              side="player"
-            />
+            <div class="arena-battlefield__fighter arena-battlefield__fighter--player">
+              <CharacterFigure
+                :actor="localActor"
+                :selected="false"
+                :aggro="false"
+                :local="true"
+                :disabled="!active"
+                :frontline="true"
+              />
+              <CombatNumbers :actor-id="localActor.actorId" :entries="eventProjection.numbers" />
+              <CombatEffectStrip
+                v-if="localActor.effects.length"
+                class="arena-battlefield__effects"
+                :effects="localActor.effects"
+                :now="now"
+                side="player"
+              />
+            </div>
+
+            <div class="arena-battlefield__fighter arena-battlefield__fighter--enemy">
+              <CharacterFigure
+                :actor="enemyActor"
+                :selected="true"
+                :aggro="false"
+                :local="false"
+                :disabled="true"
+                :frontline="true"
+              />
+              <CombatNumbers :actor-id="enemyActor.actorId" :entries="eventProjection.numbers" />
+              <CombatEffectStrip
+                v-if="enemyActor.effects.length"
+                class="arena-battlefield__effects"
+                :effects="enemyActor.effects"
+                :now="now"
+                side="enemy"
+              />
+            </div>
+
+            <div v-if="playerCast" class="arena-cast arena-cast--player" data-arena-player-cast>
+              <div><strong>{{ abilityName(playerCast.abilityId) }}</strong><small>{{ castRemaining(playerCast).toFixed(1) }}с</small></div>
+              <i><span :style="{ width: `${castProgress(playerCast)}%` }" /></i>
+            </div>
+
+            <div v-if="enemyCast" class="arena-cast arena-cast--enemy" data-arena-enemy-cast>
+              <div><strong>{{ abilityName(enemyCast.abilityId) }}</strong><small>{{ castRemaining(enemyCast).toFixed(1) }}с</small></div>
+              <i><span :style="{ width: `${castProgress(enemyCast)}%` }" /></i>
+            </div>
+          </section>
+        </div>
+
+        <section v-if="active" class="arena-battle-screen__actions">
+          <SkillPanel
+            :abilities="activeAbilities"
+            :cooldowns="localActor.cooldowns"
+            :resource="localActor.resource"
+            :queued-ability-ids="[]"
+            :now="now"
+            :disabled="false"
+            @use="useAbility"
+          />
+          <BattleControls
+            :auto-attack-enabled="localActor.autoAttackEnabled"
+            :auto-attack-disabled="true"
+            :lifecycle-disabled="Boolean(pending)"
+            :flee-disabled="Boolean(pending)"
+            :training="false"
+            :show-auto-attack="false"
+            exit-label="Сдаться"
+            exit-description="Завершить матч поражением"
+            exit-icon="⚑"
+            @flee="emit('surrender')"
+          />
+        </section>
+
+        <section v-else class="arena-battle-screen__result" :data-result="resultLabel">
+          <small>БОЙ ЗАВЕРШЁН</small>
+          <strong>{{ resultLabel ?? 'Результат матча' }}</strong>
+          <div v-if="rating != null || ratingDelta != null || honorDelta != null" class="arena-battle-screen__rewards">
+            <span v-if="rating != null"><small>Рейтинг</small><b>{{ rating }}</b><em v-if="ratingDelta">{{ ratingDelta > 0 ? '+' : '' }}{{ ratingDelta }}</em></span>
+            <span v-if="honorDelta"><small>Честь</small><b>+{{ honorDelta }}</b></span>
           </div>
-
-          <div class="arena-battlefield__center" aria-hidden="true">
-            <span>1 × 1</span>
-          </div>
-
-          <div class="arena-battlefield__fighter arena-battlefield__fighter--enemy">
-            <CharacterFigure
-              :actor="enemyActor"
-              :selected="true"
-              :aggro="false"
-              :local="false"
-              :disabled="true"
-              :frontline="true"
-            />
-            <CombatNumbers :actor-id="enemyActor.actorId" :entries="eventProjection.numbers" />
-            <CombatEffectStrip
-              v-if="enemyActor.effects.length"
-              class="arena-battlefield__effects"
-              :effects="enemyActor.effects"
-              :now="now"
-              side="enemy"
-            />
-          </div>
-
-          <div v-if="playerCast" class="arena-cast arena-cast--player" data-arena-player-cast>
-            <div><strong>{{ abilityName(playerCast.abilityId) }}</strong><small>{{ castRemaining(playerCast).toFixed(1) }}с</small></div>
-            <i><span :style="{ width: `${castProgress(playerCast)}%` }" /></i>
-          </div>
-
-          <div v-if="enemyCast" class="arena-cast arena-cast--enemy" data-arena-enemy-cast>
-            <div><strong>{{ abilityName(enemyCast.abilityId) }}</strong><small>{{ castRemaining(enemyCast).toFixed(1) }}с</small></div>
-            <i><span :style="{ width: `${castProgress(enemyCast)}%` }" /></i>
+          <div class="arena-battle-screen__result-actions">
+            <UIButton :disabled="Boolean(pending)" @click="emit('nextOpponent')">Следующий соперник</UIButton>
+            <UIButton :disabled="Boolean(pending)" variant="ghost" @click="emit('dismiss')">К арене</UIButton>
           </div>
         </section>
-      </div>
 
-      <section v-if="active" class="arena-battle-screen__actions">
-        <SkillPanel
-          :abilities="activeAbilities"
-          :cooldowns="localActor.cooldowns"
-          :resource="localActor.resource"
-          :queued-ability-ids="[]"
-          :now="now"
-          :disabled="false"
-          @use="useAbility"
-        />
-        <div class="arena-battle-screen__controls">
-          <span :data-enabled="localActor.autoAttackEnabled">Автоатака: {{ localActor.autoAttackEnabled ? 'включена' : 'выключена' }}</span>
-          <UIButton variant="danger" @click="emit('surrender')">Сдаться</UIButton>
+        <div class="arena-battle-screen__log">
+          <CombatLog :entries="eventProjection.logEntries" />
         </div>
       </section>
-
-      <section v-else class="arena-battle-screen__result" :data-result="resultLabel">
-        <small>БОЙ ЗАВЕРШЁН</small>
-        <strong>{{ resultLabel ?? 'Результат матча' }}</strong>
-        <UIButton @click="emit('dismiss')">К арене</UIButton>
-      </section>
-
-      <div class="arena-battle-screen__log">
-        <CombatLog :entries="eventProjection.logEntries" />
-      </div>
-    </section>
+    </div>
   </Teleport>
 </template>
 
 <style scoped>
-.arena-battle-screen {
-  --arena-gap: clamp(0.28rem, 1vw, 0.46rem);
+.arena-battle-overlay {
   position: fixed;
   z-index: 1000;
   inset: 0;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  background: #05070c;
+}
+.arena-battle-screen {
+  --arena-gap: clamp(0.28rem, 1vw, 0.46rem);
   display: grid;
-  width: min(100%, 62rem);
+  width: min(100%, var(--ui-content-width));
   height: 100svh;
-  min-height: 40rem;
+  min-height: 36rem;
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   gap: var(--arena-gap);
-  margin-inline: auto;
   padding: max(0.35rem, env(safe-area-inset-top)) max(0.4rem, env(safe-area-inset-right)) max(0.35rem, env(safe-area-inset-bottom)) max(0.4rem, env(safe-area-inset-left));
   overflow: hidden;
+  border-inline: 1px solid var(--ui-color-frame);
   background: radial-gradient(circle at 50% 18%, rgb(116 45 65 / 16%), transparent 25rem), #05070c;
   color: #eee6da;
 }
 .arena-battle-screen__field-wrap {
+  position: relative;
   min-height: 0;
-  max-height: 61.8svh;
 }
 .arena-battlefield {
   position: relative;
@@ -267,18 +292,6 @@ onUnmounted(() => window.clearInterval(timer))
   width: min(11rem, 82%);
   transform: translateX(-50%);
 }
-.arena-battlefield__center {
-  position: absolute;
-  z-index: 8;
-  top: 46%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: rgb(231 202 130 / 42%);
-  font-family: var(--ui-font-display);
-  font-size: clamp(0.78rem, 4vw, 1.15rem);
-  letter-spacing: 0.15em;
-  text-shadow: 0 2px 12px #000;
-}
 .arena-cast {
   position: absolute;
   z-index: 50;
@@ -299,42 +312,50 @@ onUnmounted(() => window.clearInterval(timer))
 .arena-cast > i { display: block; height: 4px; overflow: hidden; border-radius: 999px; background: #08090d; }
 .arena-cast > i span { display: block; height: 100%; background: linear-gradient(90deg, #6553ba, #b497f0); }
 .arena-cast--enemy > i span { background: linear-gradient(90deg, #9d3148, #eb7182); }
-.arena-battle-screen__actions { display: grid; gap: 0.3rem; }
-.arena-battle-screen__controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+.arena-battle-screen__actions {
+  display: grid;
+  gap: 0.3rem;
 }
-.arena-battle-screen__controls > span {
-  color: #918b82;
-  font-size: 0.5rem;
-}
-.arena-battle-screen__controls > span[data-enabled='true'] { color: #cdb36f; }
 .arena-battle-screen__result {
   display: grid;
   justify-items: center;
-  gap: 0.25rem;
+  gap: 0.35rem;
   padding: 0.55rem;
   border: 1px solid rgb(182 153 87 / 35%);
   border-radius: 8px;
   background: #0c1018;
   text-align: center;
 }
-.arena-battle-screen__result small { color: #9b927e; font-size: 0.46rem; letter-spacing: 0.12em; }
-.arena-battle-screen__result strong { color: #e9d49d; font-family: var(--ui-font-display); font-size: 1rem; }
-.arena-battle-screen__log { max-height: 5.3rem; overflow: auto; }
+.arena-battle-screen__result > small { color: #9b927e; font-size: 0.46rem; letter-spacing: 0.12em; }
+.arena-battle-screen__result > strong { color: #e9d49d; font-family: var(--ui-font-display); font-size: 1rem; }
+.arena-battle-screen__rewards {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+.arena-battle-screen__rewards span { display: flex; align-items: baseline; gap: 0.25rem; }
+.arena-battle-screen__rewards small { color: #8f887d; font-size: 0.46rem; }
+.arena-battle-screen__rewards b { color: #ead089; font-size: 0.72rem; }
+.arena-battle-screen__rewards em { color: #80c992; font-size: 0.55rem; font-style: normal; }
+.arena-battle-screen__result-actions {
+  display: grid;
+  width: min(100%, 20rem);
+  grid-template-columns: 1.35fr 1fr;
+  gap: 0.35rem;
+}
+.arena-battle-screen__log {
+  min-height: 0;
+}
 
 @media (max-width: 480px) {
-  .arena-battle-screen { min-height: 36rem; }
   .arena-battlefield__fighter { width: 48%; height: 86%; }
   .arena-battlefield__fighter--player { left: -1%; }
   .arena-battlefield__fighter--enemy { right: -1%; }
-  .arena-battle-screen__log { display: none; }
+  .arena-battle-screen__result-actions { width: 100%; }
 }
 
-@media (max-height: 740px) {
-  .arena-battle-screen__field-wrap { max-height: 54svh; }
-  .arena-battle-screen__log { display: none; }
+@media (max-height: 680px) {
+  .arena-battle-screen { min-height: 0; }
+  .arena-battlefield__fighter { height: 84%; }
 }
 </style>
