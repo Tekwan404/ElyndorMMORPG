@@ -166,7 +166,7 @@ public sealed class ArenaFighterAssemblerTests
     }
 
     [Fact]
-    public void BuildWithUnhandledTalentHookIsRejectedBeforeQueueEntry()
+    public void BuildWithUnhandledTalentHookEntersArenaWithThatHookDormant()
     {
         CombatPlayerDefinition player = Player(
             new HashSet<string> { "FIREBALL" },
@@ -179,9 +179,11 @@ public sealed class ArenaFighterAssemblerTests
                 TimeSpan.Zero,
                 false)));
 
-        Assert.Throws<NotSupportedException>(() => ArenaFighterAssembler.Create(
+        ArenaTestEntrant entrant = ArenaFighterAssembler.Create(
             player, 15, new Dictionary<string, AbilityDefinition>
-            { ["FIREBALL"] = Ability("FIREBALL") }, hasCompanion: false));
+            { ["FIREBALL"] = Ability("FIREBALL") }, hasCompanion: false);
+
+        Assert.Empty(entrant.Fighter.EffectiveTalentModifiers.EventHooks);
     }
 
     [Fact]

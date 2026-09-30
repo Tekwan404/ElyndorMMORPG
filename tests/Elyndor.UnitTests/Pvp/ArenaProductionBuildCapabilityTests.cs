@@ -12,7 +12,7 @@ public sealed class ArenaProductionBuildCapabilityTests
     };
 
     [Fact]
-    public async Task EveryProductionTalentNodeHasArenaRuntimeSemantics()
+    public async Task EveryProductionTalentNodeIsEitherExecutableOrExplicitlyDormantInOneVsOne()
     {
         var package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
         var unsupported = new List<string>();
@@ -30,15 +30,18 @@ public sealed class ArenaProductionBuildCapabilityTests
                         [node.Id] = node.MaxRank
                     });
 
-                foreach (TalentModifierDefinition deferred in resolved.DeferredHooks)
+                ResolvedTalentModifiers arenaTalents =
+                    ArenaTalentRuntimeSupport.ForOneVsOne(resolved);
+
+                foreach (TalentModifierDefinition deferred in arenaTalents.DeferredHooks)
                 {
                     unsupported.Add(
                         $"{tree.ClassId}/{node.BranchId}/{node.Id}: deferred "
                         + $"{deferred.Key}:{deferred.TargetId ?? "<none>"}");
                 }
 
-                foreach (ResolvedTalentEventHook hook in ArenaTalentRuntimeSupport.UnsupportedEventHooks(resolved)
-                             .Where(hook => !ArenaCompanionCapability.RequiresCompanion(hook)))
+                foreach (ResolvedTalentEventHook hook in ArenaTalentRuntimeSupport
+                             .UnsupportedEventHooks(arenaTalents))
                 {
                     unsupported.Add(
                         $"{tree.ClassId}/{node.BranchId}/{node.Id}: event "
@@ -49,7 +52,7 @@ public sealed class ArenaProductionBuildCapabilityTests
 
         Assert.True(
             unsupported.Count == 0,
-            "Current production talent mechanics without Arena semantics:\n"
+            "Arena admission kept unsupported production talent mechanics active:\n"
             + string.Join("\n", unsupported.Distinct(StringComparer.Ordinal)));
     }
 

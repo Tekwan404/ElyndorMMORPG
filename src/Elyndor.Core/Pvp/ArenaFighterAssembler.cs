@@ -17,17 +17,8 @@ public static class ArenaFighterAssembler
         // Its dependent talents and commands are dormant, not a reason to
         // reject the owner. The parameter remains for the existing call site.
         _ = hasCompanion;
-        ResolvedTalentModifiers arenaTalents = player.TalentModifiers.EventHooks
-            .Any(ArenaCompanionCapability.RequiresCompanion)
-            ? player.TalentModifiers with
-            {
-                EventHooks = player.TalentModifiers.EventHooks
-                    .Where(hook => !ArenaCompanionCapability.RequiresCompanion(hook))
-                    .ToArray()
-            }
-            : player.TalentModifiers;
-
-        ValidateTalentRuntime(arenaTalents);
+        ResolvedTalentModifiers arenaTalents = ArenaTalentRuntimeSupport.ForOneVsOne(
+            player.TalentModifiers);
         ArenaTalentRuntimeSupport.ConfigureActorRuntime(
             player.Participant.Actor,
             arenaTalents);
@@ -56,20 +47,4 @@ public static class ArenaFighterAssembler
             player.Participant.SkinId, player.Participant.ResourceType);
     }
 
-    private static void ValidateTalentRuntime(ResolvedTalentModifiers talents)
-    {
-        if (talents.DeferredHooks.Count > 0)
-            throw new NotSupportedException("This build has unsupported deferred talent hooks.");
-
-        IReadOnlyList<ResolvedTalentEventHook> unsupported =
-            ArenaTalentRuntimeSupport.UnsupportedEventHooks(talents);
-        if (unsupported.Count == 0)
-            return;
-
-        string mechanics = string.Join(", ", unsupported
-            .Select(ArenaTalentRuntimeSupport.DescribeUnsupportedHook)
-            .Distinct(StringComparer.Ordinal));
-        throw new NotSupportedException(
-            $"This build has unsupported arena talent hooks: {mechanics}.");
-    }
 }

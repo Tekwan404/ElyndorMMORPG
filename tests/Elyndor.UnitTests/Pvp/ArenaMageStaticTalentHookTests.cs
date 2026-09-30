@@ -126,16 +126,18 @@ public sealed class ArenaMageStaticTalentHookTests
     }
 
     [Fact]
-    public void FrostHookWithAdditionalStatefulSlowBehaviourRemainsRejected()
+    public void FrostHookWithAdditionalStatefulSlowBehaviourIsDormantInOneVsOne()
     {
         ResolvedTalentModifiers talents = Talents(Hook("I-3-3", 10));
         AbilityDefinition blizzard = Ability("MAGE_BLIZZARD", "FROST");
 
-        Assert.Throws<NotSupportedException>(() => ArenaFighterAssembler.Create(
+        ArenaTestEntrant entrant = ArenaFighterAssembler.Create(
             Player(blizzard.Id, talents),
             20,
             new Dictionary<string, AbilityDefinition> { [blizzard.Id] = blizzard },
-            hasCompanion: false));
+            hasCompanion: false);
+
+        Assert.Empty(entrant.Fighter.EffectiveTalentModifiers.EventHooks);
     }
 
     private static CombatPlayerDefinition Player(

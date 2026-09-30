@@ -67,29 +67,33 @@ public sealed class ArenaCompanionCapabilityTests
     }
 
     [Fact]
-    public void UnknownBeastTalentCannotBeSilentlyDiscarded()
+    public void UnknownBeastHookIsDormantInsteadOfBlockingOneVsOneAdmission()
     {
         ResolvedTalentModifiers talents = Talents(new ResolvedTalentEventHook(
             "B-99-9", TalentModifierKeys.OnPartyEvent, 1, 3, "UNKNOWN_PET_EFFECT",
             TimeSpan.Zero, false));
 
-        Assert.Throws<NotSupportedException>(() => ArenaFighterAssembler.Create(
+        ArenaTestEntrant entrant = ArenaFighterAssembler.Create(
             Archer(talents, "SHOT"), 20,
             new Dictionary<string, AbilityDefinition> { ["SHOT"] = Shot() },
-            hasCompanion: true));
+            hasCompanion: true);
+
+        Assert.Empty(entrant.Fighter.EffectiveTalentModifiers.EventHooks);
     }
 
     [Fact]
-    public void NewOwnerEffectOnExistingPetTalentIsNotSilentlyDiscarded()
+    public void UnimplementedOwnerHookIsDormantUntilItsArenaEffectExists()
     {
         ResolvedTalentModifiers talents = Talents(new ResolvedTalentEventHook(
             "B-1-1", TalentModifierKeys.OnPartyEvent, 1, 3, "OWNER_DAMAGE",
             TimeSpan.Zero, false));
 
-        Assert.Throws<NotSupportedException>(() => ArenaFighterAssembler.Create(
+        ArenaTestEntrant entrant = ArenaFighterAssembler.Create(
             Archer(talents, "SHOT"), 20,
             new Dictionary<string, AbilityDefinition> { ["SHOT"] = Shot() },
-            hasCompanion: true));
+            hasCompanion: true);
+
+        Assert.Empty(entrant.Fighter.EffectiveTalentModifiers.EventHooks);
     }
 
     private static CombatPlayerDefinition Archer(ResolvedTalentModifiers talents,

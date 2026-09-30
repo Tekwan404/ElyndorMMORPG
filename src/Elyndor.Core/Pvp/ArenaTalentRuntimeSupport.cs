@@ -60,6 +60,26 @@ public static class ArenaTalentRuntimeSupport
         return talents.EventHooks.Where(hook => !SupportsEventHook(hook)).ToArray();
     }
 
+    /// <summary>
+    /// A 1v1 duel has no party, encounter, or companion runtime. Production
+    /// talent hooks without an executable Arena adapter are intentionally kept
+    /// dormant instead of preventing a player from entering a test match.
+    /// Statically resolved stats and supported hooks are retained unchanged.
+    /// </summary>
+    public static ResolvedTalentModifiers ForOneVsOne(ResolvedTalentModifiers talents)
+    {
+        ArgumentNullException.ThrowIfNull(talents);
+
+        if (talents.DeferredHooks.Count == 0 && talents.EventHooks.All(SupportsEventHook))
+            return talents;
+
+        return talents with
+        {
+            EventHooks = talents.EventHooks.Where(SupportsEventHook).ToArray(),
+            DeferredHooks = []
+        };
+    }
+
     public static string DescribeUnsupportedHook(ResolvedTalentEventHook hook)
     {
         ArgumentNullException.ThrowIfNull(hook);

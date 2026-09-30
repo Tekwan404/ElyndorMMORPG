@@ -51,31 +51,35 @@ public sealed class ArenaArcherStaticTalentHookTests
     }
 
     [Fact]
-    public void ArcherHookThatAlsoModifiesAutoAttackRemainsRejected()
+    public void ArcherHookWithoutAnArenaAdapterIsDormant()
     {
         ResolvedTalentModifiers talents = Talents(
             Hook("M-1-1", "PHYSICAL_SHOT_CRIT", 5));
         AbilityDefinition shot = PhysicalShot("SHOCKING_SHOT");
 
-        Assert.Throws<NotSupportedException>(() => ArenaFighterAssembler.Create(
+        ArenaTestEntrant entrant = ArenaFighterAssembler.Create(
             Player(shot.Id, talents),
             20,
             new Dictionary<string, AbilityDefinition> { [shot.Id] = shot },
-            hasCompanion: false));
+            hasCompanion: false);
+
+        Assert.Empty(entrant.Fighter.EffectiveTalentModifiers.EventHooks);
     }
 
     [Fact]
-    public void ArcherStatefulHookRemainsRejected()
+    public void ArcherStatefulHookWithoutItsRequiredDescriptorIsDormant()
     {
         ResolvedTalentModifiers talents = Talents(
             Hook("M-2-4", "HAWK_SPIRIT", 10));
         AbilityDefinition shot = PhysicalShot("SHOCKING_SHOT");
 
-        Assert.Throws<NotSupportedException>(() => ArenaFighterAssembler.Create(
+        ArenaTestEntrant entrant = ArenaFighterAssembler.Create(
             Player(shot.Id, talents),
             20,
             new Dictionary<string, AbilityDefinition> { [shot.Id] = shot },
-            hasCompanion: false));
+            hasCompanion: false);
+
+        Assert.Empty(entrant.Fighter.EffectiveTalentModifiers.EventHooks);
     }
 
     private static CombatPlayerDefinition Player(

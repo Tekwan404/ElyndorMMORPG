@@ -68,7 +68,7 @@ public sealed class ArenaWarriorStaticTalentHookTests
     }
 
     [Fact]
-    public void ArenaEntrantCapturesResolvedWarriorCryAndRejectsPartyAura()
+    public void ArenaEntrantCapturesResolvedWarriorCryAndMakesPartyAuraDormant()
     {
         AbilityDefinition cry = Ability("BATTLE_CRY", resourceCost: 25,
             duration: TimeSpan.FromSeconds(6));
@@ -85,9 +85,10 @@ public sealed class ArenaWarriorStaticTalentHookTests
         Assert.Equal(TimeSpan.FromSeconds(9), Assert.Single(resolved.Actions!).Effect!.Duration);
 
         CombatPlayerDefinition unsupported = Player(known, Talents(Hook("W-1-2", 5)));
-        Assert.Throws<NotSupportedException>(() => ArenaFighterAssembler.Create(
+        ArenaTestEntrant dormantEntrant = ArenaFighterAssembler.Create(
             unsupported, 30, new Dictionary<string, AbilityDefinition> { [cry.Id] = cry },
-            hasCompanion: false));
+            hasCompanion: false);
+        Assert.Empty(dormantEntrant.Fighter.EffectiveTalentModifiers.EventHooks);
     }
 
     private static CombatPlayerDefinition Player(
