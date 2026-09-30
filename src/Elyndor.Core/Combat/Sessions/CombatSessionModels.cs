@@ -111,7 +111,8 @@ public sealed record CombatActorSnapshot(
     bool RewardEligible = true,
     string? GenderId = null,
     MonsterRank? MonsterRank = null,
-    string? SkinId = null);
+    string? SkinId = null,
+    int? Level = null);
 
 public sealed record CombatSessionSnapshot(
     Guid SessionId,
