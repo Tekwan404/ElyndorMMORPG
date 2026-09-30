@@ -136,10 +136,10 @@ describe('arenaStore', () => {
     expect(arena.errorCode).toBeNull()
   })
 
-  it('refreshes rating and leaderboard immediately when a command completes the match', async () => {
+  it('refreshes rating, honor and leaderboard immediately when a command completes the match', async () => {
     const request = vi.spyOn(apiClient, 'request')
-      .mockResolvedValueOnce(status({ activeMatchId: 'match-1' }))
-      .mockResolvedValueOnce(status({ rating: 984, losses: 1 }))
+      .mockResolvedValueOnce(status({ activeMatchId: 'match-1', rating: 1000, honor: 20 }))
+      .mockResolvedValueOnce(status({ rating: 984, honor: 25, losses: 1 }))
       .mockResolvedValueOnce([])
 
     signalR.invoke
@@ -156,7 +156,28 @@ describe('arenaStore', () => {
 
     expect(arena.match?.status).toBe('Completed')
     expect(arena.status?.rating).toBe(984)
+    expect(arena.status?.honor).toBe(25)
     expect(arena.status?.losses).toBe(1)
+    expect(arena.ratingDelta).toBe(-16)
+    expect(arena.honorDelta).toBe(5)
     expect(request).toHaveBeenCalledWith('/api/v1/arena/leaderboard')
+  })
+
+  it('queues the next ranked opponent directly from a completed result', async () => {
+    const arena = useArenaStore()
+    arena.status = status({ rating: 1016, honor: 8 })
+    arena.match = match({ status: 'Completed', outcome: 'WinnerA', result: 'Victory' })
+    vi.spyOn(apiClient, 'request').mockResolvedValueOnce({
+      succeeded: true,
+      errorCode: null,
+      status: status({ rating: 1016, honor: 8, isQueued: true, queueMode: 'Ranked' }),
+    })
+
+    await arena.findNextOpponent('Ranked')
+
+    expect(arena.match).toBeNull()
+    expect(arena.status?.isQueued).toBe(true)
+    expect(arena.status?.queueMode).toBe('Ranked')
+    expect(signalR.start).toHaveBeenCalledTimes(1)
   })
 })

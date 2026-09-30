@@ -19,7 +19,6 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  // Keep the connection while queued or fighting: it is what keeps the player present.
   if (!arena.status?.isQueued && !arena.inMatch) void arena.disconnect()
 })
 </script>
@@ -31,9 +30,14 @@ onUnmounted(() => {
     :events="arena.log"
     :active="activeFight"
     :result-label="resultLabel"
+    :pending="arena.pending"
+    :rating="status?.rating ?? null"
+    :rating-delta="arena.ratingDelta"
+    :honor-delta="arena.honorDelta"
     @use-ability="arena.useAbility"
     @surrender="arena.surrender"
     @dismiss="arena.dismissMatch"
+    @next-opponent="arena.findNextOpponent('Ranked')"
   />
 
   <section v-else class="arena" aria-label="Арена">

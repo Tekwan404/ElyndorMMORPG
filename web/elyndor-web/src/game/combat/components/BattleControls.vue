@@ -1,11 +1,20 @@
 <script setup lang="ts">
-defineProps<{
+const props = withDefaults(defineProps<{
   autoAttackEnabled: boolean
   autoAttackDisabled: boolean
   lifecycleDisabled: boolean
   fleeDisabled: boolean
   training: boolean
-}>()
+  showAutoAttack?: boolean
+  exitLabel?: string
+  exitDescription?: string
+  exitIcon?: string
+}>(), {
+  showAutoAttack: true,
+  exitLabel: 'Сбежать',
+  exitDescription: 'Остаться в локации',
+  exitIcon: '↗',
+})
 const emit = defineEmits<{
   toggleAutoAttack: []
   flee: []
@@ -17,11 +26,15 @@ const emit = defineEmits<{
 <template>
   <section
     class="battle-controls"
-    :class="{ 'battle-controls--training': training }"
+    :class="{
+      'battle-controls--training': training,
+      'battle-controls--single': !training && !showAutoAttack,
+    }"
     aria-label="Управление боем"
     data-combat-utility-strip
   >
     <button
+      v-if="showAutoAttack"
       type="button"
       class="battle-controls__auto"
       :class="{ active: autoAttackEnabled }"
@@ -46,8 +59,10 @@ const emit = defineEmits<{
     >
       <span aria-hidden="true">←</span><b>Завершить</b><small>Покинуть тренировку</small>
     </button>
-    <button v-else type="button" :disabled="fleeDisabled" @click="emit('flee')">
-      <span aria-hidden="true">↗</span><b>Сбежать</b><small>Остаться в локации</small>
+    <button v-else type="button" data-combat-exit :disabled="fleeDisabled" @click="emit('flee')">
+      <span aria-hidden="true">{{ props.exitIcon }}</span>
+      <b>{{ props.exitLabel }}</b>
+      <small>{{ props.exitDescription }}</small>
     </button>
   </section>
 </template>
@@ -57,6 +72,9 @@ const emit = defineEmits<{
   display: grid;
   grid-template-columns: 1.25fr 1fr;
   gap: 0.4rem;
+}
+.battle-controls--single {
+  grid-template-columns: 1fr;
 }
 .battle-controls--training {
   grid-template-columns: 1.15fr 1fr 1fr;
@@ -101,6 +119,10 @@ const emit = defineEmits<{
 }
 .battle-controls__auto[data-active='true'] > span {
   color: #f1cd71;
+}
+.battle-controls--single [data-combat-exit] {
+  border-color: rgb(184 71 91 / 45%);
+  background: linear-gradient(90deg, rgb(71 21 34 / 24%), #090c13 55%);
 }
 .battle-controls button:focus-visible {
   outline: 2px solid #ebcf7f;

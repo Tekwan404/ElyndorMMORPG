@@ -40,6 +40,11 @@ const healthRatio = computed(() =>
     ? Math.max(0, Math.min(100, (props.actor.hp / props.actor.maxHp) * 100))
     : 0,
 )
+const healthState = computed<'normal' | 'low' | 'critical'>(() => {
+  if (healthRatio.value <= 25) return 'critical'
+  if (healthRatio.value <= 50) return 'low'
+  return 'normal'
+})
 const urgentArt = computed(() => props.local || props.frontline)
 const responsiveSizes = computed(() =>
   props.frontline
@@ -96,6 +101,7 @@ const accessibleLabel = computed(() =>
         <strong>{{ actor.name }}</strong>
         <span
           class="character-figure__health"
+          :data-health-state="healthState"
           role="progressbar"
           :aria-label="`HP ${actor.name}`"
           :aria-valuenow="Math.round(healthRatio)"
@@ -212,6 +218,17 @@ const accessibleLabel = computed(() =>
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #8c3044, #dd6678);
+  transition: width 160ms ease, background 160ms ease, box-shadow 160ms ease;
+}
+.character-figure__health[data-health-state='low'] i {
+  background: linear-gradient(90deg, #9a4c2c, #e59545);
+}
+.character-figure__health[data-health-state='critical'] {
+  box-shadow: 0 0 7px rgb(232 55 75 / 30%);
+}
+.character-figure__health[data-health-state='critical'] i {
+  background: linear-gradient(90deg, #8d142c, #ff405c);
+  box-shadow: 0 0 7px rgb(255 64 92 / 45%);
 }
 .character-figure[data-aggro='true'] {
   filter: drop-shadow(0 0 12px rgb(218 68 82 / 28%));

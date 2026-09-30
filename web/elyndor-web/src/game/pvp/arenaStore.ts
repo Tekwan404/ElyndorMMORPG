@@ -32,8 +32,20 @@ export const useArenaStore = defineStore('arena', () => {
   const log = ref<CombatEvent[]>([])
   const pending = ref(false)
   const errorCode = ref<string | null>(null)
+  const matchStartRating = ref<number | null>(null)
+  const matchStartHonor = ref<number | null>(null)
   const enabled = computed(() => status.value?.enabled === true)
   const inMatch = computed(() => match.value?.status === 'Active')
+  const ratingDelta = computed(() =>
+    match.value?.status === 'Completed' && status.value && matchStartRating.value !== null
+      ? status.value.rating - matchStartRating.value
+      : null,
+  )
+  const honorDelta = computed(() =>
+    match.value?.status === 'Completed' && status.value && matchStartHonor.value !== null
+      ? status.value.honor - matchStartHonor.value
+      : null,
+  )
 
   let connection: HubConnection | null = null
   let loadedMatchId: string | null = null
@@ -41,6 +53,12 @@ export const useArenaStore = defineStore('arena', () => {
 
   function fail(error: unknown, fallback: string): void {
     errorCode.value = error instanceof Error ? error.message : fallback
+  }
+
+  function rememberMatchBaseline(): void {
+    if (!status.value) return
+    if (matchStartRating.value === null) matchStartRating.value = status.value.rating
+    if (matchStartHonor.value === null) matchStartHonor.value = status.value.honor
   }
 
   async function refreshSummary(): Promise<void> {
@@ -60,6 +78,7 @@ export const useArenaStore = defineStore('arena', () => {
     try {
       status.value = await apiClient.request<ArenaStatus>('/api/v1/arena/status')
       if (status.value.enabled && (status.value.isQueued || status.value.activeMatchId)) {
+        if (status.value.activeMatchId) rememberMatchBaseline()
         await connect()
         if (status.value.activeMatchId) await loadMatch(status.value.activeMatchId)
       }
@@ -104,9 +123,9 @@ export const useArenaStore = defineStore('arena', () => {
   }
 
   async function refreshAfterNotification(matchId: string): Promise<void> {
+    rememberMatchBaseline()
     await loadMatch(matchId)
     if (match.value?.status === 'Completed' || status.value?.activeMatchId !== matchId) {
-      // Result is settled server-side before the final notification; refresh rating/Honor and leaderboard.
       await refreshSummary()
     }
   }
@@ -128,6 +147,7 @@ export const useArenaStore = defineStore('arena', () => {
 
   function applyMatch(next: ArenaMatch | null): void {
     if (!next) return
+    if (next.status === 'Active') rememberMatchBaseline()
     match.value = next
     if (next.sequence >= lastSequence) lastSequence = next.sequence
     if (next.events.length > 0) {
@@ -141,6 +161,8 @@ export const useArenaStore = defineStore('arena', () => {
     if (pending.value) return
     pending.value = true
     errorCode.value = null
+    matchStartRating.value = status.value?.rating ?? null
+    matchStartHonor.value = status.value?.honor ?? null
     try {
       await connect()
       const response = await apiClient.request<ArenaQueueResponse>('/api/v1/arena/queue', {
@@ -199,17 +221,30 @@ export const useArenaStore = defineStore('arena', () => {
     }
   }
 
-  function dismissMatch(): void {
+  function clearMatch(): void {
     match.value = null
     loadedMatchId = null
     lastSequence = 0
     log.value = []
+    matchStartRating.value = null
+    matchStartHonor.value = null
+  }
+
+  function dismissMatch(): void {
+    clearMatch()
     void refreshSummary()
+  }
+
+  async function findNextOpponent(mode: ArenaQueueMode = 'Ranked'): Promise<void> {
+    if (pending.value) return
+    clearMatch()
+    await joinQueue(mode)
   }
 
   return {
     status, leaderboard, match, log, pending, errorCode, enabled, inMatch,
+    ratingDelta, honorDelta,
     refresh, loadLeaderboard, connect, disconnect, joinQueue, leaveQueue,
-    useAbility, surrender, dismissMatch,
+    useAbility, surrender, dismissMatch, findNextOpponent,
   }
 })

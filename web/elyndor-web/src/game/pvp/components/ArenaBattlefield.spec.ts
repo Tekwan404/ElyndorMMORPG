@@ -51,11 +51,11 @@ function actor(
   }
 }
 
-function battle(): CombatSnapshot {
+function battle(status: CombatSnapshot['status'] = 'Active'): CombatSnapshot {
   return {
     sessionId: 'arena-match',
     sequence: 1,
-    status: 'Active',
+    status,
     serverTimeUtc: '2026-09-30T18:00:00Z',
     contentVersion: 'test',
     balanceVersion: 'test',
@@ -64,9 +64,17 @@ function battle(): CombatSnapshot {
   }
 }
 
-function mountBattlefield() {
+function mountBattlefield(active = true) {
   return mount(ArenaBattlefield, {
-    props: { battle: battle(), events: [], active: true, resultLabel: null },
+    props: {
+      battle: battle(active ? 'Active' : 'Victory'),
+      events: [],
+      active,
+      resultLabel: active ? null : 'Победа',
+      rating: active ? null : 1016,
+      ratingDelta: active ? null : 16,
+      honorDelta: active ? null : 8,
+    },
     global: { stubs: { Teleport: true } },
   })
 }
@@ -74,13 +82,18 @@ function mountBattlefield() {
 describe('ArenaBattlefield', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
-  it('renders both real players on the battlefield', () => {
+  it('renders both real players in the pve-sized combat structure', () => {
     const wrapper = mountBattlefield()
 
     expect(wrapper.get('[data-character-figure="player-a"]').text()).toContain('Tekwan')
     expect(wrapper.get('[data-character-figure="player-b"]').text()).toContain('Mini tekwan')
     expect(wrapper.find('[data-arena-battlefield]').exists()).toBe(true)
     expect(wrapper.find('[data-battle-screen]').exists()).toBe(true)
+    expect(wrapper.find('[data-enemy-resource]').exists()).toBe(true)
+    expect(wrapper.find('[data-autoattack-toggle]').exists()).toBe(false)
+    expect(wrapper.get('[data-combat-exit]').text()).toContain('Сдаться')
+    expect(wrapper.find('.arena-battle-screen__log').exists()).toBe(true)
+    expect(wrapper.text()).not.toContain('1 × 1')
 
     wrapper.unmount()
   })
@@ -96,6 +109,23 @@ describe('ArenaBattlefield', () => {
       ['BASTION', 'player-a'],
     ])
 
+    wrapper.unmount()
+  })
+
+  it('shows progression and can queue the next opponent from the result', async () => {
+    const wrapper = mountBattlefield(false)
+
+    expect(wrapper.text()).toContain('Победа')
+    expect(wrapper.text()).toContain('1016')
+    expect(wrapper.text()).toContain('+16')
+    expect(wrapper.text()).toContain('+8')
+
+    const buttons = wrapper.findAll('button')
+    const next = buttons.find(button => button.text().includes('Следующий соперник'))
+    expect(next).toBeDefined()
+    await next!.trigger('click')
+
+    expect(wrapper.emitted('nextOpponent')).toEqual([[]])
     wrapper.unmount()
   })
 })

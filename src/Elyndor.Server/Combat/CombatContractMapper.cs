@@ -158,7 +158,7 @@ internal static class CombatContractMapper
                 effect.DisplayName,
                 effect.Description,
                 effect.IconId)).ToArray(),
-            monster?.Level ?? 1,
+            actor.Level ?? monster?.Level ?? 1,
             monster?.ArtId,
             actor.ActiveCast is null
                 ? null

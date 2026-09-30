@@ -84,6 +84,23 @@ describe('CharacterFigure', () => {
     expect(wrapper.get('img').attributes('fetchpriority')).toBe('low')
   })
 
+  it('marks low and critical hp in the battlefield caption', async () => {
+    const wrapper = mount(CharacterFigure, {
+      props: {
+        actor: { ...actor, hp: 45 },
+        selected: false,
+        aggro: false,
+        local: false,
+        disabled: false,
+        frontline: true,
+      },
+    })
+
+    expect(wrapper.get('.character-figure__health').attributes('data-health-state')).toBe('low')
+    await wrapper.setProps({ actor: { ...actor, hp: 20 } })
+    expect(wrapper.get('.character-figure__health').attributes('data-health-state')).toBe('critical')
+  })
+
   it('marks a dead actor unavailable without hiding its identity', () => {
     const wrapper = mount(CharacterFigure, {
       props: {
