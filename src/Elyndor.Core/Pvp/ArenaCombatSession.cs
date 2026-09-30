@@ -339,7 +339,7 @@ public sealed class ArenaCombatSession
             due, batchStartSequence);
     }
 
-    private TimestampBatchEntry SnapshotTimestampEntry(
+    private static TimestampBatchEntry SnapshotTimestampEntry(
         ArenaFighter fighter,
         ArenaFighter opponent,
         CombatRuntimeState runtime,
@@ -465,11 +465,11 @@ public sealed class ArenaCombatSession
 
     private void ResolvePendingActions(
         CombatRuntimeState runtime,
-        IReadOnlyList<PendingAbilityAction> committedActions,
+        PendingAbilityAction[] committedActions,
         bool wasAlive,
         DateTimeOffset due)
     {
-        if (committedActions.Count == 0)
+        if (committedActions.Length == 0)
             return;
         if (!wasAlive)
         {
