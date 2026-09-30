@@ -103,6 +103,9 @@ public static class ArenaTalentEventDispatcher
         if (PyromancerImpactRuntime.SupportsArenaHook(hook))
             return true;
 
+        if (ArenaPaladinJudgementTalentRuntime.Supports(hook))
+            return true;
+
         return TryNormalize(hook, out ArenaTalentEventRule rule)
             && SupportsRuntimeTrigger(rule.Trigger);
     }
@@ -269,6 +272,8 @@ public static class ArenaTalentEventDispatcher
         ArgumentNullException.ThrowIfNull(random);
 
         List<ArenaTalentRuntimeEffect> effects = [];
+
+        effects.AddRange(ArenaPaladinJudgementTalentRuntime.Dispatch(talents, combatEvent));
 
         if (combatEvent.Type == ArenaTalentEventType.OnHit && combatEvent.Ability is not null)
         {
