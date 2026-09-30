@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 import type { CombatActorSnapshot } from '@/api/contracts'
 import { monsterArtUrl } from '@/assets/monsterArt'
+import { useGameSessionStore } from '@/stores/gameSession'
 import AlliesStrip from './AlliesStrip.vue'
 
 const props = defineProps<{
@@ -14,6 +15,7 @@ const props = defineProps<{
   disabled: boolean
 }>()
 const emit = defineEmits<{ selectFriendly: [actorId: string] }>()
+const session = useGameSessionStore()
 
 const party = computed(() => props.allies.length > 1)
 const enemyIsPlayer = computed(() => props.enemy.kind === 'Player')
@@ -38,6 +40,13 @@ function healthState(actor: CombatActorSnapshot): 'normal' | 'low' | 'critical' 
   if (percent <= 50) return 'low'
   return 'normal'
 }
+
+function displayLevel(actor: CombatActorSnapshot, local: boolean): number {
+  if (actor.level && actor.level > 0) return actor.level
+  const character = session.snapshot?.character
+  if (local && actor.kind === 'Player' && character?.id === actor.actorId) return character.level
+  return 1
+}
 </script>
 
 <template>
@@ -48,7 +57,7 @@ function healthState(actor: CombatActorSnapshot): 'normal' | 'low' | 'critical' 
     >
       <div class="battle-header__identity">
         <strong>{{ localActor.name }}</strong>
-        <small>Ур. {{ localActor.level ?? 1 }}</small>
+        <small>Ур. {{ displayLevel(localActor, true) }}</small>
       </div>
       <label>Здоровье <b>{{ Math.ceil(localActor.hp) }} / {{ Math.ceil(localActor.maxHp) }}</b></label>
       <span
@@ -86,7 +95,7 @@ function healthState(actor: CombatActorSnapshot): 'normal' | 'low' | 'critical' 
       </span>
       <div class="battle-header__identity">
         <strong>{{ enemy.name }}</strong>
-        <small>Ур. {{ enemy.level ?? 1 }}</small>
+        <small>Ур. {{ displayLevel(enemy, false) }}</small>
       </div>
       <label>Здоровье <b>{{ Math.ceil(enemy.hp) }} / {{ Math.ceil(enemy.maxHp) }}</b></label>
       <span
