@@ -27,6 +27,7 @@ public sealed class CombatActorState
 {
     private readonly decimal _baseMaxHp;
     private readonly Dictionary<string, decimal> _temporaryMaxHpPercentBonuses = new(StringComparer.Ordinal);
+    private int _deferredDeathScopes;
 
     public CombatActorState(
         Guid actorId,
@@ -59,13 +60,14 @@ public sealed class CombatActorState
     public decimal CurrentResource { get; private set; }
     public CombatStats Stats { get; }
     public TalentCombatModifiers TalentModifiers { get; }
+    public IncomingDamageModifier? IncomingDamageModifier { get; set; }
     public decimal IncomingCriticalDamageReductionPercent { get; set; }
     public decimal IncomingControlDurationMultiplier { get; set; } = 1;
     public decimal OwnShieldMagnitudeMultiplier { get; set; } = 1;
     public bool CanDie { get; }
     public DateTimeOffset? UntargetableUntilUtc { get; private set; }
     public List<ActiveEffect> ActiveEffects { get; } = [];
-    public bool IsDead => CanDie && CurrentHp <= 0;
+    public bool IsDead => CanDie && CurrentHp <= 0 && _deferredDeathScopes == 0;
 
     public static CombatActorState CreateDummy(
         decimal maxHp,
@@ -87,6 +89,15 @@ public sealed class CombatActorState
     public void SetCurrentHp(decimal value) => CurrentHp = ClampHp(value);
     public void ApplyDamage(decimal value) => SetCurrentHp(CurrentHp - Math.Max(0, value));
     public void ApplyHealing(decimal value) => SetCurrentHp(CurrentHp + Math.Max(0, value));
+
+    internal IDisposable DeferDeathForCurrentBatch()
+    {
+        if (IsDead)
+            throw new InvalidOperationException("Death can only be deferred for an actor alive at batch start.");
+
+        _deferredDeathScopes++;
+        return new DeathDeferralLease(this);
+    }
 
     public bool IsTargetable(DateTimeOffset now) =>
         UntargetableUntilUtc is not { } until || now >= until;
@@ -167,6 +178,24 @@ public sealed class CombatActorState
         decimal minimum = CanDie ? 0 : Math.Min(1m, MaxHp);
         return Math.Clamp(value, minimum, MaxHp);
     }
+
+    private void ReleaseDeathDeferral()
+    {
+        if (_deferredDeathScopes <= 0)
+            throw new InvalidOperationException("Death deferral scope is not active.");
+        _deferredDeathScopes--;
+    }
+
+    private sealed class DeathDeferralLease(CombatActorState actor) : IDisposable
+    {
+        private CombatActorState? _actor = actor;
+
+        public void Dispose()
+        {
+            CombatActorState? actorToRelease = Interlocked.Exchange(ref _actor, null);
+            actorToRelease?.ReleaseDeathDeferral();
+        }
+    }
 }
 
 public enum CombatWeaponHand
@@ -208,7 +237,9 @@ public enum CombatEventType
     DamageBlocked,
     UnblockableHit,
     Dodge,
-    ActorDied
+    ActorDied,
+    EffectImmune,
+    ActionRejected
 }
 
 public sealed record CombatEvent(

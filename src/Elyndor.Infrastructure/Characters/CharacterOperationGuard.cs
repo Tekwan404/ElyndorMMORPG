@@ -19,6 +19,39 @@ public sealed class CharacterOperationGuard(ICombatActivityReader combatActivity
         .Select(_ => new SemaphoreSlim(1, 1))
         .ToArray();
 
+    public async Task<IDisposable> AcquireManyAsync(
+        IEnumerable<Guid> accountIds,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(accountIds);
+
+        int[] stripeIndexes = accountIds
+            .Select(GetStripeIndex)
+            .Distinct()
+            .OrderBy(static stripeIndex => stripeIndex)
+            .ToArray();
+
+        var acquired = new List<SemaphoreSlim>(stripeIndexes.Length);
+        try
+        {
+            foreach (int stripeIndex in stripeIndexes)
+            {
+                SemaphoreSlim gate = _gates[stripeIndex];
+                await gate.WaitAsync(cancellationToken);
+                acquired.Add(gate);
+            }
+
+            return new MultiGateLease(acquired);
+        }
+        catch
+        {
+            for (int index = acquired.Count - 1; index >= 0; index--)
+                acquired[index].Release();
+
+            throw;
+        }
+    }
+
     public async Task<T> ExecuteOutOfCombatAsync<T>(
         Guid accountId,
         Func<Task<T>> operation,
@@ -62,7 +95,27 @@ public sealed class CharacterOperationGuard(ICombatActivityReader combatActivity
 
     private SemaphoreSlim GetGate(Guid accountId)
     {
+        return _gates[GetStripeIndex(accountId)];
+    }
+
+    private static int GetStripeIndex(Guid accountId)
+    {
         uint hash = unchecked((uint)accountId.GetHashCode());
-        return _gates[(int)(hash % StripeCount)];
+        return (int)(hash % StripeCount);
+    }
+
+    private sealed class MultiGateLease(IReadOnlyList<SemaphoreSlim> gates) : IDisposable
+    {
+        private IReadOnlyList<SemaphoreSlim>? _gates = gates;
+
+        public void Dispose()
+        {
+            IReadOnlyList<SemaphoreSlim>? gates = Interlocked.Exchange(ref _gates, null);
+            if (gates is null)
+                return;
+
+            for (int index = gates.Count - 1; index >= 0; index--)
+                gates[index].Release();
+        }
     }
 }

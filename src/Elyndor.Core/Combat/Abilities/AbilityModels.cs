@@ -182,6 +182,30 @@ public sealed class CombatRuntimeState(CombatActorState actor)
 
     public void AddActor(CombatActorState actor) => Actors.Add(actor.ActorId, actor);
 
+    public bool ModifyCooldown(string abilityId, TimeSpan delta, DateTimeOffset now)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(abilityId);
+        if (!Cooldowns.TryGetValue(abilityId, out DateTimeOffset current))
+            return false;
+
+        DateTimeOffset next = current + delta;
+        if (next <= now)
+            Cooldowns.Remove(abilityId);
+        else
+            Cooldowns[abilityId] = next;
+        Version++;
+        return true;
+    }
+
+    public bool ResetCooldown(string abilityId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(abilityId);
+        if (!Cooldowns.Remove(abilityId))
+            return false;
+        Version++;
+        return true;
+    }
+
     internal void SchedulePendingAction(
         AbilityDefinition ability,
         AbilityActionDefinition action,

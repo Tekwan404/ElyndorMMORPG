@@ -1239,6 +1239,7 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasDefaultValue("UNBOUND");
 
                     b.Property<Guid>("CharacterId")
+                        .IsConcurrencyToken()
                         .HasColumnType("uuid");
 
                     b.Property<int>("DefinitionVersion")
@@ -1303,6 +1304,7 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(16)");
 
                     b.Property<int>("Quantity")
+                        .IsConcurrencyToken()
                         .HasColumnType("integer");
 
                     b.Property<int>("ReforgeCount")
@@ -1349,6 +1351,7 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Storage")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(16)
@@ -1356,6 +1359,7 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasDefaultValue("INVENTORY");
 
                     b.Property<Guid?>("TransactionLockId")
+                        .IsConcurrencyToken()
                         .HasColumnType("uuid");
 
                     b.HasKey("Id")
@@ -1912,6 +1916,189 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_combat_reward_grants_sources_json", "jsonb_typeof(\"RewardSourcesJson\") = 'array'");
 
                             t.HasCheckConstraint("ck_combat_reward_grants_xp_non_negative", "\"XpEarned\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Pvp.ArenaHonorLedgerEntry", b =>
+                {
+                    b.Property<Guid>("MatchId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("BalanceAfter")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("Delta")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("MatchId", "CharacterId")
+                        .HasName("pk_arena_honor_ledger_entries");
+
+                    b.HasIndex("CharacterId", "CreatedAtUtc")
+                        .HasDatabaseName("ix_arena_honor_ledger_character_created");
+
+                    b.ToTable("arena_honor_ledger_entries", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_arena_honor_ledger_balance_valid", "\"BalanceAfter\" >= \"Delta\"");
+
+                            t.HasCheckConstraint("ck_arena_honor_ledger_delta_positive", "\"Delta\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Pvp.ArenaHonorWallet", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("Balance")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("CharacterId")
+                        .HasName("pk_arena_honor_wallets");
+
+                    b.ToTable("arena_honor_wallets", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_arena_honor_wallets_balance_non_negative", "\"Balance\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Pvp.ArenaMatch", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterAId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterBId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("EligibleForProgression")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("FormulaVersion")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Mode")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("Outcome")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<string>("SeasonId")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<DateTimeOffset?>("SettledAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("StartedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id")
+                        .HasName("pk_arena_matches");
+
+                    b.HasIndex("CharacterAId")
+                        .HasDatabaseName("ix_arena_matches_character_a");
+
+                    b.HasIndex("CharacterBId")
+                        .HasDatabaseName("ix_arena_matches_character_b");
+
+                    b.HasIndex("Outcome", "CharacterAId")
+                        .HasDatabaseName("ix_arena_matches_active_character_a");
+
+                    b.HasIndex("Outcome", "CharacterBId")
+                        .HasDatabaseName("ix_arena_matches_active_character_b");
+
+                    b.ToTable("arena_matches", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_arena_matches_distinct_characters", "\"CharacterAId\" <> \"CharacterBId\"");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Pvp.ArenaQueueEntry", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("JoinedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Mode")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<int>("RatingSnapshot")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CharacterId")
+                        .HasName("pk_arena_queue_entries");
+
+                    b.HasIndex("Mode", "JoinedAtUtc")
+                        .HasDatabaseName("ix_arena_queue_mode_joined");
+
+                    b.HasIndex("Mode", "RatingSnapshot", "JoinedAtUtc")
+                        .HasDatabaseName("ix_arena_queue_mode_rating_joined");
+
+                    b.ToTable("arena_queue_entries", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_arena_queue_level_positive", "\"Level\" > 0");
+
+                            t.HasCheckConstraint("ck_arena_queue_rating_non_negative", "\"RatingSnapshot\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Pvp.ArenaStanding", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SeasonId")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<int>("Draws")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Losses")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Wins")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CharacterId", "SeasonId")
+                        .HasName("pk_arena_standings");
+
+                    b.HasIndex("SeasonId", "Rating", "Wins")
+                        .IsDescending(false, true, true)
+                        .HasDatabaseName("ix_arena_standings_leaderboard");
+
+                    b.ToTable("arena_standings", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_arena_standings_counts_non_negative", "\"Wins\" >= 0 AND \"Losses\" >= 0 AND \"Draws\" >= 0");
+
+                            t.HasCheckConstraint("ck_arena_standings_rating_non_negative", "\"Rating\" >= 0");
                         });
                 });
 
@@ -2808,6 +2995,63 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_combat_reward_grants_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Pvp.ArenaHonorLedgerEntry", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Elyndor.Core.Pvp.ArenaMatch", null)
+                        .WithMany()
+                        .HasForeignKey("MatchId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Pvp.ArenaHonorWallet", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Pvp.ArenaMatch", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterAId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterBId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Pvp.ArenaQueueEntry", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Pvp.ArenaStanding", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Elyndor.Core.Quests.CharacterQuestState", b =>

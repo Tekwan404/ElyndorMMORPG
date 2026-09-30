@@ -61,6 +61,13 @@ public sealed class CombatSessionFactory(
         "PALADIN"
     };
 
+    public Task<CombatPlayerDefinition> CreateArenaPlayerAsync(
+        BootstrapSnapshot bootstrap,
+        GameContentSnapshot contentSnapshot,
+        CancellationToken cancellationToken) => CreatePlayerDefinitionAsync(
+            bootstrap, contentSnapshot, isTraining: false,
+            timeProvider.GetUtcNow(), cancellationToken);
+
     public async Task<CombatSessionCreationResult> CreateAsync(
         Guid accountId,
         string monsterId,

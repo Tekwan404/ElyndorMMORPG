@@ -1,3 +1,4 @@
+using Elyndor.Server.Pvp;
 using System.Text;
 using Elyndor.Contracts.System;
 using Elyndor.Core.Content;
@@ -120,7 +121,8 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
             {
                 string? token = context.Request.Query["access_token"].FirstOrDefault();
                 if (!string.IsNullOrWhiteSpace(token) && (context.HttpContext.Request.Path.StartsWithSegments("/hubs/combat")
-                    || context.HttpContext.Request.Path.StartsWithSegments("/hubs/trade")))
+                    || context.HttpContext.Request.Path.StartsWithSegments("/hubs/trade")
+                    || context.HttpContext.Request.Path.StartsWithSegments("/hubs/arena")))
                     context.Token = token;
                 return Task.CompletedTask;
             }
@@ -145,6 +147,7 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<ICombatUpdatePublisher, SignalRCombatUpdatePublisher>();
+builder.Services.AddSingleton<Elyndor.Infrastructure.Pvp.IArenaUpdatePublisher, Elyndor.Server.Pvp.SignalRArenaUpdatePublisher>();
 
 WebApplication app = builder.Build();
 
@@ -274,6 +277,7 @@ app.MapProfessionEndpoints();
 app.MapAfkFarmEndpoints();
 app.MapReleaseNotesEndpoints();
 app.MapSocialEndpoints();
+app.MapArenaEndpoints();
 app.MapPartyEndpoints();
 app.MapDungeonEndpoints();
 app.MapTelegramAdminEndpoints();
@@ -282,6 +286,7 @@ app.MapBossCombatLogEndpoints();
 app.MapBossCombatLogArchiveEndpoints();
 app.MapHub<CombatHub>("/hubs/combat").RequireAuthorization();
 app.MapHub<TradeHub>("/hubs/trade").RequireAuthorization();
+app.MapHub<Elyndor.Server.Pvp.ArenaHub>("/hubs/arena").RequireAuthorization();
 
 app.MapGet("/api/v1/status", (TimeProvider timeProvider) => new ApiStatusResponse("Elyndor.Server", "ready", timeProvider.GetUtcNow()))
     .WithName("GetApiStatus")

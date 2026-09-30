@@ -13,6 +13,7 @@ using Elyndor.Core.Parties;
 using Elyndor.Core.Raids;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Economy;
+using Elyndor.Core.Pvp;
 using Elyndor.Core.Quests;
 using Elyndor.Core.Professions;
 using Elyndor.Core.Releases;
@@ -31,6 +32,11 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
         Set<ReleaseAdminNotification>();
 
     public DbSet<Character> Characters => Set<Character>();
+    public DbSet<ArenaQueueEntry> ArenaQueueEntries => Set<ArenaQueueEntry>();
+    public DbSet<ArenaMatch> ArenaMatches => Set<ArenaMatch>();
+    public DbSet<ArenaStanding> ArenaStandings => Set<ArenaStanding>();
+    public DbSet<ArenaHonorWallet> ArenaHonorWallets => Set<ArenaHonorWallet>();
+    public DbSet<ArenaHonorLedgerEntry> ArenaHonorLedgerEntries => Set<ArenaHonorLedgerEntry>();
     public DbSet<PlayerTrade> PlayerTrades => Set<PlayerTrade>();
     public DbSet<AuctionListing> AuctionListings => Set<AuctionListing>();
     public DbSet<CommerceMail> CommerceMails => Set<CommerceMail>();
