@@ -51,6 +51,6 @@ public static class ArenaStateProjector
                 effect.Definition.IconId)).ToArray(),
             cast is null ? null : new CombatCastSnapshot(cast.Ability.Id,
                 cast.StartedAtUtc, cast.ResolvesAtUtc),
-            GenderId: entrant.GenderId, SkinId: entrant.SkinId);
+            GenderId: entrant.GenderId, SkinId: entrant.SkinId, Level: entrant.Level);
     }
 }
