@@ -598,17 +598,17 @@ public sealed class CombatApplicationService(
 
     private async Task<bool> IsPartyRosterCurrentAsync(
         Guid accountId,
-        IReadOnlyCollection<CombatSessionParticipant> participants,
+        CombatSessionParticipant[] participants,
         CancellationToken cancellationToken)
     {
         if (partyService is null)
-            return participants.Count == 1;
+            return participants.Length == 1;
 
         PartyCombatMember[] current = (await partyService.GetCombatMembersAsync(
                 accountId,
                 cancellationToken))
             .ToArray();
-        if (current.Length != participants.Count)
+        if (current.Length != participants.Length)
             return false;
 
         (Guid AccountId, Guid CharacterId)[] expected = participants
