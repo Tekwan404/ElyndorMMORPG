@@ -8,6 +8,7 @@ using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Parties;
 using Elyndor.Core.Pvp;
+using Elyndor.Core.World;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Persistence;
@@ -224,7 +225,7 @@ public sealed class ArenaAdmissionRaceTests(PostgresFixture postgres) : IAsyncLi
 
     private static async Task<bool> TryRegisterArenaAsync(
         CharacterOperationGuard guard,
-        ICombatActivityReader pve,
+        CombatSessionRegistry pve,
         ArenaMatchRuntime arena,
         Guid matchId,
         ArenaTestEntrant first,
