@@ -204,6 +204,51 @@ public sealed class ArenaCombatSessionTests
     }
 
     [Fact]
+    public void OffHandSwingUsesHalfIntervalAndStopsAfterCombatEnd()
+    {
+        ArenaCombatSession session = Create(firstOffHand: new AutoAttackProfile(
+            TimeSpan.FromSeconds(2), 12, 0, 0));
+        session.AdvanceTo(Start.AddMilliseconds(999));
+        Assert.Equal(100, session.Snapshot.ActorB.CurrentHp);
+        session.AdvanceTo(Start.AddSeconds(1));
+        Assert.True(session.Snapshot.ActorB.CurrentHp < 100);
+        Assert.True(session.Forfeit(AccountB, Start.AddSeconds(2)));
+        decimal endedHp = session.Snapshot.ActorB.CurrentHp;
+        session.AdvanceTo(Start.AddSeconds(5));
+        Assert.Equal(endedHp, session.Snapshot.ActorB.CurrentHp);
+    }
+
+    [Fact]
+    public void OffHandSwingDoesNotResolveDuringOwnCast()
+    {
+        ArenaCombatSession session = Create(castTime: TimeSpan.FromSeconds(3),
+            firstOffHand: new AutoAttackProfile(TimeSpan.FromSeconds(2), 12, 0, 0));
+        Assert.True(session.UseAbility(AccountA, "cast", "STRIKE", ActorB, Start).Succeeded);
+        session.AdvanceTo(Start.AddSeconds(2));
+        Assert.Equal(100, session.Snapshot.ActorB.CurrentHp);
+    }
+
+    [Fact]
+    public void LethalOffHandAndMainHandAtSameTimestampResolveToDraw()
+    {
+        var noAbilities = new Dictionary<string, AbilityDefinition>();
+        var first = new ArenaFighter(AccountA, ActorA,
+            new CombatActorState(ActorA, 100, 100, 100, 100, CombatStats.Default),
+            noAbilities, new AutoAttackProfile(TimeSpan.FromHours(1), 1, 0, 0),
+            OffHandAutoAttack: new AutoAttackProfile(TimeSpan.FromSeconds(2), 200, 0, 0));
+        var second = new ArenaFighter(AccountB, ActorB,
+            new CombatActorState(ActorB, 100, 100, 100, 100, CombatStats.Default),
+            noAbilities, new AutoAttackProfile(TimeSpan.FromSeconds(1), 200, 0, 0));
+        var session = new ArenaCombatSession(Guid.NewGuid(), first, second,
+            new SeededGameRandom(42), Start);
+
+        session.AdvanceTo(Start.AddSeconds(1));
+
+        Assert.Equal(ArenaMatchOutcome.Draw, session.Outcome);
+        Assert.Single(session.GetEventsAfter(0), x => x.Type == CombatEventType.CombatEnded);
+    }
+
+    [Fact]
     public void SimultaneousLethalCastsResolveToDraw()
     {
         ArenaCombatSession session = Create(
@@ -400,7 +445,8 @@ public sealed class ArenaCombatSessionTests
         TimeSpan? duration = null,
         decimal dotDamage = 20,
         AutoAttackProfile? autoAttack = null,
-        bool swapFighters = false)
+        bool swapFighters = false,
+        AutoAttackProfile? firstOffHand = null)
     {
         var strike = new AbilityDefinition("STRIKE", castTime is null ? AbilityType.Instant : AbilityType.Casted,
             AbilityTargetType.SingleEnemy, 0, TimeSpan.Zero, castTime ?? TimeSpan.Zero,
@@ -436,7 +482,8 @@ public sealed class ArenaCombatSessionTests
         var actorB = new CombatActorState(ActorB, 100, 100, 100, 100, stats);
         if (withShield) EffectEngine.Apply(actorB, ActorB, new EffectDefinition("SHIELD",
             EffectKind.Shield, TimeSpan.FromSeconds(10), 1, EffectStackPolicy.Replace, 30), Start);
-        var fighterA = new ArenaFighter(AccountA, ActorA, actorA, abilities, auto);
+        var fighterA = new ArenaFighter(AccountA, ActorA, actorA, abilities, auto,
+            OffHandAutoAttack: firstOffHand);
         var fighterB = new ArenaFighter(AccountB, ActorB, actorB, abilities, auto);
         return new ArenaCombatSession(
             Guid.NewGuid(),

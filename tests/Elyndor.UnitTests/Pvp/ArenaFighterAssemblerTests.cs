@@ -192,15 +192,27 @@ public sealed class ArenaFighterAssemblerTests
             hasCompanion: false));
     }
 
+    [Fact]
+    public void OffHandProfileIsPreservedForArenaCombat()
+    {
+        var offHand = new AutoAttackProfile(TimeSpan.FromSeconds(2), 7, 0, 0);
+        var player = Player(new HashSet<string> { "FIREBALL" }, offHand: offHand);
+        ArenaTestEntrant entrant = ArenaFighterAssembler.Create(player, 15,
+            new Dictionary<string, AbilityDefinition> { ["FIREBALL"] = Ability("FIREBALL") },
+            hasCompanion: false);
+        Assert.Same(offHand, entrant.Fighter.OffHandAutoAttack);
+    }
+
     private static CombatPlayerDefinition Player(
         IReadOnlySet<string> abilityIds,
-        ResolvedTalentModifiers? talents = null)
+        ResolvedTalentModifiers? talents = null,
+        AutoAttackProfile? offHand = null)
     {
         Guid character = Guid.NewGuid();
         var actor = new CombatActorState(character, 100, 100, 100, 100, CombatStats.Default);
         var participant = new CombatParticipantDefinition(actor, CombatActorKind.Player,
             "MAGE", "Test Mage", "MANA", new AutoAttackProfile(TimeSpan.FromSeconds(3), 5, 0, 0),
-            abilityIds, GenderId: "FEMALE");
+            abilityIds, OffHandAutoAttack: offHand, GenderId: "FEMALE");
         return new CombatPlayerDefinition(Guid.NewGuid(), participant,
             talents ?? ResolvedTalentModifiers.Empty);
     }

@@ -11,7 +11,7 @@ namespace Elyndor.Core.Pvp;
 public sealed record ArenaFighter(Guid AccountId, Guid CharacterId, CombatActorState Actor,
     IReadOnlyDictionary<string, AbilityDefinition> Abilities, AutoAttackProfile AutoAttack,
     ResolvedTalentModifiers? TalentModifiers = null, decimal ResourceRegenPerSecond = 0,
-    bool CanAutoAttack = true)
+    bool CanAutoAttack = true, AutoAttackProfile? OffHandAutoAttack = null)
 {
     public ResolvedTalentModifiers EffectiveTalentModifiers =>
         TalentModifiers ?? ResolvedTalentModifiers.Empty;
@@ -37,6 +37,8 @@ public sealed class ArenaCombatSession
     private DateTimeOffset _advancedTo;
     private DateTimeOffset _firstAutoAttackAt;
     private DateTimeOffset _secondAutoAttackAt;
+    private DateTimeOffset _firstOffHandAttackAt;
+    private DateTimeOffset _secondOffHandAttackAt;
     private long _sequence;
     private readonly List<CombatEvent> _events = [];
     private const int MaximumAdvanceSteps = 10_000;
@@ -59,6 +61,9 @@ public sealed class ArenaCombatSession
         if (startedAt.Offset != TimeSpan.Zero) throw new ArgumentException("Start time must be UTC.");
         if (first.AutoAttack.Interval <= TimeSpan.Zero || second.AutoAttack.Interval <= TimeSpan.Zero)
             throw new ArgumentException("Auto attack interval must be positive.");
+        if (first.OffHandAutoAttack is { } firstOffHand && firstOffHand.Interval <= TimeSpan.Zero
+            || second.OffHandAutoAttack is { } secondOffHand && secondOffHand.Interval <= TimeSpan.Zero)
+            throw new ArgumentException("Off-hand attack interval must be positive.");
         if (first.ResourceRegenPerSecond < 0 || second.ResourceRegenPerSecond < 0)
             throw new ArgumentOutOfRangeException(nameof(first), "Resource regeneration cannot be negative.");
         ValidateAbilities(first.Abilities);
@@ -75,6 +80,10 @@ public sealed class ArenaCombatSession
         _secondAutoAttackAt = second.CanAutoAttack
             ? startedAt + second.AutoAttack.Interval
             : DateTimeOffset.MaxValue;
+        _firstOffHandAttackAt = first.CanAutoAttack && first.OffHandAutoAttack is { } firstWeapon
+            ? startedAt + InitialOffHandDelay(firstWeapon) : DateTimeOffset.MaxValue;
+        _secondOffHandAttackAt = second.CanAutoAttack && second.OffHandAutoAttack is { } secondWeapon
+            ? startedAt + InitialOffHandDelay(secondWeapon) : DateTimeOffset.MaxValue;
         _firstRuntime = new CombatRuntimeState(first.Actor);
         _firstRuntime.AddActor(second.Actor);
         _secondRuntime = new CombatRuntimeState(second.Actor);
@@ -250,6 +259,7 @@ public sealed class ArenaCombatSession
                 _second,
                 _firstRuntime,
                 _firstAutoAttackAt,
+                _firstOffHandAttackAt,
                 due,
                 isFirst: true),
             SnapshotTimestampEntry(
@@ -257,6 +267,7 @@ public sealed class ArenaCombatSession
                 _first,
                 _secondRuntime,
                 _secondAutoAttackAt,
+                _secondOffHandAttackAt,
                 due,
                 isFirst: false)
         ];
@@ -306,24 +317,34 @@ public sealed class ArenaCombatSession
                     ResolveAutoAttack(
                         entry.Fighter,
                         entry.Opponent,
+                        entry.Fighter.AutoAttack,
                         ref _firstAutoAttackAt,
                         due,
                         entry.AutoAttackWasDue,
                         entry.WasAlive,
                         entry.OpponentWasAlive,
                         entry.WasStunned);
+                    if (entry.Fighter.OffHandAutoAttack is { } offHand)
+                        ResolveAutoAttack(entry.Fighter, entry.Opponent, offHand,
+                            ref _firstOffHandAttackAt, due, entry.OffHandWasDue,
+                            entry.WasAlive, entry.OpponentWasAlive, entry.WasStunned);
                 }
                 else
                 {
                     ResolveAutoAttack(
                         entry.Fighter,
                         entry.Opponent,
+                        entry.Fighter.AutoAttack,
                         ref _secondAutoAttackAt,
                         due,
                         entry.AutoAttackWasDue,
                         entry.WasAlive,
                         entry.OpponentWasAlive,
                         entry.WasStunned);
+                    if (entry.Fighter.OffHandAutoAttack is { } offHand)
+                        ResolveAutoAttack(entry.Fighter, entry.Opponent, offHand,
+                            ref _secondOffHandAttackAt, due, entry.OffHandWasDue,
+                            entry.WasAlive, entry.OpponentWasAlive, entry.WasStunned);
                 }
             }
         }
@@ -344,6 +365,7 @@ public sealed class ArenaCombatSession
         ArenaFighter opponent,
         CombatRuntimeState runtime,
         DateTimeOffset nextAutoAttackAt,
+        DateTimeOffset nextOffHandAttackAt,
         DateTimeOffset due,
         bool isFirst)
     {
@@ -366,6 +388,8 @@ public sealed class ArenaCombatSession
             wasAlive,
             opponentWasAlive,
             fighter.CanAutoAttack && nextAutoAttackAt <= due,
+            fighter.CanAutoAttack && fighter.OffHandAutoAttack is not null
+                && nextOffHandAttackAt <= due,
             wasAlive && EffectEngine.HasControl(fighter.Actor, EffectKind.Stun, due),
             isFirst);
     }
@@ -681,6 +705,7 @@ public sealed class ArenaCombatSession
     private void ResolveAutoAttack(
         ArenaFighter source,
         ArenaFighter target,
+        AutoAttackProfile profile,
         ref DateTimeOffset nextAttack,
         DateTimeOffset due,
         bool wasDue,
@@ -696,7 +721,12 @@ public sealed class ArenaCombatSession
             return;
         }
 
-        ScheduleNextAutoAttack(source, ref nextAttack, due);
+        if (RuntimeFor(source.AccountId).ActiveCast is { } activeCast)
+        {
+            nextAttack = activeCast.ResolvesAtUtc + profile.Interval;
+            return;
+        }
+        ScheduleNextAutoAttack(source, profile, ref nextAttack, due);
         if (wasStunned)
         {
             Append(new CombatEvent(
@@ -708,11 +738,11 @@ public sealed class ArenaCombatSession
                 TargetActorId: target.Actor.ActorId));
             return;
         }
-        decimal baseDamage = AutoAttackDamageRoller.RollPlayerDamage(source.AutoAttack,
+        decimal baseDamage = AutoAttackDamageRoller.RollPlayerDamage(profile,
             Math.Max(0, EffectEngine.CalculateStat(source.Actor, EffectStat.AttackPower,
                 source.Actor.Stats.AttackPower, due)), _random);
         DamageResult damage = DamagePipeline.Resolve(new DamageRequest(source.Actor, target.Actor,
-            baseDamage, source.AutoAttack.DamageType), _random, due);
+            baseDamage, profile.DamageType), _random, due);
         Append(damage.Events);
         bool successfulAutoAttack = damage.Avoidance == DamageAvoidance.None && damage.HpDamage > 0;
         if (successfulAutoAttack)
@@ -725,28 +755,32 @@ public sealed class ArenaCombatSession
                     target.Actor.ActorId,
                     due,
                     FinalDamage: damage.HpDamage,
-                    DamageType: source.AutoAttack.DamageType,
+                    DamageType: profile.DamageType,
                     WasCritical: damage.IsCritical,
                     WasBlocked: damage.WasBlocked)
             ], due);
         }
         DispatchDamageTalentEvents(damage.Events, due);
         if (successfulAutoAttack)
-            ScheduleNextAutoAttack(source, ref nextAttack, due);
-        if (damage.HpDamage > 0 && source.AutoAttack.ResourceOnHit > 0)
-            source.Actor.AddResource(source.AutoAttack.ResourceOnHit);
+            ScheduleNextAutoAttack(source, profile, ref nextAttack, due);
+        if (damage.HpDamage > 0 && profile.ResourceOnHit > 0)
+            source.Actor.AddResource(profile.ResourceOnHit);
     }
 
     private static void ScheduleNextAutoAttack(
         ArenaFighter source,
+        AutoAttackProfile profile,
         ref DateTimeOffset nextAttack,
         DateTimeOffset due)
     {
         decimal attackSpeed = Math.Max(0.01m, EffectEngine.CalculateStat(
             source.Actor, EffectStat.AttackSpeed, 1m, due));
-        double adjustedTicks = source.AutoAttack.Interval.Ticks / (double)attackSpeed;
+        double adjustedTicks = profile.Interval.Ticks / (double)attackSpeed;
         nextAttack = due + TimeSpan.FromTicks(Math.Max(1, (long)Math.Ceiling(adjustedTicks)));
     }
+
+    private static TimeSpan InitialOffHandDelay(AutoAttackProfile profile) =>
+        TimeSpan.FromTicks(Math.Max(1, profile.Interval.Ticks / 2));
 
     private PreparedCrowdControlAbility PrepareCrowdControlAbility(
         AbilityDefinition ability,
@@ -891,6 +925,8 @@ public sealed class ArenaCombatSession
     private DateTimeOffset? NextExecutionAt()
     {
         DateTimeOffset next = _firstAutoAttackAt < _secondAutoAttackAt ? _firstAutoAttackAt : _secondAutoAttackAt;
+        if (_firstOffHandAttackAt < next) next = _firstOffHandAttackAt;
+        if (_secondOffHandAttackAt < next) next = _secondOffHandAttackAt;
         DateTimeOffset timeout = TimeoutAtUtc;
         if (timeout < next) next = timeout;
         foreach (CombatRuntimeState runtime in new[] { _firstRuntime, _secondRuntime })
@@ -958,6 +994,7 @@ public sealed class ArenaCombatSession
         bool WasAlive,
         bool OpponentWasAlive,
         bool AutoAttackWasDue,
+        bool OffHandWasDue,
         bool WasStunned,
         bool IsFirst);
 
