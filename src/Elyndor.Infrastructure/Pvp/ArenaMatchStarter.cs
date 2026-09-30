@@ -1,4 +1,5 @@
 using Elyndor.Core.Pvp;
+using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ public sealed partial class ArenaMatchStarter(
     ArenaSettlementService settlement,
     ArenaQueueService queue,
     IArenaUpdatePublisher publisher,
+    CharacterOperationGuard operationGuard,
     ILogger<ArenaMatchStarter> logger)
 {
     public async Task StartAsync(ArenaMatchCreated created, CancellationToken cancellationToken)
@@ -33,20 +35,35 @@ public sealed partial class ArenaMatchStarter(
 
         ArenaEligibilityResult first = await CheckAsync(accountA, cancellationToken);
         ArenaEligibilityResult second = await CheckAsync(accountB, cancellationToken);
-        if (first.Entrant is not { } entrantA || second.Entrant is not { } entrantB)
+        if (first.Entrant is not { } || second.Entrant is not { })
         {
             await CancelAsync(created, first.Eligible, second.Eligible, cancellationToken);
             return;
         }
 
+        bool registered = false;
         try
         {
-            runtime.Register(created.MatchId, entrantA, entrantB);
+            using IDisposable admissionLease = await operationGuard.AcquireManyAsync(
+                [accountA, accountB],
+                cancellationToken);
+
+            first = await CheckAsync(accountA, cancellationToken);
+            second = await CheckAsync(accountB, cancellationToken);
+            if (first.Entrant is { } entrantA && second.Entrant is { } entrantB)
+            {
+                runtime.Register(created.MatchId, entrantA, entrantB);
+                registered = true;
+            }
         }
         catch (InvalidOperationException exception)
         {
             LogRegistrationFailed(logger, created.MatchId, exception);
-            await CancelAsync(created, true, true, cancellationToken);
+        }
+
+        if (!registered)
+        {
+            await CancelAsync(created, first.Eligible, second.Eligible, cancellationToken);
             return;
         }
 

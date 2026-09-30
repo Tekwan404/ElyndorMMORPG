@@ -11,6 +11,7 @@ using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Parties;
 using Elyndor.Infrastructure.Dungeons;
+using Elyndor.Infrastructure.Pvp;
 
 namespace Elyndor.Infrastructure.Combat;
 
@@ -24,7 +25,8 @@ public sealed class CombatApplicationService(
     CombatDurabilityService? durability = null,
     PartyService? partyService = null,
     DungeonService? dungeonService = null,
-    BootstrapService? bootstrapService = null)
+    BootstrapService? bootstrapService = null,
+    ArenaMatchRuntime? arenaRuntime = null)
 {
     public CombatApplicationService(
         CombatSessionFactory factory,
@@ -43,6 +45,7 @@ public sealed class CombatApplicationService(
             null,
             null,
             null,
+            null,
             null)
     {
     }
@@ -51,35 +54,23 @@ public sealed class CombatApplicationService(
         Guid accountId,
         Guid encounterId,
         CancellationToken cancellationToken) =>
-        operationGuard.ExecuteExclusiveAsync(
-            accountId,
-            () => StartEncounterCoreAsync(accountId, encounterId, cancellationToken),
-            cancellationToken);
+        StartEncounterCoreAsync(accountId, encounterId, cancellationToken);
 
     public Task<CombatOperationResult> StartTrainingAsync(
         Guid accountId,
         CancellationToken cancellationToken) =>
-        operationGuard.ExecuteExclusiveAsync(
-            accountId,
-            () => StartTrainingCoreAsync(accountId, cancellationToken),
-            cancellationToken);
+        StartTrainingCoreAsync(accountId, cancellationToken);
 
     public Task<CombatOperationResult> StartDungeonEncounterAsync(
         Guid accountId,
         Guid runId,
         CancellationToken cancellationToken) =>
-        operationGuard.ExecuteExclusiveAsync(
-            accountId,
-            () => StartDungeonEncounterCoreAsync(accountId, runId, cancellationToken),
-            cancellationToken);
+        StartDungeonEncounterCoreAsync(accountId, runId, cancellationToken);
 
     public Task<CombatOperationResult> ResetTrainingAsync(
         Guid accountId,
         CancellationToken cancellationToken) =>
-        operationGuard.ExecuteExclusiveAsync(
-            accountId,
-            () => ResetTrainingCoreAsync(accountId, cancellationToken),
-            cancellationToken);
+        ResetTrainingCoreAsync(accountId, cancellationToken);
 
     private async Task<CombatOperationResult> StartEncounterCoreAsync(
         Guid accountId,
@@ -109,7 +100,8 @@ public sealed class CombatApplicationService(
 
     private async Task<CombatOperationResult> StartTrainingCoreAsync(
         Guid accountId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool admissionLeaseHeld = false)
     {
         CombatOperationResult? active = PrepareStart(accountId);
         if (active is not null) return active;
@@ -118,7 +110,8 @@ public sealed class CombatApplicationService(
             accountId,
             CombatSessionFactory.TrainingDummyId,
             CombatSessionFactory.StarterTownId,
-            cancellationToken);
+            cancellationToken,
+            admissionLeaseHeld: admissionLeaseHeld);
     }
 
     private async Task<CombatOperationResult> StartDungeonEncounterCoreAsync(
@@ -174,6 +167,12 @@ public sealed class CombatApplicationService(
         Guid accountId,
         CancellationToken cancellationToken)
     {
+        using IDisposable admissionLease = await operationGuard.AcquireManyAsync(
+            [accountId],
+            cancellationToken);
+        if (arenaRuntime?.IsInMatch(accountId) == true)
+            return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
+
         CombatOperationResult current = registry.Resume(accountId);
         if (!current.Succeeded
             || current.Snapshot is null
@@ -182,7 +181,7 @@ public sealed class CombatApplicationService(
 
         if (!await registry.DiscardAsync(accountId, cancellationToken))
             return CombatOperationResult.Failure(CombatErrorCodes.NotFound);
-        return await StartTrainingCoreAsync(accountId, cancellationToken);
+        return await StartTrainingCoreAsync(accountId, cancellationToken, admissionLeaseHeld: true);
     }
 
     public Task<CombatOperationResult> UseAbilityAsync(
@@ -487,7 +486,8 @@ public sealed class CombatApplicationService(
         string monsterId,
         string locationId,
         CancellationToken cancellationToken,
-        IReadOnlyList<PartyCombatMember>? partyMembersOverride = null)
+        IReadOnlyList<PartyCombatMember>? partyMembersOverride = null,
+        bool admissionLeaseHeld = false)
     {
         CombatSessionCreationResult created = await factory.CreateAsync(
             accountId,
@@ -502,66 +502,126 @@ public sealed class CombatApplicationService(
             monsterId,
             CombatSessionFactory.TrainingDummyId,
             StringComparison.Ordinal);
-        if (!isTraining
-            && durability is not null
-            )
-        {
-            HashSet<Guid> initiallyAttachedCharacterIds = created.Session!
-                .Snapshot()
-                .ParticipantRoster?
-                .Where(participant => participant.Status == CombatParticipantStatus.Active)
-                .Select(participant => participant.CharacterId)
-                .ToHashSet()
-                ?? [created.CharacterId];
-            foreach (CombatSessionParticipant participant in (created.Participants
-                         ?? [new CombatSessionParticipant(accountId, created.CharacterId)])
-                         .Where(participant => initiallyAttachedCharacterIds.Contains(participant.CharacterId)))
-            {
-                if (await durability.BeginAsync(
-                        participant.CharacterId,
-                        created.Session!.Snapshot(participant.CharacterId),
-                        cancellationToken))
-                    continue;
-
-                await durability.CompleteAsync(
-                    created.Session!.SessionId,
-                    cancellationToken);
-                return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
-            }
-        }
-
         CombatSessionParticipant[] participants = created.Participants?.ToArray()
             ?? [new CombatSessionParticipant(accountId, created.CharacterId)];
-        CombatParticipantBinding[] additionalParticipants = participants
-            .Where(participant => participant.CharacterId != created.CharacterId)
-            .Select(participant => new CombatParticipantBinding(
-                participant.AccountId,
-                participant.CharacterId))
-            .ToArray();
 
-        if (!registry.TryAdd(
-                accountId,
-                created.CharacterId,
-                created.Session!,
-                created.ContentSnapshot,
-                additionalParticipants,
-                locationId))
+        IDisposable? admissionLease = null;
+        if (!admissionLeaseHeld)
         {
-            if (!isTraining && durability is not null)
-            {
-                await durability.CompleteAsync(
-                    created.Session!.SessionId,
-                    cancellationToken);
-            }
-            return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
+            admissionLease = await operationGuard.AcquireManyAsync(
+                participants.Select(participant => participant.AccountId),
+                cancellationToken);
         }
 
-        return CombatOperationResult.FromSnapshot(
-            created.Session!.Snapshot(),
-            created.ContentSnapshot) with
+        try
         {
-            Events = created.Session.GetEventsAfter(0)
-        };
+            if (!isTraining
+                && partyMembersOverride is null
+                && partyService is not null
+                && !await IsPartyRosterCurrentAsync(accountId, participants, cancellationToken))
+            {
+                return CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);
+            }
+
+            foreach (CombatSessionParticipant participant in participants)
+                registry.ClearFinished(participant.AccountId);
+
+            if (participants.Any(participant =>
+                    arenaRuntime?.IsInMatch(participant.AccountId) == true
+                    || registry.HasActiveCombat(participant.AccountId)))
+            {
+                return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
+            }
+
+            if (!isTraining
+                && durability is not null)
+            {
+                HashSet<Guid> initiallyAttachedCharacterIds = created.Session!
+                    .Snapshot()
+                    .ParticipantRoster?
+                    .Where(participant => participant.Status == CombatParticipantStatus.Active)
+                    .Select(participant => participant.CharacterId)
+                    .ToHashSet()
+                    ?? [created.CharacterId];
+                foreach (CombatSessionParticipant participant in participants
+                             .Where(participant => initiallyAttachedCharacterIds.Contains(participant.CharacterId)))
+                {
+                    if (await durability.BeginAsync(
+                            participant.CharacterId,
+                            created.Session!.Snapshot(participant.CharacterId),
+                            cancellationToken))
+                        continue;
+
+                    await durability.CompleteAsync(
+                        created.Session!.SessionId,
+                        cancellationToken);
+                    return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
+                }
+            }
+
+            CombatParticipantBinding[] additionalParticipants = participants
+                .Where(participant => participant.CharacterId != created.CharacterId)
+                .Select(participant => new CombatParticipantBinding(
+                    participant.AccountId,
+                    participant.CharacterId))
+                .ToArray();
+
+            if (!registry.TryAdd(
+                    accountId,
+                    created.CharacterId,
+                    created.Session!,
+                    created.ContentSnapshot,
+                    additionalParticipants,
+                    locationId))
+            {
+                if (!isTraining && durability is not null)
+                {
+                    await durability.CompleteAsync(
+                        created.Session!.SessionId,
+                        cancellationToken);
+                }
+                return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
+            }
+
+            return CombatOperationResult.FromSnapshot(
+                created.Session!.Snapshot(),
+                created.ContentSnapshot) with
+            {
+                Events = created.Session.GetEventsAfter(0)
+            };
+        }
+        finally
+        {
+            admissionLease?.Dispose();
+        }
+    }
+
+    private async Task<bool> IsPartyRosterCurrentAsync(
+        Guid accountId,
+        IReadOnlyCollection<CombatSessionParticipant> participants,
+        CancellationToken cancellationToken)
+    {
+        if (partyService is null)
+            return participants.Count == 1;
+
+        PartyCombatMember[] current = (await partyService.GetCombatMembersAsync(
+                accountId,
+                cancellationToken))
+            .ToArray();
+        if (current.Length != participants.Count)
+            return false;
+
+        (Guid AccountId, Guid CharacterId)[] expected = participants
+            .Select(participant => (participant.AccountId, participant.CharacterId))
+            .OrderBy(participant => participant.AccountId)
+            .ThenBy(participant => participant.CharacterId)
+            .ToArray();
+        (Guid AccountId, Guid CharacterId)[] actual = current
+            .Select(participant => (participant.AccountId, participant.CharacterId))
+            .OrderBy(participant => participant.AccountId)
+            .ThenBy(participant => participant.CharacterId)
+            .ToArray();
+        return expected.SequenceEqual(actual);
     }
 
     private Task<CombatOperationResult> ExecuteSessionCommand(
