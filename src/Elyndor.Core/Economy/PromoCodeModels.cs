@@ -10,7 +10,8 @@ public sealed record PromoCodeDefinition(
     DateTimeOffset? StartsAtUtc = null,
     DateTimeOffset? ExpiresAtUtc = null,
     int? GlobalRedemptionLimit = null,
-    int? PerAccountRedemptionLimit = 1);
+    int? PerAccountRedemptionLimit = 1,
+    long GoldAmount = 0);
 
 public sealed class PromoCodeRedemption
 {
