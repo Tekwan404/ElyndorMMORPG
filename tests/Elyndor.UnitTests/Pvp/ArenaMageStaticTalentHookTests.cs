@@ -8,6 +8,23 @@ namespace Elyndor.UnitTests.Pvp;
 
 public sealed class ArenaMageStaticTalentHookTests
 {
+    [Theory]
+    [InlineData("MAGE_FIREBALL", 94)]
+    [InlineData("MAGE_SCORCH", 94)]
+    [InlineData("MAGE_FIRE_BLAST", 100)]
+    public void BurningSoulReducesOnlyFireballAndScorchManaCost(string abilityId, decimal expectedCost)
+    {
+        ResolvedTalentModifiers talents = Talents(Hook("F-1-3", 20, secondaryValue: 6));
+        AbilityDefinition ability = Ability(abilityId, "FIRE") with { ResourceCost = 100 };
+
+        ArenaTestEntrant entrant = ArenaFighterAssembler.Create(
+            Player(abilityId, talents), 20,
+            new Dictionary<string, AbilityDefinition> { [abilityId] = ability },
+            hasCompanion: false);
+
+        Assert.Equal(expectedCost, entrant.Fighter.Abilities[abilityId].ResourceCost);
+    }
+
     [Fact]
     public void ArcaneStatelessHooksAreAcceptedAndApplied()
     {

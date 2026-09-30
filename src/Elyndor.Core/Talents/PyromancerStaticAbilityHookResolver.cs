@@ -11,6 +11,7 @@ public static class PyromancerStaticAbilityHookResolver
 {
     public const string ImprovedFireballTalentId = "F-1-1";
     public const string IncinerationTalentId = "F-1-2";
+    public const string BurningSoulTalentId = "F-1-3";
     public const string EfficientMagicTalentId = "F-1-4";
     public const string ImprovedFireBlastTalentId = "F-2-4";
     public const string CriticalMassTalentId = "F-3-4";
@@ -24,6 +25,7 @@ public static class PyromancerStaticAbilityHookResolver
     {
         ImprovedFireballTalentId,
         IncinerationTalentId,
+        BurningSoulTalentId,
         EfficientMagicTalentId,
         ImprovedFireBlastTalentId,
         CriticalMassTalentId,
@@ -79,6 +81,13 @@ public static class PyromancerStaticAbilityHookResolver
                 cooldown = Reduce(cooldown, improvedBlast.Value);
                 criticalChanceBonus += improvedBlast.SecondaryValue;
             }
+        }
+
+        if ((string.Equals(ability.Id, FireballId, StringComparison.Ordinal)
+             || string.Equals(ability.Id, ScorchId, StringComparison.Ordinal))
+            && TryGet(talents, BurningSoulTalentId, out ResolvedTalentEventHook burningSoul))
+        {
+            resourceCost *= Math.Max(0, 1 - burningSoul.SecondaryValue / 100m);
         }
 
         return ability with
