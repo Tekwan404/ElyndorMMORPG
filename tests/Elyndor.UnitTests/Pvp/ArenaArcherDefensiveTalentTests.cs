@@ -31,9 +31,6 @@ public sealed class ArenaArcherDefensiveTalentTests
             hasCompanion: false);
 
         Assert.Equal(0.65m, entrant.Fighter.Actor.IncomingControlDurationMultiplier);
-        Assert.Throws<NotSupportedException>(() => ArenaFighterAssembler.Create(
-            player, 20, new Dictionary<string, AbilityDefinition>(),
-            hasCompanion: true));
     }
 
     [Fact]

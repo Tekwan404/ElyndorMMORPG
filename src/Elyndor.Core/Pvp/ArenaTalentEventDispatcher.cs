@@ -94,6 +94,8 @@ public static class ArenaTalentEventDispatcher
     public const string LowHpReductionTargetId = "LOW_HP_REDUCTION";
     public const string ArcherHawkSpiritTalentId = "M-2-4";
     public const string HawkSpiritTargetId = "HAWK_SPIRIT";
+    public const string BeastMasteryOwnerHawkTalentId = "B-1-3";
+    public const string OwnerHawkSpiritTargetId = "OWNER_HAWK_SPIRIT";
     public const string PyromancerBlastWaveTalentId = "F-5-1";
     public const string MageBlastWaveAbilityId = "MAGE_BLAST_WAVE";
 
@@ -104,6 +106,8 @@ public static class ArenaTalentEventDispatcher
             return true;
 
         if (ArenaPaladinJudgementTalentRuntime.Supports(hook))
+            return true;
+        if (ArenaGenericTalentStatusRuntime.Supports(hook))
             return true;
 
         return TryNormalize(hook, out ArenaTalentEventRule rule)
@@ -169,9 +173,11 @@ public static class ArenaTalentEventDispatcher
             return true;
         }
 
-        if (string.Equals(hook.TalentId, ArcherHawkSpiritTalentId, StringComparison.Ordinal)
+        if ((string.Equals(hook.TalentId, ArcherHawkSpiritTalentId, StringComparison.Ordinal)
+             && string.Equals(hook.TargetId, HawkSpiritTargetId, StringComparison.Ordinal)
+             || string.Equals(hook.TalentId, BeastMasteryOwnerHawkTalentId, StringComparison.Ordinal)
+             && string.Equals(hook.TargetId, OwnerHawkSpiritTargetId, StringComparison.Ordinal))
             && string.Equals(hook.Key, TalentModifierKeys.OnAutoAttack, StringComparison.Ordinal)
-            && string.Equals(hook.TargetId, HawkSpiritTargetId, StringComparison.Ordinal)
             && hook.Duration > TimeSpan.Zero
             && hook.Value > 0
             && hook.ChancePercent > 0)
@@ -274,6 +280,7 @@ public static class ArenaTalentEventDispatcher
         List<ArenaTalentRuntimeEffect> effects = [];
 
         effects.AddRange(ArenaPaladinJudgementTalentRuntime.Dispatch(talents, combatEvent));
+        effects.AddRange(ArenaGenericTalentStatusRuntime.Dispatch(talents, combatEvent));
 
         if (combatEvent.Type == ArenaTalentEventType.OnHit && combatEvent.Ability is not null)
         {

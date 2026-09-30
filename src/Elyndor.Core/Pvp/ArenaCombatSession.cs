@@ -28,6 +28,10 @@ public sealed record ArenaCommandResult(bool Succeeded, string? ErrorCode, Arena
 
 public sealed class ArenaCombatSession
 {
+    private static readonly AbilityDefinition AutoAttackTalentMarker = new(
+        "AUTO_ATTACK", AbilityType.Instant, AbilityTargetType.SingleEnemy,
+        0, TimeSpan.Zero, TimeSpan.Zero, false, GlobalCooldownCategory.None,
+        false, "PHYSICAL");
     private readonly ArenaFighter _first;
     private readonly ArenaFighter _second;
     private readonly CombatRuntimeState _firstRuntime;
@@ -595,9 +599,10 @@ public sealed class ArenaCombatSession
 
     private void DispatchDamageTalentEvents(
         IReadOnlyList<CombatEvent> combatEvents,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        AbilityDefinition? sourceAbility = null)
     {
-        DispatchTalentEvents(ArenaTalentEventDispatcher.FromDamageEvents(combatEvents), now);
+        DispatchTalentEvents(ArenaTalentEventDispatcher.FromDamageEvents(combatEvents, sourceAbility), now);
     }
 
     private void DispatchTalentEvents(
@@ -642,11 +647,12 @@ public sealed class ArenaCombatSession
                 break;
             case ArenaTalentEffectKind.ApplyBuff:
             case ArenaTalentEffectKind.ApplyDebuff:
-                Append(ArenaTalentStateEffectExecutor.ExecuteStatusEffect(
-                    RuntimeForActor(effect.TargetActorId).Actor,
-                    effect,
-                    now));
+            {
+                CombatActorState target = RuntimeForActor(effect.TargetActorId).Actor;
+                if (!target.CanDie || target.CurrentHp > 0)
+                    Append(ArenaTalentStateEffectExecutor.ExecuteStatusEffect(target, effect, now));
                 break;
+            }
             case ArenaTalentEffectKind.ApplyAbilityAction:
                 if (effect.Action is null)
                     throw new NotSupportedException("Arena talent effect is missing its ability action.");
@@ -768,7 +774,7 @@ public sealed class ArenaCombatSession
                     WasBlocked: damage.WasBlocked)
             ], due);
         }
-        DispatchDamageTalentEvents(damage.Events, due);
+        DispatchDamageTalentEvents(damage.Events, due, AutoAttackTalentMarker);
         if (successfulAutoAttack)
             ScheduleNextAutoAttack(source, profile, ref nextAttack, due);
         if (damage.HpDamage > 0 && profile.ResourceOnHit > 0)

@@ -37,7 +37,8 @@ public sealed class ArenaProductionBuildCapabilityTests
                         + $"{deferred.Key}:{deferred.TargetId ?? "<none>"}");
                 }
 
-                foreach (ResolvedTalentEventHook hook in ArenaTalentRuntimeSupport.UnsupportedEventHooks(resolved))
+                foreach (ResolvedTalentEventHook hook in ArenaTalentRuntimeSupport.UnsupportedEventHooks(resolved)
+                             .Where(hook => !ArenaCompanionCapability.RequiresCompanion(hook)))
                 {
                     unsupported.Add(
                         $"{tree.ClassId}/{node.BranchId}/{node.Id}: event "

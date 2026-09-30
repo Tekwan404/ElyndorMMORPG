@@ -21,6 +21,24 @@ public sealed class ArenaAutoAttackTalentEventTests
     private const string HawkEffectId = "ARENA_TALENT_M-2-4_ATTACK_SPEED";
 
     [Fact]
+    public void BeastMasteryOwnerHawkProcsFromOwnAutoAttackWithoutCompanion()
+    {
+        CombatActorState source = SourceActor();
+        ResolvedTalentEventHook ownerHawk = new("B-1-3", TalentModifierKeys.OnAutoAttack,
+            1, 6, "OWNER_HAWK_SPIRIT", TimeSpan.Zero, false,
+            ChancePercent: 5, Duration: TimeSpan.FromSeconds(6));
+        ArenaCombatSession session = Create(source, TargetActor(), TimeSpan.FromSeconds(4),
+            Talents(ownerHawk), new SequenceGameRandom(0.90m, 0.90m, 0.01m));
+
+        session.AdvanceTo(Start.AddSeconds(4));
+
+        Assert.Equal(1.06m, EffectEngine.CalculateStat(
+            source, EffectStat.AttackSpeed, 1m, Start.AddSeconds(4)));
+        Assert.Single(session.ActiveEffectsFor(AccountA), effect =>
+            effect.Definition.Id == "ARENA_TALENT_B-1-3_ATTACK_SPEED");
+    }
+
+    [Fact]
     public void SuccessfulAutoAttackProcsHawkSpiritExactlyOnceAndAcceleratesNextSwing()
     {
         TimeSpan interval = TimeSpan.FromSeconds(4);
