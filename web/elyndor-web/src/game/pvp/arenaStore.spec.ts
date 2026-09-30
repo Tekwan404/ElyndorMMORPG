@@ -3,12 +3,12 @@ import { createPinia, setActivePinia } from 'pinia'
 
 import { apiClient } from '@/api/apiClient'
 import { useArenaStore } from './arenaStore'
-import type { ArenaStatus } from './arenaContracts'
+import type { ArenaMatch, ArenaStatus } from './arenaContracts'
 
 const signalR = vi.hoisted(() => ({
   start: vi.fn<() => void>(),
   stop: vi.fn<() => void>(),
-  invoke: vi.fn<(...args: unknown[]) => Promise<null>>(async () => null),
+  invoke: vi.fn<(...args: unknown[]) => Promise<unknown>>(async () => null),
 }))
 
 vi.mock('@microsoft/signalr', () => ({
@@ -41,6 +41,20 @@ vi.mock('@microsoft/signalr', () => ({
 const status = (patch: Partial<ArenaStatus> = {}): ArenaStatus => ({
   enabled: true, honor: 0, rating: 1000, wins: 0, losses: 0, draws: 0,
   isQueued: false, queueMode: null, queuedAtUtc: null, activeMatchId: null, ...patch,
+})
+
+const match = (patch: Partial<ArenaMatch> = {}): ArenaMatch => ({
+  status: 'Active',
+  matchId: 'match-1',
+  characterId: 'character-a',
+  opponentCharacterId: 'character-b',
+  opponentName: 'Opponent',
+  outcome: 'Active',
+  result: 'Active',
+  sequence: 1,
+  battle: null,
+  events: [],
+  ...patch,
 })
 
 describe('arenaStore', () => {
@@ -120,5 +134,29 @@ describe('arenaStore', () => {
     await arena.joinQueue('Ranked')
     expect(arena.status?.isQueued).toBe(true)
     expect(arena.errorCode).toBeNull()
+  })
+
+  it('refreshes rating and leaderboard immediately when a command completes the match', async () => {
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce(status({ activeMatchId: 'match-1' }))
+      .mockResolvedValueOnce(status({ rating: 984, losses: 1 }))
+      .mockResolvedValueOnce([])
+
+    signalR.invoke
+      .mockResolvedValueOnce(match())
+      .mockResolvedValueOnce({
+        succeeded: true,
+        errorCode: null,
+        match: match({ status: 'Completed', outcome: 'WinnerB', result: 'Defeat', sequence: 2 }),
+      })
+
+    const arena = useArenaStore()
+    await arena.refresh()
+    await arena.surrender()
+
+    expect(arena.match?.status).toBe('Completed')
+    expect(arena.status?.rating).toBe(984)
+    expect(arena.status?.losses).toBe(1)
+    expect(request).toHaveBeenCalledWith('/api/v1/arena/leaderboard')
   })
 })

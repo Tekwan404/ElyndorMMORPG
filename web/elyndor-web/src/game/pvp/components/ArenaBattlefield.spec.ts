@@ -64,25 +64,29 @@ function battle(): CombatSnapshot {
   }
 }
 
+function mountBattlefield() {
+  return mount(ArenaBattlefield, {
+    props: { battle: battle(), events: [], active: true, resultLabel: null },
+    global: { stubs: { Teleport: true } },
+  })
+}
+
 describe('ArenaBattlefield', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
   it('renders both real players on the battlefield', () => {
-    const wrapper = mount(ArenaBattlefield, {
-      props: { battle: battle(), events: [], active: true, resultLabel: null },
-    })
+    const wrapper = mountBattlefield()
 
     expect(wrapper.get('[data-character-figure="player-a"]').text()).toContain('Tekwan')
     expect(wrapper.get('[data-character-figure="player-b"]').text()).toContain('Mini tekwan')
     expect(wrapper.find('[data-arena-battlefield]').exists()).toBe(true)
+    expect(wrapper.find('[data-battle-screen]').exists()).toBe(true)
 
     wrapper.unmount()
   })
 
   it('targets the opponent for attacks and the local player for self abilities', async () => {
-    const wrapper = mount(ArenaBattlefield, {
-      props: { battle: battle(), events: [], active: true, resultLabel: null },
-    })
+    const wrapper = mountBattlefield()
 
     await wrapper.get('[data-ability-slot="STRIKE"]').trigger('click')
     await wrapper.get('[data-ability-slot="BASTION"]').trigger('click')

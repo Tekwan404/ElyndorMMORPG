@@ -43,6 +43,19 @@ export const useArenaStore = defineStore('arena', () => {
     errorCode.value = error instanceof Error ? error.message : fallback
   }
 
+  async function refreshSummary(): Promise<void> {
+    try {
+      const [nextStatus, nextLeaderboard] = await Promise.all([
+        apiClient.request<ArenaStatus>('/api/v1/arena/status'),
+        apiClient.request<ArenaLeaderboardEntry[]>('/api/v1/arena/leaderboard'),
+      ])
+      status.value = nextStatus
+      leaderboard.value = nextLeaderboard
+    } catch (error) {
+      fail(error, 'arena_load_failed')
+    }
+  }
+
   async function refresh(): Promise<void> {
     try {
       status.value = await apiClient.request<ArenaStatus>('/api/v1/arena/status')
@@ -93,8 +106,8 @@ export const useArenaStore = defineStore('arena', () => {
   async function refreshAfterNotification(matchId: string): Promise<void> {
     await loadMatch(matchId)
     if (match.value?.status === 'Completed' || status.value?.activeMatchId !== matchId) {
-      // Result is settled server-side before the final notification; refresh rating/Honor.
-      status.value = await apiClient.request<ArenaStatus>('/api/v1/arena/status')
+      // Result is settled server-side before the final notification; refresh rating/Honor and leaderboard.
+      await refreshSummary()
     }
   }
 
@@ -165,6 +178,7 @@ export const useArenaStore = defineStore('arena', () => {
       const response = await connection.invoke<ArenaCommandResponse>(
         'UseAbility', current.matchId, abilityId, targetActorId, newCommandId())
       applyMatch(response.match)
+      if (response.match?.status === 'Completed') await refreshSummary()
       if (!response.succeeded) errorCode.value = response.errorCode
     } catch (error) {
       fail(error, 'arena_command_failed')
@@ -178,6 +192,7 @@ export const useArenaStore = defineStore('arena', () => {
     try {
       const response = await connection.invoke<ArenaCommandResponse>('Surrender', current.matchId)
       applyMatch(response.match)
+      if (response.match?.status === 'Completed') await refreshSummary()
       if (!response.succeeded) errorCode.value = response.errorCode
     } catch (error) {
       fail(error, 'arena_command_failed')
@@ -189,6 +204,7 @@ export const useArenaStore = defineStore('arena', () => {
     loadedMatchId = null
     lastSequence = 0
     log.value = []
+    void refreshSummary()
   }
 
   return {
