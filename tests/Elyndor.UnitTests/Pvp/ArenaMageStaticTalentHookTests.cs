@@ -1,5 +1,6 @@
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Abilities;
+using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Pvp;
 using Elyndor.Core.Talents;
@@ -23,6 +24,33 @@ public sealed class ArenaMageStaticTalentHookTests
             hasCompanion: false);
 
         Assert.Equal(expectedCost, entrant.Fighter.Abilities[abilityId].ResourceCost);
+    }
+
+    [Fact]
+    public void BurningSoulManaSavingIsAppliedByTheAuthoritativeArenaCommand()
+    {
+        ResolvedTalentModifiers talents = Talents(Hook("F-1-3", 20, secondaryValue: 6));
+        AbilityDefinition fireball = Ability("MAGE_FIREBALL", "FIRE") with { ResourceCost = 100 };
+        ArenaTestEntrant caster = ArenaFighterAssembler.Create(
+            Player(fireball.Id, talents), 20,
+            new Dictionary<string, AbilityDefinition> { [fireball.Id] = fireball },
+            hasCompanion: false);
+        ArenaTestEntrant opponent = ArenaFighterAssembler.Create(
+            Player("MAGE_FIRE_BLAST", ResolvedTalentModifiers.Empty), 20,
+            new Dictionary<string, AbilityDefinition>
+            {
+                ["MAGE_FIRE_BLAST"] = Ability("MAGE_FIRE_BLAST", "FIRE")
+            },
+            hasCompanion: false);
+        DateTimeOffset now = new(2026, 9, 30, 12, 0, 0, TimeSpan.Zero);
+        var session = new ArenaCombatSession(Guid.NewGuid(), caster.Fighter, opponent.Fighter,
+            new SeededGameRandom(42), now);
+
+        ArenaCommandResult result = session.UseAbility(caster.Fighter.AccountId, "cast-1",
+            fireball.Id, opponent.Fighter.Actor.ActorId, now);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(6m, session.Snapshot.ActorA.CurrentResource);
     }
 
     [Fact]
