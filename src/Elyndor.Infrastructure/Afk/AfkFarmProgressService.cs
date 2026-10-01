@@ -110,7 +110,8 @@ public sealed class AfkFarmProgressService(
                 intervalStart,
                 intervalEnd,
                 session.ContentVersion,
-                session.TargetMonsterId));
+                session.TargetMonsterId,
+                AbilitiesById: content.Indexes.AbilitiesById));
 
             int xp = Scale(simulation.XpCandidate, profile.XpMultiplier);
             int gold = Scale(simulation.GoldCandidate, profile.GoldMultiplier);
