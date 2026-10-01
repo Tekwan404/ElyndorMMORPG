@@ -103,6 +103,19 @@ public sealed class ArenaMatchRuntime(
         }
     }
 
+    public ArenaTestCommandResult SetAutoAttack(Guid accountId, Guid matchId, string commandId, bool enabled)
+    {
+        lock (_gate)
+        {
+            if (!TryGetParticipantMatch(accountId, matchId, out LiveMatch? match))
+                return new ArenaTestCommandResult(false, "arena_match_not_found", null);
+            DateTimeOffset now = time.GetUtcNow();
+            ArenaCommandResult result = match.Session.SetAutoAttack(accountId, commandId, enabled, now);
+            return new ArenaTestCommandResult(result.Succeeded, result.ErrorCode,
+                Project(match, accountId, result.Snapshot.Sequence - result.Events.Count, now));
+        }
+    }
+
     /// <summary>Advances every live match, applies disconnect forfeits and reports results.</summary>
     public ArenaTickResult Tick()
     {

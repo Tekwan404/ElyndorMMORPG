@@ -90,7 +90,7 @@ describe('ArenaBattlefield', () => {
     expect(wrapper.find('[data-arena-battlefield]').exists()).toBe(true)
     expect(wrapper.find('[data-battle-screen]').exists()).toBe(true)
     expect(wrapper.find('[data-enemy-resource]').exists()).toBe(true)
-    expect(wrapper.find('[data-autoattack-toggle]').exists()).toBe(false)
+    expect(wrapper.find('[data-autoattack-toggle]').exists()).toBe(true)
     expect(wrapper.get('[data-combat-exit]').text()).toContain('Сдаться')
     expect(wrapper.find('.arena-battle-screen__log').exists()).toBe(true)
     expect(wrapper.text()).not.toContain('1 × 1')
@@ -109,6 +109,36 @@ describe('ArenaBattlefield', () => {
       ['BASTION', 'player-a'],
     ])
 
+    wrapper.unmount()
+  })
+
+  it('shows command errors without replacing the battlefield', async () => {
+    const wrapper = mountBattlefield()
+    await wrapper.setProps({ errorMessage: 'Недостаточно маны' })
+    expect(wrapper.get('[role="alert"]').text()).toBe('Недостаточно маны')
+    expect(wrapper.findAll('[data-character-figure]')).toHaveLength(2)
+    await wrapper.setProps({ errorMessage: null })
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('requests autoattack changes and renders only authoritative state', async () => {
+    const wrapper = mountBattlefield()
+    await wrapper.get('[data-autoattack-toggle]').trigger('click')
+    expect(wrapper.emitted('toggleAutoAttack')).toEqual([[]])
+    expect(wrapper.get('[data-autoattack-toggle]').attributes('data-active')).toBe('true')
+    const next = battle()
+    next.player.autoAttackEnabled = false
+    await wrapper.setProps({ battle: next, autoAttackPending: true })
+    expect(wrapper.get('[data-autoattack-toggle]').attributes('data-active')).toBe('false')
+    expect(wrapper.get('[data-autoattack-toggle]').attributes('disabled')).toBeDefined()
+    wrapper.unmount()
+  })
+
+  it('shows zero honor rather than hiding the settled reward', async () => {
+    const wrapper = mountBattlefield(false)
+    await wrapper.setProps({ honorDelta: 0 })
+    expect(wrapper.get('.arena-battle-screen__rewards').text()).toContain('Честь0')
     wrapper.unmount()
   })
 

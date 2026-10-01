@@ -31,6 +31,7 @@ export const useArenaStore = defineStore('arena', () => {
   const match = ref<ArenaMatch | null>(null)
   const log = ref<CombatEvent[]>([])
   const pending = ref(false)
+  const autoAttackPending = ref(false)
   const errorCode = ref<string | null>(null)
   const matchStartRating = ref<number | null>(null)
   const matchStartHonor = ref<number | null>(null)
@@ -221,6 +222,23 @@ export const useArenaStore = defineStore('arena', () => {
     }
   }
 
+  async function toggleAutoAttack(): Promise<void> {
+    const current = match.value
+    if (!current?.battle || !connection || current.status !== 'Active' || autoAttackPending.value) return
+    autoAttackPending.value = true
+    errorCode.value = null
+    try {
+      const response = await connection.invoke<ArenaCommandResponse>(
+        'SetAutoAttack', current.matchId, !current.battle.player.autoAttackEnabled, newCommandId())
+      applyMatch(response.match)
+      if (!response.succeeded) errorCode.value = response.errorCode
+    } catch (error) {
+      fail(error, 'arena_command_failed')
+    } finally {
+      autoAttackPending.value = false
+    }
+  }
+
   function clearMatch(): void {
     match.value = null
     loadedMatchId = null
@@ -242,9 +260,9 @@ export const useArenaStore = defineStore('arena', () => {
   }
 
   return {
-    status, leaderboard, match, log, pending, errorCode, enabled, inMatch,
+    status, leaderboard, match, log, pending, autoAttackPending, errorCode, enabled, inMatch,
     ratingDelta, honorDelta,
     refresh, loadLeaderboard, connect, disconnect, joinQueue, leaveQueue,
-    useAbility, surrender, dismissMatch, findNextOpponent,
+    useAbility, toggleAutoAttack, surrender, dismissMatch, findNextOpponent,
   }
 })

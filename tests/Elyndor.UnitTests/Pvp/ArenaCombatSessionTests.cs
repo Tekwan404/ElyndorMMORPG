@@ -27,6 +27,48 @@ public sealed class ArenaCombatSessionTests
         Assert.True(session.Snapshot.ActorB.CurrentHp < 100);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void AutoAttackCanStopAndResumeWithoutAffectingOpponent(bool productionPlayers)
+    {
+        var session = Create(autoAttack: new AutoAttackProfile(TimeSpan.FromSeconds(1), 1, 0, 0),
+            firstOffHand: new AutoAttackProfile(TimeSpan.FromSeconds(1), 1, 0, 0),
+            productionPlayers: productionPlayers);
+        Assert.True(session.SetAutoAttack(AccountA, "off", false, Start).Succeeded);
+        Assert.False(session.AutoAttackEnabledFor(AccountA));
+        Assert.True(session.AutoAttackEnabledFor(AccountB));
+        session.AdvanceTo(Start.AddSeconds(2));
+        Assert.Equal(100, session.Snapshot.ActorB.CurrentHp);
+        Assert.True(session.SetAutoAttack(AccountA, "on", true, Start.AddSeconds(2)).Succeeded);
+        session.AdvanceTo(Start.AddSeconds(4));
+        Assert.True(session.Snapshot.ActorB.CurrentHp < 100);
+    }
+
+    [Fact]
+    public void AutoAttackCommandRejectsIntrudersReplayAndTerminalChanges()
+    {
+        var session = Create();
+        Assert.Equal("arena_not_participant", session.SetAutoAttack(Guid.NewGuid(), "bad", false, Start).ErrorCode);
+        Assert.True(session.SetAutoAttack(AccountA, "off", false, Start).Succeeded);
+        Assert.Equal("arena_duplicate_command", session.SetAutoAttack(AccountA, "off", true, Start).ErrorCode);
+        Assert.False(session.AutoAttackEnabledFor(AccountA));
+        session.Cancel(Start);
+        Assert.Equal("arena_ended", session.SetAutoAttack(AccountA, "late", true, Start).ErrorCode);
+    }
+
+    [Fact]
+    public void AutoAttackNoOpCommandsCannotEvictEarlierCommandProtection()
+    {
+        var session = Create();
+        Assert.True(session.SetAutoAttack(AccountA, "original", true, Start).Succeeded);
+        Assert.True(session.SetAutoAttack(AccountA, "off", false, Start).Succeeded);
+        for (int index = 0; index < 600; index++)
+            Assert.True(session.SetAutoAttack(AccountA, $"noop-{index}", false, Start).Succeeded);
+        Assert.Equal("arena_duplicate_command", session.SetAutoAttack(AccountA, "original", true, Start).ErrorCode);
+        Assert.False(session.AutoAttackEnabledFor(AccountA));
+    }
+
     [Fact]
     public void NonParticipantCommandCannotAdvanceOrEndMatch()
     {

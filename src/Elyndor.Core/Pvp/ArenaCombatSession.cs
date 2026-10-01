@@ -45,10 +45,11 @@ public sealed class ArenaCombatSession
     private DateTimeOffset _secondAutoAttackAt;
     private DateTimeOffset _firstOffHandAttackAt;
     private DateTimeOffset _secondOffHandAttackAt;
+    private bool _firstAutoAttackEnabled;
+    private bool _secondAutoAttackEnabled;
     private long _sequence;
     private readonly List<CombatEvent> _events = [];
     private const int MaximumAdvanceSteps = 10_000;
-    private const int MaximumTrackedCommands = 512;
     public static readonly TimeSpan DefaultDuration = TimeSpan.FromMinutes(5);
     private readonly TimeSpan _duration;
     private readonly HashSet<(Guid AccountId, string CommandId)> _seenCommands = [];
@@ -85,6 +86,8 @@ public sealed class ArenaCombatSession
         _random = random;
         _startedAt = startedAt;
         _advancedTo = startedAt;
+        _firstAutoAttackEnabled = first.CanAutoAttack;
+        _secondAutoAttackEnabled = second.CanAutoAttack;
         _firstAutoAttackAt = first.CanAutoAttack
             ? startedAt + first.AutoAttack.Interval
             : DateTimeOffset.MaxValue;
@@ -238,6 +241,48 @@ public sealed class ArenaCombatSession
         return true;
     }
 
+    public bool AutoAttackEnabledFor(Guid accountId) =>
+        accountId == _first.AccountId ? _firstAutoAttackEnabled
+            : accountId == _second.AccountId && _secondAutoAttackEnabled;
+
+    public ArenaCommandResult SetAutoAttack(Guid accountId, string commandId, bool enabled, DateTimeOffset now)
+    {
+        bool first = accountId == _first.AccountId;
+        if (!first && accountId != _second.AccountId) return Result(false, "arena_not_participant", _sequence);
+        if (now.Offset != TimeSpan.Zero || now < _advancedTo) return Result(false, "arena_invalid_time", _sequence);
+        if (string.IsNullOrWhiteSpace(commandId) || commandId.Length > 64)
+            return Result(false, "arena_invalid_command", _sequence);
+        AdvanceTo(now);
+        long before = _sequence;
+        if (Outcome != ArenaMatchOutcome.Active) return Result(false, "arena_ended", before);
+        if (_seenCommands.Contains((accountId, commandId))) return Result(false, "arena_duplicate_command", before);
+        ArenaFighter fighter = first ? _first : _second;
+        if (enabled && !fighter.CanAutoAttack) return Result(false, "arena_auto_attack_unavailable", before);
+        _seenCommands.Add((accountId, commandId));
+        if (AutoAttackEnabledFor(accountId) == enabled) return Result(true, null, before);
+        TimeSpan interval = MechanicsFor(fighter.Actor.ActorId)?.MechanicsAutoAttackInterval(fighter.AutoAttack, now)
+            ?? fighter.AutoAttack.Interval;
+        DateTimeOffset next = enabled ? now + interval : DateTimeOffset.MaxValue;
+        DateTimeOffset offHand = enabled && fighter.OffHandAutoAttack is { } weapon
+            ? now + TimeSpan.FromTicks((MechanicsFor(fighter.Actor.ActorId)?.MechanicsAutoAttackInterval(weapon, now)
+                ?? weapon.Interval).Ticks / 2) : DateTimeOffset.MaxValue;
+        if (first)
+        {
+            _firstAutoAttackEnabled = enabled;
+            _firstAutoAttackAt = next;
+            _firstOffHandAttackAt = offHand;
+        }
+        else
+        {
+            _secondAutoAttackEnabled = enabled;
+            _secondAutoAttackAt = next;
+            _secondOffHandAttackAt = offHand;
+        }
+        Append(new CombatEvent(enabled ? CombatEventType.AutoAttackStarted : CombatEventType.AutoAttackStopped,
+            now, fighter.Actor.ActorId));
+        return Result(true, null, before);
+    }
+
     public ArenaCommandResult UseAbility(Guid accountId, string commandId, string abilityId,
         Guid targetActorId, DateTimeOffset now)
     {
@@ -292,7 +337,6 @@ public sealed class ArenaCombatSession
             new AbilityIntent(commandId, abilityId, targetActorId, targetIds, fireTargetModifiers), now, _random);
         if (!execution.Succeeded)
             return Result(false, execution.ErrorCode.ToString(), before);
-        if (_seenCommands.Count >= MaximumTrackedCommands) _seenCommands.Clear();
         _seenCommands.Add((accountId, commandId));
         ProcessKernelEvents(execution.Events, fighter.Actor.ActorId, now, ability.Id, targetActorId);
         mechanics?.MechanicsAbilityStarted(ability, now);

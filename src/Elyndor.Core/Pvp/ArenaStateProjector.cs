@@ -40,7 +40,7 @@ public static class ArenaStateProjector
         var cast = session.ActiveCastFor(fighter.AccountId);
         return new CombatActorSnapshot(actor.ActorId, CombatActorKind.Player,
             entrant.ClassId, entrant.Name, actor.CurrentHp, actor.MaxHp, entrant.ResourceType,
-            actor.CurrentResource, actor.MaxResource, true, null,
+            actor.CurrentResource, actor.MaxResource, session.AutoAttackEnabledFor(fighter.AccountId), null,
             session.CooldownsFor(fighter.AccountId),
             new HashSet<string>(fighter.Abilities.Keys, StringComparer.Ordinal),
             session.AbilitySnapshotsFor(fighter.AccountId),
