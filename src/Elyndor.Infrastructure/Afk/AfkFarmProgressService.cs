@@ -72,66 +72,74 @@ public sealed class AfkFarmProgressService(
         AfkFarmRewardProfile profile = content.Package.AfkFarm
             ?? throw new InvalidOperationException("AFK reward profile is required in content.");
         ValidateProfile(profile);
-        DateTimeOffset intervalStart = session.LastProcessedAtUtc;
-        DateTimeOffset intervalEnd = Min(
-            session.EndsAtUtc,
-            intervalStart.AddSeconds(profile.ProcessingIntervalSeconds));
-        if (now < intervalEnd)
-        {
-            await transaction.CommitAsync(cancellationToken);
-            return new(false, session, null);
-        }
-
-        int intervalIndex = checked((int)((intervalStart - session.StartedAtUtc).TotalSeconds
-            / profile.ProcessingIntervalSeconds));
-        AfkFarmIntervalGrant? replay = await dbContext.AfkFarmIntervalGrants
-            .SingleOrDefaultAsync(grant => grant.SessionId == session.Id
-                && grant.IntervalIndex == intervalIndex, cancellationToken);
-        if (replay is not null)
-        {
-            await transaction.CommitAsync(cancellationToken);
-            return new(false, session, replay);
-        }
-
         if (!content.Indexes.LocationsById.TryGetValue(session.LocationId, out var location))
             throw new InvalidOperationException("AFK location is missing from content.");
         AfkCharacterSnapshot snapshot = JsonSerializer.Deserialize<AfkCharacterSnapshot>(
             session.CharacterSnapshotJson,
             JsonOptions) ?? throw new InvalidOperationException("AFK character snapshot is invalid.");
-        AfkFarmSimulationResult simulation = AfkFarmSimulator.Simulate(new(
-            session.Id,
-            intervalIndex,
-            snapshot,
-            location,
-            content.Indexes.MonstersById,
-            intervalStart,
-            intervalEnd,
-            session.ContentVersion,
-            session.TargetMonsterId));
 
-        int xp = Scale(simulation.XpCandidate, profile.XpMultiplier);
-        int gold = Scale(simulation.GoldCandidate, profile.GoldMultiplier);
-        LootRoll[] loot = RollLoot(simulation.LootCandidates, content, profile.LootMultiplier,
-            session.Id, intervalIndex);
-        CharacterProgression.GrantExperience(
-            character,
-            xp,
-            content.Package.LevelProgression
-                ?? throw new InvalidOperationException("Level progression content is required."));
-        character.AddGold(gold);
+        bool processedAny = false;
+        AfkFarmIntervalGrant? lastGrant = null;
 
-        bool inventoryFull = await AddLootAsync(
-            character.Id, session.Id, intervalIndex, loot, now, content, cancellationToken);
-        AfkFarmIntervalGrant grant = new(
-            session.Id, intervalIndex, intervalStart, intervalEnd,
-            simulation.Kills, xp, gold, JsonSerializer.Serialize(loot, JsonOptions), now);
-        dbContext.AfkFarmIntervalGrants.Add(grant);
-        session.CompleteInterval(intervalEnd);
-        if (inventoryFull)
-            session.StopForInventoryFull(intervalEnd);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        while (session.Status == AfkFarmStatus.Active)
+        {
+            DateTimeOffset intervalStart = session.LastProcessedAtUtc;
+            DateTimeOffset intervalEnd = Min(
+                session.EndsAtUtc,
+                intervalStart.AddSeconds(profile.ProcessingIntervalSeconds));
+            if (now < intervalEnd)
+                break;
+
+            int intervalIndex = checked((int)((intervalStart - session.StartedAtUtc).TotalSeconds
+                / profile.ProcessingIntervalSeconds));
+            AfkFarmIntervalGrant? replay = await dbContext.AfkFarmIntervalGrants
+                .SingleOrDefaultAsync(grant => grant.SessionId == session.Id
+                    && grant.IntervalIndex == intervalIndex, cancellationToken);
+            if (replay is not null)
+            {
+                await transaction.CommitAsync(cancellationToken);
+                return new(processedAny, session, replay);
+            }
+
+            AfkFarmSimulationResult simulation = AfkFarmSimulator.Simulate(new(
+                session.Id,
+                intervalIndex,
+                snapshot,
+                location,
+                content.Indexes.MonstersById,
+                intervalStart,
+                intervalEnd,
+                session.ContentVersion,
+                session.TargetMonsterId));
+
+            int xp = Scale(simulation.XpCandidate, profile.XpMultiplier);
+            int gold = Scale(simulation.GoldCandidate, profile.GoldMultiplier);
+            LootRoll[] loot = RollLoot(simulation.LootCandidates, content, profile.LootMultiplier,
+                session.Id, intervalIndex);
+            CharacterProgression.GrantExperience(
+                character,
+                xp,
+                content.Package.LevelProgression
+                    ?? throw new InvalidOperationException("Level progression content is required."));
+            character.AddGold(gold);
+
+            bool inventoryFull = await AddLootAsync(
+                character.Id, session.Id, intervalIndex, loot, now, content, cancellationToken);
+            AfkFarmIntervalGrant grant = new(
+                session.Id, intervalIndex, intervalStart, intervalEnd,
+                simulation.Kills, xp, gold, JsonSerializer.Serialize(loot, JsonOptions), now);
+            dbContext.AfkFarmIntervalGrants.Add(grant);
+            session.CompleteInterval(intervalEnd);
+            if (inventoryFull)
+                session.StopForInventoryFull(intervalEnd);
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            processedAny = true;
+            lastGrant = grant;
+        }
+
         await transaction.CommitAsync(cancellationToken);
-        return new(true, session, grant);
+        return new(processedAny, session, lastGrant);
     }
 
     private async Task<bool> AddLootAsync(Guid characterId, Guid sessionId, int intervalIndex,
