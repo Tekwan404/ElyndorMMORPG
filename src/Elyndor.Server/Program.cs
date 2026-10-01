@@ -148,6 +148,7 @@ builder.Services.AddAuthorization(options =>
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<ICombatUpdatePublisher, SignalRCombatUpdatePublisher>();
 builder.Services.AddSingleton<Elyndor.Infrastructure.Pvp.IArenaUpdatePublisher, Elyndor.Server.Pvp.SignalRArenaUpdatePublisher>();
+builder.Services.AddScoped<Elyndor.Server.Pvp.ArenaInvitationNotifier>();
 
 WebApplication app = builder.Build();
 

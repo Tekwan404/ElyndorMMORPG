@@ -20,8 +20,51 @@ public static class ArenaEndpoints
         group.MapDelete("/queue", LeaveAsync);
         group.MapGet("/leaderboard", GetLeaderboardAsync);
         group.MapGet("/matches/{matchId:guid}", GetMatch);
+        group.MapGet("/invites", GetInvitesAsync);
+        group.MapPost("/invites", InviteAsync);
+        group.MapPost("/invites/{inviteId:guid}", RespondToInviteAsync);
         return endpoints;
     }
+
+    private static async Task<IResult> GetInvitesAsync(ClaimsPrincipal user, ArenaInvitationService invites,
+        ArenaLobbyService lobby, HttpContext http, CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        if (!lobby.Enabled) return Problem("arena_disabled", 404, http);
+        return Results.Ok((await invites.ListAsync(accountId, cancellationToken)).Select(ToInvitation));
+    }
+
+    private static async Task<IResult> InviteAsync(ArenaInviteRequest request, ClaimsPrincipal user,
+        ArenaInvitationService invites, ArenaInvitationNotifier notifier, HttpContext http,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        ArenaInvitationResult result = await invites.InviteAsync(accountId, request.RequestId, request.TargetName, cancellationToken);
+        if (result.Succeeded && result.Created && result.Invitation is { } invite)
+            await notifier.NotifyAsync(invite, sendTelegram: true);
+        return InvitationResult(result, http);
+    }
+
+    private static async Task<IResult> RespondToInviteAsync(Guid inviteId, ArenaInviteActionRequest request,
+        ClaimsPrincipal user, ArenaInvitationService invites, ArenaInvitationNotifier notifier,
+        HttpContext http, CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        ArenaInvitationResult result = await invites.RespondAsync(accountId, inviteId, request.Action, cancellationToken);
+        if (result.Succeeded && result.Created && result.Invitation is { } invite)
+            await notifier.NotifyAsync(invite, sendTelegram: false);
+        return InvitationResult(result, http);
+    }
+
+    private static IResult InvitationResult(ArenaInvitationResult result, HttpContext http) =>
+        result.Succeeded && result.Invitation is { } invite ? Results.Ok(ToInvitation(invite))
+            : Problem(result.ErrorCode ?? "arena_invite_failed",
+                result.ErrorCode is "arena_invite_invalid" ? 400
+                    : result.ErrorCode is "arena_invite_not_found" or "arena_invite_player_not_found" or "arena_disabled" ? 404 : 409, http);
+
+    private static ArenaInvitationResponse ToInvitation(ArenaInvitationView invite) =>
+        new(invite.Id, invite.InviterCharacterId, invite.InviterName, invite.TargetCharacterId, invite.TargetName,
+            invite.Status.ToString(), invite.ExpiresAtUtc, invite.MatchId, invite.Incoming);
 
     private static async Task<IResult> GetStatusAsync(ClaimsPrincipal user, ArenaLobbyService lobby,
         HttpContext http, CancellationToken cancellationToken)

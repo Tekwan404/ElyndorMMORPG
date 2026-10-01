@@ -54,3 +54,14 @@ export interface ArenaMatchNotification {
   matchId: string
   sequence: number
 }
+export interface ArenaInvitation {
+  id: string
+  inviterCharacterId: string
+  inviterName: string
+  targetCharacterId: string
+  targetName: string
+  status: 'Pending' | 'Accepted' | 'Declined' | 'Cancelled' | 'Expired'
+  expiresAtUtc: string
+  matchId: string | null
+  incoming: boolean
+}

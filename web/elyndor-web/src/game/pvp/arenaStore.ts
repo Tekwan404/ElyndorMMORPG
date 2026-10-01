@@ -17,6 +17,7 @@ import type {
   ArenaQueueMode,
   ArenaQueueResponse,
   ArenaStatus,
+  ArenaInvitation,
 } from './arenaContracts'
 
 const MAX_LOG_EVENTS = 200
@@ -32,6 +33,9 @@ export const useArenaStore = defineStore('arena', () => {
   const log = ref<CombatEvent[]>([])
   const pending = ref(false)
   const autoAttackPending = ref(false)
+  const invitations = ref<ArenaInvitation[]>([])
+  const invitePending = ref(false)
+  const inviteNotice = ref<string | null>(null)
   const errorCode = ref<string | null>(null)
   const matchStartRating = ref<number | null>(null)
   const matchStartHonor = ref<number | null>(null)
@@ -51,6 +55,7 @@ export const useArenaStore = defineStore('arena', () => {
   let connection: HubConnection | null = null
   let loadedMatchId: string | null = null
   let lastSequence = 0
+  let inviteDraft: { name: string; requestId: string } | null = null
 
   function fail(error: unknown, fallback: string): void {
     errorCode.value = error instanceof Error ? error.message : fallback
@@ -112,8 +117,10 @@ export const useArenaStore = defineStore('arena', () => {
       connection.on('ArenaMatchUpdated', (note: ArenaMatchNotification) => {
         void refreshAfterNotification(note.matchId)
       })
+      connection.on('ArenaInvitesChanged', () => { void loadInvites() })
       connection.onreconnected(() => {
         void refresh()
+        void loadInvites()
       })
     }
     if (connection.state === HubConnectionState.Disconnected) await connection.start()
@@ -193,6 +200,54 @@ export const useArenaStore = defineStore('arena', () => {
     }
   }
 
+  async function loadInvites(): Promise<void> {
+    try {
+      invitations.value = await apiClient.request<ArenaInvitation[]>('/api/v1/arena/invites')
+    } catch (error) { fail(error, 'arena_invite_failed') }
+  }
+
+  async function invitePlayer(targetName: string): Promise<void> {
+    const name = targetName.trim()
+    if (!name || invitePending.value) return
+    invitePending.value = true
+    errorCode.value = null
+    inviteNotice.value = null
+    if (!inviteDraft || inviteDraft.name !== name) {
+      inviteDraft = { name, requestId: crypto.randomUUID() }
+    }
+    try {
+      await connect()
+      await apiClient.request<ArenaInvitation>('/api/v1/arena/invites', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestId: inviteDraft.requestId, targetName: name }),
+      })
+      inviteDraft = null
+      inviteNotice.value = 'Приглашение отправлено. Ждём ответа друга.'
+      await loadInvites()
+    } catch (error) { fail(error, 'arena_invite_failed') }
+    finally { invitePending.value = false }
+  }
+
+  async function respondToInvite(id: string, action: 'accept' | 'decline' | 'cancel'): Promise<void> {
+    if (invitePending.value) return
+    invitePending.value = true
+    errorCode.value = null
+    inviteNotice.value = null
+    try {
+      await connect()
+      const result = await apiClient.request<ArenaInvitation>(`/api/v1/arena/invites/${id}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }),
+      })
+      await loadInvites()
+      if (result.matchId && action === 'accept') {
+        clearMatch()
+        await refresh()
+        await loadMatch(result.matchId)
+      } else inviteNotice.value = action === 'cancel' ? 'Приглашение отменено.' : 'Приглашение отклонено.'
+    } catch (error) { fail(error, 'arena_invite_failed') }
+    finally { invitePending.value = false }
+  }
+
   async function useAbility(abilityId: string, targetActorId: string): Promise<void> {
     const current = match.value
     if (!current?.matchId || !connection || current.status !== 'Active') return
@@ -262,6 +317,7 @@ export const useArenaStore = defineStore('arena', () => {
   return {
     status, leaderboard, match, log, pending, autoAttackPending, errorCode, enabled, inMatch,
     ratingDelta, honorDelta,
+    invitations, invitePending, inviteNotice, loadInvites, invitePlayer, respondToInvite,
     refresh, loadLeaderboard, connect, disconnect, joinQueue, leaveQueue,
     useAbility, toggleAutoAttack, surrender, dismissMatch, findNextOpponent,
   }

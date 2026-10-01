@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted } from 'vue'
 
 import ArenaBattlefield from '@/game/pvp/components/ArenaBattlefield.vue'
+import ArenaInvitations from '@/game/pvp/components/ArenaInvitations.vue'
 import { useArenaStore } from '@/game/pvp/arenaStore'
 import { arenaErrorMessage, arenaResultLabel } from '@/game/pvp/arenaPresentation'
 import { UIButton } from '@/ui/components'
@@ -16,10 +17,14 @@ const activeFight = computed(() => match.value?.status === 'Active' && battle.va
 onMounted(async () => {
   await arena.refresh()
   await arena.loadLeaderboard()
+  if (arena.enabled) {
+    try { await arena.connect(); await arena.loadInvites() }
+    catch { arena.errorCode = 'arena_load_failed' }
+  }
 })
 
 onUnmounted(() => {
-  if (!arena.status?.isQueued && !arena.inMatch) void arena.disconnect()
+  if (!arena.status?.isQueued && !arena.inMatch && arena.invitations.length === 0) void arena.disconnect()
 })
 </script>
 
@@ -63,6 +68,9 @@ onUnmounted(() => {
     </div>
 
     <template v-else>
+      <ArenaInvitations :invitations="arena.invitations" :pending="arena.invitePending"
+        :unavailable="Boolean(status?.isQueued || status?.activeMatchId)" :notice="arena.inviteNotice"
+        @invite="arena.invitePlayer" @respond="arena.respondToInvite" @refresh="arena.loadInvites" />
       <section class="arena__record" aria-label="Статистика арены">
         <div><small>Победы</small><strong>{{ status?.wins ?? 0 }}</strong></div>
         <div><small>Поражения</small><strong>{{ status?.losses ?? 0 }}</strong></div>
