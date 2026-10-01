@@ -219,7 +219,7 @@ public sealed class ArenaCombatSessionTests
     }
 
     [Fact]
-    public void AuraWithoutSupportedRuntimeSemanticsIsStillRejected()
+    public void GenericSoloPartyBuffUsesTheSameAbilityRuntimeAndTargetsOnlyCaster()
     {
         var concentration = new AbilityDefinition("CONCENTRATION_AURA", AbilityType.Instant,
             AbilityTargetType.SelfAndPartyMembersInCombat, 0, TimeSpan.Zero, TimeSpan.Zero,
@@ -228,20 +228,35 @@ public sealed class ArenaCombatSessionTests
                 new EffectDefinition("PALADIN_CONCENTRATION_AURA", EffectKind.Buff,
                     TimeSpan.FromMinutes(30), 1, EffectStackPolicy.StrongestWins, 0.08m))]);
 
-        Assert.Throws<NotSupportedException>(() => Create(extraAbility: concentration));
+        ArenaCombatSession session = Create(extraAbility: concentration);
+
+        ArenaCommandResult result = session.UseAbility(AccountA, "concentration", concentration.Id,
+            ActorA, Start);
+
+        Assert.True(result.Succeeded);
+        Assert.Contains(session.ActiveEffectsFor(AccountA), active =>
+            active.Definition.Id == "PALADIN_CONCENTRATION_AURA");
+        Assert.DoesNotContain(session.ActiveEffectsFor(AccountB), active =>
+            active.Definition.Id == "PALADIN_CONCENTRATION_AURA");
     }
 
     [Fact]
-    public void BuildWithOnExpireEffectIsRejectedUntilExpirationActionsAreSupported()
+    public void ExpirationActionDealsDamageExactlyOnce()
     {
         var effect = new EffectDefinition("EXPLOSIVE", EffectKind.Debuff, TimeSpan.FromSeconds(2),
             1, EffectStackPolicy.Replace, 0,
             OnExpireActions: [new EffectExpirationActionDefinition(EffectExpirationActionType.Damage, 30)]);
-        var unsupported = new AbilityDefinition("BOMB", AbilityType.Instant,
+        var bomb = new AbilityDefinition("BOMB", AbilityType.Instant,
             AbilityTargetType.SingleEnemy, 0, TimeSpan.Zero, TimeSpan.Zero,
             false, GlobalCooldownCategory.None, true, "Fire",
             Actions: [new AbilityActionDefinition(AbilityActionType.ApplyEffect, Effect: effect)]);
-        Assert.Throws<NotSupportedException>(() => Create(extraAbility: unsupported));
+        ArenaCombatSession session = Create(extraAbility: bomb);
+        Assert.True(session.UseAbility(AccountA, "bomb", bomb.Id, ActorB, Start).Succeeded);
+        session.AdvanceTo(Start.AddSeconds(2));
+        Assert.Equal(70m, session.Snapshot.ActorB.CurrentHp);
+        session.AdvanceTo(Start.AddSeconds(2));
+        Assert.Single(session.GetEventsAfter(0), e => e.Type == CombatEventType.DamageDealt
+            && e.TargetActorId == ActorB && e.Amount == 30m);
     }
 
     [Fact]
@@ -301,12 +316,14 @@ public sealed class ArenaCombatSessionTests
         Assert.Single(session.GetEventsAfter(0), x => x.Type == CombatEventType.CombatEnded);
     }
 
-    [Fact]
-    public void SimultaneousLethalCastsResolveToDraw()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SimultaneousLethalCastsResolveToDraw(bool productionPlayers)
     {
         ArenaCombatSession session = Create(
             strikeDamage: 200,
-            castTime: TimeSpan.FromSeconds(1));
+            castTime: TimeSpan.FromSeconds(1), productionPlayers: productionPlayers);
         Assert.True(session.UseAbility(AccountA, "cast-a", "STRIKE", ActorB, Start).Succeeded);
         Assert.True(session.UseAbility(AccountB, "cast-b", "STRIKE", ActorA, Start).Succeeded);
 
@@ -344,15 +361,17 @@ public sealed class ArenaCombatSessionTests
         Assert.Equal(0, swapped.Snapshot.ActorB.CurrentHp);
     }
 
-    [Fact]
-    public void SimultaneousLethalAutoAttacksResolveToDraw()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SimultaneousLethalAutoAttacksResolveToDraw(bool productionPlayers)
     {
         var lethalAuto = new AutoAttackProfile(
             TimeSpan.FromSeconds(1),
             200,
             0,
             0);
-        ArenaCombatSession session = Create(autoAttack: lethalAuto);
+        ArenaCombatSession session = Create(autoAttack: lethalAuto, productionPlayers: productionPlayers);
 
         session.AdvanceTo(Start.AddSeconds(1));
 
@@ -361,8 +380,10 @@ public sealed class ArenaCombatSessionTests
         Assert.Equal(0, session.Snapshot.ActorB.CurrentHp);
     }
 
-    [Fact]
-    public void SimultaneousLethalPendingActionsResolveToDraw()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SimultaneousLethalPendingActionsResolveToDraw(bool productionPlayers)
     {
         var delayedLethal = new AbilityDefinition(
             "DELAYED_LETHAL",
@@ -386,7 +407,7 @@ public sealed class ArenaCombatSessionTests
                     CanDodge: false,
                     Delay: TimeSpan.FromSeconds(1))
             ]);
-        ArenaCombatSession session = Create(extraAbility: delayedLethal);
+        ArenaCombatSession session = Create(extraAbility: delayedLethal, productionPlayers: productionPlayers);
         Assert.True(session.UseAbility(
             AccountA, "delay-a", delayedLethal.Id, ActorB, Start).Succeeded);
         Assert.True(session.UseAbility(
@@ -399,10 +420,12 @@ public sealed class ArenaCombatSessionTests
         Assert.Equal(0, session.Snapshot.ActorB.CurrentHp);
     }
 
-    [Fact]
-    public void SimultaneousLethalPeriodicDamageResolvesToDraw()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SimultaneousLethalPeriodicDamageResolvesToDraw(bool productionPlayers)
     {
-        ArenaCombatSession session = Create(dotDamage: 200);
+        ArenaCombatSession session = Create(dotDamage: 200, productionPlayers: productionPlayers);
         Assert.True(session.UseAbility(AccountA, "dot-a", "DOT", ActorB, Start).Succeeded);
         Assert.True(session.UseAbility(AccountB, "dot-b", "DOT", ActorA, Start).Succeeded);
 
@@ -499,7 +522,8 @@ public sealed class ArenaCombatSessionTests
         decimal dotDamage = 20,
         AutoAttackProfile? autoAttack = null,
         bool swapFighters = false,
-        AutoAttackProfile? firstOffHand = null)
+        AutoAttackProfile? firstOffHand = null,
+        bool productionPlayers = false)
     {
         var strike = new AbilityDefinition("STRIKE", castTime is null ? AbilityType.Instant : AbilityType.Casted,
             AbilityTargetType.SingleEnemy, 0, TimeSpan.Zero, castTime ?? TimeSpan.Zero,
@@ -538,6 +562,17 @@ public sealed class ArenaCombatSessionTests
         var fighterA = new ArenaFighter(AccountA, ActorA, actorA, abilities, auto,
             OffHandAutoAttack: firstOffHand);
         var fighterB = new ArenaFighter(AccountB, ActorB, actorB, abilities, auto);
+        if (productionPlayers)
+        {
+            fighterA = ArenaFighterAssembler.Create(new CombatPlayerDefinition(AccountA,
+                new CombatParticipantDefinition(actorA, CombatActorKind.Player, "WARRIOR", "A", "RAGE",
+                    auto, abilities.Keys.ToHashSet(StringComparer.Ordinal), OffHandAutoAttack: firstOffHand),
+                Elyndor.Core.Talents.ResolvedTalentModifiers.Empty), 1, abilities, false).Fighter;
+            fighterB = ArenaFighterAssembler.Create(new CombatPlayerDefinition(AccountB,
+                new CombatParticipantDefinition(actorB, CombatActorKind.Player, "WARRIOR", "B", "RAGE",
+                    auto, abilities.Keys.ToHashSet(StringComparer.Ordinal)),
+                Elyndor.Core.Talents.ResolvedTalentModifiers.Empty), 1, abilities, false).Fighter;
+        }
         return new ArenaCombatSession(
             Guid.NewGuid(),
             swapFighters ? fighterB : fighterA,

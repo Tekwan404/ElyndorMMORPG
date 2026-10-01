@@ -8,7 +8,8 @@ public enum CrowdControlCategory
     Root,
     Fear,
     Incapacitate,
-    Silence
+    Silence,
+    Disarm
 }
 
 public readonly record struct CrowdControlDrResolution(
@@ -76,21 +77,6 @@ public sealed class CrowdControlDiminishingReturns
             : 0;
     }
 
-    internal CrowdControlDiminishingReturns Clone()
-    {
-        CrowdControlDiminishingReturns clone = new();
-        clone.ReplaceWith(this);
-        return clone;
-    }
-
-    internal void ReplaceWith(CrowdControlDiminishingReturns source)
-    {
-        ArgumentNullException.ThrowIfNull(source);
-        _states.Clear();
-        foreach ((CrowdControlCategory category, CrowdControlDrState state) in source._states)
-            _states[category] = state;
-    }
-
     internal void RefreshResetWindow(
         CrowdControlCategory category,
         DateTimeOffset controlEndsAtUtc)
@@ -131,6 +117,9 @@ public static class CrowdControlCategoryResolver
                 return true;
             case EffectKind.Silence:
                 category = CrowdControlCategory.Silence;
+                return true;
+            case EffectKind.Disarm:
+                category = CrowdControlCategory.Disarm;
                 return true;
             default:
                 category = default;

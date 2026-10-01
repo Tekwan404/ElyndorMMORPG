@@ -51,7 +51,7 @@ public sealed class ArenaArcherStaticTalentHookTests
     }
 
     [Fact]
-    public void ArcherHookWithoutAnArenaAdapterIsDormant()
+    public void ArcherHookWithoutAnArenaAdapterIsPreservedForRuntimeAudit()
     {
         ResolvedTalentModifiers talents = Talents(
             Hook("M-1-1", "PHYSICAL_SHOT_CRIT", 5));
@@ -63,23 +63,24 @@ public sealed class ArenaArcherStaticTalentHookTests
             new Dictionary<string, AbilityDefinition> { [shot.Id] = shot },
             hasCompanion: false);
 
-        Assert.Empty(entrant.Fighter.EffectiveTalentModifiers.EventHooks);
+        Assert.Contains(entrant.Fighter.EffectiveTalentModifiers.EventHooks,
+            hook => hook.TalentId == "M-1-1");
     }
 
     [Fact]
-    public void ArcherStatefulHookWithoutItsRequiredDescriptorIsDormant()
+    public void ArcherStatefulHookWithoutItsRequiredDescriptorIsRejectedAtAdmission()
     {
         ResolvedTalentModifiers talents = Talents(
             Hook("M-2-4", "HAWK_SPIRIT", 10));
         AbilityDefinition shot = PhysicalShot("SHOCKING_SHOT");
 
-        ArenaTestEntrant entrant = ArenaFighterAssembler.Create(
+        Assert.Contains(ArenaTalentRuntimeSupport.ForOneVsOne(talents).EventHooks,
+            hook => hook.TalentId == "M-2-4");
+        Assert.Throws<NotSupportedException>(() => ArenaFighterAssembler.Create(
             Player(shot.Id, talents),
             20,
             new Dictionary<string, AbilityDefinition> { [shot.Id] = shot },
-            hasCompanion: false);
-
-        Assert.Empty(entrant.Fighter.EffectiveTalentModifiers.EventHooks);
+            hasCompanion: false));
     }
 
     private static CombatPlayerDefinition Player(

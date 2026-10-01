@@ -30,6 +30,25 @@ public static class EffectEngine
         }
 
         Validate(definition);
+        EffectApplicationPolicyResult? policyResult =
+            target.EffectApplicationPolicy?.Invoke(sourceId, definition, now);
+        if (policyResult is not null)
+        {
+            if (policyResult.Definition is null)
+            {
+                return [new CombatEvent(
+                    CombatEventType.EffectImmune,
+                    now,
+                    target.ActorId,
+                    definition.Id,
+                    SourceActorId: sourceId,
+                    TargetActorId: target.ActorId)];
+            }
+
+            definition = policyResult.Definition;
+            Validate(definition);
+        }
+
         List<CombatEvent> events = [];
         List<ActiveEffect> matching = target.ActiveEffects
             .Where(effect =>
@@ -41,6 +60,7 @@ public static class EffectEngine
         if (definition.StackPolicy == EffectStackPolicy.Independent || matching.Count == 0)
         {
             AddNew(target, sourceId, definition, now, events);
+            policyResult?.OnApplied?.Invoke();
             return events;
         }
 
@@ -49,22 +69,24 @@ public static class EffectEngine
         {
             case EffectStackPolicy.Stack:
                 current.Stacks = Math.Min(definition.MaxStacks, current.Stacks + 1);
-                Refresh(current, now);
+                Refresh(current, now, policyResult?.Definition?.Duration);
                 break;
             case EffectStackPolicy.Refresh:
-                Refresh(current, now);
+                Refresh(current, now, policyResult?.Definition?.Duration);
                 break;
             case EffectStackPolicy.Replace:
                 target.ActiveEffects.RemoveAll(effect =>
                     effect.Definition.Id == definition.Id
                     && (!definition.SourceSpecific || effect.SourceId == sourceId));
                 AddNew(target, sourceId, definition, now, events);
+                policyResult?.OnApplied?.Invoke();
                 return events;
             case EffectStackPolicy.StrongestWins:
                 if (definition.Magnitude >= current.RemainingMagnitude)
                 {
                     target.ActiveEffects.Remove(current);
                     AddNew(target, sourceId, definition, now, events);
+                    policyResult?.OnApplied?.Invoke();
                     return events;
                 }
 
@@ -78,6 +100,7 @@ public static class EffectEngine
             definition.Id,
             SourceActorId: sourceId,
             TargetActorId: target.ActorId));
+        policyResult?.OnApplied?.Invoke();
         return events;
     }
 
@@ -365,10 +388,10 @@ public static class EffectEngine
             TargetActorId: target.ActorId));
     }
 
-    private static void Refresh(ActiveEffect effect, DateTimeOffset now)
+    private static void Refresh(ActiveEffect effect, DateTimeOffset now, TimeSpan? duration = null)
     {
         effect.AppliedAtUtc = now;
-        effect.ExpiresAtUtc = now + effect.Definition.Duration;
+        effect.ExpiresAtUtc = now + (duration ?? effect.Definition.Duration);
         effect.NextTickAtUtc = effect.Definition.TickInterval is { } interval ? now + interval : null;
     }
 
@@ -380,6 +403,8 @@ public static class EffectEngine
             || definition.Duration <= TimeSpan.Zero
             || definition.MaxStacks <= 0
             || invalidNegativeMagnitude
+            || definition.ResourceCostPerAbsorbedDamage < 0
+            || definition.ResourceCostPerAbsorbedDamage > 0 && definition.Kind != EffectKind.Shield
             || definition.TickInterval <= TimeSpan.Zero)
         {
             throw new ArgumentException("Effect definition contains invalid values.", nameof(definition));

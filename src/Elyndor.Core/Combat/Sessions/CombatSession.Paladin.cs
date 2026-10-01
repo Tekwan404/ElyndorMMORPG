@@ -20,6 +20,9 @@ public sealed partial class CombatSession
     private const string PaladinReckoningReadyEffectId = "PALADIN_RECKONING_READY";
     private const string PaladinVengeanceEffectId = "PALADIN_VENGEANCE";
     private const string PaladinArtOfWarEffectId = "PALADIN_ART_OF_WAR";
+    private const string PaladinDivinePurposeEffectId = "PALADIN_DIVINE_PURPOSE_READY";
+    private const decimal PaladinDivinePurposeManaDiscount = 12m;
+    private const decimal PaladinDivinePurposeBonusDamagePercent = 25m;
 
     private sealed class PaladinSessionRuntimeState
     {
@@ -30,6 +33,8 @@ public sealed partial class CombatSession
         public Dictionary<string, decimal> LastResourceSpendByAbility { get; } =
             new(StringComparer.Ordinal);
         public int BastionBlockCounter { get; set; }
+        public bool UsesTwoHandedWeapon { get; set; }
+        public bool DivinePurposeVerdictDamagePending { get; set; }
     }
 
     private readonly Dictionary<Guid, PaladinSessionRuntimeState> _paladinSessionStates = [];
@@ -45,6 +50,7 @@ public sealed partial class CombatSession
 
         state = new PaladinSessionRuntimeState();
         _paladinSessionStates[actorId] = state;
+        ConfigurePaladinIncomingDamage(state);
         return state;
     }
 
@@ -68,6 +74,9 @@ public sealed partial class CombatSession
 
         switch (combatEvent.Type)
         {
+            case CombatEventType.AbilityStarted:
+                ApplyPaladinAbilityStarted(state, combatEvent);
+                break;
             case CombatEventType.AbilityCompleted:
                 ApplyPaladinAbilityCompleted(state, combatEvent, now);
                 break;
@@ -100,6 +109,15 @@ public sealed partial class CombatSession
         string abilityId = combatEvent.DefinitionId;
         switch (abilityId)
         {
+            case "TEMPLARS_VERDICT":
+                state.DivinePurposeVerdictDamagePending = false;
+                break;
+            case "HOLY_LIGHT":
+                if (TryGetPaladinHook("H-4-4", out var grace))
+                    ApplyPaladinEffect(_player.Actor, new EffectDefinition(PaladinLightsGraceEffectId,
+                        EffectKind.Buff, TimeSpan.FromSeconds(6), 1, EffectStackPolicy.Refresh,
+                        0.15m * grace.Rank), now);
+                break;
             case "SEAL_OF_RIGHTEOUSNESS":
                 RemoveOwnedEffectFromActor(_player.Actor, PaladinSealCommandEffectId, now);
                 state.Combat.ActivateSeal(PaladinSealRighteousnessEffectId);
@@ -146,6 +164,7 @@ public sealed partial class CombatSession
                 ApplyPaladinJudgement(state, combatEvent, now);
                 break;
             case "AVENGING_WRATH":
+                _paladinIncarnationVerdictConsumed.Remove(_player.Actor.ActorId);
                 state.Retribution.ActivateAvengingWrath(
                     now,
                     TimeSpan.FromSeconds(HasPaladinTalent("R-9-1") ? 16 : 12),
@@ -178,7 +197,7 @@ public sealed partial class CombatSession
             ApplyPaladinEffect(
                 _player.Actor,
                 new EffectDefinition(
-                    "PALADIN_DIVINE_PURPOSE_READY",
+                    PaladinDivinePurposeEffectId,
                     EffectKind.Buff,
                     TimeSpan.FromSeconds(20),
                     1,
@@ -636,9 +655,9 @@ public sealed partial class CombatSession
 
         if (combatEvent.DefinitionId == "TEMPLARS_VERDICT")
         {
-            bool divinePurpose = state.Retribution.ConsumeDivinePurposeForTemplarsVerdict();
-            bool incarnationCrit = state.Retribution.ConsumeIncarnationTemplarCritical(now);
-            decimal extraPercent = divinePurpose ? 25m : 0m;
+            bool divinePurpose = state.DivinePurposeVerdictDamagePending;
+            state.DivinePurposeVerdictDamagePending = false;
+            decimal extraPercent = divinePurpose ? PaladinDivinePurposeBonusDamagePercent : 0m;
             if (_enemiesById.TryGetValue(targetId, out CombatParticipantDefinition? verdictTarget)
                 && verdictTarget.Actor.MaxHp > 0
                 && verdictTarget.Actor.CurrentHp / verdictTarget.Actor.MaxHp < 0.30m
@@ -646,11 +665,6 @@ public sealed partial class CombatSession
             {
                 extraPercent += 30m;
             }
-            if (incarnationCrit)
-                extraPercent += Math.Max(0, _player.Actor.Stats.CriticalDamage) * 100m;
-
-            if (divinePurpose)
-                AddResource(_player.Actor, 12m, now, "R-8-3");
 
             if (extraPercent > 0
                 && verdictTarget is not null

@@ -67,25 +67,27 @@ public sealed class ArenaCompanionCapabilityTests
     }
 
     [Fact]
-    public void UnknownBeastHookIsDormantInsteadOfBlockingOneVsOneAdmission()
+    public void UnknownBeastHookIsPreservedForAuditAndRejectedAtAdmission()
     {
         ResolvedTalentModifiers talents = Talents(new ResolvedTalentEventHook(
             "B-99-9", TalentModifierKeys.OnPartyEvent, 1, 3, "UNKNOWN_PET_EFFECT",
             TimeSpan.Zero, false));
 
-        ArenaTestEntrant entrant = ArenaFighterAssembler.Create(
+        ResolvedTalentModifiers retained = ArenaTalentRuntimeSupport.ForOneVsOne(talents);
+        Assert.Contains(retained.EventHooks, hook => hook.TalentId == "B-99-9");
+        Assert.Contains(ArenaTalentRuntimeSupport.UnsupportedEventHooks(retained, "ARCHER"),
+            hook => hook.TalentId == "B-99-9");
+        Assert.Throws<NotSupportedException>(() => ArenaFighterAssembler.Create(
             Archer(talents, "SHOT"), 20,
             new Dictionary<string, AbilityDefinition> { ["SHOT"] = Shot() },
-            hasCompanion: true);
-
-        Assert.Empty(entrant.Fighter.EffectiveTalentModifiers.EventHooks);
+            hasCompanion: true));
     }
 
     [Fact]
-    public void UnimplementedOwnerHookIsDormantUntilItsArenaEffectExists()
+    public void CompanionOnlyHookIsExplicitlyExcludedFromOneVsOne()
     {
         ResolvedTalentModifiers talents = Talents(new ResolvedTalentEventHook(
-            "B-1-1", TalentModifierKeys.OnPartyEvent, 1, 3, "OWNER_DAMAGE",
+            "B-1-1", TalentModifierKeys.OnPartyEvent, 1, 3, "PET_MAX_HP",
             TimeSpan.Zero, false));
 
         ArenaTestEntrant entrant = ArenaFighterAssembler.Create(

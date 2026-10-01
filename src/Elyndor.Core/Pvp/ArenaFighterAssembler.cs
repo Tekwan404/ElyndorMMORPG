@@ -19,12 +19,19 @@ public static class ArenaFighterAssembler
         _ = hasCompanion;
         ResolvedTalentModifiers arenaTalents = ArenaTalentRuntimeSupport.ForOneVsOne(
             player.TalentModifiers);
+        if (arenaTalents.DeferredHooks.Count > 0
+            || ArenaTalentRuntimeSupport.UnsupportedEventHooks(
+                arenaTalents, player.Participant.DefinitionId).Count > 0)
+            throw new NotSupportedException("The player build contains an unimplemented talent mechanic.");
         ArenaTalentRuntimeSupport.ConfigureActorRuntime(
             player.Participant.Actor,
             arenaTalents);
 
         var known = new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal);
-        foreach (string abilityId in player.Participant.KnownAbilityIds)
+        IEnumerable<string> availableAbilityIds = player.Participant.KnownAbilityIds
+            .Concat(arenaTalents.UnlockedAbilityIds)
+            .Distinct(StringComparer.Ordinal);
+        foreach (string abilityId in availableAbilityIds)
         {
             if (ArenaCompanionCapability.RequiresCompanion(abilityId))
                 continue;
@@ -41,7 +48,10 @@ public static class ArenaFighterAssembler
         var fighter = new ArenaFighter(player.AccountId, player.Participant.Actor.ActorId,
             player.Participant.Actor, known, player.Participant.AutoAttack, arenaTalents,
             player.Participant.ResourceRegenPerSecond, player.Participant.CanAutoAttack,
-            player.Participant.OffHandAutoAttack);
+            player.Participant.OffHandAutoAttack,
+            player with { TalentModifiers = arenaTalents,
+                Participant = player.Participant with { KnownAbilityIds = known.Keys.ToHashSet(StringComparer.Ordinal) } },
+            availableAbilities);
         return new ArenaTestEntrant(fighter, level, player.Participant.Name,
             player.Participant.DefinitionId, player.Participant.GenderId ?? "UNKNOWN",
             player.Participant.SkinId, player.Participant.ResourceType);
