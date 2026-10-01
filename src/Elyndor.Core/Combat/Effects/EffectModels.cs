@@ -29,6 +29,70 @@ public enum EffectStackPolicy
     StrongestWins
 }
 
+public enum EffectTrigger
+{
+    OnApply,
+    OnAbilityCast,
+    OnHit,
+    OnCriticalHit,
+    OnDamageTaken,
+    OnHeal,
+    OnPeriodicTick,
+    OnExpire
+}
+
+public enum EffectTarget
+{
+    EffectTarget,
+    Self,
+    Source,
+    SelectedTarget,
+    Allies,
+    Enemies
+}
+
+public enum EffectModifierBucket
+{
+    Base,
+    Additive,
+    Multiplicative,
+    Conditional,
+    Mitigation,
+    Final
+}
+
+public enum EffectSourceKind
+{
+    System,
+    Ability,
+    Talent,
+    Item,
+    Set,
+    Consumable,
+    Encounter
+}
+
+public enum EffectConditionType
+{
+    None,
+    SourceIsSelf,
+    TargetHealthBelowPercent,
+    TargetHealthAbovePercent,
+    TargetHasEffect,
+    SourceHasEffect,
+    CriticalHit,
+    PeriodicDamage
+}
+
+public sealed record EffectConditionDefinition(
+    EffectConditionType Type,
+    decimal? Threshold = null,
+    string? EffectId = null);
+
+public sealed record EffectSourceDefinition(
+    EffectSourceKind Kind,
+    string? DefinitionId = null);
+
 public enum EffectExpirationActionType
 {
     Damage,
@@ -92,7 +156,14 @@ public sealed record EffectDefinition(
     IReadOnlyList<EffectExpirationActionDefinition>? OnExpireActions = null,
     string? DisplayName = null,
     string? Description = null,
-    string? IconId = null);
+    string? IconId = null,
+    EffectTrigger Trigger = EffectTrigger.OnApply,
+    EffectConditionDefinition? Condition = null,
+    EffectTarget Target = EffectTarget.EffectTarget,
+    decimal ProcChance = 1m,
+    TimeSpan? InternalCooldown = null,
+    EffectModifierBucket ModifierBucket = EffectModifierBucket.Additive,
+    EffectSourceDefinition? Source = null);
 
 public sealed class ActiveEffect
 {
