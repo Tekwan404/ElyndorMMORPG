@@ -74,12 +74,12 @@ async function mutate(
     const result = await action()
     if (result.state) state.value = result.state
     else state.value = await getProfessionState()
-    await load()
     if (refreshCharacter) await session.refreshSnapshot()
     notice.value = successMessage(result)
   } catch (caught) {
-    error.value = errorMessage(caught)
-    await load().catch(() => undefined)
+    const failureMessage = errorMessage(caught)
+    await load()
+    error.value = failureMessage
   } finally {
     pendingKey.value = null
   }
@@ -106,8 +106,14 @@ function locationLabel(id: string | null): string {
 function itemLabel(id: string | null): string {
   if (!id) return 'Материал'
   return ({
+    ROUGH_HIDE: 'Грубая шкура',
+    LIGHT_HIDE: 'Лёгкая шкура',
+    THICK_HIDE: 'Толстая шкура',
     ROUGH_LEATHER: 'Грубая кожа',
     LIGHT_LEATHER: 'Лёгкая кожа',
+    THICK_LEATHER: 'Толстая кожа',
+    WOLF_HIDE: 'Волчья шкура',
+    BOAR_HIDE: 'Кабанья шкура',
     CHITIN_FRAGMENT: 'Фрагмент хитина',
   } as Record<string, string>)[id] ?? 'Материал'
 }

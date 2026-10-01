@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 import { ApiRequestError } from '@/api/apiClient'
 import { type ProfessionStateSnapshot, getProfessionState, skinCorpse, type SkinnableCorpseState } from '@/game/professions/professionApi'
 import { useGameSessionStore } from '@/stores/gameSession'
+import { useCombatSessionStore } from '@/stores/combatSession'
 import { UIButton, UICard } from '@/ui/components'
 
 const session = useGameSessionStore()
+const combat = useCombatSessionStore()
 const state = ref<ProfessionStateSnapshot | null>(null)
 const pendingKey = ref<string | null>(null)
 const error = ref<string | null>(null)
@@ -47,10 +49,18 @@ function errorMessage(caught: unknown): string {
 }
 
 onMounted(() => void load().catch(() => undefined))
+watch(
+  () => combat.snapshot?.status === 'Victory' ? combat.snapshot.sessionId : null,
+  sessionId => {
+    if (sessionId) void load().catch(() => {
+      error.value = 'Не удалось обновить добычу с туш. Откройте локацию повторно.'
+    })
+  },
+)
 </script>
 
 <template>
-  <UICard v-if="visible" class="skinning-aftermath" data-skinning-aftermath>
+  <UICard v-if="visible || error" class="skinning-aftermath" data-skinning-aftermath>
     <header>
       <div><small>СНЯТИЕ ШКУР</small><strong>Добыча с туши</strong></div>
       <span>Навык {{ skinning?.skill }}</span>
