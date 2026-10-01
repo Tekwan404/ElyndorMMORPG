@@ -126,7 +126,7 @@ public sealed class ArenaMageStaticTalentHookTests
     }
 
     [Fact]
-    public void FrostHookWithAdditionalStatefulSlowBehaviourIsDormantInOneVsOne()
+    public void FrostHookWithAdditionalStatefulSlowBehaviourIsPreservedForRuntimeAudit()
     {
         ResolvedTalentModifiers talents = Talents(Hook("I-3-3", 10));
         AbilityDefinition blizzard = Ability("MAGE_BLIZZARD", "FROST");
@@ -137,7 +137,8 @@ public sealed class ArenaMageStaticTalentHookTests
             new Dictionary<string, AbilityDefinition> { [blizzard.Id] = blizzard },
             hasCompanion: false);
 
-        Assert.Empty(entrant.Fighter.EffectiveTalentModifiers.EventHooks);
+        Assert.Contains(entrant.Fighter.EffectiveTalentModifiers.EventHooks,
+            hook => hook.TalentId == "I-3-3");
     }
 
     private static CombatPlayerDefinition Player(

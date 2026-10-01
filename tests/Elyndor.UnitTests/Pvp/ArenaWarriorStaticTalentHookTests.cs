@@ -68,7 +68,7 @@ public sealed class ArenaWarriorStaticTalentHookTests
     }
 
     [Fact]
-    public void ArenaEntrantCapturesResolvedWarriorCryAndMakesPartyAuraDormant()
+    public void ArenaEntrantCapturesResolvedWarriorCryAndPreservesPartyAuraForAudit()
     {
         AbilityDefinition cry = Ability("BATTLE_CRY", resourceCost: 25,
             duration: TimeSpan.FromSeconds(6));
@@ -88,7 +88,8 @@ public sealed class ArenaWarriorStaticTalentHookTests
         ArenaTestEntrant dormantEntrant = ArenaFighterAssembler.Create(
             unsupported, 30, new Dictionary<string, AbilityDefinition> { [cry.Id] = cry },
             hasCompanion: false);
-        Assert.Empty(dormantEntrant.Fighter.EffectiveTalentModifiers.EventHooks);
+        Assert.Contains(dormantEntrant.Fighter.EffectiveTalentModifiers.EventHooks,
+            hook => hook.TalentId == "W-1-2");
     }
 
     private static CombatPlayerDefinition Player(

@@ -111,6 +111,31 @@ public static class AbilityEngine
         return new AbilityExecutionResult(true, AbilityErrorCode.None, events);
     }
 
+    /// <summary>
+    /// Resolves a combat-triggered action through the same damage, healing and
+    /// effect pipeline as a cast, without treating the proc as a player command.
+    /// The caller owns trigger eligibility, cooldowns and PvP crowd-control DR.
+    /// </summary>
+    public static IReadOnlyList<CombatEvent> ResolveTriggeredAction(
+        CombatRuntimeState runtime,
+        AbilityDefinition ability,
+        AbilityActionDefinition action,
+        Guid targetActorId,
+        DateTimeOffset now,
+        IGameRandom random)
+    {
+        ArgumentNullException.ThrowIfNull(runtime);
+        ArgumentNullException.ThrowIfNull(ability);
+        ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(random);
+        if (!runtime.Actors.TryGetValue(targetActorId, out CombatActorState? target)
+            || target.IsDead)
+            return [];
+
+        return ResolveActions(runtime, ability with { Actions = [action] },
+            [targetActorId], null, now, random);
+    }
+
     public static AbilityExecutionResult Interrupt(
         CombatRuntimeState runtime,
         DateTimeOffset now,

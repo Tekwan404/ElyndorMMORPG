@@ -535,13 +535,21 @@ public sealed partial class CombatSession
     private void ApplySimpleFireDot(CombatActorState target, string id, decimal tick, int seconds, DateTimeOffset now)
     {
         if (target.IsDead || tick <= 0) return;
+        if (TryGetPyromancerHook("F-5-2", out ResolvedTalentEventHook firePower))
+            tick *= 1 + firePower.Value / 100m;
+        if (TryGetPyromancerHook("F-9-1", out ResolvedTalentEventHook embodiment))
+            tick *= 1 + embodiment.Value / 100m;
         ApplyPyroEffect(target, new EffectDefinition(
             id, EffectKind.DamageOverTime, TimeSpan.FromSeconds(seconds), 1,
             EffectStackPolicy.Replace, tick, TimeSpan.FromSeconds(1),
             SourceSpecific: true, PeriodicDamageType: DamageType.Magical), now);
     }
 
-    private decimal EffectiveFireSpellPower(DateTimeOffset now) => _player.Actor.Stats.SpellPower;
+    private decimal EffectiveFireSpellPower(DateTimeOffset now) =>
+        TryGetMageHook("A-5-3", out ResolvedTalentEventHook overflow)
+        && ResourcePercent() > overflow.Threshold
+            ? _player.Actor.Stats.SpellPower * (1 + overflow.Value / 100m)
+            : _player.Actor.Stats.SpellPower;
 
     private bool IsCombustionActive(DateTimeOffset now) => HasOwnEffect(_player.Actor, CombustionEffectId, now);
 

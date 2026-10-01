@@ -118,6 +118,7 @@ public sealed class ArenaCrowdControlDiminishingReturnsTests
     [InlineData(EffectKind.Root, CrowdControlCategory.Root)]
     [InlineData(EffectKind.Fear, CrowdControlCategory.Fear)]
     [InlineData(EffectKind.Silence, CrowdControlCategory.Silence)]
+    [InlineData(EffectKind.Disarm, CrowdControlCategory.Disarm)]
     public void ExistingControlKindsMapToSharedArenaCategories(
         EffectKind effectKind,
         CrowdControlCategory expected)
@@ -218,6 +219,34 @@ public sealed class ArenaCrowdControlDiminishingReturnsTests
             && item.TargetActorId == ActorB);
     }
 
+    [Theory]
+    [InlineData("FEAR", "ActorFeared")]
+    [InlineData("DISARM", "ActorDisarmed")]
+    public void FearAndDisarmPreventAutoAttacksUntilExpiration(string abilityId, string error)
+    {
+        ArenaCombatSession session = CreateArena(TimeSpan.FromSeconds(1));
+        Assert.True(Use(session, AccountA, "control", abilityId, ActorB, 0).Succeeded);
+        session.AdvanceTo(Start.AddSeconds(3));
+        Assert.Equal(100m, session.Snapshot.ActorA.CurrentHp);
+        Assert.Contains(session.GetEventsAfter(0), e => e.ActorId == ActorB
+            && e.Type == CombatEventType.ActionRejected && e.DefinitionId == error);
+        session.AdvanceTo(Start.AddSeconds(4));
+        Assert.True(session.Snapshot.ActorA.CurrentHp < 100m);
+    }
+
+    [Fact]
+    public void SilenceInterruptsSpellButDoesNotInterruptPhysicalCast()
+    {
+        ArenaCombatSession spell = CreateArena();
+        Assert.True(Use(spell, AccountB, "cast", "MAGE_FIREBALL", ActorA, 0).Succeeded);
+        Assert.True(UseAt(spell, AccountA, "silence", "SILENCE", ActorB, Start.AddMilliseconds(500)).Succeeded);
+        Assert.Null(spell.ActiveCastFor(AccountB));
+        ArenaCombatSession physical = CreateArena();
+        Assert.True(Use(physical, AccountB, "cast", "LONG_CAST", ActorA, 0).Succeeded);
+        Assert.True(Use(physical, AccountA, "silence", "SILENCE", ActorB, 1).Succeeded);
+        Assert.NotNull(physical.ActiveCastFor(AccountB));
+    }
+
     [Fact]
     public void FireballStunSharesTheGenericStunDrWithAnotherAbility()
     {
@@ -282,6 +311,9 @@ public sealed class ArenaCrowdControlDiminishingReturnsTests
             ["STUN_A"] = ControlAbility("STUN_A", "STUN_A_EFFECT", EffectKind.Stun),
             ["STUN_B"] = ControlAbility("STUN_B", "STUN_B_EFFECT", EffectKind.Stun),
             ["ROOT"] = ControlAbility("ROOT", "ROOT_EFFECT", EffectKind.Root),
+            ["FEAR"] = ControlAbility("FEAR", "FEAR_EFFECT", EffectKind.Fear),
+            ["DISARM"] = ControlAbility("DISARM", "DISARM_EFFECT", EffectKind.Disarm),
+            ["SILENCE"] = ControlAbility("SILENCE", "SILENCE_EFFECT", EffectKind.Silence),
             ["MAGE_FIREBALL"] = FireballAbility()
         };
         AutoAttackProfile auto = new(autoAttackInterval ?? TimeSpan.FromHours(1), 10, 0, 0);

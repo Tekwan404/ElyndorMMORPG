@@ -52,7 +52,7 @@ public static class DamagePipeline
     private const decimal MaxLevelPenalty = 0.10m;
     private const decimal MaxMissChance = 0.30m;
 
-    private sealed record ShieldAbsorption(string DefinitionId, decimal Amount);
+    private sealed record ShieldAbsorption(string DefinitionId, decimal Amount, decimal ResourceSpent);
 
     public static DamageResult Resolve(
         DamageRequest request,
@@ -205,7 +205,7 @@ public static class DamagePipeline
         decimal afterBlock = Math.Max(0, rounded - blocked);
         List<ShieldAbsorption> shieldAbsorptions = request.IgnoreShields
             ? []
-            : AbsorbShields(request.Target, afterBlock);
+            : AbsorbShields(request.Target, afterBlock, occurredAtUtc);
         decimal absorbed = shieldAbsorptions.Sum(item => item.Amount);
         decimal hpDamage = Math.Min(
             request.Target.CurrentHp,
@@ -276,6 +276,13 @@ public static class DamagePipeline
 
         foreach (ShieldAbsorption shieldAbsorption in shieldAbsorptions)
         {
+            if (shieldAbsorption.ResourceSpent > 0)
+                events.Add(new CombatEvent(
+                    CombatEventType.ResourceChanged, occurredAtUtc, request.Target.ActorId,
+                    DefinitionId: shieldAbsorption.DefinitionId,
+                    Amount: -shieldAbsorption.ResourceSpent,
+                    SourceActorId: request.Source.ActorId,
+                    TargetActorId: request.Target.ActorId));
             events.Add(new CombatEvent(
                 CombatEventType.ShieldAbsorbed,
                 occurredAtUtc,
@@ -318,7 +325,8 @@ public static class DamagePipeline
             RawDamage: raw,
             DamageAfterMitigation: roundedAfterMitigation,
             DamageBeforeBlock: rounded,
-            IsUnblockable: request.IsUnblockable));
+            IsUnblockable: request.IsUnblockable,
+            IsCritical: critical));
         if (vampirismHealing > 0)
         {
             events.Add(new CombatEvent(
@@ -338,7 +346,9 @@ public static class DamagePipeline
                 request.Target.ActorId,
                 SourceActorId: request.Source.ActorId,
                 TargetActorId: request.Target.ActorId,
-                DamageType: request.Type));
+                DamageType: request.Type,
+                IsUnblockable: request.IsUnblockable,
+                IsCritical: critical));
         }
 
         return new DamageResult(
@@ -441,23 +451,35 @@ public static class DamagePipeline
 
     private static List<ShieldAbsorption> AbsorbShields(
         CombatActorState target,
-        decimal incoming)
+        decimal incoming,
+        DateTimeOffset now)
     {
         decimal remaining = incoming;
         List<ShieldAbsorption> absorptions = [];
         foreach (ActiveEffect shield in target.ActiveEffects
                      .Where(effect =>
                          effect.Definition.Kind == EffectKind.Shield
+                         && effect.ExpiresAtUtc > now
                          && effect.RemainingMagnitude > 0)
                      .OrderByDescending(effect => effect.AppliedAtUtc)
                      .ThenByDescending(effect => effect.Sequence)
                      .ToArray())
         {
             decimal absorbed = Math.Min(shield.RemainingMagnitude, remaining);
+            decimal resourceSpent = 0;
+            if (shield.Definition.ResourceCostPerAbsorbedDamage > 0)
+            {
+                absorbed = Math.Min(absorbed,
+                    target.CurrentResource / shield.Definition.ResourceCostPerAbsorbedDamage);
+                resourceSpent = Math.Min(target.CurrentResource,
+                    absorbed * shield.Definition.ResourceCostPerAbsorbedDamage);
+                if (!target.TrySpendResource(resourceSpent))
+                    throw new InvalidOperationException("Shield resource payment could not be committed.");
+            }
             shield.RemainingMagnitude -= absorbed;
             remaining -= absorbed;
             if (absorbed > 0)
-                absorptions.Add(new ShieldAbsorption(shield.Definition.Id, absorbed));
+                absorptions.Add(new ShieldAbsorption(shield.Definition.Id, absorbed, resourceSpent));
 
             if (shield.RemainingMagnitude <= 0)
             {

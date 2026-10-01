@@ -116,7 +116,8 @@ public sealed class MageCombatSessionTests
         Assert.Null(interrupted.Snapshot.Enemy.ActiveCast);
         Assert.Contains(interrupted.Events, combatEvent =>
             combatEvent.Type == CombatEventType.AbilityInterrupted
-            && combatEvent.SourceActorId == EnemyId);
+            && combatEvent.SourceActorId == PlayerId
+            && combatEvent.TargetActorId == EnemyId);
         Assert.Contains(
             interrupted.Snapshot.Enemy.Effects,
             effect => effect.Id == "MAGE_COUNTERSPELL_SILENCE");

@@ -50,7 +50,7 @@ public sealed partial class CombatSession
             };
         }
 
-        return ability;
+        return ResolvePaladinAbility(ability, now);
     }
 
     private AbilityDefinition ResolvePlayerAbilityForSnapshot(
@@ -274,6 +274,7 @@ public sealed partial class CombatSession
 
         ArcherAutoAttackModifier archerModifier =
             ResolveArcherAutoAttackModifier(target, baseDamage, now);
+        AbilityTargetModifier paladinModifier = ResolvePaladinAutoAttackModifier(now);
 
         bool consumeDeathsEmbrace = _deathsEmbraceArmed && !_deathsEmbraceConsumed;
         decimal deathsEmbraceMultiplier = 1;
@@ -299,11 +300,12 @@ public sealed partial class CombatSession
                 DamageMultiplier: deathsEmbraceMultiplier
                     * ResolveWarlordVengeanceMultiplier()
                     * BerserkerTargetPhysicalDamageMultiplier(target.Actor)
-                    * archerModifier.DamageMultiplier,
+                    * archerModifier.DamageMultiplier
+                    * paladinModifier.DamageMultiplier,
                 ArmorPenetrationBonus: archerModifier.ArmorPenetrationBonus,
                 ForceCritical: consumeDeathsEmbrace,
                 AccuracyBonus: archerModifier.AccuracyBonus,
-                CriticalChanceBonus: archerModifier.CriticalChanceBonus,
+                CriticalChanceBonus: archerModifier.CriticalChanceBonus + paladinModifier.CriticalChanceBonus,
                 CriticalDamageBonus: archerModifier.CriticalDamageBonus),
             _random,
             now);

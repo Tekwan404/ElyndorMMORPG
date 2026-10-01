@@ -1,5 +1,6 @@
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Abilities;
+using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Pvp;
@@ -41,11 +42,12 @@ public static class ArenaTalentRuntimeSupport
         return resolved;
     }
 
-    public static bool SupportsEventHook(ResolvedTalentEventHook hook)
+    public static bool SupportsEventHook(ResolvedTalentEventHook hook, string? classId = null)
     {
         ArgumentNullException.ThrowIfNull(hook);
 
-        return ArenaTalentEventDispatcher.Supports(hook)
+        return classId is not null && PlayerCombatMechanicsCapabilities.SupportsHook(classId, hook)
+            || ArenaTalentEventDispatcher.Supports(hook)
             || PyromancerStaticAbilityHookResolver.Supports(hook)
             || MageStaticAbilityHookResolver.Supports(hook)
             || ArcherStaticAbilityHookResolver.Supports(hook)
@@ -54,29 +56,30 @@ public static class ArenaTalentRuntimeSupport
     }
 
     public static IReadOnlyList<ResolvedTalentEventHook> UnsupportedEventHooks(
-        ResolvedTalentModifiers talents)
+        ResolvedTalentModifiers talents, string? classId = null)
     {
         ArgumentNullException.ThrowIfNull(talents);
-        return talents.EventHooks.Where(hook => !SupportsEventHook(hook)).ToArray();
+        return talents.EventHooks.Where(hook => !SupportsEventHook(hook, classId)).ToArray();
     }
 
     /// <summary>
-    /// A 1v1 duel has no party, encounter, or companion runtime. Production
-    /// talent hooks without an executable Arena adapter are intentionally kept
-    /// dormant instead of preventing a player from entering a test match.
-    /// Statically resolved stats and supported hooks are retained unchanged.
+    /// Removes only companion-dependent hooks from a 1v1 entrant. Other hooks
+    /// remain available to runtime adapters and the production-build audit;
+    /// unsupported owner hooks must never disappear during assembly.
     /// </summary>
     public static ResolvedTalentModifiers ForOneVsOne(ResolvedTalentModifiers talents)
     {
         ArgumentNullException.ThrowIfNull(talents);
 
-        if (talents.DeferredHooks.Count == 0 && talents.EventHooks.All(SupportsEventHook))
+        ResolvedTalentEventHook[] retained = talents.EventHooks
+            .Where(hook => !ArenaCompanionCapability.RequiresCompanion(hook))
+            .ToArray();
+        if (retained.Length == talents.EventHooks.Count)
             return talents;
 
         return talents with
         {
-            EventHooks = talents.EventHooks.Where(SupportsEventHook).ToArray(),
-            DeferredHooks = []
+            EventHooks = retained
         };
     }
 

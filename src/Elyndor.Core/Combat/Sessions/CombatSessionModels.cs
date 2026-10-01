@@ -60,7 +60,9 @@ public sealed record CombatParticipantDefinition(
     bool RewardEligible = true,
     IReadOnlyDictionary<string, int>? EquippedSetPieces = null,
     string? GenderId = null,
-    string? SkinId = null);
+    string? SkinId = null,
+    decimal EquipmentArmor = 0,
+    string? MainHandWeaponCategory = null);
 
 public sealed record CombatPlayerDefinition(
     Guid AccountId,

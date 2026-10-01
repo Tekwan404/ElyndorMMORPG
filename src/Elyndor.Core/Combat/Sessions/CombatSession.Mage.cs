@@ -117,7 +117,7 @@ public sealed partial class CombatSession
                 damageMultiplier *= 1 + mindPower.Value / 100m;
             if (TryGetMageHook("A-8-2", out ResolvedTalentEventHook absolutePresence))
                 resourceCost *= Math.Max(0, 1 - absolutePresence.Value / 100m);
-            if (IsArcanePowerActive(now) && HasMageTalent("A-9-1"))
+            if (HasMageTalent("A-9-1"))
                 damageMultiplier *= 1.10m;
         }
 
@@ -315,6 +315,16 @@ public sealed partial class CombatSession
         if (ability.ResourceCost > 0)
             _lastMageManaSpendAtUtc = now;
 
+        if (ability.ResourceCost > 0 && IsArcanePowerActive(now) && HasMageTalent("A-9-1"))
+        {
+            _arcanePowerManaSpendCount++;
+            if (_arcanePowerManaSpendCount >= 3)
+            {
+                _arcanePowerManaSpendCount = 0;
+                GrantClearcasting(now);
+            }
+        }
+
         if (string.Equals(ability.School, "FROST", StringComparison.Ordinal)
             && HasOwnEffect(_player.Actor, ColdBloodEffectId, now))
             RemoveMageEffect(_player.Actor, ColdBloodEffectId, now);
@@ -392,15 +402,6 @@ public sealed partial class CombatSession
             if (IsArcanePowerActive(now))
             {
                 TryApplyArcanePowerEcho(ability, execution, now);
-                if (ability.ResourceCost > 0 && HasMageTalent("A-9-1"))
-                {
-                    _arcanePowerManaSpendCount++;
-                    if (_arcanePowerManaSpendCount >= 3)
-                    {
-                        _arcanePowerManaSpendCount = 0;
-                        GrantClearcasting(now);
-                    }
-                }
             }
         }
 
@@ -485,7 +486,17 @@ public sealed partial class CombatSession
     private static void ApplyMageCriticalHooks(CombatEvent combatEvent) { }
     private static void ApplyMageIncomingCriticalHooks(CombatEvent combatEvent) { }
     private static void ApplyMageDamageTakenHooks(CombatEvent combatEvent) { }
-    private static void ApplyMageResourceThresholdHooks(CombatEvent combatEvent) { }
+    private void ApplyMageResourceThresholdHooks(CombatEvent combatEvent)
+    {
+        if (!IsMage || combatEvent.Amount >= 0
+            || !string.Equals(combatEvent.DefinitionId, ManaShieldEffectId, StringComparison.Ordinal))
+            return;
+        if (TryGetMageHook("A-5-4", out ResolvedTalentEventHook absorption))
+            _pendingMageResourceRefunds.Add(new(
+                combatEvent.OccurredAtUtc + absorption.Duration,
+                -combatEvent.Amount * absorption.Value / 100m,
+                absorption.TalentId));
+    }
 
     private void ApplyMageShieldAbsorbedHooks(CombatEvent combatEvent)
     {
@@ -495,18 +506,6 @@ public sealed partial class CombatSession
         DateTimeOffset now = combatEvent.OccurredAtUtc;
         if (string.Equals(combatEvent.DefinitionId, ManaShieldEffectId, StringComparison.Ordinal))
         {
-            decimal efficiency = TryGetMageHook("A-3-3", out ResolvedTalentEventHook improvedShield)
-                ? improvedShield.Value
-                : 0m;
-            decimal manaSpent = combatEvent.Amount * Math.Max(0, 1 - efficiency / 100m);
-            AddResource(_player.Actor, -manaSpent, now, ManaShieldEffectId);
-
-            if (TryGetMageHook("A-5-4", out ResolvedTalentEventHook absorption) && manaSpent > 0)
-                _pendingMageResourceRefunds.Add(new(
-                    now + absorption.Duration,
-                    manaSpent * absorption.Value / 100m,
-                    absorption.TalentId));
-
             if (_player.Actor.CurrentResource <= 0)
                 RemoveMageEffect(_player.Actor, ManaShieldEffectId, now);
         }
@@ -531,17 +530,25 @@ public sealed partial class CombatSession
             EffectStackPolicy.Replace, arcanePower.Value), now);
 
         if (HasMageTalent("A-8-3"))
-            ApplyMageEffect(_player.Actor, new EffectDefinition(
+        {
+            var freeSpells = new EffectDefinition(
                 ArcanePowerFreeCostEffectId, EffectKind.Buff, duration, 2,
-                EffectStackPolicy.Stack, 0), now);
+                EffectStackPolicy.Stack, 0);
+            for (int charge = 0; charge < freeSpells.MaxStacks; charge++)
+                ApplyMageEffect(_player.Actor, freeSpells, now);
+        }
     }
 
     private void ActivateManaShield(DateTimeOffset now)
     {
         decimal absorb = Math.Min(_player.Actor.MaxHp * 0.30m, Math.Max(1, _player.Actor.CurrentResource));
+        decimal costPerDamage = TryGetMageHook("A-3-3", out ResolvedTalentEventHook improvedShield)
+            ? Math.Max(0, 1 - improvedShield.Value / 100m)
+            : 1m;
         ApplyMageEffect(_player.Actor, new EffectDefinition(
             ManaShieldEffectId, EffectKind.Shield, TimeSpan.FromSeconds(12), 1,
-            EffectStackPolicy.Replace, absorb), now);
+            EffectStackPolicy.Replace, absorb,
+            ResourceCostPerAbsorbedDamage: costPerDamage), now);
     }
 
     private void ApplyCounterspell(DateTimeOffset now)
@@ -559,8 +566,8 @@ public sealed partial class CombatSession
                 interruptedCast = true;
                 ApplyKernelEvents(
                     interrupted.Events,
-                    target.Actor.ActorId,
                     _player.Actor.ActorId,
+                    target.Actor.ActorId,
                     CounterspellId);
             }
         }
@@ -841,10 +848,15 @@ public sealed partial class CombatSession
 
         bool arcaneFortitude = TryGetMageHook("A-4-4", out ResolvedTalentEventHook fortitude)
             && ResourcePercent() > fortitude.Threshold;
-        SyncIncomingDamageReductionEffect(
-            ArcaneFortitudeEffectId,
-            arcaneFortitude ? fortitude.Value : 0,
-            now);
+        if (arcaneFortitude)
+        {
+            if (!HasOwnEffect(_player.Actor, ArcaneFortitudeEffectId, now))
+                ApplyMageEffect(_player.Actor, new EffectDefinition(
+                    ArcaneFortitudeEffectId, EffectKind.Buff, TimeSpan.FromHours(12), 1,
+                    EffectStackPolicy.Replace, fortitude.Value), now);
+        }
+        else
+            RemoveMageEffect(_player.Actor, ArcaneFortitudeEffectId, now);
 
         decimal frostArmorReduction = 0m;
         if (HasOwnEffect(_player.Actor, IceBarrierEffectId, now)
@@ -854,6 +866,22 @@ public sealed partial class CombatSession
             FrostArmorEffectId,
             frostArmorReduction,
             now);
+    }
+
+    private void ConfigureMageIncomingDamage()
+    {
+        if (!IsMage || !TryGetMageHook("A-4-4", out ResolvedTalentEventHook fortitude))
+            return;
+        CombatActorState actor = _player.Actor;
+        var previous = actor.IncomingDamageModifier;
+        actor.IncomingDamageModifier = (context, random) =>
+        {
+            decimal amount = previous?.Invoke(context, random) ?? context.CurrentAmount;
+            return actor.MaxResource > 0
+                && actor.CurrentResource / actor.MaxResource * 100m > fortitude.Threshold
+                    ? amount * Math.Max(0, 1 - fortitude.Value / 100m)
+                    : amount;
+        };
     }
 
     private void SyncIncomingDamageReductionEffect(
@@ -884,12 +912,11 @@ public sealed partial class CombatSession
             regen *= 1 + meditation.Value / 100m;
 
         ActiveEffect? afterglow = FindOwnEffect(_player.Actor, ClearcastingRegenEffectId, now);
-        if (afterglow is not null)
+        if (afterglow is not null && afterglow.AppliedAtUtc <= now)
             regen *= 1 + afterglow.Definition.Magnitude / 100m;
 
         if (TryGetMageHook("A-6-3", out ResolvedTalentEventHook deepMeditation)
-            && _lastMageManaSpendAtUtc is { } spentAt
-            && now - spentAt >= deepMeditation.Duration)
+            && now - (_lastMageManaSpendAtUtc ?? _combatStartedAtUtc) >= deepMeditation.Duration)
             regen *= 1 + deepMeditation.Value / 100m;
 
         return regen;

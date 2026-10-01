@@ -44,6 +44,7 @@ public sealed partial class CombatSession
     private readonly Dictionary<Guid, ThreatTable> _enemyThreatTables;
     private readonly Dictionary<Guid, ForcedTargetState> _enemyForcedTargets;
     private readonly IGameRandom _random;
+    private readonly DateTimeOffset _combatStartedAtUtc;
     private readonly CombatSummonProfile? _summonProfile;
     private DateTimeOffset? _nextSummonAtUtc;
     private readonly HashSet<string> _processedCommandIds = new(StringComparer.Ordinal);
@@ -252,6 +253,7 @@ public sealed partial class CombatSession
         _enemiesById = _enemies.ToDictionary(enemy => enemy.Actor.ActorId);
         _primaryEnemyActorId = _enemies[0].Actor.ActorId;
         _random = random;
+        _combatStartedAtUtc = startedAtUtc;
         _abilities = abilities;
         _playerStatesByActorId = new Dictionary<Guid, CombatPlayerRuntimeState>();
         foreach (CombatPlayerDefinition playerDefinition in playerDefinitions)
@@ -401,6 +403,7 @@ public sealed partial class CombatSession
             : null;
         ApplyGuardianStartingEffects(startedAtUtc);
         ApplyWarlordPassiveEffects(startedAtUtc);
+        InitializePlayerLoadoutMechanics(startedAtUtc);
         Append(new CombatEvent(
             CombatEventType.CombatStarted,
             startedAtUtc,
@@ -1912,6 +1915,11 @@ public sealed partial class CombatSession
                 WeaponDefinitionId = item.WeaponDefinitionId ?? weaponDefinitionId
             })
             .ToArray();
+        if (_mechanicsEventSink is not null)
+        {
+            ApplyMechanicsKernelEvents(normalizedEvents);
+            return;
+        }
         HashSet<Guid> pendingEnemyDeaths = normalizedEvents
             .Where(item => item.Type == CombatEventType.ActorDied
                 && item.ActorId != _player.Actor.ActorId
@@ -2286,24 +2294,7 @@ public sealed partial class CombatSession
 
         if (!killedEnemy.IsCombatObject)
         {
-            Append(new CombatEvent(
-                CombatEventType.EnemyKilled,
-                death.OccurredAtUtc,
-                _player.Actor.ActorId,
-                killedEnemy.DefinitionId,
-                SourceActorId: death.SourceActorId ?? _player.Actor.ActorId,
-                TargetActorId: killedEnemy.Actor.ActorId,
-                IsPeriodic: death.IsPeriodic,
-                DamageType: death.DamageType,
-                WeaponHand: death.WeaponHand,
-                WeaponDefinitionId: death.WeaponDefinitionId));
-            TriggerTalent(
-                TalentModifierKeys.OnEnemyKilled,
-                death.OccurredAtUtc);
-            ApplyBerserkerEnemyKilledHooks(death.OccurredAtUtc);
-            ApplyPyromancerEnemyKilledHooks(death);
-            ApplyArcherEnemyKilledHooks(death.OccurredAtUtc);
-            ApplyWarlordEnemyKilledHooks(death);
+            ApplyPlayerEnemyKilledHooks(death, killedEnemy);
         }
 
         EnemyAiRuntime killedAi = _enemyAiRuntimes[killedEnemy.Actor.ActorId];
@@ -2392,16 +2383,47 @@ public sealed partial class CombatSession
         {
             ActivatePlayer(participant.CharacterId);
             if (now <= _lastPlayerResourceRegenAtUtc) continue;
-            TimeSpan elapsed = now - _lastPlayerResourceRegenAtUtc;
+            DateTimeOffset from = _lastPlayerResourceRegenAtUtc;
             _lastPlayerResourceRegenAtUtc = now;
-            decimal regenPerSecond = EffectiveArcherResourceRegenPerSecond(
-                EffectivePlayerResourceRegenPerSecond(now),
-                now);
-            if (regenPerSecond <= 0 || _player.Actor.IsDead) continue;
-
-            decimal amount = regenPerSecond * (decimal)elapsed.TotalSeconds;
+            if (_player.Actor.IsDead) continue;
+            decimal amount = CalculatePlayerResourceRegeneration(from, now);
+            if (amount <= 0) continue;
             AddResource(_player.Actor, amount, now, "COMBAT_REGEN");
         }
+    }
+
+    private decimal CalculatePlayerResourceRegeneration(DateTimeOffset from, DateTimeOffset to)
+    {
+        var boundaries = new SortedSet<DateTimeOffset> { from, to };
+        if (IsMage)
+        {
+            foreach (ActiveEffect effect in _player.Actor.ActiveEffects.Where(effect =>
+                         effect.SourceId == _player.Actor.ActorId
+                         && effect.Definition.Id == ClearcastingRegenEffectId))
+            {
+                if (effect.AppliedAtUtc > from && effect.AppliedAtUtc < to)
+                    boundaries.Add(effect.AppliedAtUtc);
+                if (effect.ExpiresAtUtc > from && effect.ExpiresAtUtc < to)
+                    boundaries.Add(effect.ExpiresAtUtc);
+            }
+            if (TryGetMageHook("A-6-3", out ResolvedTalentEventHook meditation))
+            {
+                DateTimeOffset spentAt = _lastMageManaSpendAtUtc ?? _combatStartedAtUtc;
+                DateTimeOffset startsAt = spentAt + meditation.Duration;
+                if (startsAt > from && startsAt < to) boundaries.Add(startsAt);
+            }
+        }
+
+        decimal amount = 0;
+        DateTimeOffset start = from;
+        foreach (DateTimeOffset end in boundaries.Skip(1))
+        {
+            decimal rate = EffectiveArcherResourceRegenPerSecond(
+                EffectivePlayerResourceRegenPerSecond(start), start);
+            amount += rate * (end - start).Ticks / TimeSpan.TicksPerSecond;
+            start = end;
+        }
+        return amount;
     }
 
     private void SyncAllPlayerConditionalEffects(DateTimeOffset now)
@@ -2435,6 +2457,11 @@ public sealed partial class CombatSession
 
     private void Append(CombatEvent combatEvent)
     {
+        if (_mechanicsEventSink is not null)
+        {
+            _mechanicsEventSink(combatEvent);
+            return;
+        }
         Sequence++;
         CombatEvent sequenced = combatEvent with { Sequence = Sequence };
         _events.Add(sequenced);

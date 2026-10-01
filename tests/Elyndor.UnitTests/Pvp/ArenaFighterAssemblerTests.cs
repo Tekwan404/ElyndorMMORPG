@@ -25,6 +25,32 @@ public sealed class ArenaFighterAssemblerTests
     }
 
     [Fact]
+    public void TalentUnlockedAbilityIsAddedToArenaAbilitySet()
+    {
+        ResolvedTalentModifiers talents = new(
+            new TalentStatModifiers(),
+            new TalentCombatModifiers(),
+            new HashSet<string>(StringComparer.Ordinal) { "TALENT_UNLOCKED_STRIKE" },
+            new Dictionary<string, TalentAbilityModifiers>(StringComparer.Ordinal),
+            [],
+            []);
+        CombatPlayerDefinition player = Player(new HashSet<string> { "FIREBALL" }, talents);
+        AbilityDefinition unlocked = Ability("TALENT_UNLOCKED_STRIKE");
+
+        ArenaTestEntrant entrant = ArenaFighterAssembler.Create(
+            player,
+            15,
+            new Dictionary<string, AbilityDefinition>
+            {
+                ["FIREBALL"] = Ability("FIREBALL"),
+                [unlocked.Id] = unlocked
+            },
+            hasCompanion: false);
+
+        Assert.Contains(unlocked.Id, entrant.Fighter.Abilities.Keys);
+    }
+
+    [Fact]
     public void StaticAbilityTalentModifierIsAppliedBeforeQueueEntry()
     {
         var talents = new ResolvedTalentModifiers(
@@ -166,7 +192,7 @@ public sealed class ArenaFighterAssemblerTests
     }
 
     [Fact]
-    public void BuildWithUnhandledTalentHookEntersArenaWithThatHookDormant()
+    public void BuildWithUnhandledTalentHookPreservesItForRuntimeAndCapabilityAudit()
     {
         CombatPlayerDefinition player = Player(
             new HashSet<string> { "FIREBALL" },
@@ -183,7 +209,10 @@ public sealed class ArenaFighterAssemblerTests
             player, 15, new Dictionary<string, AbilityDefinition>
             { ["FIREBALL"] = Ability("FIREBALL") }, hasCompanion: false);
 
-        Assert.Empty(entrant.Fighter.EffectiveTalentModifiers.EventHooks);
+        Assert.Contains(entrant.Fighter.EffectiveTalentModifiers.EventHooks,
+            hook => hook.TalentId == "F-2-1");
+        Assert.Contains(ArenaTalentRuntimeSupport.UnsupportedEventHooks(
+            entrant.Fighter.EffectiveTalentModifiers), hook => hook.TalentId == "F-2-1");
     }
 
     [Fact]

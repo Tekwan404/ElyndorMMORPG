@@ -11,7 +11,9 @@ namespace Elyndor.Core.Pvp;
 public sealed record ArenaFighter(Guid AccountId, Guid CharacterId, CombatActorState Actor,
     IReadOnlyDictionary<string, AbilityDefinition> Abilities, AutoAttackProfile AutoAttack,
     ResolvedTalentModifiers? TalentModifiers = null, decimal ResourceRegenPerSecond = 0,
-    bool CanAutoAttack = true, AutoAttackProfile? OffHandAutoAttack = null)
+    bool CanAutoAttack = true, AutoAttackProfile? OffHandAutoAttack = null,
+    CombatPlayerDefinition? PlayerDefinition = null,
+    IReadOnlyDictionary<string, AbilityDefinition>? BaseAbilities = null)
 {
     public ResolvedTalentModifiers EffectiveTalentModifiers =>
         TalentModifiers ?? ResolvedTalentModifiers.Empty;
@@ -51,6 +53,8 @@ public sealed class ArenaCombatSession
     private readonly TimeSpan _duration;
     private readonly HashSet<(Guid AccountId, string CommandId)> _seenCommands = [];
     private readonly Dictionary<Guid, CrowdControlDiminishingReturns> _crowdControlDr;
+    private CombatSession? _firstMechanics;
+    private CombatSession? _secondMechanics;
 
     public ArenaCombatSession(Guid matchId, ArenaFighter first, ArenaFighter second,
         IGameRandom random, DateTimeOffset startedAt, TimeSpan? duration = null)
@@ -72,6 +76,9 @@ public sealed class ArenaCombatSession
             throw new ArgumentOutOfRangeException(nameof(first), "Resource regeneration cannot be negative.");
         ValidateAbilities(first.Abilities);
         ValidateAbilities(second.Abilities);
+        bool hasPlayerMechanics = first.PlayerDefinition is not null && second.PlayerDefinition is not null;
+        ValidateClassAbilityHandlers(first, hasPlayerMechanics);
+        ValidateClassAbilityHandlers(second, hasPlayerMechanics);
         MatchId = matchId;
         _first = first;
         _second = second;
@@ -97,7 +104,20 @@ public sealed class ArenaCombatSession
             [first.Actor.ActorId] = new CrowdControlDiminishingReturns(),
             [second.Actor.ActorId] = new CrowdControlDiminishingReturns()
         };
+        ConfigureCrowdControlPolicy(first.Actor);
+        ConfigureCrowdControlPolicy(second.Actor);
         Append(new CombatEvent(CombatEventType.CombatStarted, startedAt, first.Actor.ActorId));
+        if (first.PlayerDefinition is { } firstPlayer && second.PlayerDefinition is { } secondPlayer)
+        {
+            _firstMechanics = CombatSession.CreatePlayerMechanics(matchId, firstPlayer,
+                secondPlayer.Participant, _firstRuntime, _secondRuntime,
+                first.BaseAbilities ?? first.Abilities, random, startedAt,
+                e => PublishMechanicsEvent(first.Actor.ActorId, e));
+            _secondMechanics = CombatSession.CreatePlayerMechanics(matchId, secondPlayer,
+                firstPlayer.Participant, _secondRuntime, _firstRuntime,
+                second.BaseAbilities ?? second.Abilities, random, startedAt,
+                e => PublishMechanicsEvent(second.Actor.ActorId, e));
+        }
     }
 
     public Guid MatchId { get; }
@@ -119,13 +139,71 @@ public sealed class ArenaCombatSession
     public IReadOnlyList<ActiveEffect> ActiveEffectsFor(Guid accountId) =>
         RuntimeFor(accountId).Actor.ActiveEffects.ToArray();
 
+    public IReadOnlyList<CombatAbilitySnapshot> AbilitySnapshotsFor(Guid accountId)
+    {
+        ArenaFighter fighter = accountId == _first.AccountId ? _first
+            : accountId == _second.AccountId ? _second
+            : throw new ArgumentException("Account is not an arena participant.");
+        CombatSession? mechanics = MechanicsFor(fighter.Actor.ActorId);
+        return fighter.Abilities.Values.Select(ability =>
+        {
+            AbilityDefinition resolved = mechanics is null ? ability
+                : mechanics.ResolveMechanicsAbilityForSnapshot(
+                    (fighter.BaseAbilities ?? fighter.Abilities)[ability.Id], _advancedTo);
+            return new CombatAbilitySnapshot(resolved.Id, resolved.ResourceCost,
+                resolved.Cooldown, resolved.TargetType);
+        }).ToArray();
+    }
+
     private CombatRuntimeState RuntimeFor(Guid accountId) => accountId == _first.AccountId
         ? _firstRuntime : accountId == _second.AccountId
             ? _secondRuntime : throw new ArgumentException("Account is not an arena participant.");
 
+    private void ConfigureCrowdControlPolicy(CombatActorState target)
+    {
+        target.EffectApplicationPolicy = (sourceId, definition, now) =>
+        {
+            if (sourceId == target.ActorId
+                || !CrowdControlCategoryResolver.TryResolve(definition.Kind, out CrowdControlCategory category))
+                return new EffectApplicationPolicyResult(definition);
+
+            CrowdControlDrResolution resolution = _crowdControlDr[target.ActorId]
+                .Resolve(category, definition.Duration, now);
+            if (resolution.IsImmune)
+                return new EffectApplicationPolicyResult(null);
+            return new EffectApplicationPolicyResult(
+                definition with { Duration = resolution.EffectiveDuration },
+                () =>
+                {
+                    _crowdControlDr[target.ActorId].Commit(resolution, now + resolution.EffectiveDuration);
+                    RefreshResetWindow(target, category, now);
+                    ApplyControlConsequences(sourceId, target, category, now);
+                });
+        };
+    }
+
     private CombatRuntimeState RuntimeForActor(Guid actorId) => actorId == _first.Actor.ActorId
         ? _firstRuntime : actorId == _second.Actor.ActorId
             ? _secondRuntime : throw new ArgumentException("Actor is not an arena participant.");
+
+    private CombatSession? MechanicsFor(Guid actorId) => actorId == _first.Actor.ActorId
+        ? _firstMechanics : actorId == _second.Actor.ActorId ? _secondMechanics : null;
+
+    private void PublishMechanicsEvent(Guid ownerActorId, CombatEvent combatEvent)
+    {
+        Append(combatEvent);
+        if (combatEvent.TargetActorId is { } targetId && targetId != ownerActorId)
+            MechanicsFor(targetId)?.ObserveIncomingMechanicsEvent(combatEvent);
+    }
+
+    private void ProcessKernelEvents(IEnumerable<CombatEvent> events, Guid sourceId,
+        DateTimeOffset now, string? abilityId = null, Guid? targetId = null)
+    {
+        if (MechanicsFor(sourceId) is { } mechanics)
+            mechanics.HandleMechanicsEvents(events, now, abilityId, sourceId, targetId);
+        else
+            Append(events);
+    }
 
     private ArenaFighter FighterForActor(Guid actorId) => actorId == _first.Actor.ActorId
         ? _first : actorId == _second.Actor.ActorId
@@ -180,6 +258,10 @@ public sealed class ArenaCombatSession
         CombatRuntimeState runtime = isFirst ? _firstRuntime : _secondRuntime;
         if (!fighter.Abilities.TryGetValue(abilityId, out AbilityDefinition? ability))
             return Result(false, "arena_ability_not_known", before);
+        CombatSession? mechanics = MechanicsFor(fighter.Actor.ActorId);
+        if (mechanics is not null)
+            ability = mechanics.ResolveMechanicsAbility(
+                (fighter.BaseAbilities ?? fighter.Abilities)[abilityId], now);
         Guid expectedTarget = ability.TargetType switch
         {
             AbilityTargetType.Self or AbilityTargetType.SingleAlly => fighter.Actor.ActorId,
@@ -191,6 +273,8 @@ public sealed class ArenaCombatSession
         };
         if (expectedTarget == Guid.Empty || targetActorId != expectedTarget)
             return Result(false, "arena_invalid_target", before);
+        if (ability.TargetType == AbilityTargetType.SingleAlly && !ability.AllowSelfTarget)
+            return Result(false, "arena_invalid_target", before);
         IReadOnlyList<Guid>? targetIds = ability.TargetType switch
         {
             AbilityTargetType.AllEnemiesInCombat or AbilityTargetType.NEnemiesInCombat =>
@@ -200,40 +284,26 @@ public sealed class ArenaCombatSession
             _ => null
         };
 
-        PreparedCrowdControlAbility? prepared = null;
-        AbilityDefinition executableAbility = ability;
-        if (ability.Type != AbilityType.Casted)
-        {
-            prepared = PrepareCrowdControlAbility(
-                ability,
-                fighter.Actor.ActorId,
-                runtime.Actors[targetActorId],
-                now);
-            executableAbility = prepared.Ability;
-        }
-
-        AbilityExecutionResult execution = AbilityEngine.Execute(runtime, executableAbility,
-            new AbilityIntent(commandId, abilityId, targetActorId, targetIds), now, _random);
+        IReadOnlyDictionary<Guid, AbilityTargetModifier>? fireTargetModifiers =
+            ability.Type == AbilityType.Casted ? null : mechanics is not null
+                ? mechanics.ResolveMechanicsTargetModifiers(ability, targetIds ?? [targetActorId], now)
+                : null;
+        AbilityExecutionResult execution = AbilityEngine.Execute(runtime, ability,
+            new AbilityIntent(commandId, abilityId, targetActorId, targetIds, fireTargetModifiers), now, _random);
         if (!execution.Succeeded)
             return Result(false, execution.ErrorCode.ToString(), before);
         if (_seenCommands.Count >= MaximumTrackedCommands) _seenCommands.Clear();
         _seenCommands.Add((accountId, commandId));
-        Append(execution.Events);
-        if (prepared is not null)
+        ProcessKernelEvents(execution.Events, fighter.Actor.ActorId, now, ability.Id, targetActorId);
+        mechanics?.MechanicsAbilityStarted(ability, now);
+        if (ability.Type != AbilityType.Casted)
         {
-            CommitPreparedCrowdControl(prepared, now);
-            Append(prepared.ImmuneEvents);
-        }
-        if (executableAbility.Type != AbilityType.Casted)
-        {
-            ApplyInterrupt(executableAbility, isFirst ? _secondRuntime : _firstRuntime,
+            ApplyInterrupt(ability, isFirst ? _secondRuntime : _firstRuntime,
                 fighter.Actor.ActorId, now);
-            DispatchSuccessfulAbilityTalentEvents(
-                fighter,
-                targetActorId,
-                ability,
-                execution.Events,
-                now);
+            if (mechanics is not null)
+                mechanics.MechanicsAbilityResolved(ability, execution, now);
+            else
+                DispatchSuccessfulAbilityTalentEvents(fighter, targetActorId, ability, execution.Events, now);
         }
         ResolveOutcome(now);
         return Result(true, null, before);
@@ -310,10 +380,18 @@ public sealed class ArenaCombatSession
             // replace a tick that was already due at this timestamp.
             foreach (TimestampBatchEntry entry in entries)
             {
-                Append(EffectEngine.Process(
+                ActiveEffect[] expiring = entry.Fighter.Actor.ActiveEffects
+                    .Where(effect => effect.ExpiresAtUtc <= due).ToArray();
+                IReadOnlyList<CombatEvent> effectEvents = EffectEngine.Process(
                     entry.Fighter.Actor,
                     due,
-                    (effect, tick) => ResolvePeriodicDamage(effect, entry.Fighter.Actor, tick)));
+                    (effect, tick) => ResolvePeriodicDamage(effect, entry.Fighter.Actor, tick));
+                foreach (CombatEvent e in effectEvents)
+                    ProcessKernelEvents([e], e.SourceActorId ?? entry.Fighter.Actor.ActorId,
+                        e.OccurredAtUtc, e.DefinitionId, e.TargetActorId);
+                foreach (ActiveEffect expired in expiring)
+                    if (!entry.Fighter.Actor.ActiveEffects.Contains(expired))
+                        ResolveExpiredEffect(expired, entry.Fighter.Actor, expired.ExpiresAtUtc);
             }
 
             foreach (TimestampBatchEntry entry in entries)
@@ -402,7 +480,7 @@ public sealed class ArenaCombatSession
             fighter.CanAutoAttack && nextAutoAttackAt <= due,
             fighter.CanAutoAttack && fighter.OffHandAutoAttack is not null
                 && nextOffHandAttackAt <= due,
-            wasAlive && EffectEngine.HasControl(fighter.Actor, EffectKind.Stun, due),
+            wasAlive && AutoAttackControlError(fighter.Actor, due) is not null,
             isFirst);
     }
 
@@ -429,7 +507,7 @@ public sealed class ArenaCombatSession
                 && combatEvent.Type == CombatEventType.DamageDealt
                 && combatEvent.Amount > 0)
             .LastOrDefault();
-        Append(new CombatEvent(
+        CombatEvent death = new(
             CombatEventType.ActorDied,
             due,
             actor.ActorId,
@@ -437,11 +515,24 @@ public sealed class ArenaCombatSession
             SourceActorId: cause?.SourceActorId,
             TargetActorId: actor.ActorId,
             IsPeriodic: cause?.IsPeriodic ?? false,
-            DamageType: cause?.DamageType));
+            DamageType: cause?.DamageType,
+            WeaponHand: cause?.WeaponHand,
+            WeaponDefinitionId: cause?.WeaponDefinitionId,
+            IsUnblockable: cause?.IsUnblockable ?? false,
+            IsCritical: cause?.IsCritical ?? false,
+            IsReflected: cause?.IsReflected ?? false);
+        ProcessKernelEvents([death], cause?.SourceActorId ?? actor.ActorId, due,
+            cause?.DefinitionId, actor.ActorId);
     }
 
     private void RegenerateResources(DateTimeOffset from, DateTimeOffset to)
     {
+        if (_firstMechanics is not null && _secondMechanics is not null)
+        {
+            _firstMechanics.AdvanceMechanics(to);
+            _secondMechanics.AdvanceMechanics(to);
+            return;
+        }
         if (to <= from) return;
         decimal elapsedSeconds = (decimal)(to - from).TotalSeconds;
         RegenerateResource(_first, elapsedSeconds, to);
@@ -475,28 +566,23 @@ public sealed class ArenaCombatSession
             return;
 
         ActiveCast cast = committedCast;
-        CombatActorState target = runtime.Actors[cast.TargetId];
         ArenaFighter fighter = runtime == _firstRuntime ? _first : _second;
-        PreparedCrowdControlAbility prepared = PrepareCrowdControlAbility(
-            cast.Ability,
-            runtime.Actor.ActorId,
-            target,
-            due);
-        runtime.ActiveCast = cast with { Ability = prepared.Ability };
+        ArenaFighter opponent = runtime == _firstRuntime ? _second : _first;
+        CombatSession? mechanics = MechanicsFor(fighter.Actor.ActorId);
+        IReadOnlyDictionary<Guid, AbilityTargetModifier>? targetModifiers = mechanics is not null
+            ? mechanics.ResolveMechanicsTargetModifiers(cast.Ability, cast.TargetIds ?? [cast.TargetId], due)
+            : cast.TargetModifiers;
+        runtime.ActiveCast = cast with { TargetModifiers = targetModifiers };
         AbilityExecutionResult execution = AbilityEngine.CompleteCast(runtime, due, _random);
-        Append(execution.Events);
+        ProcessKernelEvents(execution.Events, fighter.Actor.ActorId, due, cast.Ability.Id, cast.TargetId);
         if (!execution.Succeeded)
             return;
-        CommitPreparedCrowdControl(prepared, due);
-        Append(prepared.ImmuneEvents);
-        ApplyInterrupt(prepared.Ability, runtime == _firstRuntime ? _secondRuntime : _firstRuntime,
+        ApplyInterrupt(cast.Ability, runtime == _firstRuntime ? _secondRuntime : _firstRuntime,
             runtime.Actor.ActorId, due);
-        DispatchSuccessfulAbilityTalentEvents(
-            fighter,
-            cast.TargetId,
-            cast.Ability,
-            execution.Events,
-            due);
+        if (mechanics is not null)
+            mechanics.MechanicsAbilityResolved(cast.Ability, execution, due);
+        else
+            DispatchSuccessfulAbilityTalentEvents(fighter, cast.TargetId, cast.Ability, execution.Events, due);
     }
 
     private void ResolvePendingActions(
@@ -514,70 +600,10 @@ public sealed class ArenaCombatSession
             return;
         }
 
-        Dictionary<Guid, CrowdControlDiminishingReturns> stagedStates = [];
-        Dictionary<Guid, HashSet<CrowdControlCategory>> appliedCategories = [];
-        List<CombatEvent> immuneEvents = [];
-
-        foreach (PendingAbilityAction pending in committedActions)
-        {
-            EffectDefinition? effect = pending.Action.Type == AbilityActionType.ApplyEffect
-                ? pending.Action.Effect
-                : null;
-            if (effect is null
-                || !CrowdControlCategoryResolver.TryResolve(effect.Kind, out CrowdControlCategory category))
-            {
-                continue;
-            }
-
-            CombatActorState target = runtime.Actors[pending.TargetId];
-            if (!stagedStates.TryGetValue(target.ActorId, out CrowdControlDiminishingReturns? staged))
-            {
-                staged = _crowdControlDr[target.ActorId].Clone();
-                stagedStates[target.ActorId] = staged;
-                appliedCategories[target.ActorId] = [];
-            }
-
-            CrowdControlDrResolution resolution = staged.Resolve(category, effect.Duration, due);
-            int index = runtime.PendingActions.IndexOf(pending);
-            if (resolution.IsImmune)
-            {
-                if (index >= 0)
-                    runtime.PendingActions.RemoveAt(index);
-                immuneEvents.Add(ImmuneEvent(
-                    due,
-                    runtime.Actor.ActorId,
-                    target.ActorId,
-                    effect.Id));
-                continue;
-            }
-
-            EffectDefinition adjustedEffect = effect with { Duration = resolution.EffectiveDuration };
-            if (index >= 0)
-            {
-                runtime.PendingActions[index] = pending with
-                {
-                    Action = pending.Action with { Effect = adjustedEffect }
-                };
-            }
-            staged.Commit(resolution, due + resolution.EffectiveDuration);
-            appliedCategories[target.ActorId].Add(category);
-        }
-
         IReadOnlyList<CombatEvent> events = AbilityEngine.ResolvePendingActions(runtime, due, _random);
-        Append(events);
-        DispatchDamageTalentEvents(events, due);
-        foreach ((Guid targetActorId, CrowdControlDiminishingReturns staged) in stagedStates)
-        {
-            _crowdControlDr[targetActorId].ReplaceWith(staged);
-            CombatActorState target = RuntimeForActor(targetActorId).Actor;
-            RefreshResetWindows(target, appliedCategories[targetActorId], due);
-            ApplyControlConsequences(
-                runtime.Actor.ActorId,
-                target,
-                appliedCategories[targetActorId],
-                due);
-        }
-        Append(immuneEvents);
+        ProcessKernelEvents(events, runtime.Actor.ActorId, due);
+        if (MechanicsFor(runtime.Actor.ActorId) is null)
+            DispatchDamageTalentEvents(events, due);
     }
 
     private void DispatchSuccessfulAbilityTalentEvents(
@@ -659,6 +685,7 @@ public sealed class ArenaCombatSession
                 ApplyGeneratedEffectAction(
                     effect.SourceActorId,
                     RuntimeForActor(effect.TargetActorId).Actor,
+                    effect.SourceTalentId,
                     effect.Action,
                     now);
                 break;
@@ -670,16 +697,22 @@ public sealed class ArenaCombatSession
     private void ApplyGeneratedEffectAction(
         Guid sourceActorId,
         CombatActorState target,
+        string sourceTalentId,
         AbilityActionDefinition action,
         DateTimeOffset now)
     {
-        if (action.Type != AbilityActionType.ApplyEffect || action.Effect is null)
+        if (action.Type == AbilityActionType.ApplyEffect && action.Effect is null)
+            throw new NotSupportedException("Arena talent proc is missing its effect definition.");
+        if (action.Type is not (AbilityActionType.ApplyEffect or AbilityActionType.Damage
+            or AbilityActionType.Healing or AbilityActionType.ResourceChange
+            or AbilityActionType.Dispel))
             throw new NotSupportedException("Arena talent proc produced an unsupported action.");
 
         var generated = new AbilityDefinition(
-            $"ARENA_PROC_{action.Effect.Id}",
+            $"ARENA_PROC_{sourceTalentId}",
             AbilityType.Instant,
-            AbilityTargetType.SingleEnemy,
+            sourceActorId == target.ActorId
+                ? AbilityTargetType.Self : AbilityTargetType.SingleEnemy,
             0,
             TimeSpan.Zero,
             TimeSpan.Zero,
@@ -688,21 +721,23 @@ public sealed class ArenaCombatSession
             true,
             "NONE",
             Actions: [action]);
-        PreparedCrowdControlAbility prepared = PrepareCrowdControlAbility(
-            generated,
-            sourceActorId,
-            target,
-            now);
-
-        foreach (AbilityActionDefinition preparedAction in prepared.Ability.Actions ?? [])
+        if (action.Type != AbilityActionType.ApplyEffect)
         {
-            if (preparedAction.Type != AbilityActionType.ApplyEffect || preparedAction.Effect is null)
-                throw new NotSupportedException("Arena talent proc produced an unsupported action.");
-            Append(EffectEngine.Apply(target, sourceActorId, preparedAction.Effect, now));
+            // Generated damage/healing uses the production AbilityEngine, but
+            // does not re-dispatch talent hooks by default: a proc is not a
+            // second player cast or an extra chance to trigger itself.
+            Append(AbilityEngine.ResolveTriggeredAction(
+                RuntimeForActor(sourceActorId), generated, action,
+                target.ActorId, now, _random).Select(combatEvent => combatEvent with
+                {
+                    DefinitionId = combatEvent.DefinitionId ?? generated.Id,
+                    SourceActorId = combatEvent.SourceActorId ?? sourceActorId,
+                    TargetActorId = combatEvent.TargetActorId ?? target.ActorId
+                }));
+            return;
         }
 
-        CommitPreparedCrowdControl(prepared, now);
-        Append(prepared.ImmuneEvents);
+        Append(EffectEngine.Apply(target, sourceActorId, action.Effect!, now));
     }
 
     private void ApplyInterrupt(AbilityDefinition ability, CombatRuntimeState targetRuntime,
@@ -712,8 +747,9 @@ public sealed class ArenaCombatSession
         if (interrupt is null) return;
         AbilityExecutionResult result = AbilityEngine.Interrupt(targetRuntime, now,
             interrupt.InterruptLockout ?? TimeSpan.Zero);
-        Append(result.Events.Select(x => x with { SourceActorId = sourceActorId,
-            TargetActorId = targetRuntime.Actor.ActorId }));
+        ProcessKernelEvents(result.Events.Select(x => x with { SourceActorId = sourceActorId,
+            TargetActorId = targetRuntime.Actor.ActorId }), sourceActorId, now,
+            targetId: targetRuntime.Actor.ActorId);
     }
 
     private void ResolveAutoAttack(
@@ -741,15 +777,23 @@ public sealed class ArenaCombatSession
             return;
         }
         ScheduleNextAutoAttack(source, profile, ref nextAttack, due);
+        if (!target.Actor.IsTargetable(due))
+            return;
         if (wasStunned)
         {
             Append(new CombatEvent(
                 CombatEventType.ActionRejected,
                 due,
                 source.Actor.ActorId,
-                AbilityErrorCode.ActorStunned.ToString(),
+                (AutoAttackControlError(source.Actor, due) ?? AbilityErrorCode.ActorStunned).ToString(),
                 SourceActorId: source.Actor.ActorId,
                 TargetActorId: target.Actor.ActorId));
+            return;
+        }
+        if (MechanicsFor(source.Actor.ActorId) is { } mechanics)
+        {
+            mechanics.ResolveMechanicsAutoAttack(profile, due);
+            ScheduleNextAutoAttack(source, profile, ref nextAttack, due);
             return;
         }
         decimal baseDamage = AutoAttackDamageRoller.RollPlayerDamage(profile,
@@ -781,159 +825,118 @@ public sealed class ArenaCombatSession
             source.Actor.AddResource(profile.ResourceOnHit);
     }
 
-    private static void ScheduleNextAutoAttack(
+    private void ScheduleNextAutoAttack(
         ArenaFighter source,
         AutoAttackProfile profile,
         ref DateTimeOffset nextAttack,
         DateTimeOffset due)
     {
+        if (MechanicsFor(source.Actor.ActorId) is { } mechanics)
+        {
+            nextAttack = due + mechanics.MechanicsAutoAttackInterval(profile, due);
+            return;
+        }
         decimal attackSpeed = Math.Max(0.01m, EffectEngine.CalculateStat(
             source.Actor, EffectStat.AttackSpeed, 1m, due));
         double adjustedTicks = profile.Interval.Ticks / (double)attackSpeed;
         nextAttack = due + TimeSpan.FromTicks(Math.Max(1, (long)Math.Ceiling(adjustedTicks)));
     }
 
+    private static AbilityErrorCode? AutoAttackControlError(CombatActorState actor, DateTimeOffset now)
+    {
+        if (EffectEngine.HasControl(actor, EffectKind.Stun, now)) return AbilityErrorCode.ActorStunned;
+        if (EffectEngine.HasControl(actor, EffectKind.Fear, now)) return AbilityErrorCode.ActorFeared;
+        if (EffectEngine.HasControl(actor, EffectKind.Disarm, now)) return AbilityErrorCode.ActorDisarmed;
+        return null;
+    }
+
     private static TimeSpan InitialOffHandDelay(AutoAttackProfile profile) =>
         TimeSpan.FromTicks(Math.Max(1, profile.Interval.Ticks / 2));
 
-    private PreparedCrowdControlAbility PrepareCrowdControlAbility(
-        AbilityDefinition ability,
-        Guid sourceActorId,
+
+    private void RefreshResetWindow(
         CombatActorState target,
+        CrowdControlCategory category,
         DateTimeOffset now)
     {
-        CrowdControlDiminishingReturns staged = _crowdControlDr[target.ActorId].Clone();
-        if (ability.Actions is null or { Count: 0 })
-        {
-            return new PreparedCrowdControlAbility(
-                ability,
-                staged,
-                sourceActorId,
-                target,
-                [],
-                new HashSet<CrowdControlCategory>());
-        }
-
-        List<AbilityActionDefinition> actions = [];
-        List<CombatEvent> immuneEvents = [];
-        HashSet<CrowdControlCategory> appliedCategories = [];
-
-        foreach (AbilityActionDefinition action in ability.Actions)
-        {
-            bool immediate = action.Delay is null || action.Delay <= TimeSpan.Zero;
-            EffectDefinition? effect = action.Type == AbilityActionType.ApplyEffect && immediate
-                ? action.Effect
-                : null;
-            if (effect is null
-                || !CrowdControlCategoryResolver.TryResolve(effect.Kind, out CrowdControlCategory category))
-            {
-                actions.Add(action);
-                continue;
-            }
-
-            CrowdControlDrResolution resolution = staged.Resolve(category, effect.Duration, now);
-            if (resolution.IsImmune)
-            {
-                immuneEvents.Add(ImmuneEvent(now, sourceActorId, target.ActorId, effect.Id));
-                continue;
-            }
-
-            actions.Add(action with
-            {
-                Effect = effect with { Duration = resolution.EffectiveDuration }
-            });
-            staged.Commit(resolution, now + resolution.EffectiveDuration);
-            appliedCategories.Add(category);
-        }
-
-        return new PreparedCrowdControlAbility(
-            ability with { Actions = actions },
-            staged,
-            sourceActorId,
-            target,
-            immuneEvents,
-            appliedCategories);
-    }
-
-    private void CommitPreparedCrowdControl(
-        PreparedCrowdControlAbility prepared,
-        DateTimeOffset now)
-    {
-        _crowdControlDr[prepared.Target.ActorId].ReplaceWith(prepared.StagedState);
-        RefreshResetWindows(prepared.Target, prepared.AppliedCategories, now);
-        ApplyControlConsequences(
-            prepared.SourceActorId,
-            prepared.Target,
-            prepared.AppliedCategories,
-            now);
-    }
-
-    private void RefreshResetWindows(
-        CombatActorState target,
-        IReadOnlySet<CrowdControlCategory> categories,
-        DateTimeOffset now)
-    {
-        foreach (CrowdControlCategory category in categories)
-        {
-            DateTimeOffset controlEndsAt = target.ActiveEffects
-                .Where(effect => effect.ExpiresAtUtc > now && IsCategory(effect, category))
-                .Select(effect => effect.ExpiresAtUtc)
-                .DefaultIfEmpty(now)
-                .Max();
-            if (controlEndsAt > now)
-                _crowdControlDr[target.ActorId].RefreshResetWindow(category, controlEndsAt);
-        }
+        DateTimeOffset controlEndsAt = target.ActiveEffects
+            .Where(effect => effect.ExpiresAtUtc > now && IsCategory(effect, category))
+            .Select(effect => effect.ExpiresAtUtc).DefaultIfEmpty(now).Max();
+        if (controlEndsAt > now)
+            _crowdControlDr[target.ActorId].RefreshResetWindow(category, controlEndsAt);
     }
 
     private void ApplyControlConsequences(
         Guid sourceActorId,
         CombatActorState target,
-        IReadOnlySet<CrowdControlCategory> categories,
+        CrowdControlCategory category,
         DateTimeOffset now)
     {
-        if (!categories.Contains(CrowdControlCategory.Stun)
-            || !EffectEngine.HasControl(target, EffectKind.Stun, now))
-        {
-            return;
-        }
-
         CombatRuntimeState targetRuntime = RuntimeForActor(target.ActorId);
+        if (targetRuntime.ActiveCast is not { } cast
+            || category is not (CrowdControlCategory.Stun or CrowdControlCategory.Fear
+                or CrowdControlCategory.Silence)
+            || category == CrowdControlCategory.Silence && !cast.Ability.IsSpell)
+            return;
         AbilityExecutionResult interrupted = AbilityEngine.Interrupt(targetRuntime, now, TimeSpan.Zero);
         if (!interrupted.Succeeded)
             return;
-        Append(interrupted.Events.Select(combatEvent => combatEvent with
+        ProcessKernelEvents(interrupted.Events.Select(combatEvent => combatEvent with
         {
             SourceActorId = sourceActorId,
             TargetActorId = target.ActorId
-        }));
+        }), sourceActorId, now, targetId: target.ActorId);
     }
 
     private static bool IsCategory(ActiveEffect effect, CrowdControlCategory category) =>
         CrowdControlCategoryResolver.TryResolve(effect.Definition.Kind, out CrowdControlCategory resolved)
         && resolved == category;
 
-    private static CombatEvent ImmuneEvent(
-        DateTimeOffset now,
-        Guid sourceActorId,
-        Guid targetActorId,
-        string effectId) =>
-        new(
-            CombatEventType.EffectImmune,
-            now,
-            targetActorId,
-            effectId,
-            SourceActorId: sourceActorId,
-            TargetActorId: targetActorId);
 
     private IReadOnlyList<CombatEvent> ResolvePeriodicDamage(ActiveEffect effect,
         CombatActorState target, DateTimeOffset tickAt)
     {
+        if (MechanicsFor(effect.SourceId) is { } mechanics)
+            return mechanics.ResolveMechanicsPeriodicDamage(effect, target, tickAt);
         CombatActorState? source = effect.SourceId == _first.Actor.ActorId ? _first.Actor
             : effect.SourceId == _second.Actor.ActorId ? _second.Actor : null;
         if (source is null || source.IsDead || target.IsDead) return [];
         return DamagePipeline.Resolve(new DamageRequest(source, target,
             effect.Definition.Magnitude * effect.Stacks, effect.Definition.PeriodicDamageType,
             CanMiss: false, CanDodge: false, CanCrit: false, MinimumDamage: 0), _random, tickAt).Events;
+    }
+
+    private void ResolveExpiredEffect(ActiveEffect effect, CombatActorState target, DateTimeOffset now)
+    {
+        if (effect.SourceId != target.ActorId
+            && CrowdControlCategoryResolver.TryResolve(effect.Definition.Kind, out CrowdControlCategory category))
+        {
+            DateTimeOffset controlEndsAt = target.ActiveEffects
+                .Where(active => active.ExpiresAtUtc > now && IsCategory(active, category))
+                .Select(active => active.ExpiresAtUtc).DefaultIfEmpty(now).Max();
+            _crowdControlDr[target.ActorId].RefreshResetWindow(category, controlEndsAt);
+        }
+        if (MechanicsFor(effect.SourceId) is { } mechanics)
+        {
+            mechanics.ResolveMechanicsExpiredEffect(effect, target, now);
+            return;
+        }
+        if (target.IsDead || RuntimeForActor(effect.SourceId).Actor.IsDead)
+            return;
+        foreach (EffectExpirationActionDefinition action in effect.Definition.OnExpireActions ?? [])
+        {
+            // A 1v1 actor has no other friendly participants.
+            if (action.TargetScope == EffectExpirationTargetScope.EffectTargetAllies)
+                continue;
+            AbilityActionDefinition executable = action.Type switch
+            {
+                EffectExpirationActionType.Damage => new(AbilityActionType.Damage,
+                    action.Amount, action.DamageType, CanMiss: false, CanCrit: false, CanDodge: false),
+                EffectExpirationActionType.ApplyEffect => new(AbilityActionType.ApplyEffect, Effect: action.Effect),
+                _ => throw new NotSupportedException($"Unknown expiration action {action.Type}.")
+            };
+            ApplyGeneratedEffectAction(effect.SourceId, target, effect.Definition.Id, executable, now);
+        }
     }
 
     private DateTimeOffset? NextExecutionAt()
@@ -948,6 +951,9 @@ public sealed class ArenaCombatSession
             if (runtime.ActiveCast is { } cast && cast.ResolvesAtUtc < next) next = cast.ResolvesAtUtc;
             if (runtime.NextPendingActionAtUtc is { } pending && pending < next) next = pending;
         }
+        foreach (CombatSession? mechanics in new[] { _firstMechanics, _secondMechanics })
+            if (mechanics?.NextMechanicsDueAt is { } pending && pending < next)
+                next = pending;
         foreach (CombatActorState actor in new[] { _first.Actor, _second.Actor })
         foreach (ActiveEffect effect in actor.ActiveEffects)
         {
@@ -978,36 +984,45 @@ public sealed class ArenaCombatSession
     }
     private void Append(CombatEvent combatEvent) => _events.Add(combatEvent with { Sequence = ++_sequence });
 
+    private static void ValidateClassAbilityHandlers(ArenaFighter fighter, bool hasPlayerMechanics)
+    {
+        foreach (AbilityDefinition ability in fighter.Abilities.Values)
+        {
+            // Synthetic kernel-only abilities remain valid when their actions are self-contained.
+            bool requiresClassHandler = ability.Actions is null or { Count: 0 }
+                || ability.RuntimeParameters?.Count > 0;
+            if (requiresClassHandler && (!hasPlayerMechanics
+                || !PlayerCombatMechanicsCapabilities.HasClassAbilityHandler(
+                    ability.Id, fighter.PlayerDefinition!.Participant.DefinitionId)))
+                throw new NotSupportedException($"Ability {ability.Id} requires its production class runtime.");
+        }
+    }
+
     public static void ValidateAbilities(IReadOnlyDictionary<string, AbilityDefinition> abilities)
     {
         foreach (AbilityDefinition ability in abilities.Values)
         {
-            if (ability.Type is not (AbilityType.Instant or AbilityType.Casted)
-                || ability.RuntimeParameters?.Count > 0
-                || ability.Actions is null or { Count: 0 }
+            bool classHandled = PlayerCombatMechanicsCapabilities.HasClassAbilityHandler(ability.Id);
+            if (ability.Type is not (AbilityType.Instant or AbilityType.Casted or AbilityType.Taunt
+                    or AbilityType.NextAttackModifier)
+                || !classHandled && ability.RuntimeParameters?.Count > 0
+                || !classHandled && ability.Actions is null or { Count: 0 }
                 || ability.TargetType is not (AbilityTargetType.Self or AbilityTargetType.SingleAlly
                 or AbilityTargetType.SingleEnemy or AbilityTargetType.AllEnemiesInCombat
                 or AbilityTargetType.NEnemiesInCombat)
                 && !IsSupportedSoloPartyAbility(ability)
-                || ability.TargetType == AbilityTargetType.SingleAlly && !ability.AllowSelfTarget
-                || ability.Actions?.Any(action => action.Type is AbilityActionType.Taunt
-                    or AbilityActionType.AddThreat or AbilityActionType.DropThreatPercent
-                    or AbilityActionType.ClearThreat or AbilityActionType.Fixate
-                    || action.Effect?.OnExpireActions is { Count: > 0 }
-                    || action.Type == AbilityActionType.Interrupt
+                || ability.Actions?.Any(action => action.Type == AbilityActionType.Interrupt
                     && (action.InterruptLockout is null || action.InterruptLockout < TimeSpan.Zero)) == true)
                 throw new NotSupportedException($"Ability {ability.Id} is not supported in the arena runtime.");
         }
     }
 
     private static bool IsSupportedSoloPartyAbility(AbilityDefinition ability) =>
-        ability.Type == AbilityType.Instant
+        ability.Type is AbilityType.Instant or AbilityType.Casted
         && ability.TargetType == AbilityTargetType.SelfAndPartyMembersInCombat
-        && ability.Actions is { Count: 1 }
-        && ability.Actions[0].Type == AbilityActionType.ApplyEffect
-        && (ability.Id, ability.Actions[0].Effect?.Id) is
-            ("AURA_MASTERY", "PALADIN_AURA_MASTERY_DEFENSE")
-            or ("DEVOTION_AURA", "PALADIN_DEVOTION_AURA");
+        && ability.Actions is { Count: > 0 }
+        && ability.Actions.All(action => action.Type is AbilityActionType.ApplyEffect
+            or AbilityActionType.Healing or AbilityActionType.ResourceChange or AbilityActionType.Dispel);
 
     private sealed record TimestampBatchEntry(
         ArenaFighter Fighter,
@@ -1022,11 +1037,4 @@ public sealed class ArenaCombatSession
         bool WasStunned,
         bool IsFirst);
 
-    private sealed record PreparedCrowdControlAbility(
-        AbilityDefinition Ability,
-        CrowdControlDiminishingReturns StagedState,
-        Guid SourceActorId,
-        CombatActorState Target,
-        IReadOnlyList<CombatEvent> ImmuneEvents,
-        IReadOnlySet<CrowdControlCategory> AppliedCategories);
 }

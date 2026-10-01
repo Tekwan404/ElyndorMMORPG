@@ -92,7 +92,8 @@ public sealed record EffectDefinition(
     IReadOnlyList<EffectExpirationActionDefinition>? OnExpireActions = null,
     string? DisplayName = null,
     string? Description = null,
-    string? IconId = null);
+    string? IconId = null,
+    decimal ResourceCostPerAbsorbedDamage = 0);
 
 public sealed class ActiveEffect
 {

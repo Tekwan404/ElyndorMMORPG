@@ -43,8 +43,7 @@ public static class ArenaStateProjector
             actor.CurrentResource, actor.MaxResource, true, null,
             session.CooldownsFor(fighter.AccountId),
             new HashSet<string>(fighter.Abilities.Keys, StringComparer.Ordinal),
-            fighter.Abilities.Values.Select(ability => new CombatAbilitySnapshot(ability.Id,
-                ability.ResourceCost, ability.Cooldown, ability.TargetType)).ToArray(),
+            session.AbilitySnapshotsFor(fighter.AccountId),
             fighter.Actor.ActiveEffects.Select(effect => new CombatEffectSnapshot(
                 effect.Definition.Id, effect.Stacks, effect.ExpiresAtUtc,
                 effect.Definition.DisplayName, effect.Definition.Description,
