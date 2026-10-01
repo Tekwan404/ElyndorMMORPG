@@ -25,6 +25,8 @@ const props = defineProps<{
   rating?: number | null
   ratingDelta?: number | null
   honorDelta?: number | null
+  errorMessage?: string | null
+  autoAttackPending?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -32,6 +34,7 @@ const emit = defineEmits<{
   surrender: []
   dismiss: []
   nextOpponent: []
+  toggleAutoAttack: []
 }>()
 
 const session = useGameSessionStore()
@@ -109,6 +112,7 @@ onUnmounted(() => window.clearInterval(timer))
 <template>
   <Teleport to="body">
     <div class="arena-battle-overlay">
+      <p v-if="errorMessage" class="arena-battle-error" role="alert">{{ errorMessage }}</p>
       <section class="arena-battle-screen" data-arena-battle-screen data-battle-screen>
         <BattleHeader
           :local-actor="localActor"
@@ -127,6 +131,7 @@ onUnmounted(() => window.clearInterval(timer))
             data-arena-battlefield
           >
             <div class="arena-battlefield__vignette" aria-hidden="true" />
+            <div class="arena-battlefield__duel" aria-hidden="true"><span>Арена</span><b>⚔</b><span>1 на 1</span></div>
 
             <div class="arena-battlefield__fighter arena-battlefield__fighter--player">
               <CharacterFigure
@@ -150,7 +155,7 @@ onUnmounted(() => window.clearInterval(timer))
             <div class="arena-battlefield__fighter arena-battlefield__fighter--enemy">
               <CharacterFigure
                 :actor="enemyActor"
-                :selected="true"
+                :selected="false"
                 :aggro="false"
                 :local="false"
                 :disabled="true"
@@ -190,24 +195,25 @@ onUnmounted(() => window.clearInterval(timer))
           />
           <BattleControls
             :auto-attack-enabled="localActor.autoAttackEnabled"
-            :auto-attack-disabled="true"
+            :auto-attack-disabled="Boolean(autoAttackPending)"
             :lifecycle-disabled="Boolean(pending)"
             :flee-disabled="Boolean(pending)"
             :training="false"
-            :show-auto-attack="false"
+            :show-auto-attack="true"
             exit-label="Сдаться"
             exit-description="Завершить матч поражением"
             exit-icon="⚑"
             @flee="emit('surrender')"
+            @toggle-auto-attack="emit('toggleAutoAttack')"
           />
         </section>
 
         <section v-else class="arena-battle-screen__result" :data-result="resultLabel">
-          <small>БОЙ ЗАВЕРШЁН</small>
+          <small>Бой завершён</small>
           <strong>{{ resultLabel ?? 'Результат матча' }}</strong>
           <div v-if="rating != null || ratingDelta != null || honorDelta != null" class="arena-battle-screen__rewards">
             <span v-if="rating != null"><small>Рейтинг</small><b>{{ rating }}</b><em v-if="ratingDelta">{{ ratingDelta > 0 ? '+' : '' }}{{ ratingDelta }}</em></span>
-            <span v-if="honorDelta"><small>Честь</small><b>+{{ honorDelta }}</b></span>
+            <span v-if="honorDelta != null"><small>Честь</small><b>{{ honorDelta > 0 ? '+' : '' }}{{ honorDelta }}</b></span>
           </div>
           <div class="arena-battle-screen__result-actions">
             <UIButton :disabled="Boolean(pending)" @click="emit('nextOpponent')">Следующий соперник</UIButton>
@@ -224,6 +230,20 @@ onUnmounted(() => window.clearInterval(timer))
 </template>
 
 <style scoped>
+.arena-battle-error {
+  position: fixed;
+  z-index: 1100;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  left: 50%;
+  width: min(90vw, 28rem);
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.75rem;
+  border: 1px solid #a84a60;
+  border-radius: 8px;
+  background: #35141c;
+  color: #ffe4e7;
+}
 .arena-battle-overlay {
   position: fixed;
   z-index: 1000;
@@ -237,8 +257,8 @@ onUnmounted(() => window.clearInterval(timer))
   --arena-gap: clamp(0.28rem, 1vw, 0.46rem);
   display: grid;
   width: min(100%, var(--ui-content-width));
-  height: 100svh;
-  min-height: 36rem;
+  height: var(--tg-viewport-stable-height, 100dvh);
+  min-height: 0;
   grid-template-rows: auto minmax(0, 1fr) auto auto;
   gap: var(--arena-gap);
   padding: max(0.35rem, env(safe-area-inset-top)) max(0.4rem, env(safe-area-inset-right)) max(0.35rem, env(safe-area-inset-bottom)) max(0.4rem, env(safe-area-inset-left));
@@ -295,7 +315,7 @@ onUnmounted(() => window.clearInterval(timer))
 .arena-cast {
   position: absolute;
   z-index: 50;
-  bottom: 0.65rem;
+  top: 2.8rem;
   display: grid;
   width: min(10rem, 38%);
   gap: 0.2rem;
@@ -307,8 +327,8 @@ onUnmounted(() => window.clearInterval(timer))
 .arena-cast--player { left: 2%; }
 .arena-cast--enemy { right: 2%; border-color: rgb(213 78 99 / 50%); }
 .arena-cast div { display: flex; justify-content: space-between; gap: 0.35rem; }
-.arena-cast strong { overflow: hidden; font-size: 0.52rem; text-overflow: ellipsis; white-space: nowrap; }
-.arena-cast small { color: #aaa4a0; font-size: 0.46rem; }
+.arena-cast strong { overflow: hidden; font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }
+.arena-cast small { color: #d1c7b5; font-size: 0.7rem; font-variant-numeric: tabular-nums; }
 .arena-cast > i { display: block; height: 4px; overflow: hidden; border-radius: 999px; background: #08090d; }
 .arena-cast > i span { display: block; height: 100%; background: linear-gradient(90deg, #6553ba, #b497f0); }
 .arena-cast--enemy > i span { background: linear-gradient(90deg, #9d3148, #eb7182); }
@@ -346,6 +366,33 @@ onUnmounted(() => window.clearInterval(timer))
 .arena-battle-screen__log {
   min-height: 0;
 }
+.arena-battlefield__duel {
+  position: absolute;
+  inset: 0.5rem 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  color: #e8d4a3;
+  font-family: var(--ui-font-display);
+  font-size: 0.75rem;
+  text-shadow: 0 2px 5px #000;
+  pointer-events: none;
+}
+.arena-battlefield__duel b { font-size: 1.25rem; color: #d5b86f; }
+.arena-battlefield__fighter :deep(.character-figure__caption small) { font-size: 0.65rem; }
+.arena-battlefield__fighter :deep(.character-figure__caption strong) { font-size: 0.8rem; }
+.arena-battle-screen :deep(.battle-header__status label),
+.arena-battle-screen :deep(.battle-header__identity small) { font-size: 0.7rem; }
+.arena-battle-screen :deep(.battle-header__bar) { height: 6px; }
+.arena-battlefield__effects { top: 0; }
+.arena-battle-screen__result > small,
+.arena-battle-screen__rewards small,
+.arena-battle-screen__rewards em { font-size: 0.7rem; }
+.arena-battle-screen__result > strong { font-size: 1.4rem; }
+.arena-battle-screen__rewards b { font-size: 0.95rem; }
+.arena-battle-screen__result { background: linear-gradient(135deg, #292116, #0c1018 65%); }
+.arena-battle-screen__result-actions :deep(button) { min-height: 44px; }
 
 @media (max-width: 480px) {
   .arena-battlefield__fighter { width: 48%; height: 86%; }

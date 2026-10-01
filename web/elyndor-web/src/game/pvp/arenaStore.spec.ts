@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { apiClient } from '@/api/apiClient'
 import { useArenaStore } from './arenaStore'
 import type { ArenaMatch, ArenaStatus } from './arenaContracts'
+import type { CombatSnapshot } from '@/api/contracts'
 
 const signalR = vi.hoisted(() => ({
   start: vi.fn<() => void>(),
@@ -179,5 +180,18 @@ describe('arenaStore', () => {
     expect(arena.status?.isQueued).toBe(true)
     expect(arena.status?.queueMode).toBe('Ranked')
     expect(signalR.start).toHaveBeenCalledTimes(1)
+  })
+
+  it('sends autoattack intent and applies the authoritative response', async () => {
+    const arena = useArenaStore()
+    await arena.connect()
+    const battle = { player: { autoAttackEnabled: true } } as CombatSnapshot
+    arena.match = match({ battle })
+    signalR.invoke.mockResolvedValueOnce({ succeeded: true, errorCode: null,
+      match: match({ battle: { player: { autoAttackEnabled: false } } as CombatSnapshot, sequence: 2 }) })
+    await arena.toggleAutoAttack()
+    expect(signalR.invoke).toHaveBeenCalledWith('SetAutoAttack', 'match-1', false, expect.any(String))
+    expect(arena.match?.battle?.player.autoAttackEnabled).toBe(false)
+    expect(arena.autoAttackPending).toBe(false)
   })
 })

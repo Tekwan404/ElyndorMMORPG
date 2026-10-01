@@ -31,11 +31,14 @@ onUnmounted(() => {
     :active="activeFight"
     :result-label="resultLabel"
     :pending="arena.pending"
+    :auto-attack-pending="arena.autoAttackPending"
     :rating="status?.rating ?? null"
     :rating-delta="arena.ratingDelta"
     :honor-delta="arena.honorDelta"
+    :error-message="arena.errorCode ? arenaErrorMessage(arena.errorCode) : null"
     @use-ability="arena.useAbility"
     @surrender="arena.surrender"
+    @toggle-auto-attack="arena.toggleAutoAttack"
     @dismiss="arena.dismissMatch"
     @next-opponent="arena.findNextOpponent('Ranked')"
   />
@@ -43,7 +46,7 @@ onUnmounted(() => {
   <section v-else class="arena" aria-label="Арена">
     <header class="arena__head">
       <div>
-        <small>РЕЙТИНГОВОЕ PVP</small>
+        <small>Испытание против другого героя</small>
         <h2>Арена 1×1</h2>
       </div>
       <p v-if="status">
@@ -79,7 +82,7 @@ onUnmounted(() => {
         <template v-else>
           <div>
             <strong>Рейтинговый бой 1×1</strong>
-            <small>Ваш текущий персонаж, экипировка, характеристики и доступные PvP-таланты.</small>
+            <small>Ваш герой, снаряжение и таланты. Побеждайте, чтобы заработать честь и подняться в рейтинге.</small>
           </div>
           <UIButton :disabled="arena.pending" @click="arena.joinQueue('Ranked')">Найти бой</UIButton>
         </template>
@@ -94,7 +97,7 @@ onUnmounted(() => {
       <section class="arena__leaderboard">
         <header>
           <div>
-            <small>СЕЗОННЫЙ РЕЙТИНГ</small>
+            <small>Сильнейшие бойцы</small>
             <h3>Таблица лидеров</h3>
           </div>
         </header>
@@ -232,8 +235,28 @@ onUnmounted(() => {
   100% { box-shadow: 0 0 0 0 rgb(213 93 114 / 0%); }
 }
 
+.arena__head { min-height: 120px; border-color: #9a7746; background: radial-gradient(ellipse at 80% 0, rgb(130 47 60 / 30%), transparent 70%), linear-gradient(120deg, #211c14, #090c12); }
+.arena__head h2 { font-size: 1.8rem; color: #efd9a7; }
+.arena__head small, .arena__leaderboard header small { font-size: 0.75rem; letter-spacing: 0; }
+.arena__head p span, .arena__record small, .arena__queue small,
+.arena__board small, .arena__note span, .arena__loading span { font-size: 0.75rem; }
+.arena__record { gap: 0; border-block: 1px solid rgb(177 151 91 / 28%); }
+.arena__record div { border: 0; border-radius: 0; background: transparent; padding-block: 0.8rem; }
+.arena__record strong { font-size: 1.2rem; }
+.arena__record div:last-child strong { color: #efd18a; }
+.arena__queue { grid-template-columns: minmax(0, 1fr) auto; padding: 1rem; }
+.arena__queue:has(.arena__queue-pulse) { grid-template-columns: auto minmax(0, 1fr) auto; }
+.arena__queue strong, .arena__board strong { font-size: 0.9rem; }
+.arena__queue :deep(button) { min-height: 48px; }
+.arena__board li > span, .arena__board em, .arena__board .arena__empty { font-size: 0.8rem; }
+.arena__leaderboard h3 { font-size: 1.1rem; }
+.arena__board li:first-child:not(.arena__empty) { background: rgb(174 137 58 / 12%); }
+.arena__error { position: fixed; z-index: 1100; bottom: max(1rem, env(safe-area-inset-bottom)); left: 50%; width: min(90vw, 28rem); transform: translateX(-50%); background: #35141c; }
+@media (prefers-reduced-motion: reduce) { .arena__queue-pulse { animation: none; } }
+
 @media (max-width: 430px) {
   .arena__queue { grid-template-columns: auto minmax(0, 1fr); }
+  .arena__queue:has(.arena__queue-pulse) { grid-template-columns: auto minmax(0, 1fr); }
   .arena__queue :deep(.ui-button) { grid-column: 1 / -1; width: 100%; }
   .arena__board li { grid-template-columns: 2rem minmax(0, 1fr) auto; }
   .arena__board li small { display: none; }

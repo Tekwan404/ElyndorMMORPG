@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router'
 import type { CombatAbility, CombatActorSnapshot } from '@/api/contracts'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import BattleScreen from './BattleScreen.vue'
+import ArenaBattlefield from '@/game/pvp/components/ArenaBattlefield.vue'
 
 const route = useRoute()
 const combat = useCombatSessionStore()
@@ -86,6 +87,11 @@ function player(index: number): CombatActorSnapshot {
 }
 
 const players = Array.from({ length: partySize.value }, (_, index) => player(index))
+const arenaPreview = computed(() => route.query.mode === 'arena')
+const arenaEvents = computed(() => combat.events.map(event => {
+  const actorId = <T extends string | null | undefined>(id: T): T | string => id === 'enemy' ? 'ally-1' : id
+  return { ...event, sourceActorId: actorId(event.sourceActorId), targetActorId: actorId(event.targetActorId), actorId: actorId(event.actorId) }
+}))
 const enemy: CombatActorSnapshot = {
   actorId: 'enemy',
   kind: 'Monster',
@@ -173,7 +179,14 @@ onUnmounted(() => {
     <button class="battle-preview__test-control" data-preview-transfer-aggro @click="transferAggro">
       Transfer aggro
     </button>
-    <BattleScreen />
+    <ArenaBattlefield
+      v-if="arenaPreview && combat.snapshot"
+      :battle="{ ...combat.snapshot, enemy: player(1) }"
+      :events="arenaEvents"
+      :active="true"
+      :result-label="null"
+    />
+    <BattleScreen v-else />
   </main>
 </template>
 

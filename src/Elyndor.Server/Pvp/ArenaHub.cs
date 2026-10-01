@@ -64,6 +64,14 @@ public sealed class ArenaHub(
         return ArenaContractMapper.ToResponse(result, contentProvider.GetCurrent().Package);
     }
 
+    public async Task<ArenaCommandResponse> SetAutoAttack(Guid matchId, bool enabled, string commandId)
+    {
+        Guid accountId = GetCommandAccountId();
+        ArenaTestCommandResult result = runtime.SetAutoAttack(accountId, matchId, commandId, enabled);
+        if (result.Succeeded) await NotifyOpponentAsync(accountId, matchId, result.State?.Sequence ?? 0);
+        return ArenaContractMapper.ToResponse(result, contentProvider.GetCurrent().Package);
+    }
+
     private async Task NotifyOpponentAsync(Guid accountId, Guid matchId, long sequence)
     {
         if (runtime.OpponentAccountId(matchId, accountId) is not { } opponent) return;
