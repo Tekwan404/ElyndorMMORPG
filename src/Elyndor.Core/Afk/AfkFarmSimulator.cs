@@ -431,42 +431,81 @@ public static class AfkFarmSimulator
     {
         try
         {
-            ResolvedTalentModifiers? resolved = JsonSerializer.Deserialize<ResolvedTalentModifiers>(
-                json,
-                SnapshotJsonOptions);
-            if (resolved is not null
-                && resolved.Combat is not null
-                && resolved.Abilities is not null
-                && resolved.EventHooks is not null)
+            using JsonDocument document = JsonDocument.Parse(json);
+            JsonElement root = document.RootElement;
+
+            TalentStatModifiers stats = DeserializeTalentProperty<TalentStatModifiers>(root, "stats")
+                ?? new TalentStatModifiers();
+            TalentCombatModifiers combat = DeserializeTalentProperty<TalentCombatModifiers>(root, "combat")
+                ?? new TalentCombatModifiers();
+            HashSet<string> unlockedAbilityIds = DeserializeTalentProperty<HashSet<string>>(
+                    root,
+                    "unlockedAbilityIds")
+                ?? new HashSet<string>(StringComparer.Ordinal);
+            Dictionary<string, TalentAbilityModifiers> abilities =
+                DeserializeTalentProperty<Dictionary<string, TalentAbilityModifiers>>(root, "abilities")
+                ?? new Dictionary<string, TalentAbilityModifiers>(StringComparer.Ordinal);
+            ResolvedTalentEventHook[] eventHooks =
+                DeserializeTalentProperty<ResolvedTalentEventHook[]>(root, "eventHooks") ?? [];
+            TalentModifierDefinition[] deferredHooks =
+                DeserializeTalentProperty<TalentModifierDefinition[]>(root, "deferredHooks") ?? [];
+            TalentProfileModifiers profiles =
+                DeserializeTalentProperty<TalentProfileModifiers>(root, "profiles")
+                ?? new TalentProfileModifiers();
+
+            return new ResolvedTalentModifiers(
+                stats,
+                combat,
+                unlockedAbilityIds,
+                abilities,
+                eventHooks,
+                deferredHooks)
             {
-                return resolved;
-            }
+                Profiles = profiles
+            };
         }
         catch (JsonException)
         {
-            // Fall through to legacy combat-only recovery below.
+            return ResolvedTalentModifiers.Empty;
         }
-
-        return ResolvedTalentModifiers.Empty with
-        {
-            Combat = ResolveTalentCombatModifiers(json)
-        };
     }
 
-    private static TalentCombatModifiers ResolveTalentCombatModifiers(string json)
+    private static T? DeserializeTalentProperty<T>(JsonElement root, string propertyName)
+        where T : class
     {
+        if (!TryGetPropertyIgnoreCase(root, propertyName, out JsonElement value))
+            return null;
+
         try
         {
-            using JsonDocument document = JsonDocument.Parse(json);
-            if (!document.RootElement.TryGetProperty("combat", out JsonElement combat))
-                return new TalentCombatModifiers();
-            return JsonSerializer.Deserialize<TalentCombatModifiers>(combat.GetRawText(), SnapshotJsonOptions)
-                   ?? new TalentCombatModifiers();
+            return JsonSerializer.Deserialize<T>(value.GetRawText(), SnapshotJsonOptions);
         }
         catch (JsonException)
         {
-            return new TalentCombatModifiers();
+            return null;
         }
+        catch (NotSupportedException)
+        {
+            return null;
+        }
+    }
+
+    private static bool TryGetPropertyIgnoreCase(
+        JsonElement root,
+        string propertyName,
+        out JsonElement value)
+    {
+        foreach (JsonProperty property in root.EnumerateObject())
+        {
+            if (!string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            value = property.Value;
+            return true;
+        }
+
+        value = default;
+        return false;
     }
 
     private static int CreateSeed(AfkFarmSimulationRequest request)
