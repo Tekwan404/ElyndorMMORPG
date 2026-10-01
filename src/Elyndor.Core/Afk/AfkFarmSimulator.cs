@@ -79,7 +79,7 @@ public static class AfkFarmSimulator
 
         AfkFarmSimulationSettings settings = request.Settings ?? AfkFarmSimulationSettings.Default;
         if (settings.EncounterRecoveryDelay < TimeSpan.Zero)
-            throw new ArgumentOutOfRangeException(nameof(request), "Encounter recovery delay cannot be negative.");
+            throw new ArgumentOutOfRangeException(nameof(request), "AFK encounter recovery delay cannot be negative.");
 
         ClassProfile classProfile = DeserializeClassProfile(request.Character.ClassProfileJson);
         AutoAttackProfile autoAttack = classProfile.CombatAutoAttack
@@ -192,7 +192,7 @@ public static class AfkFarmSimulator
         CombatRuntimeState? runtime,
         ResourceProfile? resourceProfile,
         AutoAttackProfile baseAutoAttack,
-        IReadOnlyList<AbilityDefinition> farmAbilities,
+        AbilityDefinition[] farmAbilities,
         MonsterDefinition monster,
         TimeSpan available,
         DateTimeOffset fightStartedAtUtc,
@@ -221,7 +221,7 @@ public static class AfkFarmSimulator
                     resourceProfile.CombatRegenPerSecond * (decimal)playerInterval.TotalSeconds);
             }
 
-            if (runtime is not null && farmAbilities.Count > 0)
+            if (runtime is not null && farmAbilities.Length > 0)
             {
                 TryUseFarmAbility(
                     runtime,
@@ -274,7 +274,7 @@ public static class AfkFarmSimulator
 
     private static void TryUseFarmAbility(
         CombatRuntimeState runtime,
-        IReadOnlyList<AbilityDefinition> abilities,
+        AbilityDefinition[] abilities,
         Guid targetActorId,
         DateTimeOffset now,
         IGameRandom random,
@@ -282,15 +282,14 @@ public static class AfkFarmSimulator
     {
         foreach (AbilityDefinition ability in abilities)
         {
+            string commandId = $"afk:{++commandSequence}:{ability.Id}";
             AbilityExecutionResult result = AbilityEngine.Execute(
                 runtime,
                 ability,
-                new AbilityIntent(
-                    $"afk:{++commandSequence}:{ability.Id}",
-                    ability.Id,
-                    targetActorId),
+                new AbilityIntent(commandId, ability.Id, targetActorId),
                 now,
                 random);
+            runtime.ProcessedCommandIds.Remove(commandId);
             if (result.Succeeded)
                 return;
         }
@@ -322,7 +321,9 @@ public static class AfkFarmSimulator
             if (IsSupportedFarmAbility(ability))
                 resolved.Add(ability);
         }
-        return resolved.ToArray();
+        return resolved
+            .OrderByDescending(ability => ability.Cooldown > TimeSpan.Zero)
+            .ToArray();
     }
 
     private static bool IsSupportedFarmAbility(AbilityDefinition ability)
@@ -433,18 +434,38 @@ public static class AfkFarmSimulator
             ResolvedTalentModifiers? resolved = JsonSerializer.Deserialize<ResolvedTalentModifiers>(
                 json,
                 SnapshotJsonOptions);
-            if (resolved is null
-                || resolved.Combat is null
-                || resolved.Abilities is null
-                || resolved.EventHooks is null)
+            if (resolved is not null
+                && resolved.Combat is not null
+                && resolved.Abilities is not null
+                && resolved.EventHooks is not null)
             {
-                return ResolvedTalentModifiers.Empty;
+                return resolved;
             }
-            return resolved;
         }
         catch (JsonException)
         {
-            return ResolvedTalentModifiers.Empty;
+            // Fall through to legacy combat-only recovery below.
+        }
+
+        return ResolvedTalentModifiers.Empty with
+        {
+            Combat = ResolveTalentCombatModifiers(json)
+        };
+    }
+
+    private static TalentCombatModifiers ResolveTalentCombatModifiers(string json)
+    {
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(json);
+            if (!document.RootElement.TryGetProperty("combat", out JsonElement combat))
+                return new TalentCombatModifiers();
+            return JsonSerializer.Deserialize<TalentCombatModifiers>(combat.GetRawText(), SnapshotJsonOptions)
+                   ?? new TalentCombatModifiers();
+        }
+        catch (JsonException)
+        {
+            return new TalentCombatModifiers();
         }
     }
 
