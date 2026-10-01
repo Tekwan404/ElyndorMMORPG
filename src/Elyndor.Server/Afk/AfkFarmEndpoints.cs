@@ -13,6 +13,8 @@ namespace Elyndor.Server.Afk;
 
 public static class AfkFarmEndpoints
 {
+    private const int MaxDurationMinutes = 240;
+
     public static IEndpointRouteBuilder MapAfkFarmEndpoints(this IEndpointRouteBuilder endpoints)
     {
         RouteGroupBuilder group = endpoints.MapGroup("/api/v1/afk")
@@ -29,7 +31,7 @@ public static class AfkFarmEndpoints
         HttpContext context, AfkFarmService service, CancellationToken cancellationToken)
     {
         if (!TryAccount(user, out Guid accountId)) return Results.Unauthorized();
-        if (request.DurationMinutes <= 0)
+        if (request.DurationMinutes is <= 0 or > MaxDurationMinutes)
             return Problem("afk_invalid_request", StatusCodes.Status422UnprocessableEntity, context);
         AfkFarmMutationResult result = await service.StartAsync(accountId, request.LocationId, request.TargetMonsterId,
             TimeSpan.FromMinutes(request.DurationMinutes), cancellationToken);
@@ -42,7 +44,7 @@ public static class AfkFarmEndpoints
         HttpContext context, AfkFarmService service, CancellationToken cancellationToken)
     {
         if (!TryAccount(user, out Guid accountId)) return Results.Unauthorized();
-        if (request.DurationMinutes <= 0)
+        if (request.DurationMinutes is <= 0 or > MaxDurationMinutes)
             return Problem("afk_invalid_request", StatusCodes.Status422UnprocessableEntity, context);
         AfkFarmPreviewResult result = await service.PreviewAsync(accountId, request.LocationId, request.TargetMonsterId,
             TimeSpan.FromMinutes(request.DurationMinutes), cancellationToken);
