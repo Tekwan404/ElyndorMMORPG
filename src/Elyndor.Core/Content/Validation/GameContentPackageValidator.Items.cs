@@ -214,9 +214,6 @@ public static partial class GameContentPackageValidator
             {
                 MonsterDefinition monster = package.Monsters![monsterIndex];
                 string path = $"monsters[{monsterIndex}]";
-                if (monster.XpReward < 0)
-                    errors.Add(new("INVALID_MONSTER_XP_REWARD", path,
-                        $"Monster '{monster.Id}' has a negative XP reward."));
                 if (!string.IsNullOrWhiteSpace(monster.LootTableId)
                     && !lootTableIds.Contains(monster.LootTableId))
                 {
