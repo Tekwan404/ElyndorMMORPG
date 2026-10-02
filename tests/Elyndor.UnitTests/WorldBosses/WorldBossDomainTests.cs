@@ -81,6 +81,56 @@ public sealed class WorldBossDomainTests
             committedAtUtc: Start));
     }
 
+    [Theory]
+    [InlineData(1000, 1000, WorldBossRewardTier.Qualified, 0, 0)]
+    [InlineData(501, 1000, WorldBossRewardTier.Top50, 0, 0)]
+    [InlineData(251, 1000, WorldBossRewardTier.Top75, 0, 0)]
+    [InlineData(151, 1000, WorldBossRewardTier.Top85, 1, 0)]
+    [InlineData(51, 1000, WorldBossRewardTier.Top95, 1, 0)]
+    [InlineData(11, 1000, WorldBossRewardTier.Top99, 2, 0)]
+    [InlineData(5, 1000, WorldBossRewardTier.Top5, 0, 2)]
+    public void LeaderboardRewardPolicyUsesPercentilesAndTopFiveOverride(
+        int rank,
+        int eligibleParticipants,
+        WorldBossRewardTier expectedTier,
+        int expectedChestCount,
+        int expectedEnhancedChestCount)
+    {
+        WorldBossLeaderboardRewardResolution reward =
+            WorldBossLeaderboardRewardPolicy.Resolve(
+                CreateRewardProfile(),
+                rank,
+                eligibleParticipants);
+
+        Assert.Equal(expectedTier, reward.Tier);
+        Assert.Equal(expectedChestCount, reward.ChestCount);
+        Assert.Equal(expectedEnhancedChestCount, reward.EnhancedChestCount);
+    }
+
+    private static WorldBossRewardProfileDefinition CreateRewardProfile() =>
+        new(
+            "TEST_WORLD_BOSS_REWARD",
+            5_000m,
+            200_000,
+            1_000,
+            250,
+            500,
+            [],
+            [
+                new(WorldBossRewardTier.Top50, 50m, 0),
+                new(WorldBossRewardTier.Top75, 75m, 0),
+                new(WorldBossRewardTier.Top85, 85m, 1),
+                new(WorldBossRewardTier.Top95, 95m, 1),
+                new(WorldBossRewardTier.Top99, 99m, 2),
+                new(
+                    WorldBossRewardTier.Top5,
+                    0m,
+                    2,
+                    MaxRank: 5,
+                    LootTableId: "TOP5",
+                    Enhanced: true)
+            ]);
+
     private static WorldBossSpawn CreateSpawn(decimal maxHealth = 1_000_000m) =>
         new(
             Guid.NewGuid(),
