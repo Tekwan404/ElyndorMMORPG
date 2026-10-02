@@ -21,6 +21,11 @@ public sealed record WorldBossActiveSnapshot(
     int Participants,
     decimal PersonalDamage,
     decimal PartyDamage,
+    bool RewardEligible,
+    string? RewardTier,
+    string? NextRewardTier,
+    decimal? NextRewardTierAtDamage,
+    decimal DamageToNextRewardTier,
     string ContentVersion,
     string BalanceVersion);
 
@@ -123,6 +128,10 @@ public sealed class WorldBossReadService(
 
         WorldBossPhaseDefinition? phase = definition?.Phases
             .SingleOrDefault(item => item.Phase == spawn.CurrentPhase);
+        WorldBossRewardProgress rewardProgress = ResolveRewardProgress(
+            content,
+            definition,
+            personalDamage);
 
         return new WorldBossActiveReadResult(
             true,
@@ -140,6 +149,11 @@ public sealed class WorldBossReadService(
                 participants,
                 personalDamage,
                 partyDamage,
+                rewardProgress.Eligible,
+                rewardProgress.CurrentTier,
+                rewardProgress.NextTier,
+                rewardProgress.NextTierAtDamage,
+                rewardProgress.DamageToNextTier,
                 spawn.ContentVersion,
                 spawn.BalanceVersion));
     }
@@ -331,4 +345,43 @@ public sealed class WorldBossReadService(
             currentPartyRank,
             partyDamageValue ?? 0m);
     }
+
+    private static WorldBossRewardProgress ResolveRewardProgress(
+        GameContentSnapshot content,
+        WorldBossDefinition? definition,
+        decimal personalDamage)
+    {
+        if (definition is null
+            || !content.Indexes.WorldBossRewardProfilesById.TryGetValue(
+                definition.RewardProfileId,
+                out WorldBossRewardProfileDefinition? profile))
+        {
+            return new(false, null, null, null, 0m);
+        }
+
+        WorldBossRewardTierThresholdDefinition[] orderedTiers = profile.Tiers
+            .OrderBy(tier => tier.MinimumContribution)
+            .ToArray();
+        WorldBossRewardTierThresholdDefinition? current = orderedTiers
+            .LastOrDefault(tier => personalDamage >= tier.MinimumContribution);
+        WorldBossRewardTierThresholdDefinition? next = orderedTiers
+            .FirstOrDefault(tier => personalDamage < tier.MinimumContribution);
+
+        return new(
+            personalDamage >= profile.MinimumContribution,
+            current?.Tier.ToString(),
+            next?.Tier.ToString(),
+            next?.MinimumContribution,
+            next is null
+                ? 0m
+                : Math.Max(0m, next.MinimumContribution - personalDamage));
+    }
+
+    private sealed record WorldBossRewardProgress(
+        bool Eligible,
+        string? CurrentTier,
+        string? NextTier,
+        decimal? NextTierAtDamage,
+        decimal DamageToNextTier);
+
 }
