@@ -182,6 +182,8 @@ public static class WorldBossEndpoints
             active.BossDefinitionId,
             active.Name,
             active.Level,
+            active.MonsterId,
+            active.ArtId,
             active.CurrentHealth,
             active.MaxHealth,
             active.CurrentPhase,
