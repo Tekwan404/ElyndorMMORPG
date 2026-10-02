@@ -751,7 +751,10 @@ public sealed partial class CombatSession
 
         _primaryEnemy.Actor.SetCurrentHp(currentHealth);
         if (currentHealth > 0)
+        {
+            ProcessGenericEncounterDue(now);
             return false;
+        }
 
         CurrentTimeUtc = now;
         CombatEvent death = new(
