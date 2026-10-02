@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+import { monsterArtUrl } from '@/assets/monsterArt'
 import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
 
 defineEmits<{ open: [] }>()
 
 const worldBoss = useWorldBossStore()
 const boss = computed(() => worldBoss.active)
+const bossArt = computed(() =>
+  monsterArtUrl(boss.value?.artId, boss.value?.monsterId),
+)
 const healthPercent = computed(() => {
   const current = boss.value
   if (!current || current.maxHealth <= 0) return 0
@@ -24,7 +28,10 @@ const formatter = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 })
     data-world-boss-banner
     @click="$emit('open')"
   >
-    <span class="world-boss-banner__crest" aria-hidden="true">W</span>
+    <span class="world-boss-banner__crest" aria-hidden="true">
+      <img v-if="bossArt" :src="bossArt" alt="" />
+      <span v-else>W</span>
+    </span>
     <span class="world-boss-banner__body">
       <span class="world-boss-banner__eyebrow">Мировой босс · ур. {{ boss.level }}</span>
       <strong>{{ boss.name }}</strong>
@@ -71,6 +78,13 @@ const formatter = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 })
   color: #f0c69b;
   font: 800 1.05rem var(--ui-font-display);
   box-shadow: inset 0 0 0 3px rgb(0 0 0 / 22%);
+}
+
+.world-boss-banner__crest img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 18%;
 }
 
 .world-boss-banner__body {
