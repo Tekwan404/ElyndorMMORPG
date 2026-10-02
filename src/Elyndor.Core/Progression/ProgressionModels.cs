@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Quests;
 
@@ -7,11 +8,19 @@ public sealed record LevelXpAnchorDefinition(
     int Level,
     long XpToNext);
 
-public sealed record LevelProgressionDefinition(
-    string Id,
-    int MaxLevel,
-    IReadOnlyList<LevelXpAnchorDefinition> XpAnchors)
+public sealed record LevelProgressionDefinition
 {
+    [JsonConstructor]
+    public LevelProgressionDefinition(
+        string id,
+        int maxLevel,
+        IReadOnlyList<LevelXpAnchorDefinition> xpAnchors)
+    {
+        Id = id;
+        MaxLevel = maxLevel;
+        XpAnchors = xpAnchors;
+    }
+
     public LevelProgressionDefinition(
         string id,
         int maxLevel,
@@ -23,6 +32,10 @@ public sealed record LevelProgressionDefinition(
             BuildLegacyAnchors(maxLevel, baseXpToNext, growthFactor))
     {
     }
+
+    public string Id { get; init; }
+    public int MaxLevel { get; init; }
+    public IReadOnlyList<LevelXpAnchorDefinition> XpAnchors { get; init; }
 
     public long XpToNext(int level)
     {
