@@ -22,6 +22,10 @@ public static partial class GameContentPackageValidator
         HashSet<string> monsterIds = (package.Monsters ?? [])
             .Select(monster => monster.Id)
             .ToHashSet(StringComparer.Ordinal);
+        HashSet<string> reachableMonsterIds = package.Locations
+            .SelectMany(location => location.Encounters ?? [])
+            .Select(encounter => encounter.MonsterId)
+            .ToHashSet(StringComparer.Ordinal);
         Dictionary<string, ItemDefinition> items = (package.Items ?? [])
             .ToDictionary(item => item.Id, StringComparer.Ordinal);
 
@@ -122,27 +126,41 @@ public static partial class GameContentPackageValidator
                 switch (objective.Type)
                 {
                     case QuestObjectiveType.KillMonster:
-                        if (!monsterIds.Contains(objective.TargetId)
+                    {
+                        string[] acceptedTargetIds = objective.AcceptedTargetIds()
+                            .ToArray();
+                        bool targetsValid = acceptedTargetIds.Length > 0
+                            && acceptedTargetIds.All(targetId =>
+                                !string.IsNullOrWhiteSpace(targetId)
+                                && monsterIds.Contains(targetId))
+                            && acceptedTargetIds.Distinct(StringComparer.Ordinal).Count()
+                                == acceptedTargetIds.Length;
+                        bool hasReachableTarget = acceptedTargetIds.Any(
+                            reachableMonsterIds.Contains);
+                        if (!targetsValid
+                            || !hasReachableTarget
                             || objective.ConsumeOnClaim)
                         {
                             errors.Add(new(
                                 "INVALID_QUEST_KILL_OBJECTIVE",
                                 objectivePath,
-                                $"Kill objective '{objective.Id}' references an invalid monster or consumption rule."));
+                                $"Kill objective '{objective.Id}' must reference unique known monsters with at least one reachable encounter and cannot consume on claim."));
                         }
                         break;
+                    }
 
                     case QuestObjectiveType.CollectItem:
                         if (!items.TryGetValue(
                                 objective.TargetId,
                                 out ItemDefinition? item)
                             || !item.Stackable
-                            || item.Type == ItemType.Equipment)
+                            || item.Type == ItemType.Equipment
+                            || objective.AlternativeTargetIds is { Count: > 0 })
                         {
                             errors.Add(new(
                                 "INVALID_QUEST_COLLECT_OBJECTIVE",
                                 objectivePath,
-                                $"Collect objective '{objective.Id}' must reference a stackable non-equipment item."));
+                                $"Collect objective '{objective.Id}' must reference one stackable non-equipment item."));
                         }
                         break;
                 }
