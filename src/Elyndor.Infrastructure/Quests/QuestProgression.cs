@@ -73,13 +73,14 @@ public static class QuestProgression
             bool changed = false;
             foreach (QuestObjectiveDefinition objective in quest.Objectives)
             {
-                if (objective.Type != QuestObjectiveType.KillMonster
-                    || !defeatedCounts.TryGetValue(
-                        objective.TargetId,
-                        out int defeatedCount))
-                {
+                if (objective.Type != QuestObjectiveType.KillMonster)
                     continue;
-                }
+
+                int defeatedCount = objective
+                    .AcceptedMonsterIds()
+                    .Sum(monsterId => defeatedCounts.GetValueOrDefault(monsterId));
+                if (defeatedCount == 0)
+                    continue;
 
                 int current = progress.GetValueOrDefault(objective.Id);
                 int updated = Math.Min(
@@ -129,5 +130,16 @@ public static class QuestProgression
         }
 
         return new(ready, completedLegacyContracts);
+    }
+}
+
+
+internal static class QuestObjectiveDefinitionExtensions
+{
+    public static IEnumerable<string> AcceptedMonsterIds(this QuestObjectiveDefinition objective)
+    {
+        yield return objective.TargetId;
+        foreach (string targetId in objective.AlternativeTargetIds ?? [])
+            yield return targetId;
     }
 }
