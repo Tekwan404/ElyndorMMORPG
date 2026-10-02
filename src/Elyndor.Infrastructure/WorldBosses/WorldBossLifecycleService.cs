@@ -23,8 +23,6 @@ public sealed class WorldBossLifecycleService(
     IContentSnapshotProvider contentProvider,
     TimeProvider time)
 {
-    private const long LifecycleAdvisoryLockId = 5_723_901_441L;
-
     public Task<WorldBossActivationResult> ActivateAsync(
         string bossDefinitionId,
         CancellationToken cancellationToken)
@@ -114,7 +112,7 @@ public sealed class WorldBossLifecycleService(
 
     private Task<int> AcquireLifecycleLockAsync(CancellationToken cancellationToken) =>
         db.Database.ExecuteSqlRawAsync(
-            $"SELECT pg_advisory_xact_lock({LifecycleAdvisoryLockId})",
+            "SELECT pg_advisory_xact_lock(5723901441)",
             cancellationToken);
 
     private Task<WorldBossSpawn?> ActiveForUpdateAsync(CancellationToken cancellationToken) =>
