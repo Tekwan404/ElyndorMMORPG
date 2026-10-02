@@ -25,6 +25,7 @@ public sealed class ContentValidationPipeline
             new EnhancementCatalystSourceValidator(),
             new MerchantValidator(),
             new MonsterValidator(),
+            new CombatBalanceValidator(),
             new EncounterContentValidator(),
             new WorldValidator(),
             new DungeonValidator()
@@ -263,6 +264,12 @@ public sealed class MonsterValidator : IContentValidationStage
 {
     public void Validate(ContentValidationContext context) =>
         GameContentPackageValidator.ValidateMonsterDefinitions(context.Package, context.Errors);
+}
+
+public sealed class CombatBalanceValidator : IContentValidationStage
+{
+    public void Validate(ContentValidationContext context) =>
+        GameContentPackageValidator.ValidateCombatBalance(context.Package, context.Errors);
 }
 
 public sealed class WorldValidator : IContentValidationStage
