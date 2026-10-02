@@ -19,6 +19,38 @@ public sealed class WorldBossDamageServiceTests(PostgresFixture postgres) : IAsy
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
+    public async Task DefeatPublishesRealtimeEventAfterDurableCommit()
+    {
+        (Guid spawnId, Guid characterId) = await SeedAsync(maxHealth: 2_000m);
+        var publisher = new CapturingPublisher();
+
+        await using var db = postgres.CreateDbContext();
+        var service = new WorldBossDamageService(
+            db,
+            new FixedTime(Now.AddMinutes(1)),
+            updatePublisher: publisher);
+        WorldBossDamageCommitResult result = await service.ApplyDamageAsync(
+            spawnId,
+            characterId,
+            Guid.NewGuid(),
+            partyId: null,
+            requestedDamage: 2_000m,
+            mutationId: Guid.NewGuid(),
+            cancellationToken: default);
+
+        Assert.True(result.DefeatedNow);
+        Assert.Equal(spawnId, publisher.DefeatedSpawnId);
+        Assert.Equal(Now.AddMinutes(1), publisher.DefeatedAtUtc);
+        Assert.Single(publisher.ParticipantAccountIds);
+
+        await using var verify = postgres.CreateDbContext();
+        WorldBossSpawn spawn = await verify.WorldBossSpawns.SingleAsync(
+            candidate => candidate.Id == spawnId);
+        Assert.Equal(WorldBossSpawnStatus.Defeated, spawn.Status);
+        Assert.Equal(0m, spawn.CurrentHealth);
+    }
+
+    [Fact]
     public async Task OverkillPersistsOnlyActualHealthRemovedAndDefeatsOnce()
     {
         (Guid spawnId, Guid characterId) = await SeedAsync(maxHealth: 2_000m);
@@ -308,6 +340,32 @@ public sealed class WorldBossDamageServiceTests(PostgresFixture postgres) : IAsy
             balanceVersion: "test-balance"));
         await db.SaveChangesAsync();
         return (spawnId, characterId);
+    }
+
+    private sealed class CapturingPublisher : IWorldBossUpdatePublisher
+    {
+        public Guid? DefeatedSpawnId { get; private set; }
+        public DateTimeOffset? DefeatedAtUtc { get; private set; }
+        public IReadOnlyCollection<Guid> ParticipantAccountIds { get; private set; } = [];
+
+        public Task PublishDefeatedAsync(
+            Guid spawnId,
+            DateTimeOffset defeatedAtUtc,
+            IReadOnlyCollection<Guid> participantAccountIds,
+            CancellationToken cancellationToken)
+        {
+            DefeatedSpawnId = spawnId;
+            DefeatedAtUtc = defeatedAtUtc;
+            ParticipantAccountIds = participantAccountIds;
+            return Task.CompletedTask;
+        }
+
+        public Task PublishSettledAsync(
+            Guid spawnId,
+            DateTimeOffset settledAtUtc,
+            IReadOnlyCollection<WorldBossRewardDelivery> deliveries,
+            CancellationToken cancellationToken) =>
+            Task.CompletedTask;
     }
 
     private sealed class FixedTime(DateTimeOffset now) : TimeProvider
