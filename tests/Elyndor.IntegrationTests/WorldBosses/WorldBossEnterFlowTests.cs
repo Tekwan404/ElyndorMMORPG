@@ -3,7 +3,6 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Elyndor.Contracts.Characters;
 using Elyndor.Contracts.Combat;
-using Elyndor.Core.Combat.Encounters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Core.WorldBosses;
@@ -29,9 +28,10 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
-    public async Task ConfiguredWorldBossEnterCreatesBoundPveSessionAndDamageHitsGlobalHealth()
+    public async Task BundledAshArchonEnterCreatesBoundPveSessionAndDamageHitsGlobalHealth()
     {
-        GameContentPackage package = await ConfiguredPackageAsync();
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
         Guid accountId = Guid.CreateVersion7();
         const long telegramUserId = 9751;
 
@@ -58,7 +58,8 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
             (await response.Content.ReadFromJsonAsync<CombatUpdateResponse>())!;
         Assert.True(entered.Succeeded, entered.ErrorCode);
         Assert.NotNull(entered.Snapshot);
-        Assert.Equal(1_000_000m, entered.Snapshot!.Enemy.MaxHp);
+        Assert.Equal("WORLD_BOSS_ASH_ARCHON_L30", entered.Snapshot!.Enemy.DefinitionId);
+        Assert.Equal(1_000_000m, entered.Snapshot.Enemy.MaxHp);
         Assert.Equal(1_000_000m, entered.Snapshot.Enemy.Hp);
 
         IssuedAccessToken token = IssueToken(factory, accountId, telegramUserId);
@@ -109,13 +110,20 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
     }
 
     [Fact]
-    public async Task BundledAshArchonFailsClosedUntilRealEncounterProfileIsAuthored()
+    public async Task MissingWorldBossEncounterProfileStillFailsClosed()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
-        Assert.DoesNotContain(
-            package.Encounters ?? [],
-            encounter => encounter.Id == "WB_ASH_ARCHON_V1");
+        WorldBossDefinition ash = package.WorldBosses!.Single(
+            candidate => candidate.Id == "WORLD_BOSS_ASH_ARCHON");
+        package = package with
+        {
+            WorldBosses = package.WorldBosses!
+                .Select(candidate => candidate.Id == ash.Id
+                    ? candidate with { EncounterProfileId = "WB_MISSING_PROFILE" }
+                    : candidate)
+                .ToArray()
+        };
 
         Guid accountId = Guid.CreateVersion7();
         const long telegramUserId = 9752;
@@ -150,31 +158,127 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
         Assert.Empty(await verify.ActiveCombatSessions.ToArrayAsync());
     }
 
+    [Fact]
+    public async Task LiveWorldBossSessionPullsGlobalHealthPhaseAndDefeatBeforeCommand()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        Guid accountId = Guid.CreateVersion7();
+        const long telegramUserId = 9753;
+        await SeedAccountAsync(accountId, telegramUserId);
+
+        await using WebApplicationFactory<Program> factory = CreateFactory(package);
+        using HttpClient client = CreateAuthenticatedClient(factory, accountId, telegramUserId);
+        CharacterResponse character = await CreateCharacterAsync(client, "BossSync");
+
+        Guid spawnId;
+        await using (AsyncServiceScope scope = factory.Services.CreateAsyncScope())
+        {
+            WorldBossActivationResult activation = await scope.ServiceProvider
+                .GetRequiredService<WorldBossLifecycleService>()
+                .ActivateAsync("WORLD_BOSS_ASH_ARCHON", default);
+            Assert.True(activation.Succeeded, activation.ErrorCode);
+            spawnId = activation.Spawn!.Id;
+        }
+
+        HttpResponseMessage response = await client.PostAsync(
+            $"/api/v1/world-boss/{spawnId:D}/enter",
+            content: null);
+        response.EnsureSuccessStatusCode();
+        CombatUpdateResponse entered =
+            (await response.Content.ReadFromJsonAsync<CombatUpdateResponse>())!;
+        Assert.NotNull(entered.Snapshot);
+
+        IssuedAccessToken token = IssueToken(factory, accountId, telegramUserId);
+        await using HubConnection hub = CreateHubConnection(factory, token);
+        await hub.StartAsync();
+
+        try
+        {
+            CombatUpdateResponse stopped = await hub.InvokeAsync<CombatUpdateResponse>(
+                "StopAutoAttack",
+                entered.Snapshot!.SessionId,
+                "world-boss-sync-stop");
+            Assert.True(stopped.Succeeded, stopped.ErrorCode);
+
+            decimal currentGlobalHealth;
+            await using (GameDbContext read = postgres.CreateDbContext())
+            {
+                currentGlobalHealth = (await read.WorldBossSpawns.SingleAsync(
+                    spawn => spawn.Id == spawnId)).CurrentHealth;
+            }
+
+            decimal damageToPhaseTwo = currentGlobalHealth - 740_000m;
+            Assert.True(damageToPhaseTwo > 0);
+            await using (AsyncServiceScope scope = factory.Services.CreateAsyncScope())
+            {
+                WorldBossDamageCommitResult phaseDamage = await scope.ServiceProvider
+                    .GetRequiredService<WorldBossDamageService>()
+                    .ApplyDamageAsync(
+                        spawnId,
+                        character.Id,
+                        entered.Snapshot.SessionId,
+                        partyId: null,
+                        requestedDamage: damageToPhaseTwo,
+                        mutationId: Guid.CreateVersion7(),
+                        cancellationToken: default);
+                Assert.True(phaseDamage.Succeeded, phaseDamage.ErrorCode);
+                Assert.Equal(2, phaseDamage.Phase);
+                Assert.Equal(740_000m, phaseDamage.CurrentHealth);
+            }
+
+            CombatUpdateResponse phaseSynced = await hub.InvokeAsync<CombatUpdateResponse>(
+                "StopAutoAttack",
+                entered.Snapshot.SessionId,
+                "world-boss-sync-phase");
+            Assert.True(phaseSynced.Succeeded, phaseSynced.ErrorCode);
+            Assert.Equal(740_000m, phaseSynced.Snapshot!.Enemy.Hp);
+            Assert.Contains("ARCHON_STAR_FRACTURE", phaseSynced.Snapshot.Enemy.KnownAbilityIds);
+
+            await using (AsyncServiceScope scope = factory.Services.CreateAsyncScope())
+            {
+                WorldBossDamageCommitResult defeat = await scope.ServiceProvider
+                    .GetRequiredService<WorldBossDamageService>()
+                    .ApplyDamageAsync(
+                        spawnId,
+                        character.Id,
+                        entered.Snapshot.SessionId,
+                        partyId: null,
+                        requestedDamage: 2_000_000m,
+                        mutationId: Guid.CreateVersion7(),
+                        cancellationToken: default);
+                Assert.True(defeat.Succeeded, defeat.ErrorCode);
+                Assert.True(defeat.DefeatedNow);
+            }
+
+            CombatUpdateResponse defeated = await hub.InvokeAsync<CombatUpdateResponse>(
+                "StopAutoAttack",
+                entered.Snapshot.SessionId,
+                "world-boss-sync-defeat");
+            Assert.True(defeated.Succeeded, defeated.ErrorCode);
+            Assert.Equal("Victory", defeated.Snapshot!.Status);
+            Assert.Equal(0m, defeated.Snapshot.Enemy.Hp);
+            Assert.Null(defeated.Reward);
+
+            await using GameDbContext verify = postgres.CreateDbContext();
+            Assert.Empty(await verify.CombatRewardGrants.ToArrayAsync());
+        }
+        finally
+        {
+            if (hub.State == HubConnectionState.Connected)
+            {
+                await hub.InvokeAsync<CombatUpdateResponse>(
+                    "LeaveCombat",
+                    "world-boss-sync-cleanup");
+            }
+        }
+    }
+
     private async Task SeedAccountAsync(Guid accountId, long telegramUserId)
     {
         await using GameDbContext db = postgres.CreateDbContext();
         db.Accounts.Add(new Account(accountId, telegramUserId, DateTimeOffset.UtcNow));
         await db.SaveChangesAsync();
-    }
-
-    private static async Task<GameContentPackage> ConfiguredPackageAsync()
-    {
-        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
-            Path.GetFullPath("content/package.json"));
-        GameContentIndexes indexes = GameContentIndexes.For(package);
-        EncounterDefinition encounter = (package.Encounters ?? [])
-            .First(candidate => indexes.MonstersById.ContainsKey(candidate.MonsterId));
-        WorldBossDefinition ash = package.WorldBosses!
-            .Single(candidate => candidate.Id == "WORLD_BOSS_ASH_ARCHON");
-
-        return package with
-        {
-            WorldBosses = package.WorldBosses!
-                .Select(candidate => candidate.Id == ash.Id
-                    ? candidate with { EncounterProfileId = encounter.Id }
-                    : candidate)
-                .ToArray()
-        };
     }
 
     private WebApplicationFactory<Program> CreateFactory(GameContentPackage package) =>
