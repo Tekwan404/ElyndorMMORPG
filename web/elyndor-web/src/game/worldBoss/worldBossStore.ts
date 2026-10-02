@@ -32,6 +32,7 @@ export interface WorldBossActiveSnapshot {
   rewardPercentile: number
   rewardChestCount: number
   rewardEnhancedChestCount: number
+  minimumContribution: number
   rewardEligible: boolean
   rewardTier: string | null
   nextRewardTier: string | null
