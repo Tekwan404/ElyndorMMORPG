@@ -32,7 +32,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
     [Fact]
     public async Task VictoryLevelUpFullyHealsToNewAuthoritativeMaxHp()
     {
-        (Guid characterId, _) = await CreateCharacterAsync(90, 10);
+        (Guid characterId, _) = await CreateCharacterAsync(390, 10);
         await using GameDbContext context = postgres.CreateDbContext();
         CombatRewardService service = await CreateServiceAsync(context);
 
@@ -92,9 +92,9 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
             ?? [];
 
         Assert.True(result.Granted);
-        Assert.Equal(100, result.XpEarned);
+        Assert.Equal(123, result.XpEarned);
         Assert.Equal(9, result.GoldEarned);
-        Assert.Equal(100, character.Experience);
+        Assert.Equal(123, character.Experience);
         Assert.Equal(9, character.Gold);
         Assert.DoesNotContain(result.Items, item => item.ItemId == "WOLF_HIDE");
         Assert.DoesNotContain(result.Items, item => item.ItemId == "BOAR_HIDE");
@@ -103,7 +103,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         Assert.Equal(2, sources.Length);
         Assert.Equal(["FOREST_WOLF_L1", "FOREST_BOAR_L2"], sources.Select(source => source.MonsterId));
         Assert.Equal([0, 1], sources.Select(source => source.EncounterOrder));
-        Assert.Equal([40, 60], sources.Select(source => source.XpEarned));
+        Assert.Equal([40, 83], sources.Select(source => source.XpEarned));
         Assert.Equal([4, 5], sources.Select(source => source.GoldEarned));
         Assert.All(sources, source => Assert.NotEmpty(source.Items));
     }
@@ -131,7 +131,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         Assert.False(replay.Granted);
         Assert.Equal(first.XpEarned, replay.XpEarned);
         Assert.Equal(first.GoldEarned, replay.GoldEarned);
-        Assert.Equal(100, character.Experience);
+        Assert.Equal(123, character.Experience);
         Assert.Equal(9, character.Gold);
         Assert.Equal(1, await context.CombatRewardGrants.CountAsync());
 
@@ -282,7 +282,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
 
         Assert.True(first.Granted);
         Assert.False(replay.Granted);
-        Assert.Equal(8_500, first.XpEarned);
+        Assert.Equal(30_094, first.XpEarned);
         Assert.Equal(90, first.GoldEarned);
         Assert.Contains(
             "CONTRACT_BROODMOTHER_GATE",
@@ -317,7 +317,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
             CancellationToken.None);
 
         Assert.True(result.Granted);
-        Assert.Equal(8_500, result.XpEarned);
+        Assert.Equal(30_094, result.XpEarned);
         Assert.Equal(90, result.GoldEarned);
         Assert.Empty(result.CompletedContractIds ?? []);
         Assert.Empty(await context.CharacterContractCompletions.AsNoTracking().ToArrayAsync());
