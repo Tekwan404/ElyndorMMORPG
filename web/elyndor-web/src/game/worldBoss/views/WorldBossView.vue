@@ -52,6 +52,15 @@ const rewardChestLabel = computed(() => {
   return 'Без сундука'
 })
 
+const rewardLadder = [
+  { tier: 'Top50', label: 'TOP 50%', reward: 'Без сундука', note: 'XP + золото' },
+  { tier: 'Top75', label: 'TOP 75%', reward: 'Без сундука', note: 'XP + золото' },
+  { tier: 'Top85', label: 'TOP 85%', reward: '1 обычный', note: 'Сундук Архонта' },
+  { tier: 'Top95', label: 'TOP 95%', reward: '1 обычный', note: 'Сундук Архонта' },
+  { tier: 'Top99', label: 'TOP 99%', reward: '2 обычных', note: '2 независимых roll' },
+  { tier: 'Top5', label: 'TOP 5', reward: '2 усиленных', note: 'Повышенный шанс Unique' },
+] as const
+
 const formatter = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 })
 
 function formatNumber(value: number): string {
@@ -63,7 +72,11 @@ function formatRewardTier(tier: string | null): string {
   if (tier === 'Qualified') return 'Участник'
   if (tier === 'Top5') return 'TOP 5'
   const match = /^Top(\d+)$/.exec(tier)
-  return match ? `TOP ${match[1]}` : tier
+  return match ? `TOP ${match[1]}%` : tier
+}
+
+function isRewardStepCurrent(tier: string): boolean {
+  return boss.value?.rewardTier === tier
 }
 
 function close(): void {
@@ -171,7 +184,13 @@ onUnmounted(() => {
               <div>
                 <strong>{{ item.name }}</strong>
                 <span>{{ item.rarity }}<template v-if="item.quantity > 1"> · ×{{ item.quantity }}</template></span>
-                <small>Предмет уже сохранён в инвентарь или ожидающую добычу.</small>
+                <small v-if="item.generatedItem">
+                  Ур. {{ item.generatedItem.itemLevel }}
+                  · Power {{ formatNumber(item.generatedItem.itemPower) }}
+                  · roll {{ item.generatedItem.rollQuality.toFixed(1) }}%
+                  <template v-if="item.generatedItem.stars > 0"> · {{ '★'.repeat(item.generatedItem.stars) }}</template>
+                </small>
+                <small>{{ item.pending ? 'Ожидает места в инвентаре.' : 'Предмет сохранён в инвентарь.' }}</small>
               </div>
             </article>
           </section>
@@ -243,6 +262,38 @@ onUnmounted(() => {
         </p>
         <p v-else>
           Набери минимальный вклад, чтобы попасть в наградный рейтинг.
+        </p>
+      </section>
+
+      <section class="reward-ladder">
+        <header class="reward-ladder__header">
+          <div>
+            <small>Награды за итоговый рейтинг</small>
+            <h2>Чем выше вклад — тем сильнее добыча</h2>
+          </div>
+          <span>мин. 5 000 урона</span>
+        </header>
+
+        <div class="reward-ladder__grid">
+          <article
+            v-for="step in rewardLadder"
+            :key="step.tier"
+            class="reward-ladder__step"
+            :class="{ 'reward-ladder__step--current': isRewardStepCurrent(step.tier) }"
+            :data-tier="step.tier"
+          >
+            <div>
+              <strong>{{ step.label }}</strong>
+              <span v-if="isRewardStepCurrent(step.tier)">Сейчас ты здесь</span>
+            </div>
+            <b>{{ step.reward }}</b>
+            <small>{{ step.note }}</small>
+          </article>
+        </div>
+
+        <p class="reward-ladder__foot">
+          Категория пересчитывается по месту среди квалифицированных участников.
+          <strong>TOP 5</strong> имеет приоритет и получает усиленную добычу.
         </p>
       </section>
 
@@ -380,6 +431,7 @@ onUnmounted(() => {
 
 .boss-card,
 .reward-progress,
+.reward-ladder,
 .leaderboard,
 .result-card {
   border: 1px solid var(--ui-color-border);
@@ -498,6 +550,7 @@ onUnmounted(() => {
 }
 
 .reward-progress,
+.reward-ladder,
 .leaderboard {
   padding: var(--ui-space-4);
 }
@@ -534,6 +587,99 @@ onUnmounted(() => {
   margin: var(--ui-space-2) 0 0;
   color: var(--ui-color-text-secondary);
   font-size: var(--ui-font-size-sm);
+}
+
+.reward-ladder__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  margin-bottom: var(--ui-space-3);
+}
+
+.reward-ladder__header small,
+.reward-ladder__step small {
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+}
+
+.reward-ladder__header h2 {
+  margin: 2px 0 0;
+  font: 700 1.02rem var(--ui-font-display);
+}
+
+.reward-ladder__header > span {
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+  white-space: nowrap;
+}
+
+.reward-ladder__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--ui-space-2);
+}
+
+.reward-ladder__step {
+  display: grid;
+  min-height: 88px;
+  gap: 4px;
+  padding: var(--ui-space-3);
+  border: 1px solid rgb(255 255 255 / 6%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(0 0 0 / 20%);
+}
+
+.reward-ladder__step > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-2);
+}
+
+.reward-ladder__step > div strong {
+  color: #d9c5ad;
+  font: 800 .9rem var(--ui-font-display);
+}
+
+.reward-ladder__step > div span {
+  color: var(--ui-color-gold);
+  font-size: .62rem;
+  font-weight: 800;
+  text-align: right;
+}
+
+.reward-ladder__step > b {
+  color: var(--ui-color-text-secondary);
+  font-size: var(--ui-font-size-sm);
+}
+
+.reward-ladder__step--current {
+  border-color: color-mix(in srgb, var(--ui-color-gold) 62%, var(--ui-color-border));
+  background:
+    radial-gradient(circle at 100% 0%, rgb(203 153 77 / 16%), transparent 58%),
+    rgb(20 17 13 / 72%);
+  box-shadow: inset 0 0 0 1px rgb(209 170 98 / 9%);
+}
+
+.reward-ladder__step[data-tier='Top5'] {
+  border-color: rgb(178 102 58 / 28%);
+}
+
+.reward-ladder__step[data-tier='Top5'] > div strong,
+.reward-ladder__step[data-tier='Top99'] > div strong {
+  color: var(--ui-color-gold);
+}
+
+.reward-ladder__foot {
+  margin: var(--ui-space-3) 0 0;
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+  line-height: 1.45;
+}
+
+.reward-ladder__foot strong {
+  color: var(--ui-color-gold);
 }
 
 .leaderboard header {
@@ -798,12 +944,20 @@ onUnmounted(() => {
     grid-template-columns: repeat(3, 1fr);
   }
 
+  .reward-ladder__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .leaderboard__columns {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 390px) {
+  .reward-ladder__grid {
+    grid-template-columns: 1fr;
+  }
+
   .boss-card__metrics {
     grid-template-columns: 1fr;
   }
