@@ -28,6 +28,11 @@ public sealed record WorldBossSettlementCharacterResult(
     Guid CharacterId,
     decimal Contribution,
     WorldBossRewardTier Tier,
+    int Rank,
+    int EligibleParticipants,
+    decimal Percentile,
+    int ChestCount,
+    int EnhancedChestCount,
     int Experience,
     int BossGold,
     int ChestGold,
@@ -153,6 +158,8 @@ public sealed class WorldBossSettlementService(
                     cancellationToken);
         WorldBossContribution[] eligible = contributions
             .Where(contribution => contribution.Damage >= rewardProfile.MinimumContribution)
+            .OrderByDescending(contribution => contribution.Damage)
+            .ThenBy(contribution => contribution.CharacterId)
             .ToArray();
 
         Dictionary<Guid, WorldBossRewardSettlement> existing =
@@ -164,8 +171,9 @@ public sealed class WorldBossSettlementService(
                     cancellationToken);
 
         List<WorldBossSettlementCharacterResult> rewards = [];
-        foreach (WorldBossContribution contribution in eligible)
+        for (var eligibleIndex = 0; eligibleIndex < eligible.Length; eligibleIndex++)
         {
+            WorldBossContribution contribution = eligible[eligibleIndex];
             if (existing.TryGetValue(
                     contribution.CharacterId,
                     out WorldBossRewardSettlement? alreadySettled))
@@ -179,25 +187,52 @@ public sealed class WorldBossSettlementService(
                     $"SELECT * FROM game.characters WHERE \"Id\" = {contribution.CharacterId} FOR UPDATE")
                 .SingleAsync(cancellationToken);
 
-            WorldBossRewardTier tier = ResolveTier(
-                contribution.Damage,
-                rewardProfile);
+            WorldBossLeaderboardRewardResolution leaderboardReward =
+                ResolveLeaderboardReward(
+                    contribution.Damage,
+                    eligibleIndex + 1,
+                    eligible.Length,
+                    rewardProfile);
+            WorldBossRewardTier tier = leaderboardReward.Tier;
             Guid lootSeed = CreateLootSeed(spawnId, character.Id);
             var random = new SeededGameRandom(SeedToInt32(lootSeed));
-            int chestGold = RollInclusive(
-                rewardProfile.ChestGoldMin,
-                rewardProfile.ChestGoldMax,
-                random);
-            int totalGold = checked(rewardProfile.BossGold + chestGold);
 
-            LootRoll[] chestLoot = LootRoller.Roll(chestTable, random)
-                .Select(roll => roll with { SourceQualityProfileId = "BOSS" })
-                .ToArray();
-            if (chestLoot.Length == 0)
+            int totalChestCount = checked(
+                leaderboardReward.ChestCount + leaderboardReward.EnhancedChestCount);
+            int chestGold = 0;
+            List<LootRoll> chestLoot = [];
+            LootTableDefinition rewardChestTable = chestTable;
+            if (totalChestCount > 0
+                && !string.IsNullOrWhiteSpace(leaderboardReward.LootTableId))
             {
-                throw new InvalidOperationException(
-                    $"World boss chest '{chestTable.Id}' did not produce an item.");
+                if (!content.Indexes.LootTablesById.TryGetValue(
+                        leaderboardReward.LootTableId,
+                        out rewardChestTable))
+                {
+                    throw new InvalidOperationException(
+                        $"World boss reward chest '{leaderboardReward.LootTableId}' is missing from content.");
+                }
             }
+
+            for (var chestIndex = 0; chestIndex < totalChestCount; chestIndex++)
+            {
+                chestGold = checked(chestGold + RollInclusive(
+                    rewardProfile.ChestGoldMin,
+                    rewardProfile.ChestGoldMax,
+                    random));
+                LootRoll[] chestRolls = LootRoller.Roll(rewardChestTable, random)
+                    .Select(roll => roll with { SourceQualityProfileId = "BOSS" })
+                    .ToArray();
+                if (chestRolls.Length == 0)
+                {
+                    throw new InvalidOperationException(
+                        $"World boss chest '{rewardChestTable.Id}' did not produce an item.");
+                }
+
+                chestLoot.AddRange(chestRolls);
+            }
+
+            int totalGold = checked(rewardProfile.BossGold + chestGold);
 
             CharacterProgressionResult progression =
                 CharacterProgression.GrantExperience(
@@ -226,7 +261,7 @@ public sealed class WorldBossSettlementService(
             }
 
             List<WorldBossLootItemResult> itemResults = [];
-            for (var ordinal = 0; ordinal < chestLoot.Length; ordinal++)
+            for (var ordinal = 0; ordinal < chestLoot.Count; ordinal++)
             {
                 LootRoll roll = chestLoot[ordinal];
                 WorldBossGrantedItemSnapshot granted = await GrantItemAsync(
@@ -254,7 +289,12 @@ public sealed class WorldBossSettlementService(
             WorldBossLootResult lootResult = new(
                 rewardProfile.BossGold,
                 chestGold,
-                itemResults);
+                itemResults,
+                leaderboardReward.Rank,
+                leaderboardReward.EligibleParticipants,
+                leaderboardReward.Percentile,
+                leaderboardReward.ChestCount,
+                leaderboardReward.EnhancedChestCount);
             var settlement = new WorldBossRewardSettlement(
                 spawnId,
                 character.Id,
@@ -272,6 +312,11 @@ public sealed class WorldBossSettlementService(
                 character.Id,
                 contribution.Damage,
                 tier,
+                leaderboardReward.Rank,
+                leaderboardReward.EligibleParticipants,
+                leaderboardReward.Percentile,
+                leaderboardReward.ChestCount,
+                leaderboardReward.EnhancedChestCount,
                 rewardProfile.BossExperience,
                 rewardProfile.BossGold,
                 chestGold,
@@ -576,11 +621,35 @@ public sealed class WorldBossSettlementService(
             settlement.CharacterId,
             settlement.ContributionScore,
             settlement.RewardTier,
+            loot.Rank,
+            loot.EligibleParticipants,
+            loot.Percentile,
+            loot.ChestCount,
+            loot.EnhancedChestCount,
             settlement.Experience,
             loot.BossGold,
             loot.ChestGold,
             loot.Items,
             settlement.SettledAtUtc);
+    }
+
+    private static WorldBossLeaderboardRewardResolution ResolveLeaderboardReward(
+        decimal contribution,
+        int rank,
+        int eligibleParticipants,
+        WorldBossRewardProfileDefinition profile)
+    {
+        if (profile.LeaderboardTiers is { Count: > 0 })
+            return WorldBossLeaderboardRewardPolicy.Resolve(profile, rank, eligibleParticipants);
+
+        return new(
+            ResolveTier(contribution, profile),
+            rank,
+            eligibleParticipants,
+            WorldBossLeaderboardRewardPolicy.CalculatePercentile(rank, eligibleParticipants),
+            1,
+            0,
+            null);
     }
 
     private static WorldBossRewardTier ResolveTier(
