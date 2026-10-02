@@ -71,6 +71,8 @@ public static class DependencyInjection
         builder.Services.AddScoped<WorldBossLifecycleService>();
         builder.Services.AddScoped<WorldBossReadService>();
         builder.Services.AddScoped<WorldBossEnterService>();
+        builder.Services.AddScoped<WorldBossSettlementService>();
+        builder.Services.AddHostedService<WorldBossSettlementWorker>();
         builder.Services.TryAddEnumerable(
             ServiceDescriptor.Singleton<ICombatResultObserver, WorldBossCombatDamageObserver>());
         builder.Services.TryAddEnumerable(
