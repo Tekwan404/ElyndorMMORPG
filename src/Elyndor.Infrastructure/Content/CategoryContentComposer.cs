@@ -245,6 +245,10 @@ internal static class CategoryContentComposer
             WorldBosses = ContentCompositionRules.MergeOptionalByKey(
                 package.WorldBosses,
                 fragment.WorldBosses,
+                item => item.Id),
+            WorldBossRewardProfiles = ContentCompositionRules.MergeOptionalByKey(
+                package.WorldBossRewardProfiles,
+                fragment.WorldBossRewardProfiles,
                 item => item.Id)
         };
     }
@@ -411,7 +415,8 @@ internal static class CategoryContentComposer
         IReadOnlyList<DungeonDefinition>? Dungeons = null,
         IReadOnlyList<QuestDefinition>? Quests = null,
         ItemizationDefinition? Itemization = null,
-        IReadOnlyList<WorldBossDefinition>? WorldBosses = null);
+        IReadOnlyList<WorldBossDefinition>? WorldBosses = null,
+        IReadOnlyList<WorldBossRewardProfileDefinition>? WorldBossRewardProfiles = null);
 
     private sealed record TalentBranchReplacement(
         string TreeId,
