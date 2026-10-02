@@ -144,6 +144,7 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<DungeonEncounterMember> DungeonEncounterMembers => Set<DungeonEncounterMember>();
 
     public DbSet<WorldBossSpawn> WorldBossSpawns => Set<WorldBossSpawn>();
+    public DbSet<WorldBossCombatSessionBinding> WorldBossCombatSessions => Set<WorldBossCombatSessionBinding>();
     public DbSet<WorldBossContribution> WorldBossContributions => Set<WorldBossContribution>();
     public DbSet<WorldBossPartyContribution> WorldBossPartyContributions => Set<WorldBossPartyContribution>();
     public DbSet<WorldBossDamageMutation> WorldBossDamageMutations => Set<WorldBossDamageMutation>();

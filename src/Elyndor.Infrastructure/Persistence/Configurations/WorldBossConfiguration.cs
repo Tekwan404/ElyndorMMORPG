@@ -142,3 +142,26 @@ public sealed class WorldBossRewardSettlementConfiguration : IEntityTypeConfigur
             .HasDatabaseName("ix_world_boss_reward_settlements_character_settled");
     }
 }
+
+public sealed class WorldBossCombatSessionBindingConfiguration
+    : IEntityTypeConfiguration<WorldBossCombatSessionBinding>
+{
+    public void Configure(EntityTypeBuilder<WorldBossCombatSessionBinding> builder)
+    {
+        builder.ToTable("world_boss_combat_sessions");
+        builder.HasKey(x => x.CombatSessionId).HasName("pk_world_boss_combat_sessions");
+        builder.Property(x => x.CombatSessionId).ValueGeneratedNever();
+
+        builder.HasOne<WorldBossSpawn>().WithMany().HasForeignKey(x => x.SpawnId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .HasConstraintName("fk_world_boss_combat_sessions_spawn");
+        builder.HasOne<Party>().WithMany().HasForeignKey(x => x.PartyId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("fk_world_boss_combat_sessions_party");
+
+        builder.HasIndex(x => x.SpawnId)
+            .HasDatabaseName("ix_world_boss_combat_sessions_spawn");
+        builder.HasIndex(x => x.PartyId)
+            .HasDatabaseName("ix_world_boss_combat_sessions_party");
+    }
+}

@@ -312,3 +312,35 @@ public sealed class WorldBossRewardSettlement
     public string LootResultJson { get; private set; }
     public DateTimeOffset SettledAtUtc { get; private set; }
 }
+
+public sealed class WorldBossCombatSessionBinding
+{
+    private WorldBossCombatSessionBinding() { }
+
+    public WorldBossCombatSessionBinding(
+        Guid combatSessionId,
+        Guid spawnId,
+        Guid bossActorId,
+        Guid? partyId,
+        DateTimeOffset boundAtUtc)
+    {
+        if (combatSessionId == Guid.Empty || spawnId == Guid.Empty || bossActorId == Guid.Empty)
+            throw new ArgumentException("World boss combat binding identifiers cannot be empty.");
+        if (partyId == Guid.Empty)
+            throw new ArgumentException("World boss party identifier cannot be empty.", nameof(partyId));
+        if (boundAtUtc.Offset != TimeSpan.Zero)
+            throw new ArgumentException("World boss binding timestamps must be UTC.", nameof(boundAtUtc));
+
+        CombatSessionId = combatSessionId;
+        SpawnId = spawnId;
+        BossActorId = bossActorId;
+        PartyId = partyId;
+        BoundAtUtc = boundAtUtc;
+    }
+
+    public Guid CombatSessionId { get; private set; }
+    public Guid SpawnId { get; private set; }
+    public Guid BossActorId { get; private set; }
+    public Guid? PartyId { get; private set; }
+    public DateTimeOffset BoundAtUtc { get; private set; }
+}

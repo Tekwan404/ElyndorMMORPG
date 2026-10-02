@@ -2922,6 +2922,35 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossCombatSessionBinding", b =>
+                {
+                    b.Property<Guid>("CombatSessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BossActorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("BoundAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("PartyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SpawnId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("CombatSessionId")
+                        .HasName("pk_world_boss_combat_sessions");
+
+                    b.HasIndex("PartyId")
+                        .HasDatabaseName("ix_world_boss_combat_sessions_party");
+
+                    b.HasIndex("SpawnId")
+                        .HasDatabaseName("ix_world_boss_combat_sessions_spawn");
+
+                    b.ToTable("world_boss_combat_sessions", "game");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Afk.AfkFarmSession", b =>
                 {
                     b.HasOne("Elyndor.Core.Characters.Character", null)
@@ -3615,6 +3644,22 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_world_boss_reward_settlements_spawn");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossCombatSessionBinding", b =>
+                {
+                    b.HasOne("Elyndor.Core.Parties.Party", null)
+                        .WithMany()
+                        .HasForeignKey("PartyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_world_boss_combat_sessions_party");
+
+                    b.HasOne("Elyndor.Core.WorldBosses.WorldBossSpawn", null)
+                        .WithMany()
+                        .HasForeignKey("SpawnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_world_boss_combat_sessions_spawn");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Dungeons.DungeonEncounter", b =>
