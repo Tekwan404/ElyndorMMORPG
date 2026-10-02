@@ -41,7 +41,7 @@ const protectedItemsCount = computed(() => session.snapshot?.character?.inventor
     !item.equippedSlot
     && item.isLocked
     && item.sellPriceGold > 0,
-  ).length ?? [])
+  ).length ?? 0)
 const affordableOfferCount = computed(() =>
   merchant.value?.items.filter(item => isAffordable(item)).length ?? 0,
 )
