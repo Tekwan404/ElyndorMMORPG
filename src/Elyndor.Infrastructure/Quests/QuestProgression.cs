@@ -77,7 +77,7 @@ public static class QuestProgression
                     continue;
 
                 int defeatedCount = objective
-                    .AcceptedMonsterIds()
+                    .AcceptedTargetIds()
                     .Sum(monsterId => defeatedCounts.GetValueOrDefault(monsterId));
                 if (defeatedCount == 0)
                     continue;
@@ -134,12 +134,3 @@ public static class QuestProgression
 }
 
 
-internal static class QuestObjectiveDefinitionExtensions
-{
-    public static IEnumerable<string> AcceptedMonsterIds(this QuestObjectiveDefinition objective)
-    {
-        yield return objective.TargetId;
-        foreach (string targetId in objective.AlternativeTargetIds ?? [])
-            yield return targetId;
-    }
-}
