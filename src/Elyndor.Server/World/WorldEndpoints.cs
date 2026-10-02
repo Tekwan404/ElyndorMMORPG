@@ -6,6 +6,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.Progression;
 using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Server.Items;
@@ -26,7 +27,7 @@ public static class WorldEndpoints
             GameContentSnapshot content = contentProvider.GetCurrent();
             return Results.Ok(content.WorldMap.Locations
                 .OrderBy(location => location.Id, StringComparer.Ordinal)
-                .Select(location => ToLocation(location, content.Indexes))
+                .Select(location => ToLocation(location, content))
                 .ToArray());
         });
         group.MapPost("/world/explore", ExploreAsync);
@@ -364,10 +365,14 @@ public static class WorldEndpoints
 
     private static WorldLocationResponse ToLocation(
         LocationDefinition location,
-        GameContentIndexes indexes)
+        GameContentSnapshot content)
     {
-        WorldLocationResidentResponse[] residents = BuildResidents(location, indexes);
-        WorldLocationLootResponse[] loot = BuildLoot(residents, indexes);
+        WorldLocationResidentResponse[] residents = BuildResidents(
+            location,
+            content);
+        WorldLocationLootResponse[] loot = BuildLoot(
+            residents,
+            content.Indexes);
 
         return new WorldLocationResponse(
             location.Id,
@@ -387,8 +392,9 @@ public static class WorldEndpoints
 
     private static WorldLocationResidentResponse[] BuildResidents(
         LocationDefinition location,
-        GameContentIndexes indexes)
+        GameContentSnapshot content)
     {
+        GameContentIndexes indexes = content.Indexes;
         HashSet<string> monsterIds = new(StringComparer.Ordinal);
 
         if (location.Encounters is { Count: > 0 })
@@ -430,13 +436,31 @@ public static class WorldEndpoints
                 monster.Rank.ToString(),
                 monster.Description,
                 monster.ArtId,
-                monster.XpReward,
+                ResolveBaseMonsterXp(content.Package, monster),
                 monster.GoldRewardMin,
                 monster.GoldRewardMax))
             .OrderBy(resident => MonsterRankOrder(resident.Rank))
             .ThenBy(resident => resident.Level)
             .ThenBy(resident => resident.DisplayName, StringComparer.Ordinal)
             .ToArray();
+    }
+
+    private static int ResolveBaseMonsterXp(
+        GameContentPackage package,
+        MonsterDefinition monster)
+    {
+        if (!monster.GrantsXp)
+            return 0;
+        if (package.LevelProgression is null
+            || package.ProgressionBalance is null)
+        {
+            return monster.LegacyXpReward;
+        }
+
+        return ProgressionRewardCalculator.ResolveBaseMonsterXp(
+            monster,
+            package.LevelProgression,
+            package.ProgressionBalance);
     }
 
     private static WorldLocationLootResponse[] BuildLoot(
