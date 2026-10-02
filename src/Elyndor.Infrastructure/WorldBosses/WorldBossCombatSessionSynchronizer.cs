@@ -18,6 +18,8 @@ public sealed class WorldBossCombatSessionSynchronizer(IServiceScopeFactory scop
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(session);
+        if (!session.RequiresExternalSynchronization)
+            return false;
 
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
         GameDbContext db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
