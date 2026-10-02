@@ -166,7 +166,12 @@ public static class QuestEndpoints
             quest.RewardItems.Select(item =>
                 ToRewardItemResponse(item.ItemId, item.Quantity, content)).ToArray(),
             quest.PrerequisiteQuestIds,
-            quest.UnlockLocationId);
+            quest.UnlockLocationId,
+            quest.IssuerName,
+            quest.IssuerRole,
+            quest.RegionName,
+            quest.ContractNumber,
+            quest.ThreatLevel);
 
     private static QuestRewardItemResponse ToRewardItemResponse(
         string itemId,
