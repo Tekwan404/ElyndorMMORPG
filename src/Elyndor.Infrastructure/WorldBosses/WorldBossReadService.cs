@@ -21,6 +21,11 @@ public sealed record WorldBossActiveSnapshot(
     int Participants,
     decimal PersonalDamage,
     decimal PartyDamage,
+    int EligibleParticipants,
+    int? PersonalRewardRank,
+    decimal RewardPercentile,
+    int RewardChestCount,
+    int RewardEnhancedChestCount,
     bool RewardEligible,
     string? RewardTier,
     string? NextRewardTier,
@@ -133,10 +138,13 @@ public sealed class WorldBossReadService(
 
         WorldBossPhaseDefinition? phase = definition?.Phases
             .SingleOrDefault(item => item.Phase == spawn.CurrentPhase);
-        WorldBossRewardProgress rewardProgress = ResolveRewardProgress(
+        WorldBossRewardProgress rewardProgress = await ResolveRewardProgressAsync(
+            spawn.Id,
+            characterId.Value,
             content,
             definition,
-            personalDamage);
+            personalDamage,
+            cancellationToken);
 
         return new WorldBossActiveReadResult(
             true,
@@ -154,6 +162,11 @@ public sealed class WorldBossReadService(
                 participants,
                 personalDamage,
                 partyDamage,
+                rewardProgress.EligibleParticipants,
+                rewardProgress.PersonalRank,
+                rewardProgress.Percentile,
+                rewardProgress.ChestCount,
+                rewardProgress.EnhancedChestCount,
                 rewardProgress.Eligible,
                 rewardProgress.CurrentTier,
                 rewardProgress.NextTier,
@@ -356,35 +369,91 @@ public sealed class WorldBossReadService(
             partyDamageValue ?? 0m);
     }
 
-    private static WorldBossRewardProgress ResolveRewardProgress(
+    private async Task<WorldBossRewardProgress> ResolveRewardProgressAsync(
+        Guid spawnId,
+        Guid characterId,
         GameContentSnapshot content,
         WorldBossDefinition? definition,
-        decimal personalDamage)
+        decimal personalDamage,
+        CancellationToken cancellationToken)
     {
         if (definition is null
             || !content.Indexes.WorldBossRewardProfilesById.TryGetValue(
                 definition.RewardProfileId,
                 out WorldBossRewardProfileDefinition? profile))
         {
-            return new(false, null, null, null, 0m);
+            return new(false, null, null, null, 0m, 0, null, 0m, 0, 0);
         }
 
-        WorldBossRewardTierThresholdDefinition[] orderedTiers = profile.Tiers
-            .OrderBy(tier => tier.MinimumContribution)
-            .ToArray();
-        WorldBossRewardTierThresholdDefinition? current = orderedTiers
-            .LastOrDefault(tier => personalDamage >= tier.MinimumContribution);
-        WorldBossRewardTierThresholdDefinition? next = orderedTiers
-            .FirstOrDefault(tier => personalDamage < tier.MinimumContribution);
+        if (profile.LeaderboardTiers is not { Count: > 0 })
+        {
+            WorldBossRewardTierThresholdDefinition[] orderedTiers = profile.Tiers
+                .OrderBy(tier => tier.MinimumContribution)
+                .ToArray();
+            WorldBossRewardTierThresholdDefinition? current = orderedTiers
+                .LastOrDefault(tier => personalDamage >= tier.MinimumContribution);
+            WorldBossRewardTierThresholdDefinition? next = orderedTiers
+                .FirstOrDefault(tier => personalDamage < tier.MinimumContribution);
+
+            return new(
+                personalDamage >= profile.MinimumContribution,
+                current?.Tier.ToString(),
+                next?.Tier.ToString(),
+                next?.MinimumContribution,
+                next is null
+                    ? 0m
+                    : Math.Max(0m, next.MinimumContribution - personalDamage),
+                0,
+                null,
+                0m,
+                0,
+                0);
+        }
+
+        var eligibleRows = await db.WorldBossContributions.AsNoTracking()
+            .Where(contribution => contribution.SpawnId == spawnId
+                && contribution.Damage >= profile.MinimumContribution)
+            .OrderByDescending(contribution => contribution.Damage)
+            .ThenBy(contribution => contribution.CharacterId)
+            .Select(contribution => contribution.CharacterId)
+            .ToArrayAsync(cancellationToken);
+
+        int eligibleParticipants = eligibleRows.Length;
+        int index = Array.IndexOf(eligibleRows, characterId);
+        if (personalDamage < profile.MinimumContribution
+            || index < 0
+            || eligibleParticipants == 0)
+        {
+            return new(
+                false,
+                null,
+                "Top50",
+                null,
+                0m,
+                eligibleParticipants,
+                null,
+                0m,
+                0,
+                0);
+        }
+
+        WorldBossLeaderboardRewardResolution reward =
+            WorldBossLeaderboardRewardPolicy.Resolve(
+                profile,
+                index + 1,
+                eligibleParticipants);
 
         return new(
-            personalDamage >= profile.MinimumContribution,
-            current?.Tier.ToString(),
-            next?.Tier.ToString(),
-            next?.MinimumContribution,
-            next is null
-                ? 0m
-                : Math.Max(0m, next.MinimumContribution - personalDamage));
+            true,
+            reward.Tier.ToString(),
+            null,
+            null,
+            0m,
+            eligibleParticipants,
+            reward.Rank,
+            reward.Percentile,
+            reward.ChestCount,
+            reward.EnhancedChestCount);
     }
 
     private sealed record WorldBossRewardProgress(
@@ -392,6 +461,11 @@ public sealed class WorldBossReadService(
         string? CurrentTier,
         string? NextTier,
         decimal? NextTierAtDamage,
-        decimal DamageToNextTier);
+        decimal DamageToNextTier,
+        int EligibleParticipants,
+        int? PersonalRank,
+        decimal Percentile,
+        int ChestCount,
+        int EnhancedChestCount);
 
 }
