@@ -50,8 +50,8 @@ public sealed record AfkFarmSimulationResult(
 /// <summary>
 /// Calculates AFK intervals without creating online combat sessions or mutating durable state.
 /// Incoming damage informs combat timing only; AFK never spends HP or causes death.
-/// Direct instant single-target abilities are resolved through the shared ability/damage pipeline;
-/// casted abilities and stateful class proc runtimes remain intentionally outside the lightweight AFK model.
+/// Direct single-target instant and casted abilities are resolved through the shared ability/damage pipeline;
+/// delayed actions and stateful class proc runtimes remain intentionally outside the lightweight AFK model.
 /// </summary>
 public static class AfkFarmSimulator
 {
@@ -111,6 +111,7 @@ public static class AfkFarmSimulator
         int abilityCommandSequence = 0;
         decimal estimatedIncomingDamage = 0;
         TimeSpan successfulKillTime = TimeSpan.Zero;
+        TimeSpan successfulEncounterPressureWindow = TimeSpan.Zero;
         List<AfkFarmLootCandidate> loot = [];
 
         while (remaining > TimeSpan.Zero)
@@ -141,6 +142,7 @@ public static class AfkFarmSimulator
 
             kills++;
             successfulKillTime += fight.Elapsed;
+            successfulEncounterPressureWindow += monster.AutoAttackInterval;
             xp += monster.XpReward;
             gold += RollGold(monster, random);
             if (!string.IsNullOrWhiteSpace(monster.LootTableId))
@@ -163,14 +165,21 @@ public static class AfkFarmSimulator
             simulatedNow += recovery;
         }
 
-        TimeSpan baselineKillTime = TimeSpan.FromSeconds(
-            autoAttack.Interval.TotalSeconds / (double)Math.Max(0.1m, request.Character.Stats.AttackSpeed));
-        int efficiency = kills == 0 || successfulKillTime <= TimeSpan.Zero
+        // Efficiency must be class-neutral. Using the player's auto-attack interval as the baseline
+        // makes weapon-centric classes look artificially stronger than casters. Instead, compare the
+        // actual build's time-to-kill against the defeated encounters' own attack cadence. A build
+        // averaging one kill within one enemy attack cycle reaches 100%; slower kills scale down.
+        int efficiency = kills == 0
             ? 0
-            : Math.Clamp(
-                (int)Math.Floor(kills * baselineKillTime.TotalMilliseconds / successfulKillTime.TotalMilliseconds * 100d),
-                0,
-                100);
+            : successfulKillTime <= TimeSpan.Zero
+                ? 100
+                : Math.Clamp(
+                    (int)Math.Floor(
+                        successfulEncounterPressureWindow.TotalMilliseconds
+                        / successfulKillTime.TotalMilliseconds
+                        * 100d),
+                    0,
+                    100);
 
         // AFK intentionally does not consume HP or cause death; this is a combat-efficiency estimate only.
         return new AfkFarmSimulationResult(
@@ -211,40 +220,115 @@ public static class AfkFarmSimulator
             throw new InvalidOperationException("AFK combat attack intervals must be positive.");
 
         TimeSpan elapsed = TimeSpan.Zero;
-        while (!enemy.IsDead && elapsed + playerInterval <= available)
+        TimeSpan nextAutoAttackAt = playerInterval;
+        DateTimeOffset? nextAbilityDecisionAtUtc = runtime is not null && farmAbilities.Length > 0
+            ? fightStartedAtUtc
+            : null;
+
+        while (!enemy.IsDead && elapsed < available)
         {
-            elapsed += playerInterval;
-            DateTimeOffset actionAtUtc = fightStartedAtUtc + elapsed;
-            if (resourceProfile is not null && resourceProfile.CombatRegenPerSecond > 0)
+            DateTimeOffset? castResolvesAtUtc = runtime?.ActiveCast?.ResolvesAtUtc;
+            TimeSpan nextEventAt = nextAutoAttackAt;
+            if (castResolvesAtUtc is { } castAt)
+                nextEventAt = Min(nextEventAt, castAt - fightStartedAtUtc);
+            if (nextAbilityDecisionAtUtc is { } abilityAt)
+                nextEventAt = Min(nextEventAt, abilityAt - fightStartedAtUtc);
+
+            if (nextEventAt > available)
             {
-                player.AddResource(
-                    resourceProfile.CombatRegenPerSecond * (decimal)playerInterval.TotalSeconds);
+                AdvanceCombatResource(player, resourceProfile, available - elapsed);
+                elapsed = available;
+                break;
             }
 
-            if (runtime is not null && farmAbilities.Length > 0)
+            if (nextEventAt < elapsed)
+                nextEventAt = elapsed;
+
+            AdvanceCombatResource(player, resourceProfile, nextEventAt - elapsed);
+            elapsed = nextEventAt;
+            DateTimeOffset actionAtUtc = fightStartedAtUtc + elapsed;
+
+            if (runtime?.ActiveCast is { } activeCast && activeCast.ResolvesAtUtc <= actionAtUtc)
             {
-                TryUseFarmAbility(
+                AbilityEngine.CompleteCast(runtime, actionAtUtc, random);
+                if (enemy.IsDead)
+                    break;
+                nextAbilityDecisionAtUtc = actionAtUtc;
+            }
+
+            if (runtime is not null
+                && runtime.ActiveCast is null
+                && nextAbilityDecisionAtUtc is { } decisionAt
+                && decisionAt <= actionAtUtc)
+            {
+                bool usedAbility = TryUseFarmAbility(
                     runtime,
                     farmAbilities,
                     enemy.ActorId,
                     actionAtUtc,
                     random,
                     ref abilityCommandSequence);
-            }
-            if (enemy.IsDead)
-                break;
 
-            decimal baseDamage = AutoAttackDamageRoller.RollPlayerDamage(
-                baseAutoAttack, snapshot.Stats.AttackPower, random);
-            DamageResult autoAttack = DamagePipeline.Resolve(
-                new DamageRequest(player, enemy, baseDamage, baseAutoAttack.DamageType),
-                random,
-                actionAtUtc);
-            if (autoAttack.Avoidance == DamageAvoidance.None && baseAutoAttack.ResourceOnHit > 0)
-                player.AddResource(baseAutoAttack.ResourceOnHit);
+                if (enemy.IsDead)
+                    break;
+
+                if (usedAbility && runtime.ActiveCast is { } startedCast)
+                {
+                    TimeSpan castEndsAt = startedCast.ResolvesAtUtc - fightStartedAtUtc;
+                    if (nextAutoAttackAt <= castEndsAt)
+                        nextAutoAttackAt = castEndsAt + playerInterval;
+                    nextAbilityDecisionAtUtc = startedCast.ResolvesAtUtc;
+                }
+                else
+                {
+                    nextAbilityDecisionAtUtc = ResolveNextAbilityDecisionAtUtc(
+                        runtime,
+                        farmAbilities,
+                        resourceProfile,
+                        actionAtUtc);
+                }
+            }
+
+            if (!enemy.IsDead && nextAutoAttackAt <= elapsed)
+            {
+                if (runtime?.ActiveCast is null)
+                {
+                    decimal baseDamage = AutoAttackDamageRoller.RollPlayerDamage(
+                        baseAutoAttack, snapshot.Stats.AttackPower, random);
+                    DamageResult autoAttack = DamagePipeline.Resolve(
+                        new DamageRequest(player, enemy, baseDamage, baseAutoAttack.DamageType),
+                        random,
+                        actionAtUtc);
+                    if (autoAttack.Avoidance == DamageAvoidance.None && baseAutoAttack.ResourceOnHit > 0)
+                        player.AddResource(baseAutoAttack.ResourceOnHit);
+
+                    nextAutoAttackAt += playerInterval;
+                    if (runtime is not null && farmAbilities.Length > 0)
+                    {
+                        nextAbilityDecisionAtUtc = nextAbilityDecisionAtUtc is null
+                            || nextAbilityDecisionAtUtc > actionAtUtc
+                            ? actionAtUtc
+                            : nextAbilityDecisionAtUtc;
+                    }
+                }
+                else
+                {
+                    TimeSpan castEndsAt = runtime.ActiveCast.ResolvesAtUtc - fightStartedAtUtc;
+                    nextAutoAttackAt = castEndsAt + playerInterval;
+                }
+            }
+
+            if (nextEventAt == elapsed
+                && nextAutoAttackAt <= elapsed
+                && (nextAbilityDecisionAtUtc is null || nextAbilityDecisionAtUtc <= actionAtUtc)
+                && runtime?.ActiveCast is null)
+            {
+                // Defensive guard against malformed zero-duration content producing a zero-time loop.
+                nextAutoAttackAt = elapsed + TimeSpan.FromTicks(1);
+            }
         }
 
-        TimeSpan resolvedElapsed = elapsed == TimeSpan.Zero ? available : elapsed;
+        TimeSpan resolvedElapsed = elapsed;
         int monsterAttacks = (int)Math.Floor(
             resolvedElapsed.TotalSeconds / monster.AutoAttackInterval.TotalSeconds);
         decimal incoming = 0;
@@ -272,7 +356,7 @@ public static class AfkFarmSimulator
         return new FightResult(enemy.IsDead, resolvedElapsed, incoming);
     }
 
-    private static void TryUseFarmAbility(
+    private static bool TryUseFarmAbility(
         CombatRuntimeState runtime,
         AbilityDefinition[] abilities,
         Guid targetActorId,
@@ -291,9 +375,68 @@ public static class AfkFarmSimulator
                 random);
             runtime.ProcessedCommandIds.Remove(commandId);
             if (result.Succeeded)
-                return;
+                return true;
         }
+        return false;
     }
+
+    private static DateTimeOffset? ResolveNextAbilityDecisionAtUtc(
+        CombatRuntimeState runtime,
+        AbilityDefinition[] abilities,
+        ResourceProfile? resourceProfile,
+        DateTimeOffset now)
+    {
+        DateTimeOffset? next = null;
+        foreach (AbilityDefinition ability in abilities)
+        {
+            DateTimeOffset readyAt = now;
+            if (ability.UsesGlobalCooldown
+                && runtime.GlobalCooldownEndsAtUtc is { } gcdAt
+                && gcdAt > readyAt)
+            {
+                readyAt = gcdAt;
+            }
+            if (runtime.Cooldowns.TryGetValue(ability.Id, out DateTimeOffset cooldownAt)
+                && cooldownAt > readyAt)
+            {
+                readyAt = cooldownAt;
+            }
+
+            if (runtime.Actor.CurrentResource < ability.ResourceCost)
+            {
+                if (resourceProfile is null || resourceProfile.CombatRegenPerSecond <= 0)
+                    continue;
+
+                decimal missing = ability.ResourceCost - runtime.Actor.CurrentResource;
+                double seconds = (double)(missing / resourceProfile.CombatRegenPerSecond);
+                DateTimeOffset resourceReadyAt = now + TimeSpan.FromSeconds(seconds);
+                if (resourceReadyAt > readyAt)
+                    readyAt = resourceReadyAt;
+            }
+
+            if (readyAt <= now)
+                continue;
+            next = next is null || readyAt < next ? readyAt : next;
+        }
+        return next;
+    }
+
+    private static void AdvanceCombatResource(
+        CombatActorState player,
+        ResourceProfile? resourceProfile,
+        TimeSpan elapsed)
+    {
+        if (resourceProfile is null
+            || resourceProfile.CombatRegenPerSecond <= 0
+            || elapsed <= TimeSpan.Zero)
+        {
+            return;
+        }
+
+        player.AddResource(resourceProfile.CombatRegenPerSecond * (decimal)elapsed.TotalSeconds);
+    }
+
+    private static TimeSpan Min(TimeSpan left, TimeSpan right) => left <= right ? left : right;
 
     private static AbilityDefinition[] ResolveFarmAbilities(
         AfkCharacterSnapshot snapshot,
@@ -328,7 +471,8 @@ public static class AfkFarmSimulator
 
     private static bool IsSupportedFarmAbility(AbilityDefinition ability)
     {
-        if (ability.Type != AbilityType.Instant
+        if ((ability.Type != AbilityType.Instant && ability.Type != AbilityType.Casted)
+            || (ability.Type == AbilityType.Casted && ability.CastTime <= TimeSpan.Zero)
             || ability.TargetType != AbilityTargetType.SingleEnemy
             || ability.Actions is not { Count: > 0 }
             || ability.Actions.Any(action => action.Delay is { } delay && delay > TimeSpan.Zero))
