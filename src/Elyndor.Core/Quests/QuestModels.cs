@@ -19,7 +19,15 @@ public sealed record QuestObjectiveDefinition(
     string TargetId,
     int RequiredCount,
     bool ConsumeOnClaim = false,
-    IReadOnlyList<string>? AlternativeTargetIds = null);
+    IReadOnlyList<string>? AlternativeTargetIds = null)
+{
+    public IEnumerable<string> AcceptedTargetIds()
+    {
+        yield return TargetId;
+        foreach (string targetId in AlternativeTargetIds ?? [])
+            yield return targetId;
+    }
+}
 
 public sealed record QuestItemRewardDefinition(
     string ItemId,
