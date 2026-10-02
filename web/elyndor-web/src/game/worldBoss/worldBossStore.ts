@@ -16,6 +16,8 @@ export interface WorldBossActiveSnapshot {
   bossDefinitionId: string
   name: string
   level: number
+  monsterId: string | null
+  artId: string | null
   currentHealth: number
   maxHealth: number
   currentPhase: number
