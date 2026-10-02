@@ -91,6 +91,49 @@ public static partial class GameContentPackageValidator
                 }
             }
 
+            WorldBossRewardProfileDefinition? rewardProfile =
+                package.WorldBossRewardProfiles?.FirstOrDefault(candidate =>
+                    string.Equals(candidate.Id, definition.RewardProfileId, StringComparison.Ordinal));
+            if (rewardProfile is null)
+            {
+                errors.Add(new(
+                    "WORLD_BOSS_REWARD_PROFILE_NOT_FOUND",
+                    $"{path}.rewardProfileId",
+                    $"World boss '{definition.Id}' references missing reward profile '{definition.RewardProfileId}'."));
+            }
+            else
+            {
+                bool invalidRewardProfile =
+                    rewardProfile.MinimumContribution <= 0
+                    || rewardProfile.BossExperience < 0
+                    || rewardProfile.BossGold < 0
+                    || rewardProfile.ChestGoldMin < 0
+                    || rewardProfile.ChestGoldMax < rewardProfile.ChestGoldMin
+                    || rewardProfile.Tiers.Count == 0
+                    || rewardProfile.Tiers.Any(tier =>
+                        tier.MinimumContribution < rewardProfile.MinimumContribution)
+                    || rewardProfile.Tiers
+                        .Select(tier => tier.Tier)
+                        .Distinct()
+                        .Count() != rewardProfile.Tiers.Count;
+                if (invalidRewardProfile)
+                {
+                    errors.Add(new(
+                        "INVALID_WORLD_BOSS_REWARD_PROFILE",
+                        $"{path}.rewardProfileId",
+                        $"World boss reward profile '{rewardProfile.Id}' contains invalid values."));
+                }
+            }
+
+            if (package.LootTables?.Any(table =>
+                    string.Equals(table.Id, definition.LootTableId, StringComparison.Ordinal)) != true)
+            {
+                errors.Add(new(
+                    "WORLD_BOSS_LOOT_TABLE_NOT_FOUND",
+                    $"{path}.lootTableId",
+                    $"World boss '{definition.Id}' references missing chest loot table '{definition.LootTableId}'."));
+            }
+
             decimal previousThreshold = decimal.MaxValue;
             for (int phaseIndex = 0; phaseIndex < definition.Phases.Count; phaseIndex++)
             {
