@@ -198,7 +198,7 @@ onUnmounted(() => {
 
         <section v-else class="result-card__ineligible">
           <strong>Награда не начислена</strong>
-          <p>В этом убийстве не был достигнут минимальный личный вклад для сундука.</p>
+          <p>В этом убийстве не был достигнут минимальный личный вклад для наградного рейтинга.</p>
         </section>
 
         <UIButton class="result-card__close" @click="close">Вернуться в мир</UIButton>
@@ -936,6 +936,7 @@ onUnmounted(() => {
   }
 
   .boss-card__metrics,
+  .result-card__placement,
   .result-card__rewards {
     grid-template-columns: 1fr;
   }
