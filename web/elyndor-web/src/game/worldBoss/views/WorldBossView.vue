@@ -517,7 +517,7 @@ onUnmounted(() => {
   font: 800 clamp(1.55rem, 7vw, 2.25rem) var(--ui-font-display);
 }
 
-.boss-card > p {
+.boss-card__content > p {
   margin: 4px 0 var(--ui-space-4);
   color: var(--ui-color-text-secondary);
 }
