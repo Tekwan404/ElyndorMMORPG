@@ -213,8 +213,7 @@ public sealed class WorldBossPartyContribution
 
     public void AddDamage(decimal appliedDamage)
     {
-        if (appliedDamage <= 0)
-            throw new ArgumentOutOfRangeException(nameof(appliedDamage));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(appliedDamage);
 
         Damage = checked(Damage + appliedDamage);
     }
