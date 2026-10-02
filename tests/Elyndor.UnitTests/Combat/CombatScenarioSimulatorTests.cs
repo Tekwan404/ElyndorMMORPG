@@ -179,8 +179,8 @@ public sealed class CombatReplaySimulatorTests
             AbilityIds: [],
             AiProfileId: "SIM_ADD_AI",
             AutoAttackAttackPowerCoefficient: 0,
-            XpReward: 0,
             LootTableId: null,
+            GrantsXp: false,
             GoldRewardMin: 0,
             GoldRewardMax: 0);
         EncounterDefinition encounter = new(
