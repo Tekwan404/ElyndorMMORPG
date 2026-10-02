@@ -31,8 +31,8 @@ public sealed class QuestInventoryCapacityTests(PostgresFixture postgres) : IAsy
         Guid characterId = Guid.CreateVersion7();
         GameContentPackage content = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
-        int wolfHideVersion = content.Items!
-            .Single(item => item.Id == "WOLF_HIDE")
+        int roughHideVersion = content.Items!
+            .Single(item => item.Id == "ROUGH_HIDE")
             .Version;
 
         await using (GameDbContext setup = postgres.CreateDbContext())
@@ -75,10 +75,10 @@ public sealed class QuestInventoryCapacityTests(PostgresFixture postgres) : IAsy
             setup.CharacterItems.Add(new CharacterItem(
                 Guid.CreateVersion7(),
                 characterId,
-                "WOLF_HIDE",
+                "ROUGH_HIDE",
                 4,
                 Now,
-                wolfHideVersion));
+                roughHideVersion));
             for (var index = 0; index < InventoryCapacity.DefaultCapacity - 1; index++)
             {
                 setup.CharacterItems.Add(new CharacterItem(
@@ -127,7 +127,7 @@ public sealed class QuestInventoryCapacityTests(PostgresFixture postgres) : IAsy
             .AsNoTracking()
             .AnyAsync(item =>
                 item.CharacterId == characterId
-                && item.ItemDefinitionId == "WOLF_HIDE"));
+                && item.ItemDefinitionId == "ROUGH_HIDE"));
         Assert.Equal(
             2,
             await verify.CharacterItems
