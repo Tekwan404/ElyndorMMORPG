@@ -7,6 +7,8 @@ public sealed record WorldBossActiveResponse(
     string BossDefinitionId,
     string Name,
     int Level,
+    string? MonsterId,
+    string? ArtId,
     decimal CurrentHealth,
     decimal MaxHealth,
     int CurrentPhase,
