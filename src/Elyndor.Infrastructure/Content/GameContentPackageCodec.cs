@@ -58,6 +58,33 @@ public static class GameContentPackageCodec
             return payloadJson;
 
         bool changed = false;
+        if (package["levelProgression"] is JsonObject levelProgression
+            && levelProgression["xpAnchors"] is null
+            && levelProgression["maxLevel"] is JsonValue maxLevelValue
+            && maxLevelValue.TryGetValue<int>(out int maxLevel)
+            && levelProgression["baseXpToNext"] is JsonValue baseValue
+            && baseValue.TryGetValue<int>(out int baseXp)
+            && levelProgression["growthFactor"] is JsonValue growthValue
+            && growthValue.TryGetValue<decimal>(out decimal growthFactor))
+        {
+            JsonArray anchors = [];
+            decimal xp = baseXp;
+            for (int level = 1; level < maxLevel; level++)
+            {
+                anchors.Add(new JsonObject
+                {
+                    ["level"] = level,
+                    ["xpToNext"] = decimal.ToInt64(decimal.Ceiling(xp))
+                });
+                xp *= growthFactor;
+            }
+
+            levelProgression["xpAnchors"] = anchors;
+            levelProgression.Remove("baseXpToNext");
+            levelProgression.Remove("growthFactor");
+            changed = true;
+        }
+
         if (package["statFormula"] is JsonObject statFormula)
         {
             changed |= statFormula.Remove("armorPerStamina");
