@@ -18,6 +18,7 @@ internal static class CategoryContentComposer
     private static readonly string[] FragmentDirectories =
     [
         "abilities",
+        "balance",
         "bosses",
         "contracts",
         "dungeons",
@@ -240,7 +241,8 @@ internal static class CategoryContentComposer
                 package.Quests,
                 fragment.Quests,
                 item => item.Id),
-            Itemization = fragment.Itemization ?? package.Itemization
+            Itemization = fragment.Itemization ?? package.Itemization,
+            CombatBalance = fragment.CombatBalance ?? package.CombatBalance
         };
     }
 
@@ -405,7 +407,8 @@ internal static class CategoryContentComposer
         IReadOnlyList<WorldContractDefinition>? WorldContracts = null,
         IReadOnlyList<DungeonDefinition>? Dungeons = null,
         IReadOnlyList<QuestDefinition>? Quests = null,
-        ItemizationDefinition? Itemization = null);
+        ItemizationDefinition? Itemization = null,
+        CombatBalanceProfile? CombatBalance = null);
 
     private sealed record TalentBranchReplacement(
         string TreeId,
