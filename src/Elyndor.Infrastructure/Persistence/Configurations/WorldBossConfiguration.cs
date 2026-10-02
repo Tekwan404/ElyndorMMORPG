@@ -29,6 +29,10 @@ public sealed class WorldBossSpawnConfiguration : IEntityTypeConfiguration<World
 
         builder.HasIndex(x => new { x.Status, x.ExpiresAtUtc })
             .HasDatabaseName("ix_world_boss_spawns_status_expires");
+        builder.HasIndex(x => x.Status)
+            .IsUnique()
+            .HasFilter("\"Status\" = 'Active'")
+            .HasDatabaseName("uq_world_boss_spawns_single_active");
         builder.HasIndex(x => new { x.BossDefinitionId, x.SpawnedAtUtc })
             .HasDatabaseName("ix_world_boss_spawns_definition_spawned");
     }

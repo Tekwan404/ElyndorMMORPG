@@ -2910,6 +2910,11 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.HasIndex("Status", "ExpiresAtUtc")
                         .HasDatabaseName("ix_world_boss_spawns_status_expires");
 
+                    b.HasIndex("Status")
+                        .IsUnique()
+                        .HasDatabaseName("uq_world_boss_spawns_single_active")
+                        .HasFilter("\"Status\" = 'Active'");
+
                     b.ToTable("world_boss_spawns", "game", t =>
                         {
                             t.HasCheckConstraint("ck_world_boss_spawns_expiry_after_spawn", "\"ExpiresAtUtc\" > \"SpawnedAtUtc\"");

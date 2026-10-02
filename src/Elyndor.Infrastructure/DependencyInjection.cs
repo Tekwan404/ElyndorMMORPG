@@ -68,6 +68,8 @@ public static class DependencyInjection
         builder.Services.AddScoped<ArenaLobbyService>();
         builder.Services.AddScoped<ArenaInvitationService>();
         builder.Services.AddScoped<WorldBossDamageService>();
+        builder.Services.AddScoped<WorldBossLifecycleService>();
+        builder.Services.AddScoped<WorldBossReadService>();
         builder.Services.TryAddEnumerable(
             ServiceDescriptor.Singleton<ICombatResultObserver, WorldBossCombatDamageObserver>());
         if (bool.TryParse(builder.Configuration["Arena:Enabled"], out bool arenaEnabled) && arenaEnabled)
