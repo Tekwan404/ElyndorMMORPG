@@ -20,6 +20,6 @@ public sealed class HealingPotionBalanceTests
         Assert.Equal("HEALING_POTION", potion.ConsumableCooldownCategoryId);
         ConsumableActionDefinition action = Assert.Single(potion.ConsumableActions!);
         Assert.Equal(ConsumableActionType.RestoreHp, action.Type);
-        Assert.Equal(50m, action.Amount);
+        Assert.Equal(120m, action.Amount);
     }
 }
