@@ -362,7 +362,7 @@ public sealed class WorldBossSettlementService(
                 string itemIds = reward.Items.Count == 0
                     ? "none"
                     : string.Join(
-                        ',',
+                        ",",
                         reward.Items.Select(item => item.ItemId));
                 string details =
                     $"damage={reward.Contribution:0.##} "
