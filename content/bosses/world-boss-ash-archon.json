@@ -8,7 +8,7 @@
       "name": "Архон Пепла",
       "rank": "Boss",
       "level": 30,
-      "maxHp": 1000000,
+      "maxHp": 100000,
       "stats": {
         "level": 30,
         "accuracy": 103,
@@ -148,7 +148,7 @@
       "id": "WORLD_BOSS_ASH_ARCHON",
       "name": "Архон Пепла",
       "level": 30,
-      "baseMaxHealth": 1000000,
+      "baseMaxHealth": 100000,
       "durationSeconds": 1800,
       "encounterProfileId": "WB_ASH_ARCHON_V1",
       "lootTableId": "WORLD_BOSS_ASH_ARCHON_LOOT",
