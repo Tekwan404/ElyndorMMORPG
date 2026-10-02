@@ -153,7 +153,7 @@
         }
       ],
       "prerequisiteQuestIds": [
-        "QUEST_04_SILKEN_THREAT"
+        "QUEST_01_FIRST_HUNT"
       ],
       "issuerName": "Гильдия авантюристов",
       "issuerRole": "Регистратор",
@@ -415,7 +415,7 @@
     {
       "id": "CONTRACT_BROODMOTHER_GATE",
       "displayName": "Контракт: Прародительница",
-      "description": "Войдите в логово и уничтожьте Паучью Прародительницу. Победа откроет путь в Осквернённую чащу.",
+      "description": "Войдите в логово и уничтожьте Паучью Прародительницу. Контракт ведёт сюжет дальше, но не ограничивает доступ к мировой локации.",
       "type": "Contract",
       "requiredLevel": 14,
       "offerLocationId": "STARTER_TOWN",
@@ -432,7 +432,6 @@
       "prerequisiteQuestIds": [
         "QUEST_13_BROODMOTHER_TRACE"
       ],
-      "unlockLocationId": "BLIGHTED_GROVE",
       "issuerName": "Гильдия авантюристов",
       "issuerRole": "Распорядитель охоты",
       "regionName": "Логово Прародительницы",
