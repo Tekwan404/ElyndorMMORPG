@@ -103,8 +103,15 @@ public static class GameContentPackageCodec
                 }
 
                 monster.Remove("xpReward");
-                if (xpReward <= 0 && monster["grantsXp"] is null)
-                    monster["grantsXp"] = false;
+                if (xpReward <= 0)
+                {
+                    if (monster["grantsXp"] is null)
+                        monster["grantsXp"] = false;
+                }
+                else
+                {
+                    monster["legacyXpReward"] = xpReward;
+                }
                 changed = true;
             }
         }
