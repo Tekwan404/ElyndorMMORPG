@@ -19,7 +19,13 @@ public enum WorldBossRewardTier
     Silver,
     Gold,
     Epic,
-    Legendary
+    Legendary,
+    Top50,
+    Top75,
+    Top85,
+    Top95,
+    Top99,
+    Top5
 }
 
 public sealed class WorldBossSpawn
@@ -398,7 +404,12 @@ public sealed record WorldBossLootItemResult(
 public sealed record WorldBossLootResult(
     int BossGold,
     int ChestGold,
-    IReadOnlyList<WorldBossLootItemResult> Items);
+    IReadOnlyList<WorldBossLootItemResult> Items,
+    int Rank = 0,
+    int EligibleParticipants = 0,
+    decimal Percentile = 0,
+    int ChestCount = 0,
+    int EnhancedChestCount = 0);
 
 public sealed record WorldBossRewardProfileDefinition(
     string Id,
@@ -407,11 +418,94 @@ public sealed record WorldBossRewardProfileDefinition(
     int BossGold,
     int ChestGoldMin,
     int ChestGoldMax,
-    IReadOnlyList<WorldBossRewardTierThresholdDefinition> Tiers);
+    IReadOnlyList<WorldBossRewardTierThresholdDefinition> Tiers,
+    IReadOnlyList<WorldBossLeaderboardRewardTierDefinition>? LeaderboardTiers = null);
 
 public sealed record WorldBossRewardTierThresholdDefinition(
     WorldBossRewardTier Tier,
     decimal MinimumContribution);
+
+public sealed record WorldBossLeaderboardRewardTierDefinition(
+    WorldBossRewardTier Tier,
+    decimal MinimumPercentile,
+    int ChestCount,
+    int? MaxRank = null,
+    string? LootTableId = null,
+    bool Enhanced = false);
+
+public sealed record WorldBossLeaderboardRewardResolution(
+    WorldBossRewardTier Tier,
+    int Rank,
+    int EligibleParticipants,
+    decimal Percentile,
+    int ChestCount,
+    int EnhancedChestCount,
+    string? LootTableId);
+
+public static class WorldBossLeaderboardRewardPolicy
+{
+    public static WorldBossLeaderboardRewardResolution Resolve(
+        WorldBossRewardProfileDefinition profile,
+        int rank,
+        int eligibleParticipants)
+    {
+        ArgumentNullException.ThrowIfNull(profile);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rank);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(eligibleParticipants);
+        if (rank > eligibleParticipants)
+            throw new ArgumentOutOfRangeException(nameof(rank));
+
+        decimal percentile = CalculatePercentile(rank, eligibleParticipants);
+        IReadOnlyList<WorldBossLeaderboardRewardTierDefinition> tiers =
+            profile.LeaderboardTiers ?? [];
+
+        WorldBossLeaderboardRewardTierDefinition? resolved = tiers
+            .Where(tier => tier.MaxRank.HasValue && rank <= tier.MaxRank.Value)
+            .OrderBy(tier => tier.MaxRank)
+            .ThenByDescending(tier => tier.MinimumPercentile)
+            .FirstOrDefault();
+
+        resolved ??= tiers
+            .Where(tier => !tier.MaxRank.HasValue
+                && percentile >= tier.MinimumPercentile)
+            .OrderByDescending(tier => tier.MinimumPercentile)
+            .FirstOrDefault();
+
+        if (resolved is null)
+        {
+            return new(
+                WorldBossRewardTier.Qualified,
+                rank,
+                eligibleParticipants,
+                percentile,
+                0,
+                0,
+                null);
+        }
+
+        return new(
+            resolved.Tier,
+            rank,
+            eligibleParticipants,
+            percentile,
+            resolved.Enhanced ? 0 : resolved.ChestCount,
+            resolved.Enhanced ? resolved.ChestCount : 0,
+            resolved.LootTableId);
+    }
+
+    public static decimal CalculatePercentile(int rank, int eligibleParticipants)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rank);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(eligibleParticipants);
+        if (rank > eligibleParticipants)
+            throw new ArgumentOutOfRangeException(nameof(rank));
+
+        return decimal.Round(
+            (eligibleParticipants - rank + 1) * 100m / eligibleParticipants,
+            2,
+            MidpointRounding.AwayFromZero);
+    }
+}
 
 public sealed record WorldBossPhaseDefinition(
     int Phase,
