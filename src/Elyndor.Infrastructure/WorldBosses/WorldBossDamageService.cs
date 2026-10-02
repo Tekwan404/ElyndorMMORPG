@@ -1,3 +1,5 @@
+using Elyndor.Core.Content;
+using Elyndor.Infrastructure.Content;
 using Elyndor.Core.WorldBosses;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -22,9 +24,13 @@ public sealed record WorldBossDamageCommitResult(
     decimal MaxHealth,
     int Phase,
     WorldBossSpawnStatus? Status,
-    bool DefeatedNow);
+    bool DefeatedNow,
+    bool PhaseChanged);
 
-public sealed class WorldBossDamageService(GameDbContext db, TimeProvider time)
+public sealed class WorldBossDamageService(
+    GameDbContext db,
+    TimeProvider time,
+    IContentSnapshotProvider? contentProvider = null)
 {
     public Task<WorldBossDamageCommitResult> ApplyDamageAsync(
         Guid spawnId,
@@ -68,7 +74,8 @@ public sealed class WorldBossDamageService(GameDbContext db, TimeProvider time)
                         WorldBossErrorCodes.MutationConflict,
                         replayed: false,
                         appliedDamage: 0,
-                        defeatedNow: false);
+                        defeatedNow: false,
+                        phaseChanged: false);
                 }
 
                 await transaction.RollbackAsync(CancellationToken.None);
@@ -78,7 +85,8 @@ public sealed class WorldBossDamageService(GameDbContext db, TimeProvider time)
                     errorCode: null,
                     replayed: true,
                     existing.AppliedDamage,
-                    defeatedNow: false);
+                    defeatedNow: false,
+                    phaseChanged: false);
             }
 
             DateTimeOffset now = time.GetUtcNow();
@@ -94,7 +102,8 @@ public sealed class WorldBossDamageService(GameDbContext db, TimeProvider time)
                     WorldBossErrorCodes.Expired,
                     replayed: false,
                     appliedDamage: 0,
-                    defeatedNow: false);
+                    defeatedNow: false,
+                    phaseChanged: false);
             }
 
             string? inactiveError = spawn.Status switch
@@ -113,7 +122,8 @@ public sealed class WorldBossDamageService(GameDbContext db, TimeProvider time)
                     inactiveError,
                     replayed: false,
                     appliedDamage: 0,
-                    defeatedNow: false);
+                    defeatedNow: false,
+                    phaseChanged: false);
             }
 
             decimal appliedDamage = spawn.ApplyDamage(requestedDamage);
@@ -148,6 +158,22 @@ public sealed class WorldBossDamageService(GameDbContext db, TimeProvider time)
                 }
             }
 
+            bool phaseChanged = false;
+            if (appliedDamage > 0 && spawn.CurrentHealth > 0 && contentProvider is not null)
+            {
+                GameContentSnapshot content = contentProvider.GetCurrent();
+                if (content.Indexes.WorldBossesById.TryGetValue(
+                        spawn.BossDefinitionId,
+                        out WorldBossDefinition? definition))
+                {
+                    int resolvedPhase = WorldBossPhasePolicy.ResolvePhase(
+                        definition,
+                        spawn.CurrentHealth,
+                        spawn.MaxHealth);
+                    phaseChanged = spawn.TryChangePhase(resolvedPhase);
+                }
+            }
+
             bool defeatedNow = spawn.CurrentHealth == 0 && spawn.TryMarkDefeated(now);
             db.WorldBossDamageMutations.Add(new WorldBossDamageMutation(
                 spawnId,
@@ -169,7 +195,8 @@ public sealed class WorldBossDamageService(GameDbContext db, TimeProvider time)
                 errorCode: null,
                 replayed: false,
                 appliedDamage,
-                defeatedNow);
+                defeatedNow,
+                phaseChanged);
         });
     }
 
@@ -216,7 +243,8 @@ public sealed class WorldBossDamageService(GameDbContext db, TimeProvider time)
             MaxHealth: 0,
             Phase: 0,
             Status: null,
-            DefeatedNow: false);
+            DefeatedNow: false,
+            PhaseChanged: false);
 
     private static WorldBossDamageCommitResult FromSpawn(
         WorldBossSpawn spawn,
@@ -224,7 +252,8 @@ public sealed class WorldBossDamageService(GameDbContext db, TimeProvider time)
         string? errorCode,
         bool replayed,
         decimal appliedDamage,
-        bool defeatedNow) =>
+        bool defeatedNow,
+        bool phaseChanged) =>
         new(
             succeeded,
             errorCode,
@@ -234,5 +263,6 @@ public sealed class WorldBossDamageService(GameDbContext db, TimeProvider time)
             spawn.MaxHealth,
             spawn.CurrentPhase,
             spawn.Status,
-            defeatedNow);
+            defeatedNow,
+            phaseChanged);
 }
