@@ -2,9 +2,11 @@ using System.Text.Json;
 using Elyndor.Core.Afk;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Combat;
+using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.Talents;
 using Elyndor.Core.World;
 
 namespace Elyndor.UnitTests.Afk;
@@ -41,6 +43,45 @@ public sealed class AfkFarmSimulatorTests
         Assert.True(stronger.XpCandidate > weaker.XpCandidate);
         AfkFarmSimulationResult underpowered = AfkFarmSimulator.Simulate(CreateRequest(CreateSnapshot(1)));
         Assert.True(stronger.EfficiencyPercent > underpowered.EfficiencyPercent);
+    }
+
+    [Fact]
+    public void SafeInstantAbilityIncreasesKillsInTheSameInterval()
+    {
+        AbilityDefinition strike = new(
+            "AFK_TEST_STRIKE",
+            AbilityType.Instant,
+            AbilityTargetType.SingleEnemy,
+            10,
+            TimeSpan.FromSeconds(4),
+            TimeSpan.Zero,
+            true,
+            GlobalCooldownCategory.Standard,
+            false,
+            "PHYSICAL",
+            Actions:
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.Damage,
+                    DamageType: Elyndor.Core.Combat.Damage.DamageType.Physical,
+                    AttackPowerCoefficient: 1.5m)
+            ]);
+        MonsterDefinition monster = CreateMonster("ABILITY_TARGET", MonsterRank.Normal, 140, 5);
+        AfkCharacterSnapshot snapshot = CreateSnapshot(12, [strike.Id], currentResource: 100);
+
+        AfkFarmSimulationResult autoOnly = AfkFarmSimulator.Simulate(
+            CreateRequest(snapshot, monster));
+        AfkFarmSimulationResult withAbility = AfkFarmSimulator.Simulate(
+            CreateRequest(
+                snapshot,
+                monster,
+                new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal)
+                {
+                    [strike.Id] = strike
+                }));
+
+        Assert.True(withAbility.Kills > autoOnly.Kills);
+        Assert.True(withAbility.XpCandidate > autoOnly.XpCandidate);
     }
 
     [Fact]
@@ -109,7 +150,8 @@ public sealed class AfkFarmSimulatorTests
 
     private static AfkFarmSimulationRequest CreateRequest(
         AfkCharacterSnapshot snapshot,
-        MonsterDefinition? suppliedMonster = null)
+        MonsterDefinition? suppliedMonster = null,
+        IReadOnlyDictionary<string, AbilityDefinition>? abilities = null)
     {
         MonsterDefinition wolf = suppliedMonster ?? CreateMonster("WOLF", MonsterRank.Normal, 45, 9);
         return new AfkFarmSimulationRequest(
@@ -122,23 +164,40 @@ public sealed class AfkFarmSimulatorTests
             new Dictionary<string, MonsterDefinition> { [wolf.Id] = wolf },
             new DateTimeOffset(2026, 9, 12, 0, 0, 0, TimeSpan.Zero),
             new DateTimeOffset(2026, 9, 12, 0, 15, 0, TimeSpan.Zero),
-            "content-v1");
+            "content-v1",
+            AbilitiesById: abilities);
     }
 
-    private static AfkCharacterSnapshot CreateSnapshot(decimal attackPower)
+    private static AfkCharacterSnapshot CreateSnapshot(
+        decimal attackPower,
+        IReadOnlyList<string>? knownAbilityIds = null,
+        decimal currentResource = 0)
     {
         ClassProfile profile = new(
             "WARRIOR", "STRENGTH", "RAGE", new PrimaryStats(1, 1, 1, 1),
             new PrimaryStats(1, 1, 1, 1), [], [], "test",
             CombatAutoAttack: new AutoAttackProfile(TimeSpan.FromSeconds(2), 8, 1, 0));
+        ResourceProfile resource = new(
+            "RAGE",
+            100,
+            0,
+            0,
+            10,
+            0,
+            5,
+            5);
         return new AfkCharacterSnapshot(
             profile.Id,
             5,
             new CharacterStats(1, 1, 1, 1, 100, attackPower, 0, 0, 1, 100, 0, 0, 1, 0, 0, 0),
             100,
-            0,
+            currentResource,
             JsonSerializer.Serialize(profile),
-            "{}", "{}", new Dictionary<string, int>(), "{}", []);
+            JsonSerializer.Serialize(resource),
+            "{}",
+            new Dictionary<string, int>(),
+            JsonSerializer.Serialize(ResolvedTalentModifiers.Empty),
+            knownAbilityIds ?? []);
     }
 
     private static MonsterDefinition CreateMonster(
