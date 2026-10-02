@@ -189,6 +189,107 @@ public sealed class WorldBossLifecycleTests(PostgresFixture postgres) : IAsyncLi
         Assert.Equal("Пробуждение", result.Active.PhaseName);
     }
 
+    [Fact]
+    public async Task LeaderboardReadRanksPlayersAndPartiesAndReturnsCurrentPlayerPosition()
+    {
+        GameContentSnapshot content = await ContentAsync();
+        Guid[] accounts = [Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7()];
+        Guid[] characters = [Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7()];
+        Guid firstPartyId = Guid.CreateVersion7();
+        Guid secondPartyId = Guid.CreateVersion7();
+
+        await using (GameDbContext db = postgres.CreateDbContext())
+        {
+            for (int index = 0; index < accounts.Length; index++)
+            {
+                db.Accounts.Add(new Account(
+                    accounts[index],
+                    Random.Shared.NextInt64(1, long.MaxValue),
+                    _time.Now));
+                db.Characters.Add(new Character(
+                    characters[index],
+                    accounts[index],
+                    Guid.CreateVersion7(),
+                    $"Ranker{index + 1}",
+                    $"RANK{index}{characters[index]:N}"[..16].ToUpperInvariant(),
+                    "HUMAN",
+                    "MALE",
+                    "WARRIOR",
+                    _time.Now));
+            }
+
+            db.Parties.Add(Party.Create(
+                firstPartyId,
+                Guid.CreateVersion7(),
+                characters[0],
+                _time.Now));
+            db.Parties.Add(Party.Create(
+                secondPartyId,
+                Guid.CreateVersion7(),
+                characters[1],
+                _time.Now));
+            await db.SaveChangesAsync();
+        }
+
+        Guid spawnId;
+        await using (GameDbContext db = postgres.CreateDbContext())
+        {
+            var lifecycle = new WorldBossLifecycleService(
+                db,
+                new StaticContentSnapshotProvider(content.Package),
+                _time);
+            spawnId = (await lifecycle.ActivateAsync(
+                "WORLD_BOSS_ASH_ARCHON",
+                default)).Spawn!.Id;
+        }
+
+        await using (GameDbContext db = postgres.CreateDbContext())
+        {
+            decimal[] damages = [50_000m, 125_000m, 75_000m];
+            for (int index = 0; index < characters.Length; index++)
+            {
+                var contribution = new WorldBossContribution(
+                    spawnId,
+                    characters[index],
+                    _time.Now);
+                contribution.AddDamage(damages[index], _time.Now.AddSeconds(index + 1));
+                db.WorldBossContributions.Add(contribution);
+            }
+
+            var firstParty = new WorldBossPartyContribution(spawnId, firstPartyId);
+            firstParty.AddDamage(50_000m);
+            db.WorldBossPartyContributions.Add(firstParty);
+            var secondParty = new WorldBossPartyContribution(spawnId, secondPartyId);
+            secondParty.AddDamage(125_000m);
+            db.WorldBossPartyContributions.Add(secondParty);
+            await db.SaveChangesAsync();
+        }
+
+        await using GameDbContext readDb = postgres.CreateDbContext();
+        var reader = new WorldBossReadService(
+            readDb,
+            new StaticContentSnapshotProvider(content.Package),
+            _time);
+        WorldBossLeaderboardReadResult result = await reader.GetLeaderboardAsync(
+            accounts[1],
+            spawnId,
+            default);
+
+        Assert.True(result.CharacterFound);
+        Assert.True(result.SpawnFound);
+        Assert.Equal(characters[1], result.Players[0].CharacterId);
+        Assert.Equal(1, result.Players[0].Rank);
+        Assert.Equal(characters[2], result.Players[1].CharacterId);
+        Assert.Equal(characters[0], result.Players[2].CharacterId);
+        Assert.Equal(1, result.PersonalRank);
+        Assert.Equal(125_000m, result.PersonalDamage);
+        Assert.Equal(secondPartyId, result.PartyId);
+        Assert.Equal(1, result.PartyRank);
+        Assert.Equal(125_000m, result.PartyDamage);
+        Assert.Equal(secondPartyId, result.Parties[0].PartyId);
+        Assert.Equal(firstPartyId, result.Parties[1].PartyId);
+    }
+
     private static async Task<GameContentSnapshot> ContentAsync()
     {
         var package = await GameContentPackageLoader.LoadAsync(
