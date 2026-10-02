@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Elyndor.Core.Balance;
 using Elyndor.Core.Content;
+using Elyndor.Core.Progression;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Items;
 
@@ -274,7 +275,8 @@ internal static class ContentAuditExporter
                 },
                 Rewards = new
                 {
-                    monster.XpReward,
+                    XpReward = ResolveBaseMonsterXp(package, monster),
+                    monster.GrantsXp,
                     monster.GoldRewardMin,
                     monster.GoldRewardMax,
                     monster.LootTableId,
@@ -307,6 +309,24 @@ internal static class ContentAuditExporter
             .ToArray();
 
         return Envelope(package, "enemies", rows.Length, rows);
+    }
+
+    private static int ResolveBaseMonsterXp(
+        GameContentPackage package,
+        MonsterDefinition monster)
+    {
+        if (!monster.GrantsXp)
+            return 0;
+        if (package.LevelProgression is null
+            || package.ProgressionBalance is null)
+        {
+            return monster.LegacyXpReward;
+        }
+
+        return ProgressionRewardCalculator.ResolveBaseMonsterXp(
+            monster,
+            package.LevelProgression,
+            package.ProgressionBalance);
     }
 
     private static object BuildCombatBalance(GameContentPackage package)
