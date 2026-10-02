@@ -18,14 +18,14 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Мгновенно восстанавливает 50 здоровья. Лечебные зелья этой категории можно использовать раз в 5 секунд.",
+      "description": "Мгновенно восстанавливает 120 здоровья. Лечебные зелья этой категории можно использовать раз в 5 секунд.",
       "version": 2,
       "consumableCooldownSeconds": 5,
       "consumableCooldownCategoryId": "HEALING_POTION",
       "consumableActions": [
         {
           "type": "RestoreHp",
-          "amount": 50
+          "amount": 120
         }
       ],
       "buyPriceGold": 20
