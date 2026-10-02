@@ -13,6 +13,7 @@ using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.Logging;
 
 namespace Elyndor.Infrastructure.WorldBosses;
 
@@ -48,7 +49,9 @@ public sealed class WorldBossSettlementService(
     GameDbContext db,
     IContentSnapshotProvider contentProvider,
     CharacterDerivedStateService derivedStateService,
-    TimeProvider time)
+    TimeProvider time,
+    IWorldBossUpdatePublisher? updatePublisher = null,
+    ILogger<WorldBossSettlementService>? logger = null)
 {
     public Task<WorldBossSettlementBatchResult> SettleAsync(
         Guid spawnId,
@@ -124,13 +127,27 @@ public sealed class WorldBossSettlementService(
             _ = spawn.TryBeginSettlement();
 
         DateTimeOffset now = time.GetUtcNow();
-        WorldBossContribution[] eligible = await db.WorldBossContributions
+        WorldBossContribution[] contributions = await db.WorldBossContributions
             .AsNoTracking()
-            .Where(contribution =>
-                contribution.SpawnId == spawnId
-                && contribution.Damage >= rewardProfile.MinimumContribution)
+            .Where(contribution => contribution.SpawnId == spawnId)
             .OrderBy(contribution => contribution.CharacterId)
             .ToArrayAsync(cancellationToken);
+        Guid[] participantCharacterIds = contributions
+            .Select(contribution => contribution.CharacterId)
+            .Distinct()
+            .ToArray();
+        Dictionary<Guid, Guid> accountByCharacterId = participantCharacterIds.Length == 0
+            ? []
+            : await db.Characters
+                .AsNoTracking()
+                .Where(character => participantCharacterIds.Contains(character.Id))
+                .ToDictionaryAsync(
+                    character => character.Id,
+                    character => character.AccountId,
+                    cancellationToken);
+        WorldBossContribution[] eligible = contributions
+            .Where(contribution => contribution.Damage >= rewardProfile.MinimumContribution)
+            .ToArray();
 
         Dictionary<Guid, WorldBossRewardSettlement> existing =
             await db.WorldBossRewardSettlements
@@ -259,12 +276,60 @@ public sealed class WorldBossSettlementService(
         cancellationToken.ThrowIfCancellationRequested();
         await transaction.CommitAsync(CancellationToken.None);
 
+        if (updatePublisher is not null)
+        {
+            Dictionary<Guid, WorldBossSettlementCharacterResult> rewardByCharacterId =
+                rewards.ToDictionary(reward => reward.CharacterId);
+            WorldBossRewardDelivery[] deliveries = contributions
+                .Where(contribution =>
+                    accountByCharacterId.ContainsKey(contribution.CharacterId))
+                .Select(contribution => new WorldBossRewardDelivery(
+                    accountByCharacterId[contribution.CharacterId],
+                    contribution.CharacterId,
+                    contribution.Damage,
+                    rewardByCharacterId.GetValueOrDefault(contribution.CharacterId)))
+                .ToArray();
+
+            await PublishSettledSafelyAsync(
+                spawnId,
+                now,
+                deliveries,
+                cancellationToken);
+        }
+
         return new(
             true,
             null,
             spawnId,
             false,
             rewards);
+    }
+
+    private async Task PublishSettledSafelyAsync(
+        Guid spawnId,
+        DateTimeOffset settledAtUtc,
+        IReadOnlyCollection<WorldBossRewardDelivery> deliveries,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await updatePublisher!.PublishSettledAsync(
+                spawnId,
+                settledAtUtc,
+                deliveries,
+                cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Settlement is already durable. A reconnect performs an authoritative reward read.
+        }
+        catch (Exception exception)
+        {
+            logger?.LogError(
+                exception,
+                "World boss {SpawnId} settled, but realtime reward delivery failed.",
+                spawnId);
+        }
     }
 
     private async Task GrantItemAsync(
