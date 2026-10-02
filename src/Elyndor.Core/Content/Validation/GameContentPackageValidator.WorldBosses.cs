@@ -111,6 +111,7 @@ public static partial class GameContentPackageValidator
                     || rewardProfile.ChestGoldMin < 0
                     || rewardProfile.ChestGoldMax < rewardProfile.ChestGoldMin
                     || rewardProfile.Tiers.Count == 0
+                        && rewardProfile.LeaderboardTiers is not { Count: > 0 }
                     || rewardProfile.Tiers.Any(tier =>
                         tier.MinimumContribution < rewardProfile.MinimumContribution)
                     || rewardProfile.Tiers
