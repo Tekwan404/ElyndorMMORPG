@@ -49,13 +49,7 @@ public static partial class GameContentPackageValidator
 
         ProgressionBalanceProfile? profile = package.ProgressionBalance;
         if (profile is null)
-        {
-            errors.Add(new(
-                "MISSING_PROGRESSION_BALANCE",
-                "progressionBalance",
-                "Progression balance profile is required."));
             return;
-        }
 
         if (string.IsNullOrWhiteSpace(profile.Id)
             || profile.MaxBenchmarkLevel < 1
