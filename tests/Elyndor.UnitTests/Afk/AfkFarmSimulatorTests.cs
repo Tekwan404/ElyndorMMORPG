@@ -85,6 +85,104 @@ public sealed class AfkFarmSimulatorTests
     }
 
     [Fact]
+    public void CastedDirectDamageAbilityIncreasesMageFarmThroughput()
+    {
+        AbilityDefinition fireball = new(
+            "AFK_TEST_FIREBALL",
+            AbilityType.Casted,
+            AbilityTargetType.SingleEnemy,
+            0,
+            TimeSpan.Zero,
+            TimeSpan.FromSeconds(1.8),
+            true,
+            GlobalCooldownCategory.Standard,
+            true,
+            "FIRE",
+            Actions:
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.Damage,
+                    Amount: 180,
+                    DamageType: Elyndor.Core.Combat.Damage.DamageType.Magical,
+                    CanMiss: false,
+                    CanCrit: false,
+                    CanDodge: false)
+            ]);
+        MonsterDefinition monster = CreateMonster("CAST_TARGET", MonsterRank.Normal, 140, 5);
+        AfkCharacterSnapshot mage = CreateSnapshot(
+            4,
+            [fireball.Id],
+            classId: "MAGE",
+            autoAttackInterval: TimeSpan.FromSeconds(2.6));
+
+        AfkFarmSimulationResult autoOnly = AfkFarmSimulator.Simulate(
+            CreateRequest(mage, monster));
+        AfkFarmSimulationResult withFireball = AfkFarmSimulator.Simulate(
+            CreateRequest(
+                mage,
+                monster,
+                new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal)
+                {
+                    [fireball.Id] = fireball
+                }));
+
+        Assert.True(withFireball.Kills > autoOnly.Kills);
+        Assert.True(withFireball.XpCandidate > autoOnly.XpCandidate);
+        Assert.True(withFireball.EfficiencyPercent > autoOnly.EfficiencyPercent);
+    }
+
+    [Fact]
+    public void CastDrivenEfficiencyDoesNotFavorTheFasterClassAutoAttackProfile()
+    {
+        AbilityDefinition spell = new(
+            "AFK_TEST_NEUTRAL_CAST",
+            AbilityType.Casted,
+            AbilityTargetType.SingleEnemy,
+            0,
+            TimeSpan.Zero,
+            TimeSpan.FromSeconds(1.8),
+            true,
+            GlobalCooldownCategory.Standard,
+            true,
+            "ARCANE",
+            Actions:
+            [
+                new AbilityActionDefinition(
+                    AbilityActionType.Damage,
+                    Amount: 180,
+                    DamageType: Elyndor.Core.Combat.Damage.DamageType.Magical,
+                    CanMiss: false,
+                    CanCrit: false,
+                    CanDodge: false)
+            ]);
+        MonsterDefinition monster = CreateMonster("NEUTRAL_TARGET", MonsterRank.Normal, 140, 5);
+        IReadOnlyDictionary<string, AbilityDefinition> abilities =
+            new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal)
+            {
+                [spell.Id] = spell
+            };
+        AfkCharacterSnapshot warriorProfile = CreateSnapshot(
+            4,
+            [spell.Id],
+            classId: "WARRIOR",
+            autoAttackInterval: TimeSpan.FromSeconds(2));
+        AfkCharacterSnapshot mageProfile = CreateSnapshot(
+            4,
+            [spell.Id],
+            classId: "MAGE",
+            autoAttackInterval: TimeSpan.FromSeconds(2.6));
+
+        AfkFarmSimulationResult warrior = AfkFarmSimulator.Simulate(
+            CreateRequest(warriorProfile, monster, abilities));
+        AfkFarmSimulationResult mage = AfkFarmSimulator.Simulate(
+            CreateRequest(mageProfile, monster, abilities));
+
+        Assert.Equal(warrior.Kills, mage.Kills);
+        Assert.Equal(warrior.EfficiencyPercent, mage.EfficiencyPercent);
+        Assert.Equal(100, mage.EfficiencyPercent);
+    }
+
+    [Fact]
     public void BossEncountersAreIgnored()
     {
         MonsterDefinition boss = CreateMonster("BOSS", MonsterRank.Boss, 1_000, 100);
@@ -171,14 +269,24 @@ public sealed class AfkFarmSimulatorTests
     private static AfkCharacterSnapshot CreateSnapshot(
         decimal attackPower,
         IReadOnlyList<string>? knownAbilityIds = null,
-        decimal currentResource = 0)
+        decimal currentResource = 0,
+        string classId = "WARRIOR",
+        TimeSpan? autoAttackInterval = null)
     {
+        string resourceId = string.Equals(classId, "MAGE", StringComparison.Ordinal)
+            ? "MANA"
+            : "RAGE";
         ClassProfile profile = new(
-            "WARRIOR", "STRENGTH", "RAGE", new PrimaryStats(1, 1, 1, 1),
+            classId, classId == "MAGE" ? "INTELLECT" : "STRENGTH", resourceId,
+            new PrimaryStats(1, 1, 1, 1),
             new PrimaryStats(1, 1, 1, 1), [], [], "test",
-            CombatAutoAttack: new AutoAttackProfile(TimeSpan.FromSeconds(2), 8, 1, 0));
+            CombatAutoAttack: new AutoAttackProfile(
+                autoAttackInterval ?? TimeSpan.FromSeconds(2),
+                8,
+                1,
+                0));
         ResourceProfile resource = new(
-            "RAGE",
+            resourceId,
             100,
             0,
             0,
