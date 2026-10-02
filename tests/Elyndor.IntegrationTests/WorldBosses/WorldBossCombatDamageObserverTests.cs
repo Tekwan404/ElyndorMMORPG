@@ -152,7 +152,7 @@ public sealed class WorldBossCombatDamageObserverTests(PostgresFixture postgres)
         WorldBossCombatDamageObserver observer = new(
             provider.GetRequiredService<IServiceScopeFactory>());
         await observer.ObserveAsync(
-            Guid.CreateVersion7(),
+            CreateSession(seed with { SessionId = Guid.CreateVersion7() }),
             [Participant(seed)],
             [Damage(seed.PlayerActorId, seed.BossActorId, 5_000m, 1)],
             CancellationToken.None);
