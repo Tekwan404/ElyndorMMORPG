@@ -91,6 +91,24 @@ public static class GameContentPackageCodec
             changed |= statFormula.Remove("armorPerStrength");
         }
 
+        if (package["monsters"] is JsonArray monsters)
+        {
+            foreach (JsonNode? monsterNode in monsters)
+            {
+                if (monsterNode is not JsonObject monster
+                    || monster["xpReward"] is not JsonValue xpValue
+                    || !xpValue.TryGetValue<int>(out int xpReward))
+                {
+                    continue;
+                }
+
+                monster.Remove("xpReward");
+                if (xpReward <= 0 && monster["grantsXp"] is null)
+                    monster["grantsXp"] = false;
+                changed = true;
+            }
+        }
+
         if (package["items"] is not JsonArray items)
         {
             return changed
