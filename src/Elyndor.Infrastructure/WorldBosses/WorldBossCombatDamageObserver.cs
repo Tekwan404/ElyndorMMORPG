@@ -90,7 +90,24 @@ public sealed class WorldBossCombatDamageObserver(IServiceScopeFactory scopeFact
                 cancellationToken);
 
             if (result.Succeeded)
+            {
+                if (result.DefeatedNow)
+                {
+                    WorldBossSettlementBatchResult settlement =
+                        await scope.ServiceProvider
+                            .GetRequiredService<WorldBossSettlementService>()
+                            .SettleAsync(binding.SpawnId, cancellationToken);
+                    if (!settlement.Succeeded)
+                    {
+                        throw new InvalidOperationException(
+                            $"World boss settlement failed with '{settlement.ErrorCode}'.");
+                    }
+
+                    break;
+                }
+
                 continue;
+            }
 
             if (result.ErrorCode is WorldBossErrorCodes.AlreadyDefeated
                 or WorldBossErrorCodes.Expired
