@@ -1,0 +1,250 @@
+using Elyndor.Core.Characters;
+using Elyndor.Core.Content;
+using Elyndor.Core.Identity;
+using Elyndor.Core.WorldBosses;
+using Elyndor.Infrastructure.Characters;
+using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.WorldBosses;
+using Elyndor.IntegrationTests.Postgres;
+using Microsoft.EntityFrameworkCore;
+
+namespace Elyndor.IntegrationTests.WorldBosses;
+
+[Collection(PostgresFixtureDefinition.Name)]
+public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : IAsyncLifetime
+{
+    private static readonly DateTimeOffset Now =
+        new(2026, 10, 2, 14, 0, 0, TimeSpan.Zero);
+
+    public Task InitializeAsync() => postgres.ResetAsync();
+    public Task DisposeAsync() => Task.CompletedTask;
+
+    [Fact]
+    public async Task SettlementGrantsBossRewardsAndOneChestExactlyOnce()
+    {
+        GameContentPackage package = await LoadContentAsync();
+        Seed seed = await SeedDefeatedAsync(package, 50_000m);
+
+        WorldBossSettlementBatchResult first;
+        await using (GameDbContext db = postgres.CreateDbContext())
+        {
+            first = await CreateService(db, package).SettleAsync(seed.SpawnId, default);
+        }
+
+        Assert.True(first.Succeeded, first.ErrorCode);
+        Assert.False(first.WasReplay);
+        WorldBossSettlementCharacterResult reward = Assert.Single(first.Rewards);
+        Assert.Equal(seed.CharacterId, reward.CharacterId);
+        Assert.Equal(50_000m, reward.Contribution);
+        Assert.Equal(WorldBossRewardTier.Gold, reward.Tier);
+        Assert.Equal(200_000, reward.Experience);
+        Assert.Equal(1_000, reward.BossGold);
+        Assert.InRange(reward.ChestGold, 250, 500);
+        Assert.Single(reward.Items);
+
+        CharacterState afterFirst = await ReadCharacterStateAsync(seed.CharacterId);
+        Assert.Equal(1_000 + reward.ChestGold, afterFirst.Gold);
+        Assert.Equal(1, afterFirst.ItemCount);
+        Assert.Equal(1, afterFirst.SettlementCount);
+        Assert.Equal(WorldBossSpawnStatus.Settled, afterFirst.SpawnStatus);
+
+        WorldBossSettlementBatchResult replay;
+        await using (GameDbContext db = postgres.CreateDbContext())
+        {
+            replay = await CreateService(db, package).SettleAsync(seed.SpawnId, default);
+        }
+
+        Assert.True(replay.Succeeded, replay.ErrorCode);
+        Assert.True(replay.WasReplay);
+        Assert.Single(replay.Rewards);
+        CharacterState afterReplay = await ReadCharacterStateAsync(seed.CharacterId);
+        Assert.Equal(afterFirst, afterReplay);
+    }
+
+    [Fact]
+    public async Task ConcurrentSettlementProducesOnePermanentReward()
+    {
+        GameContentPackage package = await LoadContentAsync();
+        Seed seed = await SeedDefeatedAsync(package, 200_000m);
+
+        async Task<WorldBossSettlementBatchResult> SettleAsync()
+        {
+            await using GameDbContext db = postgres.CreateDbContext();
+            return await CreateService(db, package).SettleAsync(seed.SpawnId, default);
+        }
+
+        WorldBossSettlementBatchResult[] results =
+            await Task.WhenAll(SettleAsync(), SettleAsync());
+
+        Assert.All(results, result => Assert.True(result.Succeeded, result.ErrorCode));
+        Assert.Contains(results, result => !result.WasReplay);
+        Assert.Contains(results, result => result.WasReplay);
+
+        CharacterState state = await ReadCharacterStateAsync(seed.CharacterId);
+        Assert.Equal(1, state.SettlementCount);
+        Assert.Equal(1, state.ItemCount);
+        Assert.InRange(state.Gold, 1_250, 1_500);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        WorldBossRewardSettlement settlement =
+            await verify.WorldBossRewardSettlements.SingleAsync();
+        Assert.Equal(WorldBossRewardTier.Legendary, settlement.RewardTier);
+        Assert.Equal(200_000, settlement.Experience);
+    }
+
+    [Fact]
+    public async Task ContributionBelowEligibilityReceivesNoPermanentReward()
+    {
+        GameContentPackage package = await LoadContentAsync();
+        Seed seed = await SeedDefeatedAsync(package, 4_999m);
+
+        await using (GameDbContext db = postgres.CreateDbContext())
+        {
+            WorldBossSettlementBatchResult result =
+                await CreateService(db, package).SettleAsync(seed.SpawnId, default);
+            Assert.True(result.Succeeded, result.ErrorCode);
+            Assert.Empty(result.Rewards);
+        }
+
+        CharacterState state = await ReadCharacterStateAsync(seed.CharacterId);
+        Assert.Equal(0, state.Gold);
+        Assert.Equal(0, state.ItemCount);
+        Assert.Equal(0, state.SettlementCount);
+        Assert.Equal(WorldBossSpawnStatus.Settled, state.SpawnStatus);
+    }
+
+    [Fact]
+    public async Task RewardReadReturnsPersistedChestResultWithoutRerolling()
+    {
+        GameContentPackage package = await LoadContentAsync();
+        Seed seed = await SeedDefeatedAsync(package, 25_000m);
+
+        WorldBossSettlementCharacterResult settled;
+        await using (GameDbContext db = postgres.CreateDbContext())
+        {
+            WorldBossSettlementBatchResult result =
+                await CreateService(db, package).SettleAsync(seed.SpawnId, default);
+            settled = Assert.Single(result.Rewards);
+        }
+
+        await using GameDbContext readDb = postgres.CreateDbContext();
+        var reader = new WorldBossReadService(
+            readDb,
+            new StaticContentSnapshotProvider(package),
+            new FixedTime(Now.AddMinutes(1)));
+        WorldBossRewardReadResult read = await reader.GetRewardAsync(
+            seed.AccountId,
+            seed.SpawnId,
+            default);
+
+        Assert.True(read.CharacterFound);
+        Assert.True(read.SpawnFound);
+        Assert.NotNull(read.Reward);
+        Assert.Equal(settled.Tier, read.Reward!.Tier);
+        Assert.Equal(settled.Experience, read.Reward.Experience);
+        Assert.Equal(settled.BossGold, read.Reward.BossGold);
+        Assert.Equal(settled.ChestGold, read.Reward.ChestGold);
+        Assert.Equal(settled.Items, read.Reward.Items);
+    }
+
+    private WorldBossSettlementService CreateService(
+        GameDbContext db,
+        GameContentPackage package)
+    {
+        var provider = new StaticContentSnapshotProvider(package);
+        var derived = new CharacterDerivedStateService(db, provider, inventoryService: null);
+        return new WorldBossSettlementService(
+            db,
+            provider,
+            derived,
+            new FixedTime(Now.AddMinutes(1)));
+    }
+
+    private async Task<Seed> SeedDefeatedAsync(
+        GameContentPackage package,
+        decimal contributionDamage)
+    {
+        Guid accountId = Guid.CreateVersion7();
+        Guid characterId = Guid.CreateVersion7();
+        Guid spawnId = Guid.CreateVersion7();
+
+        await using GameDbContext db = postgres.CreateDbContext();
+        db.Accounts.Add(new Account(
+            accountId,
+            Random.Shared.NextInt64(1, long.MaxValue),
+            Now));
+
+        var character = new Character(
+            characterId,
+            accountId,
+            Guid.CreateVersion7(),
+            "Settlement",
+            $"SETTLE{characterId:N}"[..16].ToUpperInvariant(),
+            "HUMAN",
+            "MALE",
+            "WARRIOR",
+            Now);
+        character.SetLevel(30);
+        db.Characters.Add(character);
+
+        var spawn = new WorldBossSpawn(
+            spawnId,
+            "WORLD_BOSS_ASH_ARCHON",
+            1_000_000m,
+            1,
+            Now,
+            Now.AddMinutes(30),
+            package.ContentVersion,
+            package.BalanceVersion);
+        _ = spawn.ApplyDamage(spawn.MaxHealth);
+        Assert.True(spawn.TryMarkDefeated(Now.AddMinutes(1)));
+        db.WorldBossSpawns.Add(spawn);
+
+        var contribution = new WorldBossContribution(
+            spawnId,
+            characterId,
+            Now.AddSeconds(1));
+        contribution.AddDamage(
+            contributionDamage,
+            Now.AddMinutes(1));
+        db.WorldBossContributions.Add(contribution);
+
+        await db.SaveChangesAsync();
+        return new Seed(accountId, characterId, spawnId);
+    }
+
+    private async Task<CharacterState> ReadCharacterStateAsync(Guid characterId)
+    {
+        await using GameDbContext db = postgres.CreateDbContext();
+        Character character = await db.Characters.SingleAsync(
+            candidate => candidate.Id == characterId);
+        return new CharacterState(
+            character.Gold,
+            character.Level,
+            character.Experience,
+            await db.CharacterItems.CountAsync(item => item.CharacterId == characterId),
+            await db.WorldBossRewardSettlements.CountAsync(
+                settlement => settlement.CharacterId == characterId),
+            (await db.WorldBossSpawns.SingleAsync()).Status);
+    }
+
+    private static Task<GameContentPackage> LoadContentAsync() =>
+        GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+    private sealed record Seed(Guid AccountId, Guid CharacterId, Guid SpawnId);
+
+    private sealed record CharacterState(
+        long Gold,
+        int Level,
+        long Experience,
+        int ItemCount,
+        int SettlementCount,
+        WorldBossSpawnStatus SpawnStatus);
+
+    private sealed class FixedTime(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
+}
