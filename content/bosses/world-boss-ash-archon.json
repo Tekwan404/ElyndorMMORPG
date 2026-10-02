@@ -208,6 +208,41 @@
           "tier": "Legendary",
           "minimumContribution": 200000
         }
+      ],
+      "leaderboardTiers": [
+        {
+          "tier": "Top50",
+          "minimumPercentile": 50,
+          "chestCount": 0
+        },
+        {
+          "tier": "Top75",
+          "minimumPercentile": 75,
+          "chestCount": 0
+        },
+        {
+          "tier": "Top85",
+          "minimumPercentile": 85,
+          "chestCount": 1
+        },
+        {
+          "tier": "Top95",
+          "minimumPercentile": 95,
+          "chestCount": 1
+        },
+        {
+          "tier": "Top99",
+          "minimumPercentile": 99,
+          "chestCount": 2
+        },
+        {
+          "tier": "Top5",
+          "minimumPercentile": 0,
+          "chestCount": 2,
+          "maxRank": 5,
+          "lootTableId": "WORLD_BOSS_ASH_ARCHON_TOP5_LOOT",
+          "enhanced": true
+        }
       ]
     }
   ]
