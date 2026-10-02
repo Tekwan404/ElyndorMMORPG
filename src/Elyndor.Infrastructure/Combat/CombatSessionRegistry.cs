@@ -33,7 +33,8 @@ public sealed class CombatSessionRegistry(
     ICombatUpdatePublisher publisher,
     ICombatSessionFinalizer finalizer,
     ILogger<CombatSessionRegistry> logger,
-    IEnumerable<ICombatResultObserver>? resultObservers = null) : IDisposable, ICombatActivityReader
+    IEnumerable<ICombatResultObserver>? resultObservers = null,
+    IEnumerable<ICombatSessionSynchronizer>? sessionSynchronizers = null) : IDisposable, ICombatActivityReader
 {
     private static readonly TimeSpan RecoveryDelay = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan WatchdogInterval = TimeSpan.FromSeconds(5);
@@ -45,6 +46,8 @@ public sealed class CombatSessionRegistry(
             + "session {SessionId}, status {Status}.");
 
     private readonly ICombatResultObserver[] _resultObservers = resultObservers?.ToArray() ?? [];
+    private readonly ICombatSessionSynchronizer[] _sessionSynchronizers =
+        sessionSynchronizers?.ToArray() ?? [];
     private readonly ConcurrentDictionary<Guid, SessionEntry> _byAccount = [];
     private readonly ConcurrentDictionary<Guid, SessionEntry> _byCharacter = [];
     private readonly ConcurrentDictionary<Guid, SessionEntry> _bySession = [];
@@ -185,7 +188,26 @@ public sealed class CombatSessionRegistry(
                 return CombatOperationResult.Failure(CombatErrorCodes.NotFound);
 
             ParticipantBinding activeBinding = binding!;
-            CombatCommandResult result = await operation(entry, activeBinding, timeProvider.GetUtcNow());
+            DateTimeOffset now = timeProvider.GetUtcNow();
+            long beforeSynchronization = entry.Session.Sequence;
+            bool terminalized = await SynchronizeSessionAsync(
+                entry,
+                now,
+                CancellationToken.None);
+            CombatCommandResult result = terminalized
+                ? new CombatCommandResult(
+                    true,
+                    null,
+                    entry.Session.Snapshot(activeBinding.CharacterId),
+                    entry.Session.GetEventsAfter(beforeSynchronization))
+                : await operation(entry, activeBinding, now);
+            if (!terminalized && beforeSynchronization < result.Snapshot.Sequence)
+            {
+                result = result with
+                {
+                    Events = entry.Session.GetEventsAfter(beforeSynchronization)
+                };
+            }
             entry.PendingResult = result;
             entry.ExecutionState = result.Snapshot.Status == CombatSessionStatus.Active
                 ? SessionExecutionState.Active
@@ -315,6 +337,10 @@ public sealed class CombatSessionRegistry(
                 || binding is null)
                 return CombatOperationResult.Failure(CombatErrorCodes.NotFound);
 
+            await SynchronizeSessionAsync(
+                entry,
+                timeProvider.GetUtcNow(),
+                CancellationToken.None);
             IReadOnlyList<Core.Combat.CombatEvent> tail = entry.Session.GetRetainedEventsAfter(
                 Math.Max(0, lastSeenSequence),
                 out bool fullResyncRequired);
@@ -571,7 +597,19 @@ public sealed class CombatSessionRegistry(
 
             entry.Timer?.Dispose();
             entry.Timer = null;
-            CombatCommandResult result = entry.Session.AdvanceTo(timeProvider.GetUtcNow());
+            DateTimeOffset now = timeProvider.GetUtcNow();
+            long beforeSynchronization = entry.Session.Sequence;
+            bool terminalized = await SynchronizeSessionAsync(
+                entry,
+                now,
+                CancellationToken.None);
+            CombatCommandResult result = terminalized
+                ? new CombatCommandResult(
+                    true,
+                    null,
+                    entry.Session.Snapshot(),
+                    entry.Session.GetEventsAfter(beforeSynchronization))
+                : entry.Session.AdvanceTo(now);
             entry.PendingResult = result;
             entry.ExecutionState = result.Snapshot.Status == CombatSessionStatus.Active
                 ? SessionExecutionState.Active
@@ -595,6 +633,29 @@ public sealed class CombatSessionRegistry(
         {
             entry.Gate.Release();
         }
+    }
+
+    private async Task<bool> SynchronizeSessionAsync(
+        SessionEntry entry,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        if (_sessionSynchronizers.Length == 0)
+            return false;
+
+        foreach (ICombatSessionSynchronizer synchronizer in _sessionSynchronizers)
+        {
+            if (await synchronizer.SynchronizeAsync(
+                    entry.Session,
+                    entry.ContentSnapshot,
+                    now,
+                    cancellationToken))
+            {
+                return true;
+            }
+        }
+
+        return entry.Session.Status != CombatSessionStatus.Active;
     }
 
     private async Task ObserveResultAsync(

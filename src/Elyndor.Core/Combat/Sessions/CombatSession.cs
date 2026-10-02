@@ -718,6 +718,51 @@ public sealed partial class CombatSession
         _primaryEnemy.Actor.SetCurrentHp(currentHealth);
     }
 
+    public bool SynchronizePrimaryEnemyFromAuthority(
+        decimal currentHealth,
+        bool expired,
+        DateTimeOffset now)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(currentHealth);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(
+            currentHealth,
+            _primaryEnemy.Actor.MaxHp);
+        if (Status != CombatSessionStatus.Active)
+            return false;
+        if (now < CurrentTimeUtc)
+            throw new ArgumentOutOfRangeException(
+                nameof(now),
+                "Authoritative combat synchronization cannot move time backwards.");
+
+        CurrentTimeUtc = now;
+        if (expired)
+        {
+            Status = CombatSessionStatus.Cancelled;
+            EndCombat(new CombatEvent(
+                CombatEventType.CombatEnded,
+                now,
+                _primaryEnemy.Actor.ActorId,
+                "AUTHORITATIVE_EXPIRED",
+                TargetActorId: _primaryEnemy.Actor.ActorId));
+            return true;
+        }
+
+        _primaryEnemy.Actor.SetCurrentHp(currentHealth);
+        if (currentHealth > 0)
+            return false;
+
+        CombatEvent death = new(
+            CombatEventType.ActorDied,
+            now,
+            _primaryEnemy.Actor.ActorId,
+            _primaryEnemy.DefinitionId,
+            TargetActorId: _primaryEnemy.Actor.ActorId);
+        Append(death);
+        Status = CombatSessionStatus.Victory;
+        EndCombat(death);
+        return true;
+    }
+
     public IReadOnlyList<CombatEvent> GetEventsAfter(long sequence) =>
         _events.Where(item => item.Sequence > sequence).ToArray();
 

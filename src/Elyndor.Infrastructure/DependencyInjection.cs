@@ -73,6 +73,8 @@ public static class DependencyInjection
         builder.Services.AddScoped<WorldBossEnterService>();
         builder.Services.TryAddEnumerable(
             ServiceDescriptor.Singleton<ICombatResultObserver, WorldBossCombatDamageObserver>());
+        builder.Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<ICombatSessionSynchronizer, WorldBossCombatSessionSynchronizer>());
         if (bool.TryParse(builder.Configuration["Arena:Enabled"], out bool arenaEnabled) && arenaEnabled)
         {
             // Order matters: recovery cancels orphaned matches before matchmaking starts.
