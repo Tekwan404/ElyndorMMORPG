@@ -154,6 +154,16 @@ function closeWorldBoss(): void {
   openLocation()
 }
 
+function leaveCombatView(): void {
+  if (activeView.value === 'world-boss') {
+    void worldBoss.refreshLive()
+    openWorldBoss()
+    return
+  }
+
+  openLocation()
+}
+
 async function acknowledgeRelease(): Promise<void> {
   const release = releaseUpdate.value
   if (!release || acknowledgingRelease.value) return
@@ -188,8 +198,11 @@ watch(
 watch(
   () => combat.isActive,
   (active, wasActive) => {
-    if (active) openLocation()
-    if (!active && wasActive) void session.refreshSnapshot()
+    if (active && activeView.value !== 'world-boss') openLocation()
+    if (!active && wasActive) {
+      void session.refreshSnapshot()
+      if (activeView.value === 'world-boss') void worldBoss.refreshLive()
+    }
   },
 )
 
@@ -297,7 +310,7 @@ onMounted(() => {
       <CharacterCreationView v-else-if="session.state === 'needs-character'" />
       <BattleScreen
         v-else-if="session.state === 'world' && combat.isActive"
-        @leave="openLocation()"
+        @leave="leaveCombatView"
       />
       <WorldBossView
         v-else-if="session.state === 'world' && activeView === 'world-boss'"
