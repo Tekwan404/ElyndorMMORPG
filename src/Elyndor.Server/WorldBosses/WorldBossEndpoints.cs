@@ -1,6 +1,9 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.WorldBosses;
+using Elyndor.Core.Content;
+using Elyndor.Infrastructure.Combat;
+using Elyndor.Server.Combat;
 using Elyndor.Infrastructure.WorldBosses;
 
 namespace Elyndor.Server.WorldBosses;
@@ -14,7 +17,57 @@ public static class WorldBossEndpoints
             .WithTags("World Boss");
 
         group.MapGet("/active", GetActiveAsync);
+        group.MapPost("/{spawnId:guid}/enter", EnterAsync);
         return endpoints;
+    }
+
+    private static async Task<IResult> EnterAsync(
+        Guid spawnId,
+        ClaimsPrincipal user,
+        HttpContext httpContext,
+        WorldBossEnterService enterService,
+        IContentSnapshotProvider contentProvider,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        WorldBossEnterResult result = await enterService.EnterAsync(
+            accountId,
+            spawnId,
+            cancellationToken);
+        if (result.Succeeded && result.Combat is { } combat)
+        {
+            return Results.Ok(CombatContractMapper.ToResponse(
+                combat,
+                contentProvider.GetCurrent().Package));
+        }
+
+        int statusCode = result.ErrorCode switch
+        {
+            WorldBossEnterErrorCodes.CharacterNotFound
+                or WorldBossEnterErrorCodes.SpawnNotFound =>
+                StatusCodes.Status404NotFound,
+            WorldBossEnterErrorCodes.EncounterNotConfigured
+                or WorldBossEnterErrorCodes.ContentVersionMismatch =>
+                StatusCodes.Status503ServiceUnavailable,
+            WorldBossEnterErrorCodes.Expired
+                or WorldBossEnterErrorCodes.NotActive
+                or Elyndor.Core.Combat.Sessions.CombatErrorCodes.AlreadyActive =>
+                StatusCodes.Status409Conflict,
+            Elyndor.Core.Combat.Sessions.CombatErrorCodes.InvalidLocation
+                or Elyndor.Core.Combat.Sessions.CombatErrorCodes.CommandRejected =>
+                StatusCodes.Status422UnprocessableEntity,
+            _ => StatusCodes.Status409Conflict
+        };
+
+        return Results.Problem(
+            statusCode: statusCode,
+            extensions: new Dictionary<string, object?>
+            {
+                ["code"] = result.ErrorCode ?? "world_boss_enter_failed",
+                ["correlationId"] = httpContext.TraceIdentifier
+            });
     }
 
     private static async Task<IResult> GetActiveAsync(
