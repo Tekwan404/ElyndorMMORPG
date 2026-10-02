@@ -33,6 +33,9 @@ public static class TelegramAdminCommandParser
         if (name is "promocode" or "promo")
             return ParsePromoCode(arguments);
 
+        if (name is "worldboss" or "wb")
+            return ParseWorldBoss(arguments);
+
         if (!TryTakeTarget(arguments, out long targetId, out string remainder))
             return AdminCommandParseResult.Failure("admin_target_invalid");
 
@@ -50,6 +53,25 @@ public static class TelegramAdminCommandParser
             "delete" => ParseDelete(targetId, remainder),
             _ => AdminCommandParseResult.Failure("admin_command_unknown")
         };
+    }
+
+    private static AdminCommandParseResult ParseWorldBoss(string arguments)
+    {
+        string[] tokens = arguments.Split(
+            ' ',
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (tokens.Length is < 1 or > 2
+            || !string.Equals(tokens[0], "spawn", StringComparison.OrdinalIgnoreCase))
+        {
+            return AdminCommandParseResult.Failure("admin_world_boss_command_invalid");
+        }
+
+        string bossDefinitionId = tokens.Length == 2
+            ? tokens[1].ToUpperInvariant()
+            : "WORLD_BOSS_ASH_ARCHON";
+        return AdminCommandParseResult.Success(new(
+            AdminCommandType.SpawnWorldBoss,
+            Value: bossDefinitionId));
     }
 
     private static AdminCommandParseResult ParsePromoCode(string arguments)
