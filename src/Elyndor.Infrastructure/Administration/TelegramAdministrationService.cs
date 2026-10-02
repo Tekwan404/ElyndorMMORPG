@@ -6,6 +6,7 @@ using Elyndor.Core.Identity;
 using Elyndor.Core.Items;
 using Elyndor.Core.Talents;
 using Elyndor.Core.World;
+using Elyndor.Core.WorldBosses;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Content;
