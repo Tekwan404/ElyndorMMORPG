@@ -59,7 +59,7 @@ public sealed record LevelProgressionDefinition(
             MidpointRounding.AwayFromZero));
     }
 
-    private static IReadOnlyList<LevelXpAnchorDefinition> BuildLegacyAnchors(
+    private static List<LevelXpAnchorDefinition> BuildLegacyAnchors(
         int maxLevel,
         int baseXpToNext,
         decimal growthFactor)
