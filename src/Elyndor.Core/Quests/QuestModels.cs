@@ -18,7 +18,8 @@ public sealed record QuestObjectiveDefinition(
     QuestObjectiveType Type,
     string TargetId,
     int RequiredCount,
-    bool ConsumeOnClaim = false);
+    bool ConsumeOnClaim = false,
+    IReadOnlyList<string>? AlternativeTargetIds = null);
 
 public sealed record QuestItemRewardDefinition(
     string ItemId,
