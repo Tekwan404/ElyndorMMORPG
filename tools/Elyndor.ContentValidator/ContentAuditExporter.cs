@@ -1,6 +1,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Elyndor.Core.Balance;
 using Elyndor.Core.Content;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Items;
@@ -39,6 +40,10 @@ internal static class ContentAuditExporter
         await WriteAsync(
             Path.Combine(outputDirectory, "03-locations.json"),
             BuildLocations(package),
+            cancellationToken);
+        await WriteAsync(
+            Path.Combine(outputDirectory, "04-combat-balance.json"),
+            BuildCombatBalance(package),
             cancellationToken);
     }
 
@@ -238,6 +243,7 @@ internal static class ContentAuditExporter
                 monster.Level,
                 monster.Description,
                 monster.Rank,
+                monster.BalanceArchetypeId,
                 monster.ArtId,
                 monster.Version,
                 monster.MaxHp,
@@ -301,6 +307,28 @@ internal static class ContentAuditExporter
             .ToArray();
 
         return Envelope(package, "enemies", rows.Length, rows);
+    }
+
+    private static object BuildCombatBalance(GameContentPackage package)
+    {
+        CombatBalanceProfile? profile = package.CombatBalance;
+        IReadOnlyList<MonsterBalanceAuditEntry> audit = profile is null
+            ? []
+            : MonsterBalanceAudit.Run(package);
+        return new
+        {
+            SchemaVersion,
+            package.ContentVersion,
+            package.BalanceVersion,
+            package.PublishedAtUtc,
+            Profile = profile,
+            Totals = new
+            {
+                AuditedMonsters = audit.Count,
+                Outliers = audit.Count(item => !item.WithinTolerance)
+            },
+            Monsters = audit
+        };
     }
 
     private static object BuildLocations(GameContentPackage package)
