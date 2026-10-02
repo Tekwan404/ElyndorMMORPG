@@ -711,8 +711,9 @@ public sealed partial class CombatSession
         if (Status != CombatSessionStatus.Active)
             throw new InvalidOperationException("Only an active combat session can be synchronized.");
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(currentHealth);
-        if (currentHealth > _primaryEnemy.Actor.MaxHp)
-            throw new ArgumentOutOfRangeException(nameof(currentHealth));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(
+            currentHealth,
+            _primaryEnemy.Actor.MaxHp);
 
         _primaryEnemy.Actor.SetCurrentHp(currentHealth);
     }
