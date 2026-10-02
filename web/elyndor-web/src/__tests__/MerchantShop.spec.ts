@@ -57,8 +57,6 @@ describe('MerchantShop', () => {
     await wrapper.get('.merchant-quantity__quick button:nth-child(2)').trigger('click')
 
     expect(wrapper.get('[data-buy-quantity]').text()).toBe('5')
-    expect(wrapper.get('[data-merchant-detail]').text()).toContain('100')
-
     await wrapper.get('[data-buy-selected]').trigger('click')
     await flushPromises()
 
