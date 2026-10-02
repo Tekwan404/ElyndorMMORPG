@@ -31,14 +31,21 @@ public static class MerchantErrorCodes
     public const string Conflict = "merchant_conflict";
     public const string InventoryFull = "merchant_inventory_full";
     public const string TransactionLocked = "merchant_item_transaction_locked";
+    public const string BuybackNotFound = "merchant_buyback_not_found";
 }
 
 public sealed record MerchantCatalogItem(ItemDefinition Definition, int SellPriceGold);
 
+public sealed record MerchantBuybackItem(
+    CharacterItem Item,
+    ItemDefinition Definition,
+    int BuybackPriceGold);
+
 public sealed record MerchantSnapshot(
     MerchantDefinition Merchant,
     long Gold,
-    IReadOnlyList<MerchantCatalogItem> Items);
+    IReadOnlyList<MerchantCatalogItem> Items,
+    IReadOnlyList<MerchantBuybackItem> BuybackItems);
 
 public sealed record MerchantOperationResult(
     bool IsSuccess,
@@ -97,6 +104,8 @@ public sealed class MerchantService(
     private const string BuyOperation = "MERCHANT_BUY";
     private const string SellMaterialOperation = "MERCHANT_SELL_MATERIAL";
     private const string SellItemOperation = "MERCHANT_SELL_ITEM";
+    private const string BuybackOperation = "MERCHANT_BUYBACK";
+    private const int BuybackCapacity = 12;
 
     public async Task<MerchantOperationResult> GetAsync(
         Guid accountId,
@@ -113,7 +122,8 @@ public sealed class MerchantService(
         if (!await IsAtMerchantLocationAsync(character.Id, merchant, cancellationToken))
             return MerchantOperationResult.Failure(MerchantErrorCodes.InvalidLocation);
 
-        return MerchantOperationResult.Success(ToSnapshot(merchant, character.Gold));
+        return MerchantOperationResult.Success(
+            await BuildSnapshotAsync(merchant, character.Id, character.Gold, cancellationToken));
     }
 
     public Task<MerchantOperationResult> BuyAsync(
@@ -193,7 +203,7 @@ public sealed class MerchantService(
                 merchantId,
                 characterItemId.ToString("N"),
                 quantity.ToString(CultureInfo.InvariantCulture)),
-            async (character, _) =>
+            async (character, merchant) =>
             {
                 if (quantity < 1 || quantity > 99) return MerchantErrorCodes.InvalidQuantity;
 
@@ -235,8 +245,14 @@ public sealed class MerchantService(
                 if (item.TransactionLockId.HasValue) return MerchantErrorCodes.TransactionLocked;
                 if (quantity > item.Quantity) return MerchantErrorCodes.InvalidQuantity;
 
-                item.RemoveQuantity(quantity);
-                if (item.Quantity == 0) dbContext.CharacterItems.Remove(item);
+                await MoveToBuybackAsync(
+                    character.Id,
+                    merchant,
+                    item,
+                    definition,
+                    quantity,
+                    mutationId,
+                    cancellationToken);
                 return null;
             },
             cancellationToken);
@@ -259,7 +275,7 @@ public sealed class MerchantService(
                 merchantId,
                 characterItemId.ToString("N"),
                 quantity.ToString(CultureInfo.InvariantCulture)),
-            async (character, _) =>
+            async (character, merchant) =>
             {
                 if (quantity < 1 || quantity > 99)
                     return MerchantErrorCodes.InvalidQuantity;
@@ -328,9 +344,88 @@ public sealed class MerchantService(
                 if (quantity > item.Quantity)
                     return MerchantErrorCodes.InvalidQuantity;
 
-                item.RemoveQuantity(quantity);
-                if (item.Quantity == 0)
+                await MoveToBuybackAsync(
+                    character.Id,
+                    merchant,
+                    item,
+                    definition,
+                    quantity,
+                    mutationId,
+                    cancellationToken);
+                return null;
+            },
+            cancellationToken);
+
+    public Task<MerchantOperationResult> BuybackAsync(
+        Guid accountId,
+        string merchantId,
+        Guid characterItemId,
+        Guid mutationId,
+        CancellationToken cancellationToken) =>
+        ExecuteMutationAsync(
+            accountId,
+            merchantId,
+            mutationId,
+            BuybackOperation,
+            Fingerprint(BuybackOperation, merchantId, characterItemId.ToString("N")),
+            async (character, merchant) =>
+            {
+                CharacterItem? item = await dbContext.CharacterItems
+                    .IgnoreQueryFilters()
+                    .SingleOrDefaultAsync(
+                        candidate => candidate.Id == characterItemId
+                            && candidate.CharacterId == character.Id
+                            && candidate.Storage == "BUYBACK"
+                            && candidate.SourceType == "MERCHANT_BUYBACK"
+                            && candidate.SourceEntryId == merchant.Id,
+                        cancellationToken);
+                if (item is null)
+                    return MerchantErrorCodes.BuybackNotFound;
+
+                ItemDefinition? definition = FindItem(item.ItemDefinitionId);
+                if (definition is null)
+                    return MerchantErrorCodes.ItemNotSellable;
+
+                GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+                if (!await InventoryCapacity.CanAddAsync(
+                        dbContext,
+                        character.Id,
+                        definition,
+                        item.Quantity,
+                        contentSnapshot,
+                        cancellationToken))
+                {
+                    return MerchantErrorCodes.InventoryFull;
+                }
+
+                long totalPrice = checked((long)ResolveSellPrice(definition) * item.Quantity);
+                int debited = await dbContext.Characters
+                    .Where(candidate => candidate.Id == character.Id && candidate.Gold >= totalPrice)
+                    .ExecuteUpdateAsync(
+                        setters => setters.SetProperty(
+                            candidate => candidate.Gold,
+                            candidate => candidate.Gold - totalPrice),
+                        cancellationToken);
+                if (debited == 0)
+                    return MerchantErrorCodes.NotEnoughGold;
+
+                if (definition.Stackable)
+                {
+                    int quantity = item.Quantity;
+                    await AddItemAsync(
+                        character.Id,
+                        definition,
+                        quantity,
+                        mutationId,
+                        contentSnapshot,
+                        cancellationToken);
                     dbContext.CharacterItems.Remove(item);
+                }
+                else
+                {
+                    item.RestoreFromMerchantBuyback();
+                }
+
                 return null;
             },
             cancellationToken);
@@ -405,7 +500,8 @@ public sealed class MerchantService(
                 await dbContext.SaveChangesAsync(cancellationToken);
                 long gold = await CurrentGoldAsync(character.Id, cancellationToken);
                 await transaction.CommitAsync(cancellationToken);
-                return MerchantOperationResult.Success(ToSnapshot(merchant, gold));
+                return MerchantOperationResult.Success(
+                    await BuildSnapshotAsync(merchant, character.Id, gold, cancellationToken));
             }
             catch (DbUpdateException exception) when (IsMutationConstraintViolation(exception))
             {
@@ -464,7 +560,8 @@ public sealed class MerchantService(
         if (merchant is null) return MerchantOperationResult.Failure(MerchantErrorCodes.MerchantNotFound);
 
         long gold = await CurrentGoldAsync(character.Id, cancellationToken);
-        return MerchantOperationResult.Success(ToSnapshot(merchant, gold));
+        return MerchantOperationResult.Success(
+            await BuildSnapshotAsync(merchant, character.Id, gold, cancellationToken));
     }
 
     private Task<long> CurrentGoldAsync(Guid characterId, CancellationToken cancellationToken) =>
@@ -560,14 +657,84 @@ public sealed class MerchantService(
     private ItemDefinition? FindItem(string definitionId) =>
         contentProvider.GetCurrent().Indexes.ItemsById.GetValueOrDefault(definitionId);
 
-    private MerchantSnapshot ToSnapshot(MerchantDefinition merchant, long gold) =>
-        new(
+    private async Task<MerchantSnapshot> BuildSnapshotAsync(
+        MerchantDefinition merchant,
+        Guid characterId,
+        long gold,
+        CancellationToken cancellationToken)
+    {
+        CharacterItem[] buybackItems = await dbContext.CharacterItems
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .Where(item => item.CharacterId == characterId
+                && item.Storage == "BUYBACK"
+                && item.SourceType == "MERCHANT_BUYBACK"
+                && item.SourceEntryId == merchant.Id)
+            .OrderByDescending(item => item.AcquiredAtUtc)
+            .Take(BuybackCapacity)
+            .ToArrayAsync(cancellationToken);
+
+        MerchantBuybackItem[] buyback = buybackItems
+            .Select(item => (Item: item, Definition: FindItem(item.ItemDefinitionId)))
+            .Where(entry => entry.Definition is not null)
+            .Select(entry => new MerchantBuybackItem(
+                entry.Item,
+                entry.Definition!,
+                checked(ResolveSellPrice(entry.Definition!) * entry.Item.Quantity)))
+            .ToArray();
+
+        return new MerchantSnapshot(
             merchant,
             gold,
             merchant.ItemIds.Select(id => FindItem(id))
                 .Where(item => item is not null)
                 .Select(item => new MerchantCatalogItem(item!, ResolveSellPrice(item!)))
-                .ToArray());
+                .ToArray(),
+            buyback);
+    }
+
+    private async Task MoveToBuybackAsync(
+        Guid characterId,
+        MerchantDefinition merchant,
+        CharacterItem item,
+        ItemDefinition definition,
+        int quantity,
+        Guid mutationId,
+        CancellationToken cancellationToken)
+    {
+        CharacterItem[] existing = await dbContext.CharacterItems
+            .IgnoreQueryFilters()
+            .Where(candidate => candidate.CharacterId == characterId
+                && candidate.Storage == "BUYBACK"
+                && candidate.SourceType == "MERCHANT_BUYBACK")
+            .OrderBy(candidate => candidate.AcquiredAtUtc)
+            .ToArrayAsync(cancellationToken);
+
+        int removeCount = Math.Max(0, existing.Length - BuybackCapacity + 1);
+        for (var index = 0; index < removeCount; index++)
+            dbContext.CharacterItems.Remove(existing[index]);
+
+        DateTimeOffset soldAt = timeProvider.GetUtcNow();
+        if (quantity == item.Quantity)
+        {
+            item.MoveToMerchantBuyback(merchant.Id, mutationId, soldAt);
+            return;
+        }
+
+        if (!definition.Stackable)
+            throw new InvalidOperationException("Only stackable items may be partially sold.");
+
+        item.RemoveQuantity(quantity);
+        CharacterItem buybackItem = new(
+            Guid.NewGuid(),
+            characterId,
+            definition.Id,
+            quantity,
+            soldAt,
+            definition.Version);
+        buybackItem.MoveToMerchantBuyback(merchant.Id, mutationId, soldAt);
+        dbContext.CharacterItems.Add(buybackItem);
+    }
 
     public static int ResolveSellPrice(ItemDefinition definition)
     {
