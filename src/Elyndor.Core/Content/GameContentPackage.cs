@@ -50,7 +50,9 @@ public sealed record GameContentPackage(
     IReadOnlyList<ProfessionRecipeDefinition>? ProfessionRecipes = null,
     IReadOnlyList<CharacterSkinDefinition>? CharacterSkins = null,
     IReadOnlyList<WorldBossDefinition>? WorldBosses = null,
-    IReadOnlyList<WorldBossRewardProfileDefinition>? WorldBossRewardProfiles = null);
+    IReadOnlyList<WorldBossRewardProfileDefinition>? WorldBossRewardProfiles = null,
+    CombatBalanceProfile? CombatBalance = null,
+    ProgressionBalanceProfile? ProgressionBalance = null);
 
 public sealed record AfkFarmRewardProfile(
     int ProcessingIntervalSeconds,
@@ -120,8 +122,6 @@ public sealed record StatFormulaProfile(
     decimal AttackPowerPerStrength,
     decimal AttackPowerPerAgility,
     decimal SpellPowerPerIntellect,
-    decimal ArmorPerStamina,
-    decimal ArmorPerStrength,
     decimal MagicResistancePerStamina,
     decimal MagicResistancePerIntellect,
     decimal CriticalChanceBase,
