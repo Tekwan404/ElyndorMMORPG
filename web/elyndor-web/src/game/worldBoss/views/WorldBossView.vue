@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 import { itemArtUrl } from '@/assets/itemArt'
+import { monsterArtUrl } from '@/assets/monsterArt'
 import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
 import { UIButton, UILoadingState } from '@/ui/components'
 
@@ -16,6 +17,9 @@ const boss = computed(() => worldBoss.active)
 const settlement = computed(() => worldBoss.settlement)
 const reward = computed(() => settlement.value?.reward ?? null)
 const showingResult = computed(() => settlement.value !== null)
+const bossArt = computed(() =>
+  monsterArtUrl(boss.value?.artId, boss.value?.monsterId),
+)
 
 const healthPercent = computed(() => {
   const current = boss.value
@@ -207,6 +211,10 @@ onUnmounted(() => {
 
     <template v-else-if="boss">
       <section class="boss-card">
+        <div v-if="bossArt" class="boss-card__art" aria-hidden="true">
+          <img :src="bossArt" alt="" />
+        </div>
+        <div class="boss-card__content">
         <div class="boss-card__topline">
           <span>WORLD BOSS · УР. {{ boss.level }}</span>
           <time>{{ remainingTime }}</time>
@@ -235,6 +243,7 @@ onUnmounted(() => {
           <div><span>Участники</span><strong>{{ boss.participants }}</strong></div>
           <div><span>Мой урон</span><strong>{{ formatNumber(boss.personalDamage) }}</strong></div>
           <div><span>Урон группы</span><strong>{{ formatNumber(boss.partyDamage) }}</strong></div>
+        </div>
         </div>
       </section>
 
@@ -446,11 +455,47 @@ onUnmounted(() => {
 }
 
 .boss-card {
-  padding: var(--ui-space-4);
+  position: relative;
+  min-height: 260px;
+  overflow: hidden;
+  padding: 0;
   border-color: color-mix(in srgb, #b85d47 44%, var(--ui-color-border));
   background:
     radial-gradient(circle at 84% 0%, rgb(163 58 46 / 20%), transparent 34%),
     linear-gradient(180deg, rgb(32 19 20 / 95%), rgb(12 15 22 / 96%));
+}
+
+.boss-card__art {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.boss-card__art::after {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgb(12 12 17 / 96%) 0%, rgb(12 12 17 / 74%) 48%, rgb(12 12 17 / 34%) 100%),
+    linear-gradient(0deg, rgb(12 15 22 / 98%) 0%, transparent 54%);
+  content: '';
+}
+
+.boss-card__art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 72% 22%;
+  opacity: .66;
+  filter: saturate(.86) contrast(1.08);
+}
+
+.boss-card__content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  min-height: 260px;
+  align-content: end;
+  padding: var(--ui-space-4);
 }
 
 .boss-card__topline {
