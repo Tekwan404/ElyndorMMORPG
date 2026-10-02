@@ -541,7 +541,7 @@ public static class InventoryEndpoints
                 ToMerchantItemStats(item.Definition),
                 item.Definition.WeaponCategory,
                 item.Definition.ArmorCategory)).ToArray(),
-            snapshot.BuybackItems.Select(item => new MerchantBuybackItemResponse(
+            (snapshot.BuybackItems ?? []).Select(item => new MerchantBuybackItemResponse(
                 item.Item.Id,
                 item.Definition.Id,
                 item.Item.GeneratedDisplayName ?? item.Definition.Name,
