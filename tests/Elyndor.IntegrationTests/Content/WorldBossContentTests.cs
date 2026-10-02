@@ -26,6 +26,38 @@ public sealed class WorldBossContentTests
             boss.Phases.Select(phase => phase.StartsAtHealthPercent).ToArray());
     }
 
+    [Fact]
+    public async Task AshArchonCombatProfileIsPlayableAndCannotLeakOrdinaryPveRewards()
+    {
+        var package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+        var boss = package.WorldBosses!.Single(
+            item => item.Id == "WORLD_BOSS_ASH_ARCHON");
+        var encounter = package.Encounters!.Single(
+            item => item.Id == boss.EncounterProfileId);
+        var monster = package.Monsters!.Single(
+            item => item.Id == encounter.MonsterId);
+
+        Assert.Equal("WORLD_BOSS_ASH_ARCHON_L30", monster.Id);
+        Assert.Equal(30, monster.Level);
+        Assert.Equal(1_000_000m, monster.MaxHp);
+        Assert.Equal(0, monster.XpReward);
+        Assert.Equal(0, monster.GoldRewardMin);
+        Assert.Equal(0, monster.GoldRewardMax);
+        Assert.Null(monster.LootTableId);
+        Assert.Equal(
+            ["P1", "P2", "P3", "P4"],
+            encounter.Phases.Select(phase => phase.Id).ToArray());
+        Assert.Equal(
+            [100m, 75m, 50m, 25m],
+            encounter.Phases.Select(phase =>
+                phase.Trigger.Type == Elyndor.Core.Combat.Encounters.EncounterTriggerType.CombatStart
+                    ? 100m
+                    : phase.Trigger.Threshold).ToArray());
+        Assert.Empty(GameContentPackageValidator.Validate(package));
+    }
+
     [Theory]
     [InlineData(100, 1)]
     [InlineData(75, 2)]

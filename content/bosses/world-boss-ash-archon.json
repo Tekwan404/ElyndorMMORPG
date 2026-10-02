@@ -1,7 +1,148 @@
 {
-  "contentVersion": "0.34.0",
-  "balanceVersion": "0.27.0",
-  "publishedAtUtc": "2026-10-02T07:45:00+00:00",
+  "contentVersion": "0.35.0",
+  "balanceVersion": "0.28.0",
+  "publishedAtUtc": "2026-10-02T10:45:00+00:00",
+  "monsters": [
+    {
+      "id": "WORLD_BOSS_ASH_ARCHON_L30",
+      "name": "Архон Пепла",
+      "rank": "Boss",
+      "level": 30,
+      "maxHp": 1000000,
+      "stats": {
+        "level": 30,
+        "accuracy": 103,
+        "dodge": 7,
+        "criticalChance": 12,
+        "criticalDamage": 1,
+        "armor": 210,
+        "magicResistance": 230,
+        "armorPenetration": 0.03,
+        "magicPenetration": 0.055,
+        "attackPower": 190,
+        "spellPower": 290
+      },
+      "autoAttackInterval": "00:00:02.4",
+      "autoAttackBaseDamage": 155,
+      "autoAttackAttackPowerCoefficient": 0.45,
+      "autoAttackBaseDamageMin": 140,
+      "autoAttackBaseDamageMax": 170,
+      "abilityIds": [
+        "ARCHON_DEAD_STAR_BRAND",
+        "ARCHON_ECLIPSE_ASH",
+        "ARCHON_STAR_FRACTURE",
+        "ARCHON_DEAD_STAR_COLLAPSE"
+      ],
+      "aiProfileId": "WORLD_BOSS_ASH_ARCHON_AI",
+      "version": 1,
+      "xpReward": 0,
+      "lootTableId": null,
+      "goldRewardMin": 0,
+      "goldRewardMax": 0,
+      "displayName": "Архон Пепла",
+      "description": "Мировой босс 30 уровня. Его здоровье общее для всех одновременно идущих боёв.",
+      "artId": "namestnik-tsitadeli"
+    }
+  ],
+  "monsterAiProfiles": [
+    {
+      "id": "WORLD_BOSS_ASH_ARCHON_AI",
+      "priorityAbilityIds": [
+        "ARCHON_DEAD_STAR_COLLAPSE",
+        "ARCHON_STAR_FRACTURE",
+        "ARCHON_ECLIPSE_ASH",
+        "ARCHON_DEAD_STAR_BRAND"
+      ],
+      "version": 1,
+      "abilityRules": [
+        {
+          "abilityId": "ARCHON_DEAD_STAR_COLLAPSE",
+          "priority": 400,
+          "targetSelector": "EncounterOrder"
+        },
+        {
+          "abilityId": "ARCHON_STAR_FRACTURE",
+          "priority": 300,
+          "initialDelay": "00:00:06"
+        },
+        {
+          "abilityId": "ARCHON_ECLIPSE_ASH",
+          "priority": 200,
+          "targetSelector": "RandomEnemy"
+        },
+        {
+          "abilityId": "ARCHON_DEAD_STAR_BRAND",
+          "priority": 100,
+          "targetSelector": "CurrentThreatTarget"
+        }
+      ]
+    }
+  ],
+  "encounters": [
+    {
+      "id": "WB_ASH_ARCHON_V1",
+      "monsterId": "WORLD_BOSS_ASH_ARCHON_L30",
+      "version": 1,
+      "displayName": "Архон Пепла",
+      "phases": [
+        {
+          "id": "P1",
+          "displayName": "Пробуждение",
+          "trigger": {
+            "type": "CombatStart"
+          },
+          "actions": [],
+          "abilityIds": [
+            "ARCHON_DEAD_STAR_BRAND",
+            "ARCHON_ECLIPSE_ASH"
+          ]
+        },
+        {
+          "id": "P2",
+          "displayName": "Пепельные слуги",
+          "trigger": {
+            "type": "HpAtOrBelow",
+            "threshold": 75
+          },
+          "actions": [],
+          "abilityIds": [
+            "ARCHON_DEAD_STAR_BRAND",
+            "ARCHON_ECLIPSE_ASH",
+            "ARCHON_STAR_FRACTURE"
+          ]
+        },
+        {
+          "id": "P3",
+          "displayName": "Проклятие Пустоши",
+          "trigger": {
+            "type": "HpAtOrBelow",
+            "threshold": 50
+          },
+          "actions": [],
+          "abilityIds": [
+            "ARCHON_ECLIPSE_ASH",
+            "ARCHON_STAR_FRACTURE",
+            "ARCHON_DEAD_STAR_COLLAPSE"
+          ]
+        },
+        {
+          "id": "P4",
+          "displayName": "Последняя ярость",
+          "trigger": {
+            "type": "HpAtOrBelow",
+            "threshold": 25
+          },
+          "actions": [],
+          "abilityIds": [
+            "ARCHON_DEAD_STAR_BRAND",
+            "ARCHON_ECLIPSE_ASH",
+            "ARCHON_STAR_FRACTURE",
+            "ARCHON_DEAD_STAR_COLLAPSE"
+          ]
+        }
+      ]
+    }
+  ],
   "worldBosses": [
     {
       "id": "WORLD_BOSS_ASH_ARCHON",
@@ -15,10 +156,26 @@
       "tokenCurrencyId": "ASH_SHARD",
       "isEnabled": true,
       "phases": [
-        { "phase": 1, "name": "Пробуждение", "startsAtHealthPercent": 100 },
-        { "phase": 2, "name": "Пепельные слуги", "startsAtHealthPercent": 75 },
-        { "phase": 3, "name": "Проклятие Пустоши", "startsAtHealthPercent": 50 },
-        { "phase": 4, "name": "Последняя ярость", "startsAtHealthPercent": 25 }
+        {
+          "phase": 1,
+          "name": "Пробуждение",
+          "startsAtHealthPercent": 100
+        },
+        {
+          "phase": 2,
+          "name": "Пепельные слуги",
+          "startsAtHealthPercent": 75
+        },
+        {
+          "phase": 3,
+          "name": "Проклятие Пустоши",
+          "startsAtHealthPercent": 50
+        },
+        {
+          "phase": 4,
+          "name": "Последняя ярость",
+          "startsAtHealthPercent": 25
+        }
       ]
     }
   ]

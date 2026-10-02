@@ -44,6 +44,53 @@ public static partial class GameContentPackageValidator
                 continue;
             }
 
+            var encounter = package.Encounters?.FirstOrDefault(candidate =>
+                string.Equals(
+                    candidate.Id,
+                    definition.EncounterProfileId,
+                    StringComparison.Ordinal));
+            if (encounter is null)
+            {
+                errors.Add(new(
+                    "WORLD_BOSS_ENCOUNTER_NOT_FOUND",
+                    $"{path}.encounterProfileId",
+                    $"World boss '{definition.Id}' references missing encounter '{definition.EncounterProfileId}'."));
+            }
+            else
+            {
+                var monster = package.Monsters?.FirstOrDefault(candidate =>
+                    string.Equals(candidate.Id, encounter.MonsterId, StringComparison.Ordinal));
+                if (monster is null)
+                {
+                    errors.Add(new(
+                        "WORLD_BOSS_MONSTER_NOT_FOUND",
+                        $"{path}.encounterProfileId",
+                        $"World boss encounter '{encounter.Id}' references missing monster '{encounter.MonsterId}'."));
+                }
+                else
+                {
+                    if (monster.Level != definition.Level
+                        || monster.MaxHp != definition.BaseMaxHealth)
+                    {
+                        errors.Add(new(
+                            "WORLD_BOSS_COMBAT_PROFILE_MISMATCH",
+                            path,
+                            $"World boss '{definition.Id}' combat profile must match level and global max health."));
+                    }
+
+                    if (monster.XpReward != 0
+                        || monster.GoldRewardMin != 0
+                        || monster.GoldRewardMax != 0
+                        || !string.IsNullOrWhiteSpace(monster.LootTableId))
+                    {
+                        errors.Add(new(
+                            "WORLD_BOSS_STANDARD_REWARD_LEAK",
+                            path,
+                            $"World boss '{definition.Id}' must not use ordinary PvE rewards."));
+                    }
+                }
+            }
+
             decimal previousThreshold = decimal.MaxValue;
             for (int phaseIndex = 0; phaseIndex < definition.Phases.Count; phaseIndex++)
             {
