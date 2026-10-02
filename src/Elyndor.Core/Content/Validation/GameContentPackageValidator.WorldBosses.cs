@@ -123,6 +123,48 @@ public static partial class GameContentPackageValidator
                         $"{path}.rewardProfileId",
                         $"World boss reward profile '{rewardProfile.Id}' contains invalid values."));
                 }
+
+                IReadOnlyList<WorldBossLeaderboardRewardTierDefinition> leaderboardTiers =
+                    rewardProfile.LeaderboardTiers ?? [];
+                bool invalidLeaderboardTiers = leaderboardTiers.Any(tier =>
+                        tier.MinimumPercentile < 0
+                        || tier.MinimumPercentile > 100
+                        || tier.ChestCount < 0
+                        || tier.MaxRank is <= 0
+                        || tier.Enhanced && tier.ChestCount <= 0
+                        || tier.Enhanced && string.IsNullOrWhiteSpace(tier.LootTableId))
+                    || leaderboardTiers
+                        .Select(tier => tier.Tier)
+                        .Distinct()
+                        .Count() != leaderboardTiers.Count;
+                if (invalidLeaderboardTiers)
+                {
+                    errors.Add(new(
+                        "INVALID_WORLD_BOSS_LEADERBOARD_REWARD_PROFILE",
+                        $"{path}.rewardProfileId",
+                        $"World boss reward profile '{rewardProfile.Id}' contains invalid leaderboard rewards."));
+                }
+
+                foreach (WorldBossLeaderboardRewardTierDefinition leaderboardTier in leaderboardTiers)
+                {
+                    if (string.IsNullOrWhiteSpace(leaderboardTier.LootTableId))
+                        continue;
+
+                    LootTableDefinition? leaderboardChest = package.LootTables?.FirstOrDefault(table =>
+                        string.Equals(table.Id, leaderboardTier.LootTableId, StringComparison.Ordinal));
+                    bool invalidLeaderboardChest = leaderboardChest is null
+                        || leaderboardChest.Entries.Count != 0
+                        || leaderboardChest.SelectionGroups is not { Count: 1 }
+                        || leaderboardChest.SelectionGroups[0].Rolls != 1
+                        || leaderboardChest.SelectionGroups[0].Entries.Count == 0;
+                    if (invalidLeaderboardChest)
+                    {
+                        errors.Add(new(
+                            "INVALID_WORLD_BOSS_LEADERBOARD_CHEST_TABLE",
+                            $"{path}.rewardProfileId",
+                            $"World boss leaderboard reward tier '{leaderboardTier.Tier}' references an invalid chest loot table."));
+                    }
+                }
             }
 
             var chestTable = package.LootTables?.FirstOrDefault(table =>
