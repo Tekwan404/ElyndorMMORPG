@@ -275,33 +275,38 @@ public sealed class WorldBossReadService(
             .ToListAsync(cancellationToken);
 
         List<WorldBossPersonalLeaderboardEntry> players = [];
-        decimal? previousPlayerDamage = null;
-        var playerRank = 0;
         for (int index = 0; index < playerRows.Count; index++)
         {
             var row = playerRows[index];
-            if (previousPlayerDamage != row.Damage)
-                playerRank = index + 1;
             players.Add(new(
-                playerRank,
+                index + 1,
                 row.CharacterId,
                 row.Name,
                 row.Damage));
-            previousPlayerDamage = row.Damage;
         }
 
-        decimal? personalDamageValue = await db.WorldBossContributions.AsNoTracking()
+        var personalContribution = await db.WorldBossContributions.AsNoTracking()
             .Where(contribution => contribution.SpawnId == spawnId
                 && contribution.CharacterId == characterId.Value)
-            .Select(contribution => (decimal?)contribution.Damage)
+            .Select(contribution => new
+            {
+                contribution.CharacterId,
+                contribution.Damage
+            })
             .SingleOrDefaultAsync(cancellationToken);
-        int? personalRank = personalDamageValue is null
-            ? null
-            : 1 + await db.WorldBossContributions.AsNoTracking()
-                .CountAsync(
-                    contribution => contribution.SpawnId == spawnId
-                        && contribution.Damage > personalDamageValue.Value,
-                    cancellationToken);
+        Guid[] rankedCharacterIds = personalContribution is null
+            ? []
+            : await db.WorldBossContributions.AsNoTracking()
+                .Where(contribution => contribution.SpawnId == spawnId)
+                .OrderByDescending(contribution => contribution.Damage)
+                .ThenBy(contribution => contribution.CharacterId)
+                .Select(contribution => contribution.CharacterId)
+                .ToArrayAsync(cancellationToken);
+        int personalIndex = personalContribution is null
+            ? -1
+            : Array.IndexOf(rankedCharacterIds, personalContribution.CharacterId);
+        int? personalRank = personalIndex < 0 ? null : personalIndex + 1;
+        decimal? personalDamageValue = personalContribution?.Damage;
 
         Guid? partyId = await db.PartyMembers.AsNoTracking()
             .Where(member => member.CharacterId == characterId.Value)
