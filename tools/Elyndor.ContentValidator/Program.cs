@@ -131,7 +131,7 @@ try
                 $"{row.ClassId} L{row.Level} {row.GearState} vs {row.MonsterId}: "
                 + $"HP={row.PlayerMaxHp:0.#} Armor={row.PlayerArmor:0.#} "
                 + $"EHP={row.PlayerPhysicalEhp:0.#} DPS={row.PlayerDps:0.#} "
-                + $"TTK={row.P50TtkSeconds:0.##}s TTD={row.EstimatedTtdSeconds:0.##}s "
+                + $"TTK={row.EstimatedTtkSeconds:0.##}s TTD={row.EstimatedTtdSeconds:0.##}s "
                 + $"Win={row.WinRatePercent:0.#}%");
         }
     }
