@@ -1,12 +1,22 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Combat.Abilities;
+using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
+using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Combat.Simulation;
+
+public enum CombatSimulationGearState
+{
+    None,
+    Weak,
+    Normal,
+    Good
+}
 
 public sealed record CombatSimulationScenario(
     string ClassId,
@@ -17,7 +27,8 @@ public sealed record CombatSimulationScenario(
     int MaxDurationSeconds = 90,
     IReadOnlyList<string>? AbilityPriority = null,
     IReadOnlyDictionary<string, int>? SelectedTalentRanks = null,
-    IReadOnlyDictionary<string, int>? EquippedSetPieces = null);
+    IReadOnlyDictionary<string, int>? EquippedSetPieces = null,
+    CombatSimulationGearState GearState = CombatSimulationGearState.None);
 
 public sealed record CombatSimulationDamageSource(
     string DefinitionId,
@@ -41,7 +52,18 @@ public sealed record CombatSimulationResult(
     decimal AveragePlayerDps,
     decimal AverageEnemyDps,
     decimal AveragePlayerRemainingHp,
-    IReadOnlyList<CombatSimulationDamageSource> DamageSources);
+    IReadOnlyList<CombatSimulationDamageSource> DamageSources)
+{
+    public CombatSimulationGearState GearState { get; init; }
+    public decimal PlayerMaxHp { get; init; }
+    public decimal PlayerArmor { get; init; }
+    public decimal PlayerMagicResistance { get; init; }
+    public decimal PlayerPhysicalEhp { get; init; }
+    public decimal PlayerMagicEhp { get; init; }
+    public decimal PlayerAttackPower { get; init; }
+    public decimal PlayerSpellPower { get; init; }
+    public decimal EstimatedPlayerTtdSeconds { get; init; }
+}
 
 public sealed class CombatSimulationException(string code, string message)
     : Exception(message)
@@ -54,6 +76,8 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
     private static readonly DateTimeOffset SimulationEpoch =
         new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly TimeSpan ActionStep = TimeSpan.FromMilliseconds(100);
+    private static readonly Guid SimulationEquipmentSeed =
+        Guid.Parse("8c90d387-4e78-4f6f-b8ae-c76463cf8d22");
 
     public CombatSimulationResult Run(
         CombatSimulationScenario scenario,
@@ -100,10 +124,14 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
 
         ResolvedTalentModifiers talentModifiers =
             ResolveTalentModifiers(scenario);
+        SimulationEquipment simulationEquipment = ResolveSimulationEquipment(
+            scenario,
+            classProfile);
+        EquipmentModifierSummary equipment = simulationEquipment.Modifiers;
         TalentPrimaryStatPercentages talentPercentages = new(
             talentModifiers.Stats.StrengthPercent,
-            0,
-            0,
+            talentModifiers.Stats.AgilityPercent,
+            talentModifiers.Stats.IntellectPercent,
             talentModifiers.Stats.StaminaPercent);
         CharacterStats playerStats =
             new CharacterStatCalculator(formula, classProfiles)
@@ -112,6 +140,23 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
                     scenario.PlayerLevel,
                     CharacterStatInputs.Empty with
                     {
+                        Equipment = equipment.PrimaryStats,
+                        EquipmentDerived = new CharacterEquipmentDerivedModifiers(
+                            MaxHpFlat: equipment.MaxHpFlat,
+                            AttackPowerFlat: equipment.AttackPowerFlat,
+                            SpellPowerFlat: equipment.SpellPowerFlat,
+                            CriticalChancePercent: equipment.CriticalChancePercent,
+                            CriticalDamagePercent: equipment.CriticalDamagePercent,
+                            AccuracyPercent: equipment.AccuracyPercent,
+                            AttackSpeedPercent: equipment.AttackSpeedPercent,
+                            ArmorFlat: equipment.ArmorFlat,
+                            MagicResistanceFlat: equipment.MagicResistanceFlat,
+                            DodgePercent: equipment.DodgePercent,
+                            ArmorPenetrationPercent: equipment.ArmorPenetrationPercent,
+                            MagicPenetrationPercent: equipment.MagicPenetrationPercent,
+                            BlockChancePercent: equipment.BlockChancePercent,
+                            BlockValueMin: equipment.BlockValueMin,
+                            BlockValueMax: equipment.BlockValueMax),
                         TalentPercentages = talentPercentages,
                         TalentDerived = talentModifiers.Stats
                     });
@@ -119,11 +164,14 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
             baseResource,
             content.ResourceScaling,
             playerStats,
-            talentModifiers.Stats.MaxResourceFlat);
+            talentModifiers.Stats.MaxResourceFlat + equipment.MaxResourceFlat);
 
         Dictionary<string, AbilityDefinition> abilities = (content.Abilities ?? [])
             .ToDictionary(ability => ability.Id, StringComparer.Ordinal);
-        string[] knownAbilityIds = talentModifiers.UnlockedAbilityIds
+        string[] knownAbilityIds = CharacterKnownAbilityResolver.Resolve(
+                classProfile,
+                scenario.PlayerLevel,
+                talentModifiers.UnlockedAbilityIds)
             .Where(abilities.ContainsKey)
             .OrderBy(id => id, StringComparer.Ordinal)
             .ToArray();
@@ -157,6 +205,8 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
                 knownAbilityIds,
                 abilityPriority,
                 talentModifiers,
+                equipment,
+                scenario.EquippedSetPieces ?? simulationEquipment.SetPieces,
                 cancellationToken);
 
             switch (run.Status)
@@ -198,6 +248,13 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
                 totalPlayerDamage > 0 ? pair.Value / totalPlayerDamage * 100m : 0))
             .ToArray();
 
+        decimal physicalMultiplier = DefenseMitigationFormula.CalculateDamageMultiplier(
+            playerStats.Armor,
+            scenario.PlayerLevel);
+        decimal magicMultiplier = DefenseMitigationFormula.CalculateDamageMultiplier(
+            playerStats.MagicResistance,
+            scenario.PlayerLevel);
+
         return new CombatSimulationResult(
             content.ContentVersion,
             content.BalanceVersion,
@@ -215,7 +272,18 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
             averagePlayerDps,
             averageEnemyDps,
             totalRemainingHp / scenario.Iterations,
-            sources);
+            sources)
+        {
+            GearState = scenario.GearState,
+            PlayerMaxHp = playerStats.MaxHp,
+            PlayerArmor = playerStats.Armor,
+            PlayerMagicResistance = playerStats.MagicResistance,
+            PlayerPhysicalEhp = physicalMultiplier <= 0 ? playerStats.MaxHp : playerStats.MaxHp / physicalMultiplier,
+            PlayerMagicEhp = magicMultiplier <= 0 ? playerStats.MaxHp : playerStats.MaxHp / magicMultiplier,
+            PlayerAttackPower = playerStats.AttackPower,
+            PlayerSpellPower = playerStats.SpellPower,
+            EstimatedPlayerTtdSeconds = averageEnemyDps <= 0 ? 0 : playerStats.MaxHp / averageEnemyDps
+        };
     }
 
     private SimulationRun RunSingle(
@@ -230,6 +298,8 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
         IReadOnlyList<string> knownAbilityIds,
         IReadOnlyList<AbilityDefinition> abilityPriority,
         ResolvedTalentModifiers talentModifiers,
+        EquipmentModifierSummary equipment,
+        IReadOnlyDictionary<string, int> equippedSetPieces,
         CancellationToken cancellationToken)
     {
         Guid playerId = Guid.NewGuid();
@@ -251,10 +321,15 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
 
         decimal attackSpeedMultiplier = Math.Max(0.1m, playerStats.AttackSpeed);
         AutoAttackProfile classAutoAttack = classProfile.CombatAutoAttack!;
+        double baseAttackIntervalSeconds = equipment.WeaponBaseAttackIntervalSeconds is { } weaponInterval
+            ? (double)weaponInterval
+            : classAutoAttack.Interval.TotalSeconds;
         AutoAttackProfile playerAutoAttack = classAutoAttack with
         {
             Interval = TimeSpan.FromSeconds(
-                classAutoAttack.Interval.TotalSeconds / (double)attackSpeedMultiplier)
+                baseAttackIntervalSeconds / (double)attackSpeedMultiplier),
+            BaseDamageMin = equipment.WeaponDamageMin ?? classAutoAttack.BaseDamageMin,
+            BaseDamageMax = equipment.WeaponDamageMax ?? classAutoAttack.BaseDamageMax
         };
 
         CombatParticipantDefinition player = new(
@@ -266,7 +341,7 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
             playerAutoAttack,
             new HashSet<string>(knownAbilityIds, StringComparer.Ordinal),
             resource.CombatRegenPerSecond,
-            EquippedSetPieces: scenario.EquippedSetPieces);
+            EquippedSetPieces: equippedSetPieces);
         CombatParticipantDefinition enemy = new(
             enemyActor,
             CombatActorKind.Monster,
@@ -444,6 +519,125 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
             .ToArray();
     }
 
+    private SimulationEquipment ResolveSimulationEquipment(
+        CombatSimulationScenario scenario,
+        ClassProfile classProfile)
+    {
+        if (scenario.GearState == CombatSimulationGearState.None)
+        {
+            return new SimulationEquipment(
+                EquipmentStatModifierResolver.ResolveDetailed([], content.EquipmentSets ?? []),
+                new Dictionary<string, int>(StringComparer.Ordinal));
+        }
+
+        CombatBalanceProfile balance = content.CombatBalance
+            ?? throw Invalid(
+                "simulation_combat_balance_missing",
+                "Combat balance profile is required for gear benchmarks.");
+        CombatGearBenchmarkDefinition gearState = balance.GearStates.SingleOrDefault(item =>
+                string.Equals(
+                    item.Id,
+                    scenario.GearState.ToString(),
+                    StringComparison.OrdinalIgnoreCase))
+            ?? throw Invalid(
+                "simulation_gear_state_missing",
+                $"Combat gear benchmark '{scenario.GearState}' does not exist.");
+        ItemizationDefinition itemization = content.Itemization
+            ?? throw Invalid(
+                "simulation_itemization_missing",
+                "Itemization content is required for gear benchmarks.");
+
+        int targetRequiredLevel = Math.Max(1, scenario.PlayerLevel - gearState.ItemLevelLag);
+        ItemDefinition[] wearable = (content.Items ?? [])
+            .Where(item =>
+                item.Type == ItemType.Equipment
+                && item.Slot is not null
+                && item.RequiredLevel <= scenario.PlayerLevel
+                && CanEquip(classProfile, item))
+            .ToArray();
+
+        List<ItemDefinition> selected = [];
+        foreach (IGrouping<EquipmentSlot, ItemDefinition> group in wearable
+                     .GroupBy(item => CanonicalSlot(item.Slot!.Value)))
+        {
+            ItemDefinition[] atOrBelowTarget = group
+                .Where(item => item.RequiredLevel <= targetRequiredLevel)
+                .OrderByDescending(item => item.RequiredLevel)
+                .ThenByDescending(item => item.Rarity)
+                .ThenBy(item => item.Id, StringComparer.Ordinal)
+                .ToArray();
+            ItemDefinition? template = atOrBelowTarget.FirstOrDefault()
+                ?? group
+                    .OrderBy(item => item.RequiredLevel)
+                    .ThenBy(item => item.Rarity)
+                    .ThenBy(item => item.Id, StringComparer.Ordinal)
+                    .FirstOrDefault();
+            if (template is null)
+                continue;
+
+            ItemizationDefinition effectiveItemization =
+                ItemizationBudgetPolicy.NormalizeForTemplate(template, itemization);
+            ItemGenerationKey key = ItemGenerationKey.Create(
+                SimulationEquipmentSeed,
+                $"{scenario.ClassId}|{scenario.PlayerLevel}|{scenario.GearState}|{template.Id}",
+                selected.Count);
+            GeneratedItemInstance? generated = ProceduralItemPolicy.Generate(
+                template,
+                effectiveItemization,
+                gearState.QualityProfileId,
+                key,
+                "SIMULATION");
+            selected.Add(generated is null
+                ? template
+                : ItemInstanceGenerator.ApplyGeneratedAffixes(
+                    template,
+                    generated.Affixes,
+                    generated.DisplayName));
+        }
+
+        ItemDefinition? mainHand = selected.SingleOrDefault(item =>
+            CanonicalSlot(item.Slot!.Value) == EquipmentSlot.MainHand);
+        if (mainHand is not null && EquipmentCategoryIds.UsesBothHands(mainHand.WeaponCategory))
+        {
+            selected.RemoveAll(item =>
+                CanonicalSlot(item.Slot!.Value) == EquipmentSlot.OffHand);
+        }
+
+        EquipmentModifierSummary modifiers = EquipmentStatModifierResolver.ResolveDetailed(
+            selected,
+            content.EquipmentSets ?? []);
+        IReadOnlyDictionary<string, int> setPieces = selected
+            .Where(item => !string.IsNullOrWhiteSpace(item.SetId))
+            .GroupBy(item => item.SetId!, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
+        return new SimulationEquipment(modifiers, setPieces);
+    }
+
+    private static bool CanEquip(ClassProfile classProfile, ItemDefinition item)
+    {
+        if (item.WeaponCategory is not null
+            && !classProfile.AllowedWeaponCategories.Contains(item.WeaponCategory, StringComparer.Ordinal))
+            return false;
+        if (item.ArmorCategory is not null
+            && !classProfile.AllowedArmorCategories.Contains(item.ArmorCategory, StringComparer.Ordinal))
+            return false;
+        if (item.OffHandCategory is not null
+            && !(classProfile.AllowedOffHandCategories ?? []).Contains(
+                item.OffHandCategory,
+                StringComparer.Ordinal))
+            return false;
+        return true;
+    }
+
+    private static EquipmentSlot CanonicalSlot(EquipmentSlot slot) =>
+        slot switch
+        {
+            EquipmentSlot.Weapon => EquipmentSlot.MainHand,
+            EquipmentSlot.Boots => EquipmentSlot.Feet,
+            EquipmentSlot.Accessory => EquipmentSlot.Amulet,
+            _ => slot
+        };
+
     private static CombatStats ToCombatStats(int level, CharacterStats stats) => new(
         level,
         stats.Accuracy,
@@ -484,6 +678,10 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
 
     private static CombatSimulationException Invalid(string code, string message) =>
         new(code, message);
+
+    private sealed record SimulationEquipment(
+        EquipmentModifierSummary Modifiers,
+        IReadOnlyDictionary<string, int> SetPieces);
 
     private sealed record SimulationRun(
         CombatSessionStatus Status,
