@@ -1,3 +1,5 @@
+using Elyndor.Contracts.Items;
+
 namespace Elyndor.Contracts.WorldBosses;
 
 public sealed record WorldBossActiveResponse(
@@ -50,7 +52,11 @@ public sealed record WorldBossRewardItemResponse(
     string Name,
     string Rarity,
     int Quantity,
-    string? IconId);
+    string? IconId,
+    Guid? InstanceId = null,
+    bool Pending = false,
+    ItemStatsResponse? Stats = null,
+    GeneratedItemSummaryResponse? GeneratedItem = null);
 
 public sealed record WorldBossRewardResponse(
     Guid SpawnId,
