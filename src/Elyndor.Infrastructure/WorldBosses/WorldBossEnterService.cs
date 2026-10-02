@@ -186,6 +186,7 @@ public sealed class WorldBossEnterService(
             bindingCreated = true;
             created.Session.SynchronizePrimaryEnemyHealthBeforeRegistration(
                 binding.CurrentHealth);
+            created.Session.EnableExternalSynchronization();
 
             CombatParticipantBinding[] additionalParticipants = participants
                 .Where(participant => participant.CharacterId != created.CharacterId)
