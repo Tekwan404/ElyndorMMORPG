@@ -29,7 +29,7 @@ public sealed class SignalRWorldBossUpdatePublisher(
         {
             WorldBossRewardResponse? reward = delivery.Reward is null
                 ? null
-                : ToRewardResponse(spawnId, delivery.Reward);
+                : WorldBossContractMapper.ToRewardResponse(spawnId, delivery.Reward);
             var response = new WorldBossRewardsSettledResponse(
                 spawnId,
                 delivery.Contribution,
@@ -43,22 +43,4 @@ public sealed class SignalRWorldBossUpdatePublisher(
         }
     }
 
-    private static WorldBossRewardResponse ToRewardResponse(
-        Guid spawnId,
-        WorldBossSettlementCharacterResult reward) =>
-        new(
-            spawnId,
-            reward.Contribution,
-            reward.Tier.ToString(),
-            reward.Experience,
-            reward.BossGold,
-            reward.ChestGold,
-            checked(reward.BossGold + reward.ChestGold),
-            reward.Items.Select(item => new WorldBossRewardItemResponse(
-                item.ItemId,
-                item.Name,
-                item.Rarity.ToString(),
-                item.Quantity,
-                item.IconId)).ToArray(),
-            reward.SettledAtUtc);
 }
