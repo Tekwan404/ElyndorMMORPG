@@ -174,7 +174,7 @@ public sealed class BlackBastionBossContentTests
         {
             MonsterDefinition add = indexes.MonstersById[summon.MonsterId];
             Assert.True(summon.NoReward);
-            Assert.Equal(0, add.XpReward);
+            Assert.False(add.GrantsXp);
             Assert.Equal(0, add.GoldRewardMin);
             Assert.Equal(0, add.GoldRewardMax);
             Assert.Null(add.LootTableId);
