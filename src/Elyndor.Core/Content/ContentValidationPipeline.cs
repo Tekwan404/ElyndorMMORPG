@@ -26,6 +26,8 @@ public sealed class ContentValidationPipeline
             new MerchantValidator(),
             new MonsterValidator(),
             new WorldBossValidator(),
+            new CombatBalanceValidator(),
+            new ProgressionBalanceValidator(),
             new EncounterContentValidator(),
             new WorldValidator(),
             new DungeonValidator()
@@ -270,6 +272,20 @@ public sealed class WorldBossValidator : IContentValidationStage
 {
     public void Validate(ContentValidationContext context) =>
         GameContentPackageValidator.ValidateWorldBossDefinitions(
+            context.Package,
+            context.Errors);
+}
+
+public sealed class CombatBalanceValidator : IContentValidationStage
+{
+    public void Validate(ContentValidationContext context) =>
+        GameContentPackageValidator.ValidateCombatBalance(context.Package, context.Errors);
+}
+
+public sealed class ProgressionBalanceValidator : IContentValidationStage
+{
+    public void Validate(ContentValidationContext context) =>
+        GameContentPackageValidator.ValidateProgressionBalance(
             context.Package,
             context.Errors);
 }
