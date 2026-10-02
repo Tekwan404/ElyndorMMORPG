@@ -62,6 +62,7 @@ public sealed record CombatSimulationResult(
     public decimal PlayerMagicEhp { get; init; }
     public decimal PlayerAttackPower { get; init; }
     public decimal PlayerSpellPower { get; init; }
+    public decimal EstimatedEnemyTtkSeconds { get; init; }
     public decimal EstimatedPlayerTtdSeconds { get; init; }
 }
 
@@ -282,6 +283,7 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
             PlayerMagicEhp = magicMultiplier <= 0 ? playerStats.MaxHp : playerStats.MaxHp / magicMultiplier,
             PlayerAttackPower = playerStats.AttackPower,
             PlayerSpellPower = playerStats.SpellPower,
+            EstimatedEnemyTtkSeconds = averagePlayerDps <= 0 ? 0 : monster.MaxHp / averagePlayerDps,
             EstimatedPlayerTtdSeconds = averageEnemyDps <= 0 ? 0 : playerStats.MaxHp / averageEnemyDps
         };
     }
@@ -581,7 +583,7 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
                 ItemizationBudgetPolicy.NormalizeForTemplate(template, itemization);
             ItemGenerationKey key = ItemGenerationKey.Create(
                 SimulationEquipmentSeed,
-                $"{scenario.ClassId}|{scenario.PlayerLevel}|{scenario.GearState}|{template.Id}",
+                $"{scenario.ClassId}|{scenario.PlayerLevel}|{template.Id}",
                 selected.Count);
             GeneratedItemInstance? generated = ProceduralItemPolicy.Generate(
                 template,
