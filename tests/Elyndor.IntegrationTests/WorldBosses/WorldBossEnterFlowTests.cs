@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Elyndor.Contracts.Characters;
 using Elyndor.Contracts.Combat;
+using Elyndor.Contracts.WorldBosses;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Core.WorldBosses;
@@ -272,6 +273,68 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
                     "world-boss-sync-cleanup");
             }
         }
+    }
+
+    [Fact]
+    public async Task SettledWorldBossRewardsAreReturnedByPersonalRewardEndpoint()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        Guid accountId = Guid.CreateVersion7();
+        const long telegramUserId = 9754;
+        await SeedAccountAsync(accountId, telegramUserId);
+
+        await using WebApplicationFactory<Program> factory = CreateFactory(package);
+        using HttpClient client = CreateAuthenticatedClient(factory, accountId, telegramUserId);
+        CharacterResponse character = await CreateCharacterAsync(client, "BossReward");
+
+        Guid spawnId;
+        await using (AsyncServiceScope scope = factory.Services.CreateAsyncScope())
+        {
+            WorldBossActivationResult activation = await scope.ServiceProvider
+                .GetRequiredService<WorldBossLifecycleService>()
+                .ActivateAsync("WORLD_BOSS_ASH_ARCHON", default);
+            Assert.True(activation.Succeeded, activation.ErrorCode);
+            spawnId = activation.Spawn!.Id;
+
+            GameDbContext db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+            WorldBossSpawn spawn = await db.WorldBossSpawns.SingleAsync(
+                candidate => candidate.Id == spawnId);
+            DateTimeOffset now = scope.ServiceProvider
+                .GetRequiredService<TimeProvider>()
+                .GetUtcNow();
+            _ = spawn.ApplyDamage(spawn.MaxHealth);
+            Assert.True(spawn.TryMarkDefeated(now));
+
+            var contribution = new WorldBossContribution(
+                spawnId,
+                character.Id,
+                now);
+            contribution.AddDamage(50_000m, now);
+            db.WorldBossContributions.Add(contribution);
+            await db.SaveChangesAsync();
+
+            WorldBossSettlementBatchResult settlement = await scope.ServiceProvider
+                .GetRequiredService<WorldBossSettlementService>()
+                .SettleAsync(spawnId, default);
+            Assert.True(settlement.Succeeded, settlement.ErrorCode);
+        }
+
+        HttpResponseMessage response = await client.GetAsync(
+            $"/api/v1/world-boss/{spawnId:D}/rewards/me");
+        response.EnsureSuccessStatusCode();
+        WorldBossRewardResponse? reward =
+            await response.Content.ReadFromJsonAsync<WorldBossRewardResponse>();
+
+        Assert.NotNull(reward);
+        Assert.Equal(spawnId, reward.SpawnId);
+        Assert.Equal(50_000m, reward.Contribution);
+        Assert.Equal("Gold", reward.Tier);
+        Assert.Equal(200_000, reward.Experience);
+        Assert.Equal(1_000, reward.BossGold);
+        Assert.InRange(reward.ChestGold, 250, 500);
+        Assert.Equal(reward.BossGold + reward.ChestGold, reward.TotalGold);
+        Assert.Single(reward.Items);
     }
 
     private async Task SeedAccountAsync(Guid accountId, long telegramUserId)
