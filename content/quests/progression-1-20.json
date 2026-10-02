@@ -14,8 +14,14 @@
         {
           "id": "KILL_WOLVES",
           "type": "KillMonster",
-          "targetId": "FOREST_WOLF_L1",
-          "requiredCount": 3
+          "targetId": "WHISPERING_FOREST_MOLODOI_VOLK_L1",
+          "requiredCount": 3,
+          "alternativeTargetIds": [
+            "WHISPERING_FOREST_SERYI_VOLK_L1",
+            "WHISPERING_FOREST_VOLK_OKHOTNIK_L2",
+            "WHISPERING_FOREST_LESNOI_VOLK_L3",
+            "WHISPERING_FOREST_MATIORYI_VOLK_L4"
+          ]
         }
       ],
       "rewardXp": 90,
@@ -67,8 +73,13 @@
         {
           "id": "KILL_BOARS",
           "type": "KillMonster",
-          "targetId": "FOREST_BOAR_L2",
-          "requiredCount": 3
+          "targetId": "WHISPERING_FOREST_LESNOI_KABAN_L2",
+          "requiredCount": 3,
+          "alternativeTargetIds": [
+            "WHISPERING_FOREST_RAZIARIONNYI_KABAN_L3",
+            "WHISPERING_FOREST_KABAN_L4",
+            "WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4"
+          ]
         }
       ],
       "rewardXp": 190,
@@ -91,8 +102,12 @@
         {
           "id": "KILL_SPIDERS",
           "type": "KillMonster",
-          "targetId": "GIANT_SPIDER_L3",
-          "requiredCount": 4
+          "targetId": "WHISPERING_FOREST_LESNOI_PAUK_L3",
+          "requiredCount": 4,
+          "alternativeTargetIds": [
+            "WHISPERING_FOREST_IADOVITYI_PAUK_L3",
+            "WHISPERING_FOREST_GIGANTSKII_PAUK_L5"
+          ]
         },
         {
           "id": "COLLECT_SILK",
@@ -122,8 +137,11 @@
         {
           "id": "KILL_ALPHA",
           "type": "KillMonster",
-          "targetId": "ALPHA_WOLF_L5",
-          "requiredCount": 2
+          "targetId": "WHISPERING_FOREST_MATIORYI_VOZHAK_L4",
+          "requiredCount": 2,
+          "alternativeTargetIds": [
+            "WHISPERING_FOREST_MATIORYI_VOLK_L4"
+          ]
         }
       ],
       "rewardXp": 420,
@@ -154,8 +172,11 @@
         {
           "id": "KILL_DEEP_WOLVES",
           "type": "KillMonster",
-          "targetId": "DEEP_WOLF_L6",
-          "requiredCount": 3
+          "targetId": "DEEP_FOREST_VOLK_CHASHCHOBY_L6",
+          "requiredCount": 3,
+          "alternativeTargetIds": [
+            "DEEP_FOREST_ALFA_VOLK_L7"
+          ]
         }
       ],
       "rewardXp": 600,
@@ -178,13 +199,13 @@
         {
           "id": "KILL_CORRUPTED_BOARS",
           "type": "KillMonster",
-          "targetId": "CORRUPTED_BOAR_L7",
+          "targetId": "DEEP_FOREST_OSKVERNIONNYI_KABAN_L7",
           "requiredCount": 3
         },
         {
           "id": "COLLECT_TUSKS",
           "type": "CollectItem",
-          "targetId": "BOAR_TUSK",
+          "targetId": "ZARAZHIONNYI_KLYK",
           "requiredCount": 3,
           "consumeOnClaim": true
         }
@@ -209,13 +230,13 @@
         {
           "id": "KILL_DEEP_SPIDERS",
           "type": "KillMonster",
-          "targetId": "DEEP_SPIDER_L8",
+          "targetId": "DEEP_FOREST_GLUBINNYI_PAUK_L8",
           "requiredCount": 4
         },
         {
           "id": "COLLECT_VENOM",
           "type": "CollectItem",
-          "targetId": "SPIDER_VENOM_SAC",
+          "targetId": "GLUBINNYI_IAD",
           "requiredCount": 2,
           "consumeOnClaim": true
         }
@@ -246,8 +267,11 @@
         {
           "id": "KILL_GOBLINS",
           "type": "KillMonster",
-          "targetId": "GOBLIN_SCOUT_L9",
-          "requiredCount": 4
+          "targetId": "DEEP_FOREST_GOBLIN_RAZVEDCHIK_L9",
+          "requiredCount": 4,
+          "alternativeTargetIds": [
+            "DEEP_FOREST_GOBLIN_KAPKANSHCHIK_L10"
+          ]
         }
       ],
       "rewardXp": 1550,
@@ -272,8 +296,11 @@
         {
           "id": "KILL_MATURE_WOLVES",
           "type": "KillMonster",
-          "targetId": "DEEP_WOLF_L10",
-          "requiredCount": 5
+          "targetId": "DEEP_FOREST_VOLK_CHASHCHOBY_L6",
+          "requiredCount": 5,
+          "alternativeTargetIds": [
+            "DEEP_FOREST_ALFA_VOLK_L7"
+          ]
         }
       ],
       "rewardXp": 2200,
@@ -296,7 +323,7 @@
         {
           "id": "KILL_OLD_ALPHA",
           "type": "KillMonster",
-          "targetId": "ALPHA_WOLF_L11",
+          "targetId": "DEEP_FOREST_ALFA_VOLK_L7",
           "requiredCount": 3
         }
       ],
@@ -328,13 +355,13 @@
         {
           "id": "KILL_ALPHA_GUARD",
           "type": "KillMonster",
-          "targetId": "ALPHA_WOLF_L11",
+          "targetId": "DEEP_FOREST_ALFA_VOLK_L7",
           "requiredCount": 4
         },
         {
           "id": "COLLECT_FANGS",
           "type": "CollectItem",
-          "targetId": "WOLF_FANG",
+          "targetId": "ZARAZHIONNYI_KLYK",
           "requiredCount": 5,
           "consumeOnClaim": true
         }
@@ -359,13 +386,13 @@
         {
           "id": "KILL_WEB_GUARD",
           "type": "KillMonster",
-          "targetId": "DEEP_SPIDER_L8",
+          "targetId": "DEEP_FOREST_GLUBINNYI_PAUK_L8",
           "requiredCount": 6
         },
         {
           "id": "COLLECT_VENOM_SAMPLES",
           "type": "CollectItem",
-          "targetId": "SPIDER_VENOM_SAC",
+          "targetId": "GLUBINNYI_IAD",
           "requiredCount": 4,
           "consumeOnClaim": true
         }
@@ -423,8 +450,12 @@
         {
           "id": "KILL_BANDITS",
           "type": "KillMonster",
-          "targetId": "BANDIT_ROGUE_L15",
-          "requiredCount": 4
+          "targetId": "BLIGHTED_GROVE_PEPELNYI_NALIOTCHIK_L16",
+          "requiredCount": 4,
+          "alternativeTargetIds": [
+            "BLIGHTED_GROVE_TENEVOI_BRAKONER_L17",
+            "BLIGHTED_GROVE_BRAKONER_CHASHCHI_L17"
+          ]
         }
       ],
       "rewardXp": 9000,
@@ -447,8 +478,11 @@
         {
           "id": "KILL_BANDIT_ARCHERS",
           "type": "KillMonster",
-          "targetId": "BANDIT_ARCHER_L16",
-          "requiredCount": 4
+          "targetId": "BLIGHTED_GROVE_TENEVOI_BRAKONER_L17",
+          "requiredCount": 4,
+          "alternativeTargetIds": [
+            "BLIGHTED_GROVE_BRAKONER_CHASHCHI_L17"
+          ]
         }
       ],
       "rewardXp": 13000,
@@ -471,7 +505,7 @@
         {
           "id": "KILL_BLIGHTED_BOARS",
           "type": "KillMonster",
-          "targetId": "CORRUPTED_BOAR_L17",
+          "targetId": "BLIGHTED_GROVE_PORCHENYI_KABAN_L15",
           "requiredCount": 5
         }
       ],
@@ -495,8 +529,11 @@
         {
           "id": "KILL_BLIGHTED_SPIDERS",
           "type": "KillMonster",
-          "targetId": "BLIGHTED_SPIDER_L18",
-          "requiredCount": 5
+          "targetId": "BLIGHTED_GROVE_PORCHENYI_PAUK_L16",
+          "requiredCount": 5,
+          "alternativeTargetIds": [
+            "BLIGHTED_GROVE_IADOVITAIA_MATRONA_CHASHCHI_L19"
+          ]
         }
       ],
       "rewardXp": 27500,
@@ -519,8 +556,12 @@
         {
           "id": "KILL_VETERAN_BANDITS",
           "type": "KillMonster",
-          "targetId": "BANDIT_ROGUE_L19",
-          "requiredCount": 6
+          "targetId": "BLIGHTED_GROVE_PEPELNYI_NALIOTCHIK_L16",
+          "requiredCount": 6,
+          "alternativeTargetIds": [
+            "BLIGHTED_GROVE_TENEVOI_BRAKONER_L17",
+            "BLIGHTED_GROVE_BRAKONER_CHASHCHI_L17"
+          ]
         }
       ],
       "rewardXp": 39000,
@@ -551,7 +592,7 @@
         {
           "id": "KILL_BLIGHTED_ALPHA",
           "type": "KillMonster",
-          "targetId": "ALPHA_WOLF_L20",
+          "targetId": "BLIGHTED_GROVE_MATIORYI_VOZHAK_L19",
           "requiredCount": 5
         }
       ],
