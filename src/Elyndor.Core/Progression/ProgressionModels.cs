@@ -171,7 +171,7 @@ public static class ProgressionRewardCalculator
         ArgumentNullException.ThrowIfNull(progression);
         ArgumentNullException.ThrowIfNull(profile);
 
-        if (monster.XpReward <= 0)
+        if (!monster.GrantsXp)
             return 0;
 
         long xpToNext = progression.XpToNext(monster.Level);
