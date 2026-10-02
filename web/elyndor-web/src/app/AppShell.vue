@@ -179,6 +179,7 @@ watch(
 
 onMounted(() => {
   initializeTelegramWebApp()
+  if (new URLSearchParams(window.location.search).has('arenaInvite')) openMenu('arena')
   void session.start()
 })
 </script>

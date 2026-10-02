@@ -68,6 +68,38 @@ describe('arenaStore', () => {
     setActivePinia(createPinia())
   })
 
+  it('retries an uncertain invite with the same request id and clears its own pending state', async () => {
+    const request = vi.spyOn(apiClient, 'request')
+      .mockRejectedValueOnce(new Error('network_unavailable'))
+      .mockResolvedValueOnce({ id: 'invite' })
+      .mockResolvedValueOnce([])
+    const arena = useArenaStore()
+    await arena.invitePlayer(' Friend ')
+    expect(arena.invitePending).toBe(false)
+    expect(arena.errorCode).toBe('network_unavailable')
+    await arena.invitePlayer('Friend')
+    const first = JSON.parse(String(request.mock.calls[0]![1]!.body)) as { requestId: string; targetName: string }
+    const retry = JSON.parse(String(request.mock.calls[1]![1]!.body)) as { requestId: string; targetName: string }
+    expect(retry.requestId).toBe(first.requestId)
+    expect(retry.targetName).toBe('Friend')
+    expect(arena.inviteNotice).toContain('отправлено')
+    expect(arena.pending).toBe(false)
+  })
+
+  it('accepts the invitation and restores the existing authoritative match', async () => {
+    vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce({ matchId: 'match-1' })
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(status({ activeMatchId: 'match-1' }))
+    signalR.invoke.mockResolvedValue(match())
+    const arena = useArenaStore()
+    await arena.respondToInvite('invite', 'accept')
+    expect(arena.match?.matchId).toBe('match-1')
+    expect(arena.invitations).toEqual([])
+    expect(arena.invitePending).toBe(false)
+    expect(signalR.start).toHaveBeenCalledTimes(1)
+  })
+
   it('reports disabled arena without touching the hub', async () => {
     vi.spyOn(apiClient, 'request').mockResolvedValueOnce(status({ enabled: false }))
     const arena = useArenaStore()

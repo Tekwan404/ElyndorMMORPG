@@ -34,6 +34,7 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<Character> Characters => Set<Character>();
     public DbSet<ArenaQueueEntry> ArenaQueueEntries => Set<ArenaQueueEntry>();
     public DbSet<ArenaMatch> ArenaMatches => Set<ArenaMatch>();
+    public DbSet<ArenaInvitation> ArenaInvitations => Set<ArenaInvitation>();
     public DbSet<ArenaStanding> ArenaStandings => Set<ArenaStanding>();
     public DbSet<ArenaHonorWallet> ArenaHonorWallets => Set<ArenaHonorWallet>();
     public DbSet<ArenaHonorLedgerEntry> ArenaHonorLedgerEntries => Set<ArenaHonorLedgerEntry>();

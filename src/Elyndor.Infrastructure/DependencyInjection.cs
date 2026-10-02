@@ -65,6 +65,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<ArenaMatchStarter>();
         builder.Services.AddScoped<ArenaReadService>();
         builder.Services.AddScoped<ArenaLobbyService>();
+        builder.Services.AddScoped<ArenaInvitationService>();
         if (bool.TryParse(builder.Configuration["Arena:Enabled"], out bool arenaEnabled) && arenaEnabled)
         {
             // Order matters: recovery cancels orphaned matches before matchmaking starts.
