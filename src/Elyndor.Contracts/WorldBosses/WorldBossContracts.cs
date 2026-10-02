@@ -14,6 +14,11 @@ public sealed record WorldBossActiveResponse(
     int Participants,
     decimal PersonalDamage,
     decimal PartyDamage,
+    bool RewardEligible,
+    string? RewardTier,
+    string? NextRewardTier,
+    decimal? NextRewardTierAtDamage,
+    decimal DamageToNextRewardTier,
     string ContentVersion,
     string BalanceVersion);
 
@@ -56,4 +61,16 @@ public sealed record WorldBossRewardResponse(
     int ChestGold,
     int TotalGold,
     IReadOnlyList<WorldBossRewardItemResponse> Items,
+    DateTimeOffset SettledAtUtc);
+
+
+public sealed record WorldBossDefeatedResponse(
+    Guid SpawnId,
+    DateTimeOffset DefeatedAtUtc);
+
+public sealed record WorldBossRewardsSettledResponse(
+    Guid SpawnId,
+    decimal Contribution,
+    bool RewardEligible,
+    WorldBossRewardResponse? Reward,
     DateTimeOffset SettledAtUtc);
