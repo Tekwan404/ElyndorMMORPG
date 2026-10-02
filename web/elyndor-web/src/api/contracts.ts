@@ -560,11 +560,11 @@ export interface MerchantItem {
   consumableCooldownCategoryId: string | null
   consumableCooldownSeconds: number
   iconId: string | null
-  requiredLevel: number
-  slot: EquipmentSlot | null
-  stats: ItemStats
-  weaponCategory: string | null
-  armorCategory: string | null
+  requiredLevel?: number
+  slot?: EquipmentSlot | null
+  stats?: ItemStats
+  weaponCategory?: string | null
+  armorCategory?: string | null
 }
 
 export interface MerchantBuybackItem {
@@ -585,7 +585,7 @@ export interface MerchantSnapshot {
   description: string
   gold: number | string
   items: MerchantItem[]
-  buybackItems: MerchantBuybackItem[]
+  buybackItems?: MerchantBuybackItem[]
 }
 
 export interface CharacterStats {
