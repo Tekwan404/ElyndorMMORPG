@@ -18,7 +18,54 @@ public static class WorldBossEndpoints
 
         group.MapGet("/active", GetActiveAsync);
         group.MapPost("/{spawnId:guid}/enter", EnterAsync);
+        group.MapGet("/{spawnId:guid}/leaderboard", GetLeaderboardAsync);
         return endpoints;
+    }
+
+    private static async Task<IResult> GetLeaderboardAsync(
+        Guid spawnId,
+        ClaimsPrincipal user,
+        HttpContext httpContext,
+        WorldBossReadService readService,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        WorldBossLeaderboardReadResult result = await readService.GetLeaderboardAsync(
+            accountId,
+            spawnId,
+            cancellationToken);
+        if (!result.CharacterFound || !result.SpawnFound)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status404NotFound,
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = result.CharacterFound
+                        ? WorldBossEnterErrorCodes.SpawnNotFound
+                        : WorldBossEnterErrorCodes.CharacterNotFound,
+                    ["correlationId"] = httpContext.TraceIdentifier
+                });
+        }
+
+        return Results.Ok(new WorldBossLeaderboardResponse(
+            result.SpawnId,
+            result.Players.Select(entry => new WorldBossPersonalLeaderboardEntryResponse(
+                entry.Rank,
+                entry.CharacterId,
+                entry.Name,
+                entry.Damage)).ToArray(),
+            result.Parties.Select(entry => new WorldBossPartyLeaderboardEntryResponse(
+                entry.Rank,
+                entry.PartyId,
+                entry.LeaderName,
+                entry.Damage)).ToArray(),
+            result.PersonalRank,
+            result.PersonalDamage,
+            result.PartyId,
+            result.PartyRank,
+            result.PartyDamage));
     }
 
     private static async Task<IResult> EnterAsync(
