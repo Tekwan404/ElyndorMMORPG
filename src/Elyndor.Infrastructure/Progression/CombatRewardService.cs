@@ -171,7 +171,7 @@ public sealed class CombatRewardService(
         foreach (ResolvedRewardSource source in rewardSources)
         {
             int sourceXp = progressionBalance is null
-                ? source.Monster.XpReward
+                ? source.Monster.LegacyXpReward
                 : ProgressionRewardCalculator.ResolveMonsterXp(
                     source.Monster,
                     character.Level,
