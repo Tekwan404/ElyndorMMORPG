@@ -23,7 +23,7 @@ public sealed class ProgressionBalanceContentTests
     }
 
     [Fact]
-    public async Task AuthoredFieldXpMatchesDerivedNormalMobCurve()
+    public async Task FieldXpComesFromDerivedNormalMobCurve()
     {
         var content = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
@@ -45,7 +45,8 @@ public sealed class ProgressionBalanceContentTests
             balance);
 
         Assert.InRange(target21, 18_000, 18_200);
-        Assert.Equal(35_000, level30.XpReward);
+        Assert.True(level30.GrantsXp);
+        Assert.Equal(0, level30.LegacyXpReward);
         Assert.InRange(target30, 34_600, 34_900);
     }
 
