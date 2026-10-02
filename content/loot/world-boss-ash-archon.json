@@ -58,6 +58,62 @@
           ]
         }
       ]
+    },
+    {
+      "id": "WORLD_BOSS_ASH_ARCHON_TOP5_LOOT",
+      "version": 1,
+      "entries": [],
+      "selectionGroups": [
+        {
+          "id": "ASH_ARCHON_TOP5_CHEST",
+          "rolls": 1,
+          "selectionMode": "WeightedExclusive",
+          "entries": [
+            {
+              "itemId": "UNIQUE_WARRIOR_BLACKHEART_L25",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1
+            },
+            {
+              "itemId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1
+            },
+            {
+              "itemId": "UNIQUE_ARCHER_LAST_CONSTELLATION_L25",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1
+            },
+            {
+              "itemId": "FOKUS_OSTATOCHNOI_MANY",
+              "weight": 10,
+              "minQuantity": 1,
+              "maxQuantity": 1
+            },
+            {
+              "itemId": "LUK_TROINOGO_ASPEKTA",
+              "weight": 10,
+              "minQuantity": 1,
+              "maxQuantity": 1
+            },
+            {
+              "itemId": "KOLTSO_RAZBITOGO_OTRAZHENIIA",
+              "weight": 10,
+              "minQuantity": 1,
+              "maxQuantity": 1
+            },
+            {
+              "itemId": "PECHAT_TRIEDINSTVA",
+              "weight": 10,
+              "minQuantity": 1,
+              "maxQuantity": 1
+            }
+          ]
+        }
+      ]
     }
   ]
 }
