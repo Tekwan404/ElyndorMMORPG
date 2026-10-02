@@ -49,7 +49,8 @@ public sealed record GameContentPackage(
     IReadOnlyList<SkinningSourceDefinition>? SkinningSources = null,
     IReadOnlyList<ProfessionRecipeDefinition>? ProfessionRecipes = null,
     IReadOnlyList<CharacterSkinDefinition>? CharacterSkins = null,
-    IReadOnlyList<WorldBossDefinition>? WorldBosses = null);
+    IReadOnlyList<WorldBossDefinition>? WorldBosses = null,
+    IReadOnlyList<WorldBossRewardProfileDefinition>? WorldBossRewardProfiles = null);
 
 public sealed record AfkFarmRewardProfile(
     int ProcessingIntervalSeconds,
