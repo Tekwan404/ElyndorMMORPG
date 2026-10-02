@@ -59,6 +59,50 @@ public sealed class WorldBossContentTests
         Assert.Empty(GameContentPackageValidator.Validate(package));
     }
 
+    [Fact]
+    public async Task AshArchonRewardProfileMovesThreeUniqueWeaponsOutOfDungeonIntoPersonalChest()
+    {
+        var package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+        WorldBossDefinition boss = package.WorldBosses!.Single(
+            item => item.Id == "WORLD_BOSS_ASH_ARCHON");
+        WorldBossRewardProfileDefinition rewardProfile =
+            package.WorldBossRewardProfiles!.Single(
+                item => item.Id == boss.RewardProfileId);
+        var chest = package.LootTables!.Single(
+            table => table.Id == boss.LootTableId);
+        var dungeonBoss = package.LootTables!.Single(
+            table => table.Id == "ECLIPSED_CITADEL_BOSS_LOOT");
+
+        Assert.Equal(5_000m, rewardProfile.MinimumContribution);
+        Assert.Equal(200_000, rewardProfile.BossExperience);
+        Assert.Equal(1_000, rewardProfile.BossGold);
+        Assert.Equal(250, rewardProfile.ChestGoldMin);
+        Assert.Equal(500, rewardProfile.ChestGoldMax);
+
+        string[] uniqueIds =
+        [
+            "UNIQUE_WARRIOR_BLACKHEART_L25",
+            "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25",
+            "UNIQUE_ARCHER_LAST_CONSTELLATION_L25"
+        ];
+        Assert.All(uniqueIds, uniqueId =>
+        {
+            Assert.DoesNotContain(dungeonBoss.Entries, entry => entry.ItemId == uniqueId);
+            Assert.Contains(
+                chest.SelectionGroups!.SelectMany(group => group.Entries),
+                entry => entry.ItemId == uniqueId);
+        });
+
+        Assert.Single(chest.SelectionGroups!);
+        Assert.Equal(1, chest.SelectionGroups![0].Rolls);
+        Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "FOKUS_OSTATOCHNOI_MANY");
+        Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "LUK_TROINOGO_ASPEKTA");
+        Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "KOLTSO_RAZBITOGO_OTRAZHENIIA");
+        Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "PECHAT_TRIEDINSTVA");
+    }
+
     [Theory]
     [InlineData(100, 1)]
     [InlineData(75, 2)]
