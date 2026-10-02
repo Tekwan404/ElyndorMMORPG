@@ -682,7 +682,7 @@ public sealed class CombatSessionRegistry(
         foreach (ICombatResultObserver observer in _resultObservers)
         {
             await observer.ObserveAsync(
-                entry.Session.SessionId,
+                entry.Session,
                 participants,
                 result.Events,
                 cancellationToken);

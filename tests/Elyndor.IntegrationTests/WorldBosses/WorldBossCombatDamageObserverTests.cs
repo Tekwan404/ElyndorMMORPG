@@ -1,5 +1,10 @@
 using Elyndor.Core.Characters;
 using Elyndor.Core.Combat;
+using Elyndor.Core.Combat.Abilities;
+using Elyndor.Core.Combat.Randomness;
+using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Monsters;
+using Elyndor.Core.Talents;
 using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Parties;
@@ -36,12 +41,12 @@ public sealed class WorldBossCombatDamageObserverTests(PostgresFixture postgres)
             sequence: 42);
 
         await observer.ObserveAsync(
-            seed.SessionId,
+            CreateSession(seed),
             [Participant(seed)],
             [damage],
             CancellationToken.None);
         await observer.ObserveAsync(
-            seed.SessionId,
+            CreateSession(seed),
             [Participant(seed)],
             [damage],
             CancellationToken.None);
@@ -64,7 +69,7 @@ public sealed class WorldBossCombatDamageObserverTests(PostgresFixture postgres)
             provider.GetRequiredService<IServiceScopeFactory>());
 
         await observer.ObserveAsync(
-            seed.SessionId,
+            CreateSession(seed),
             [Participant(seed)],
             [
                 Damage(seed.PlayerActorId, addActorId, 1_000m, 1),
@@ -100,7 +105,7 @@ public sealed class WorldBossCombatDamageObserverTests(PostgresFixture postgres)
             provider.GetRequiredService<IServiceScopeFactory>());
 
         await observer.ObserveAsync(
-            seed.SessionId,
+            CreateSession(seed),
             [Participant(seed)],
             [Damage(seed.PlayerActorId, seed.BossActorId, 2_500m, 7)],
             CancellationToken.None);
@@ -109,6 +114,33 @@ public sealed class WorldBossCombatDamageObserverTests(PostgresFixture postgres)
         WorldBossPartyContribution party = await verify.WorldBossPartyContributions.SingleAsync();
         Assert.Equal(partyId, party.PartyId);
         Assert.Equal(2_500m, party.Damage);
+    }
+
+    [Fact]
+    public async Task CompanionDamageIsAttributedToOwningCharacter()
+    {
+        Seed seed = await SeedAsync();
+        Guid companionActorId = Guid.CreateVersion7();
+
+        await using ServiceProvider provider = Services();
+        WorldBossCombatDamageObserver observer = new(
+            provider.GetRequiredService<IServiceScopeFactory>());
+        CombatSession session = CreateSession(seed, companionActorId);
+
+        await observer.ObserveAsync(
+            session,
+            [Participant(seed)],
+            [Damage(companionActorId, seed.BossActorId, 1_750m, 11)],
+            CancellationToken.None);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        WorldBossSpawn spawn = await verify.WorldBossSpawns.SingleAsync();
+        WorldBossContribution contribution =
+            await verify.WorldBossContributions.SingleAsync();
+
+        Assert.Equal(8_250m, spawn.CurrentHealth);
+        Assert.Equal(seed.CharacterId, contribution.CharacterId);
+        Assert.Equal(1_750m, contribution.Damage);
     }
 
     [Fact]
@@ -181,6 +213,77 @@ public sealed class WorldBossCombatDamageObserverTests(PostgresFixture postgres)
         await db.SaveChangesAsync();
 
         return new Seed(accountId, characterId, sessionId, characterId, bossActorId);
+    }
+
+    private static CombatSession CreateSession(
+        Seed seed,
+        Guid? companionActorId = null)
+    {
+        CombatStats stats = new(
+            30,
+            Accuracy: 100,
+            Dodge: 0,
+            CriticalChance: 0,
+            CriticalDamage: 1.5m,
+            Armor: 0,
+            MagicResistance: 0,
+            ArmorPenetration: 0,
+            MagicPenetration: 0,
+            AttackPower: 100,
+            SpellPower: 0);
+        CombatParticipantDefinition player = new(
+            new CombatActorState(
+                seed.PlayerActorId,
+                1_000,
+                1_000,
+                100,
+                100,
+                stats),
+            CombatActorKind.Player,
+            "WARRIOR",
+            "BridgeTester",
+            "RAGE",
+            new AutoAttackProfile(TimeSpan.FromSeconds(30), 0, 0, 0),
+            new HashSet<string>(StringComparer.Ordinal));
+        CombatParticipantDefinition boss = new(
+            new CombatActorState(
+                seed.BossActorId,
+                10_000,
+                10_000,
+                0,
+                0,
+                stats),
+            CombatActorKind.Monster,
+            "WORLD_BOSS_ASH_ARCHON_L30",
+            "Архон Пепла",
+            "NONE",
+            new AutoAttackProfile(TimeSpan.FromSeconds(30), 0, 0, 0),
+            new HashSet<string>(StringComparer.Ordinal),
+            MonsterRank: MonsterRank.Boss);
+        CombatParticipantDefinition? companion = companionActorId is { } actorId
+            ? new CombatParticipantDefinition(
+                new CombatActorState(actorId, 500, 500, 0, 0, stats),
+                CombatActorKind.Companion,
+                "ARCHER_STARTER_PREDATOR",
+                "Companion",
+                "NONE",
+                new AutoAttackProfile(TimeSpan.FromSeconds(30), 10, 0, 0),
+                new HashSet<string>(StringComparer.Ordinal))
+            : null;
+
+        return new CombatSession(
+            seed.SessionId,
+            player,
+            boss,
+            new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal),
+            new MonsterAiProfile("WB_TEST_AI", []),
+            ResolvedTalentModifiers.Empty,
+            new SequenceGameRandom(Enumerable.Repeat(0.99m, 64).ToArray()),
+            Now,
+            "test-content",
+            "test-balance",
+            companion: companion,
+            playerAccountId: seed.AccountId);
     }
 
     private static CombatParticipantSnapshot Participant(Seed seed) =>

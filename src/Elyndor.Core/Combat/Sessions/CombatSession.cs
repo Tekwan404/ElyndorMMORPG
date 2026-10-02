@@ -428,6 +428,11 @@ public sealed partial class CombatSession
     public ContributionLedger ContributionLedger => _contributionLedger;
     public CombatParticipantRoster ParticipantRoster => _participantRoster;
 
+    public bool TryResolveContributionCharacterId(
+        Guid actorId,
+        out Guid characterId) =>
+        _contributionLedger.TryResolveCharacterId(actorId, out characterId);
+
     public ContributionEligibilityResult EvaluateParticipant(
         Guid characterId,
         DateTimeOffset completedAtUtc) =>

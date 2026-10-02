@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using System.Security.Cryptography;
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Participants;
+using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.WorldBosses;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Persistence;
@@ -14,15 +15,16 @@ public sealed class WorldBossCombatDamageObserver(IServiceScopeFactory scopeFact
     : ICombatResultObserver
 {
     public async Task ObserveAsync(
-        Guid combatSessionId,
+        CombatSession session,
         IReadOnlyList<CombatParticipantSnapshot> participants,
         IReadOnlyList<CombatEvent> events,
         CancellationToken cancellationToken)
     {
-        if (combatSessionId == Guid.Empty)
-            throw new ArgumentException("Combat session identifier cannot be empty.", nameof(combatSessionId));
+        ArgumentNullException.ThrowIfNull(session);
         if (events.Count == 0)
             return;
+
+        Guid combatSessionId = session.SessionId;
 
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
         GameDbContext db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
@@ -34,9 +36,21 @@ public sealed class WorldBossCombatDamageObserver(IServiceScopeFactory scopeFact
         if (binding is null)
             return;
 
-        Dictionary<Guid, Guid> charactersByActor = participants
-            .ToDictionary(participant => participant.ActorId, participant => participant.CharacterId);
-        Guid[] characterIds = charactersByActor.Values.Distinct().ToArray();
+        Guid[] characterIds = events
+            .Where(combatEvent => combatEvent.Type == CombatEventType.DamageDealt
+                && combatEvent.TargetActorId == binding.BossActorId
+                && combatEvent.SourceActorId is not null)
+            .Select(combatEvent =>
+            {
+                return session.TryResolveContributionCharacterId(
+                    combatEvent.SourceActorId!.Value,
+                    out Guid ownerCharacterId)
+                        ? ownerCharacterId
+                        : Guid.Empty;
+            })
+            .Where(characterId => characterId != Guid.Empty)
+            .Distinct()
+            .ToArray();
         Dictionary<Guid, Guid> currentPartyByCharacter = await db.PartyMembers
             .AsNoTracking()
             .Where(member => characterIds.Contains(member.CharacterId))
@@ -53,7 +67,9 @@ public sealed class WorldBossCombatDamageObserver(IServiceScopeFactory scopeFact
                 || combatEvent.Amount <= 0
                 || combatEvent.TargetActorId != binding.BossActorId
                 || combatEvent.SourceActorId is not { } sourceActorId
-                || !charactersByActor.TryGetValue(sourceActorId, out Guid characterId))
+                || !session.TryResolveContributionCharacterId(
+                    sourceActorId,
+                    out Guid characterId))
             {
                 continue;
             }
