@@ -360,12 +360,40 @@ public sealed record WorldBossDefinition(
     bool IsEnabled,
     IReadOnlyList<WorldBossPhaseDefinition> Phases);
 
+public sealed record WorldBossLootItemStats(
+    decimal Strength,
+    decimal Agility,
+    decimal Intellect,
+    decimal Stamina,
+    decimal MaxHp,
+    decimal AttackPower,
+    decimal SpellPower,
+    decimal CriticalChance,
+    decimal CriticalDamage,
+    decimal Accuracy,
+    decimal Armor,
+    decimal MagicResistance,
+    decimal Dodge,
+    decimal ArmorPenetration,
+    decimal MagicPenetration,
+    decimal AttackSpeed,
+    decimal MaxResource,
+    decimal? WeaponDamageMin = null,
+    decimal? WeaponDamageMax = null,
+    decimal BlockChance = 0,
+    decimal BlockValueMin = 0,
+    decimal BlockValueMax = 0);
+
 public sealed record WorldBossLootItemResult(
     string ItemId,
     string Name,
     ItemRarity Rarity,
     int Quantity,
-    string? IconId);
+    string? IconId,
+    Guid? InstanceId = null,
+    bool Pending = false,
+    WorldBossLootItemStats? Stats = null,
+    GeneratedItemInstance? GeneratedItem = null);
 
 public sealed record WorldBossLootResult(
     int BossGold,
