@@ -48,7 +48,8 @@ public sealed record GameContentPackage(
     IReadOnlyList<SkinningSourceDefinition>? SkinningSources = null,
     IReadOnlyList<ProfessionRecipeDefinition>? ProfessionRecipes = null,
     IReadOnlyList<CharacterSkinDefinition>? CharacterSkins = null,
-    CombatBalanceProfile? CombatBalance = null);
+    CombatBalanceProfile? CombatBalance = null,
+    ProgressionBalanceProfile? ProgressionBalance = null);
 
 public sealed record AfkFarmRewardProfile(
     int ProcessingIntervalSeconds,
