@@ -352,7 +352,9 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
                 monster.AutoAttackInterval,
                 monster.AutoAttackBaseDamage,
                 monster.AutoAttackAttackPowerCoefficient,
-                0),
+                0,
+                monster.AutoAttackBaseDamageMin,
+                monster.AutoAttackBaseDamageMax),
             new HashSet<string>(monster.AbilityIds, StringComparer.Ordinal));
 
         DateTimeOffset startedAt = SimulationEpoch.AddDays(iteration);
