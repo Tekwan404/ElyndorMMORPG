@@ -108,6 +108,159 @@
       "itemId": "THICK_HIDE",
       "minQuantity": 2,
       "maxQuantity": 4
+    },
+    {
+      "id": "SKIN_WHISPERING_FOREST_MOLODOI_VOLK_L1",
+      "monsterId": "WHISPERING_FOREST_MOLODOI_VOLK_L1",
+      "requiredSkill": 1,
+      "skillUpUntil": 45,
+      "itemId": "ROUGH_HIDE",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_WHISPERING_FOREST_SERYI_VOLK_L1",
+      "monsterId": "WHISPERING_FOREST_SERYI_VOLK_L1",
+      "requiredSkill": 1,
+      "skillUpUntil": 45,
+      "itemId": "ROUGH_HIDE",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_WHISPERING_FOREST_VOLK_OKHOTNIK_L2",
+      "monsterId": "WHISPERING_FOREST_VOLK_OKHOTNIK_L2",
+      "requiredSkill": 10,
+      "skillUpUntil": 55,
+      "itemId": "ROUGH_HIDE",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_WHISPERING_FOREST_LESNOI_KABAN_L2",
+      "monsterId": "WHISPERING_FOREST_LESNOI_KABAN_L2",
+      "requiredSkill": 10,
+      "skillUpUntil": 55,
+      "itemId": "ROUGH_HIDE",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_WHISPERING_FOREST_RAZIARIONNYI_KABAN_L3",
+      "monsterId": "WHISPERING_FOREST_RAZIARIONNYI_KABAN_L3",
+      "requiredSkill": 20,
+      "skillUpUntil": 70,
+      "itemId": "ROUGH_HIDE",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_WHISPERING_FOREST_LESNOI_PAUK_L3",
+      "monsterId": "WHISPERING_FOREST_LESNOI_PAUK_L3",
+      "requiredSkill": 20,
+      "skillUpUntil": 70,
+      "itemId": "CHITIN_FRAGMENT",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_WHISPERING_FOREST_IADOVITYI_PAUK_L3",
+      "monsterId": "WHISPERING_FOREST_IADOVITYI_PAUK_L3",
+      "requiredSkill": 20,
+      "skillUpUntil": 70,
+      "itemId": "CHITIN_FRAGMENT",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_WHISPERING_FOREST_LESNOI_VOLK_L3",
+      "monsterId": "WHISPERING_FOREST_LESNOI_VOLK_L3",
+      "requiredSkill": 35,
+      "skillUpUntil": 85,
+      "itemId": "LIGHT_HIDE",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_WHISPERING_FOREST_MATIORYI_VOLK_L4",
+      "monsterId": "WHISPERING_FOREST_MATIORYI_VOLK_L4",
+      "requiredSkill": 35,
+      "skillUpUntil": 85,
+      "itemId": "LIGHT_HIDE",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_WHISPERING_FOREST_MATIORYI_VOZHAK_L4",
+      "monsterId": "WHISPERING_FOREST_MATIORYI_VOZHAK_L4",
+      "requiredSkill": 50,
+      "skillUpUntil": 100,
+      "itemId": "LIGHT_HIDE",
+      "minQuantity": 2,
+      "maxQuantity": 3
+    },
+    {
+      "id": "SKIN_WHISPERING_FOREST_KABAN_L4",
+      "monsterId": "WHISPERING_FOREST_KABAN_L4",
+      "requiredSkill": 35,
+      "skillUpUntil": 85,
+      "itemId": "LIGHT_HIDE",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4",
+      "monsterId": "WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4",
+      "requiredSkill": 50,
+      "skillUpUntil": 100,
+      "itemId": "LIGHT_HIDE",
+      "minQuantity": 2,
+      "maxQuantity": 3
+    },
+    {
+      "id": "SKIN_WHISPERING_FOREST_GIGANTSKII_PAUK_L5",
+      "monsterId": "WHISPERING_FOREST_GIGANTSKII_PAUK_L5",
+      "requiredSkill": 50,
+      "skillUpUntil": 100,
+      "itemId": "CHITIN_FRAGMENT",
+      "minQuantity": 2,
+      "maxQuantity": 3
+    },
+    {
+      "id": "SKIN_DEEP_FOREST_VOLK_CHASHCHOBY_L6",
+      "monsterId": "DEEP_FOREST_VOLK_CHASHCHOBY_L6",
+      "requiredSkill": 65,
+      "skillUpUntil": 120,
+      "itemId": "LIGHT_HIDE",
+      "minQuantity": 1,
+      "maxQuantity": 3
+    },
+    {
+      "id": "SKIN_DEEP_FOREST_OSKVERNIONNYI_KABAN_L7",
+      "monsterId": "DEEP_FOREST_OSKVERNIONNYI_KABAN_L7",
+      "requiredSkill": 80,
+      "skillUpUntil": 140,
+      "itemId": "THICK_HIDE",
+      "minQuantity": 1,
+      "maxQuantity": 2
+    },
+    {
+      "id": "SKIN_DEEP_FOREST_ALFA_VOLK_L7",
+      "monsterId": "DEEP_FOREST_ALFA_VOLK_L7",
+      "requiredSkill": 80,
+      "skillUpUntil": 140,
+      "itemId": "THICK_HIDE",
+      "minQuantity": 2,
+      "maxQuantity": 3
+    },
+    {
+      "id": "SKIN_DEEP_FOREST_GLUBINNYI_PAUK_L8",
+      "monsterId": "DEEP_FOREST_GLUBINNYI_PAUK_L8",
+      "requiredSkill": 95,
+      "skillUpUntil": 155,
+      "itemId": "CHITIN_FRAGMENT",
+      "minQuantity": 2,
+      "maxQuantity": 3
     }
   ],
   "professionRecipes": [
@@ -120,7 +273,10 @@
       "outputItemId": "ROUGH_LEATHER",
       "outputQuantity": 1,
       "ingredients": [
-        { "itemId": "ROUGH_HIDE", "quantity": 1 }
+        {
+          "itemId": "ROUGH_HIDE",
+          "quantity": 1
+        }
       ],
       "requiredLocationId": "STARTER_TOWN"
     },
@@ -133,7 +289,10 @@
       "outputItemId": "LIGHT_LEATHER",
       "outputQuantity": 1,
       "ingredients": [
-        { "itemId": "LIGHT_HIDE", "quantity": 1 }
+        {
+          "itemId": "LIGHT_HIDE",
+          "quantity": 1
+        }
       ],
       "requiredLocationId": "STARTER_TOWN"
     },
@@ -146,7 +305,10 @@
       "outputItemId": "THICK_LEATHER",
       "outputQuantity": 1,
       "ingredients": [
-        { "itemId": "THICK_HIDE", "quantity": 1 }
+        {
+          "itemId": "THICK_HIDE",
+          "quantity": 1
+        }
       ],
       "requiredLocationId": "STARTER_TOWN"
     },
@@ -159,7 +321,10 @@
       "outputItemId": "ROUGH_LEATHER",
       "outputQuantity": 1,
       "ingredients": [
-        { "itemId": "WOLF_HIDE", "quantity": 1 }
+        {
+          "itemId": "WOLF_HIDE",
+          "quantity": 1
+        }
       ],
       "requiredLocationId": "STARTER_TOWN"
     },
@@ -172,7 +337,10 @@
       "outputItemId": "ROUGH_LEATHER",
       "outputQuantity": 1,
       "ingredients": [
-        { "itemId": "BOAR_HIDE", "quantity": 1 }
+        {
+          "itemId": "BOAR_HIDE",
+          "quantity": 1
+        }
       ],
       "requiredLocationId": "STARTER_TOWN"
     },
@@ -185,7 +353,10 @@
       "outputItemId": "ARCHER_COMMON_WHISPER_TRACKER_FEET",
       "outputQuantity": 1,
       "ingredients": [
-        { "itemId": "ROUGH_LEATHER", "quantity": 4 }
+        {
+          "itemId": "ROUGH_LEATHER",
+          "quantity": 4
+        }
       ],
       "requiredLocationId": "STARTER_TOWN"
     },
@@ -198,7 +369,10 @@
       "outputItemId": "ARCHER_COMMON_WHISPER_TRACKER_HANDS",
       "outputQuantity": 1,
       "ingredients": [
-        { "itemId": "ROUGH_LEATHER", "quantity": 5 }
+        {
+          "itemId": "ROUGH_LEATHER",
+          "quantity": 5
+        }
       ],
       "requiredLocationId": "STARTER_TOWN"
     },
@@ -211,8 +385,14 @@
       "outputItemId": "ARCHER_COMMON_WHISPER_TRACKER_CHEST",
       "outputQuantity": 1,
       "ingredients": [
-        { "itemId": "ROUGH_LEATHER", "quantity": 8 },
-        { "itemId": "CHITIN_FRAGMENT", "quantity": 2 }
+        {
+          "itemId": "ROUGH_LEATHER",
+          "quantity": 8
+        },
+        {
+          "itemId": "CHITIN_FRAGMENT",
+          "quantity": 2
+        }
       ],
       "requiredLocationId": "STARTER_TOWN"
     }
