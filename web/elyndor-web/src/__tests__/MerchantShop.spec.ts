@@ -27,15 +27,86 @@ describe('MerchantShop', () => {
     await flushPromises()
 
     expect(getMerchant).toHaveBeenCalledWith('MARCUS_SUPPLIES')
-    expect(wrapper.get('[data-merchant-offer="SMALL_HEALING_POTION"]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.get('[data-merchant-offer="SMALL_HEALING_POTION"]').classes()).toContain('active')
     expect(wrapper.get('[data-merchant-detail]').text()).toContain('Малое зелье лечения')
-    expect(wrapper.get('[data-merchant-detail]').text()).toContain('+50 здоровья')
+    expect(wrapper.get('[data-merchant-detail]').text()).toContain('+120 здоровья')
 
     await wrapper.get('[data-buy-selected]').trigger('click')
     await flushPromises()
 
     expect(buy).toHaveBeenCalledWith('MARCUS_SUPPLIES', 'SMALL_HEALING_POTION', 1)
     expect(wrapper.get('.merchant__wallet').text()).toContain('80')
+  })
+
+  it('buys consumables in selected quantity and shows the calculated total', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot([])
+    vi.spyOn(session, 'getMerchant').mockResolvedValue(merchantSnapshot())
+    const buy = vi.spyOn(session, 'buyMerchantItem').mockResolvedValue({
+      ...merchantSnapshot(),
+      gold: 0,
+    })
+
+    const wrapper = mount(MerchantShop, {
+      props: { open: false },
+      global: { stubs: { Teleport: true } },
+    })
+
+    await wrapper.setProps({ open: true })
+    await flushPromises()
+    await wrapper.get('.merchant-quantity__quick button:nth-child(2)').trigger('click')
+
+    expect(wrapper.get('[data-buy-quantity]').text()).toBe('5')
+    expect(wrapper.get('[data-merchant-detail]').text()).toContain('100')
+
+    await wrapper.get('[data-buy-selected]').trigger('click')
+    await flushPromises()
+
+    expect(buy).toHaveBeenCalledWith('MARCUS_SUPPLIES', 'SMALL_HEALING_POTION', 5)
+  })
+
+  it('shows durable buyback entries and restores them through the store action', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot([])
+    const merchant = {
+      ...merchantSnapshot(),
+      buybackItems: [{
+        characterItemId: '11111111-1111-7111-8111-111111111111',
+        definitionId: 'WARRIOR_STARTER_CHEST',
+        name: 'Кираса приграничной стали',
+        type: 'Equipment' as const,
+        rarity: 'Rare' as const,
+        quantity: 1,
+        buybackPriceGold: 25,
+        iconId: null,
+        enhancementLevel: 2,
+      }],
+    }
+    vi.spyOn(session, 'getMerchant').mockResolvedValue(merchant)
+    const buyback = vi.spyOn(session, 'buybackMerchantItem').mockResolvedValue({
+      ...merchant,
+      buybackItems: [],
+    })
+
+    const wrapper = mount(MerchantShop, {
+      props: { open: false },
+      global: { stubs: { Teleport: true } },
+    })
+
+    await wrapper.setProps({ open: true })
+    await flushPromises()
+    await wrapper.get('[data-merchant-tab="buyback"]').trigger('click')
+
+    expect(wrapper.get('[data-buyback-item]').text()).toContain('Кираса приграничной стали')
+    expect(wrapper.get('[data-buyback-item]').text()).toContain('+2')
+
+    await wrapper.get('[data-buyback-item] button').trigger('click')
+    await flushPromises()
+
+    expect(buyback).toHaveBeenCalledWith(
+      'MARCUS_SUPPLIES',
+      '11111111-1111-7111-8111-111111111111',
+    )
   })
 
   it('excludes protected items from sell actions and sells through the generic merchant action', async () => {
@@ -119,6 +190,7 @@ function merchantSnapshot(): MerchantSnapshot {
     name: 'Маркус',
     description: 'Торговец припасами.',
     gold: 100,
+    buybackItems: [],
     items: [
       {
         definitionId: 'SMALL_HEALING_POTION',
@@ -131,7 +203,7 @@ function merchantSnapshot(): MerchantSnapshot {
         consumableActions: [
           {
             type: 'RestoreHp',
-            amount: 50,
+            amount: 120,
             resourceType: null,
             effectId: null,
             dispelCategory: null,
