@@ -170,7 +170,7 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
 
         return package with
         {
-            WorldBosses = package.WorldBosses
+            WorldBosses = package.WorldBosses!
                 .Select(candidate => candidate.Id == ash.Id
                     ? candidate with { EncounterProfileId = encounter.Id }
                     : candidate)
