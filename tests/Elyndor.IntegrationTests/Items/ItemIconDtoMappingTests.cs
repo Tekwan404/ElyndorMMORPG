@@ -25,7 +25,8 @@ public sealed class ItemIconDtoMappingTests
         MerchantSnapshot merchant = new(
             new MerchantDefinition("MERCHANT", "Merchant", "STARTER_TOWN", "", [definition.Id]),
             0,
-            [new MerchantCatalogItem(definition, 3)]);
+            [new MerchantCatalogItem(definition, 3)],
+            []);
 
         Assert.Equal(definition.IconId, InventoryEndpoints.ToResponse(inventory).IconId);
         Assert.Equal(definition.IconId, InventoryEndpoints.ToMerchantResponse(merchant).Items.Single().IconId);

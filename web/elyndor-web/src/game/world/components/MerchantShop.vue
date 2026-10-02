@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import MoneyAmount from '@/ui/components/MoneyAmount.vue'
 import { canAffordMoney } from '@/shared/money'
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
-import type { InventoryItem, MerchantItem, MerchantSnapshot } from '@/api/contracts'
+import type { InventoryItem, MerchantBuybackItem, MerchantItem, MerchantSnapshot } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
 import { consumableActionLabel } from '@/game/items/consumablePresentation'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
@@ -14,37 +14,50 @@ import IconGenerator from '@/ui/icons/IconGenerator.vue'
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 const MERCHANT_ID = 'MARCUS_SUPPLIES'
+
 type MerchantFilter = 'all' | MerchantItem['type']
 type SortMode = 'recommended' | 'price-asc' | 'price-desc' | 'rarity'
+type EquipmentSubcategory = 'all' | 'weapon' | 'armor' | 'accessory'
+type ActiveTab = 'buy' | 'sell' | 'buyback'
+type StatKey =
+  | 'strength' | 'agility' | 'intellect' | 'stamina'
+  | 'maxHp' | 'attackPower' | 'spellPower' | 'criticalChance'
+  | 'armor' | 'magicResistance' | 'dodge' | 'attackSpeed'
 
 const session = useGameSessionStore()
 const merchant = ref<MerchantSnapshot | null>(null)
 const loading = ref(false)
-const activeTab = ref<'buy' | 'sell'>('buy')
+const activeTab = ref<ActiveTab>('buy')
 const selectedOfferId = ref<string | null>(null)
 const searchQuery = ref('')
 const activeFilter = ref<MerchantFilter>('all')
+const equipmentSubcategory = ref<EquipmentSubcategory>('all')
 const onlyAffordable = ref(false)
+const onlyForClass = ref(false)
 const sortMode = ref<SortMode>('recommended')
+const selectedQuantity = ref(1)
+const selectedSellIds = ref<string[]>([])
+const reaction = ref('Осмотрись. Хорошее снаряжение само себя не купит.')
+const purchasePulseId = ref<string | null>(null)
+let pulseTimer: ReturnType<typeof setTimeout> | null = null
+
 const merchantFilters = ['all', 'Consumable', 'Equipment', 'Material'] as const
 const buyPending = computed(() => session.isMutationPending('merchant:buy'))
 const sellPending = computed(() => session.isMutationDomainPending('merchant:sell-'))
+const buybackPending = computed(() => session.isMutationPending('merchant:buyback'))
+const characterClassId = computed(() => session.snapshot?.character?.classId ?? '')
+const characterLevel = computed(() => session.snapshot?.character?.level ?? 1)
+const walletGold = computed(() => Number(merchant.value?.gold ?? session.snapshot?.character?.gold ?? 0))
+const buybackItems = computed(() => merchant.value?.buybackItems ?? [])
 
 const sellableItems = computed(() => session.snapshot?.character?.inventory.items
-  .filter((item) =>
-    !item.equippedSlot
-    && !item.isLocked
-    && item.sellPriceGold > 0,
-  ) ?? [])
+  .filter(item => !item.equippedSlot && !item.isLocked && item.sellPriceGold > 0) ?? [])
 const protectedItemsCount = computed(() => session.snapshot?.character?.inventory.items
-  .filter((item) =>
-    !item.equippedSlot
-    && item.isLocked
-    && item.sellPriceGold > 0,
-  ).length ?? 0)
+  .filter(item => !item.equippedSlot && item.isLocked && item.sellPriceGold > 0).length ?? 0)
 const affordableOfferCount = computed(() =>
   merchant.value?.items.filter(item => isAffordable(item)).length ?? 0,
 )
+
 const visibleOffers = computed(() => {
   const query = searchQuery.value.trim().toLocaleLowerCase()
   const offers = merchant.value?.items.filter(item => {
@@ -53,35 +66,83 @@ const visibleOffers = computed(() => {
       || item.name.toLocaleLowerCase().includes(query)
       || item.description.toLocaleLowerCase().includes(query)
     const matchesBudget = !onlyAffordable.value || isAffordable(item)
-    return matchesType && matchesQuery && matchesBudget
+    const matchesClass = !onlyForClass.value || item.type !== 'Equipment' || isForCurrentClass(item)
+    const matchesEquipmentGroup = activeFilter.value !== 'Equipment'
+      || equipmentSubcategory.value === 'all'
+      || equipmentGroup(item) === equipmentSubcategory.value
+    return matchesType && matchesQuery && matchesBudget && matchesClass && matchesEquipmentGroup
   }) ?? []
 
-  if (sortMode.value === 'price-asc') {
-    return [...offers].sort((left, right) => left.buyPriceGold - right.buyPriceGold)
-  }
-  if (sortMode.value === 'price-desc') {
-    return [...offers].sort((left, right) => right.buyPriceGold - left.buyPriceGold)
-  }
-  if (sortMode.value === 'rarity') {
-    return [...offers].sort((left, right) => rarityRank(right.rarity) - rarityRank(left.rarity))
-  }
-  return offers
+  if (sortMode.value === 'price-asc') return [...offers].sort((a, b) => a.buyPriceGold - b.buyPriceGold)
+  if (sortMode.value === 'price-desc') return [...offers].sort((a, b) => b.buyPriceGold - a.buyPriceGold)
+  if (sortMode.value === 'rarity') return [...offers].sort((a, b) => rarityRank(b.rarity) - rarityRank(a.rarity))
+  return [...offers].sort((a, b) => recommendationScore(b) - recommendationScore(a))
 })
+
 const selectedOffer = computed(() =>
   visibleOffers.value.find(item => item.definitionId === selectedOfferId.value)
     ?? visibleOffers.value[0]
     ?? null,
 )
 
-watch(() => props.open, (open) => {
-  if (open) {
-    activeTab.value = 'buy'
-    searchQuery.value = ''
-    activeFilter.value = 'all'
-    onlyAffordable.value = false
-    sortMode.value = 'recommended'
-    void loadMerchant()
-  }
+const recommendedOffers = computed(() =>
+  [...(merchant.value?.items ?? [])]
+    .filter(item => isAffordable(item))
+    .sort((a, b) => recommendationScore(b) - recommendationScore(a))
+    .slice(0, 3),
+)
+
+const selectedOfferMaxQuantity = computed(() => {
+  if (!selectedOffer.value) return 1
+  return selectedOffer.value.type === 'Equipment' ? 1 : 20
+})
+const selectedTotalPrice = computed(() =>
+  (selectedOffer.value?.buyPriceGold ?? 0) * selectedQuantity.value,
+)
+const selectedCanAfford = computed(() =>
+  !!selectedOffer.value && canAffordMoney(merchant.value?.gold ?? 0, selectedTotalPrice.value),
+)
+const maxAffordableQuantity = computed(() => {
+  if (!selectedOffer.value || selectedOffer.value.buyPriceGold <= 0) return 1
+  return Math.max(
+    1,
+    Math.min(
+      selectedOfferMaxQuantity.value,
+      Math.floor(walletGold.value / selectedOffer.value.buyPriceGold),
+    ),
+  )
+})
+const selectedComparisonRows = computed(() =>
+  selectedOffer.value ? comparisonRows(selectedOffer.value) : [],
+)
+const selectedSellItems = computed(() =>
+  sellableItems.value.filter(item => selectedSellIds.value.includes(item.id)),
+)
+const selectedSellValue = computed(() =>
+  selectedSellItems.value.reduce((sum, item) => sum + item.sellPriceGold * item.quantity, 0),
+)
+
+watch(() => props.open, open => {
+  if (!open) return
+  activeTab.value = 'buy'
+  searchQuery.value = ''
+  activeFilter.value = 'all'
+  equipmentSubcategory.value = 'all'
+  onlyAffordable.value = false
+  onlyForClass.value = false
+  sortMode.value = 'recommended'
+  selectedQuantity.value = 1
+  selectedSellIds.value = []
+  reaction.value = 'Осмотрись. Хорошее снаряжение само себя не купит.'
+  void loadMerchant()
+})
+
+watch(selectedOfferId, () => {
+  selectedQuantity.value = 1
+})
+
+onBeforeUnmount(() => {
+  if (pulseTimer) clearTimeout(pulseTimer)
 })
 
 async function loadMerchant(): Promise<void> {
@@ -116,7 +177,7 @@ function itemTypeLabel(item: MerchantItem): string {
   return 'Материал'
 }
 
-function rarityLabel(item: MerchantItem): string {
+function rarityLabel(item: { rarity: MerchantItem['rarity'] }): string {
   if (item.rarity === 'Uncommon') return 'Необычный'
   if (item.rarity === 'Rare') return 'Редкий'
   if (item.rarity === 'Epic') return 'Эпический'
@@ -144,9 +205,142 @@ function inventoryCount(item: MerchantItem): number {
     .reduce((sum, entry) => sum + entry.quantity, 0) ?? 0
 }
 
-async function buy(definitionId: string): Promise<void> {
-  const updated = await session.buyMerchantItem(MERCHANT_ID, definitionId, 1)
-  if (updated) merchant.value = updated
+function classPrimaryStat(): 'strength' | 'agility' | 'intellect' | null {
+  if (characterClassId.value === 'WARRIOR') return 'strength'
+  if (characterClassId.value === 'ARCHER') return 'agility'
+  if (characterClassId.value === 'MAGE') return 'intellect'
+  return null
+}
+
+function isForCurrentClass(item: MerchantItem): boolean {
+  if (item.type !== 'Equipment' || !item.stats) return true
+  const key = classPrimaryStat()
+  if (!key) return true
+  const primary = {
+    strength: item.stats.strength,
+    agility: item.stats.agility,
+    intellect: item.stats.intellect,
+  }
+  const peak = Math.max(primary.strength, primary.agility, primary.intellect)
+  return peak <= 0 || primary[key] >= peak
+}
+
+function equipmentGroup(item: MerchantItem): EquipmentSubcategory {
+  if (item.weaponCategory || item.slot === 'MainHand' || item.slot === 'OffHand') return 'weapon'
+  if (item.slot === 'Accessory' || item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return 'accessory'
+  return 'armor'
+}
+
+function equippedForOffer(item: MerchantItem): InventoryItem | null {
+  if (!item.slot) return null
+  const equipped = session.snapshot?.character?.inventory.equipped
+  if (!equipped) return null
+  const map: Record<string, keyof typeof equipped> = {
+    MainHand: 'mainHand',
+    OffHand: 'offHand',
+    Head: 'head',
+    Shoulders: 'shoulders',
+    Chest: 'chest',
+    Legs: 'legs',
+    Boots: 'boots',
+    Feet: 'feet',
+    Hands: 'hands',
+    Cloak: 'cloak',
+    Amulet: 'amulet',
+    Accessory: 'accessory',
+    Waist: 'waist',
+    Wrist: 'wrist',
+    Ring1: 'ring1',
+    Ring2: 'ring2',
+  }
+  const key = map[item.slot]
+  if (!key) return null
+  return equipped[key] ?? null
+}
+
+const statDefinitions: ReadonlyArray<{ key: StatKey; label: string }> = [
+  { key: 'strength', label: 'Сила' },
+  { key: 'agility', label: 'Ловкость' },
+  { key: 'intellect', label: 'Интеллект' },
+  { key: 'stamina', label: 'Выносливость' },
+  { key: 'maxHp', label: 'Здоровье' },
+  { key: 'attackPower', label: 'Сила атаки' },
+  { key: 'spellPower', label: 'Сила заклинаний' },
+  { key: 'armor', label: 'Броня' },
+  { key: 'magicResistance', label: 'Сопротивление' },
+  { key: 'criticalChance', label: 'Крит. шанс' },
+  { key: 'dodge', label: 'Уклонение' },
+  { key: 'attackSpeed', label: 'Скорость атаки' },
+]
+
+function comparisonRows(item: MerchantItem) {
+  if (item.type !== 'Equipment' || !item.stats) return []
+  const equipped = equippedForOffer(item)
+  return statDefinitions
+    .map(({ key, label }) => {
+      const next = Number(item.stats?.[key] ?? 0)
+      const current = Number(equipped?.stats?.[key] ?? 0)
+      return { key, label, next, current, delta: next - current }
+    })
+    .filter(row => row.next !== 0 || row.current !== 0)
+}
+
+function hasPositiveComparison(item: MerchantItem): boolean {
+  return comparisonRows(item).some(row => row.delta > 0)
+}
+
+function recommendationScore(item: MerchantItem): number {
+  let score = 0
+  if (isAffordable(item)) score += 10
+  if (item.type === 'Consumable' && item.definitionId === 'SMALL_HEALING_POTION' && inventoryCount(item) < 5) score += 40
+  if (item.type === 'Equipment' && isForCurrentClass(item)) score += 20
+  if (item.type === 'Equipment' && hasPositiveComparison(item)) score += 25
+  if ((item.requiredLevel ?? 1) <= characterLevel.value) score += 5
+  return score
+}
+
+function recommendationReason(item: MerchantItem): string {
+  if (item.definitionId === 'SMALL_HEALING_POTION' && inventoryCount(item) < 5) return 'Запас заканчивается'
+  if (item.type === 'Equipment' && hasPositiveComparison(item)) return 'Есть прирост характеристик'
+  if (item.type === 'Equipment' && isForCurrentClass(item)) return 'Подходит вашему классу'
+  return 'Полезно в дороге'
+}
+
+function offerBadges(item: MerchantItem): string[] {
+  const badges: string[] = []
+  if ((item.requiredLevel ?? 1) > characterLevel.value) badges.push('Ур. ' + item.requiredLevel)
+  if (item.type === 'Equipment' && isForCurrentClass(item)) badges.push('Для моего класса')
+  if (item.type === 'Equipment' && hasPositiveComparison(item)) badges.push('Есть прирост')
+  if (inventoryCount(item) > 0) badges.push('В сумке: ' + inventoryCount(item))
+  return badges.slice(0, 2)
+}
+
+function setBuyQuantity(quantity: number): void {
+  selectedQuantity.value = Math.max(1, Math.min(selectedOfferMaxQuantity.value, quantity))
+}
+
+function pulse(itemId: string): void {
+  purchasePulseId.value = itemId
+  if (pulseTimer) clearTimeout(pulseTimer)
+  pulseTimer = setTimeout(() => {
+    purchasePulseId.value = null
+  }, 360)
+}
+
+async function buy(item: MerchantItem, quantity = 1): Promise<void> {
+  const updated = await session.buyMerchantItem(MERCHANT_ID, item.definitionId, quantity)
+  if (!updated) return
+  merchant.value = updated
+  reaction.value = quantity > 1
+    ? 'Вот это запас. ' + quantity + ' шт. — хватит на дорогу.'
+    : 'Хороший выбор. В дороге пригодится.'
+  pulse(item.definitionId)
+  selectedQuantity.value = 1
+}
+
+async function buySelected(): Promise<void> {
+  if (!selectedOffer.value) return
+  await buy(selectedOffer.value, selectedQuantity.value)
 }
 
 function inventoryItemTypeLabel(item: InventoryItem): string {
@@ -155,9 +349,68 @@ function inventoryItemTypeLabel(item: InventoryItem): string {
   return 'МАТЕРИАЛ'
 }
 
-async function sell(item: InventoryItem, quantity: number): Promise<void> {
+function isValuable(item: InventoryItem): boolean {
+  return rarityRank(item.rarity) >= rarityRank('Rare')
+    || (item.generatedItem?.stars ?? 0) > 0
+    || (item.reforgeCount ?? 0) > 0
+}
+
+async function performSell(item: InventoryItem, quantity: number): Promise<boolean> {
   const updated = await session.sellMerchantItem(MERCHANT_ID, item.id, quantity)
-  if (updated) merchant.value = updated
+  if (!updated) return false
+  merchant.value = updated
+  return true
+}
+
+async function sell(item: InventoryItem, quantity: number): Promise<void> {
+  if (isValuable(item)) {
+    const confirmed = window.confirm(
+      'Продать ценный предмет «' + item.name + '» за ' + (item.sellPriceGold * quantity) + ' золота?',
+    )
+    if (!confirmed) return
+  }
+  if (await performSell(item, quantity)) {
+    reaction.value = 'Сделка есть сделка. Если передумаешь — загляни во «Выкуп».'
+    selectedSellIds.value = selectedSellIds.value.filter(id => id !== item.id)
+  }
+}
+
+function toggleSellSelection(itemId: string): void {
+  selectedSellIds.value = selectedSellIds.value.includes(itemId)
+    ? selectedSellIds.value.filter(id => id !== itemId)
+    : [...selectedSellIds.value, itemId]
+}
+
+function selectAllSellable(): void {
+  selectedSellIds.value = selectedSellIds.value.length === sellableItems.value.length
+    ? []
+    : sellableItems.value.map(item => item.id)
+}
+
+async function sellSelected(): Promise<void> {
+  const items = selectedSellItems.value
+  if (!items.length) return
+  if (items.some(isValuable)) {
+    const confirmed = window.confirm(
+      'В выбранных предметах есть Rare+ или улучшенные вещи. Продать '
+      + items.length + ' позиций за ' + selectedSellValue.value + ' золота?',
+    )
+    if (!confirmed) return
+  }
+  let sold = 0
+  for (const item of items) {
+    if (!await performSell(item, item.quantity)) break
+    sold += 1
+  }
+  selectedSellIds.value = []
+  if (sold > 0) reaction.value = 'Принял ' + sold + ' позиций. Освободил тебе место в сумке.'
+}
+
+async function buyback(item: MerchantBuybackItem): Promise<void> {
+  const updated = await session.buybackMerchantItem(MERCHANT_ID, item.characterItemId)
+  if (!updated) return
+  merchant.value = updated
+  reaction.value = 'Передумал? Бывает. Забирай — вещь всё ещё твоя.'
 }
 </script>
 
@@ -166,7 +419,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
     <section class="merchant">
       <header
         class="merchant__npc"
-        :style="{ '--merchant-scene': `url(${gameArt.world.capital})` }"
+        :style="{ '--merchant-scene': 'url(' + gameArt.world.capital + ')' }"
       >
         <div class="merchant__npc-shade" />
         <div class="merchant__portrait">
@@ -190,6 +443,12 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
         </div>
       </header>
 
+      <div class="merchant-reaction" data-merchant-reaction>
+        <span aria-hidden="true">“</span>
+        <p>{{ reaction }}</p>
+        <small>— Маркус</small>
+      </div>
+
       <nav class="merchant-tabs" aria-label="Разделы торговца">
         <button
           type="button"
@@ -207,7 +466,14 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
         >
           Продать
         </button>
-        <button type="button" disabled title="Будет добавлено вместе с системой обратного выкупа">Выкуп</button>
+        <button
+          type="button"
+          data-merchant-tab="buyback"
+          :class="{ active: activeTab === 'buyback' }"
+          @click="activeTab = 'buyback'"
+        >
+          Выкуп <span v-if="buybackItems.length">· {{ buybackItems.length }}</span>
+        </button>
       </nav>
 
       <section v-if="activeTab === 'buy'" class="merchant-panel merchant-panel--buy">
@@ -218,6 +484,30 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
           </div>
           <span>{{ visibleOffers.length }} / {{ merchant?.items.length ?? 0 }}</span>
         </header>
+
+        <div v-if="recommendedOffers.length" class="merchant-recommendations">
+          <small>МАРКУС СОВЕТУЕТ</small>
+          <div>
+            <button
+              v-for="item in recommendedOffers"
+              :key="item.definitionId"
+              type="button"
+              @click="selectOffer(item)"
+            >
+              <ItemIcon
+                :icon-id="item.iconId"
+                :item-id="item.definitionId"
+                :name="item.name"
+                :type="item.type"
+                :rarity="item.rarity"
+              />
+              <span>
+                <b>{{ item.name }}</b>
+                <em>{{ recommendationReason(item) }}</em>
+              </span>
+            </button>
+          </div>
+        </div>
 
         <div class="merchant-filter" aria-label="Фильтры витрины">
           <label class="merchant-filter__search">
@@ -234,7 +524,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
                 type="button"
                 :data-merchant-filter="filter"
                 :class="{ active: activeFilter === filter }"
-                @click="activeFilter = filter"
+                @click="activeFilter = filter; equipmentSubcategory = 'all'"
               >{{ filterLabel(filter) }}</button>
             </div>
 
@@ -249,18 +539,40 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
             </label>
           </div>
 
-          <button
-            type="button"
-            class="merchant-filter__affordable"
-            data-merchant-affordable
-            :aria-pressed="onlyAffordable"
-            :class="{ active: onlyAffordable }"
-            @click="onlyAffordable = !onlyAffordable"
-          >
-            <span class="merchant-filter__check">{{ onlyAffordable ? '✓' : '' }}</span>
-            Только то, что могу купить
-            <b>{{ affordableOfferCount }}</b>
-          </button>
+          <div v-if="activeFilter === 'Equipment'" class="merchant-filter__subcategories">
+            <button type="button" :class="{ active: equipmentSubcategory === 'all' }" @click="equipmentSubcategory = 'all'">Всё снаряжение</button>
+            <button type="button" :class="{ active: equipmentSubcategory === 'weapon' }" @click="equipmentSubcategory = 'weapon'">Оружие</button>
+            <button type="button" :class="{ active: equipmentSubcategory === 'armor' }" @click="equipmentSubcategory = 'armor'">Броня</button>
+            <button type="button" :class="{ active: equipmentSubcategory === 'accessory' }" @click="equipmentSubcategory = 'accessory'">Аксессуары</button>
+          </div>
+
+          <div class="merchant-filter__toggles">
+            <button
+              type="button"
+              class="merchant-filter__affordable"
+              data-merchant-affordable
+              :aria-pressed="onlyAffordable"
+              :class="{ active: onlyAffordable }"
+              @click="onlyAffordable = !onlyAffordable"
+            >
+              <span class="merchant-filter__check">{{ onlyAffordable ? '✓' : '' }}</span>
+              Только то, что могу купить
+              <b>{{ affordableOfferCount }}</b>
+            </button>
+
+            <button
+              type="button"
+              class="merchant-filter__affordable"
+              data-merchant-class
+              :aria-pressed="onlyForClass"
+              :class="{ active: onlyForClass }"
+              @click="onlyForClass = !onlyForClass"
+            >
+              <span class="merchant-filter__check">{{ onlyForClass ? '✓' : '' }}</span>
+              Для моего класса
+              <b>{{ characterClassId || '—' }}</b>
+            </button>
+          </div>
         </div>
 
         <div v-if="visibleOffers.length" class="merchant-buy">
@@ -271,19 +583,21 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
             </div>
 
             <div class="merchant-shelf" aria-label="Товары торговца">
-              <button
+              <article
                 v-for="item in visibleOffers"
                 :key="item.definitionId"
-                type="button"
                 class="offer-card"
+                role="button"
+                tabindex="0"
                 :class="{
                   active: selectedOffer?.definitionId === item.definitionId,
                   'is-unaffordable': !isAffordable(item),
+                  'purchase-pulse': purchasePulseId === item.definitionId,
                 }"
                 :data-rarity="item.rarity"
                 :data-merchant-offer="item.definitionId"
-                :aria-pressed="selectedOffer?.definitionId === item.definitionId"
                 @click="selectOffer(item)"
+                @keydown.enter="selectOffer(item)"
               >
                 <span class="offer-card__visual">
                   <span class="offer-card__icon">
@@ -301,20 +615,33 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
                 <span class="offer-card__copy">
                   <small>{{ itemTypeLabel(item) }}</small>
                   <strong>{{ item.name }}</strong>
+                  <span class="offer-card__badges">
+                    <i v-for="badge in offerBadges(item)" :key="badge">{{ badge }}</i>
+                  </span>
                   <span class="offer-card__description">{{ item.description }}</span>
                 </span>
 
                 <span class="offer-card__footer">
                   <b><MoneyAmount :amount="item.buyPriceGold" /></b>
-                  <em v-if="inventoryCount(item) > 0">В сумке: {{ inventoryCount(item) }}</em>
-                  <em v-else-if="!isAffordable(item)" class="offer-card__shortfall">Не хватает золота</em>
-                  <em v-else>В наличии</em>
+                  <button
+                    type="button"
+                    class="offer-card__quick-buy"
+                    :disabled="buyPending || !isAffordable(item)"
+                    @click.stop="buy(item, 1)"
+                  >
+                    Купить
+                  </button>
                 </span>
-              </button>
+              </article>
             </div>
           </div>
 
-          <article v-if="selectedOffer" class="merchant-detail" data-merchant-detail :data-rarity="selectedOffer.rarity">
+          <article
+            v-if="selectedOffer"
+            class="merchant-detail"
+            data-merchant-detail
+            :data-rarity="selectedOffer.rarity"
+          >
             <div class="merchant-detail__banner">
               <small>ВЫБРАННЫЙ ТОВАР</small>
               <span>{{ rarityLabel(selectedOffer) }}</span>
@@ -334,9 +661,8 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
               <div>
                 <small>{{ itemTypeLabel(selectedOffer) }}</small>
                 <h3>{{ selectedOffer.name }}</h3>
-                <span v-if="inventoryCount(selectedOffer) > 0">
-                  Уже в сумке: {{ inventoryCount(selectedOffer) }}
-                </span>
+                <span v-if="inventoryCount(selectedOffer) > 0">Уже в сумке: {{ inventoryCount(selectedOffer) }}</span>
+                <span v-if="selectedOffer.requiredLevel">Требуется уровень: {{ selectedOffer.requiredLevel }}</span>
               </div>
             </div>
 
@@ -355,27 +681,67 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
               </small>
             </div>
 
+            <div v-if="selectedOffer.type === 'Equipment'" class="merchant-compare">
+              <header>
+                <span>Сравнение с надетым</span>
+                <small>{{ equippedForOffer(selectedOffer)?.name ?? 'Слот пуст' }}</small>
+              </header>
+              <div v-if="selectedComparisonRows.length">
+                <p v-for="row in selectedComparisonRows" :key="row.key">
+                  <span>{{ row.label }}</span>
+                  <em>{{ row.current }}</em>
+                  <b :class="{ positive: row.delta > 0, negative: row.delta < 0 }">
+                    {{ row.delta > 0 ? '+' : '' }}{{ row.delta }}
+                  </b>
+                </p>
+              </div>
+              <small v-else>У предмета нет сравнимых базовых характеристик.</small>
+            </div>
+
             <div class="merchant-detail__quote">
               <span aria-hidden="true">“</span>
-              <p>{{ isAffordable(selectedOffer) ? 'Бери, пока есть. В дороге пригодится.' : 'Хорошая вещь. Вернёшься с монетой — придержу.' }}</p>
+              <p>{{ reaction }}</p>
               <small>— Маркус</small>
+            </div>
+
+            <div v-if="selectedOffer.type !== 'Equipment'" class="merchant-quantity">
+              <span>Количество</span>
+              <div class="merchant-quantity__stepper">
+                <button type="button" @click="setBuyQuantity(selectedQuantity - 1)">−</button>
+                <b data-buy-quantity>{{ selectedQuantity }}</b>
+                <button type="button" @click="setBuyQuantity(selectedQuantity + 1)">+</button>
+              </div>
+              <div class="merchant-quantity__quick">
+                <button
+                  v-for="qty in [1, 5, 10]"
+                  :key="qty"
+                  type="button"
+                  :disabled="qty > selectedOfferMaxQuantity"
+                  @click="setBuyQuantity(qty)"
+                >
+                  {{ qty }}
+                </button>
+                <button type="button" @click="setBuyQuantity(maxAffordableQuantity)">MAX</button>
+              </div>
+              <small>После покупки: {{ inventoryCount(selectedOffer) + selectedQuantity }} в сумке</small>
             </div>
 
             <footer class="merchant-detail__purchase">
               <div>
-                <small>Цена у Маркуса</small>
-                <strong><MoneyAmount :amount="selectedOffer.buyPriceGold" /></strong>
-                <span :class="{ danger: !isAffordable(selectedOffer) }">
-                  {{ isAffordable(selectedOffer) ? 'Можно купить сейчас' : 'Недостаточно золота' }}
+                <small>Итого</small>
+                <strong><MoneyAmount :amount="selectedTotalPrice" /></strong>
+                <span :class="{ danger: !selectedCanAfford }">
+                  {{ selectedCanAfford ? 'Можно купить сейчас' : 'Недостаточно золота' }}
                 </span>
               </div>
               <UIButton
                 data-buy-selected
                 :loading="buyPending"
-                :disabled="buyPending || !isAffordable(selectedOffer)"
-                @click="buy(selectedOffer.definitionId)"
+                :disabled="buyPending || !selectedCanAfford"
+                @click="buySelected"
               >
-                Купить · <MoneyAmount :amount="selectedOffer.buyPriceGold" />
+                Купить {{ selectedQuantity > 1 ? '×' + selectedQuantity : '' }} ·
+                <MoneyAmount :amount="selectedTotalPrice" />
               </UIButton>
             </footer>
           </article>
@@ -394,21 +760,32 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
           <p>По этим фильтрам ничего не нашлось.</p>
           <button
             type="button"
-            @click="searchQuery = ''; activeFilter = 'all'; onlyAffordable = false"
+            @click="searchQuery = ''; activeFilter = 'all'; onlyAffordable = false; onlyForClass = false"
           >
             Сбросить фильтры
           </button>
         </div>
       </section>
 
-      <section v-else class="merchant-panel merchant-panel--sell">
+      <section v-else-if="activeTab === 'sell'" class="merchant-panel merchant-panel--sell">
         <header class="merchant-panel__heading">
           <div>
             <small>СДАТЬ МАРКУСУ</small>
-            <strong>Предметы, которые торговец готов выкупить</strong>
+            <strong>Отметьте вещи и продайте пачкой</strong>
           </div>
           <span>{{ sellableItems.length }} предметов</span>
         </header>
+
+        <div v-if="sellableItems.length" class="sell-toolbar">
+          <button type="button" @click="selectAllSellable">
+            {{ selectedSellIds.length === sellableItems.length ? 'Снять выбор' : 'Выбрать всё' }}
+          </button>
+          <span>Выбрано: {{ selectedSellItems.length }}</span>
+          <b><MoneyAmount :amount="selectedSellValue" /></b>
+          <UIButton :disabled="sellPending || !selectedSellItems.length" @click="sellSelected">
+            Продать выбранное
+          </UIButton>
+        </div>
 
         <p v-if="protectedItemsCount > 0" class="protected-hint">
           <IconGenerator :config="{ id: 'merchant-locked-items', glyph: 'lock', category: 'utility', state: 'locked' }" />
@@ -416,7 +793,22 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
         </p>
 
         <div v-if="sellableItems.length" class="sell-list">
-          <article v-for="item in sellableItems" :key="item.id" class="sell-card" :data-sell-item="item.id">
+          <article
+            v-for="item in sellableItems"
+            :key="item.id"
+            class="sell-card"
+            :class="{ selected: selectedSellIds.includes(item.id) }"
+            :data-sell-item="item.id"
+          >
+            <label class="sell-card__select">
+              <input
+                type="checkbox"
+                :checked="selectedSellIds.includes(item.id)"
+                @change="toggleSellSelection(item.id)"
+              />
+              <span />
+            </label>
+
             <span class="sell-card__icon" :data-rarity="item.rarity">
               <ItemIcon
                 :icon-id="item.iconId"
@@ -427,15 +819,19 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
                 :rarity="item.rarity"
               />
             </span>
+
             <div class="sell-card__copy">
               <small>{{ inventoryItemTypeLabel(item) }}</small>
               <strong>{{ item.name }}</strong>
               <span>В сумке: {{ item.quantity }}</span>
+              <em v-if="isValuable(item)">⚠ Ценный предмет — потребуется подтверждение</em>
             </div>
+
             <div class="sell-card__price">
               <small>за штуку</small>
               <strong><MoneyAmount :amount="item.sellPriceGold" /></strong>
             </div>
+
             <div class="sell-card__actions">
               <UIButton variant="ghost" :disabled="sellPending" @click="sell(item, 1)">
                 Продать 1
@@ -451,6 +847,62 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
         <div v-else class="merchant-empty">
           <span class="merchant-empty__mark">◇</span>
           <p>В сумке пока нет вещей, которые Маркус готов купить.</p>
+        </div>
+      </section>
+
+      <section v-else class="merchant-panel merchant-panel--buyback">
+        <header class="merchant-panel__heading">
+          <div>
+            <small>ОБРАТНЫЙ ВЫКУП</small>
+            <strong>Последние 12 проданных позиций</strong>
+          </div>
+          <span>{{ buybackItems.length }} предметов</span>
+        </header>
+
+        <div v-if="buybackItems.length" class="buyback-list">
+          <article
+            v-for="item in buybackItems"
+            :key="item.characterItemId"
+            class="buyback-card"
+            :data-buyback-item="item.characterItemId"
+          >
+            <span class="sell-card__icon" :data-rarity="item.rarity">
+              <ItemIcon
+                :icon-id="item.iconId"
+                :item-id="item.definitionId"
+                :name="item.name"
+                :type="item.type"
+                :rarity="item.rarity"
+              />
+            </span>
+
+            <div class="buyback-card__copy">
+              <small>{{ rarityLabel(item) }}</small>
+              <strong>{{ item.name }}</strong>
+              <span>
+                Количество: {{ item.quantity }}
+                <template v-if="item.enhancementLevel"> · +{{ item.enhancementLevel }}</template>
+              </span>
+            </div>
+
+            <div class="buyback-card__price">
+              <small>Вернуть за</small>
+              <b><MoneyAmount :amount="item.buybackPriceGold" /></b>
+            </div>
+
+            <UIButton
+              :loading="buybackPending"
+              :disabled="buybackPending || !canAffordMoney(merchant?.gold ?? 0, item.buybackPriceGold)"
+              @click="buyback(item)"
+            >
+              Выкупить
+            </UIButton>
+          </article>
+        </div>
+
+        <div v-else class="merchant-empty">
+          <span class="merchant-empty__mark">↶</span>
+          <p>Выкуп пуст. Здесь появятся последние проданные Маркусу вещи.</p>
         </div>
       </section>
     </section>
@@ -1453,6 +1905,498 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 
   .sell-card__price strong {
     justify-self: end;
+  }
+}
+
+.merchant-reaction {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 7px var(--ui-space-4);
+  border-bottom: 1px solid rgb(216 173 99 / 10%);
+  background: linear-gradient(90deg, rgb(216 173 99 / 5%), transparent 65%);
+  color: #9e968a;
+}
+
+.merchant-reaction > span {
+  color: rgb(216 173 99 / 52%);
+  font-family: Georgia, serif;
+  font-size: 1.25rem;
+}
+
+.merchant-reaction p {
+  margin: 0;
+  font-size: .58rem;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.merchant-reaction small {
+  color: #7f776c;
+  font-size: .48rem;
+  white-space: nowrap;
+}
+
+.merchant-recommendations {
+  display: grid;
+  gap: 6px;
+  padding: 9px var(--ui-space-4);
+  border-bottom: 1px solid rgb(216 173 99 / 9%);
+  background: rgb(216 173 99 / 2.5%);
+}
+
+.merchant-recommendations > small {
+  color: #a99164;
+  font-size: .5rem;
+  font-weight: 850;
+  letter-spacing: .1em;
+}
+
+.merchant-recommendations > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.merchant-recommendations button {
+  display: grid;
+  grid-template-columns: 2.1rem minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid rgb(216 173 99 / 14%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(255 255 255 / 1.5%);
+  color: #bbb3a6;
+  font: inherit;
+  text-align: left;
+}
+
+.merchant-recommendations button :deep(img) {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.merchant-recommendations button span {
+  display: grid;
+  min-width: 0;
+}
+
+.merchant-recommendations button b {
+  overflow: hidden;
+  color: #d9d1c2;
+  font-size: .58rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.merchant-recommendations button em {
+  color: #8e9a86;
+  font-size: .48rem;
+  font-style: normal;
+}
+
+.merchant-filter__toggles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.merchant-filter__subcategories {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.merchant-filter__subcategories::-webkit-scrollbar {
+  display: none;
+}
+
+.merchant-filter__subcategories button {
+  flex: 0 0 auto;
+  min-height: 1.8rem;
+  padding: 3px 8px;
+  border: 1px solid rgb(216 173 99 / 12%);
+  border-radius: var(--ui-radius-round);
+  background: transparent;
+  color: #817c74;
+  font: inherit;
+  font-size: .53rem;
+}
+
+.merchant-filter__subcategories button.active {
+  border-color: rgb(216 173 99 / 40%);
+  background: rgb(216 173 99 / 8%);
+  color: #dac38f;
+}
+
+.offer-card {
+  cursor: pointer;
+}
+
+.offer-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  min-height: .9rem;
+}
+
+.offer-card__badges i {
+  padding: 2px 4px;
+  border: 1px solid rgb(216 173 99 / 15%);
+  border-radius: 3px;
+  background: rgb(216 173 99 / 5%);
+  color: #aa9977;
+  font-size: .43rem;
+  font-style: normal;
+  line-height: 1;
+}
+
+.offer-card__quick-buy {
+  min-height: 1.7rem;
+  padding: 3px 7px;
+  border: 1px solid rgb(216 173 99 / 28%);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(216 173 99 / 8%);
+  color: #e2c37f;
+  font: inherit;
+  font-size: .51rem;
+  font-weight: 800;
+}
+
+.offer-card__quick-buy:disabled {
+  opacity: .38;
+}
+
+.offer-card.purchase-pulse {
+  animation: merchant-purchase-pulse 360ms ease-out;
+}
+
+@keyframes merchant-purchase-pulse {
+  0% { box-shadow: 0 0 0 0 rgb(216 173 99 / 0%); }
+  35% { box-shadow: 0 0 0 2px rgb(216 173 99 / 45%), 0 0 1.2rem rgb(216 173 99 / 28%); }
+  100% { box-shadow: 0 0 0 0 rgb(216 173 99 / 0%); }
+}
+
+.merchant-compare {
+  display: grid;
+  gap: 6px;
+  padding: 8px 9px;
+  border: 1px solid rgb(111 142 173 / 16%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(76 103 128 / 6%);
+}
+
+.merchant-compare header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.merchant-compare header span {
+  color: #aebdca;
+  font-size: .55rem;
+  font-weight: 800;
+}
+
+.merchant-compare header small {
+  overflow: hidden;
+  max-width: 55%;
+  color: #777f86;
+  font-size: .48rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.merchant-compare > div {
+  display: grid;
+  gap: 3px;
+}
+
+.merchant-compare p {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3rem 3rem;
+  gap: 5px;
+  margin: 0;
+  color: #8f9498;
+  font-size: .52rem;
+}
+
+.merchant-compare p em {
+  color: #777d82;
+  font-style: normal;
+  text-align: right;
+}
+
+.merchant-compare p b {
+  color: #aaa;
+  font-weight: 800;
+  text-align: right;
+}
+
+.merchant-compare p b.positive {
+  color: #75b98d;
+}
+
+.merchant-compare p b.negative {
+  color: #bd7771;
+}
+
+.merchant-quantity {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 9px;
+  border: 1px solid rgb(216 173 99 / 12%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(216 173 99 / 3%);
+}
+
+.merchant-quantity > span {
+  color: #a29a8e;
+  font-size: .56rem;
+  font-weight: 800;
+}
+
+.merchant-quantity__stepper {
+  display: grid;
+  grid-template-columns: 1.8rem 2rem 1.8rem;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgb(216 173 99 / 22%);
+  border-radius: var(--ui-radius-sm);
+}
+
+.merchant-quantity__stepper button,
+.merchant-quantity__quick button {
+  border: 0;
+  background: rgb(255 255 255 / 2%);
+  color: #ceb57d;
+  font: inherit;
+  font-size: .65rem;
+}
+
+.merchant-quantity__stepper button {
+  min-height: 1.8rem;
+}
+
+.merchant-quantity__stepper b {
+  color: #e3d8c4;
+  font-size: .62rem;
+  text-align: center;
+}
+
+.merchant-quantity__quick {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.merchant-quantity__quick button {
+  min-height: 1.65rem;
+  border: 1px solid rgb(216 173 99 / 12%);
+  border-radius: 4px;
+}
+
+.merchant-quantity > small {
+  grid-column: 1 / -1;
+  color: #757d73;
+  font-size: .48rem;
+}
+
+.sell-toolbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px var(--ui-space-4);
+  border-bottom: 1px solid rgb(216 173 99 / 10%);
+  background: rgb(216 173 99 / 3%);
+}
+
+.sell-toolbar > button {
+  border: 0;
+  background: transparent;
+  color: #c1a56e;
+  font: inherit;
+  font-size: .55rem;
+  text-decoration: underline;
+}
+
+.sell-toolbar > span {
+  color: #88827a;
+  font-size: .55rem;
+}
+
+.sell-toolbar > b {
+  color: #d8b874;
+  font-size: .65rem;
+}
+
+.sell-card {
+  grid-template-columns: 1.4rem 3rem minmax(0, 1fr) auto;
+}
+
+.sell-card.selected {
+  background: rgb(216 173 99 / 4%);
+}
+
+.sell-card__select {
+  display: grid;
+  place-items: center;
+}
+
+.sell-card__select input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sell-card__select span {
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid rgb(216 173 99 / 28%);
+  border-radius: 3px;
+  background: #0b0d10;
+}
+
+.sell-card__select input:checked + span {
+  background:
+    linear-gradient(135deg, transparent 38%, #e2c77f 39% 52%, transparent 53%) center / 70% 70% no-repeat,
+    rgb(216 173 99 / 12%);
+  border-color: rgb(216 173 99 / 60%);
+}
+
+.sell-card__copy em {
+  color: #ba7f75;
+  font-size: .48rem;
+  font-style: normal;
+}
+
+.buyback-list {
+  display: grid;
+  gap: 7px;
+  padding: 9px;
+}
+
+.buyback-card {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 9px;
+  padding: 9px;
+  border: 1px solid rgb(216 173 99 / 13%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(255 255 255 / 1.5%);
+}
+
+.buyback-card__copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.buyback-card__copy small {
+  color: #928979;
+  font-size: .49rem;
+  text-transform: uppercase;
+}
+
+.buyback-card__copy strong {
+  overflow: hidden;
+  color: #ddd4c4;
+  font-size: .67rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.buyback-card__copy span {
+  color: #7f817c;
+  font-size: .52rem;
+}
+
+.buyback-card__price {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.buyback-card__price small {
+  color: #7c756c;
+  font-size: .48rem;
+}
+
+.buyback-card__price b {
+  color: #d7b874;
+  font-size: .66rem;
+}
+
+@media (max-width: 620px) {
+  .merchant-recommendations > div {
+    grid-template-columns: 1fr;
+  }
+
+  .merchant-recommendations button {
+    grid-template-columns: 2rem minmax(0, 1fr);
+  }
+
+  .merchant-filter__toggles {
+    grid-template-columns: 1fr;
+  }
+
+  .merchant-detail__purchase {
+    position: sticky;
+    z-index: 3;
+    bottom: 0;
+    margin: 0 -13px -13px;
+    padding: 10px 13px calc(10px + var(--ui-safe-area-bottom));
+    background: linear-gradient(180deg, rgb(12 13 15 / 92%), #0a0b0d);
+    box-shadow: 0 -.5rem 1rem rgb(0 0 0 / 24%);
+    backdrop-filter: blur(8px);
+  }
+
+  .sell-toolbar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .sell-toolbar > span {
+    grid-column: 1;
+  }
+
+  .sell-toolbar :deep(.ui-button) {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .sell-card {
+    grid-template-columns: 1.2rem 2.7rem minmax(0, 1fr);
+  }
+
+  .sell-card__price {
+    grid-column: 2 / -1;
+  }
+
+  .buyback-card {
+    grid-template-columns: 2.7rem minmax(0, 1fr) auto;
+  }
+
+  .buyback-card > :deep(.ui-button) {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .offer-card.purchase-pulse {
+    animation: none;
   }
 }
 </style>

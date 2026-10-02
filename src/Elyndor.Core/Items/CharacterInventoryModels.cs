@@ -248,6 +248,29 @@ public sealed class CharacterItem
             throw new InvalidOperationException("Item stack does not contain enough quantity.");
         Quantity -= quantity;
     }
+
+    public void MoveToMerchantBuyback(DateTimeOffset soldAtUtc)
+    {
+        if (soldAtUtc.Offset != TimeSpan.Zero)
+            throw new ArgumentException("Buyback timestamps must be UTC.", nameof(soldAtUtc));
+        if (Storage != "INVENTORY" || TransactionLockId.HasValue || IsLocked)
+            throw new InvalidOperationException("Only unlocked inventory items can move to merchant buyback.");
+
+        // Keep acquisition/source metadata intact: generated item provenance must survive a sale.
+        Storage = "BUYBACK";
+        AcquiredAtUtc = soldAtUtc;
+    }
+
+    public void RestoreFromMerchantBuyback()
+    {
+        if (Storage != "BUYBACK"
+            || TransactionLockId.HasValue)
+        {
+            throw new InvalidOperationException("Item is not available for merchant buyback.");
+        }
+
+        Storage = "INVENTORY";
+    }
 }
 
 public sealed class ItemRolledAffix

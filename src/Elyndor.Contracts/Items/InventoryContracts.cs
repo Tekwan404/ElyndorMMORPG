@@ -191,14 +191,31 @@ public sealed record MerchantItemResponse(
     IReadOnlyList<ConsumableActionResponse> ConsumableActions,
     string? ConsumableCooldownCategoryId,
     decimal ConsumableCooldownSeconds,
-    string? IconId);
+    string? IconId,
+    int RequiredLevel,
+    string? Slot,
+    ItemStatsResponse Stats,
+    string? WeaponCategory,
+    string? ArmorCategory);
+
+public sealed record MerchantBuybackItemResponse(
+    Guid CharacterItemId,
+    string DefinitionId,
+    string Name,
+    string Type,
+    string Rarity,
+    int Quantity,
+    int BuybackPriceGold,
+    string? IconId,
+    int EnhancementLevel);
 
 public sealed record MerchantResponse(
     string Id,
     string Name,
     string Description,
     [property: global::System.Text.Json.Serialization.JsonConverter(typeof(Elyndor.Contracts.Economy.MoneyJsonConverter))] long Gold,
-    IReadOnlyList<MerchantItemResponse> Items);
+    IReadOnlyList<MerchantItemResponse> Items,
+    IReadOnlyList<MerchantBuybackItemResponse>? BuybackItems = null);
 
 public sealed record BuyMerchantItemRequest(
     string MerchantId,
@@ -211,6 +228,11 @@ public sealed record SellMerchantItemRequest(
     Guid CharacterItemId,
     Guid MutationId,
     int Quantity = 1);
+
+public sealed record BuybackMerchantItemRequest(
+    string MerchantId,
+    Guid CharacterItemId,
+    Guid MutationId);
 
 public sealed record PendingLootItemResponse(
     Guid Id,

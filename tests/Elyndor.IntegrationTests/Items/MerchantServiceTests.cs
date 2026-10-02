@@ -281,6 +281,82 @@ public sealed class MerchantServiceTests(PostgresFixture postgres) : IAsyncLifet
     }
 
     [Fact]
+    public async Task BuyingPotionStackChargesForRequestedQuantity()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(200);
+        await using GameDbContext context = postgres.CreateDbContext();
+        MerchantService service = await CreateServiceAsync(context);
+
+        MerchantOperationResult result = await service.BuyAsync(
+            accountId,
+            MerchantId,
+            PotionId,
+            5,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(
+            100,
+            await verify.Characters
+                .Where(character => character.Id == characterId)
+                .Select(character => character.Gold)
+                .SingleAsync());
+        Assert.Equal(
+            5,
+            await verify.CharacterItems
+                .Where(item => item.CharacterId == characterId && item.ItemDefinitionId == PotionId)
+                .SumAsync(item => item.Quantity));
+    }
+
+    [Fact]
+    public async Task SoldEquipmentCanBeBoughtBackAsSameItemInstance()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100);
+        Guid itemId = Guid.CreateVersion7();
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.CharacterItems.Add(new CharacterItem(
+                itemId,
+                characterId,
+                "RECRUIT_IRON_SWORD",
+                1,
+                Now));
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        MerchantService service = await CreateServiceAsync(context);
+
+        MerchantOperationResult sold = await service.SellItemAsync(
+            accountId,
+            MerchantId,
+            itemId,
+            1,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+        Assert.True(sold.IsSuccess);
+        MerchantBuybackItem buyback = Assert.Single(sold.Snapshot!.BuybackItems!);
+        Assert.Equal(itemId, buyback.Item.Id);
+
+        MerchantOperationResult restored = await service.BuybackAsync(
+            accountId,
+            MerchantId,
+            itemId,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+        Assert.True(restored.IsSuccess);
+        Assert.Empty(restored.Snapshot!.BuybackItems!);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterItem item = await verify.CharacterItems
+            .SingleAsync(candidate => candidate.Id == itemId);
+        Assert.Equal("INVENTORY", item.Storage);
+    }
+
+    [Fact]
     public async Task ReforgeLockedEquipmentCannotBeSold()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(0);

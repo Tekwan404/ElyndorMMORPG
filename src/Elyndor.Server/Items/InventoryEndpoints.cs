@@ -34,6 +34,7 @@ public static class InventoryEndpoints
         group.MapPost("/merchant/buy", BuyMerchantItemAsync);
         group.MapPost("/merchant/sell-material", SellMerchantMaterialAsync);
         group.MapPost("/merchant/sell-item", SellMerchantItemAsync);
+        group.MapPost("/merchant/buyback", BuybackMerchantItemAsync);
         return endpoints;
     }
 
@@ -423,6 +424,33 @@ public static class InventoryEndpoints
             cancellationToken);
     }
 
+    private static async Task<IResult> BuybackMerchantItemAsync(
+        BuybackMerchantItemRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        MerchantService service,
+        CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () =>
+            {
+                MerchantOperationResult result = await service.BuybackAsync(
+                    accountId,
+                    request.MerchantId,
+                    request.CharacterItemId,
+                    request.MutationId,
+                    cancellationToken);
+                return ToMerchantResult(result, context);
+            },
+            () => InCombatProblem(context),
+            cancellationToken);
+    }
+
     private static async Task<IResult> SellMerchantMaterialAsync(
         SellMerchantItemRequest request,
         ClaimsPrincipal user,
@@ -507,7 +535,42 @@ public static class InventoryEndpoints
                 ToConsumableActions(item.Definition),
                 item.Definition.ConsumableCooldownCategoryId,
                 item.Definition.ConsumableCooldownSeconds,
-                item.Definition.IconId)).ToArray());
+                item.Definition.IconId,
+                item.Definition.RequiredLevel,
+                item.Definition.Slot?.ToString(),
+                ToMerchantItemStats(item.Definition),
+                item.Definition.WeaponCategory,
+                item.Definition.ArmorCategory)).ToArray(),
+            (snapshot.BuybackItems ?? []).Select(item => new MerchantBuybackItemResponse(
+                item.Item.Id,
+                item.Definition.Id,
+                item.Item.GeneratedDisplayName ?? item.Definition.Name,
+                item.Definition.Type.ToString(),
+                item.Definition.Rarity.ToString(),
+                item.Item.Quantity,
+                item.BuybackPriceGold,
+                item.Definition.IconId,
+                item.Item.EnhancementLevel)).ToArray());
+
+    private static ItemStatsResponse ToMerchantItemStats(ItemDefinition definition) =>
+        new(
+            definition.Stats.Strength,
+            definition.Stats.Agility,
+            definition.Stats.Intellect,
+            definition.Stats.Stamina,
+            definition.MaxHpFlat,
+            definition.AttackPowerFlat,
+            definition.SpellPowerFlat,
+            definition.CriticalChancePercent,
+            definition.CriticalDamagePercent,
+            definition.AccuracyPercent,
+            definition.ArmorFlat,
+            definition.MagicResistanceFlat,
+            definition.DodgePercent,
+            definition.ArmorPenetrationPercent,
+            definition.MagicPenetrationPercent,
+            definition.AttackSpeedPercent,
+            definition.MaxResourceFlat);
 
     private static IResult Problem(string errorCode, HttpContext context) =>
         Results.Problem(
