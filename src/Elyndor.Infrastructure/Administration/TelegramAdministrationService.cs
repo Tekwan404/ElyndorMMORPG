@@ -408,12 +408,18 @@ public sealed class TelegramAdministrationService(
         }
 
         WorldBossSpawn spawn = activation.Spawn;
+        GameContentSnapshot content = contentProvider.GetCurrent();
+        string bossName = content.Indexes.WorldBossesById.TryGetValue(
+            spawn.BossDefinitionId,
+            out WorldBossDefinition? definition)
+            ? definition.Name
+            : spawn.BossDefinitionId;
         string state = activation.Created ? "вызван" : "уже активен";
         return Success(
             activation.Created
                 ? "admin_world_boss_spawned"
                 : "admin_world_boss_already_active",
-            $"Мировой босс {spawn.BossDefinitionId} {state}. "
+            $"Мировой босс «{bossName}» {state}. "
             + $"Spawn: {spawn.Id:N}; HP {spawn.CurrentHealth:0}/{spawn.MaxHealth:0}; "
             + $"до {spawn.ExpiresAtUtc:HH:mm:ss} UTC.");
     }
