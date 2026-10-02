@@ -187,28 +187,7 @@
       "bossGold": 1000,
       "chestGoldMin": 250,
       "chestGoldMax": 500,
-      "tiers": [
-        {
-          "tier": "Bronze",
-          "minimumContribution": 5000
-        },
-        {
-          "tier": "Silver",
-          "minimumContribution": 25000
-        },
-        {
-          "tier": "Gold",
-          "minimumContribution": 50000
-        },
-        {
-          "tier": "Epic",
-          "minimumContribution": 100000
-        },
-        {
-          "tier": "Legendary",
-          "minimumContribution": 200000
-        }
-      ],
+      "tiers": [],
       "leaderboardTiers": [
         {
           "tier": "Top50",
