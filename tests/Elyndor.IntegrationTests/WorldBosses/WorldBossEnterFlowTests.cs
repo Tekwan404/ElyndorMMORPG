@@ -5,6 +5,7 @@ using Elyndor.Contracts.Characters;
 using Elyndor.Contracts.Combat;
 using Elyndor.Contracts.WorldBosses;
 using Elyndor.Core.Content;
+using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Identity;
 using Elyndor.Core.WorldBosses;
 using Elyndor.Infrastructure.Content;
@@ -369,6 +370,9 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
                     services.RemoveAll<IContentSnapshotProvider>();
                     services.AddSingleton<IContentSnapshotProvider>(
                         new StaticContentSnapshotProvider(package));
+                    services.RemoveAll<IGameRandomFactory>();
+                    services.AddSingleton<IGameRandomFactory>(
+                        new HighRollGameRandomFactory());
                 });
             });
 
@@ -426,4 +430,14 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
                     options.Transports = HttpTransportType.LongPolling;
                 })
             .Build();
+
+    private sealed class HighRollGameRandomFactory : IGameRandomFactory
+    {
+        public IGameRandom Create() => new HighRollGameRandom();
+    }
+
+    private sealed class HighRollGameRandom : IGameRandom
+    {
+        public decimal NextUnit() => 0.99m;
+    }
 }
