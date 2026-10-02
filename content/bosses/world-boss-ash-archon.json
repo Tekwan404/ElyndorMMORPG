@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.35.0",
-  "balanceVersion": "0.28.0",
-  "publishedAtUtc": "2026-10-02T10:45:00+00:00",
+  "contentVersion": "0.36.0",
+  "balanceVersion": "0.29.0",
+  "publishedAtUtc": "2026-10-02T13:40:00+00:00",
   "monsters": [
     {
       "id": "WORLD_BOSS_ASH_ARCHON_L30",
@@ -175,6 +175,38 @@
           "phase": 4,
           "name": "Последняя ярость",
           "startsAtHealthPercent": 25
+        }
+      ]
+    }
+  ],
+  "worldBossRewardProfiles": [
+    {
+      "id": "WORLD_BOSS_ASH_ARCHON_REWARD",
+      "minimumContribution": 5000,
+      "bossExperience": 200000,
+      "bossGold": 1000,
+      "chestGoldMin": 250,
+      "chestGoldMax": 500,
+      "tiers": [
+        {
+          "tier": "Bronze",
+          "minimumContribution": 5000
+        },
+        {
+          "tier": "Silver",
+          "minimumContribution": 25000
+        },
+        {
+          "tier": "Gold",
+          "minimumContribution": 50000
+        },
+        {
+          "tier": "Epic",
+          "minimumContribution": 100000
+        },
+        {
+          "tier": "Legendary",
+          "minimumContribution": 200000
         }
       ]
     }
