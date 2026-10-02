@@ -21,7 +21,9 @@ public sealed class HealingPotionBalanceTests
         ConsumableActionDefinition action = Assert.Single(potion.ConsumableActions!);
         Assert.Equal(ConsumableActionType.RestoreHp, action.Type);
         Assert.Equal(120m, action.Amount);
-        [Theory]
+    }
+
+    [Theory]
     [InlineData("MINOR_HEALING_POTION", 150)]
     [InlineData("HEALING_POTION", 200)]
     [InlineData("MAJOR_HEALING_POTION", 250)]
@@ -65,6 +67,4 @@ public sealed class HealingPotionBalanceTests
 
         Assert.All(expected, itemId => Assert.Contains(itemId, merchant.ItemIds));
     }
-
-}
 }
