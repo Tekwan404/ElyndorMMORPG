@@ -66,6 +66,11 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
 
         await using AsyncServiceScope scope = scopeFactory.CreateAsyncScope();
         GameDbContext dbContext = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+        bool isWorldBossCombat = await dbContext.WorldBossCombatSessions
+            .AsNoTracking()
+            .AnyAsync(
+                binding => binding.CombatSessionId == snapshot.SessionId,
+                cancellationToken);
         CombatDurabilityService? durability =
             scope.ServiceProvider.GetService<CombatDurabilityService>();
         if (durability is not null && snapshot.Status != CombatSessionStatus.Active)
@@ -89,6 +94,7 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
             cancellationToken);
 
         if (snapshot.Status == CombatSessionStatus.Victory
+            && !isWorldBossCombat
             && snapshot.PlayerContributionEligible == false)
         {
             if (durability is not null)
@@ -113,7 +119,7 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         // replay shortcut so reconnect/retry can heal a crash between reward and corpse writes.
         // Isolated finalizer hosts (for example focused combat tests) may intentionally omit
         // the profession subsystem; the production application always registers this service.
-        if (snapshot.Status == CombatSessionStatus.Victory && !fled)
+        if (snapshot.Status == CombatSessionStatus.Victory && !fled && !isWorldBossCombat)
         {
             ProfessionCorpseService? corpseService =
                 scope.ServiceProvider.GetService<ProfessionCorpseService>();
@@ -138,7 +144,7 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         // A terminal victory may be observed again after reconnect/retry. Rewards are already
         // idempotent by CombatSessionId, but replaying the pre-reward combat vitals here would
         // overwrite authoritative post-reward state (for example a level-up full heal).
-        if (snapshot.Status == CombatSessionStatus.Victory && !fled)
+        if (snapshot.Status == CombatSessionStatus.Victory && !fled && !isWorldBossCombat)
         {
             var existingReward = await dbContext.CombatRewardGrants
                 .AsNoTracking()
@@ -242,7 +248,7 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         }
 
         CombatRewardApplicationResult? reward = null;
-        if (snapshot.Status == CombatSessionStatus.Victory && !fled)
+        if (snapshot.Status == CombatSessionStatus.Victory && !fled && !isWorldBossCombat)
         {
             CombatRewardService rewards =
                 scope.ServiceProvider.GetRequiredService<CombatRewardService>();

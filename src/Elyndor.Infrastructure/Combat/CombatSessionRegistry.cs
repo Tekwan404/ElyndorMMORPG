@@ -32,7 +32,8 @@ public sealed class CombatSessionRegistry(
     TimeProvider timeProvider,
     ICombatUpdatePublisher publisher,
     ICombatSessionFinalizer finalizer,
-    ILogger<CombatSessionRegistry> logger) : IDisposable, ICombatActivityReader
+    ILogger<CombatSessionRegistry> logger,
+    IEnumerable<ICombatResultObserver>? resultObservers = null) : IDisposable, ICombatActivityReader
 {
     private static readonly TimeSpan RecoveryDelay = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan WatchdogInterval = TimeSpan.FromSeconds(5);
@@ -43,6 +44,7 @@ public sealed class CombatSessionRegistry(
             "Combat timer tick failed for account {AccountId}, character {CharacterId}, "
             + "session {SessionId}, status {Status}.");
 
+    private readonly ICombatResultObserver[] _resultObservers = resultObservers?.ToArray() ?? [];
     private readonly ConcurrentDictionary<Guid, SessionEntry> _byAccount = [];
     private readonly ConcurrentDictionary<Guid, SessionEntry> _byCharacter = [];
     private readonly ConcurrentDictionary<Guid, SessionEntry> _bySession = [];
@@ -189,6 +191,7 @@ public sealed class CombatSessionRegistry(
                 ? SessionExecutionState.Active
                 : SessionExecutionState.Finalizing;
             ScheduleGameplay(entry);
+            await ObserveResultAsync(entry, result, CancellationToken.None);
             // Once the authoritative session has changed, browser disconnects must not cancel
             // durable finalization or publication. Command ids make a client retry idempotent.
             await FinalizeIfNeededAsync(entry, result.Snapshot, CancellationToken.None);
@@ -494,6 +497,7 @@ public sealed class CombatSessionRegistry(
                     entry.ExecutionState = pending.Snapshot.Status == CombatSessionStatus.Active
                         ? SessionExecutionState.Active
                         : SessionExecutionState.Finalizing;
+                    await ObserveResultAsync(entry, pending, CancellationToken.None);
                     await FinalizeIfNeededAsync(entry, pending.Snapshot, CancellationToken.None);
                     await PublishToParticipantsAsync(
                         entry,
@@ -573,6 +577,7 @@ public sealed class CombatSessionRegistry(
                 ? SessionExecutionState.Active
                 : SessionExecutionState.Finalizing;
             ScheduleGameplay(entry);
+            await ObserveResultAsync(entry, result, CancellationToken.None);
             await FinalizeIfNeededAsync(entry, result.Snapshot, CancellationToken.None);
             await PublishToParticipantsAsync(
                 entry,
@@ -589,6 +594,26 @@ public sealed class CombatSessionRegistry(
         finally
         {
             entry.Gate.Release();
+        }
+    }
+
+    private async Task ObserveResultAsync(
+        SessionEntry entry,
+        CombatCommandResult result,
+        CancellationToken cancellationToken)
+    {
+        if (_resultObservers.Length == 0 || result.Events.Count == 0)
+            return;
+
+        IReadOnlyList<CombatParticipantSnapshot> participants =
+            result.Snapshot.ParticipantRoster ?? [];
+        foreach (ICombatResultObserver observer in _resultObservers)
+        {
+            await observer.ObserveAsync(
+                entry.Session.SessionId,
+                participants,
+                result.Events,
+                cancellationToken);
         }
     }
 
