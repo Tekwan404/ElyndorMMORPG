@@ -25,6 +25,11 @@ export interface WorldBossActiveSnapshot {
   participants: number
   personalDamage: number
   partyDamage: number
+  eligibleParticipants: number
+  personalRewardRank: number | null
+  rewardPercentile: number
+  rewardChestCount: number
+  rewardEnhancedChestCount: number
   rewardEligible: boolean
   rewardTier: string | null
   nextRewardTier: string | null
@@ -126,6 +131,11 @@ export interface WorldBossReward {
   spawnId: string
   contribution: number
   tier: string
+  rank: number
+  eligibleParticipants: number
+  percentile: number
+  chestCount: number
+  enhancedChestCount: number
   experience: number
   bossGold: number
   chestGold: number
