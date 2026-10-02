@@ -344,3 +344,40 @@ public sealed class WorldBossCombatSessionBinding
     public Guid? PartyId { get; private set; }
     public DateTimeOffset BoundAtUtc { get; private set; }
 }
+
+public sealed record WorldBossDefinition(
+    string Id,
+    string Name,
+    int Level,
+    decimal BaseMaxHealth,
+    int DurationSeconds,
+    string EncounterProfileId,
+    string LootTableId,
+    string RewardProfileId,
+    string TokenCurrencyId,
+    bool IsEnabled,
+    IReadOnlyList<WorldBossPhaseDefinition> Phases);
+
+public sealed record WorldBossPhaseDefinition(
+    int Phase,
+    string Name,
+    decimal StartsAtHealthPercent);
+
+public static class WorldBossPhasePolicy
+{
+    public static int ResolvePhase(WorldBossDefinition definition, decimal currentHealth, decimal maxHealth)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentOutOfRangeException.ThrowIfNegative(currentHealth);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxHealth);
+
+        decimal healthPercent = Math.Clamp(currentHealth / maxHealth * 100m, 0m, 100m);
+        WorldBossPhaseDefinition? phase = definition.Phases
+            .OrderBy(item => item.StartsAtHealthPercent)
+            .FirstOrDefault(item => healthPercent <= item.StartsAtHealthPercent);
+
+        return phase?.Phase ?? definition.Phases
+            .OrderByDescending(item => item.Phase)
+            .First().Phase;
+    }
+}

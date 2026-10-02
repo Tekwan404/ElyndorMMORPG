@@ -10,6 +10,7 @@ using Elyndor.Core.Talents;
 using Elyndor.Core.World;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Quests;
+using Elyndor.Core.WorldBosses;
 
 namespace Elyndor.Infrastructure.Content;
 
@@ -240,7 +241,11 @@ internal static class CategoryContentComposer
                 package.Quests,
                 fragment.Quests,
                 item => item.Id),
-            Itemization = fragment.Itemization ?? package.Itemization
+            Itemization = fragment.Itemization ?? package.Itemization,
+            WorldBosses = ContentCompositionRules.MergeOptionalByKey(
+                package.WorldBosses,
+                fragment.WorldBosses,
+                item => item.Id)
         };
     }
 
@@ -405,7 +410,8 @@ internal static class CategoryContentComposer
         IReadOnlyList<WorldContractDefinition>? WorldContracts = null,
         IReadOnlyList<DungeonDefinition>? Dungeons = null,
         IReadOnlyList<QuestDefinition>? Quests = null,
-        ItemizationDefinition? Itemization = null);
+        ItemizationDefinition? Itemization = null,
+        IReadOnlyList<WorldBossDefinition>? WorldBosses = null);
 
     private sealed record TalentBranchReplacement(
         string TreeId,

@@ -1,0 +1,25 @@
+{
+  "contentVersion": "0.34.0",
+  "balanceVersion": "0.27.0",
+  "publishedAtUtc": "2026-10-02T07:45:00+00:00",
+  "worldBosses": [
+    {
+      "id": "WORLD_BOSS_ASH_ARCHON",
+      "name": "Архон Пепла",
+      "level": 30,
+      "baseMaxHealth": 1000000,
+      "durationSeconds": 1800,
+      "encounterProfileId": "WB_ASH_ARCHON_V1",
+      "lootTableId": "WORLD_BOSS_ASH_ARCHON_LOOT",
+      "rewardProfileId": "WORLD_BOSS_ASH_ARCHON_REWARD",
+      "tokenCurrencyId": "ASH_SHARD",
+      "isEnabled": true,
+      "phases": [
+        { "phase": 1, "name": "Пробуждение", "startsAtHealthPercent": 100 },
+        { "phase": 2, "name": "Пепельные слуги", "startsAtHealthPercent": 75 },
+        { "phase": 3, "name": "Проклятие Пустоши", "startsAtHealthPercent": 50 },
+        { "phase": 4, "name": "Последняя ярость", "startsAtHealthPercent": 25 }
+      ]
+    }
+  ]
+}
