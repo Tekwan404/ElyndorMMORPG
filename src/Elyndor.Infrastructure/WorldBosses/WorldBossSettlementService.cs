@@ -368,7 +368,7 @@ public sealed class WorldBossSettlementService(
                 acquiredAtUtc,
                 definition.Version));
             remaining -= quantity;
-            availableSlots--;
+            freeSlots--;
         }
 
         if (remaining > 0)
