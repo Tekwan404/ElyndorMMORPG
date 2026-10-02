@@ -21,6 +21,30 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
+    public async Task SettlementPublishesPersonalRealtimeDeliveryForIneligibleContributor()
+    {
+        GameContentPackage package = await LoadContentAsync();
+        Seed seed = await SeedDefeatedAsync(package, 4_999m);
+        var publisher = new CapturingPublisher();
+
+        await using (GameDbContext db = postgres.CreateDbContext())
+        {
+            WorldBossSettlementBatchResult result =
+                await CreateService(db, package, publisher).SettleAsync(seed.SpawnId, default);
+            Assert.True(result.Succeeded, result.ErrorCode);
+            Assert.Empty(result.Rewards);
+        }
+
+        Assert.Equal(seed.SpawnId, publisher.SettledSpawnId);
+        Assert.Equal(Now.AddMinutes(1), publisher.SettledAtUtc);
+        WorldBossRewardDelivery delivery = Assert.Single(publisher.Deliveries);
+        Assert.Equal(seed.AccountId, delivery.AccountId);
+        Assert.Equal(seed.CharacterId, delivery.CharacterId);
+        Assert.Equal(4_999m, delivery.Contribution);
+        Assert.Null(delivery.Reward);
+    }
+
+    [Fact]
     public async Task SettlementGrantsBossRewardsAndOneChestExactlyOnce()
     {
         GameContentPackage package = await LoadContentAsync();
@@ -150,7 +174,8 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
 
     private static WorldBossSettlementService CreateService(
         GameDbContext db,
-        GameContentPackage package)
+        GameContentPackage package,
+        IWorldBossUpdatePublisher? publisher = null)
     {
         var provider = new StaticContentSnapshotProvider(package);
         var derived = new CharacterDerivedStateService(db, provider, inventoryService: null);
@@ -158,7 +183,8 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
             db,
             provider,
             derived,
-            new FixedTime(Now.AddMinutes(1)));
+            new FixedTime(Now.AddMinutes(1)),
+            publisher);
     }
 
     private async Task<Seed> SeedDefeatedAsync(
@@ -242,6 +268,32 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
         int ItemCount,
         int SettlementCount,
         WorldBossSpawnStatus SpawnStatus);
+
+    private sealed class CapturingPublisher : IWorldBossUpdatePublisher
+    {
+        public Guid? SettledSpawnId { get; private set; }
+        public DateTimeOffset? SettledAtUtc { get; private set; }
+        public IReadOnlyCollection<WorldBossRewardDelivery> Deliveries { get; private set; } = [];
+
+        public Task PublishDefeatedAsync(
+            Guid spawnId,
+            DateTimeOffset defeatedAtUtc,
+            IReadOnlyCollection<Guid> participantAccountIds,
+            CancellationToken cancellationToken) =>
+            Task.CompletedTask;
+
+        public Task PublishSettledAsync(
+            Guid spawnId,
+            DateTimeOffset settledAtUtc,
+            IReadOnlyCollection<WorldBossRewardDelivery> deliveries,
+            CancellationToken cancellationToken)
+        {
+            SettledSpawnId = spawnId;
+            SettledAtUtc = settledAtUtc;
+            Deliveries = deliveries;
+            return Task.CompletedTask;
+        }
+    }
 
     private sealed class FixedTime(DateTimeOffset now) : TimeProvider
     {
