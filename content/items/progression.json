@@ -307,14 +307,14 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Мгновенно восстанавливает 50 здоровья. Все лечебные зелья этого ранга делят общий кулдаун.",
+      "description": "Мгновенно восстанавливает 120 здоровья. Все лечебные зелья этого ранга делят общий кулдаун.",
       "version": 2,
       "consumableCooldownSeconds": 30,
       "consumableCooldownCategoryId": "HEALING_POTION",
       "consumableActions": [
         {
           "type": "RestoreHp",
-          "amount": 50
+          "amount": 120
         }
       ],
       "buyPriceGold": 20

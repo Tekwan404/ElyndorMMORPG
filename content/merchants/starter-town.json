@@ -10,6 +10,10 @@
       "description": "Маркус снабжает искателей расходниками, материалами для базового усиления и гарантированным Common-снаряжением 2 уровня. Более редкая экипировка добывается в мире и подземельях.",
       "itemIds": [
         "SMALL_HEALING_POTION",
+        "MINOR_HEALING_POTION",
+        "HEALING_POTION",
+        "MAJOR_HEALING_POTION",
+        "SUPERIOR_HEALING_POTION",
         "SMALL_MANA_POTION",
         "SMALL_FOCUS_POTION",
         "SMALL_RAGE_POTION",

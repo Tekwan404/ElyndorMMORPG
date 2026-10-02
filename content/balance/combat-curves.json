@@ -1,0 +1,130 @@
+{
+  "contentVersion": "0.34.0",
+  "balanceVersion": "0.28.0",
+  "publishedAtUtc": "2026-10-02T13:33:55+00:00",
+  "combatBalance": {
+    "id": "ELYNDOR_COMBAT_BALANCE_V1",
+    "maxBenchmarkLevel": 40,
+    "gearStates": [
+      {
+        "id": "WEAK",
+        "itemLevelLag": 6,
+        "qualityProfileId": "NORMAL"
+      },
+      {
+        "id": "NORMAL",
+        "itemLevelLag": 2,
+        "qualityProfileId": "ELITE"
+      },
+      {
+        "id": "GOOD",
+        "itemLevelLag": 0,
+        "qualityProfileId": "BOSS"
+      }
+    ],
+    "normalMonsterCurve": {
+      "maxHp": {
+        "baseValue": 100,
+        "linearPerLevel": 18,
+        "quadraticPerLevel": 4.65
+      },
+      "attackPower": {
+        "baseValue": 8,
+        "linearPerLevel": 4.7,
+        "quadraticPerLevel": 0
+      },
+      "armor": {
+        "baseValue": 8,
+        "linearPerLevel": 3,
+        "quadraticPerLevel": 0.05
+      },
+      "magicResistance": {
+        "baseValue": 4,
+        "linearPerLevel": 1.6,
+        "quadraticPerLevel": 0.02
+      },
+      "autoAttackBaseDamage": {
+        "baseValue": 5.5,
+        "linearPerLevel": 2.4,
+        "quadraticPerLevel": 0.04
+      }
+    },
+    "rankMultipliers": [
+      {
+        "rank": "Normal",
+        "hpMultiplier": 1,
+        "attackPowerMultiplier": 1,
+        "armorMultiplier": 1,
+        "magicResistanceMultiplier": 1,
+        "autoAttackDamageMultiplier": 1
+      },
+      {
+        "rank": "Elite",
+        "hpMultiplier": 1.6,
+        "attackPowerMultiplier": 1.15,
+        "armorMultiplier": 1.15,
+        "magicResistanceMultiplier": 1.15,
+        "autoAttackDamageMultiplier": 1.1
+      }
+    ],
+    "monsterArchetypes": [
+      {
+        "id": "STANDARD",
+        "hpMultiplier": 1,
+        "attackPowerMultiplier": 1,
+        "armorMultiplier": 1,
+        "magicResistanceMultiplier": 1,
+        "autoAttackDamageMultiplier": 1
+      },
+      {
+        "id": "TANK",
+        "hpMultiplier": 1.15,
+        "attackPowerMultiplier": 0.95,
+        "armorMultiplier": 1.25,
+        "magicResistanceMultiplier": 1.1,
+        "autoAttackDamageMultiplier": 0.95
+      },
+      {
+        "id": "BRUTE",
+        "hpMultiplier": 1,
+        "attackPowerMultiplier": 1.15,
+        "armorMultiplier": 1,
+        "magicResistanceMultiplier": 0.95,
+        "autoAttackDamageMultiplier": 1.15
+      },
+      {
+        "id": "CASTER",
+        "hpMultiplier": 0.9,
+        "attackPowerMultiplier": 0.7,
+        "armorMultiplier": 0.8,
+        "magicResistanceMultiplier": 1.35,
+        "autoAttackDamageMultiplier": 0.9
+      },
+      {
+        "id": "SKIRMISHER",
+        "hpMultiplier": 0.9,
+        "attackPowerMultiplier": 1,
+        "armorMultiplier": 0.9,
+        "magicResistanceMultiplier": 0.9,
+        "autoAttackDamageMultiplier": 1.05
+      }
+    ],
+    "normalTtkSeconds": {
+      "minimum": 8,
+      "maximum": 12
+    },
+    "normalTtdSeconds": {
+      "minimum": 14,
+      "maximum": 24
+    },
+    "eliteTtkSeconds": {
+      "minimum": 16,
+      "maximum": 24
+    },
+    "eliteTtdSeconds": {
+      "minimum": 12,
+      "maximum": 22
+    },
+    "auditTolerancePercent": 25
+  }
+}

@@ -668,6 +668,17 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     )
   }
 
+  async function buybackMerchantItem(
+    merchantId: string,
+    characterItemId: string,
+  ): Promise<MerchantSnapshot | null> {
+    return await merchantMutation(
+      'merchant:buyback',
+      '/api/v1/inventory/merchant/buyback',
+      { merchantId, characterItemId },
+    )
+  }
+
   async function sellMerchantMaterial(
     merchantId: string,
     characterItemId: string,
@@ -853,6 +864,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     buyMerchantItem,
     sellMerchantItem,
     sellMerchantMaterial,
+    buybackMerchantItem,
   }
 })
 

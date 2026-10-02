@@ -76,9 +76,9 @@
       "transitions": ["BROODMOTHER_LAIR", "STONE_SPURS", "ASHEN_BORDER", "HEART_OF_BLIGHTED_GROVE"],
       "minimumLevel": 1,
       "maximumLevel": 20,
-      "requiredContractId": "CONTRACT_BROODMOTHER_GATE",
+      "requiredContractId": null,
       "artId": "oskvernionnaia-chashcha",
-      "description": "Порча, яд, чума и подготовка к подземелью 20 уровня. Визуальная тема: осквернённая чаща в стилистике Elyndor.",
+      "description": "Порча, яд, чума и подготовка к подземелью 20 уровня. Локация открыта для исследования независимо от выполнения контрактов.",
       "allowAfk": true
     },
     {

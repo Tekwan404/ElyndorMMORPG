@@ -4,8 +4,8 @@ using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Talents;
-namespace Elyndor.Infrastructure.Combat;
-internal static class ArcherCompanionRuntimeResolver
+namespace Elyndor.Core.Combat.Sessions;
+public static class ArcherCompanionRuntimeResolver
 {
 public static CombatParticipantDefinition Resolve(
 CompanionProfileDefinition profile,

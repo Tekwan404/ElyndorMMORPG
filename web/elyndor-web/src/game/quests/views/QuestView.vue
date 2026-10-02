@@ -35,14 +35,25 @@ const visibleQuests = computed(() => {
 const inProgressCount = computed(() => trackedQuests.value.length)
 
 const targetNames: Readonly<Record<string, string>> = {
-  FOREST_WOLF_L1: 'Лесной волк', FOREST_BOAR_L2: 'Лесной кабан', GIANT_SPIDER_L3: 'Гигантский паук',
-  FOREST_WOLF_L4: 'Лесной волк', ALPHA_WOLF_L5: 'Альфа-волк', DEEP_WOLF_L6: 'Тёмный лесной волк',
-  CORRUPTED_BOAR_L7: 'Осквернённый кабан', DEEP_SPIDER_L8: 'Глубинный паук', GOBLIN_SCOUT_L9: 'Гоблин-разведчик',
-  DEEP_WOLF_L10: 'Матёрый лесной волк', ALPHA_WOLF_L11: 'Старый альфа-волк', SPIDER_BROODMOTHER_L14: 'Паучья Прародительница',
-  BANDIT_ROGUE_L15: 'Лесной разбойник', BANDIT_ARCHER_L16: 'Разбойник-лучник', CORRUPTED_BOAR_L17: 'Осквернённый вепрь',
-  BLIGHTED_SPIDER_L18: 'Осквернённый паук', BANDIT_ROGUE_L19: 'Опытный лесной разбойник', ALPHA_WOLF_L20: 'Осквернённый альфа-волк',
-  WOLF_HIDE: 'Шкура волка', ROUGH_HIDE: 'Грубая шкура', WOLF_FANG: 'Волчий клык', BOAR_TUSK: 'Кабаний клык',
-  SPIDER_SILK: 'Паучий шёлк', SPIDER_VENOM_SAC: 'Ядовитая железа паука',
+  WHISPERING_FOREST_MOLODOI_VOLK_L1: 'Волк Шепчущего леса',
+  WHISPERING_FOREST_LESNOI_KABAN_L2: 'Лесной кабан',
+  WHISPERING_FOREST_LESNOI_PAUK_L3: 'Лесной паук',
+  WHISPERING_FOREST_MATIORYI_VOZHAK_L4: 'Матёрый вожак',
+  DEEP_FOREST_VOLK_CHASHCHOBY_L6: 'Волк чащобы',
+  DEEP_FOREST_OSKVERNIONNYI_KABAN_L7: 'Осквернённый кабан',
+  DEEP_FOREST_GLUBINNYI_PAUK_L8: 'Глубинный паук',
+  DEEP_FOREST_GOBLIN_RAZVEDCHIK_L9: 'Гоблин-разведчик',
+  DEEP_FOREST_ALFA_VOLK_L7: 'Альфа-волк',
+  SPIDER_BROODMOTHER_L14: 'Паучья Прародительница',
+  BLIGHTED_GROVE_PEPELNYI_NALIOTCHIK_L16: 'Пепельный налётчик',
+  BLIGHTED_GROVE_TENEVOI_BRAKONER_L17: 'Теневой браконьер',
+  BLIGHTED_GROVE_PORCHENYI_KABAN_L15: 'Порченый кабан',
+  BLIGHTED_GROVE_PORCHENYI_PAUK_L16: 'Порченый паук',
+  BLIGHTED_GROVE_MATIORYI_VOZHAK_L19: 'Матёрый вожак',
+  ROUGH_HIDE: 'Грубая шкура',
+  SPIDER_SILK: 'Паучий шёлк',
+  ZARAZHIONNYI_KLYK: 'Заражённый клык',
+  GLUBINNYI_IAD: 'Глубинный яд',
 }
 const errorMessages: Readonly<Record<string, string>> = {
   quest_level_required: 'Нужен более высокий уровень.',

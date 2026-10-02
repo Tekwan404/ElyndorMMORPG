@@ -58,11 +58,11 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.screenshot({ path: '../../output/playwright/session-2a-city.png', fullPage: true })
 
   await page.getByRole('button', { name: 'Торговать' }).click()
-  const merchantDialog = page.getByRole('dialog', { name: 'Торговец' })
+  const merchantDialog = page.getByRole('dialog', { name: 'Лавка Маркуса' })
   await expect(merchantDialog).toBeVisible()
   await expect(merchantDialog.locator('.merchant__identity h2')).toContainText('Маркус')
   await expect(merchantDialog.locator('[data-merchant-offer]').first()).toBeVisible()
-  await expect(merchantDialog.getByPlaceholder('Найти припасы')).toBeVisible()
+  await expect(merchantDialog.getByPlaceholder('Поиск по витрине…')).toBeVisible()
   await merchantDialog.getByRole('button', { name: 'Close' }).click()
   await expect(merchantDialog).toBeHidden()
 

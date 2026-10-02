@@ -43,8 +43,11 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
         Assert.Equal("ROUGH_HIDE", wolfHideObjective.TargetId);
         Assert.Contains(
             content.SkinningSources ?? [],
-            source => source.MonsterId == "FOREST_WOLF_L1"
+            source => source.MonsterId == "WHISPERING_FOREST_MOLODOI_VOLK_L1"
                 && source.ItemId == "ROUGH_HIDE");
+
+        QuestDefinition alpha = quests.Single(quest => quest.Id == "QUEST_05_ALPHA_OF_WHISPERS");
+        Assert.Equal(["QUEST_01_FIRST_HUNT"], alpha.PrerequisiteQuestIds ?? []);
 
         QuestDefinition broodmother = quests.Single(quest => quest.Id == "CONTRACT_BROODMOTHER_GATE");
         Assert.Equal(QuestType.Contract, broodmother.Type);
@@ -52,9 +55,87 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
         Assert.Equal("BF-014", broodmother.ContractNumber);
         Assert.Equal("Высокая", broodmother.ThreatLevel);
         Assert.Contains("QUEST_13_BROODMOTHER_TRACE", broodmother.PrerequisiteQuestIds ?? []);
+        Assert.Null(broodmother.UnlockLocationId);
 
         QuestDefinition levelTwenty = quests.Single(quest => quest.Id == "QUEST_20_BLIGHTED_ALPHA");
         Assert.Contains("QUEST_19_VETERAN_BANDITS", levelTwenty.PrerequisiteQuestIds ?? []);
+    }
+
+    [Fact]
+    public async Task EveryKillObjectiveHasAnEncounterReachableTarget()
+    {
+        GameContentPackage content = await LoadContentAsync();
+        HashSet<string> reachableMonsterIds = content.Locations
+            .SelectMany(location => location.Encounters ?? [])
+            .Select(encounter => encounter.MonsterId)
+            .ToHashSet(StringComparer.Ordinal);
+
+        foreach (QuestDefinition quest in QuestCatalog.Resolve(content))
+        {
+            foreach (QuestObjectiveDefinition objective in quest.Objectives
+                         .Where(objective => objective.Type == QuestObjectiveType.KillMonster))
+            {
+                Assert.Contains(
+                    objective.AcceptedTargetIds(),
+                    reachableMonsterIds.Contains);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task FirstHuntCountsCurrentAuthoredWolfVariants()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(
+            level: 1,
+            locationId: "STARTER_TOWN");
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        (QuestService service, GameContentPackage content) =
+            await CreateServiceAsync(context);
+
+        Assert.True((await service.AcceptAsync(
+            accountId,
+            "QUEST_01_FIRST_HUNT",
+            CancellationToken.None)).IsSuccess);
+
+        await QuestProgression.ApplyKillsAsync(
+            context,
+            characterId,
+            Guid.CreateVersion7(),
+            [
+                "WHISPERING_FOREST_MOLODOI_VOLK_L1",
+                "WHISPERING_FOREST_SERYI_VOLK_L1"
+            ],
+            content,
+            Now,
+            CancellationToken.None);
+        await context.SaveChangesAsync();
+
+        QuestJournalSnapshot afterTwo = await service.GetAsync(
+            accountId,
+            CancellationToken.None);
+        QuestJournalEntry firstHunt = afterTwo.Quests.Single(
+            quest => quest.Id == "QUEST_01_FIRST_HUNT");
+        Assert.Equal(2, firstHunt.Objectives.Single().CurrentCount);
+        Assert.Equal(QuestStateStatuses.Active, firstHunt.Status);
+
+        await QuestProgression.ApplyKillsAsync(
+            context,
+            characterId,
+            Guid.CreateVersion7(),
+            ["WHISPERING_FOREST_LESNOI_VOLK_L3"],
+            content,
+            Now.AddSeconds(1),
+            CancellationToken.None);
+        await context.SaveChangesAsync();
+
+        QuestJournalSnapshot ready = await service.GetAsync(
+            accountId,
+            CancellationToken.None);
+        firstHunt = ready.Quests.Single(
+            quest => quest.Id == "QUEST_01_FIRST_HUNT");
+        Assert.Equal(3, firstHunt.Objectives.Single().CurrentCount);
+        Assert.Equal(QuestStateStatuses.ReadyToClaim, firstHunt.Status);
     }
 
     [Fact]
@@ -86,7 +167,11 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
                 context,
                 characterId,
                 Guid.CreateVersion7(),
-                ["FOREST_WOLF_L1", "FOREST_WOLF_L1", "FOREST_WOLF_L1"],
+                [
+                    "WHISPERING_FOREST_MOLODOI_VOLK_L1",
+                    "WHISPERING_FOREST_SERYI_VOLK_L1",
+                    "WHISPERING_FOREST_LESNOI_VOLK_L3"
+                ],
                 content,
                 Now,
                 CancellationToken.None);
@@ -144,6 +229,37 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
         Assert.Equal(
             QuestStateStatuses.Completed,
             persisted.Quests.Single(q => q.Id == "QUEST_01_FIRST_HUNT").Status);
+    }
+
+    [Fact]
+    public async Task AlphaContractBecomesAvailableAfterFirstHuntWithoutOptionalErrands()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(
+            level: 5,
+            locationId: "STARTER_TOWN");
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        context.QuestRewardGrants.Add(new QuestRewardGrant(
+            characterId,
+            "QUEST_01_FIRST_HUNT",
+            Guid.CreateVersion7(),
+            90,
+            15,
+            "[]",
+            Now));
+        await context.SaveChangesAsync();
+
+        (QuestService service, _) = await CreateServiceAsync(context);
+        QuestJournalSnapshot journal = await service.GetAsync(
+            accountId,
+            CancellationToken.None);
+
+        Assert.Equal(
+            "AVAILABLE",
+            journal.Quests.Single(q => q.Id == "QUEST_05_ALPHA_OF_WHISPERS").Status);
+        Assert.NotEqual(
+            QuestStateStatuses.Completed,
+            journal.Quests.Single(q => q.Id == "QUEST_04_SILKEN_THREAT").Status);
     }
 
     [Fact]

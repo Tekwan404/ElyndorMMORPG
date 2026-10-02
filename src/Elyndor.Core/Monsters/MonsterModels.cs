@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Abilities;
 
@@ -32,7 +33,6 @@ public sealed record MonsterDefinition(
     string AiProfileId,
     int Version = 1,
     decimal AutoAttackAttackPowerCoefficient = 0.5m,
-    int XpReward = 0,
     string? LootTableId = null,
     int GoldRewardMin = 0,
     int GoldRewardMax = 0,
@@ -44,7 +44,11 @@ public sealed record MonsterDefinition(
     string? SummonMonsterId = null,
     decimal SummonIntervalSeconds = 0,
     int SummonCount = 0,
-    int MaxActiveSummons = 0);
+    int MaxActiveSummons = 0,
+    string BalanceArchetypeId = "STANDARD",
+    bool GrantsXp = true,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    int LegacyXpReward = 0);
 
 public sealed record MonsterAbilityRule(
     string AbilityId,

@@ -37,7 +37,7 @@ public sealed class MoneySerializationTests
     {
         Assert.Equal(typeof(MoneyJsonConverter), typeof(BootstrapCharacterResponse).GetProperty("Gold")!
             .GetCustomAttribute<JsonConverterAttribute>()!.ConverterType);
-        var response = new MerchantResponse("test", "Test", "", long.MaxValue, []);
+        var response = new MerchantResponse("test", "Test", "", long.MaxValue, [], []);
         using var json = JsonDocument.Parse(JsonSerializer.Serialize(response, JsonSerializerOptions.Web));
         Assert.Equal("9223372036854775807", json.RootElement.GetProperty("gold").GetString());
     }

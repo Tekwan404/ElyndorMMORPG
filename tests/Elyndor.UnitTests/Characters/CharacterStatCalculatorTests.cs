@@ -243,8 +243,6 @@ public sealed class CharacterStatCalculatorTests
         AttackPowerPerStrength: 2,
         AttackPowerPerAgility: 1,
         SpellPowerPerIntellect: 2,
-        ArmorPerStamina: 2,
-        ArmorPerStrength: 1,
         MagicResistancePerStamina: 1,
         MagicResistancePerIntellect: 1,
         CriticalChanceBase: 5,

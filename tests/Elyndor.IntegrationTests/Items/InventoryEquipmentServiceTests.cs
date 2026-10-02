@@ -106,7 +106,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
         Assert.True(replay.IsSuccess);
 
         await using GameDbContext verify = postgres.CreateDbContext();
-        Assert.Equal(75, await verify.CharacterVitals
+        Assert.Equal(145, await verify.CharacterVitals
             .Where(v => v.CharacterId == characterId)
             .Select(v => v.CurrentHp)
             .SingleAsync());
@@ -227,7 +227,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
         Assert.All(results, result => Assert.True(result.IsSuccess));
 
         await using GameDbContext verify = postgres.CreateDbContext();
-        Assert.Equal(125, await verify.CharacterVitals
+        Assert.Equal(200, await verify.CharacterVitals
             .Where(v => v.CharacterId == characterId)
             .Select(v => v.CurrentHp)
             .SingleAsync());
@@ -256,7 +256,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
         Assert.Single(results, result => result.ErrorCode == InventoryErrorCodes.ItemNotFound);
 
         await using GameDbContext verify = postgres.CreateDbContext();
-        Assert.Equal(75, await verify.CharacterVitals
+        Assert.Equal(145, await verify.CharacterVitals
             .Where(v => v.CharacterId == characterId)
             .Select(v => v.CurrentHp)
             .SingleAsync());

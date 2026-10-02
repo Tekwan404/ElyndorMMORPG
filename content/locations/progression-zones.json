@@ -174,9 +174,9 @@
       ],
       "minimumLevel": 1,
       "maximumLevel": 20,
-      "requiredContractId": "CONTRACT_BROODMOTHER_GATE",
+      "requiredContractId": null,
       "artId": "caravan-road",
-      "description": "Заражённая чаща за логовом Прародительницы. Доступ открывается после выполнения её контракта.",
+      "description": "Заражённая чаща за логовом Прародительницы. Локация доступна для исследования независимо от выполнения контрактов.",
       "allowAfk": true
     },
     {

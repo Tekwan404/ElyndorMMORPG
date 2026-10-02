@@ -1,5 +1,8 @@
 using Elyndor.ContentValidator;
+using Elyndor.Core.Balance;
+using Elyndor.Core.Combat.Simulation;
 using Elyndor.Core.Content;
+using Elyndor.Core.Progression;
 using Elyndor.Infrastructure.Content;
 
 bool strictTalents = args.Any(argument =>
@@ -11,6 +14,12 @@ bool strictItemIcons = args.Any(argument =>
 bool auditItemIcons = args.Any(argument =>
     string.Equals(argument, "--audit-item-icons", StringComparison.Ordinal))
     || strictItemIcons;
+bool auditBalance = args.Any(argument =>
+    string.Equals(argument, "--audit-balance", StringComparison.Ordinal));
+bool benchmarkBalance = args.Any(argument =>
+    string.Equals(argument, "--benchmark-balance", StringComparison.Ordinal));
+bool auditProgression = args.Any(argument =>
+    string.Equals(argument, "--audit-progression", StringComparison.Ordinal));
 string? analysisExportDirectory = args
     .FirstOrDefault(argument => argument.StartsWith("--export-analysis=", StringComparison.Ordinal))?
     .Split('=', 2)[1];
@@ -86,6 +95,70 @@ try
                     $"{entry.TreeId}:{entry.BranchId}:{entry.NodeId} "
                     + $"ranks={entry.MaxRank} modifiers={entry.Modifiers.Count}");
             }
+        }
+    }
+
+    if (auditBalance && package.CombatBalance is not null)
+    {
+        IReadOnlyList<MonsterBalanceAuditEntry> audit = MonsterBalanceAudit.Run(package);
+        MonsterBalanceAuditEntry[] outliers = audit
+            .Where(item => !item.WithinTolerance)
+            .ToArray();
+        Console.WriteLine(
+            $"Combat balance audit: Monsters={audit.Count}, Outliers={outliers.Length}, "
+            + $"Tolerance={package.CombatBalance.AuditTolerancePercent}%");
+        foreach (MonsterBalanceAuditEntry item in outliers)
+        {
+            Console.WriteLine(
+                $"Warning: COMBAT_BALANCE_OUTLIER {item.MonsterId} "
+                + $"L{item.Level} {item.Rank}/{item.ArchetypeId} "
+                + $"HP={item.HpDeltaPercent:+0.##;-0.##;0}% "
+                + $"AP={item.AttackPowerDeltaPercent:+0.##;-0.##;0}% "
+                + $"Armor={item.ArmorDeltaPercent:+0.##;-0.##;0}% "
+                + $"MR={item.MagicResistanceDeltaPercent:+0.##;-0.##;0}% "
+                + $"AA={item.AutoAttackBaseDamageDeltaPercent:+0.##;-0.##;0}%");
+        }
+    }
+
+    if (auditProgression && package.ProgressionBalance is not null)
+    {
+        IReadOnlyList<ProgressionBalanceAuditRow> rows =
+            ProgressionBalanceAudit.Run(package);
+        ProgressionBalanceAuditRow[] missingLevels = rows
+            .Where(row => !row.HasRewardableNormalMonster)
+            .ToArray();
+        Console.WriteLine(
+            $"Progression balance audit: Levels={rows.Count}, "
+            + $"MissingRewardableNormalLevels={missingLevels.Length}");
+        foreach (ProgressionBalanceAuditRow row in rows)
+        {
+            Console.WriteLine(
+                $"XP L{row.Level}: next={row.XpToNext} "
+                + $"normalMob={row.NormalMonsterXp} "
+                + $"targetKills={row.TargetNormalKills:0.#} "
+                + $"normalMobs={row.RewardableNormalMonsterCount} "
+                + $"quest={row.TargetQuestXp} ({row.TargetQuestSharePercent:0.#}%) "
+                + $"combat={row.TargetPureCombatMinutes:0.##}m "
+                + $"status={(row.HasRewardableNormalMonster ? "OK" : "NO_NORMAL_MOB")}");
+        }
+    }
+
+    if (benchmarkBalance)
+    {
+        CombatBalanceBenchmarkRunner runner = new(package);
+        IReadOnlyList<CombatBalanceBenchmarkRow> rows = runner.Run();
+        Console.WriteLine(
+            $"Combat balance benchmark: Rows={rows.Count}, "
+            + $"TTK in target={rows.Count(item => item.TtkWithinTarget)}, "
+            + $"TTD in target={rows.Count(item => item.TtdWithinTarget)}");
+        foreach (CombatBalanceBenchmarkRow row in rows)
+        {
+            Console.WriteLine(
+                $"{row.ClassId} L{row.Level} {row.GearState} vs {row.MonsterId}: "
+                + $"HP={row.PlayerMaxHp:0.#} Armor={row.PlayerArmor:0.#} "
+                + $"EHP={row.PlayerPhysicalEhp:0.#} DPS={row.PlayerDps:0.#} "
+                + $"TTK={row.EstimatedTtkSeconds:0.##}s TTD={row.EstimatedTtdSeconds:0.##}s "
+                + $"Win={row.WinRatePercent:0.#}%");
         }
     }
 

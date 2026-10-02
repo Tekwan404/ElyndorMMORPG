@@ -81,7 +81,7 @@ public sealed class ShatteredOrderDungeonContentTests
         Assert.All(bosses, boss =>
         {
             Assert.Equal(25, boss.Level);
-            Assert.True(boss.XpReward > 0, boss.Id);
+            Assert.True(boss.GrantsXp, boss.Id);
             Assert.True(boss.GoldRewardMin > 0, boss.Id);
             Assert.True(boss.GoldRewardMax >= boss.GoldRewardMin, boss.Id);
             Assert.NotNull(boss.LootTableId);
@@ -218,7 +218,7 @@ public sealed class ShatteredOrderDungeonContentTests
         foreach (string id in noRewardIds)
         {
             MonsterDefinition monster = indexes.MonstersById[id];
-            Assert.Equal(0, monster.XpReward);
+            Assert.False(monster.GrantsXp);
             Assert.Equal(0, monster.GoldRewardMin);
             Assert.Equal(0, monster.GoldRewardMax);
             Assert.Null(monster.LootTableId);
