@@ -101,6 +101,35 @@ public sealed class WorldBossContentTests
         Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "LUK_TROINOGO_ASPEKTA");
         Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "KOLTSO_RAZBITOGO_OTRAZHENIIA");
         Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "PECHAT_TRIEDINSTVA");
+
+        WorldBossLeaderboardRewardTierDefinition[] leaderboardTiers =
+            rewardProfile.LeaderboardTiers!.ToArray();
+        Assert.Contains(
+            leaderboardTiers,
+            tier => tier.Tier == WorldBossRewardTier.Top95
+                && tier.ChestCount == 1
+                && !tier.Enhanced);
+        Assert.Contains(
+            leaderboardTiers,
+            tier => tier.Tier == WorldBossRewardTier.Top99
+                && tier.ChestCount == 2
+                && !tier.Enhanced);
+        WorldBossLeaderboardRewardTierDefinition topFive = Assert.Single(
+            leaderboardTiers,
+            tier => tier.Tier == WorldBossRewardTier.Top5);
+        Assert.Equal(5, topFive.MaxRank);
+        Assert.Equal(2, topFive.ChestCount);
+        Assert.True(topFive.Enhanced);
+        Assert.Equal("WORLD_BOSS_ASH_ARCHON_TOP5_LOOT", topFive.LootTableId);
+
+        var topFiveChest = package.LootTables!.Single(
+            table => table.Id == topFive.LootTableId);
+        Assert.Single(topFiveChest.SelectionGroups!);
+        Assert.Equal(1, topFiveChest.SelectionGroups![0].Rolls);
+        Assert.All(uniqueIds, uniqueId =>
+            Assert.Contains(
+                topFiveChest.SelectionGroups[0].Entries,
+                entry => entry.ItemId == uniqueId && entry.Weight > 1));
     }
 
     [Theory]
