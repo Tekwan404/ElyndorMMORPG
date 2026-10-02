@@ -36,6 +36,14 @@ public sealed class WorldBossCombatDamageObserver(IServiceScopeFactory scopeFact
 
         Dictionary<Guid, Guid> charactersByActor = participants
             .ToDictionary(participant => participant.ActorId, participant => participant.CharacterId);
+        Guid[] characterIds = charactersByActor.Values.Distinct().ToArray();
+        Dictionary<Guid, Guid> currentPartyByCharacter = await db.PartyMembers
+            .AsNoTracking()
+            .Where(member => characterIds.Contains(member.CharacterId))
+            .ToDictionaryAsync(
+                member => member.CharacterId,
+                member => member.PartyId,
+                cancellationToken);
         WorldBossDamageService damageService =
             scope.ServiceProvider.GetRequiredService<WorldBossDamageService>();
 
@@ -58,7 +66,9 @@ public sealed class WorldBossCombatDamageObserver(IServiceScopeFactory scopeFact
                 binding.SpawnId,
                 characterId,
                 combatSessionId,
-                binding.PartyId,
+                currentPartyByCharacter.TryGetValue(characterId, out Guid partyId)
+                    ? partyId
+                    : null,
                 combatEvent.Amount,
                 CreateMutationId(combatSessionId, combatEvent.Sequence),
                 cancellationToken);
