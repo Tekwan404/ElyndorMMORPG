@@ -20,11 +20,15 @@ public sealed class MigrationModelTests
         IMigrationsAssembly migrations = db.GetService<IMigrationsAssembly>();
         IMigrationsModelDiffer differ = db.GetService<IMigrationsModelDiffer>();
         IDesignTimeModel designTimeModel = db.GetService<IDesignTimeModel>();
+        IModelRuntimeInitializer runtimeInitializer = db.GetService<IModelRuntimeInitializer>();
 
         Assert.NotNull(migrations.ModelSnapshot);
+        var snapshotModel = runtimeInitializer.Initialize(
+            migrations.ModelSnapshot!.Model,
+            designTime: true);
 
         IReadOnlyList<MigrationOperation> operations = differ.GetDifferences(
-            migrations.ModelSnapshot!.Model.GetRelationalModel(),
+            snapshotModel.GetRelationalModel(),
             designTimeModel.Model.GetRelationalModel());
 
         Assert.True(
