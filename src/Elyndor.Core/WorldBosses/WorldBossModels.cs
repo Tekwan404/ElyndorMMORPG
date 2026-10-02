@@ -44,10 +44,8 @@ public sealed class WorldBossSpawn
         ArgumentException.ThrowIfNullOrWhiteSpace(bossDefinitionId);
         ArgumentException.ThrowIfNullOrWhiteSpace(contentVersion);
         ArgumentException.ThrowIfNullOrWhiteSpace(balanceVersion);
-        if (maxHealth <= 0)
-            throw new ArgumentOutOfRangeException(nameof(maxHealth));
-        if (initialPhase <= 0)
-            throw new ArgumentOutOfRangeException(nameof(initialPhase));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maxHealth);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(initialPhase);
         EnsureUtc(spawnedAtUtc, nameof(spawnedAtUtc));
         EnsureUtc(expiresAtUtc, nameof(expiresAtUtc));
         if (expiresAtUtc <= spawnedAtUtc)
@@ -82,8 +80,7 @@ public sealed class WorldBossSpawn
 
     public decimal ApplyDamage(decimal requestedDamage)
     {
-        if (requestedDamage < 0)
-            throw new ArgumentOutOfRangeException(nameof(requestedDamage));
+        ArgumentOutOfRangeException.ThrowIfNegative(requestedDamage);
         if (requestedDamage == 0 || Status != WorldBossSpawnStatus.Active || CurrentHealth <= 0)
             return 0;
 
@@ -95,8 +92,7 @@ public sealed class WorldBossSpawn
 
     public bool TryChangePhase(int phase)
     {
-        if (phase <= 0)
-            throw new ArgumentOutOfRangeException(nameof(phase));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(phase);
         if (Status != WorldBossSpawnStatus.Active || phase <= CurrentPhase)
             return false;
 
@@ -110,8 +106,7 @@ public sealed class WorldBossSpawn
         EnsureUtc(defeatedAtUtc, nameof(defeatedAtUtc));
         if (Status != WorldBossSpawnStatus.Active || CurrentHealth > 0)
             return false;
-        if (defeatedAtUtc < SpawnedAtUtc)
-            throw new ArgumentOutOfRangeException(nameof(defeatedAtUtc));
+        ArgumentOutOfRangeException.ThrowIfLessThan(defeatedAtUtc, SpawnedAtUtc);
 
         Status = WorldBossSpawnStatus.Defeated;
         DefeatedAtUtc = defeatedAtUtc;
@@ -145,8 +140,7 @@ public sealed class WorldBossSpawn
         EnsureUtc(settledAtUtc, nameof(settledAtUtc));
         if (Status != WorldBossSpawnStatus.Settling)
             return false;
-        if (settledAtUtc < SpawnedAtUtc)
-            throw new ArgumentOutOfRangeException(nameof(settledAtUtc));
+        ArgumentOutOfRangeException.ThrowIfLessThan(settledAtUtc, SpawnedAtUtc);
 
         Status = WorldBossSpawnStatus.Settled;
         SettledAtUtc = settledAtUtc;
@@ -185,11 +179,9 @@ public sealed class WorldBossContribution
 
     public void AddDamage(decimal appliedDamage, DateTimeOffset activityAtUtc)
     {
-        if (appliedDamage <= 0)
-            throw new ArgumentOutOfRangeException(nameof(appliedDamage));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(appliedDamage);
         EnsureUtc(activityAtUtc, nameof(activityAtUtc));
-        if (activityAtUtc < LastActivityAtUtc)
-            throw new ArgumentOutOfRangeException(nameof(activityAtUtc));
+        ArgumentOutOfRangeException.ThrowIfLessThan(activityAtUtc, LastActivityAtUtc);
 
         Damage = checked(Damage + appliedDamage);
         LastActivityAtUtc = activityAtUtc;
@@ -290,8 +282,7 @@ public sealed class WorldBossRewardSettlement
     {
         if (spawnId == Guid.Empty || characterId == Guid.Empty || lootRollSeed == Guid.Empty)
             throw new ArgumentException("World boss settlement identifiers cannot be empty.");
-        if (contributionScore < 0)
-            throw new ArgumentOutOfRangeException(nameof(contributionScore));
+        ArgumentOutOfRangeException.ThrowIfNegative(contributionScore);
         ArgumentOutOfRangeException.ThrowIfNegative(gold);
         ArgumentOutOfRangeException.ThrowIfNegative(experience);
         ArgumentOutOfRangeException.ThrowIfNegative(tokens);
