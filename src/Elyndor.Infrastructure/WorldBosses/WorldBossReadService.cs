@@ -125,6 +125,7 @@ public sealed class WorldBossReadService(
                 partyDamage,
                 spawn.ContentVersion,
                 spawn.BalanceVersion));
+    }
 
     public async Task<WorldBossLeaderboardReadResult> GetLeaderboardAsync(
         Guid accountId,
@@ -262,6 +263,5 @@ public sealed class WorldBossReadService(
             partyId,
             currentPartyRank,
             partyDamageValue ?? 0m);
-    }
     }
 }
