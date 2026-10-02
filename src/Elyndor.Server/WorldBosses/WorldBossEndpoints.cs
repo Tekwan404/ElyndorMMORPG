@@ -19,7 +19,55 @@ public static class WorldBossEndpoints
         group.MapGet("/active", GetActiveAsync);
         group.MapPost("/{spawnId:guid}/enter", EnterAsync);
         group.MapGet("/{spawnId:guid}/leaderboard", GetLeaderboardAsync);
+        group.MapGet("/{spawnId:guid}/rewards/me", GetRewardAsync);
         return endpoints;
+    }
+
+    private static async Task<IResult> GetRewardAsync(
+        Guid spawnId,
+        ClaimsPrincipal user,
+        HttpContext httpContext,
+        WorldBossReadService readService,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        WorldBossRewardReadResult result = await readService.GetRewardAsync(
+            accountId,
+            spawnId,
+            cancellationToken);
+        if (!result.CharacterFound || !result.SpawnFound)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status404NotFound,
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = result.CharacterFound
+                        ? WorldBossEnterErrorCodes.SpawnNotFound
+                        : WorldBossEnterErrorCodes.CharacterNotFound,
+                    ["correlationId"] = httpContext.TraceIdentifier
+                });
+        }
+
+        if (result.Reward is not { } reward)
+            return Results.NoContent();
+
+        return Results.Ok(new WorldBossRewardResponse(
+            reward.SpawnId,
+            reward.Contribution,
+            reward.Tier.ToString(),
+            reward.Experience,
+            reward.BossGold,
+            reward.ChestGold,
+            reward.TotalGold,
+            reward.Items.Select(item => new WorldBossRewardItemResponse(
+                item.ItemId,
+                item.Name,
+                item.Rarity.ToString(),
+                item.Quantity,
+                item.IconId)).ToArray(),
+            reward.SettledAtUtc));
     }
 
     private static async Task<IResult> GetLeaderboardAsync(
