@@ -74,10 +74,11 @@ watch(
     )
       return
 
-    // Server captures the terminal update before SignalR publishes it, so the
-    // archived report remains sendable even if the player immediately leaves.
+    // Run synchronously so LeaveCombat cannot clear the terminal snapshot
+    // before the report request is started.
     void reportTerminalCombat(snapshot.sessionId)
   },
+  { flush: 'sync' },
 )
 </script>
 
