@@ -338,7 +338,7 @@ public sealed class MerchantServiceTests(PostgresFixture postgres) : IAsyncLifet
             Guid.CreateVersion7(),
             CancellationToken.None);
         Assert.True(sold.IsSuccess);
-        MerchantBuybackItem buyback = Assert.Single(sold.Snapshot!.BuybackItems);
+        MerchantBuybackItem buyback = Assert.Single(sold.Snapshot!.BuybackItems!);
         Assert.Equal(itemId, buyback.Item.Id);
 
         MerchantOperationResult restored = await service.BuybackAsync(
@@ -348,7 +348,7 @@ public sealed class MerchantServiceTests(PostgresFixture postgres) : IAsyncLifet
             Guid.CreateVersion7(),
             CancellationToken.None);
         Assert.True(restored.IsSuccess);
-        Assert.Empty(restored.Snapshot!.BuybackItems);
+        Assert.Empty(restored.Snapshot!.BuybackItems!);
 
         await using GameDbContext verify = postgres.CreateDbContext();
         CharacterItem item = await verify.CharacterItems
