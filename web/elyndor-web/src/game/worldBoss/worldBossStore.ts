@@ -59,12 +59,67 @@ export interface WorldBossLeaderboard {
   partyDamage: number
 }
 
+export interface WorldBossItemStats {
+  strength: number
+  agility: number
+  intellect: number
+  stamina: number
+  maxHp: number
+  attackPower: number
+  spellPower: number
+  criticalChance: number
+  criticalDamage: number
+  accuracy: number
+  armor: number
+  magicResistance: number
+  dodge: number
+  armorPenetration: number
+  magicPenetration: number
+  attackSpeed: number
+  maxResource: number
+}
+
+export interface WorldBossGeneratedAffix {
+  slotKey: string
+  statId: string
+  value: number
+  min: number
+  max: number
+  step: number
+  affixTier: number
+  isGuaranteed: boolean
+  isReforgeSlot: boolean
+}
+
+export interface WorldBossGeneratedItem {
+  itemLevel: number
+  itemPower: number
+  maxItemPower: number
+  rollQuality: number
+  stars: number
+  isPerfect: boolean
+  perfectOrigin: string | null
+  generatedPrefixId: string | null
+  generatedSuffixId: string | null
+  displayName: string
+  affixes: WorldBossGeneratedAffix[]
+}
+
 export interface WorldBossRewardItem {
   itemId: string
   name: string
   rarity: string
   quantity: number
   iconId: string | null
+  instanceId: string | null
+  pending: boolean
+  stats: WorldBossItemStats | null
+  generatedItem: WorldBossGeneratedItem | null
+  weaponDamageMin: number | null
+  weaponDamageMax: number | null
+  blockChance: number
+  blockValueMin: number
+  blockValueMax: number
 }
 
 export interface WorldBossReward {
