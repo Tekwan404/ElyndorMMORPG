@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
@@ -45,7 +46,7 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
     }
 
     [Fact]
-    public async Task SettlementGrantsBossRewardsAndOneChestExactlyOnce()
+    public async Task SettlementGrantsTopFiveRewardExactlyOnce()
     {
         GameContentPackage package = await LoadContentAsync();
         Seed seed = await SeedDefeatedAsync(package, 50_000m);
@@ -61,15 +62,20 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
         WorldBossSettlementCharacterResult reward = Assert.Single(first.Rewards);
         Assert.Equal(seed.CharacterId, reward.CharacterId);
         Assert.Equal(50_000m, reward.Contribution);
-        Assert.Equal(WorldBossRewardTier.Gold, reward.Tier);
+        Assert.Equal(WorldBossRewardTier.Top5, reward.Tier);
+        Assert.Equal(1, reward.Rank);
+        Assert.Equal(1, reward.EligibleParticipants);
+        Assert.Equal(100m, reward.Percentile);
+        Assert.Equal(0, reward.ChestCount);
+        Assert.Equal(2, reward.EnhancedChestCount);
         Assert.Equal(200_000, reward.Experience);
         Assert.Equal(1_000, reward.BossGold);
         Assert.InRange(reward.ChestGold, 250, 500);
-        Assert.Single(reward.Items);
+        Assert.Equal(2, reward.Items.Count);
 
         CharacterState afterFirst = await ReadCharacterStateAsync(seed.CharacterId);
         Assert.Equal(1_000 + reward.ChestGold, afterFirst.Gold);
-        Assert.Equal(1, afterFirst.ItemCount);
+        Assert.Equal(2, afterFirst.ItemCount);
         Assert.Equal(1, afterFirst.SettlementCount);
         Assert.Equal(WorldBossSpawnStatus.Settled, afterFirst.SpawnStatus);
 
@@ -107,13 +113,13 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
 
         CharacterState state = await ReadCharacterStateAsync(seed.CharacterId);
         Assert.Equal(1, state.SettlementCount);
-        Assert.Equal(1, state.ItemCount);
+        Assert.Equal(2, state.ItemCount);
         Assert.InRange(state.Gold, 1_250, 1_500);
 
         await using GameDbContext verify = postgres.CreateDbContext();
         WorldBossRewardSettlement settlement =
             await verify.WorldBossRewardSettlements.SingleAsync();
-        Assert.Equal(WorldBossRewardTier.Legendary, settlement.RewardTier);
+        Assert.Equal(WorldBossRewardTier.Top5, settlement.RewardTier);
         Assert.Equal(200_000, settlement.Experience);
     }
 
@@ -169,7 +175,14 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
         Assert.Equal(settled.Experience, read.Reward.Experience);
         Assert.Equal(settled.BossGold, read.Reward.BossGold);
         Assert.Equal(settled.ChestGold, read.Reward.ChestGold);
-        Assert.Equal(settled.Items, read.Reward.Items);
+        Assert.Equal(settled.Rank, read.Reward.Rank);
+        Assert.Equal(settled.EligibleParticipants, read.Reward.EligibleParticipants);
+        Assert.Equal(settled.Percentile, read.Reward.Percentile);
+        Assert.Equal(settled.ChestCount, read.Reward.ChestCount);
+        Assert.Equal(settled.EnhancedChestCount, read.Reward.EnhancedChestCount);
+        Assert.Equal(
+            JsonSerializer.Serialize(settled.Items),
+            JsonSerializer.Serialize(read.Reward.Items));
     }
 
     private static WorldBossSettlementService CreateService(
