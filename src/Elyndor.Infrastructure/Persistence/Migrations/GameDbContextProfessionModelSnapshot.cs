@@ -2688,6 +2688,240 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_afk_farm_interval_grants_sessions_session_id");
                 });
 
+            modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossContribution", b =>
+                {
+                    b.Property<Guid>("SpawnId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Damage")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<DateTimeOffset>("FirstActivityAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("LastActivityAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("SpawnId", "CharacterId")
+                        .HasName("pk_world_boss_contributions");
+
+                    b.HasIndex("CharacterId", "LastActivityAtUtc")
+                        .HasDatabaseName("ix_world_boss_contributions_character_activity");
+
+                    b.HasIndex("SpawnId", "Damage")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("ix_world_boss_contributions_leaderboard");
+
+                    b.ToTable("world_boss_contributions", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_world_boss_contributions_activity_order", "\"LastActivityAtUtc\" >= \"FirstActivityAtUtc\"");
+
+                            t.HasCheckConstraint("ck_world_boss_contributions_damage_non_negative", "\"Damage\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossDamageMutation", b =>
+                {
+                    b.Property<Guid>("SpawnId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MutationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("AppliedDamage")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CommittedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CombatSessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("PartyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("RequestedDamage")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.HasKey("SpawnId", "MutationId")
+                        .HasName("pk_world_boss_damage_mutations");
+
+                    b.HasIndex("CharacterId", "CommittedAtUtc")
+                        .HasDatabaseName("ix_world_boss_damage_mutations_character_committed");
+
+                    b.HasIndex("CombatSessionId")
+                        .HasDatabaseName("ix_world_boss_damage_mutations_combat_session");
+
+                    b.HasIndex("PartyId");
+
+                    b.ToTable("world_boss_damage_mutations", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_world_boss_damage_mutations_applied_range", "\"AppliedDamage\" >= 0 AND \"AppliedDamage\" <= \"RequestedDamage\"");
+
+                            t.HasCheckConstraint("ck_world_boss_damage_mutations_requested_non_negative", "\"RequestedDamage\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossPartyContribution", b =>
+                {
+                    b.Property<Guid>("SpawnId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("PartyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Damage")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.HasKey("SpawnId", "PartyId")
+                        .HasName("pk_world_boss_party_contributions");
+
+                    b.HasIndex("PartyId");
+
+                    b.HasIndex("SpawnId", "Damage")
+                        .IsDescending(false, true)
+                        .HasDatabaseName("ix_world_boss_party_contributions_leaderboard");
+
+                    b.ToTable("world_boss_party_contributions", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_world_boss_party_contributions_damage_non_negative", "\"Damage\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossRewardSettlement", b =>
+                {
+                    b.Property<Guid>("SpawnId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("ContributionScore")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<int>("Experience")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Gold")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("LootResultJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<Guid>("LootRollSeed")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RewardTier")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<DateTimeOffset>("SettledAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Tokens")
+                        .HasColumnType("integer");
+
+                    b.HasKey("SpawnId", "CharacterId")
+                        .HasName("pk_world_boss_reward_settlements");
+
+                    b.HasIndex("CharacterId", "SettledAtUtc")
+                        .HasDatabaseName("ix_world_boss_reward_settlements_character_settled");
+
+                    b.ToTable("world_boss_reward_settlements", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_world_boss_reward_settlements_rewards_non_negative", "\"Gold\" >= 0 AND \"Experience\" >= 0 AND \"Tokens\" >= 0");
+
+                            t.HasCheckConstraint("ck_world_boss_reward_settlements_score_non_negative", "\"ContributionScore\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossSpawn", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BalanceVersion")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("BossDefinitionId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("ContentVersion")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<decimal>("CurrentHealth")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<int>("CurrentPhase")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset?>("DefeatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ExpiresAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("MaxHealth")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<DateTimeOffset?>("SettledAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("SpawnedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id")
+                        .HasName("pk_world_boss_spawns");
+
+                    b.HasIndex("BossDefinitionId", "SpawnedAtUtc")
+                        .HasDatabaseName("ix_world_boss_spawns_definition_spawned");
+
+                    b.HasIndex("Status", "ExpiresAtUtc")
+                        .HasDatabaseName("ix_world_boss_spawns_status_expires");
+
+                    b.ToTable("world_boss_spawns", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_world_boss_spawns_expiry_after_spawn", "\"ExpiresAtUtc\" > \"SpawnedAtUtc\"");
+
+                            t.HasCheckConstraint("ck_world_boss_spawns_health_range", "\"CurrentHealth\" >= 0 AND \"CurrentHealth\" <= \"MaxHealth\"");
+
+                            t.HasCheckConstraint("ck_world_boss_spawns_max_health_positive", "\"MaxHealth\" > 0");
+
+                            t.HasCheckConstraint("ck_world_boss_spawns_phase_positive", "\"CurrentPhase\" > 0");
+                        });
+                });
+
             modelBuilder.Entity("Elyndor.Core.Afk.AfkFarmSession", b =>
                 {
                     b.HasOne("Elyndor.Core.Characters.Character", null)
@@ -3307,6 +3541,80 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_travel_operations_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossContribution", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_world_boss_contributions_character");
+
+                    b.HasOne("Elyndor.Core.WorldBosses.WorldBossSpawn", null)
+                        .WithMany()
+                        .HasForeignKey("SpawnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_world_boss_contributions_spawn");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossDamageMutation", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_world_boss_damage_mutations_character");
+
+                    b.HasOne("Elyndor.Core.Parties.Party", null)
+                        .WithMany()
+                        .HasForeignKey("PartyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_world_boss_damage_mutations_party");
+
+                    b.HasOne("Elyndor.Core.WorldBosses.WorldBossSpawn", null)
+                        .WithMany()
+                        .HasForeignKey("SpawnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_world_boss_damage_mutations_spawn");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossPartyContribution", b =>
+                {
+                    b.HasOne("Elyndor.Core.Parties.Party", null)
+                        .WithMany()
+                        .HasForeignKey("PartyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_world_boss_party_contributions_party");
+
+                    b.HasOne("Elyndor.Core.WorldBosses.WorldBossSpawn", null)
+                        .WithMany()
+                        .HasForeignKey("SpawnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_world_boss_party_contributions_spawn");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossRewardSettlement", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_world_boss_reward_settlements_character");
+
+                    b.HasOne("Elyndor.Core.WorldBosses.WorldBossSpawn", null)
+                        .WithMany()
+                        .HasForeignKey("SpawnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_world_boss_reward_settlements_spawn");
                 });
 
             modelBuilder.Entity("Elyndor.Core.Dungeons.DungeonEncounter", b =>
