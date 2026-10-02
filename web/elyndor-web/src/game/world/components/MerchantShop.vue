@@ -1907,4 +1907,496 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
     justify-self: end;
   }
 }
+
+.merchant-reaction {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  padding: 7px var(--ui-space-4);
+  border-bottom: 1px solid rgb(216 173 99 / 10%);
+  background: linear-gradient(90deg, rgb(216 173 99 / 5%), transparent 65%);
+  color: #9e968a;
+}
+
+.merchant-reaction > span {
+  color: rgb(216 173 99 / 52%);
+  font-family: Georgia, serif;
+  font-size: 1.25rem;
+}
+
+.merchant-reaction p {
+  margin: 0;
+  font-size: .58rem;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+.merchant-reaction small {
+  color: #7f776c;
+  font-size: .48rem;
+  white-space: nowrap;
+}
+
+.merchant-recommendations {
+  display: grid;
+  gap: 6px;
+  padding: 9px var(--ui-space-4);
+  border-bottom: 1px solid rgb(216 173 99 / 9%);
+  background: rgb(216 173 99 / 2.5%);
+}
+
+.merchant-recommendations > small {
+  color: #a99164;
+  font-size: .5rem;
+  font-weight: 850;
+  letter-spacing: .1em;
+}
+
+.merchant-recommendations > div {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.merchant-recommendations button {
+  display: grid;
+  grid-template-columns: 2.1rem minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid rgb(216 173 99 / 14%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(255 255 255 / 1.5%);
+  color: #bbb3a6;
+  font: inherit;
+  text-align: left;
+}
+
+.merchant-recommendations button :deep(img) {
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 5px;
+  object-fit: cover;
+}
+
+.merchant-recommendations button span {
+  display: grid;
+  min-width: 0;
+}
+
+.merchant-recommendations button b {
+  overflow: hidden;
+  color: #d9d1c2;
+  font-size: .58rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.merchant-recommendations button em {
+  color: #8e9a86;
+  font-size: .48rem;
+  font-style: normal;
+}
+
+.merchant-filter__toggles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.merchant-filter__subcategories {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.merchant-filter__subcategories::-webkit-scrollbar {
+  display: none;
+}
+
+.merchant-filter__subcategories button {
+  flex: 0 0 auto;
+  min-height: 1.8rem;
+  padding: 3px 8px;
+  border: 1px solid rgb(216 173 99 / 12%);
+  border-radius: var(--ui-radius-round);
+  background: transparent;
+  color: #817c74;
+  font: inherit;
+  font-size: .53rem;
+}
+
+.merchant-filter__subcategories button.active {
+  border-color: rgb(216 173 99 / 40%);
+  background: rgb(216 173 99 / 8%);
+  color: #dac38f;
+}
+
+.offer-card {
+  cursor: pointer;
+}
+
+.offer-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  min-height: .9rem;
+}
+
+.offer-card__badges i {
+  padding: 2px 4px;
+  border: 1px solid rgb(216 173 99 / 15%);
+  border-radius: 3px;
+  background: rgb(216 173 99 / 5%);
+  color: #aa9977;
+  font-size: .43rem;
+  font-style: normal;
+  line-height: 1;
+}
+
+.offer-card__quick-buy {
+  min-height: 1.7rem;
+  padding: 3px 7px;
+  border: 1px solid rgb(216 173 99 / 28%);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(216 173 99 / 8%);
+  color: #e2c37f;
+  font: inherit;
+  font-size: .51rem;
+  font-weight: 800;
+}
+
+.offer-card__quick-buy:disabled {
+  opacity: .38;
+}
+
+.offer-card.purchase-pulse {
+  animation: merchant-purchase-pulse 360ms ease-out;
+}
+
+@keyframes merchant-purchase-pulse {
+  0% { box-shadow: 0 0 0 0 rgb(216 173 99 / 0%); }
+  35% { box-shadow: 0 0 0 2px rgb(216 173 99 / 45%), 0 0 1.2rem rgb(216 173 99 / 28%); }
+  100% { box-shadow: 0 0 0 0 rgb(216 173 99 / 0%); }
+}
+
+.merchant-compare {
+  display: grid;
+  gap: 6px;
+  padding: 8px 9px;
+  border: 1px solid rgb(111 142 173 / 16%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(76 103 128 / 6%);
+}
+
+.merchant-compare header {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.merchant-compare header span {
+  color: #aebdca;
+  font-size: .55rem;
+  font-weight: 800;
+}
+
+.merchant-compare header small {
+  overflow: hidden;
+  max-width: 55%;
+  color: #777f86;
+  font-size: .48rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.merchant-compare > div {
+  display: grid;
+  gap: 3px;
+}
+
+.merchant-compare p {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3rem 3rem;
+  gap: 5px;
+  margin: 0;
+  color: #8f9498;
+  font-size: .52rem;
+}
+
+.merchant-compare p em {
+  color: #777d82;
+  font-style: normal;
+  text-align: right;
+}
+
+.merchant-compare p b {
+  color: #aaa;
+  font-weight: 800;
+  text-align: right;
+}
+
+.merchant-compare p b.positive {
+  color: #75b98d;
+}
+
+.merchant-compare p b.negative {
+  color: #bd7771;
+}
+
+.merchant-quantity {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 9px;
+  border: 1px solid rgb(216 173 99 / 12%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(216 173 99 / 3%);
+}
+
+.merchant-quantity > span {
+  color: #a29a8e;
+  font-size: .56rem;
+  font-weight: 800;
+}
+
+.merchant-quantity__stepper {
+  display: grid;
+  grid-template-columns: 1.8rem 2rem 1.8rem;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgb(216 173 99 / 22%);
+  border-radius: var(--ui-radius-sm);
+}
+
+.merchant-quantity__stepper button,
+.merchant-quantity__quick button {
+  border: 0;
+  background: rgb(255 255 255 / 2%);
+  color: #ceb57d;
+  font: inherit;
+  font-size: .65rem;
+}
+
+.merchant-quantity__stepper button {
+  min-height: 1.8rem;
+}
+
+.merchant-quantity__stepper b {
+  color: #e3d8c4;
+  font-size: .62rem;
+  text-align: center;
+}
+
+.merchant-quantity__quick {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.merchant-quantity__quick button {
+  min-height: 1.65rem;
+  border: 1px solid rgb(216 173 99 / 12%);
+  border-radius: 4px;
+}
+
+.merchant-quantity > small {
+  grid-column: 1 / -1;
+  color: #757d73;
+  font-size: .48rem;
+}
+
+.sell-toolbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 8px var(--ui-space-4);
+  border-bottom: 1px solid rgb(216 173 99 / 10%);
+  background: rgb(216 173 99 / 3%);
+}
+
+.sell-toolbar > button {
+  border: 0;
+  background: transparent;
+  color: #c1a56e;
+  font: inherit;
+  font-size: .55rem;
+  text-decoration: underline;
+}
+
+.sell-toolbar > span {
+  color: #88827a;
+  font-size: .55rem;
+}
+
+.sell-toolbar > b {
+  color: #d8b874;
+  font-size: .65rem;
+}
+
+.sell-card {
+  grid-template-columns: 1.4rem 3rem minmax(0, 1fr) auto;
+}
+
+.sell-card.selected {
+  background: rgb(216 173 99 / 4%);
+}
+
+.sell-card__select {
+  display: grid;
+  place-items: center;
+}
+
+.sell-card__select input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sell-card__select span {
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid rgb(216 173 99 / 28%);
+  border-radius: 3px;
+  background: #0b0d10;
+}
+
+.sell-card__select input:checked + span {
+  background:
+    linear-gradient(135deg, transparent 38%, #e2c77f 39% 52%, transparent 53%) center / 70% 70% no-repeat,
+    rgb(216 173 99 / 12%);
+  border-color: rgb(216 173 99 / 60%);
+}
+
+.sell-card__copy em {
+  color: #ba7f75;
+  font-size: .48rem;
+  font-style: normal;
+}
+
+.buyback-list {
+  display: grid;
+  gap: 7px;
+  padding: 9px;
+}
+
+.buyback-card {
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 9px;
+  padding: 9px;
+  border: 1px solid rgb(216 173 99 / 13%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(255 255 255 / 1.5%);
+}
+
+.buyback-card__copy {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.buyback-card__copy small {
+  color: #928979;
+  font-size: .49rem;
+  text-transform: uppercase;
+}
+
+.buyback-card__copy strong {
+  overflow: hidden;
+  color: #ddd4c4;
+  font-size: .67rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.buyback-card__copy span {
+  color: #7f817c;
+  font-size: .52rem;
+}
+
+.buyback-card__price {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.buyback-card__price small {
+  color: #7c756c;
+  font-size: .48rem;
+}
+
+.buyback-card__price b {
+  color: #d7b874;
+  font-size: .66rem;
+}
+
+@media (max-width: 620px) {
+  .merchant-recommendations > div {
+    grid-template-columns: 1fr;
+  }
+
+  .merchant-recommendations button {
+    grid-template-columns: 2rem minmax(0, 1fr);
+  }
+
+  .merchant-filter__toggles {
+    grid-template-columns: 1fr;
+  }
+
+  .merchant-detail__purchase {
+    position: sticky;
+    z-index: 3;
+    bottom: 0;
+    margin: 0 -13px -13px;
+    padding: 10px 13px calc(10px + var(--ui-safe-area-bottom));
+    background: linear-gradient(180deg, rgb(12 13 15 / 92%), #0a0b0d);
+    box-shadow: 0 -.5rem 1rem rgb(0 0 0 / 24%);
+    backdrop-filter: blur(8px);
+  }
+
+  .sell-toolbar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .sell-toolbar > span {
+    grid-column: 1;
+  }
+
+  .sell-toolbar :deep(.ui-button) {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .sell-card {
+    grid-template-columns: 1.2rem 2.7rem minmax(0, 1fr);
+  }
+
+  .sell-card__price {
+    grid-column: 2 / -1;
+  }
+
+  .buyback-card {
+    grid-template-columns: 2.7rem minmax(0, 1fr) auto;
+  }
+
+  .buyback-card > :deep(.ui-button) {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .offer-card.purchase-pulse {
+    animation: none;
+  }
+}
 </style>
