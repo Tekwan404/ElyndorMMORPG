@@ -718,6 +718,8 @@ public sealed partial class CombatSession
         _primaryEnemy.Actor.SetCurrentHp(currentHealth);
     }
 
+    public decimal PrimaryEnemyMaxHp => _primaryEnemy.Actor.MaxHp;
+
     public bool SynchronizePrimaryEnemyFromAuthority(
         decimal currentHealth,
         bool expired,
@@ -734,9 +736,9 @@ public sealed partial class CombatSession
                 nameof(now),
                 "Authoritative combat synchronization cannot move time backwards.");
 
-        CurrentTimeUtc = now;
         if (expired)
         {
+            CurrentTimeUtc = now;
             Status = CombatSessionStatus.Cancelled;
             EndCombat(new CombatEvent(
                 CombatEventType.CombatEnded,
@@ -751,6 +753,7 @@ public sealed partial class CombatSession
         if (currentHealth > 0)
             return false;
 
+        CurrentTimeUtc = now;
         CombatEvent death = new(
             CombatEventType.ActorDied,
             now,
