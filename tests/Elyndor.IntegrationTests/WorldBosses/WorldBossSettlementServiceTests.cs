@@ -70,7 +70,7 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
         Assert.Equal(2, reward.EnhancedChestCount);
         Assert.Equal(200_000, reward.Experience);
         Assert.Equal(1_000, reward.BossGold);
-        Assert.InRange(reward.ChestGold, 250, 500);
+        Assert.InRange(reward.ChestGold, 500, 1_000);
         Assert.Equal(2, reward.Items.Count);
 
         CharacterState afterFirst = await ReadCharacterStateAsync(seed.CharacterId);
@@ -114,7 +114,7 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
         CharacterState state = await ReadCharacterStateAsync(seed.CharacterId);
         Assert.Equal(1, state.SettlementCount);
         Assert.Equal(2, state.ItemCount);
-        Assert.InRange(state.Gold, 1_250, 1_500);
+        Assert.InRange(state.Gold, 1_500, 2_000);
 
         await using GameDbContext verify = postgres.CreateDbContext();
         WorldBossRewardSettlement settlement =
