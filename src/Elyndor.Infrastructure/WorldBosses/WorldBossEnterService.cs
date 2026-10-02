@@ -273,7 +273,7 @@ public sealed class WorldBossEnterService(
                 spawnId,
                 bossActorId,
                 partyId: null,
-                now));
+                boundAtUtc: now));
             await db.SaveChangesAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             await transaction.CommitAsync(CancellationToken.None);
