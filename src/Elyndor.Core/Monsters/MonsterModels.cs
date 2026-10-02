@@ -32,7 +32,6 @@ public sealed record MonsterDefinition(
     string AiProfileId,
     int Version = 1,
     decimal AutoAttackAttackPowerCoefficient = 0.5m,
-    int XpReward = 0,
     string? LootTableId = null,
     int GoldRewardMin = 0,
     int GoldRewardMax = 0,
@@ -45,7 +44,8 @@ public sealed record MonsterDefinition(
     decimal SummonIntervalSeconds = 0,
     int SummonCount = 0,
     int MaxActiveSummons = 0,
-    string BalanceArchetypeId = "STANDARD");
+    string BalanceArchetypeId = "STANDARD",
+    bool GrantsXp = true);
 
 public sealed record MonsterAbilityRule(
     string AbilityId,
