@@ -367,7 +367,8 @@ public sealed class CombatSessionFactory(
             character.Id,
             session,
             contentSnapshot,
-            participants);
+            participants,
+            expectedLocationId);
     }
 
     private async Task<CombatPlayerDefinition> CreatePlayerDefinitionAsync(
