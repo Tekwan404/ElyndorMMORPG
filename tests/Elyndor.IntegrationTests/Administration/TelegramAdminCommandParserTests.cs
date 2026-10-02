@@ -58,6 +58,31 @@ public sealed class TelegramAdminCommandParserTests
         Assert.NotEmpty(result.Command.Value!);
     }
 
+    [Theory]
+    [InlineData("/worldboss spawn")]
+    [InlineData("worldboss spawn")]
+    [InlineData("/wb spawn")]
+    public void WorldBossSpawnDefaultsToAshArchon(string text)
+    {
+        AdminCommandParseResult result = TelegramAdminCommandParser.Parse(text);
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(AdminCommandType.SpawnWorldBoss, result.Command!.Type);
+        Assert.Null(result.Command.TargetTelegramUserId);
+        Assert.Equal("WORLD_BOSS_ASH_ARCHON", result.Command.Value);
+    }
+
+    [Fact]
+    public void WorldBossSpawnAcceptsExplicitDefinition()
+    {
+        AdminCommandParseResult result =
+            TelegramAdminCommandParser.Parse("/worldboss spawn world_boss_ash_archon");
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(AdminCommandType.SpawnWorldBoss, result.Command!.Type);
+        Assert.Equal("WORLD_BOSS_ASH_ARCHON", result.Command.Value);
+    }
+
     [Fact]
     public void PromoRequiresCreateSubcommand()
     {
