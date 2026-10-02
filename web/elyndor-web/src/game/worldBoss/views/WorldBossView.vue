@@ -364,9 +364,12 @@ onUnmounted(() => {
       v-else
       state="empty"
       title="Сейчас мирового босса нет"
-      message="Когда глобальное событие начнётся, оно появится здесь автоматически."
+      message="Вызови событие админ-командой или обнови состояние мира."
     >
-      <UIButton variant="secondary" @click="close">Назад</UIButton>
+      <div class="world-boss__empty-actions">
+        <UIButton @click="worldBoss.refreshActive()">Обновить</UIButton>
+        <UIButton variant="secondary" @click="close">Назад</UIButton>
+      </div>
     </UILoadingState>
   </section>
 </template>
@@ -775,6 +778,13 @@ onUnmounted(() => {
   color: var(--ui-color-danger);
   font-size: var(--ui-font-size-sm);
   text-align: center;
+}
+
+.world-boss__empty-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--ui-space-2);
 }
 
 .result-card {
