@@ -54,6 +54,13 @@ public sealed class WorldBossSettlementService(
     ILogger<WorldBossSettlementService>? logger = null)
 {
     public Task<WorldBossSettlementBatchResult> SettleAsync(
+    private static readonly Action<ILogger, Guid, Exception?> RealtimeSettlementDeliveryFailed =
+        LoggerMessage.Define<Guid>(
+            LogLevel.Error,
+            new EventId(4202, nameof(RealtimeSettlementDeliveryFailed)),
+            "World boss {SpawnId} settled, but realtime reward delivery failed.");
+
+
         Guid spawnId,
         CancellationToken cancellationToken)
     {
@@ -325,10 +332,8 @@ public sealed class WorldBossSettlementService(
         }
         catch (Exception exception)
         {
-            logger?.LogError(
-                exception,
-                "World boss {SpawnId} settled, but realtime reward delivery failed.",
-                spawnId);
+            if (logger is not null)
+                RealtimeSettlementDeliveryFailed(logger, spawnId, exception);
         }
     }
 
