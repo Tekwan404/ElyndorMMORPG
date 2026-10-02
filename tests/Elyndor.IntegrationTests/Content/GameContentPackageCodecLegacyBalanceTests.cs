@@ -26,6 +26,44 @@ public sealed class GameContentPackageCodecLegacyBalanceTests
     }
 
     [Fact]
+    public async Task DeserializeValidatedMigratesLegacyMonsterXpWithoutLosingRollbackValue()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        string canonical = GameContentPackageCodec.SerializeCanonical(package);
+        JsonObject root = JsonNode.Parse(canonical)!.AsObject();
+        JsonArray monsters = root["monsters"]!.AsArray();
+        JsonObject rewarded = monsters
+            .Select(node => node!.AsObject())
+            .First(monster =>
+                monster["id"]!.GetValue<string>()
+                    == "ASHEN_BORDER_OBUGLENNYI_DREVEN_L21");
+        JsonObject noReward = monsters
+            .Select(node => node!.AsObject())
+            .First(monster =>
+                monster["id"]!.GetValue<string>()
+                    == "ANCIENT_MINE_SPIDERLING_L16");
+
+        rewarded["xpReward"] = 17_600;
+        rewarded.Remove("legacyXpReward");
+        noReward["xpReward"] = 0;
+        noReward.Remove("grantsXp");
+
+        GameContentPackage restored = GameContentPackageCodec.DeserializeValidated(
+            root.ToJsonString());
+
+        var restoredRewarded = restored.Monsters!.Single(monster =>
+            monster.Id == "ASHEN_BORDER_OBUGLENNYI_DREVEN_L21");
+        var restoredNoReward = restored.Monsters!.Single(monster =>
+            monster.Id == "ANCIENT_MINE_SPIDERLING_L16");
+
+        Assert.Equal(17_600, restoredRewarded.LegacyXpReward);
+        Assert.True(restoredRewarded.GrantsXp);
+        Assert.Equal(0, restoredNoReward.LegacyXpReward);
+        Assert.False(restoredNoReward.GrantsXp);
+    }
+
+    [Fact]
     public async Task DeserializeValidatedMigratesLegacyExponentialLevelProgression()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
