@@ -18,14 +18,30 @@ public sealed class WorldBossSettlementWorker(
             LogLevel.Error,
             new EventId(4101, nameof(SettlementFailed)),
             "World boss settlement recovery failed for spawn {SpawnId}.");
+    private static readonly Action<ILogger, Exception?> RecoveryLoopFailed =
+        LoggerMessage.Define(
+            LogLevel.Error,
+            new EventId(4102, nameof(RecoveryLoopFailed)),
+            "World boss settlement recovery loop failed.");
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         using var timer = new PeriodicTimer(Interval, timeProvider);
-        await RecoverAsync(stoppingToken);
-
         while (await timer.WaitForNextTickAsync(stoppingToken))
-            await RecoverAsync(stoppingToken);
+        {
+            try
+            {
+                await RecoverAsync(stoppingToken);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (Exception exception)
+            {
+                RecoveryLoopFailed(logger, exception);
+            }
+        }
     }
 
     private async Task RecoverAsync(CancellationToken cancellationToken)
