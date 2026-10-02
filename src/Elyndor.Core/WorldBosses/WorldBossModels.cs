@@ -358,6 +358,19 @@ public sealed record WorldBossDefinition(
     bool IsEnabled,
     IReadOnlyList<WorldBossPhaseDefinition> Phases);
 
+public sealed record WorldBossRewardProfileDefinition(
+    string Id,
+    decimal MinimumContribution,
+    int BossExperience,
+    int BossGold,
+    int ChestGoldMin,
+    int ChestGoldMax,
+    IReadOnlyList<WorldBossRewardTierThresholdDefinition> Tiers);
+
+public sealed record WorldBossRewardTierThresholdDefinition(
+    WorldBossRewardTier Tier,
+    decimal MinimumContribution);
+
 public sealed record WorldBossPhaseDefinition(
     int Phase,
     string Name,
