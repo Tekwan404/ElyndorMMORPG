@@ -12,6 +12,7 @@ using Elyndor.Core.Quests;
 using Elyndor.Core.Economy;
 using Elyndor.Core.Professions;
 using Elyndor.Core.Characters;
+using Elyndor.Core.WorldBosses;
 
 namespace Elyndor.Core.Content;
 
@@ -48,6 +49,8 @@ public sealed record GameContentPackage(
     IReadOnlyList<SkinningSourceDefinition>? SkinningSources = null,
     IReadOnlyList<ProfessionRecipeDefinition>? ProfessionRecipes = null,
     IReadOnlyList<CharacterSkinDefinition>? CharacterSkins = null,
+    IReadOnlyList<WorldBossDefinition>? WorldBosses = null,
+    IReadOnlyList<WorldBossRewardProfileDefinition>? WorldBossRewardProfiles = null,
     CombatBalanceProfile? CombatBalance = null,
     ProgressionBalanceProfile? ProgressionBalance = null);
 

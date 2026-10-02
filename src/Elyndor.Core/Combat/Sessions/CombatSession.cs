@@ -428,6 +428,11 @@ public sealed partial class CombatSession
     public ContributionLedger ContributionLedger => _contributionLedger;
     public CombatParticipantRoster ParticipantRoster => _participantRoster;
 
+    public bool TryResolveContributionCharacterId(
+        Guid actorId,
+        out Guid characterId) =>
+        _contributionLedger.TryResolveCharacterId(actorId, out characterId);
+
     public ContributionEligibilityResult EvaluateParticipant(
         Guid characterId,
         DateTimeOffset completedAtUtc) =>
@@ -704,6 +709,81 @@ public sealed partial class CombatSession
         long before = Sequence;
         AdvanceCore(now);
         return Result(true, null, before);
+    }
+
+    public void SynchronizePrimaryEnemyHealthBeforeRegistration(decimal currentHealth)
+    {
+        if (Status != CombatSessionStatus.Active)
+            throw new InvalidOperationException("Only an active combat session can be synchronized.");
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(currentHealth);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(
+            currentHealth,
+            _primaryEnemy.Actor.MaxHp);
+
+        _primaryEnemy.Actor.SetCurrentHp(currentHealth);
+    }
+
+    public decimal PrimaryEnemyMaxHp => _primaryEnemy.Actor.MaxHp;
+    public bool RequiresExternalSynchronization { get; private set; }
+
+    public void EnableExternalSynchronization()
+    {
+        if (Status != CombatSessionStatus.Active)
+        {
+            throw new InvalidOperationException(
+                "External synchronization can only be enabled for an active combat session.");
+        }
+
+        RequiresExternalSynchronization = true;
+    }
+
+    public bool SynchronizePrimaryEnemyFromAuthority(
+        decimal currentHealth,
+        bool expired,
+        DateTimeOffset now)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(currentHealth);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(
+            currentHealth,
+            _primaryEnemy.Actor.MaxHp);
+        if (Status != CombatSessionStatus.Active)
+            return false;
+        if (now < CurrentTimeUtc)
+            throw new ArgumentOutOfRangeException(
+                nameof(now),
+                "Authoritative combat synchronization cannot move time backwards.");
+
+        if (expired)
+        {
+            CurrentTimeUtc = now;
+            Status = CombatSessionStatus.Cancelled;
+            EndCombat(new CombatEvent(
+                CombatEventType.CombatEnded,
+                now,
+                _primaryEnemy.Actor.ActorId,
+                "AUTHORITATIVE_EXPIRED",
+                TargetActorId: _primaryEnemy.Actor.ActorId));
+            return true;
+        }
+
+        _primaryEnemy.Actor.SetCurrentHp(currentHealth);
+        if (currentHealth > 0)
+        {
+            ProcessGenericEncounterDue(now);
+            return false;
+        }
+
+        CurrentTimeUtc = now;
+        CombatEvent death = new(
+            CombatEventType.ActorDied,
+            now,
+            _primaryEnemy.Actor.ActorId,
+            _primaryEnemy.DefinitionId,
+            TargetActorId: _primaryEnemy.Actor.ActorId);
+        Append(death);
+        Status = CombatSessionStatus.Victory;
+        EndCombat(death);
+        return true;
     }
 
     public IReadOnlyList<CombatEvent> GetEventsAfter(long sequence) =>

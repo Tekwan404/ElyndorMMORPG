@@ -10,19 +10,22 @@ import HeroView from '@/game/character/views/HeroView.vue'
 import BattleScreen from '@/game/combat/views/BattleScreen.vue'
 import MenuView, { type MenuSection } from '@/game/menu/views/MenuView.vue'
 import QuestView from '@/game/quests/views/QuestView.vue'
+import WorldBossView from '@/game/worldBoss/views/WorldBossView.vue'
 import WorldMapView from '@/game/world/views/WorldMapView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
+import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
 import { useTradeStore } from '@/game/economy/tradeStore'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { UIButton, UIHealthBar, UILoadingState, UIModal } from '@/ui/components'
 
-type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu'
+type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu' | 'world-boss'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
+const worldBoss = useWorldBossStore()
 const trade = useTradeStore()
 const activeView = ref<ShellView>('location')
 const contentElement = ref<HTMLElement | null>(null)
@@ -142,6 +145,25 @@ function openHero(): void {
   showView('hero')
 }
 
+function openWorldBoss(): void {
+  showView('world-boss')
+}
+
+function closeWorldBoss(): void {
+  worldBoss.acknowledgeResult()
+  openLocation()
+}
+
+function leaveCombatView(): void {
+  if (activeView.value === 'world-boss') {
+    void worldBoss.refreshLive()
+    openWorldBoss()
+    return
+  }
+
+  openLocation()
+}
+
 async function acknowledgeRelease(): Promise<void> {
   const release = releaseUpdate.value
   if (!release || acknowledgingRelease.value) return
@@ -157,7 +179,10 @@ async function acknowledgeRelease(): Promise<void> {
 watch(
   () => session.state,
   async (state) => {
-    if (state !== 'world') return
+    if (state !== 'world') {
+      void worldBoss.stop()
+      return
+    }
     try {
       await combat.connect()
       await combat.resume()
@@ -165,6 +190,7 @@ watch(
       // The combat store retains the connection error and supports retry/reconnect.
     }
     try { await trade.connect() } catch { /* Trade actions surface connection errors in their own panel. */ }
+    try { await worldBoss.start() } catch { /* World boss view exposes its own retryable state. */ }
   },
   { immediate: true },
 )
@@ -172,8 +198,18 @@ watch(
 watch(
   () => combat.isActive,
   (active, wasActive) => {
-    if (active) openLocation()
-    if (!active && wasActive) void session.refreshSnapshot()
+    if (active && activeView.value !== 'world-boss') openLocation()
+    if (!active && wasActive) {
+      void session.refreshSnapshot()
+      if (activeView.value === 'world-boss') void worldBoss.refreshLive()
+    }
+  },
+)
+
+watch(
+  [() => worldBoss.resultUnseen, () => combat.isActive],
+  ([resultUnseen, combatActive]) => {
+    if (resultUnseen && !combatActive) openWorldBoss()
   },
 )
 
@@ -191,7 +227,7 @@ onMounted(() => {
       Вам предложили обмен · Открыть
     </button>
     <section
-      v-if="session.state === 'world' && character && !combat.isActive"
+      v-if="session.state === 'world' && character && !combat.isActive && activeView !== 'world-boss'"
       class="hud"
       :class="{ 'hud--combat': combat.isActive }"
       aria-label="Состояние героя"
@@ -274,7 +310,11 @@ onMounted(() => {
       <CharacterCreationView v-else-if="session.state === 'needs-character'" />
       <BattleScreen
         v-else-if="session.state === 'world' && combat.isActive"
-        @leave="openLocation()"
+        @leave="leaveCombatView"
+      />
+      <WorldBossView
+        v-else-if="session.state === 'world' && activeView === 'world-boss'"
+        @close="closeWorldBoss"
       />
       <WorldMapView
         v-else-if="session.state === 'world' && activeView === 'world'"
@@ -284,6 +324,7 @@ onMounted(() => {
         v-else-if="session.state === 'world' && activeView === 'location'"
         :open-guild="openGuildOnLocation"
         @open-party="openMenu('party')"
+        @open-world-boss="openWorldBoss"
       />
       <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" />
       <QuestView
@@ -299,7 +340,7 @@ onMounted(() => {
     </main>
 
     <nav
-      v-if="session.state === 'world' && !combat.isActive"
+      v-if="session.state === 'world' && !combat.isActive && activeView !== 'world-boss'"
       class="navigation"
       aria-label="Основная навигация"
     >

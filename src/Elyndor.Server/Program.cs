@@ -9,11 +9,13 @@ using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Identity.Telegram;
 using Elyndor.Infrastructure.Releases;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.WorldBosses;
 using Elyndor.Server;
 using Elyndor.Server.Characters;
 using Elyndor.Server.Administration;
 using Elyndor.Server.Identity;
 using Elyndor.Server.World;
+using Elyndor.Server.WorldBosses;
 using Elyndor.Server.Quests;
 using Elyndor.Server.Talents;
 using Elyndor.Server.Combat;
@@ -122,7 +124,8 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
                 string? token = context.Request.Query["access_token"].FirstOrDefault();
                 if (!string.IsNullOrWhiteSpace(token) && (context.HttpContext.Request.Path.StartsWithSegments("/hubs/combat")
                     || context.HttpContext.Request.Path.StartsWithSegments("/hubs/trade")
-                    || context.HttpContext.Request.Path.StartsWithSegments("/hubs/arena")))
+                    || context.HttpContext.Request.Path.StartsWithSegments("/hubs/arena")
+                    || context.HttpContext.Request.Path.StartsWithSegments("/hubs/world-boss")))
                     context.Token = token;
                 return Task.CompletedTask;
             }
@@ -147,6 +150,7 @@ builder.Services.AddAuthorization(options =>
 });
 builder.Services.AddSignalR();
 builder.Services.AddSingleton<ICombatUpdatePublisher, SignalRCombatUpdatePublisher>();
+builder.Services.AddSingleton<IWorldBossUpdatePublisher, SignalRWorldBossUpdatePublisher>();
 builder.Services.AddSingleton<Elyndor.Infrastructure.Pvp.IArenaUpdatePublisher, Elyndor.Server.Pvp.SignalRArenaUpdatePublisher>();
 builder.Services.AddScoped<Elyndor.Server.Pvp.ArenaInvitationNotifier>();
 
@@ -267,6 +271,7 @@ app.MapAuthenticationEndpoints(mapDevelopmentAuthentication);
 app.MapAdminWebAuthenticationEndpoints();
 app.MapCharacterEndpoints();
 app.MapWorldEndpoints();
+app.MapWorldBossEndpoints();
 app.MapQuestEndpoints();
 app.MapTalentEndpoints();
 app.MapInventoryEndpoints();
@@ -286,6 +291,7 @@ app.MapContentAdminEndpoints();
 app.MapBossCombatLogEndpoints();
 app.MapBossCombatLogArchiveEndpoints();
 app.MapHub<CombatHub>("/hubs/combat").RequireAuthorization();
+app.MapHub<WorldBossHub>("/hubs/world-boss").RequireAuthorization();
 app.MapHub<TradeHub>("/hubs/trade").RequireAuthorization();
 app.MapHub<Elyndor.Server.Pvp.ArenaHub>("/hubs/arena").RequireAuthorization();
 

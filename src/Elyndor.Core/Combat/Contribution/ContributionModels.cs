@@ -83,6 +83,9 @@ public sealed class ContributionLedger
         _characterByActorId = new Dictionary<Guid, Guid>(characterByActorId);
     }
 
+    public bool TryResolveCharacterId(Guid actorId, out Guid characterId) =>
+        _characterByActorId.TryGetValue(actorId, out characterId);
+
     public void Register(Guid characterId, Guid actorId, DateTimeOffset joinedAtUtc)
     {
         if (_entries.ContainsKey(characterId))

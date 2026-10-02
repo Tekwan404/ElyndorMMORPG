@@ -6,6 +6,7 @@ using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Core.World;
+using Elyndor.Core.WorldBosses;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Content;
@@ -249,6 +250,110 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
         Assert.True(vitals.CurrentHp > 0);
         Assert.Equal(fled ? "WHISPERING_FOREST" : "STARTER_TOWN", location.LocationId);
         if (fled) Assert.Equal(50, vitals.CurrentHp);
+    }
+
+    [Fact]
+    public async Task WorldBossBoundVictorySkipsOrdinaryPveRewards()
+    {
+        Guid accountId = Guid.CreateVersion7();
+        Guid characterId = Guid.CreateVersion7();
+        Guid sessionId = Guid.CreateVersion7();
+        Guid spawnId = Guid.CreateVersion7();
+        Guid bossActorId = Guid.CreateVersion7();
+
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.Accounts.Add(new Account(
+                accountId,
+                Random.Shared.NextInt64(1, long.MaxValue),
+                Now));
+            Character character = new(
+                characterId,
+                accountId,
+                Guid.CreateVersion7(),
+                "Varian",
+                $"VARIAN{characterId:N}"[..16],
+                "HUMAN",
+                "MALE",
+                "WARRIOR",
+                Now);
+            character.SetExperience(90);
+            setup.Characters.Add(character);
+            setup.CharacterVitals.Add(new CharacterVitals(characterId, 100, 0, Now, Now));
+            setup.CharacterLocations.Add(new CharacterLocation(
+                characterId,
+                "WHISPERING_FOREST",
+                1,
+                Now));
+            setup.WorldBossSpawns.Add(new WorldBossSpawn(
+                spawnId,
+                "WORLD_BOSS_ASH_ARCHON",
+                1_000_000m,
+                1,
+                Now,
+                Now.AddMinutes(30),
+                "test-content",
+                "test-balance"));
+            setup.WorldBossCombatSessions.Add(new WorldBossCombatSessionBinding(
+                sessionId,
+                spawnId,
+                bossActorId,
+                null,
+                Now));
+            await setup.SaveChangesAsync();
+        }
+
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        ServiceCollection services = new();
+        services.AddScoped<GameDbContext>(_ => postgres.CreateDbContext());
+        services.AddSingleton(content);
+        services.AddSingleton<TimeProvider>(new FixedTimeProvider(Now));
+        services.AddSingleton<IGameRandomFactory>(new FixedRandomFactory());
+        services.AddScoped<InventoryEquipmentService>();
+        services.AddScoped<CharacterDerivedStateService>();
+        services.AddScoped<CharacterAbilityCooldownStore>();
+
+        await using ServiceProvider provider = services.BuildServiceProvider();
+        CombatSessionFinalizer finalizer = new(
+            provider.GetRequiredService<IServiceScopeFactory>());
+
+        CombatActorSnapshot player = Actor(
+            characterId,
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Varian",
+            hp: 25,
+            maxHp: 150,
+            resource: 0,
+            maxResource: 100);
+        CombatActorSnapshot boss = Actor(
+            bossActorId,
+            CombatActorKind.Monster,
+            "WORLD_BOSS_ASH_ARCHON",
+            "Ash Archon",
+            hp: 0,
+            maxHp: 1_000_000,
+            resource: 0,
+            maxResource: 0);
+        CombatSessionSnapshot snapshot = new(
+            sessionId,
+            10,
+            CombatSessionStatus.Victory,
+            Now,
+            player,
+            boss);
+
+        CombatRewardApplicationResult? reward = await finalizer.FinalizeAsync(
+            characterId,
+            snapshot,
+            CancellationToken.None);
+
+        Assert.Null(reward);
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Empty(await verify.CombatRewardGrants.ToListAsync());
+        Assert.Equal(90, (await verify.Characters.SingleAsync()).Experience);
+        Assert.Equal(25, (await verify.CharacterVitals.SingleAsync()).CurrentHp);
     }
 
     private static CombatSessionSnapshot VictorySnapshot(Guid sessionId)

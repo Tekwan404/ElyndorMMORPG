@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 
 import DungeonLocationCard from '@/game/world/components/DungeonLocationCard.vue'
+import WorldBossBanner from '@/game/worldBoss/components/WorldBossBanner.vue'
 import LocationOverview from '@/game/world/components/LocationOverview.vue'
 import { locationKind } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -9,7 +10,7 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import WorldViewLegacy from './WorldViewLegacy.vue'
 
 const props = withDefaults(defineProps<{ openGuild?: boolean }>(), { openGuild: false })
-const emit = defineEmits<{ 'open-party': [] }>()
+const emit = defineEmits<{ 'open-party': []; 'open-world-boss': [] }>()
 const session = useGameSessionStore()
 const currentLocationId = computed(() => session.snapshot?.world?.currentLocation.id ?? '')
 const isDungeonLocation = computed(() => locationKind(currentLocationId.value) === 'dungeon')
@@ -17,6 +18,7 @@ const isDungeonLocation = computed(() => locationKind(currentLocationId.value) =
 
 <template>
   <section class="location-screen">
+    <WorldBossBanner @open="emit('open-world-boss')" />
     <LocationOverview>
       <template v-if="isDungeonLocation && currentLocationId" #primary-actions>
         <DungeonLocationCard

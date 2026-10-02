@@ -24,7 +24,8 @@ public sealed record CombatSessionCreationResult(
     Guid CharacterId,
     CombatSession? Session,
     GameContentSnapshot? ContentSnapshot = null,
-    IReadOnlyList<CombatSessionParticipant>? Participants = null);
+    IReadOnlyList<CombatSessionParticipant>? Participants = null,
+    string? LocationId = null);
 
 public sealed class CombatSessionFactory(
     BootstrapService bootstrapService,
@@ -73,7 +74,10 @@ public sealed class CombatSessionFactory(
         string monsterId,
         string expectedLocationId,
         CancellationToken cancellationToken,
-        IReadOnlyList<PartyCombatMember>? partyMembersOverride = null)
+        IReadOnlyList<PartyCombatMember>? partyMembersOverride = null,
+        bool allowUnlistedEncounter = false,
+        decimal? enemyMaxHealthOverride = null,
+        decimal? enemyCurrentHealthOverride = null)
     {
         GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
         GameContentPackage content = contentSnapshot.Package;
@@ -117,7 +121,8 @@ public sealed class CombatSessionFactory(
             if (!string.Equals(expectedLocationId, StarterTownId, StringComparison.Ordinal))
                 return Failure(CombatErrorCodes.InvalidLocation, character.Id);
         }
-        else if (currentLocation.Encounters?.Any(encounter =>
+        else if (!allowUnlistedEncounter
+            && currentLocation.Encounters?.Any(encounter =>
                      string.Equals(encounter.MonsterId, monster.Id, StringComparison.Ordinal)) != true
             && content.Dungeons?.Any(dungeon =>
                 string.Equals(dungeon.EntryLocationId, expectedLocationId, StringComparison.Ordinal)
@@ -207,10 +212,16 @@ public sealed class CombatSessionFactory(
             playerResource,
             ToCombatStats(character.Level, character.Stats),
             talentModifiers.Combat);
+        decimal enemyMaxHealth = enemyMaxHealthOverride ?? monster.MaxHp;
+        decimal enemyCurrentHealth = enemyCurrentHealthOverride ?? enemyMaxHealth;
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(enemyMaxHealth);
+        if (enemyCurrentHealth <= 0 || enemyCurrentHealth > enemyMaxHealth)
+            throw new ArgumentOutOfRangeException(nameof(enemyCurrentHealthOverride));
+
         CombatActorState enemyActor = new(
             Guid.NewGuid(),
-            monster.MaxHp,
-            monster.MaxHp,
+            enemyMaxHealth,
+            enemyCurrentHealth,
             0,
             0,
             monster.Stats,
@@ -356,7 +367,8 @@ public sealed class CombatSessionFactory(
             character.Id,
             session,
             contentSnapshot,
-            participants);
+            participants,
+            expectedLocationId);
     }
 
     private async Task<CombatPlayerDefinition> CreatePlayerDefinitionAsync(

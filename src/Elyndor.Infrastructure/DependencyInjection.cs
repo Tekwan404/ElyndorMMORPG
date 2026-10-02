@@ -17,6 +17,7 @@ using Elyndor.Infrastructure.Quests;
 using Elyndor.Infrastructure.Economy;
 using Elyndor.Infrastructure.Professions;
 using Elyndor.Infrastructure.Pvp;
+using Elyndor.Infrastructure.WorldBosses;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Pvp;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -66,6 +67,16 @@ public static class DependencyInjection
         builder.Services.AddScoped<ArenaReadService>();
         builder.Services.AddScoped<ArenaLobbyService>();
         builder.Services.AddScoped<ArenaInvitationService>();
+        builder.Services.AddScoped<WorldBossDamageService>();
+        builder.Services.AddScoped<WorldBossLifecycleService>();
+        builder.Services.AddScoped<WorldBossReadService>();
+        builder.Services.AddScoped<WorldBossEnterService>();
+        builder.Services.AddScoped<WorldBossSettlementService>();
+        builder.Services.AddHostedService<WorldBossSettlementWorker>();
+        builder.Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<ICombatResultObserver, WorldBossCombatDamageObserver>());
+        builder.Services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<ICombatSessionSynchronizer, WorldBossCombatSessionSynchronizer>());
         if (bool.TryParse(builder.Configuration["Arena:Enabled"], out bool arenaEnabled) && arenaEnabled)
         {
             // Order matters: recovery cancels orphaned matches before matchmaking starts.

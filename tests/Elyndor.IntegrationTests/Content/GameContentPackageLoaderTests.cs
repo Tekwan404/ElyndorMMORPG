@@ -88,7 +88,7 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.35.0", package.ContentVersion);
+        Assert.Equal("0.36.0", package.ContentVersion);
         Assert.Equal("0.29.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
@@ -283,9 +283,9 @@ public sealed class GameContentPackageLoaderTests
         LootTableDefinition citadelBossLoot = Assert.Single(
             package.LootTables!,
             table => table.Id == "ECLIPSED_CITADEL_BOSS_LOOT");
-        Assert.Contains(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_WARRIOR_BLACKHEART_L25");
-        Assert.Contains(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25");
-        Assert.Contains(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_ARCHER_LAST_CONSTELLATION_L25");
+        Assert.DoesNotContain(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_WARRIOR_BLACKHEART_L25");
+        Assert.DoesNotContain(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25");
+        Assert.DoesNotContain(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_ARCHER_LAST_CONSTELLATION_L25");
     }
 
     [Fact]

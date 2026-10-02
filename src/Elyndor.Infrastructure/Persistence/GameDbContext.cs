@@ -17,6 +17,7 @@ using Elyndor.Core.Pvp;
 using Elyndor.Core.Quests;
 using Elyndor.Core.Professions;
 using Elyndor.Core.Releases;
+using Elyndor.Core.WorldBosses;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Infrastructure.Persistence;
@@ -141,6 +142,13 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<DungeonEncounter> DungeonEncounters => Set<DungeonEncounter>();
 
     public DbSet<DungeonEncounterMember> DungeonEncounterMembers => Set<DungeonEncounterMember>();
+
+    public DbSet<WorldBossSpawn> WorldBossSpawns => Set<WorldBossSpawn>();
+    public DbSet<WorldBossCombatSessionBinding> WorldBossCombatSessions => Set<WorldBossCombatSessionBinding>();
+    public DbSet<WorldBossContribution> WorldBossContributions => Set<WorldBossContribution>();
+    public DbSet<WorldBossPartyContribution> WorldBossPartyContributions => Set<WorldBossPartyContribution>();
+    public DbSet<WorldBossDamageMutation> WorldBossDamageMutations => Set<WorldBossDamageMutation>();
+    public DbSet<WorldBossRewardSettlement> WorldBossRewardSettlements => Set<WorldBossRewardSettlement>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

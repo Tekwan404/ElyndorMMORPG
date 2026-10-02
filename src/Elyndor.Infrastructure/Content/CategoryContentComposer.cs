@@ -10,6 +10,7 @@ using Elyndor.Core.Talents;
 using Elyndor.Core.World;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Quests;
+using Elyndor.Core.WorldBosses;
 
 namespace Elyndor.Infrastructure.Content;
 
@@ -242,6 +243,14 @@ internal static class CategoryContentComposer
                 fragment.Quests,
                 item => item.Id),
             Itemization = fragment.Itemization ?? package.Itemization,
+            WorldBosses = ContentCompositionRules.MergeOptionalByKey(
+                package.WorldBosses,
+                fragment.WorldBosses,
+                item => item.Id),
+            WorldBossRewardProfiles = ContentCompositionRules.MergeOptionalByKey(
+                package.WorldBossRewardProfiles,
+                fragment.WorldBossRewardProfiles,
+                item => item.Id),
             CombatBalance = fragment.CombatBalance ?? package.CombatBalance,
             ProgressionBalance = fragment.ProgressionBalance ?? package.ProgressionBalance
         };
@@ -409,6 +418,8 @@ internal static class CategoryContentComposer
         IReadOnlyList<DungeonDefinition>? Dungeons = null,
         IReadOnlyList<QuestDefinition>? Quests = null,
         ItemizationDefinition? Itemization = null,
+        IReadOnlyList<WorldBossDefinition>? WorldBosses = null,
+        IReadOnlyList<WorldBossRewardProfileDefinition>? WorldBossRewardProfiles = null,
         CombatBalanceProfile? CombatBalance = null,
         ProgressionBalanceProfile? ProgressionBalance = null);
 
