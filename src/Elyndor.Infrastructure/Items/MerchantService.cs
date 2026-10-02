@@ -247,11 +247,9 @@ public sealed class MerchantService(
 
                 await MoveToBuybackAsync(
                     character.Id,
-                    merchant,
                     item,
                     definition,
                     quantity,
-                    mutationId,
                     cancellationToken);
                 return null;
             },
@@ -346,11 +344,9 @@ public sealed class MerchantService(
 
                 await MoveToBuybackAsync(
                     character.Id,
-                    merchant,
                     item,
                     definition,
                     quantity,
-                    mutationId,
                     cancellationToken);
                 return null;
             },
@@ -691,11 +687,9 @@ public sealed class MerchantService(
 
     private async Task MoveToBuybackAsync(
         Guid characterId,
-        MerchantDefinition merchant,
         CharacterItem item,
         ItemDefinition definition,
         int quantity,
-        Guid mutationId,
         CancellationToken cancellationToken)
     {
         CharacterItem[] existing = await dbContext.CharacterItems
