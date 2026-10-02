@@ -125,13 +125,29 @@ public static partial class GameContentPackageValidator
                 }
             }
 
-            if (package.LootTables?.Any(table =>
-                    string.Equals(table.Id, definition.LootTableId, StringComparison.Ordinal)) != true)
+            var chestTable = package.LootTables?.FirstOrDefault(table =>
+                string.Equals(table.Id, definition.LootTableId, StringComparison.Ordinal));
+            if (chestTable is null)
             {
                 errors.Add(new(
                     "WORLD_BOSS_LOOT_TABLE_NOT_FOUND",
                     $"{path}.lootTableId",
                     $"World boss '{definition.Id}' references missing chest loot table '{definition.LootTableId}'."));
+            }
+            else
+            {
+                bool invalidChest =
+                    chestTable.Entries.Count != 0
+                    || chestTable.SelectionGroups is not { Count: 1 }
+                    || chestTable.SelectionGroups[0].Rolls != 1
+                    || chestTable.SelectionGroups[0].Entries.Count == 0;
+                if (invalidChest)
+                {
+                    errors.Add(new(
+                        "INVALID_WORLD_BOSS_CHEST_TABLE",
+                        $"{path}.lootTableId",
+                        $"World boss chest '{chestTable.Id}' must contain exactly one personal selection roll."));
+                }
             }
 
             decimal previousThreshold = decimal.MaxValue;
