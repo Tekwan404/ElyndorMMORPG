@@ -79,7 +79,8 @@ public static partial class GameContentPackageValidator
                             $"World boss '{definition.Id}' combat profile must match level and global max health."));
                     }
 
-                    if (monster.XpReward != 0
+                    if (monster.GrantsXp
+                        || monster.LegacyXpReward != 0
                         || monster.GoldRewardMin != 0
                         || monster.GoldRewardMax != 0
                         || !string.IsNullOrWhiteSpace(monster.LootTableId))
