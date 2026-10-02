@@ -337,10 +337,21 @@ public sealed class CombatSessionRegistry(
                 || binding is null)
                 return CombatOperationResult.Failure(CombatErrorCodes.NotFound);
 
-            await SynchronizeSessionAsync(
+            bool terminalized = await SynchronizeSessionAsync(
                 entry,
                 timeProvider.GetUtcNow(),
                 CancellationToken.None);
+            if (terminalized)
+            {
+                CombatSessionSnapshot terminalSnapshot =
+                    entry.Session.Snapshot(binding.CharacterId);
+                await FinalizeIfNeededAsync(
+                    entry,
+                    terminalSnapshot,
+                    CancellationToken.None);
+                entry.ExecutionState = SessionExecutionState.Completed;
+            }
+
             IReadOnlyList<Core.Combat.CombatEvent> tail = entry.Session.GetRetainedEventsAfter(
                 Math.Max(0, lastSeenSequence),
                 out bool fullResyncRequired);
