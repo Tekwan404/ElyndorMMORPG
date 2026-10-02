@@ -45,7 +45,7 @@ public sealed record MerchantSnapshot(
     MerchantDefinition Merchant,
     long Gold,
     IReadOnlyList<MerchantCatalogItem> Items,
-    IReadOnlyList<MerchantBuybackItem> BuybackItems);
+    IReadOnlyList<MerchantBuybackItem>? BuybackItems = null);
 
 public sealed record MerchantOperationResult(
     bool IsSuccess,
