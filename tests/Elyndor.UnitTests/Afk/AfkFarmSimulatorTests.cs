@@ -321,5 +321,5 @@ public sealed class AfkFarmSimulatorTests
         id, id, rank, 3, maxHp,
         new CombatStats(3, 0, 0, 0, 1, 0, 0, 0, 0, attackDamage, 0),
         TimeSpan.FromSeconds(2), attackDamage, [], "NONE",
-        XpReward: 10, LootTableId: lootTableId, GoldRewardMin: 2, GoldRewardMax: 4);
+        LegacyXpReward: 10, LootTableId: lootTableId, GoldRewardMin: 2, GoldRewardMax: 4);
 }
