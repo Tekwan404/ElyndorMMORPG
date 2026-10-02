@@ -2,6 +2,7 @@ using Elyndor.ContentValidator;
 using Elyndor.Core.Balance;
 using Elyndor.Core.Combat.Simulation;
 using Elyndor.Core.Content;
+using Elyndor.Core.Progression;
 using Elyndor.Infrastructure.Content;
 
 bool strictTalents = args.Any(argument =>
@@ -17,6 +18,8 @@ bool auditBalance = args.Any(argument =>
     string.Equals(argument, "--audit-balance", StringComparison.Ordinal));
 bool benchmarkBalance = args.Any(argument =>
     string.Equals(argument, "--benchmark-balance", StringComparison.Ordinal));
+bool auditProgression = args.Any(argument =>
+    string.Equals(argument, "--audit-progression", StringComparison.Ordinal));
 string? analysisExportDirectory = args
     .FirstOrDefault(argument => argument.StartsWith("--export-analysis=", StringComparison.Ordinal))?
     .Split('=', 2)[1];
@@ -114,6 +117,31 @@ try
                 + $"Armor={item.ArmorDeltaPercent:+0.##;-0.##;0}% "
                 + $"MR={item.MagicResistanceDeltaPercent:+0.##;-0.##;0}% "
                 + $"AA={item.AutoAttackBaseDamageDeltaPercent:+0.##;-0.##;0}%");
+        }
+    }
+
+    if (auditProgression && package.ProgressionBalance is not null)
+    {
+        IReadOnlyList<ProgressionBalanceAuditRow> rows =
+            ProgressionBalanceAudit.Run(package);
+        ProgressionBalanceAuditRow[] outliers = rows
+            .Where(row => !row.WithinMonsterXpTolerance)
+            .ToArray();
+        Console.WriteLine(
+            $"Progression balance audit: Levels={rows.Count}, "
+            + $"MonsterXpOutliers={outliers.Length}, "
+            + $"Tolerance={package.ProgressionBalance.AuditTolerancePercent}%");
+        foreach (ProgressionBalanceAuditRow row in rows)
+        {
+            Console.WriteLine(
+                $"XP L{row.Level}: next={row.XpToNext} "
+                + $"targetMob={row.TargetNormalMonsterXp} "
+                + $"authoredMob={row.AverageAuthoredNormalMonsterXp:0.#} "
+                + $"targetKills={row.TargetNormalKills:0.#} "
+                + $"authoredKills={row.AuthoredKillsToLevel:0.#} "
+                + $"quest={row.TargetQuestXp} ({row.TargetQuestSharePercent:0.#}%) "
+                + $"combat={row.TargetPureCombatMinutes:0.##}m "
+                + $"status={(row.WithinMonsterXpTolerance ? "OK" : "OUTLIER")}");
         }
     }
 
