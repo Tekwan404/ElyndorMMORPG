@@ -31,6 +31,8 @@ public sealed class TelegramAdminUpdateProcessor(
         /class <telegramId> WARRIOR|ARCHER|MAGE
         /race <telegramId> <raceId>
         /giveitem <telegramId> <itemId> [quantity] [NORMAL|ELITE|BOSS]
+        /worldboss spawn [WORLD_BOSS_ID]
+        /wb spawn [WORLD_BOSS_ID]
         /promocode create <CODE> [crystals=<amount>] [gold=<amount>] [item=<ITEM_ID>:<qty>] [global=<N>] [per=<N>] [hours=<N>]
         /delete <telegramId> <exact name> CONFIRM
         /msg <telegramId> <text>
@@ -202,6 +204,7 @@ public sealed class TelegramAdminUpdateProcessor(
         AdminCommandType.Message => AdministrationOperationType.Message,
         AdminCommandType.GiveItem => AdministrationOperationType.GiveItem,
         AdminCommandType.CreatePromoCode => AdministrationOperationType.CreatePromoCode,
+        AdminCommandType.SpawnWorldBoss => AdministrationOperationType.SpawnWorldBoss,
         _ => throw new ArgumentOutOfRangeException(nameof(type))
     };
 }
