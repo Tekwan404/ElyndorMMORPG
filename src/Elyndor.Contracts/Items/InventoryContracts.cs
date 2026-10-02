@@ -215,7 +215,7 @@ public sealed record MerchantResponse(
     string Description,
     [property: global::System.Text.Json.Serialization.JsonConverter(typeof(Elyndor.Contracts.Economy.MoneyJsonConverter))] long Gold,
     IReadOnlyList<MerchantItemResponse> Items,
-    IReadOnlyList<MerchantBuybackItemResponse> BuybackItems);
+    IReadOnlyList<MerchantBuybackItemResponse>? BuybackItems = null);
 
 public sealed record BuyMerchantItemRequest(
     string MerchantId,
