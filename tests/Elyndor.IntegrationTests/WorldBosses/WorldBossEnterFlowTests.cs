@@ -61,8 +61,8 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
         Assert.True(entered.Succeeded, entered.ErrorCode);
         Assert.NotNull(entered.Snapshot);
         Assert.Equal("WORLD_BOSS_ASH_ARCHON_L30", entered.Snapshot!.Enemy.DefinitionId);
-        Assert.Equal(1_000_000m, entered.Snapshot.Enemy.MaxHp);
-        Assert.Equal(1_000_000m, entered.Snapshot.Enemy.Hp);
+        Assert.Equal(100_000m, entered.Snapshot.Enemy.MaxHp);
+        Assert.Equal(100_000m, entered.Snapshot.Enemy.Hp);
 
         IssuedAccessToken token = IssueToken(factory, accountId, telegramUserId);
         await using HubConnection hub = CreateHubConnection(factory, token);
@@ -96,7 +96,7 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
             WorldBossCombatSessionBinding binding =
                 await verify.WorldBossCombatSessions.SingleAsync();
 
-            decimal globalDamage = 1_000_000m - spawn.CurrentHealth;
+            decimal globalDamage = 100_000m - spawn.CurrentHealth;
             Assert.True(globalDamage >= hit.Amount);
             Assert.Equal(globalDamage, contribution.Damage);
             Assert.Equal(entered.Snapshot.SessionId, binding.CombatSessionId);
