@@ -283,9 +283,9 @@ public sealed class GameContentPackageLoaderTests
         LootTableDefinition citadelBossLoot = Assert.Single(
             package.LootTables!,
             table => table.Id == "ECLIPSED_CITADEL_BOSS_LOOT");
-        Assert.Contains(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_WARRIOR_BLACKHEART_L25");
-        Assert.Contains(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25");
-        Assert.Contains(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_ARCHER_LAST_CONSTELLATION_L25");
+        Assert.DoesNotContain(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_WARRIOR_BLACKHEART_L25");
+        Assert.DoesNotContain(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25");
+        Assert.DoesNotContain(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_ARCHER_LAST_CONSTELLATION_L25");
     }
 
     [Fact]
