@@ -16,3 +16,25 @@ public sealed record WorldBossActiveResponse(
     decimal PartyDamage,
     string ContentVersion,
     string BalanceVersion);
+
+public sealed record WorldBossPersonalLeaderboardEntryResponse(
+    int Rank,
+    Guid CharacterId,
+    string Name,
+    decimal Damage);
+
+public sealed record WorldBossPartyLeaderboardEntryResponse(
+    int Rank,
+    Guid PartyId,
+    string LeaderName,
+    decimal Damage);
+
+public sealed record WorldBossLeaderboardResponse(
+    Guid SpawnId,
+    IReadOnlyList<WorldBossPersonalLeaderboardEntryResponse> Players,
+    IReadOnlyList<WorldBossPartyLeaderboardEntryResponse> Parties,
+    int? PersonalRank,
+    decimal PersonalDamage,
+    Guid? PartyId,
+    int? PartyRank,
+    decimal PartyDamage);
