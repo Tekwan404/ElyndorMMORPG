@@ -3,6 +3,7 @@ using Elyndor.Core.Identity;
 using Elyndor.Core.Parties;
 using Elyndor.Core.WorldBosses;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.WorldBosses;
 using Elyndor.IntegrationTests.Postgres;
 using Microsoft.EntityFrameworkCore;
@@ -127,6 +128,70 @@ public sealed class WorldBossDamageServiceTests(PostgresFixture postgres) : IAsy
         await using var verify = postgres.CreateDbContext();
         Assert.Equal(7_500m, (await verify.WorldBossContributions.SingleAsync()).Damage);
         Assert.Equal(7_500m, (await verify.WorldBossPartyContributions.SingleAsync()).Damage);
+    }
+
+    [Theory]
+    [InlineData(260_000, 2, true)]
+    [InlineData(250_000, 2, true)]
+    [InlineData(500_000, 1, false)]
+    public async Task DamageCrossesGlobalPhaseThresholdInsideSameTransaction(
+        decimal requestedDamage,
+        int expectedPhase,
+        bool expectedPhaseChanged)
+    {
+        (Guid spawnId, Guid characterId) = await SeedAsync(maxHealth: 1_000_000m);
+        var package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+        await using var db = postgres.CreateDbContext();
+        var service = new WorldBossDamageService(
+            db,
+            new FixedTime(Now.AddMinutes(1)),
+            new StaticContentSnapshotProvider(package));
+
+        WorldBossDamageCommitResult result = await service.ApplyDamageAsync(
+            spawnId,
+            characterId,
+            Guid.NewGuid(),
+            partyId: null,
+            requestedDamage,
+            mutationId: Guid.NewGuid(),
+            cancellationToken: default);
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(expectedPhase, result.Phase);
+        Assert.Equal(expectedPhaseChanged, result.PhaseChanged);
+
+        await using var verify = postgres.CreateDbContext();
+        Assert.Equal(expectedPhase, (await verify.WorldBossSpawns.SingleAsync()).CurrentPhase);
+    }
+
+    [Fact]
+    public async Task OneLargeHitCanAdvanceAcrossMultipleThresholdsDirectlyToCurrentGlobalPhase()
+    {
+        (Guid spawnId, Guid characterId) = await SeedAsync(maxHealth: 1_000_000m);
+        var package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+        await using var db = postgres.CreateDbContext();
+        var service = new WorldBossDamageService(
+            db,
+            new FixedTime(Now.AddMinutes(1)),
+            new StaticContentSnapshotProvider(package));
+
+        WorldBossDamageCommitResult result = await service.ApplyDamageAsync(
+            spawnId,
+            characterId,
+            Guid.NewGuid(),
+            partyId: null,
+            requestedDamage: 760_000m,
+            mutationId: Guid.NewGuid(),
+            cancellationToken: default);
+
+        Assert.True(result.Succeeded);
+        Assert.True(result.PhaseChanged);
+        Assert.Equal(4, result.Phase);
+        Assert.Equal(240_000m, result.CurrentHealth);
     }
 
     [Fact]
