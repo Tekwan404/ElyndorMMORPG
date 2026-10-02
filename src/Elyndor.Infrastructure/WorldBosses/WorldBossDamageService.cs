@@ -35,14 +35,13 @@ public sealed class WorldBossDamageService(
     IWorldBossUpdatePublisher? updatePublisher = null,
     ILogger<WorldBossDamageService>? logger = null)
 {
-    public async Task<WorldBossDamageCommitResult> ApplyDamageAsync(
     private static readonly Action<ILogger, Guid, Exception?> RealtimeDefeatDeliveryFailed =
         LoggerMessage.Define<Guid>(
             LogLevel.Error,
             new EventId(4201, nameof(RealtimeDefeatDeliveryFailed)),
             "World boss {SpawnId} was defeated, but realtime defeat delivery failed.");
 
-
+    public async Task<WorldBossDamageCommitResult> ApplyDamageAsync(
         Guid spawnId,
         Guid characterId,
         Guid combatSessionId,
