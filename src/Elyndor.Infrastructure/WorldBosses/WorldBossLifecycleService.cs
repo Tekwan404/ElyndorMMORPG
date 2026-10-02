@@ -3,6 +3,7 @@ using Elyndor.Core.WorldBosses;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Elyndor.Infrastructure.WorldBosses;
 
@@ -21,8 +22,29 @@ public sealed record WorldBossActivationResult(
 public sealed class WorldBossLifecycleService(
     GameDbContext db,
     IContentSnapshotProvider contentProvider,
-    TimeProvider time)
+    TimeProvider time,
+    ILogger<WorldBossLifecycleService>? logger = null)
 {
+    private static readonly Action<ILogger, Guid, string, decimal, DateTimeOffset, Exception?>
+        BossActivated = LoggerMessage.Define<Guid, string, decimal, DateTimeOffset>(
+            LogLevel.Information,
+            new EventId(4210, nameof(BossActivated)),
+            "World boss activated: spawn {SpawnId}, definition {BossDefinitionId}, "
+            + "maxHealth {MaxHealth}, expiresAt {ExpiresAtUtc}.");
+
+    private static readonly Action<ILogger, Guid, string, Exception?>
+        BossReused = LoggerMessage.Define<Guid, string>(
+            LogLevel.Information,
+            new EventId(4211, nameof(BossReused)),
+            "World boss activation reused active spawn {SpawnId} for {BossDefinitionId}.");
+
+    private static readonly Action<ILogger, Guid, string, decimal, Exception?>
+        BossExpired = LoggerMessage.Define<Guid, string, decimal>(
+            LogLevel.Information,
+            new EventId(4212, nameof(BossExpired)),
+            "World boss expired: spawn {SpawnId}, definition {BossDefinitionId}, "
+            + "remainingHealth {RemainingHealth}.");
+
     public Task<WorldBossActivationResult> ActivateAsync(
         string bossDefinitionId,
         CancellationToken cancellationToken)
@@ -62,6 +84,15 @@ public sealed class WorldBossLifecycleService(
             {
                 active.TryExpire(now);
                 await db.SaveChangesAsync(cancellationToken);
+                if (logger is not null)
+                {
+                    BossExpired(
+                        logger,
+                        active.Id,
+                        active.BossDefinitionId,
+                        active.CurrentHealth,
+                        null);
+                }
                 active = null;
             }
 
@@ -69,6 +100,8 @@ public sealed class WorldBossLifecycleService(
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await transaction.CommitAsync(CancellationToken.None);
+                if (logger is not null)
+                    BossReused(logger, active.Id, active.BossDefinitionId, null);
                 return new WorldBossActivationResult(true, null, active, false);
             }
 
@@ -88,6 +121,16 @@ public sealed class WorldBossLifecycleService(
             await db.SaveChangesAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             await transaction.CommitAsync(CancellationToken.None);
+            if (logger is not null)
+            {
+                BossActivated(
+                    logger,
+                    spawn.Id,
+                    spawn.BossDefinitionId,
+                    spawn.MaxHealth,
+                    spawn.ExpiresAtUtc,
+                    null);
+            }
             return new WorldBossActivationResult(true, null, spawn, true);
         });
     }
@@ -107,6 +150,15 @@ public sealed class WorldBossLifecycleService(
 
             cancellationToken.ThrowIfCancellationRequested();
             await transaction.CommitAsync(CancellationToken.None);
+            if (expired && active is not null && logger is not null)
+            {
+                BossExpired(
+                    logger,
+                    active.Id,
+                    active.BossDefinitionId,
+                    active.CurrentHealth,
+                    null);
+            }
             return expired;
         });
 
