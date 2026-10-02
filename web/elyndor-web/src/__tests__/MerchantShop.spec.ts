@@ -67,6 +67,32 @@ describe('MerchantShop', () => {
     expect(sell).toHaveBeenCalledWith('MARCUS_SUPPLIES', 'OPEN_HIDE', 1)
   })
 
+  it('renders Marcus artwork and filters the storefront by category and budget', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot([])
+    vi.spyOn(session, 'getMerchant').mockResolvedValue(merchantSnapshot())
+
+    const wrapper = mount(MerchantShop, {
+      props: { open: false },
+      global: { stubs: { Teleport: true } },
+    })
+
+    await wrapper.setProps({ open: true })
+    await flushPromises()
+
+    expect(wrapper.get('img[alt="Торговец Маркус"]').exists()).toBe(true)
+    expect(wrapper.find('[data-merchant-offer="WARRIOR_STARTER_CHEST"]').exists()).toBe(true)
+
+    await wrapper.get('[data-merchant-filter="Equipment"]').trigger('click')
+    expect(wrapper.find('[data-merchant-offer="WARRIOR_STARTER_CHEST"]').exists()).toBe(true)
+    expect(wrapper.find('[data-merchant-offer="SMALL_HEALING_POTION"]').exists()).toBe(false)
+
+    await wrapper.get('[data-merchant-filter="all"]').trigger('click')
+    await wrapper.get('[data-merchant-affordable]').trigger('click')
+    expect(wrapper.find('[data-merchant-offer="WARRIOR_STARTER_CHEST"]').exists()).toBe(false)
+    expect(wrapper.find('[data-merchant-offer="SMALL_HEALING_POTION"]').exists()).toBe(true)
+  })
+
   it('filters the storefront without changing the selected offer contract', async () => {
     const session = useGameSessionStore()
     session.snapshot = snapshot([])
@@ -113,6 +139,19 @@ function merchantSnapshot(): MerchantSnapshot {
         ],
         consumableCooldownCategoryId: 'HEALING_POTION',
         consumableCooldownSeconds: 30,
+        iconId: null,
+      },
+      {
+        definitionId: 'WARRIOR_STARTER_CHEST',
+        name: 'Кираса приграничной стали',
+        type: 'Equipment',
+        rarity: 'Rare',
+        description: 'Надёжная кираса для молодого воина.',
+        buyPriceGold: 150,
+        sellPriceGold: 0,
+        consumableActions: [],
+        consumableCooldownCategoryId: null,
+        consumableCooldownSeconds: 0,
         iconId: null,
       },
       {
