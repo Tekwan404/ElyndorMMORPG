@@ -12,6 +12,8 @@ public sealed record WorldBossActiveSnapshot(
     string BossDefinitionId,
     string Name,
     int Level,
+    string? MonsterId,
+    string? ArtId,
     decimal CurrentHealth,
     decimal MaxHealth,
     int CurrentPhase,
@@ -136,6 +138,22 @@ public sealed class WorldBossReadService(
                 .Select(contribution => (decimal?)contribution.Damage)
                 .SingleOrDefaultAsync(cancellationToken) ?? 0m;
 
+        string? monsterId = null;
+        string? artId = null;
+        if (definition is not null
+            && content.Indexes.EncountersById.TryGetValue(
+                definition.EncounterProfileId,
+                out var encounter))
+        {
+            monsterId = encounter.MonsterId;
+            if (content.Indexes.MonstersById.TryGetValue(
+                    encounter.MonsterId,
+                    out var monster))
+            {
+                artId = monster.ArtId;
+            }
+        }
+
         WorldBossPhaseDefinition? phase = definition?.Phases
             .SingleOrDefault(item => item.Phase == spawn.CurrentPhase);
         WorldBossRewardProgress rewardProgress = await ResolveRewardProgressAsync(
@@ -153,6 +171,8 @@ public sealed class WorldBossReadService(
                 spawn.BossDefinitionId,
                 definition?.Name ?? spawn.BossDefinitionId,
                 definition?.Level ?? 0,
+                monsterId,
+                artId,
                 spawn.CurrentHealth,
                 spawn.MaxHealth,
                 spawn.CurrentPhase,
