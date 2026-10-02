@@ -133,7 +133,7 @@ public sealed class WorldBossDamageServiceTests(PostgresFixture postgres) : IAsy
     [Theory]
     [InlineData(260_000, 2, true)]
     [InlineData(250_000, 2, true)]
-    [InlineData(500_000, 1, false)]
+    [InlineData(240_000, 1, false)]
     public async Task DamageCrossesGlobalPhaseThresholdInsideSameTransaction(
         decimal requestedDamage,
         int expectedPhase,
