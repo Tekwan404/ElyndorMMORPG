@@ -124,24 +124,22 @@ try
     {
         IReadOnlyList<ProgressionBalanceAuditRow> rows =
             ProgressionBalanceAudit.Run(package);
-        ProgressionBalanceAuditRow[] outliers = rows
-            .Where(row => !row.WithinMonsterXpTolerance)
+        ProgressionBalanceAuditRow[] missingLevels = rows
+            .Where(row => !row.HasRewardableNormalMonster)
             .ToArray();
         Console.WriteLine(
             $"Progression balance audit: Levels={rows.Count}, "
-            + $"MonsterXpOutliers={outliers.Length}, "
-            + $"Tolerance={package.ProgressionBalance.AuditTolerancePercent}%");
+            + $"MissingRewardableNormalLevels={missingLevels.Length}");
         foreach (ProgressionBalanceAuditRow row in rows)
         {
             Console.WriteLine(
                 $"XP L{row.Level}: next={row.XpToNext} "
-                + $"targetMob={row.TargetNormalMonsterXp} "
-                + $"authoredMob={row.AverageAuthoredNormalMonsterXp:0.#} "
+                + $"normalMob={row.NormalMonsterXp} "
                 + $"targetKills={row.TargetNormalKills:0.#} "
-                + $"authoredKills={row.AuthoredKillsToLevel:0.#} "
+                + $"normalMobs={row.RewardableNormalMonsterCount} "
                 + $"quest={row.TargetQuestXp} ({row.TargetQuestSharePercent:0.#}%) "
                 + $"combat={row.TargetPureCombatMinutes:0.##}m "
-                + $"status={(row.WithinMonsterXpTolerance ? "OK" : "OUTLIER")}");
+                + $"status={(row.HasRewardableNormalMonster ? "OK" : "NO_NORMAL_MOB")}");
         }
     }
 
