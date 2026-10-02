@@ -4,11 +4,13 @@ using Elyndor.Core.Identity;
 using Elyndor.Core.Items;
 using Elyndor.Core.Talents;
 using Elyndor.Core.World;
+using Elyndor.Core.WorldBosses;
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.WorldBosses;
 using Elyndor.IntegrationTests.Postgres;
 using Elyndor.IntegrationTests.Support;
 using Microsoft.EntityFrameworkCore;
@@ -169,6 +171,51 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
         Assert.Equal("MAGE_TREE", talentState.TalentTreeId);
         Assert.Empty(talentState.GetRanks(TalentLoadoutIds.Loadout1));
         Assert.Empty(talentState.GetRanks(TalentLoadoutIds.Loadout2));
+    }
+
+    [Fact]
+    public async Task SpawnWorldBossUsesLifecycleAndIsIdempotentPerTelegramUpdate()
+    {
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        await using GameDbContext context = postgres.CreateDbContext();
+        TimeProvider timeProvider = new FixedTimeProvider(Now);
+        var provider = new StaticContentSnapshotProvider(content);
+        var derived = new CharacterDerivedStateService(context, provider, inventoryService: null);
+        var lifecycle = new WorldBossLifecycleService(context, provider, timeProvider);
+        var service = new TelegramAdministrationService(
+            context,
+            timeProvider,
+            provider,
+            derived,
+            contentAdministrationService: null,
+            messageSender: null,
+            worldBossLifecycleService: lifecycle);
+        AdministrationOperation operation = new(
+            AdministrationOperationType.SpawnWorldBoss,
+            Value: "WORLD_BOSS_ASH_ARCHON");
+
+        AdministrationResult first = await service.ExecuteAsync(
+            9010,
+            732_707_324,
+            operation,
+            CancellationToken.None);
+        AdministrationResult replay = await service.ExecuteAsync(
+            9010,
+            732_707_324,
+            operation,
+            CancellationToken.None);
+
+        Assert.True(first.IsSuccess);
+        Assert.Equal("admin_world_boss_spawned", first.Code);
+        Assert.True(replay.IsSuccess);
+        Assert.True(replay.IsDuplicate);
+
+        WorldBossSpawn spawn = await context.WorldBossSpawns.AsNoTracking().SingleAsync();
+        Assert.Equal("WORLD_BOSS_ASH_ARCHON", spawn.BossDefinitionId);
+        Assert.Equal(WorldBossSpawnStatus.Active, spawn.Status);
+        Assert.Equal(1_000_000m, spawn.CurrentHealth);
+        Assert.Equal(1, await context.AdminCommandAudits.CountAsync());
     }
 
     [Fact]
