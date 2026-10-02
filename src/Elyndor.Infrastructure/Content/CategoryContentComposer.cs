@@ -19,6 +19,7 @@ internal static class CategoryContentComposer
     private static readonly string[] FragmentDirectories =
     [
         "abilities",
+        "balance",
         "bosses",
         "contracts",
         "dungeons",
@@ -249,7 +250,9 @@ internal static class CategoryContentComposer
             WorldBossRewardProfiles = ContentCompositionRules.MergeOptionalByKey(
                 package.WorldBossRewardProfiles,
                 fragment.WorldBossRewardProfiles,
-                item => item.Id)
+                item => item.Id),
+            CombatBalance = fragment.CombatBalance ?? package.CombatBalance,
+            ProgressionBalance = fragment.ProgressionBalance ?? package.ProgressionBalance
         };
     }
 
@@ -416,7 +419,9 @@ internal static class CategoryContentComposer
         IReadOnlyList<QuestDefinition>? Quests = null,
         ItemizationDefinition? Itemization = null,
         IReadOnlyList<WorldBossDefinition>? WorldBosses = null,
-        IReadOnlyList<WorldBossRewardProfileDefinition>? WorldBossRewardProfiles = null);
+        IReadOnlyList<WorldBossRewardProfileDefinition>? WorldBossRewardProfiles = null,
+        CombatBalanceProfile? CombatBalance = null,
+        ProgressionBalanceProfile? ProgressionBalance = null);
 
     private sealed record TalentBranchReplacement(
         string TreeId,
