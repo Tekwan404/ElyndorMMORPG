@@ -286,7 +286,7 @@ public sealed class WorldBossSettlementService(
 
         if (!definition.Stackable)
         {
-            int freeSlots = await InventoryCapacity.FreeSlotsAsync(
+            int availableSlots = await InventoryCapacity.FreeSlotsAsync(
                 db,
                 characterId,
                 content,
@@ -294,7 +294,7 @@ public sealed class WorldBossSettlementService(
             for (var index = 0; index < roll.Quantity; index++)
             {
                 int generationOrdinal = checked(ordinal * 100 + index);
-                if (freeSlots > 0)
+                if (availableSlots > 0)
                 {
                     db.CharacterItems.Add(
                         ItemInstancePersistenceFactory.CreateCharacterItem(
@@ -307,7 +307,7 @@ public sealed class WorldBossSettlementService(
                             acquiredAtUtc,
                             content.Package,
                             roll.SourceQualityProfileId));
-                    freeSlots--;
+                    availableSlots--;
                 }
                 else
                 {
@@ -368,7 +368,7 @@ public sealed class WorldBossSettlementService(
                 acquiredAtUtc,
                 definition.Version));
             remaining -= quantity;
-            freeSlots--;
+            availableSlots--;
         }
 
         if (remaining > 0)
@@ -426,7 +426,7 @@ public sealed class WorldBossSettlementService(
             .Select(threshold => threshold.Tier)
             .FirstOrDefault(WorldBossRewardTier.Bronze);
 
-    private static int RollInclusive(int min, int max, IGameRandom random)
+    private static int RollInclusive(int min, int max, SeededGameRandom random)
     {
         if (max <= min)
             return min;
