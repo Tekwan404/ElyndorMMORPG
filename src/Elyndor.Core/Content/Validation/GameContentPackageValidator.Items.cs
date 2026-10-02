@@ -25,8 +25,11 @@ public static partial class GameContentPackageValidator
             }
             else if (!IsCanonicalIdentifier(progression.Id)
                 || progression.MaxLevel < 2
-                || progression.BaseXpToNext <= 0
-                || progression.GrowthFactor < 1)
+                || progression.XpAnchors.Count < 2
+                || progression.XpAnchors.Any(anchor =>
+                    anchor.Level < 1
+                    || anchor.Level >= progression.MaxLevel
+                    || anchor.XpToNext <= 0))
             {
                 errors.Add(new("INVALID_LEVEL_PROGRESSION", "levelProgression",
                     "Level progression contains values outside its valid range."));
