@@ -9,6 +9,7 @@ using Elyndor.Core.Items;
 using Elyndor.Core.Progression;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Quests;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -117,6 +118,16 @@ public sealed class AfkFarmProgressService(
             int gold = Scale(simulation.GoldCandidate, profile.GoldMultiplier);
             LootRoll[] loot = RollLoot(simulation.LootCandidates, content, profile.LootMultiplier,
                 session.Id, intervalIndex);
+
+            await QuestProgression.ApplyKillsAsync(
+                dbContext,
+                character.Id,
+                session.Id,
+                simulation.DefeatedMonsterIds,
+                content.Package,
+                intervalEnd,
+                cancellationToken);
+
             CharacterProgression.GrantExperience(
                 character,
                 xp,

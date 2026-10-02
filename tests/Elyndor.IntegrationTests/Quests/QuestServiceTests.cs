@@ -38,6 +38,13 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
         QuestDefinition boarTrail = quests.Single(quest => quest.Id == "QUEST_03_BOAR_TRAIL");
         Assert.Contains("QUEST_01_FIRST_HUNT", wolfHides.PrerequisiteQuestIds ?? []);
         Assert.Contains("QUEST_01_FIRST_HUNT", boarTrail.PrerequisiteQuestIds ?? []);
+        QuestObjectiveDefinition wolfHideObjective = Assert.Single(wolfHides.Objectives);
+        Assert.Equal(QuestObjectiveType.CollectItem, wolfHideObjective.Type);
+        Assert.Equal("ROUGH_HIDE", wolfHideObjective.TargetId);
+        Assert.Contains(
+            content.SkinningSources ?? [],
+            source => source.MonsterId == "FOREST_WOLF_L1"
+                && source.ItemId == "ROUGH_HIDE");
 
         QuestDefinition broodmother = quests.Single(quest => quest.Id == "CONTRACT_BROODMOTHER_GATE");
         Assert.Equal(QuestType.Contract, broodmother.Type);
@@ -159,10 +166,10 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
         context.CharacterItems.Add(new CharacterItem(
             Guid.CreateVersion7(),
             characterId,
-            "WOLF_HIDE",
+            "ROUGH_HIDE",
             4,
             Now,
-            content.Items!.Single(item => item.Id == "WOLF_HIDE").Version,
+            content.Items!.Single(item => item.Id == "ROUGH_HIDE").Version,
             null));
         await context.SaveChangesAsync();
 
@@ -198,7 +205,7 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
         Assert.False(await context.CharacterItems
             .AsNoTracking()
             .AnyAsync(item => item.CharacterId == characterId
-                && item.ItemDefinitionId == "WOLF_HIDE"));
+                && item.ItemDefinitionId == "ROUGH_HIDE"));
         Assert.Equal(
             2,
             await context.CharacterItems

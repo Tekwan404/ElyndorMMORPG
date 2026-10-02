@@ -28,7 +28,7 @@
     {
       "id": "QUEST_02_WOLF_HIDES",
       "displayName": "Шкуры для дозора",
-      "description": "Соберите пригодные шкуры волков для ремонта снаряжения городского дозора.",
+      "description": "Снимите с лесных волков грубые шкуры для ремонта снаряжения городского дозора.",
       "type": "Side",
       "requiredLevel": 2,
       "offerLocationId": "WHISPERING_FOREST",
@@ -36,7 +36,7 @@
         {
           "id": "COLLECT_HIDES",
           "type": "CollectItem",
-          "targetId": "WOLF_HIDE",
+          "targetId": "ROUGH_HIDE",
           "requiredCount": 4,
           "consumeOnClaim": true
         }

@@ -6,6 +6,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Progression;
+using Elyndor.Core.Quests;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Afk;
 using Elyndor.Infrastructure.Characters;
@@ -63,6 +64,84 @@ public sealed class AfkFarmCatchUpTests(PostgresFixture postgres) : IAsyncLifeti
         Assert.Equal(
             grants.Sum(grant => grant.GoldEarned),
             await dbContext.Characters.Select(character => character.Gold).SingleAsync());
+    }
+
+    [Fact]
+    public async Task AutomaticHuntAdvancesAcceptedKillQuestAndReplayDoesNotDuplicateProgress()
+    {
+        await using GameDbContext dbContext = postgres.CreateDbContext();
+        Guid accountId = await SeedCharacterAsync(dbContext);
+        Guid characterId = await dbContext.Characters
+            .Where(character => character.AccountId == accountId)
+            .Select(character => character.Id)
+            .SingleAsync();
+
+        GameContentPackage content = CreateContent() with
+        {
+            Quests =
+            [
+                new QuestDefinition(
+                    "AFK_KILL_QUEST",
+                    "AFK hunt",
+                    "Kill wolves while away.",
+                    QuestType.Side,
+                    1,
+                    ForestId,
+                    [
+                        new QuestObjectiveDefinition(
+                            "KILL_WOLVES",
+                            QuestObjectiveType.KillMonster,
+                            WolfId,
+                            3)
+                    ])
+            ]
+        };
+        dbContext.CharacterQuestStates.Add(
+            new CharacterQuestState(characterId, "AFK_KILL_QUEST", Now));
+        await dbContext.SaveChangesAsync();
+
+        AfkFarmService start = CreateService(dbContext, content);
+        AfkFarmMutationResult started = await start.StartAsync(
+            accountId,
+            ForestId,
+            WolfId,
+            TimeSpan.FromMinutes(15),
+            CancellationToken.None);
+        Assert.True(started.Succeeded, started.ErrorCode);
+
+        AfkFarmProgressService progress = new(
+            dbContext,
+            new StaticContentSnapshotProvider(content),
+            new OffsetTimeProvider(Now.AddMinutes(15)));
+
+        AfkFarmProgressResult first = await progress.ProcessAsync(
+            accountId,
+            CancellationToken.None);
+        Assert.True(first.Processed);
+
+        CharacterQuestState state = await dbContext.CharacterQuestStates
+            .AsNoTracking()
+            .SingleAsync(candidate =>
+                candidate.CharacterId == characterId
+                && candidate.QuestId == "AFK_KILL_QUEST");
+        Dictionary<string, int> counts = QuestProgressJson.Read(state.ProgressJson);
+        Assert.Equal(3, counts["KILL_WOLVES"]);
+        Assert.Equal(QuestStateStatuses.ReadyToClaim, state.Status);
+
+        AfkFarmProgressResult replay = await progress.ProcessAsync(
+            accountId,
+            CancellationToken.None);
+        Assert.False(replay.Processed);
+
+        CharacterQuestState afterReplay = await dbContext.CharacterQuestStates
+            .AsNoTracking()
+            .SingleAsync(candidate =>
+                candidate.CharacterId == characterId
+                && candidate.QuestId == "AFK_KILL_QUEST");
+        Assert.Equal(
+            counts,
+            QuestProgressJson.Read(afterReplay.ProgressJson));
+        Assert.Equal(QuestStateStatuses.ReadyToClaim, afterReplay.Status);
     }
 
     [Fact]

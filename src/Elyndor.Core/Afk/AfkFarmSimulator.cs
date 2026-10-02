@@ -45,7 +45,8 @@ public sealed record AfkFarmSimulationResult(
     int EfficiencyPercent,
     int XpCandidate,
     int GoldCandidate,
-    IReadOnlyList<AfkFarmLootCandidate> LootCandidates);
+    IReadOnlyList<AfkFarmLootCandidate> LootCandidates,
+    IReadOnlyList<string> DefeatedMonsterIds);
 
 /// <summary>
 /// Calculates AFK intervals without creating online combat sessions or mutating durable state.
@@ -113,6 +114,7 @@ public static class AfkFarmSimulator
         TimeSpan successfulKillTime = TimeSpan.Zero;
         TimeSpan successfulEncounterPressureWindow = TimeSpan.Zero;
         List<AfkFarmLootCandidate> loot = [];
+        List<string> defeatedMonsterIds = [];
 
         while (remaining > TimeSpan.Zero)
         {
@@ -141,6 +143,7 @@ public static class AfkFarmSimulator
             }
 
             kills++;
+            defeatedMonsterIds.Add(monster.Id);
             successfulKillTime += fight.Elapsed;
             successfulEncounterPressureWindow += monster.AutoAttackInterval;
             xp += monster.XpReward;
@@ -192,7 +195,8 @@ public static class AfkFarmSimulator
             efficiency,
             xp,
             gold,
-            loot);
+            loot,
+            defeatedMonsterIds);
     }
 
     private static FightResult SimulateFight(
@@ -662,7 +666,7 @@ public static class AfkFarmSimulator
 
     private static AfkFarmSimulationResult Empty(AfkFarmSimulationRequest request) => new(
         request.EndsAtUtc - request.StartedAtUtc,
-        0, 0, 0, 0, request.Character.CurrentHp, 0, 0, 0, []);
+        0, 0, 0, 0, request.Character.CurrentHp, 0, 0, 0, [], []);
 
     private static void EnsureUtc(DateTimeOffset value, string parameterName)
     {

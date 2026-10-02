@@ -30,7 +30,12 @@ public sealed record QuestResponse(
     int RewardGold,
     IReadOnlyList<QuestRewardItemResponse> RewardItems,
     IReadOnlyList<string> PrerequisiteQuestIds,
-    string? UnlockLocationId);
+    string? UnlockLocationId,
+    string? IssuerName,
+    string? IssuerRole,
+    string? RegionName,
+    string? ContractNumber,
+    string? ThreatLevel);
 
 public sealed record QuestJournalResponse(
     IReadOnlyList<QuestResponse> Quests);

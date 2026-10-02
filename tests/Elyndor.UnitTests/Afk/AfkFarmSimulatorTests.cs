@@ -29,6 +29,8 @@ public sealed class AfkFarmSimulatorTests
         Assert.Equal(first.XpCandidate, second.XpCandidate);
         Assert.Equal(first.GoldCandidate, second.GoldCandidate);
         Assert.Equal(first.LootCandidates, second.LootCandidates);
+        Assert.Equal(first.DefeatedMonsterIds, second.DefeatedMonsterIds);
+        Assert.Equal(first.Kills, first.DefeatedMonsterIds.Count);
         Assert.True(first.Kills > 0);
         Assert.Equal(request.Character.CurrentHp, first.ResultingHpEstimate);
     }
@@ -244,6 +246,8 @@ public sealed class AfkFarmSimulatorTests
 
         Assert.NotEmpty(result.LootCandidates);
         Assert.All(result.LootCandidates, candidate => Assert.Equal(boar.Id, candidate.MonsterId));
+        Assert.NotEmpty(result.DefeatedMonsterIds);
+        Assert.All(result.DefeatedMonsterIds, monsterId => Assert.Equal(boar.Id, monsterId));
     }
 
     private static AfkFarmSimulationRequest CreateRequest(
