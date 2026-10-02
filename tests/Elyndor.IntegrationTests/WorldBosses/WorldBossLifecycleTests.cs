@@ -186,10 +186,15 @@ public sealed class WorldBossLifecycleTests(PostgresFixture postgres) : IAsyncLi
         Assert.Equal(73_420m, result.Active.PersonalDamage);
         Assert.Equal(73_420m, result.Active.PartyDamage);
         Assert.True(result.Active.RewardEligible);
-        Assert.Equal("Gold", result.Active.RewardTier);
-        Assert.Equal("Epic", result.Active.NextRewardTier);
-        Assert.Equal(100_000m, result.Active.NextRewardTierAtDamage);
-        Assert.Equal(26_580m, result.Active.DamageToNextRewardTier);
+        Assert.Equal("Top5", result.Active.RewardTier);
+        Assert.Null(result.Active.NextRewardTier);
+        Assert.Null(result.Active.NextRewardTierAtDamage);
+        Assert.Equal(0m, result.Active.DamageToNextRewardTier);
+        Assert.Equal(1, result.Active.EligibleParticipants);
+        Assert.Equal(1, result.Active.PersonalRewardRank);
+        Assert.Equal(100m, result.Active.RewardPercentile);
+        Assert.Equal(0, result.Active.RewardChestCount);
+        Assert.Equal(2, result.Active.RewardEnhancedChestCount);
         Assert.Equal(1, result.Active.Participants);
         Assert.Equal("Пробуждение", result.Active.PhaseName);
     }
