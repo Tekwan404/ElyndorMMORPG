@@ -207,11 +207,14 @@ public sealed class WorldBossSettlementService(
             {
                 if (!content.Indexes.LootTablesById.TryGetValue(
                         leaderboardReward.LootTableId,
-                        out rewardChestTable))
+                        out LootTableDefinition? configuredChestTable)
+                    || configuredChestTable is null)
                 {
                     throw new InvalidOperationException(
                         $"World boss reward chest '{leaderboardReward.LootTableId}' is missing from content.");
                 }
+
+                rewardChestTable = configuredChestTable;
             }
 
             for (var chestIndex = 0; chestIndex < totalChestCount; chestIndex++)
