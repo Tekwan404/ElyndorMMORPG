@@ -61,6 +61,12 @@ public static class GameContentPackageCodec
         }
 
         bool changed = false;
+        if (package["statFormula"] is JsonObject statFormula)
+        {
+            changed |= statFormula.Remove("armorPerStamina");
+            changed |= statFormula.Remove("armorPerStrength");
+        }
+
         foreach (JsonNode? itemNode in items)
         {
             if (itemNode is not JsonObject item)
