@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Elyndor.Core.Content;
 using Elyndor.Core.WorldBosses;
 using Elyndor.Infrastructure.Content;
@@ -50,6 +51,22 @@ public sealed record WorldBossLeaderboardReadResult(
     Guid? PartyId,
     int? PartyRank,
     decimal PartyDamage);
+
+public sealed record WorldBossRewardSnapshot(
+    Guid SpawnId,
+    decimal Contribution,
+    WorldBossRewardTier Tier,
+    int Experience,
+    int BossGold,
+    int ChestGold,
+    int TotalGold,
+    IReadOnlyList<WorldBossLootItemResult> Items,
+    DateTimeOffset SettledAtUtc);
+
+public sealed record WorldBossRewardReadResult(
+    bool CharacterFound,
+    bool SpawnFound,
+    WorldBossRewardSnapshot? Reward);
 
 public sealed class WorldBossReadService(
     GameDbContext db,
@@ -125,6 +142,56 @@ public sealed class WorldBossReadService(
                 partyDamage,
                 spawn.ContentVersion,
                 spawn.BalanceVersion));
+    }
+
+    public async Task<WorldBossRewardReadResult> GetRewardAsync(
+        Guid accountId,
+        Guid spawnId,
+        CancellationToken cancellationToken)
+    {
+        if (accountId == Guid.Empty)
+            throw new ArgumentException("Account identifier cannot be empty.", nameof(accountId));
+        if (spawnId == Guid.Empty)
+            throw new ArgumentException("World boss spawn identifier cannot be empty.", nameof(spawnId));
+
+        Guid? characterId = await db.Characters.AsNoTracking()
+            .Where(character => character.AccountId == accountId)
+            .Select(character => (Guid?)character.Id)
+            .SingleOrDefaultAsync(cancellationToken);
+        if (characterId is null)
+            return new WorldBossRewardReadResult(false, false, null);
+
+        bool spawnFound = await db.WorldBossSpawns.AsNoTracking()
+            .AnyAsync(spawn => spawn.Id == spawnId, cancellationToken);
+        if (!spawnFound)
+            return new WorldBossRewardReadResult(true, false, null);
+
+        WorldBossRewardSettlement? settlement = await db.WorldBossRewardSettlements
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                candidate => candidate.SpawnId == spawnId
+                    && candidate.CharacterId == characterId.Value,
+                cancellationToken);
+        if (settlement is null)
+            return new WorldBossRewardReadResult(true, true, null);
+
+        WorldBossLootResult loot = JsonSerializer.Deserialize<WorldBossLootResult>(
+            settlement.LootResultJson)
+            ?? new WorldBossLootResult(settlement.Gold, 0, []);
+
+        return new WorldBossRewardReadResult(
+            true,
+            true,
+            new WorldBossRewardSnapshot(
+                spawnId,
+                settlement.ContributionScore,
+                settlement.RewardTier,
+                settlement.Experience,
+                loot.BossGold,
+                loot.ChestGold,
+                settlement.Gold,
+                loot.Items,
+                settlement.SettledAtUtc));
     }
 
     public async Task<WorldBossLeaderboardReadResult> GetLeaderboardAsync(
