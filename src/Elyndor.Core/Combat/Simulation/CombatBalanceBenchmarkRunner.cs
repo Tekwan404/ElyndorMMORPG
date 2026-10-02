@@ -6,7 +6,7 @@ namespace Elyndor.Core.Combat.Simulation;
 public sealed record CombatBalanceBenchmarkRequest(
     int MinimumLevel = 1,
     int MaximumLevel = 25,
-    int Iterations = 20,
+    int Iterations = 10,
     int Seed = 1337,
     int MaxDurationSeconds = 90,
     IReadOnlyList<string>? ClassIds = null,
