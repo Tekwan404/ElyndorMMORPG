@@ -280,7 +280,7 @@ onUnmounted(() => {
             <small>Награды за итоговый рейтинг</small>
             <h2>Чем выше вклад — тем сильнее добыча</h2>
           </div>
-          <span>мин. 5 000 урона</span>
+          <span>мин. {{ formatNumber(boss.minimumContribution) }} урона</span>
         </header>
 
         <div class="reward-ladder__grid">
