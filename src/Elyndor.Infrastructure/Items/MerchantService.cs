@@ -375,9 +375,7 @@ public sealed class MerchantService(
                     .SingleOrDefaultAsync(
                         candidate => candidate.Id == characterItemId
                             && candidate.CharacterId == character.Id
-                            && candidate.Storage == "BUYBACK"
-                            && candidate.SourceType == "MERCHANT_BUYBACK"
-                            && candidate.SourceEntryId == merchant.Id,
+                            && candidate.Storage == "BUYBACK",
                         cancellationToken);
                 if (item is null)
                     return MerchantErrorCodes.BuybackNotFound;
@@ -667,9 +665,7 @@ public sealed class MerchantService(
             .IgnoreQueryFilters()
             .AsNoTracking()
             .Where(item => item.CharacterId == characterId
-                && item.Storage == "BUYBACK"
-                && item.SourceType == "MERCHANT_BUYBACK"
-                && item.SourceEntryId == merchant.Id)
+                && item.Storage == "BUYBACK")
             .OrderByDescending(item => item.AcquiredAtUtc)
             .Take(BuybackCapacity)
             .ToArrayAsync(cancellationToken);
@@ -705,8 +701,7 @@ public sealed class MerchantService(
         CharacterItem[] existing = await dbContext.CharacterItems
             .IgnoreQueryFilters()
             .Where(candidate => candidate.CharacterId == characterId
-                && candidate.Storage == "BUYBACK"
-                && candidate.SourceType == "MERCHANT_BUYBACK")
+                && candidate.Storage == "BUYBACK")
             .OrderBy(candidate => candidate.AcquiredAtUtc)
             .ToArrayAsync(cancellationToken);
 
@@ -717,7 +712,7 @@ public sealed class MerchantService(
         DateTimeOffset soldAt = timeProvider.GetUtcNow();
         if (quantity == item.Quantity)
         {
-            item.MoveToMerchantBuyback(merchant.Id, mutationId, soldAt);
+            item.MoveToMerchantBuyback(soldAt);
             return;
         }
 
@@ -732,7 +727,7 @@ public sealed class MerchantService(
             quantity,
             soldAt,
             definition.Version);
-        buybackItem.MoveToMerchantBuyback(merchant.Id, mutationId, soldAt);
+        buybackItem.MoveToMerchantBuyback(soldAt);
         dbContext.CharacterItems.Add(buybackItem);
     }
 
