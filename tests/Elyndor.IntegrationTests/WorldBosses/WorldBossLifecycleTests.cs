@@ -164,9 +164,9 @@ public sealed class WorldBossLifecycleTests(PostgresFixture postgres) : IAsyncLi
         await using (GameDbContext db = postgres.CreateDbContext())
         {
             var personal = new WorldBossContribution(spawnId, characterId, _time.Now);
-            personal.AddDamage(12_500m, _time.Now.AddSeconds(1));
+            personal.AddDamage(73_420m, _time.Now.AddSeconds(1));
             var party = new WorldBossPartyContribution(spawnId, partyId);
-            party.AddDamage(12_500m);
+            party.AddDamage(73_420m);
             db.WorldBossContributions.Add(personal);
             db.WorldBossPartyContributions.Add(party);
             await db.SaveChangesAsync();
@@ -183,8 +183,13 @@ public sealed class WorldBossLifecycleTests(PostgresFixture postgres) : IAsyncLi
         Assert.NotNull(result.Active);
         Assert.Equal("Архон Пепла", result.Active!.Name);
         Assert.Equal(1_000_000m, result.Active.MaxHealth);
-        Assert.Equal(12_500m, result.Active.PersonalDamage);
-        Assert.Equal(12_500m, result.Active.PartyDamage);
+        Assert.Equal(73_420m, result.Active.PersonalDamage);
+        Assert.Equal(73_420m, result.Active.PartyDamage);
+        Assert.True(result.Active.RewardEligible);
+        Assert.Equal("Gold", result.Active.RewardTier);
+        Assert.Equal("Epic", result.Active.NextRewardTier);
+        Assert.Equal(100_000m, result.Active.NextRewardTierAtDamage);
+        Assert.Equal(26_580m, result.Active.DamageToNextRewardTier);
         Assert.Equal(1, result.Active.Participants);
         Assert.Equal("Пробуждение", result.Active.PhaseName);
     }
