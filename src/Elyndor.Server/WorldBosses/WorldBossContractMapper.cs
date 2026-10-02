@@ -46,7 +46,12 @@ internal static class WorldBossContractMapper
             item.InstanceId,
             item.Pending,
             ToStatsResponse(item.Stats),
-            ToGeneratedItemResponse(item.GeneratedItem));
+            ToGeneratedItemResponse(item.GeneratedItem),
+            item.Stats?.WeaponDamageMin,
+            item.Stats?.WeaponDamageMax,
+            item.Stats?.BlockChance ?? 0m,
+            item.Stats?.BlockValueMin ?? 0m,
+            item.Stats?.BlockValueMax ?? 0m);
 
     private static ItemStatsResponse? ToStatsResponse(WorldBossLootItemStats? stats) =>
         stats is null
