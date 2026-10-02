@@ -14,14 +14,19 @@ import IconGenerator from '@/ui/icons/IconGenerator.vue'
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 const MERCHANT_ID = 'MARCUS_SUPPLIES'
+type MerchantFilter = 'all' | MerchantItem['type']
+type SortMode = 'recommended' | 'price-asc' | 'price-desc' | 'rarity'
+
 const session = useGameSessionStore()
 const merchant = ref<MerchantSnapshot | null>(null)
 const loading = ref(false)
 const activeTab = ref<'buy' | 'sell'>('buy')
 const selectedOfferId = ref<string | null>(null)
 const searchQuery = ref('')
-const activeFilter = ref<'all' | MerchantItem['type']>('all')
-const merchantFilters = ['all', 'Equipment', 'Consumable', 'Material'] as const
+const activeFilter = ref<MerchantFilter>('all')
+const onlyAffordable = ref(false)
+const sortMode = ref<SortMode>('recommended')
+const merchantFilters = ['all', 'Consumable', 'Equipment', 'Material'] as const
 const buyPending = computed(() => session.isMutationPending('merchant:buy'))
 const sellPending = computed(() => session.isMutationDomainPending('merchant:sell-'))
 
@@ -37,15 +42,30 @@ const protectedItemsCount = computed(() => session.snapshot?.character?.inventor
     && item.isLocked
     && item.sellPriceGold > 0,
   ).length ?? 0)
+const affordableOfferCount = computed(() =>
+  merchant.value?.items.filter(item => isAffordable(item)).length ?? 0,
+)
 const visibleOffers = computed(() => {
   const query = searchQuery.value.trim().toLocaleLowerCase()
-  return merchant.value?.items.filter(item => {
+  const offers = merchant.value?.items.filter(item => {
     const matchesType = activeFilter.value === 'all' || item.type === activeFilter.value
     const matchesQuery = !query
       || item.name.toLocaleLowerCase().includes(query)
       || item.description.toLocaleLowerCase().includes(query)
-    return matchesType && matchesQuery
+    const matchesBudget = !onlyAffordable.value || isAffordable(item)
+    return matchesType && matchesQuery && matchesBudget
   }) ?? []
+
+  if (sortMode.value === 'price-asc') {
+    return [...offers].sort((left, right) => left.buyPriceGold - right.buyPriceGold)
+  }
+  if (sortMode.value === 'price-desc') {
+    return [...offers].sort((left, right) => right.buyPriceGold - left.buyPriceGold)
+  }
+  if (sortMode.value === 'rarity') {
+    return [...offers].sort((left, right) => rarityRank(right.rarity) - rarityRank(left.rarity))
+  }
+  return offers
 })
 const selectedOffer = computed(() =>
   visibleOffers.value.find(item => item.definitionId === selectedOfferId.value)
@@ -58,6 +78,8 @@ watch(() => props.open, (open) => {
     activeTab.value = 'buy'
     searchQuery.value = ''
     activeFilter.value = 'all'
+    onlyAffordable.value = false
+    sortMode.value = 'recommended'
     void loadMerchant()
   }
 })
@@ -81,16 +103,16 @@ function selectOffer(item: MerchantItem): void {
   selectedOfferId.value = item.definitionId
 }
 
-function filterLabel(filter: 'all' | MerchantItem['type']): string {
-  if (filter === 'Equipment') return 'Экипировка'
+function filterLabel(filter: MerchantFilter): string {
+  if (filter === 'Equipment') return 'Снаряжение'
   if (filter === 'Consumable') return 'Расходники'
   if (filter === 'Material') return 'Материалы'
-  return 'Все'
+  return 'Всё'
 }
 
 function itemTypeLabel(item: MerchantItem): string {
   if (item.type === 'Consumable') return 'Расходник'
-  if (item.type === 'Equipment') return 'Экипировка'
+  if (item.type === 'Equipment') return 'Снаряжение'
   return 'Материал'
 }
 
@@ -101,6 +123,25 @@ function rarityLabel(item: MerchantItem): string {
   if (item.rarity === 'Legendary') return 'Легендарный'
   if (item.rarity === 'Unique') return 'Уникальный'
   return 'Обычный'
+}
+
+function rarityRank(rarity: MerchantItem['rarity']): number {
+  if (rarity === 'Unique') return 6
+  if (rarity === 'Legendary') return 5
+  if (rarity === 'Epic') return 4
+  if (rarity === 'Rare') return 3
+  if (rarity === 'Uncommon') return 2
+  return 1
+}
+
+function isAffordable(item: MerchantItem): boolean {
+  return canAffordMoney(merchant.value?.gold ?? 0, item.buyPriceGold)
+}
+
+function inventoryCount(item: MerchantItem): number {
+  return session.snapshot?.character?.inventory.items
+    .filter(entry => entry.definitionId === item.definitionId)
+    .reduce((sum, entry) => sum + entry.quantity, 0) ?? 0
 }
 
 async function buy(definitionId: string): Promise<void> {
@@ -121,22 +162,31 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 </script>
 
 <template>
-  <UIModal :open="open" title="Торговец" @close="emit('close')">
+  <UIModal :open="open" title="Лавка Маркуса" @close="emit('close')">
     <section class="merchant">
       <header
         class="merchant__npc"
         :style="{ '--merchant-scene': `url(${gameArt.world.capital})` }"
       >
         <div class="merchant__npc-shade" />
-        <div class="merchant__portrait" aria-hidden="true">М</div>
-        <div class="merchant__identity">
-          <small>ТОРГОВЕЦ ПРИПАСАМИ</small>
-          <h2>{{ merchant?.name ?? 'Маркус' }}</h2>
-          <p>{{ merchant?.description ?? 'Здесь можно купить лечебные припасы и продать добытые материалы.' }}</p>
+        <div class="merchant__portrait">
+          <img :src="gameArt.npc.marcus" alt="Торговец Маркус" />
         </div>
+
+        <div class="merchant__identity">
+          <span class="merchant__eyebrow">СТАРТОВЫЙ ГОРОД · ЛАВКА ПРИПАСОВ</span>
+          <h2>{{ merchant?.name ?? 'Торговец Маркус' }}</h2>
+          <p>{{ merchant?.description ?? 'Припасы, снаряжение и полезные мелочи перед дорогой.' }}</p>
+          <div class="merchant__service">
+            <span>⚒ Проверенный товар</span>
+            <span>◆ Честная цена</span>
+          </div>
+        </div>
+
         <div class="merchant__wallet">
           <small>Ваш кошелёк</small>
           <strong><MoneyAmount :amount="merchant?.gold ?? session.snapshot?.character?.gold ?? 0" /></strong>
+          <span>{{ affordableOfferCount }} товаров по карману</span>
         </div>
       </header>
 
@@ -163,80 +213,166 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
       <section v-if="activeTab === 'buy'" class="merchant-panel merchant-panel--buy">
         <header class="merchant-panel__heading">
           <div>
-            <small>ВИТРИНА</small>
-            <strong>Припасы для следующего похода</strong>
+            <small>ВИТРИНА МАРКУСА</small>
+            <strong>Выберите товар для следующего похода</strong>
           </div>
-          <span>{{ visibleOffers.length }} из {{ merchant?.items.length ?? 0 }}</span>
+          <span>{{ visibleOffers.length }} / {{ merchant?.items.length ?? 0 }}</span>
         </header>
 
-        <div class="merchant-filter" aria-label="Фильтр витрины">
+        <div class="merchant-filter" aria-label="Фильтры витрины">
           <label class="merchant-filter__search">
             <span class="sr-only">Поиск товара</span>
             <span aria-hidden="true">⌕</span>
-            <input v-model="searchQuery" type="search" placeholder="Найти припасы" />
+            <input v-model="searchQuery" type="search" placeholder="Поиск по витрине…" />
           </label>
-          <div class="merchant-filter__chips" role="group" aria-label="Категория товара">
-            <button
-              v-for="filter in merchantFilters"
-              :key="filter"
-              type="button"
-              :class="{ active: activeFilter === filter }"
-              @click="activeFilter = filter"
-            >{{ filterLabel(filter) }}</button>
+
+          <div class="merchant-filter__row">
+            <div class="merchant-filter__chips" role="group" aria-label="Категория товара">
+              <button
+                v-for="filter in merchantFilters"
+                :key="filter"
+                type="button"
+                :data-merchant-filter="filter"
+                :class="{ active: activeFilter === filter }"
+                @click="activeFilter = filter"
+              >{{ filterLabel(filter) }}</button>
+            </div>
+
+            <label class="merchant-filter__sort">
+              <span class="sr-only">Сортировка</span>
+              <select v-model="sortMode" data-merchant-sort>
+                <option value="recommended">Рекомендовано</option>
+                <option value="price-asc">Сначала дешевле</option>
+                <option value="price-desc">Сначала дороже</option>
+                <option value="rarity">По редкости</option>
+              </select>
+            </label>
           </div>
+
+          <button
+            type="button"
+            class="merchant-filter__affordable"
+            data-merchant-affordable
+            :aria-pressed="onlyAffordable"
+            :class="{ active: onlyAffordable }"
+            @click="onlyAffordable = !onlyAffordable"
+          >
+            <span class="merchant-filter__check">{{ onlyAffordable ? '✓' : '' }}</span>
+            Только то, что могу купить
+            <b>{{ affordableOfferCount }}</b>
+          </button>
         </div>
 
         <div v-if="visibleOffers.length" class="merchant-buy">
-          <div class="merchant-shelf" aria-label="Товары торговца">
-            <button
-              v-for="item in visibleOffers"
-              :key="item.definitionId"
-              type="button"
-              class="offer-card"
-              :class="{ active: selectedOffer?.definitionId === item.definitionId }"
-              :data-rarity="item.rarity"
-              :data-merchant-offer="item.definitionId"
-              :aria-pressed="selectedOffer?.definitionId === item.definitionId"
-              @click="selectOffer(item)"
-            >
-              <span class="offer-card__icon">
-                <ItemIcon :icon-id="item.iconId" :item-id="item.definitionId" :name="item.name" :type="item.type" :rarity="item.rarity" />
-              </span>
-              <span class="offer-card__copy">
-                <small>{{ rarityLabel(item) }}</small>
-                <strong>{{ item.name }}</strong>
-                <b><MoneyAmount :amount="item.buyPriceGold" /></b>
-              </span>
-            </button>
+          <div class="merchant-showcase">
+            <div class="merchant-showcase__rail">
+              <span>ТОВАРЫ НА ПРИЛАВКЕ</span>
+              <i aria-hidden="true" />
+            </div>
+
+            <div class="merchant-shelf" aria-label="Товары торговца">
+              <button
+                v-for="item in visibleOffers"
+                :key="item.definitionId"
+                type="button"
+                class="offer-card"
+                :class="{
+                  active: selectedOffer?.definitionId === item.definitionId,
+                  'is-unaffordable': !isAffordable(item),
+                }"
+                :data-rarity="item.rarity"
+                :data-merchant-offer="item.definitionId"
+                :aria-pressed="selectedOffer?.definitionId === item.definitionId"
+                @click="selectOffer(item)"
+              >
+                <span class="offer-card__visual">
+                  <span class="offer-card__icon">
+                    <ItemIcon
+                      :icon-id="item.iconId"
+                      :item-id="item.definitionId"
+                      :name="item.name"
+                      :type="item.type"
+                      :rarity="item.rarity"
+                    />
+                  </span>
+                  <span class="offer-card__rarity">{{ rarityLabel(item) }}</span>
+                </span>
+
+                <span class="offer-card__copy">
+                  <small>{{ itemTypeLabel(item) }}</small>
+                  <strong>{{ item.name }}</strong>
+                  <span class="offer-card__description">{{ item.description }}</span>
+                </span>
+
+                <span class="offer-card__footer">
+                  <b><MoneyAmount :amount="item.buyPriceGold" /></b>
+                  <em v-if="inventoryCount(item) > 0">В сумке: {{ inventoryCount(item) }}</em>
+                  <em v-else-if="!isAffordable(item)" class="offer-card__shortfall">Не хватает золота</em>
+                  <em v-else>В наличии</em>
+                </span>
+              </button>
+            </div>
           </div>
 
-          <article v-if="selectedOffer" class="merchant-detail" data-merchant-detail>
+          <article v-if="selectedOffer" class="merchant-detail" data-merchant-detail :data-rarity="selectedOffer.rarity">
+            <div class="merchant-detail__banner">
+              <small>ВЫБРАННЫЙ ТОВАР</small>
+              <span>{{ rarityLabel(selectedOffer) }}</span>
+            </div>
+
             <div class="merchant-detail__identity">
               <span class="merchant-detail__icon" :data-rarity="selectedOffer.rarity">
-                <ItemIcon :icon-id="selectedOffer.iconId" :item-id="selectedOffer.definitionId" :name="selectedOffer.name" :type="selectedOffer.type" :rarity="selectedOffer.rarity" loading="eager" />
+                <ItemIcon
+                  :icon-id="selectedOffer.iconId"
+                  :item-id="selectedOffer.definitionId"
+                  :name="selectedOffer.name"
+                  :type="selectedOffer.type"
+                  :rarity="selectedOffer.rarity"
+                  loading="eager"
+                />
               </span>
               <div>
-                <small>{{ rarityLabel(selectedOffer) }} · {{ itemTypeLabel(selectedOffer) }}</small>
+                <small>{{ itemTypeLabel(selectedOffer) }}</small>
                 <h3>{{ selectedOffer.name }}</h3>
+                <span v-if="inventoryCount(selectedOffer) > 0">
+                  Уже в сумке: {{ inventoryCount(selectedOffer) }}
+                </span>
               </div>
             </div>
 
             <p>{{ selectedOffer.description }}</p>
-            <div v-if="selectedOffer.type === 'Consumable' && selectedOffer.consumableActions.length" class="merchant-detail__effect">
-              <span>Эффект</span>
-              <strong>{{ selectedOffer.consumableActions.map(consumableActionLabel).join(' · ') }}</strong>
-              <small v-if="selectedOffer.consumableCooldownSeconds">Перезарядка: {{ selectedOffer.consumableCooldownSeconds }} сек.</small>
+
+            <div
+              v-if="selectedOffer.type === 'Consumable' && selectedOffer.consumableActions.length"
+              class="merchant-detail__effect"
+            >
+              <div>
+                <span>Эффект</span>
+                <strong>{{ selectedOffer.consumableActions.map(consumableActionLabel).join(' · ') }}</strong>
+              </div>
+              <small v-if="selectedOffer.consumableCooldownSeconds">
+                Перезарядка {{ selectedOffer.consumableCooldownSeconds }} сек.
+              </small>
+            </div>
+
+            <div class="merchant-detail__quote">
+              <span aria-hidden="true">“</span>
+              <p>{{ isAffordable(selectedOffer) ? 'Бери, пока есть. В дороге пригодится.' : 'Хорошая вещь. Вернёшься с монетой — придержу.' }}</p>
+              <small>— Маркус</small>
             </div>
 
             <footer class="merchant-detail__purchase">
               <div>
-                <small>Цена</small>
+                <small>Цена у Маркуса</small>
                 <strong><MoneyAmount :amount="selectedOffer.buyPriceGold" /></strong>
+                <span :class="{ danger: !isAffordable(selectedOffer) }">
+                  {{ isAffordable(selectedOffer) ? 'Можно купить сейчас' : 'Недостаточно золота' }}
+                </span>
               </div>
               <UIButton
                 data-buy-selected
                 :loading="buyPending"
-                :disabled="buyPending || !canAffordMoney(merchant?.gold ?? 0, selectedOffer.buyPriceGold)"
+                :disabled="buyPending || !isAffordable(selectedOffer)"
                 @click="buy(selectedOffer.definitionId)"
               >
                 Купить · <MoneyAmount :amount="selectedOffer.buyPriceGold" />
@@ -245,16 +381,31 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
           </article>
         </div>
 
-        <p v-if="loading" class="muted">Маркус раскладывает товар…</p>
-        <p v-else-if="merchant && merchant.items.length === 0" class="muted">На витрине пока ничего нет.</p>
-        <p v-else-if="merchant && visibleOffers.length === 0" class="muted">По этому фильтру товаров нет.</p>
+        <div v-if="loading" class="merchant-empty">
+          <span class="merchant-empty__mark">◆</span>
+          <p>Маркус раскладывает товар…</p>
+        </div>
+        <div v-else-if="merchant && merchant.items.length === 0" class="merchant-empty">
+          <span class="merchant-empty__mark">◇</span>
+          <p>На прилавке пока ничего нет.</p>
+        </div>
+        <div v-else-if="merchant && visibleOffers.length === 0" class="merchant-empty">
+          <span class="merchant-empty__mark">⌕</span>
+          <p>По этим фильтрам ничего не нашлось.</p>
+          <button
+            type="button"
+            @click="searchQuery = ''; activeFilter = 'all'; onlyAffordable = false"
+          >
+            Сбросить фильтры
+          </button>
+        </div>
       </section>
 
       <section v-else class="merchant-panel merchant-panel--sell">
         <header class="merchant-panel__heading">
           <div>
-            <small>ПРОДАЖА</small>
-            <strong>Предметы из вашего рюкзака</strong>
+            <small>СДАТЬ МАРКУСУ</small>
+            <strong>Предметы, которые торговец готов выкупить</strong>
           </div>
           <span>{{ sellableItems.length }} предметов</span>
         </header>
@@ -267,12 +418,19 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
         <div v-if="sellableItems.length" class="sell-list">
           <article v-for="item in sellableItems" :key="item.id" class="sell-card" :data-sell-item="item.id">
             <span class="sell-card__icon" :data-rarity="item.rarity">
-              <ItemIcon :icon-id="item.iconId" :item-id="item.id" :name="item.name" :type="item.type" :equipment-slot="item.slot" :rarity="item.rarity" />
+              <ItemIcon
+                :icon-id="item.iconId"
+                :item-id="item.id"
+                :name="item.name"
+                :type="item.type"
+                :equipment-slot="item.slot"
+                :rarity="item.rarity"
+              />
             </span>
             <div class="sell-card__copy">
               <small>{{ inventoryItemTypeLabel(item) }}</small>
               <strong>{{ item.name }}</strong>
-              <span>В рюкзаке: {{ item.quantity }}</span>
+              <span>В сумке: {{ item.quantity }}</span>
             </div>
             <div class="sell-card__price">
               <small>за штуку</small>
@@ -280,19 +438,20 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
             </div>
             <div class="sell-card__actions">
               <UIButton variant="ghost" :disabled="sellPending" @click="sell(item, 1)">
-                1 шт.
+                Продать 1
               </UIButton>
-              <UIButton
-                :disabled="sellPending"
-                @click="sell(item, item.quantity)"
-              >
-                {{ item.quantity > 1 ? 'Всё' : 'Продать' }} · <MoneyAmount :amount="item.sellPriceGold * item.quantity" />
+              <UIButton :disabled="sellPending" @click="sell(item, item.quantity)">
+                {{ item.quantity > 1 ? 'Продать всё' : 'Продать' }} ·
+                <MoneyAmount :amount="item.sellPriceGold * item.quantity" />
               </UIButton>
             </div>
           </article>
         </div>
 
-        <p v-else class="muted">В рюкзаке пока нет предметов, которые Маркус готов купить.</p>
+        <div v-else class="merchant-empty">
+          <span class="merchant-empty__mark">◇</span>
+          <p>В сумке пока нет вещей, которые Маркус готов купить.</p>
+        </div>
       </section>
     </section>
   </UIModal>
@@ -300,13 +459,22 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 
 <style scoped>
 .merchant {
+  --merchant-gold: #d8ad63;
+  --merchant-gold-soft: #f0d99f;
+  --merchant-wood: #241811;
+  --merchant-iron: #15191f;
+  --merchant-burgundy: #4b2027;
+
   display: grid;
   overflow: hidden;
-  border: 1px solid var(--ui-color-border);
+  border: 1px solid rgb(201 167 101 / 30%);
   border-radius: var(--ui-radius-lg);
   background:
-    radial-gradient(circle at 15% 0, rgb(146 136 255 / 8%), transparent 14rem),
-    linear-gradient(180deg, rgb(13 18 30 / 96%), rgb(6 9 16 / 99%));
+    radial-gradient(circle at 88% 2%, rgb(117 53 42 / 15%), transparent 14rem),
+    linear-gradient(180deg, #12151a, #080a0e 58%, #090a0d);
+  box-shadow:
+    inset 0 1px 0 rgb(255 244 213 / 4%),
+    0 1.1rem 2.6rem rgb(0 0 0 / 38%);
 }
 
 .merchant__npc {
@@ -314,24 +482,35 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 
   position: relative;
   display: grid;
-  grid-template-columns: 4.6rem minmax(0, 1fr) auto;
+  grid-template-columns: 6.2rem minmax(0, 1fr) auto;
   align-items: end;
   gap: var(--ui-space-3);
-  min-height: 8.5rem;
+  min-height: 10.5rem;
   padding: var(--ui-space-4);
   overflow: hidden;
-  border-bottom: 1px solid var(--ui-color-border);
+  border-bottom: 1px solid rgb(216 173 99 / 24%);
   background:
-    var(--merchant-scene) center 42% / cover,
-    var(--ui-color-surface-1);
+    var(--merchant-scene) center 44% / cover,
+    #16181c;
+}
+
+.merchant__npc::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  background:
+    linear-gradient(90deg, transparent, rgb(216 173 99 / 36%) 20%, rgb(216 173 99 / 62%) 50%, rgb(216 173 99 / 36%) 80%, transparent);
+  content: '';
 }
 
 .merchant__npc-shade {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgb(4 6 10 / 28%), rgb(5 8 14 / 94%)),
-    linear-gradient(90deg, rgb(7 10 17 / 28%), transparent 65%);
+    linear-gradient(180deg, rgb(3 4 6 / 18%), rgb(5 6 8 / 90%)),
+    linear-gradient(90deg, rgb(7 7 8 / 18%), transparent 58%, rgb(44 17 18 / 26%));
   pointer-events: none;
 }
 
@@ -343,93 +522,123 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 }
 
 .merchant__portrait {
-  display: grid;
-  width: 4.6rem;
-  height: 4.6rem;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--ui-color-gold) 34%, var(--ui-color-border));
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 38% 24%, rgb(255 255 255 / 10%), transparent 33%),
-    linear-gradient(180deg, rgb(49 42 34 / 96%), rgb(12 14 20 / 99%));
-  box-shadow: 0 0 0 3px rgb(232 200 102 / 5%), 0 .6rem 1.4rem rgb(0 0 0 / 30%);
-  color: #ead9a2;
-  font-family: var(--ui-font-display);
-  font-size: 2rem;
+  width: 6.2rem;
+  height: 7.8rem;
+  overflow: hidden;
+  border: 1px solid rgb(216 173 99 / 42%);
+  border-radius: 2.8rem 2.8rem var(--ui-radius-md) var(--ui-radius-md);
+  background: #17130f;
+  box-shadow:
+    0 0 0 3px rgb(0 0 0 / 34%),
+    0 .7rem 1.5rem rgb(0 0 0 / 45%);
+}
+
+.merchant__portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 18%;
 }
 
 .merchant__identity {
   display: grid;
   min-width: 0;
-  gap: 2px;
-  text-shadow: 0 2px 8px rgb(0 0 0 / 75%);
+  gap: 4px;
+  padding-bottom: 2px;
+  text-shadow: 0 2px 8px rgb(0 0 0 / 82%);
 }
 
+.merchant__eyebrow,
 .merchant__identity small,
 .merchant__wallet small,
 .merchant-panel__heading small,
 .offer-card small,
 .merchant-detail small,
 .sell-card small {
-  color: var(--ui-color-text-muted);
-  font-size: .53rem;
-  font-weight: 800;
-  letter-spacing: .07em;
+  color: #988f80;
+  font-size: .52rem;
+  font-weight: 850;
+  letter-spacing: .095em;
   text-transform: uppercase;
 }
 
+.merchant__eyebrow {
+  color: #c8a96d;
+}
+
 .merchant__identity h2,
-.merchant__identity p {
+.merchant__identity p,
+.merchant__service {
   margin: 0;
 }
 
 .merchant__identity h2 {
+  color: #f1e5cc;
   font-family: var(--ui-font-display);
-  font-size: var(--ui-font-size-xl);
+  font-size: 1.55rem;
+  line-height: 1;
 }
 
 .merchant__identity p {
-  max-width: 30rem;
-  color: #c2c8d4;
-  font-size: .68rem;
-  line-height: 1.4;
+  max-width: 34rem;
+  color: #c5c0b5;
+  font-size: .7rem;
+  line-height: 1.45;
+}
+
+.merchant__service {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  margin-top: 3px;
+  color: #bca878;
+  font-size: .55rem;
 }
 
 .merchant__wallet {
   display: grid;
   justify-items: end;
   gap: 2px;
-  padding: 6px 9px;
-  border: 1px solid rgb(232 200 102 / 20%);
+  min-width: 7rem;
+  padding: 9px 11px;
+  border: 1px solid rgb(216 173 99 / 24%);
   border-radius: var(--ui-radius-md);
-  background: rgb(8 10 14 / 72%);
+  background: rgb(7 8 10 / 78%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 3%);
   white-space: nowrap;
-  backdrop-filter: blur(7px);
+  backdrop-filter: blur(8px);
 }
 
 .merchant__wallet strong {
-  color: var(--ui-color-gold);
-  font-size: .75rem;
+  color: var(--merchant-gold-soft);
+  font-size: .88rem;
   font-variant-numeric: tabular-nums;
+}
+
+.merchant__wallet span {
+  color: #8f968d;
+  font-size: .52rem;
 }
 
 .merchant-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-bottom: 1px solid var(--ui-color-border);
-  background: rgb(255 255 255 / 1.5%);
+  border-bottom: 1px solid rgb(216 173 99 / 16%);
+  background:
+    linear-gradient(180deg, rgb(44 31 22 / 76%), rgb(20 18 16 / 72%));
 }
 
 .merchant-tabs button {
   position: relative;
-  min-height: 2.85rem;
+  min-height: 3rem;
   border: 0;
-  border-right: 1px solid rgb(255 255 255 / 5%);
+  border-right: 1px solid rgb(216 173 99 / 10%);
   background: transparent;
-  color: var(--ui-color-text-muted);
+  color: #938b80;
   font: inherit;
-  font-size: .68rem;
-  font-weight: 800;
+  font-size: .67rem;
+  font-weight: 850;
+  letter-spacing: .035em;
   text-transform: uppercase;
 }
 
@@ -438,19 +647,18 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 }
 
 .merchant-tabs button.active {
-  background: linear-gradient(180deg, rgb(232 200 102 / 7%), transparent);
-  color: #ead9a2;
+  background: rgb(216 173 99 / 6%);
+  color: #f0d79c;
 }
 
 .merchant-tabs button.active::after {
   position: absolute;
-  right: 22%;
+  right: 18%;
   bottom: -1px;
-  left: 22%;
+  left: 18%;
   height: 2px;
-  border-radius: var(--ui-radius-round);
-  background: var(--ui-color-gold);
-  box-shadow: 0 0 8px rgb(232 200 102 / 35%);
+  background: var(--merchant-gold);
+  box-shadow: 0 0 10px rgb(216 173 99 / 42%);
   content: '';
 }
 
@@ -467,7 +675,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
   align-items: center;
   justify-content: space-between;
   gap: var(--ui-space-3);
-  padding: var(--ui-space-3) var(--ui-space-4);
+  padding: 12px var(--ui-space-4) 10px;
   border-bottom: 1px solid rgb(255 255 255 / 5%);
 }
 
@@ -477,33 +685,39 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 }
 
 .merchant-panel__heading strong {
-  font-size: var(--ui-font-size-sm);
+  color: #ddd5c7;
+  font-family: var(--ui-font-display);
+  font-size: .9rem;
 }
 
 .merchant-panel__heading > span {
-  color: var(--ui-color-text-muted);
-  font-size: .6rem;
+  padding: 3px 7px;
+  border: 1px solid rgb(216 173 99 / 15%);
+  border-radius: var(--ui-radius-round);
+  color: #9e9485;
+  font-size: .56rem;
 }
 
 .merchant-filter {
   display: grid;
-  gap: 7px;
-  padding: 9px var(--ui-space-4);
+  gap: 8px;
+  padding: 10px var(--ui-space-4);
   border-bottom: 1px solid rgb(255 255 255 / 5%);
-  background: rgb(4 7 12 / 56%);
+  background:
+    linear-gradient(180deg, rgb(7 9 12 / 82%), rgb(11 10 9 / 54%));
 }
 
 .merchant-filter__search {
   display: grid;
-  grid-template-columns: 1.5rem minmax(0, 1fr);
+  grid-template-columns: 1.4rem minmax(0, 1fr);
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   min-height: var(--ui-touch-target);
-  padding: 0 9px;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-sm);
-  background: rgb(12 17 24 / 94%);
-  color: var(--ui-color-gold);
+  padding: 0 10px;
+  border: 1px solid rgb(216 173 99 / 20%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(8 10 13 / 88%);
+  color: var(--merchant-gold);
 }
 
 .merchant-filter__search input {
@@ -518,7 +732,13 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 }
 
 .merchant-filter__search input::placeholder {
-  color: var(--ui-color-text-muted);
+  color: #77756f;
+}
+
+.merchant-filter__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 7px;
 }
 
 .merchant-filter__chips {
@@ -532,39 +752,109 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
   display: none;
 }
 
+.merchant-filter__chips button,
+.merchant-filter__affordable,
+.merchant-filter__sort select {
+  min-height: 2rem;
+  border: 1px solid rgb(216 173 99 / 16%);
+  border-radius: var(--ui-radius-round);
+  background: rgb(255 255 255 / 1.5%);
+  color: #979187;
+  font: inherit;
+  font-size: .58rem;
+}
+
 .merchant-filter__chips button {
   flex: 0 0 auto;
-  min-height: var(--ui-touch-target);
-  padding: 4px 8px;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-round);
-  background: transparent;
-  color: var(--ui-color-text-muted);
-  font: inherit;
-  font-size: var(--ui-font-size-xs);
+  padding: 4px 9px;
   white-space: nowrap;
 }
 
-.merchant-filter__chips button.active {
-  border-color: rgb(209 170 98 / 58%);
-  background: rgb(209 170 98 / 12%);
-  color: #f0d28e;
+.merchant-filter__chips button.active,
+.merchant-filter__affordable.active {
+  border-color: rgb(216 173 99 / 52%);
+  background: rgb(216 173 99 / 10%);
+  color: #f0d79c;
+}
+
+.merchant-filter__sort select {
+  min-width: 8.2rem;
+  padding: 0 8px;
+  outline: 0;
+}
+
+.merchant-filter__sort option {
+  background: #111318;
+  color: #ddd;
+}
+
+.merchant-filter__affordable {
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 4px 9px;
+  border-radius: var(--ui-radius-md);
+  text-align: left;
+}
+
+.merchant-filter__affordable b {
+  color: #c2a86f;
+  font-size: .58rem;
+}
+
+.merchant-filter__check {
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
+  border: 1px solid rgb(216 173 99 / 28%);
+  border-radius: 3px;
+  color: #f0d79c;
+  font-size: .65rem;
 }
 
 .merchant-buy {
   display: grid;
-  grid-template-columns: minmax(8.5rem, .8fr) minmax(0, 1.2fr);
-  min-height: 17rem;
+  grid-template-columns: minmax(0, 1.45fr) minmax(13.5rem, .75fr);
+  min-height: 24rem;
+}
+
+.merchant-showcase {
+  min-width: 0;
+  border-right: 1px solid rgb(216 173 99 / 13%);
+  background:
+    linear-gradient(90deg, rgb(55 35 22 / 8%), transparent 35%),
+    #090b0e;
+}
+
+.merchant-showcase__rail {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px 11px 3px;
+  color: #786f62;
+  font-size: .48rem;
+  font-weight: 850;
+  letter-spacing: .1em;
+}
+
+.merchant-showcase__rail i {
+  height: 1px;
+  background: linear-gradient(90deg, rgb(216 173 99 / 18%), transparent);
 }
 
 .merchant-shelf {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-content: start;
-  gap: 1px;
-  max-height: 19rem;
+  gap: 8px;
+  max-height: 27rem;
+  padding: 8px 10px 12px;
   overflow-y: auto;
-  border-right: 1px solid rgb(255 255 255 / 6%);
-  background: rgb(3 6 11 / 42%);
+  scrollbar-width: thin;
 }
 
 .sr-only {
@@ -579,165 +869,346 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 }
 
 .offer-card {
+  position: relative;
   display: grid;
-  grid-template-columns: 3rem minmax(0, 1fr);
-  align-items: center;
-  gap: var(--ui-space-2);
+  grid-template-columns: 3.4rem minmax(0, 1fr);
+  gap: 8px;
   min-width: 0;
-  padding: var(--ui-space-3);
-  border: 0;
-  border-bottom: 1px solid rgb(255 255 255 / 5%);
-  background: linear-gradient(90deg, rgb(255 255 255 / 1.2%), transparent);
-  color: var(--ui-color-text-secondary);
+  min-height: 7.1rem;
+  padding: 9px;
+  overflow: hidden;
+  border: 1px solid rgb(176 164 142 / 14%);
+  border-radius: var(--ui-radius-md);
+  background:
+    linear-gradient(135deg, rgb(255 255 255 / 2.5%), transparent 48%),
+    rgb(17 19 22 / 94%);
+  color: #c9c2b7;
   font: inherit;
   text-align: left;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 2.5%);
+}
+
+.offer-card::after {
+  position: absolute;
+  right: 8px;
+  bottom: 0;
+  left: 8px;
+  height: 2px;
+  background: rgb(216 173 99 / 7%);
+  content: '';
+}
+
+.offer-card:hover,
+.offer-card.active {
+  border-color: rgb(216 173 99 / 46%);
+  background:
+    linear-gradient(135deg, rgb(216 173 99 / 9%), transparent 48%),
+    rgb(22 22 21 / 96%);
 }
 
 .offer-card.active {
-  background:
-    linear-gradient(90deg, rgb(232 200 102 / 10%), transparent 78%),
-    rgb(255 255 255 / 1.5%);
-  box-shadow: inset 2px 0 0 var(--ui-color-gold);
+  box-shadow:
+    inset 0 0 0 1px rgb(216 173 99 / 12%),
+    0 .4rem 1rem rgb(0 0 0 / 16%);
+}
+
+.offer-card.is-unaffordable {
+  opacity: .68;
+}
+
+.offer-card__visual {
+  display: grid;
+  align-content: start;
+  gap: 4px;
 }
 
 .offer-card__icon {
   display: grid;
-  width: 3rem;
-  height: 3rem;
+  width: 3.4rem;
+  height: 3.4rem;
   place-items: center;
-  border: 1px solid var(--ui-color-border-strong);
+  overflow: hidden;
+  border: 1px solid #55504a;
   border-radius: var(--ui-radius-md);
-  background: rgb(5 8 14 / 92%);
-  color: #aaa3ff;
-  font-size: 1.25rem;
+  background: #080a0d;
+  box-shadow: inset 0 0 12px rgb(0 0 0 / 60%);
 }
 
-.offer-card[data-rarity='Uncommon'] .offer-card__icon {
-  border-color: rgb(79 185 150 / 42%);
-  color: #84d5bb;
-}
-
-.offer-card[data-rarity='Rare'] .offer-card__icon {
-  border-color: rgb(88 149 205 / 46%);
-}
-
-.offer-card[data-rarity='Epic'] .offer-card__icon {
-  border-color: rgb(146 136 255 / 55%);
+.offer-card__rarity {
+  overflow: hidden;
+  color: #8e8980;
+  font-size: .48rem;
+  line-height: 1.1;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .offer-card__copy {
   display: grid;
   min-width: 0;
+  align-content: start;
   gap: 2px;
 }
 
-.offer-card__copy strong {
-  overflow: hidden;
-  font-size: .7rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.offer-card__copy small {
+  color: #8e8578;
 }
 
-.offer-card__copy b {
-  color: var(--ui-color-gold);
-  font-size: .64rem;
+.offer-card__copy strong {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #e5dfd4;
+  font-size: .69rem;
+  line-height: 1.22;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.offer-card__description {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #85847f;
+  font-size: .55rem;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.offer-card__footer {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px solid rgb(255 255 255 / 5%);
+}
+
+.offer-card__footer b {
+  color: #e8c77e;
+  font-size: .67rem;
+  font-style: normal;
+}
+
+.offer-card__footer em {
+  color: #798377;
+  font-size: .49rem;
+  font-style: normal;
+  text-align: right;
+}
+
+.offer-card__footer .offer-card__shortfall {
+  color: #a87670;
+}
+
+.offer-card[data-rarity='Uncommon'] .offer-card__icon,
+.merchant-detail__icon[data-rarity='Uncommon'] {
+  border-color: rgb(87 177 115 / 58%);
+}
+
+.offer-card[data-rarity='Rare'] .offer-card__icon,
+.merchant-detail__icon[data-rarity='Rare'] {
+  border-color: rgb(75 130 201 / 66%);
+}
+
+.offer-card[data-rarity='Epic'] .offer-card__icon,
+.merchant-detail__icon[data-rarity='Epic'] {
+  border-color: rgb(137 94 201 / 72%);
+}
+
+.offer-card[data-rarity='Legendary'] .offer-card__icon,
+.merchant-detail__icon[data-rarity='Legendary'] {
+  border-color: rgb(211 139 62 / 76%);
+}
+
+.offer-card[data-rarity='Unique'] .offer-card__icon,
+.merchant-detail__icon[data-rarity='Unique'] {
+  border-color: rgb(218 188 92 / 82%);
 }
 
 .merchant-detail {
+  position: sticky;
+  top: 0;
   display: grid;
   align-content: start;
   gap: var(--ui-space-3);
-  padding: var(--ui-space-4);
+  min-width: 0;
+  padding: 13px;
   background:
-    radial-gradient(circle at 100% 0, rgb(232 200 102 / 7%), transparent 12rem);
+    radial-gradient(circle at 50% 0, rgb(91 43 34 / 14%), transparent 12rem),
+    linear-gradient(180deg, rgb(28 24 21 / 96%), rgb(12 13 15 / 98%));
+}
+
+.merchant-detail__banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgb(216 173 99 / 12%);
+}
+
+.merchant-detail__banner span {
+  color: #c9a96d;
+  font-size: .55rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .merchant-detail__identity {
   display: grid;
-  grid-template-columns: 4rem minmax(0, 1fr);
+  grid-template-columns: 4.6rem minmax(0, 1fr);
   align-items: center;
   gap: var(--ui-space-3);
 }
 
 .merchant-detail__icon {
   display: grid;
-  width: 4rem;
-  height: 4rem;
+  width: 4.6rem;
+  height: 4.6rem;
   place-items: center;
-  border: 1px solid var(--ui-color-border-strong);
+  overflow: hidden;
+  border: 1px solid #5b554e;
   border-radius: var(--ui-radius-md);
-  background: rgb(4 7 12 / 86%);
-  color: #aaa3ff;
-  font-size: 1.7rem;
+  background: #080a0d;
+  box-shadow:
+    inset 0 0 15px rgb(0 0 0 / 60%),
+    0 .4rem 1rem rgb(0 0 0 / 24%);
 }
 
-.merchant-detail__icon[data-rarity='Uncommon'] {
-  border-color: rgb(79 185 150 / 48%);
-  color: #84d5bb;
-}
-
-.merchant-detail__identity h3 {
-  margin: 2px 0 0;
-  font-family: var(--ui-font-display);
-  font-size: var(--ui-font-size-lg);
-}
-
-.merchant-detail > p {
-  margin: 0;
-  color: var(--ui-color-text-muted);
-  font-size: .7rem;
-  line-height: 1.5;
-}
-
-.offer-card__icon img,
-.merchant-detail__icon img {
+.offer-card__icon :deep(img),
+.merchant-detail__icon :deep(img) {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
+.merchant-detail__identity h3 {
+  margin: 2px 0;
+  color: #eee5d3;
+  font-family: var(--ui-font-display);
+  font-size: 1.08rem;
+  line-height: 1.12;
+}
+
+.merchant-detail__identity > div > span {
+  color: #879087;
+  font-size: .55rem;
+}
+
+.merchant-detail > p {
+  margin: 0;
+  color: #aaa59c;
+  font-size: .66rem;
+  line-height: 1.5;
+}
+
 .merchant-detail__effect {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--ui-space-3);
-  padding: var(--ui-space-2) var(--ui-space-3);
-  border: 1px solid rgb(79 185 150 / 16%);
+  display: grid;
+  gap: 4px;
+  padding: 9px;
+  border: 1px solid rgb(76 157 111 / 18%);
   border-radius: var(--ui-radius-md);
-  background: rgb(79 185 150 / 4%);
+  background: rgb(49 104 73 / 7%);
+}
+
+.merchant-detail__effect > div {
+  display: grid;
+  gap: 2px;
 }
 
 .merchant-detail__effect span {
-  color: var(--ui-color-text-muted);
-  font-size: .61rem;
+  color: #7f9487;
+  font-size: .52rem;
 }
 
 .merchant-detail__effect strong {
-  color: #84d5bb;
-  font-size: .68rem;
+  color: #8ac6a0;
+  font-size: .66rem;
+}
+
+.merchant-detail__effect > small {
+  color: #737d76;
+}
+
+.merchant-detail__quote {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  padding: 8px 9px 8px 20px;
+  border-left: 2px solid rgb(216 173 99 / 30%);
+  background: rgb(216 173 99 / 3%);
+}
+
+.merchant-detail__quote > span {
+  position: absolute;
+  top: 3px;
+  left: 7px;
+  color: rgb(216 173 99 / 52%);
+  font-family: Georgia, serif;
+  font-size: 1.4rem;
+}
+
+.merchant-detail__quote p {
+  margin: 0;
+  color: #9c9488;
+  font-size: .58rem;
+  font-style: italic;
+  line-height: 1.35;
+}
+
+.merchant-detail__quote small {
+  color: #7f776c;
+  font-size: .48rem;
+  text-align: right;
 }
 
 .merchant-detail__purchase {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: var(--ui-space-3);
+  display: grid;
+  gap: 9px;
   margin-top: auto;
-  padding-top: var(--ui-space-3);
-  border-top: 1px solid rgb(255 255 255 / 6%);
+  padding-top: 10px;
+  border-top: 1px solid rgb(216 173 99 / 13%);
 }
 
 .merchant-detail__purchase > div {
   display: grid;
-  gap: 1px;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  gap: 1px 7px;
+}
+
+.merchant-detail__purchase > div > small,
+.merchant-detail__purchase > div > span {
+  grid-column: 1;
 }
 
 .merchant-detail__purchase strong {
-  color: var(--ui-color-gold);
-  font-size: var(--ui-font-size-md);
+  grid-column: 2;
+  grid-row: 1 / 3;
+  color: var(--merchant-gold-soft);
+  font-size: 1rem;
+}
+
+.merchant-detail__purchase span {
+  color: #7f9782;
+  font-size: .52rem;
+}
+
+.merchant-detail__purchase span.danger {
+  color: #a87670;
+}
+
+.merchant-detail__purchase :deep(.ui-button) {
+  width: 100%;
 }
 
 .protected-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   margin: 0;
   padding: var(--ui-space-2) var(--ui-space-4);
   border-bottom: 1px solid rgb(255 255 255 / 5%);
@@ -748,6 +1219,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 
 .sell-list {
   display: grid;
+  padding: 6px 0;
 }
 
 .sell-card {
@@ -755,12 +1227,9 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
   grid-template-columns: 3rem minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--ui-space-3);
-  padding: var(--ui-space-3) var(--ui-space-4);
-  border-bottom: 1px solid rgb(255 255 255 / 6%);
-}
-
-.sell-card:last-child {
-  border-bottom: 0;
+  margin: 0 8px;
+  padding: var(--ui-space-3);
+  border-bottom: 1px solid rgb(216 173 99 / 9%);
 }
 
 .sell-card__icon {
@@ -768,17 +1237,15 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
   width: 3rem;
   height: 3rem;
   place-items: center;
-  border: 1px solid rgb(75 164 178 / 30%);
+  overflow: hidden;
+  border: 1px solid rgb(216 173 99 / 20%);
   border-radius: var(--ui-radius-md);
-  background: rgb(5 8 14 / 78%);
-  color: #77bbc5;
-  font-size: 1.1rem;
+  background: #090b0e;
 }
 
-.sell-card__icon img {
+.sell-card__icon :deep(img) {
   width: 100%;
   height: 100%;
-  border-radius: inherit;
   object-fit: cover;
 }
 
@@ -790,14 +1257,15 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 
 .sell-card__copy strong {
   overflow: hidden;
+  color: #ddd6ca;
   font-size: .7rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .sell-card__copy span {
-  color: var(--ui-color-text-muted);
-  font-size: .62rem;
+  color: #8a8780;
+  font-size: .58rem;
 }
 
 .sell-card__price {
@@ -808,7 +1276,7 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
 }
 
 .sell-card__price strong {
-  color: var(--ui-color-gold);
+  color: #e0bd76;
   font-size: .7rem;
 }
 
@@ -823,24 +1291,63 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
   width: 100%;
 }
 
-.muted {
-  margin: 0;
+.merchant-empty {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  min-height: 10rem;
+  place-content: center;
   padding: var(--ui-space-4);
-  color: var(--ui-color-text-muted);
-  font-size: var(--ui-font-size-sm);
+  color: #87827a;
   text-align: center;
 }
 
-@media (max-width: 520px) {
+.merchant-empty__mark {
+  color: #b79459;
+  font-size: 1.15rem;
+}
+
+.merchant-empty p {
+  margin: 0;
+  font-size: .68rem;
+}
+
+.merchant-empty button {
+  margin-top: 4px;
+  border: 0;
+  background: transparent;
+  color: #d2b477;
+  font: inherit;
+  font-size: .6rem;
+  text-decoration: underline;
+}
+
+@media (max-width: 620px) {
   .merchant__npc {
-    grid-template-columns: 3.8rem minmax(0, 1fr);
-    min-height: 8rem;
-    padding: var(--ui-space-3);
+    grid-template-columns: 5.2rem minmax(0, 1fr);
+    align-items: end;
+    min-height: 9rem;
+    padding: 12px;
   }
 
   .merchant__portrait {
-    width: 3.8rem;
-    height: 3.8rem;
+    width: 5.2rem;
+    height: 6.6rem;
+  }
+
+  .merchant__identity h2 {
+    font-size: 1.25rem;
+  }
+
+  .merchant__identity p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .merchant__service {
+    display: none;
   }
 
   .merchant__wallet {
@@ -848,66 +1355,90 @@ async function sell(item: InventoryItem, quantity: number): Promise<void> {
     grid-template-columns: 1fr auto;
     align-items: center;
     justify-items: stretch;
+    min-width: 0;
+    padding: 6px 9px;
   }
 
   .merchant__wallet strong {
+    grid-column: 2;
+    grid-row: 1 / 3;
     justify-self: end;
+  }
+
+  .merchant__wallet span {
+    grid-column: 1;
+  }
+
+  .merchant-panel__heading {
+    padding-inline: 12px;
+  }
+
+  .merchant-filter {
+    padding-inline: 12px;
+  }
+
+  .merchant-filter__row {
+    grid-template-columns: 1fr;
+  }
+
+  .merchant-filter__sort select {
+    width: 100%;
+    min-height: 2.2rem;
+    border-radius: var(--ui-radius-md);
   }
 
   .merchant-buy {
     grid-template-columns: 1fr;
   }
 
-  .merchant-shelf {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    max-height: 13rem;
+  .merchant-showcase {
     border-right: 0;
-    border-bottom: 1px solid rgb(255 255 255 / 6%);
+    border-bottom: 1px solid rgb(216 173 99 / 13%);
   }
 
-  .offer-card {
-    grid-template-columns: 2.6rem minmax(0, 1fr);
-    padding: var(--ui-space-2);
-  }
-
-  .offer-card__icon {
-    width: 2.6rem;
-    height: 2.6rem;
+  .merchant-shelf {
+    max-height: 21rem;
   }
 
   .merchant-detail {
-    min-height: 12rem;
-    padding: var(--ui-space-3);
-  }
-
-  .merchant-detail__purchase {
-    align-items: center;
-  }
-
-  .sell-card {
-    grid-template-columns: 2.7rem minmax(0, 1fr) auto;
-    gap: var(--ui-space-2);
-    padding-inline: var(--ui-space-3);
-  }
-
-  .sell-card__icon {
-    width: 2.7rem;
-    height: 2.7rem;
+    position: static;
+    min-height: 16rem;
   }
 }
 
-@media (max-width: 355px) {
+@media (max-width: 390px) {
+  .merchant-shelf {
+    gap: 6px;
+    padding-inline: 8px;
+  }
+
+  .offer-card {
+    grid-template-columns: 3rem minmax(0, 1fr);
+    min-height: 6.6rem;
+    padding: 7px;
+  }
+
+  .offer-card__icon {
+    width: 3rem;
+    height: 3rem;
+  }
+
+  .offer-card__description {
+    -webkit-line-clamp: 1;
+  }
+
+  .offer-card__footer {
+    align-items: center;
+  }
+
+  .offer-card__footer em {
+    max-width: 5rem;
+  }
+}
+
+@media (max-width: 340px) {
   .merchant-shelf {
     grid-template-columns: 1fr;
-  }
-
-  .merchant-detail__purchase {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  .merchant-detail__purchase :deep(.ui-button) {
-    width: 100%;
   }
 
   .sell-card {
