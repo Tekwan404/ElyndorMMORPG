@@ -201,8 +201,6 @@
     "attackPowerPerStrength": 2,
     "attackPowerPerAgility": 1,
     "spellPowerPerIntellect": 2,
-    "armorPerStamina": 2,
-    "armorPerStrength": 1,
     "magicResistancePerStamina": 1,
     "magicResistancePerIntellect": 1,
     "criticalChanceBase": 5,
