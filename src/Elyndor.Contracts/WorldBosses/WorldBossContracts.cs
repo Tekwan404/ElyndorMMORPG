@@ -38,3 +38,22 @@ public sealed record WorldBossLeaderboardResponse(
     Guid? PartyId,
     int? PartyRank,
     decimal PartyDamage);
+
+
+public sealed record WorldBossRewardItemResponse(
+    string ItemId,
+    string Name,
+    string Rarity,
+    int Quantity,
+    string? IconId);
+
+public sealed record WorldBossRewardResponse(
+    Guid SpawnId,
+    decimal Contribution,
+    string Tier,
+    int Experience,
+    int BossGold,
+    int ChestGold,
+    int TotalGold,
+    IReadOnlyList<WorldBossRewardItemResponse> Items,
+    DateTimeOffset SettledAtUtc);
