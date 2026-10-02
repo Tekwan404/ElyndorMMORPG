@@ -9,6 +9,7 @@ using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Progression;
 using Elyndor.Server.Administration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -514,7 +515,7 @@ internal static class BossCombatLogArchive
             && (combatEvent.ActorId == playerActorId
                 || combatEvent.TargetActorId == playerActorId));
 
-        builder.Append("Урон босcу: ").AppendLine(FormatNumber(damageDealt));
+        builder.Append("Урон боссу: ").AppendLine(FormatNumber(damageDealt));
         builder.Append("Критов: ")
             .AppendLine(criticalHits.ToString(CultureInfo.InvariantCulture));
         builder.Append("Получено урона: ").AppendLine(FormatNumber(damageReceived));
