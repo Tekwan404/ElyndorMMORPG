@@ -35,18 +35,35 @@ const remainingTime = computed(() => {
 
 const rewardProgress = computed(() => {
   const current = boss.value
-  if (!current) return 0
-  if (!current.nextRewardTierAtDamage) return current.rewardEligible ? 100 : 0
-  return Math.max(
-    0,
-    Math.min(100, (current.personalDamage / current.nextRewardTierAtDamage) * 100),
-  )
+  if (!current?.rewardEligible) return 0
+  return Math.max(0, Math.min(100, current.rewardPercentile))
+})
+
+const rewardTierLabel = computed(() => formatRewardTier(boss.value?.rewardTier ?? null))
+
+const rewardChestLabel = computed(() => {
+  const current = boss.value
+  if (!current?.rewardEligible) return 'Награда пока не открыта'
+  if (current.rewardEnhancedChestCount > 0) {
+    return `${current.rewardEnhancedChestCount} усиленных сундука`
+  }
+  if (current.rewardChestCount === 1) return '1 обычный сундук'
+  if (current.rewardChestCount > 1) return `${current.rewardChestCount} обычных сундука`
+  return 'Без сундука'
 })
 
 const formatter = new Intl.NumberFormat('ru-RU', { maximumFractionDigits: 0 })
 
 function formatNumber(value: number): string {
   return formatter.format(Math.max(0, value))
+}
+
+function formatRewardTier(tier: string | null): string {
+  if (!tier) return 'Не квалифицирован'
+  if (tier === 'Qualified') return 'Участник'
+  if (tier === 'Top5') return 'TOP 5'
+  const match = /^Top(\d+)$/.exec(tier)
+  return match ? `TOP ${match[1]}` : tier
 }
 
 function close(): void {
@@ -99,6 +116,21 @@ onUnmounted(() => {
         </p>
 
         <template v-if="reward">
+          <div class="result-card__placement">
+            <div>
+              <small>Итоговое место</small>
+              <strong>#{{ reward.rank }} / {{ reward.eligibleParticipants }}</strong>
+            </div>
+            <div>
+              <small>Процентиль</small>
+              <strong>{{ reward.percentile.toFixed(2) }}%</strong>
+            </div>
+            <div>
+              <small>Категория</small>
+              <strong>{{ formatRewardTier(reward.tier) }}</strong>
+            </div>
+          </div>
+
           <div class="result-card__rewards">
             <div>
               <span>Опыт</span>
@@ -107,22 +139,28 @@ onUnmounted(() => {
             <div>
               <span>Золото</span>
               <strong>+{{ formatNumber(reward.totalGold) }}</strong>
-              <small>{{ formatNumber(reward.bossGold) }} босс + {{ formatNumber(reward.chestGold) }} сундук</small>
+              <small>{{ formatNumber(reward.bossGold) }} босс + {{ formatNumber(reward.chestGold) }} сундуки</small>
             </div>
             <div>
-              <span>Тир награды</span>
-              <strong>{{ reward.tier }}</strong>
+              <span>Сундуки</span>
+              <strong v-if="reward.enhancedChestCount > 0">
+                {{ reward.enhancedChestCount }} × усиленный
+              </strong>
+              <strong v-else-if="reward.chestCount > 0">
+                {{ reward.chestCount }} × обычный
+              </strong>
+              <strong v-else>Без сундука</strong>
             </div>
           </div>
 
-          <section class="boss-chest">
+          <section v-if="reward.items.length" class="boss-chest">
             <div class="boss-chest__title">
-              <span>Сундук Архона Пепла</span>
+              <span>{{ reward.enhancedChestCount > 0 ? 'Усиленная добыча TOP 5' : 'Сундук Архона Пепла' }}</span>
               <small>Персональная добыча</small>
             </div>
             <article
-              v-for="item in reward.items"
-              :key="item.itemId"
+              v-for="(item, index) in reward.items"
+              :key="item.instanceId ?? `${item.itemId}-${index}`"
               class="reward-item"
               :data-rarity="item.rarity.toLowerCase()"
             >
@@ -184,26 +222,28 @@ onUnmounted(() => {
       <section class="reward-progress">
         <div class="reward-progress__head">
           <div>
-            <small>Текущая награда</small>
-            <strong>{{ boss.rewardTier ?? 'Не квалифицирован' }}</strong>
+            <small>Предварительная категория</small>
+            <strong>{{ rewardTierLabel }}</strong>
           </div>
-          <div v-if="boss.nextRewardTier">
-            <small>Следующий тир</small>
-            <strong>{{ boss.nextRewardTier }}</strong>
-          </div>
-          <div v-else>
-            <small>Следующий тир</small>
-            <strong>Максимум</strong>
+          <div>
+            <small>Наградное место</small>
+            <strong v-if="boss.personalRewardRank">
+              #{{ boss.personalRewardRank }} / {{ boss.eligibleParticipants }}
+            </strong>
+            <strong v-else>—</strong>
           </div>
         </div>
         <div class="reward-progress__track">
           <span :style="{ width: `${rewardProgress}%` }" />
         </div>
-        <p v-if="boss.nextRewardTier">
-          До {{ boss.nextRewardTier }}:
-          <strong>{{ formatNumber(boss.damageToNextRewardTier) }} урона</strong>
+        <p v-if="boss.rewardEligible">
+          {{ rewardChestLabel }} · текущий процентиль
+          <strong>{{ boss.rewardPercentile.toFixed(2) }}%</strong>.
+          Итоговая награда фиксируется после смерти босса.
         </p>
-        <p v-else><strong>Legendary достигнут.</strong> Вклад продолжает считаться в рейтинге.</p>
+        <p v-else>
+          Набери минимальный вклад, чтобы попасть в наградный рейтинг.
+        </p>
       </section>
 
       <section class="leaderboard">
@@ -615,10 +655,30 @@ onUnmounted(() => {
   color: var(--ui-color-text-secondary);
 }
 
+.result-card__placement,
 .result-card__rewards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--ui-space-2);
+}
+
+.result-card__placement > div {
+  display: grid;
+  gap: 2px;
+  padding: var(--ui-space-3);
+  border: 1px solid rgb(255 255 255 / 6%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(0 0 0 / 20%);
+}
+
+.result-card__placement small {
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+}
+
+.result-card__placement strong {
+  color: var(--ui-color-gold);
+  font-size: .95rem;
 }
 
 .result-card__rewards > div {
