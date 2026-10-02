@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import MoneyAmount from '@/ui/components/MoneyAmount.vue'
 import { canAffordMoney } from '@/shared/money'
-import { computed, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
-import type { InventoryItem, MerchantItem, MerchantSnapshot } from '@/api/contracts'
+import type { InventoryItem, MerchantBuybackItem, MerchantItem, MerchantSnapshot } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
 import { consumableActionLabel } from '@/game/items/consumablePresentation'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
@@ -14,37 +14,50 @@ import IconGenerator from '@/ui/icons/IconGenerator.vue'
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 const MERCHANT_ID = 'MARCUS_SUPPLIES'
+
 type MerchantFilter = 'all' | MerchantItem['type']
 type SortMode = 'recommended' | 'price-asc' | 'price-desc' | 'rarity'
+type EquipmentSubcategory = 'all' | 'weapon' | 'armor' | 'accessory'
+type ActiveTab = 'buy' | 'sell' | 'buyback'
+type StatKey =
+  | 'strength' | 'agility' | 'intellect' | 'stamina'
+  | 'maxHp' | 'attackPower' | 'spellPower' | 'criticalChance'
+  | 'armor' | 'magicResistance' | 'dodge' | 'attackSpeed'
 
 const session = useGameSessionStore()
 const merchant = ref<MerchantSnapshot | null>(null)
 const loading = ref(false)
-const activeTab = ref<'buy' | 'sell'>('buy')
+const activeTab = ref<ActiveTab>('buy')
 const selectedOfferId = ref<string | null>(null)
 const searchQuery = ref('')
 const activeFilter = ref<MerchantFilter>('all')
+const equipmentSubcategory = ref<EquipmentSubcategory>('all')
 const onlyAffordable = ref(false)
+const onlyForClass = ref(false)
 const sortMode = ref<SortMode>('recommended')
+const selectedQuantity = ref(1)
+const selectedSellIds = ref<string[]>([])
+const reaction = ref('Осмотрись. Хорошее снаряжение само себя не купит.')
+const purchasePulseId = ref<string | null>(null)
+let pulseTimer: ReturnType<typeof setTimeout> | null = null
+
 const merchantFilters = ['all', 'Consumable', 'Equipment', 'Material'] as const
 const buyPending = computed(() => session.isMutationPending('merchant:buy'))
 const sellPending = computed(() => session.isMutationDomainPending('merchant:sell-'))
+const buybackPending = computed(() => session.isMutationPending('merchant:buyback'))
+const characterClassId = computed(() => session.snapshot?.character?.classId ?? '')
+const characterLevel = computed(() => session.snapshot?.character?.level ?? 1)
+const walletGold = computed(() => Number(merchant.value?.gold ?? session.snapshot?.character?.gold ?? 0))
+const buybackItems = computed(() => merchant.value?.buybackItems ?? [])
 
 const sellableItems = computed(() => session.snapshot?.character?.inventory.items
-  .filter((item) =>
-    !item.equippedSlot
-    && !item.isLocked
-    && item.sellPriceGold > 0,
-  ) ?? [])
+  .filter(item => !item.equippedSlot && !item.isLocked && item.sellPriceGold > 0) ?? [])
 const protectedItemsCount = computed(() => session.snapshot?.character?.inventory.items
-  .filter((item) =>
-    !item.equippedSlot
-    && item.isLocked
-    && item.sellPriceGold > 0,
-  ).length ?? 0)
+  .filter(item => !item.equippedSlot && item.isLocked && item.sellPriceGold > 0).length ?? 0)
 const affordableOfferCount = computed(() =>
   merchant.value?.items.filter(item => isAffordable(item)).length ?? 0,
 )
+
 const visibleOffers = computed(() => {
   const query = searchQuery.value.trim().toLocaleLowerCase()
   const offers = merchant.value?.items.filter(item => {
@@ -53,35 +66,83 @@ const visibleOffers = computed(() => {
       || item.name.toLocaleLowerCase().includes(query)
       || item.description.toLocaleLowerCase().includes(query)
     const matchesBudget = !onlyAffordable.value || isAffordable(item)
-    return matchesType && matchesQuery && matchesBudget
+    const matchesClass = !onlyForClass.value || item.type !== 'Equipment' || isForCurrentClass(item)
+    const matchesEquipmentGroup = activeFilter.value !== 'Equipment'
+      || equipmentSubcategory.value === 'all'
+      || equipmentGroup(item) === equipmentSubcategory.value
+    return matchesType && matchesQuery && matchesBudget && matchesClass && matchesEquipmentGroup
   }) ?? []
 
-  if (sortMode.value === 'price-asc') {
-    return [...offers].sort((left, right) => left.buyPriceGold - right.buyPriceGold)
-  }
-  if (sortMode.value === 'price-desc') {
-    return [...offers].sort((left, right) => right.buyPriceGold - left.buyPriceGold)
-  }
-  if (sortMode.value === 'rarity') {
-    return [...offers].sort((left, right) => rarityRank(right.rarity) - rarityRank(left.rarity))
-  }
-  return offers
+  if (sortMode.value === 'price-asc') return [...offers].sort((a, b) => a.buyPriceGold - b.buyPriceGold)
+  if (sortMode.value === 'price-desc') return [...offers].sort((a, b) => b.buyPriceGold - a.buyPriceGold)
+  if (sortMode.value === 'rarity') return [...offers].sort((a, b) => rarityRank(b.rarity) - rarityRank(a.rarity))
+  return [...offers].sort((a, b) => recommendationScore(b) - recommendationScore(a))
 })
+
 const selectedOffer = computed(() =>
   visibleOffers.value.find(item => item.definitionId === selectedOfferId.value)
     ?? visibleOffers.value[0]
     ?? null,
 )
 
-watch(() => props.open, (open) => {
-  if (open) {
-    activeTab.value = 'buy'
-    searchQuery.value = ''
-    activeFilter.value = 'all'
-    onlyAffordable.value = false
-    sortMode.value = 'recommended'
-    void loadMerchant()
-  }
+const recommendedOffers = computed(() =>
+  [...(merchant.value?.items ?? [])]
+    .filter(item => isAffordable(item))
+    .sort((a, b) => recommendationScore(b) - recommendationScore(a))
+    .slice(0, 3),
+)
+
+const selectedOfferMaxQuantity = computed(() => {
+  if (!selectedOffer.value) return 1
+  return selectedOffer.value.type === 'Equipment' ? 1 : 20
+})
+const selectedTotalPrice = computed(() =>
+  (selectedOffer.value?.buyPriceGold ?? 0) * selectedQuantity.value,
+)
+const selectedCanAfford = computed(() =>
+  !!selectedOffer.value && canAffordMoney(merchant.value?.gold ?? 0, selectedTotalPrice.value),
+)
+const maxAffordableQuantity = computed(() => {
+  if (!selectedOffer.value || selectedOffer.value.buyPriceGold <= 0) return 1
+  return Math.max(
+    1,
+    Math.min(
+      selectedOfferMaxQuantity.value,
+      Math.floor(walletGold.value / selectedOffer.value.buyPriceGold),
+    ),
+  )
+})
+const selectedComparisonRows = computed(() =>
+  selectedOffer.value ? comparisonRows(selectedOffer.value) : [],
+)
+const selectedSellItems = computed(() =>
+  sellableItems.value.filter(item => selectedSellIds.value.includes(item.id)),
+)
+const selectedSellValue = computed(() =>
+  selectedSellItems.value.reduce((sum, item) => sum + item.sellPriceGold * item.quantity, 0),
+)
+
+watch(() => props.open, open => {
+  if (!open) return
+  activeTab.value = 'buy'
+  searchQuery.value = ''
+  activeFilter.value = 'all'
+  equipmentSubcategory.value = 'all'
+  onlyAffordable.value = false
+  onlyForClass.value = false
+  sortMode.value = 'recommended'
+  selectedQuantity.value = 1
+  selectedSellIds.value = []
+  reaction.value = 'Осмотрись. Хорошее снаряжение само себя не купит.'
+  void loadMerchant()
+})
+
+watch(selectedOfferId, () => {
+  selectedQuantity.value = 1
+})
+
+onBeforeUnmount(() => {
+  if (pulseTimer) clearTimeout(pulseTimer)
 })
 
 async function loadMerchant(): Promise<void> {
@@ -116,7 +177,7 @@ function itemTypeLabel(item: MerchantItem): string {
   return 'Материал'
 }
 
-function rarityLabel(item: MerchantItem): string {
+function rarityLabel(item: { rarity: MerchantItem['rarity'] }): string {
   if (item.rarity === 'Uncommon') return 'Необычный'
   if (item.rarity === 'Rare') return 'Редкий'
   if (item.rarity === 'Epic') return 'Эпический'
@@ -144,9 +205,142 @@ function inventoryCount(item: MerchantItem): number {
     .reduce((sum, entry) => sum + entry.quantity, 0) ?? 0
 }
 
-async function buy(definitionId: string): Promise<void> {
-  const updated = await session.buyMerchantItem(MERCHANT_ID, definitionId, 1)
-  if (updated) merchant.value = updated
+function classPrimaryStat(): 'strength' | 'agility' | 'intellect' | null {
+  if (characterClassId.value === 'WARRIOR') return 'strength'
+  if (characterClassId.value === 'ARCHER') return 'agility'
+  if (characterClassId.value === 'MAGE') return 'intellect'
+  return null
+}
+
+function isForCurrentClass(item: MerchantItem): boolean {
+  if (item.type !== 'Equipment' || !item.stats) return true
+  const key = classPrimaryStat()
+  if (!key) return true
+  const primary = {
+    strength: item.stats.strength,
+    agility: item.stats.agility,
+    intellect: item.stats.intellect,
+  }
+  const peak = Math.max(primary.strength, primary.agility, primary.intellect)
+  return peak <= 0 || primary[key] >= peak
+}
+
+function equipmentGroup(item: MerchantItem): EquipmentSubcategory {
+  if (item.weaponCategory || item.slot === 'MainHand' || item.slot === 'OffHand') return 'weapon'
+  if (item.slot === 'Accessory' || item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return 'accessory'
+  return 'armor'
+}
+
+function equippedForOffer(item: MerchantItem): InventoryItem | null {
+  if (!item.slot) return null
+  const equipped = session.snapshot?.character?.inventory.equipped
+  if (!equipped) return null
+  const map: Record<string, keyof typeof equipped> = {
+    MainHand: 'mainHand',
+    OffHand: 'offHand',
+    Head: 'head',
+    Shoulders: 'shoulders',
+    Chest: 'chest',
+    Legs: 'legs',
+    Boots: 'boots',
+    Feet: 'feet',
+    Hands: 'hands',
+    Cloak: 'cloak',
+    Amulet: 'amulet',
+    Accessory: 'accessory',
+    Waist: 'waist',
+    Wrist: 'wrist',
+    Ring1: 'ring1',
+    Ring2: 'ring2',
+  }
+  const key = map[item.slot]
+  if (!key) return null
+  return equipped[key] ?? null
+}
+
+const statDefinitions: ReadonlyArray<{ key: StatKey; label: string }> = [
+  { key: 'strength', label: 'Сила' },
+  { key: 'agility', label: 'Ловкость' },
+  { key: 'intellect', label: 'Интеллект' },
+  { key: 'stamina', label: 'Выносливость' },
+  { key: 'maxHp', label: 'Здоровье' },
+  { key: 'attackPower', label: 'Сила атаки' },
+  { key: 'spellPower', label: 'Сила заклинаний' },
+  { key: 'armor', label: 'Броня' },
+  { key: 'magicResistance', label: 'Сопротивление' },
+  { key: 'criticalChance', label: 'Крит. шанс' },
+  { key: 'dodge', label: 'Уклонение' },
+  { key: 'attackSpeed', label: 'Скорость атаки' },
+]
+
+function comparisonRows(item: MerchantItem) {
+  if (item.type !== 'Equipment' || !item.stats) return []
+  const equipped = equippedForOffer(item)
+  return statDefinitions
+    .map(({ key, label }) => {
+      const next = Number(item.stats?.[key] ?? 0)
+      const current = Number(equipped?.stats?.[key] ?? 0)
+      return { key, label, next, current, delta: next - current }
+    })
+    .filter(row => row.next !== 0 || row.current !== 0)
+}
+
+function hasPositiveComparison(item: MerchantItem): boolean {
+  return comparisonRows(item).some(row => row.delta > 0)
+}
+
+function recommendationScore(item: MerchantItem): number {
+  let score = 0
+  if (isAffordable(item)) score += 10
+  if (item.type === 'Consumable' && item.definitionId === 'SMALL_HEALING_POTION' && inventoryCount(item) < 5) score += 40
+  if (item.type === 'Equipment' && isForCurrentClass(item)) score += 20
+  if (item.type === 'Equipment' && hasPositiveComparison(item)) score += 25
+  if ((item.requiredLevel ?? 1) <= characterLevel.value) score += 5
+  return score
+}
+
+function recommendationReason(item: MerchantItem): string {
+  if (item.definitionId === 'SMALL_HEALING_POTION' && inventoryCount(item) < 5) return 'Запас заканчивается'
+  if (item.type === 'Equipment' && hasPositiveComparison(item)) return 'Есть прирост характеристик'
+  if (item.type === 'Equipment' && isForCurrentClass(item)) return 'Подходит вашему классу'
+  return 'Полезно в дороге'
+}
+
+function offerBadges(item: MerchantItem): string[] {
+  const badges: string[] = []
+  if ((item.requiredLevel ?? 1) > characterLevel.value) badges.push('Ур. ' + item.requiredLevel)
+  if (item.type === 'Equipment' && isForCurrentClass(item)) badges.push('Для моего класса')
+  if (item.type === 'Equipment' && hasPositiveComparison(item)) badges.push('Есть прирост')
+  if (inventoryCount(item) > 0) badges.push('В сумке: ' + inventoryCount(item))
+  return badges.slice(0, 2)
+}
+
+function setBuyQuantity(quantity: number): void {
+  selectedQuantity.value = Math.max(1, Math.min(selectedOfferMaxQuantity.value, quantity))
+}
+
+function pulse(itemId: string): void {
+  purchasePulseId.value = itemId
+  if (pulseTimer) clearTimeout(pulseTimer)
+  pulseTimer = setTimeout(() => {
+    purchasePulseId.value = null
+  }, 360)
+}
+
+async function buy(item: MerchantItem, quantity = 1): Promise<void> {
+  const updated = await session.buyMerchantItem(MERCHANT_ID, item.definitionId, quantity)
+  if (!updated) return
+  merchant.value = updated
+  reaction.value = quantity > 1
+    ? 'Вот это запас. ' + quantity + ' шт. — хватит на дорогу.'
+    : 'Хороший выбор. В дороге пригодится.'
+  pulse(item.definitionId)
+  selectedQuantity.value = 1
+}
+
+async function buySelected(): Promise<void> {
+  if (!selectedOffer.value) return
+  await buy(selectedOffer.value, selectedQuantity.value)
 }
 
 function inventoryItemTypeLabel(item: InventoryItem): string {
@@ -155,9 +349,68 @@ function inventoryItemTypeLabel(item: InventoryItem): string {
   return 'МАТЕРИАЛ'
 }
 
-async function sell(item: InventoryItem, quantity: number): Promise<void> {
+function isValuable(item: InventoryItem): boolean {
+  return rarityRank(item.rarity) >= rarityRank('Rare')
+    || (item.generatedItem?.stars ?? 0) > 0
+    || (item.reforgeCount ?? 0) > 0
+}
+
+async function performSell(item: InventoryItem, quantity: number): Promise<boolean> {
   const updated = await session.sellMerchantItem(MERCHANT_ID, item.id, quantity)
-  if (updated) merchant.value = updated
+  if (!updated) return false
+  merchant.value = updated
+  return true
+}
+
+async function sell(item: InventoryItem, quantity: number): Promise<void> {
+  if (isValuable(item)) {
+    const confirmed = window.confirm(
+      'Продать ценный предмет «' + item.name + '» за ' + (item.sellPriceGold * quantity) + ' золота?',
+    )
+    if (!confirmed) return
+  }
+  if (await performSell(item, quantity)) {
+    reaction.value = 'Сделка есть сделка. Если передумаешь — загляни во «Выкуп».'
+    selectedSellIds.value = selectedSellIds.value.filter(id => id !== item.id)
+  }
+}
+
+function toggleSellSelection(itemId: string): void {
+  selectedSellIds.value = selectedSellIds.value.includes(itemId)
+    ? selectedSellIds.value.filter(id => id !== itemId)
+    : [...selectedSellIds.value, itemId]
+}
+
+function selectAllSellable(): void {
+  selectedSellIds.value = selectedSellIds.value.length === sellableItems.value.length
+    ? []
+    : sellableItems.value.map(item => item.id)
+}
+
+async function sellSelected(): Promise<void> {
+  const items = selectedSellItems.value
+  if (!items.length) return
+  if (items.some(isValuable)) {
+    const confirmed = window.confirm(
+      'В выбранных предметах есть Rare+ или улучшенные вещи. Продать '
+      + items.length + ' позиций за ' + selectedSellValue.value + ' золота?',
+    )
+    if (!confirmed) return
+  }
+  let sold = 0
+  for (const item of items) {
+    if (!await performSell(item, item.quantity)) break
+    sold += 1
+  }
+  selectedSellIds.value = []
+  if (sold > 0) reaction.value = 'Принял ' + sold + ' позиций. Освободил тебе место в сумке.'
+}
+
+async function buyback(item: MerchantBuybackItem): Promise<void> {
+  const updated = await session.buybackMerchantItem(MERCHANT_ID, item.characterItemId)
+  if (!updated) return
+  merchant.value = updated
+  reaction.value = 'Передумал? Бывает. Забирай — вещь всё ещё твоя.'
 }
 </script>
 
