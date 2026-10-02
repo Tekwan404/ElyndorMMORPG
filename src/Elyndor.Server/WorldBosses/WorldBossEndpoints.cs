@@ -198,6 +198,7 @@ public static class WorldBossEndpoints
             active.RewardPercentile,
             active.RewardChestCount,
             active.RewardEnhancedChestCount,
+            active.MinimumContribution,
             active.RewardEligible,
             active.RewardTier,
             active.NextRewardTier,
