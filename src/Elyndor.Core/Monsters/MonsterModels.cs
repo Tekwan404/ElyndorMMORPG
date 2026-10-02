@@ -44,7 +44,8 @@ public sealed record MonsterDefinition(
     string? SummonMonsterId = null,
     decimal SummonIntervalSeconds = 0,
     int SummonCount = 0,
-    int MaxActiveSummons = 0);
+    int MaxActiveSummons = 0,
+    string BalanceArchetypeId = "STANDARD");
 
 public sealed record MonsterAbilityRule(
     string AbilityId,
