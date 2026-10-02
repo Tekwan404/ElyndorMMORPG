@@ -53,21 +53,7 @@ public static class WorldBossEndpoints
         if (result.Reward is not { } reward)
             return Results.NoContent();
 
-        return Results.Ok(new WorldBossRewardResponse(
-            reward.SpawnId,
-            reward.Contribution,
-            reward.Tier.ToString(),
-            reward.Experience,
-            reward.BossGold,
-            reward.ChestGold,
-            reward.TotalGold,
-            reward.Items.Select(item => new WorldBossRewardItemResponse(
-                item.ItemId,
-                item.Name,
-                item.Rarity.ToString(),
-                item.Quantity,
-                item.IconId)).ToArray(),
-            reward.SettledAtUtc));
+        return Results.Ok(WorldBossContractMapper.ToRewardResponse(reward));
     }
 
     private static async Task<IResult> GetLeaderboardAsync(
