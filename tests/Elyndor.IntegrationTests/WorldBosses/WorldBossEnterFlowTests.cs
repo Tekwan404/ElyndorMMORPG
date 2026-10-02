@@ -162,9 +162,7 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
             Path.GetFullPath("content/package.json"));
         GameContentIndexes indexes = GameContentIndexes.For(package);
         EncounterDefinition encounter = (package.Encounters ?? [])
-            .First(candidate =>
-                indexes.MonstersById.TryGetValue(candidate.MonsterId, out var monster)
-                && monster.Level <= 5);
+            .First(candidate => indexes.MonstersById.ContainsKey(candidate.MonsterId));
         WorldBossDefinition ash = package.WorldBosses!
             .Single(candidate => candidate.Id == "WORLD_BOSS_ASH_ARCHON");
 
