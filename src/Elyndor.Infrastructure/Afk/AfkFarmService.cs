@@ -247,7 +247,9 @@ public sealed class AfkFarmService(
             now.Add(duration),
             preparation.Content.ContentVersion,
             preparation.TargetMonsterId,
-            AbilitiesById: preparation.Content.Indexes.AbilitiesById));
+            AbilitiesById: preparation.Content.Indexes.AbilitiesById,
+            LevelProgression: preparation.Content.Package.LevelProgression,
+            ProgressionBalance: preparation.Content.Package.ProgressionBalance));
         AfkFarmRewardProfile profile = preparation.Content.Package.AfkFarm
             ?? throw new InvalidOperationException("AFK reward profile is required in content.");
         ValidateRewardProfile(profile);
