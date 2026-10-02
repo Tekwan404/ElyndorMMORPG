@@ -43,7 +43,8 @@ public sealed class WorldBossContentTests
         Assert.Equal("WORLD_BOSS_ASH_ARCHON_L30", monster.Id);
         Assert.Equal(30, monster.Level);
         Assert.Equal(1_000_000m, monster.MaxHp);
-        Assert.Equal(0, monster.XpReward);
+        Assert.False(monster.GrantsXp);
+        Assert.Equal(0, monster.LegacyXpReward);
         Assert.Equal(0, monster.GoldRewardMin);
         Assert.Equal(0, monster.GoldRewardMax);
         Assert.Null(monster.LootTableId);
