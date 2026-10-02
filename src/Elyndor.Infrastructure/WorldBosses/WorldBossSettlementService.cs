@@ -481,7 +481,7 @@ public sealed class WorldBossSettlementService(
             content.Package.Itemization);
         ItemDefinition effective = generated is null
             ? definition
-            : ItemizationBudgetPolicy.ApplyGeneratedAffixes(
+            : ItemInstanceGenerator.ApplyGeneratedAffixes(
                 definition,
                 generated.Affixes,
                 generated.DisplayName);
@@ -503,7 +503,7 @@ public sealed class WorldBossSettlementService(
             : JsonSerializer.Deserialize<GeneratedItemInstance>(pending.GeneratedItemJson);
         ItemDefinition effective = generated is null
             ? definition
-            : ItemizationBudgetPolicy.ApplyGeneratedAffixes(
+            : ItemInstanceGenerator.ApplyGeneratedAffixes(
                 definition,
                 generated.Affixes,
                 generated.DisplayName);
