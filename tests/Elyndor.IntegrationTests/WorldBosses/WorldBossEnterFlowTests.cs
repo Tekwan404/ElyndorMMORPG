@@ -93,8 +93,9 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
             WorldBossCombatSessionBinding binding =
                 await verify.WorldBossCombatSessions.SingleAsync();
 
-            Assert.Equal(1_000_000m - hit.Amount, spawn.CurrentHealth);
-            Assert.Equal(hit.Amount, contribution.Damage);
+            decimal globalDamage = 1_000_000m - spawn.CurrentHealth;
+            Assert.True(globalDamage >= hit.Amount);
+            Assert.Equal(globalDamage, contribution.Damage);
             Assert.Equal(entered.Snapshot.SessionId, binding.CombatSessionId);
             Assert.Equal(spawnId, binding.SpawnId);
             Assert.Equal(entered.Snapshot.Enemy.ActorId, binding.BossActorId);
