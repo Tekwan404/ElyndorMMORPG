@@ -1,3 +1,5 @@
+using Elyndor.Core.Items;
+
 namespace Elyndor.Core.WorldBosses;
 
 public enum WorldBossSpawnStatus
@@ -357,6 +359,18 @@ public sealed record WorldBossDefinition(
     string TokenCurrencyId,
     bool IsEnabled,
     IReadOnlyList<WorldBossPhaseDefinition> Phases);
+
+public sealed record WorldBossLootItemResult(
+    string ItemId,
+    string Name,
+    ItemRarity Rarity,
+    int Quantity,
+    string? IconId);
+
+public sealed record WorldBossLootResult(
+    int BossGold,
+    int ChestGold,
+    IReadOnlyList<WorldBossLootItemResult> Items);
 
 public sealed record WorldBossRewardProfileDefinition(
     string Id,
