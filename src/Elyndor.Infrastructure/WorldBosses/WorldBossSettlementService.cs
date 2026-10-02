@@ -229,7 +229,7 @@ public sealed class WorldBossSettlementService(
             for (var ordinal = 0; ordinal < chestLoot.Length; ordinal++)
             {
                 LootRoll roll = chestLoot[ordinal];
-                await GrantItemAsync(
+                WorldBossGrantedItemSnapshot granted = await GrantItemAsync(
                     character.Id,
                     lootSeed,
                     roll,
@@ -241,10 +241,14 @@ public sealed class WorldBossSettlementService(
                 ItemDefinition item = content.Indexes.ItemsById[roll.ItemId];
                 itemResults.Add(new(
                     item.Id,
-                    item.Name,
+                    granted.DisplayName,
                     item.Rarity,
                     roll.Quantity,
-                    item.IconId));
+                    item.IconId,
+                    granted.InstanceId,
+                    granted.Pending,
+                    granted.Stats,
+                    granted.GeneratedItem));
             }
 
             WorldBossLootResult lootResult = new(
@@ -336,7 +340,7 @@ public sealed class WorldBossSettlementService(
         }
     }
 
-    private async Task GrantItemAsync(
+    private async Task<WorldBossGrantedItemSnapshot> GrantItemAsync(
         Guid characterId,
         Guid rewardResolutionId,
         LootRoll roll,
@@ -360,41 +364,46 @@ public sealed class WorldBossSettlementService(
                 characterId,
                 content,
                 cancellationToken);
+            WorldBossGrantedItemSnapshot? firstGranted = null;
             for (var index = 0; index < roll.Quantity; index++)
             {
                 int generationOrdinal = checked(ordinal * 100 + index);
                 if (availableSlots > 0)
                 {
-                    db.CharacterItems.Add(
-                        ItemInstancePersistenceFactory.CreateCharacterItem(
-                            characterId,
-                            definition,
-                            rewardResolutionId,
-                            "WORLD_BOSS_CHEST",
-                            roll.ItemId,
-                            generationOrdinal,
-                            acquiredAtUtc,
-                            content.Package,
-                            roll.SourceQualityProfileId));
+                    CharacterItem item = ItemInstancePersistenceFactory.CreateCharacterItem(
+                        characterId,
+                        definition,
+                        rewardResolutionId,
+                        "WORLD_BOSS_CHEST",
+                        roll.ItemId,
+                        generationOrdinal,
+                        acquiredAtUtc,
+                        content.Package,
+                        roll.SourceQualityProfileId);
+                    db.CharacterItems.Add(item);
+                    firstGranted ??= ToGrantedSnapshot(item, definition, content);
                     availableSlots--;
                 }
                 else
                 {
-                    db.PendingLootItems.Add(
-                        ItemInstancePersistenceFactory.CreatePendingLootItem(
-                            characterId,
-                            definition,
-                            rewardResolutionId,
-                            "WORLD_BOSS_CHEST",
-                            roll.ItemId,
-                            generationOrdinal,
-                            acquiredAtUtc,
-                            content.Package,
-                            roll.SourceQualityProfileId));
+                    PendingLootItem pending = ItemInstancePersistenceFactory.CreatePendingLootItem(
+                        characterId,
+                        definition,
+                        rewardResolutionId,
+                        "WORLD_BOSS_CHEST",
+                        roll.ItemId,
+                        generationOrdinal,
+                        acquiredAtUtc,
+                        content.Package,
+                        roll.SourceQualityProfileId);
+                    db.PendingLootItems.Add(pending);
+                    firstGranted ??= ToGrantedSnapshot(pending, definition);
                 }
             }
 
-            return;
+            return firstGranted
+                ?? throw new InvalidOperationException(
+                    $"World boss chest item '{roll.ItemId}' produced no persisted instance.");
         }
 
         int remaining = roll.Quantity;
@@ -440,7 +449,8 @@ public sealed class WorldBossSettlementService(
             freeSlots--;
         }
 
-        if (remaining > 0)
+        bool pendingOverflow = remaining > 0;
+        if (pendingOverflow)
         {
             db.PendingLootItems.Add(new PendingLootItem(
                 Guid.CreateVersion7(),
@@ -451,7 +461,94 @@ public sealed class WorldBossSettlementService(
                 definition.Version,
                 acquiredAtUtc));
         }
+
+        return new WorldBossGrantedItemSnapshot(
+            null,
+            pendingOverflow,
+            definition.Name,
+            ToLootStats(definition.Stats, definition),
+            null);
     }
+
+    private static WorldBossGrantedItemSnapshot ToGrantedSnapshot(
+        CharacterItem item,
+        ItemDefinition definition,
+        GameContentSnapshot content)
+    {
+        GeneratedItemInstance? generated = ItemInstancePersistenceFactory.ToGeneratedInstance(
+            item,
+            definition,
+            content.Package.Itemization);
+        ItemDefinition effective = generated is null
+            ? definition
+            : ItemizationBudgetPolicy.ApplyGeneratedAffixes(
+                definition,
+                generated.Affixes,
+                generated.DisplayName);
+        PrimaryStats stats = item.RolledPrimaryStats ?? effective.Stats;
+        return new(
+            item.Id,
+            false,
+            generated?.DisplayName ?? effective.Name,
+            ToLootStats(stats, effective),
+            generated);
+    }
+
+    private static WorldBossGrantedItemSnapshot ToGrantedSnapshot(
+        PendingLootItem pending,
+        ItemDefinition definition)
+    {
+        GeneratedItemInstance? generated = string.IsNullOrWhiteSpace(pending.GeneratedItemJson)
+            ? null
+            : JsonSerializer.Deserialize<GeneratedItemInstance>(pending.GeneratedItemJson);
+        ItemDefinition effective = generated is null
+            ? definition
+            : ItemizationBudgetPolicy.ApplyGeneratedAffixes(
+                definition,
+                generated.Affixes,
+                generated.DisplayName);
+        PrimaryStats stats = pending.RolledPrimaryStats ?? effective.Stats;
+        return new(
+            pending.Id,
+            true,
+            generated?.DisplayName ?? effective.Name,
+            ToLootStats(stats, effective),
+            generated);
+    }
+
+    private static WorldBossLootItemStats ToLootStats(
+        PrimaryStats stats,
+        ItemDefinition definition) =>
+        new(
+            stats.Strength,
+            stats.Agility,
+            stats.Intellect,
+            stats.Stamina,
+            definition.MaxHpFlat,
+            definition.AttackPowerFlat,
+            definition.SpellPowerFlat,
+            definition.CriticalChancePercent,
+            definition.CriticalDamagePercent,
+            definition.AccuracyPercent,
+            definition.ArmorFlat,
+            definition.MagicResistanceFlat,
+            definition.DodgePercent,
+            definition.ArmorPenetrationPercent,
+            definition.MagicPenetrationPercent,
+            definition.AttackSpeedPercent,
+            definition.MaxResourceFlat,
+            definition.WeaponDamageMin,
+            definition.WeaponDamageMax,
+            definition.BlockChancePercent,
+            definition.BlockValueMin,
+            definition.BlockValueMax);
+
+    private sealed record WorldBossGrantedItemSnapshot(
+        Guid? InstanceId,
+        bool Pending,
+        string DisplayName,
+        WorldBossLootItemStats Stats,
+        GeneratedItemInstance? GeneratedItem);
 
     private async Task<WorldBossSettlementCharacterResult[]> LoadExistingResultsAsync(
         Guid spawnId,
