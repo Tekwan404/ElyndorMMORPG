@@ -6,6 +6,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Progression;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Items;
+using Elyndor.Core.Monsters;
 
 namespace Elyndor.ContentValidator;
 
