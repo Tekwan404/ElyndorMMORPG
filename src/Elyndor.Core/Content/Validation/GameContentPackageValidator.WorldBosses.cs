@@ -1,3 +1,4 @@
+using Elyndor.Core.Items;
 using Elyndor.Core.WorldBosses;
 
 namespace Elyndor.Core.Content;
