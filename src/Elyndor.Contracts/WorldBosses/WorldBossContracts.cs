@@ -56,7 +56,12 @@ public sealed record WorldBossRewardItemResponse(
     Guid? InstanceId = null,
     bool Pending = false,
     ItemStatsResponse? Stats = null,
-    GeneratedItemSummaryResponse? GeneratedItem = null);
+    GeneratedItemSummaryResponse? GeneratedItem = null,
+    decimal? WeaponDamageMin = null,
+    decimal? WeaponDamageMax = null,
+    decimal BlockChance = 0,
+    decimal BlockValueMin = 0,
+    decimal BlockValueMax = 0);
 
 public sealed record WorldBossRewardResponse(
     Guid SpawnId,
