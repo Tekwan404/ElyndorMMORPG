@@ -205,6 +205,11 @@ public static class WorldBossEndpoints
             active.Participants,
             active.PersonalDamage,
             active.PartyDamage,
+            active.RewardEligible,
+            active.RewardTier,
+            active.NextRewardTier,
+            active.NextRewardTierAtDamage,
+            active.DamageToNextRewardTier,
             active.ContentVersion,
             active.BalanceVersion));
     }
