@@ -23,7 +23,7 @@ public sealed record CombatBalanceBenchmarkRow(
     decimal PlayerPhysicalEhp,
     decimal PlayerDps,
     decimal EnemyDps,
-    decimal P50TtkSeconds,
+    decimal EstimatedTtkSeconds,
     decimal EstimatedTtdSeconds,
     decimal WinRatePercent,
     bool TtkWithinTarget,
@@ -89,11 +89,11 @@ public sealed class CombatBalanceBenchmarkRunner(GameContentPackage content)
                         result.PlayerPhysicalEhp,
                         result.AveragePlayerDps,
                         result.AverageEnemyDps,
-                        result.P50DurationSeconds,
+                        result.EstimatedEnemyTtkSeconds,
                         result.EstimatedPlayerTtdSeconds,
                         result.WinRatePercent,
-                        result.Victories > 0
-                        && profile.NormalTtkSeconds.Contains(result.P50DurationSeconds),
+                        result.EstimatedEnemyTtkSeconds > 0
+                        && profile.NormalTtkSeconds.Contains(result.EstimatedEnemyTtkSeconds),
                         result.EstimatedPlayerTtdSeconds > 0
                         && profile.NormalTtdSeconds.Contains(result.EstimatedPlayerTtdSeconds)));
                 }
