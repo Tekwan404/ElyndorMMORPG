@@ -28,6 +28,7 @@ public sealed record WorldBossActiveSnapshot(
     decimal RewardPercentile,
     int RewardChestCount,
     int RewardEnhancedChestCount,
+    decimal MinimumContribution,
     bool RewardEligible,
     string? RewardTier,
     string? NextRewardTier,
@@ -187,6 +188,7 @@ public sealed class WorldBossReadService(
                 rewardProgress.Percentile,
                 rewardProgress.ChestCount,
                 rewardProgress.EnhancedChestCount,
+                rewardProgress.MinimumContribution,
                 rewardProgress.Eligible,
                 rewardProgress.CurrentTier,
                 rewardProgress.NextTier,
@@ -407,7 +409,7 @@ public sealed class WorldBossReadService(
                 definition.RewardProfileId,
                 out WorldBossRewardProfileDefinition? profile))
         {
-            return new(false, null, null, null, 0m, 0, null, 0m, 0, 0);
+            return new(false, null, null, null, 0m, 0, null, 0m, 0, 0, 0m);
         }
 
         if (profile.LeaderboardTiers is not { Count: > 0 })
@@ -432,7 +434,8 @@ public sealed class WorldBossReadService(
                 null,
                 0m,
                 0,
-                0);
+                0,
+                profile.MinimumContribution);
         }
 
         var eligibleRows = await db.WorldBossContributions.AsNoTracking()
@@ -459,7 +462,8 @@ public sealed class WorldBossReadService(
                 null,
                 0m,
                 0,
-                0);
+                0,
+                profile.MinimumContribution);
         }
 
         WorldBossLeaderboardRewardResolution reward =
@@ -478,7 +482,8 @@ public sealed class WorldBossReadService(
             reward.Rank,
             reward.Percentile,
             reward.ChestCount,
-            reward.EnhancedChestCount);
+            reward.EnhancedChestCount,
+            profile.MinimumContribution);
     }
 
     private sealed record WorldBossRewardProgress(
@@ -491,6 +496,7 @@ public sealed class WorldBossReadService(
         int? PersonalRank,
         decimal Percentile,
         int ChestCount,
-        int EnhancedChestCount);
+        int EnhancedChestCount,
+        decimal MinimumContribution);
 
 }
