@@ -63,6 +63,13 @@ public sealed class WorldBossCombatSessionSynchronizer(IServiceScopeFactory scop
 
         bool expired = state.Status == WorldBossSpawnStatus.Expired
             || state.Status == WorldBossSpawnStatus.Active && now >= state.ExpiresAtUtc;
+        if (state.Status == WorldBossSpawnStatus.Active && now >= state.ExpiresAtUtc)
+        {
+            WorldBossLifecycleService lifecycle =
+                scope.ServiceProvider.GetRequiredService<WorldBossLifecycleService>();
+            _ = await lifecycle.ExpireDueAsync(cancellationToken);
+        }
+
         decimal currentHealth = state.Status is WorldBossSpawnStatus.Defeated
                 or WorldBossSpawnStatus.Settling
                 or WorldBossSpawnStatus.Settled
