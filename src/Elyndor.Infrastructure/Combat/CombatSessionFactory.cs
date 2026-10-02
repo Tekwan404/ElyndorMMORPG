@@ -519,8 +519,8 @@ public sealed class CombatSessionFactory(
         AbilityIds: [],
         AiProfileId: "TRAINING_DUMMY_AI",
         AutoAttackAttackPowerCoefficient: 0,
-        XpReward: 0,
         LootTableId: null,
+        GrantsXp: false,
         GoldRewardMin: 0,
         GoldRewardMax: 0);
 
