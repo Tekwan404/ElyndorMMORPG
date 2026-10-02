@@ -45,6 +45,7 @@ public sealed class GameContentIndexes
         PromoCodesByCode = ToDictionary(package.PromoCodes, item => item.Code);
         CharacterSkinsById = ToDictionary(package.CharacterSkins, item => item.Id);
         WorldBossesById = ToDictionary(package.WorldBosses, item => item.Id);
+        WorldBossRewardProfilesById = ToDictionary(package.WorldBossRewardProfiles, item => item.Id);
     }
 
     public IReadOnlyDictionary<GameContentDefinitionKey, GameContentDefinition> DefinitionsByKey { get; }
@@ -70,6 +71,7 @@ public sealed class GameContentIndexes
     public IReadOnlyDictionary<string, PromoCodeDefinition> PromoCodesByCode { get; }
     public IReadOnlyDictionary<string, CharacterSkinDefinition> CharacterSkinsById { get; }
     public IReadOnlyDictionary<string, WorldBossDefinition> WorldBossesById { get; }
+    public IReadOnlyDictionary<string, WorldBossRewardProfileDefinition> WorldBossRewardProfilesById { get; }
 
     public static GameContentIndexes For(GameContentPackage package)
     {
