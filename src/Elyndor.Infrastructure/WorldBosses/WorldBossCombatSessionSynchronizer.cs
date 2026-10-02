@@ -53,7 +53,7 @@ public sealed class WorldBossCombatSessionSynchronizer(IServiceScopeFactory scop
                 "World boss spawn content identity does not match the pinned combat snapshot.");
         }
 
-        if (state.MaxHealth != session.Snapshot().Enemy.MaxHp)
+        if (state.MaxHealth != session.PrimaryEnemyMaxHp)
         {
             throw new InvalidOperationException(
                 "World boss global max health does not match the bound combat session.");
