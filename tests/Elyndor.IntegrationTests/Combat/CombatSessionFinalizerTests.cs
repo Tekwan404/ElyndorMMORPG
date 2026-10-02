@@ -51,7 +51,7 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
                 "MALE",
                 "WARRIOR",
                 Now);
-            character.SetExperience(90);
+            character.SetExperience(390);
             setup.Characters.Add(character);
             setup.CharacterVitals.Add(new CharacterVitals(
                 characterId,
@@ -251,7 +251,6 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
         Assert.Equal(fled ? "WHISPERING_FOREST" : "STARTER_TOWN", location.LocationId);
         if (fled) Assert.Equal(50, vitals.CurrentHp);
     }
-
 
     [Fact]
     public async Task WorldBossBoundVictorySkipsOrdinaryPveRewards()
