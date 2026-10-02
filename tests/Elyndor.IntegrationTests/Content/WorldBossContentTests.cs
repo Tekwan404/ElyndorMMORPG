@@ -1,4 +1,5 @@
 using Elyndor.Core.WorldBosses;
+using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Content;
 
 namespace Elyndor.IntegrationTests.Content;
