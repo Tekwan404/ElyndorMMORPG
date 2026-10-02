@@ -157,7 +157,7 @@ public static class AfkFarmSimulator
                     1,
                     request.LevelProgression,
                     request.ProgressionBalance)
-                : monster.XpReward;
+                : monster.LegacyXpReward;
             gold += RollGold(monster, random);
             if (!string.IsNullOrWhiteSpace(monster.LootTableId))
                 loot.Add(new AfkFarmLootCandidate(monster.Id, monster.LootTableId));
