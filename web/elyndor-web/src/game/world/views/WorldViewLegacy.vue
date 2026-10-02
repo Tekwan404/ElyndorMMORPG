@@ -312,6 +312,7 @@ watch(() => combat.snapshot?.status, (status) => {
       scheduleCombatResultDismiss()
     }
     void session.refreshSnapshot()
+    if (status === 'Victory') void session.refreshQuestJournal()
   }
 }, { immediate: true })
 
