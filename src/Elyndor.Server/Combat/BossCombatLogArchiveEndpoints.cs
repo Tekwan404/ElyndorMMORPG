@@ -592,7 +592,7 @@ internal static class BossCombatLogArchive
             CombatEvent finalEvent = events[^1];
             builder.Append("Финальное событие: #")
                 .Append(finalEvent.Sequence.ToString(CultureInfo.InvariantCulture))
-                .Append(" ")
+                .Append(' ')
                 .Append(finalEvent.Type);
             if (!string.IsNullOrWhiteSpace(finalEvent.DefinitionId))
                 builder.Append(" · ").Append(Sanitize(finalEvent.DefinitionId, 80));
