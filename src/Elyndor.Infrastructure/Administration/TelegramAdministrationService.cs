@@ -10,6 +10,7 @@ using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Items;
+using Elyndor.Infrastructure.WorldBosses;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Npgsql;
@@ -28,7 +29,8 @@ public enum AdministrationOperationType
     Delete,
     Message,
     GiveItem,
-    CreatePromoCode
+    CreatePromoCode,
+    SpawnWorldBoss
 }
 
 public sealed record AdministrationOperation(
@@ -54,7 +56,8 @@ public sealed class TelegramAdministrationService(
     IContentSnapshotProvider contentProvider,
     CharacterDerivedStateService derivedStateService,
     ContentAdministrationService? contentAdministrationService = null,
-    ITelegramMessageSender? messageSender = null)
+    ITelegramMessageSender? messageSender = null,
+    WorldBossLifecycleService? worldBossLifecycleService = null)
 {
     private static readonly HashSet<string> AdminItemQualityProfiles =
         new(["NORMAL", "ELITE", "BOSS"], StringComparer.Ordinal);
@@ -71,7 +74,8 @@ public sealed class TelegramAdministrationService(
             new StaticContentSnapshotProvider(content),
             derivedStateService,
             null,
-            messageSender)
+            messageSender,
+            null)
     {
     }
 
@@ -147,6 +151,16 @@ public sealed class TelegramAdministrationService(
                 operation.Value,
                 cancellationToken);
             return await CompleteDeferredAuditAsync(updateId, promoResult, cancellationToken);
+        }
+
+        if (operation.Type == AdministrationOperationType.SpawnWorldBoss)
+        {
+            await transaction.CommitAsync(cancellationToken);
+            dbContext.ChangeTracker.Clear();
+            AdministrationResult worldBossResult = await SpawnWorldBossAsync(
+                operation.Value,
+                cancellationToken);
+            return await CompleteDeferredAuditAsync(updateId, worldBossResult, cancellationToken);
         }
 
         AdministrationResult result = await ExecuteCharacterOperationAsync(
@@ -358,6 +372,49 @@ public sealed class TelegramAdministrationService(
         return Success(
             "admin_item_granted",
             $"{character.Name}: выдано {definition.Name} ×{quantity} ({definition.Id}), качество {qualityProfile}.");
+    }
+
+    private async Task<AdministrationResult> SpawnWorldBossAsync(
+        string? bossDefinitionId,
+        CancellationToken cancellationToken)
+    {
+        if (worldBossLifecycleService is null)
+        {
+            return Failure(
+                "admin_world_boss_unavailable",
+                "World Boss lifecycle недоступен.");
+        }
+
+        string resolvedBossDefinitionId = string.IsNullOrWhiteSpace(bossDefinitionId)
+            ? "WORLD_BOSS_ASH_ARCHON"
+            : bossDefinitionId.Trim().ToUpperInvariant();
+        WorldBossActivationResult activation = await worldBossLifecycleService.ActivateAsync(
+            resolvedBossDefinitionId,
+            cancellationToken);
+        if (!activation.Succeeded || activation.Spawn is null)
+        {
+            string message = activation.ErrorCode switch
+            {
+                WorldBossLifecycleErrorCodes.DefinitionNotFound =>
+                    $"Мировой босс {resolvedBossDefinitionId} не найден в content.",
+                WorldBossLifecycleErrorCodes.DefinitionDisabled =>
+                    $"Мировой босс {resolvedBossDefinitionId} отключён.",
+                _ => "Не удалось запустить мирового босса."
+            };
+            return Failure(
+                activation.ErrorCode ?? "admin_world_boss_spawn_failed",
+                message);
+        }
+
+        WorldBossSpawn spawn = activation.Spawn;
+        string state = activation.Created ? "вызван" : "уже активен";
+        return Success(
+            activation.Created
+                ? "admin_world_boss_spawned"
+                : "admin_world_boss_already_active",
+            $"Мировой босс {spawn.BossDefinitionId} {state}. "
+            + $"Spawn: {spawn.Id:N}; HP {spawn.CurrentHealth:0}/{spawn.MaxHealth:0}; "
+            + $"до {spawn.ExpiresAtUtc:HH:mm:ss} UTC.");
     }
 
     private async Task<AdministrationResult> CreatePromoCodeAsync(
