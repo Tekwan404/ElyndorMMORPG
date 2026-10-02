@@ -148,7 +148,7 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
         Assert.Equal(settled.Items, read.Reward.Items);
     }
 
-    private WorldBossSettlementService CreateService(
+    private static WorldBossSettlementService CreateService(
         GameDbContext db,
         GameContentPackage package)
     {
