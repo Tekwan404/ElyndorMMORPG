@@ -210,7 +210,7 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
                     spawn => spawn.Id == spawnId)).CurrentHealth;
             }
 
-            decimal damageToPhaseTwo = currentGlobalHealth - 740_000m;
+            decimal damageToPhaseTwo = currentGlobalHealth - 74_000m;
             Assert.True(damageToPhaseTwo > 0);
             await using (AsyncServiceScope scope = factory.Services.CreateAsyncScope())
             {
@@ -226,7 +226,7 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
                         cancellationToken: default);
                 Assert.True(phaseDamage.Succeeded, phaseDamage.ErrorCode);
                 Assert.Equal(2, phaseDamage.Phase);
-                Assert.Equal(740_000m, phaseDamage.CurrentHealth);
+                Assert.Equal(74_000m, phaseDamage.CurrentHealth);
             }
 
             CombatUpdateResponse phaseSynced = await hub.InvokeAsync<CombatUpdateResponse>(
@@ -234,7 +234,7 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
                 entered.Snapshot.SessionId,
                 "world-boss-sync-phase");
             Assert.True(phaseSynced.Succeeded, phaseSynced.ErrorCode);
-            Assert.Equal(740_000m, phaseSynced.Snapshot!.Enemy.Hp);
+            Assert.Equal(74_000m, phaseSynced.Snapshot!.Enemy.Hp);
             Assert.Contains("ARCHON_STAR_FRACTURE", phaseSynced.Snapshot.Enemy.KnownAbilityIds);
 
             await using (AsyncServiceScope scope = factory.Services.CreateAsyncScope())
