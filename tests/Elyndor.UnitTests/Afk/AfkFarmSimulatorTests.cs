@@ -6,6 +6,7 @@ using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.Progression;
 using Elyndor.Core.Talents;
 using Elyndor.Core.World;
 
@@ -45,6 +46,60 @@ public sealed class AfkFarmSimulatorTests
         Assert.True(stronger.XpCandidate > weaker.XpCandidate);
         AfkFarmSimulationResult underpowered = AfkFarmSimulator.Simulate(CreateRequest(CreateSnapshot(1)));
         Assert.True(stronger.EfficiencyPercent > underpowered.EfficiencyPercent);
+    }
+
+    [Fact]
+    public void ProgressionBalanceOverridesLegacyMonsterXpInAfkSimulation()
+    {
+        MonsterDefinition monster = CreateMonster(
+            "XP_CURVE_TARGET",
+            MonsterRank.Normal,
+            45,
+            5);
+        LevelProgressionDefinition progression = new(
+            "TEST_LEVELING",
+            6,
+            [
+                new(1, 100),
+                new(5, 500)
+            ]);
+        ProgressionBalanceProfile balance = new(
+            "TEST_XP",
+            5,
+            [
+                new(1, 10),
+                new(5, 10)
+            ],
+            [
+                new(MonsterRank.Normal, 1m),
+                new(MonsterRank.Elite, 1.75m),
+                new(MonsterRank.Boss, 4.5m)
+            ],
+            [],
+            [
+                new(2, 0.8m),
+                new(3, 0.6m),
+                new(4, 0.4m),
+                new(5, 0.2m),
+                new(6, 0m)
+            ],
+            [new(1, 1m)],
+            0.05m,
+            1.2m);
+
+        AfkFarmSimulationRequest request = CreateRequest(
+            CreateSnapshot(28),
+            monster) with
+        {
+            LevelProgression = progression,
+            ProgressionBalance = balance
+        };
+
+        AfkFarmSimulationResult result = AfkFarmSimulator.Simulate(request);
+
+        Assert.True(result.Kills > 0);
+        Assert.Equal(result.Kills * 24, result.XpCandidate);
+        Assert.NotEqual(result.Kills * monster.LegacyXpReward, result.XpCandidate);
     }
 
     [Fact]
@@ -321,5 +376,5 @@ public sealed class AfkFarmSimulatorTests
         id, id, rank, 3, maxHp,
         new CombatStats(3, 0, 0, 0, 1, 0, 0, 0, 0, attackDamage, 0),
         TimeSpan.FromSeconds(2), attackDamage, [], "NONE",
-        XpReward: 10, LootTableId: lootTableId, GoldRewardMin: 2, GoldRewardMax: 4);
+        LegacyXpReward: 10, LootTableId: lootTableId, GoldRewardMin: 2, GoldRewardMax: 4);
 }

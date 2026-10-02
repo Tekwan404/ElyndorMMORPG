@@ -54,13 +54,75 @@ public static class GameContentPackageCodec
     private static string UpgradeLegacyPayload(string payloadJson)
     {
         JsonNode? root = JsonNode.Parse(payloadJson);
-        if (root is not JsonObject package
-            || package["items"] is not JsonArray items)
-        {
+        if (root is not JsonObject package)
             return payloadJson;
-        }
 
         bool changed = false;
+        if (package["levelProgression"] is JsonObject levelProgression
+            && levelProgression["xpAnchors"] is null
+            && levelProgression["maxLevel"] is JsonValue maxLevelValue
+            && maxLevelValue.TryGetValue<int>(out int maxLevel)
+            && levelProgression["baseXpToNext"] is JsonValue baseValue
+            && baseValue.TryGetValue<int>(out int baseXp)
+            && levelProgression["growthFactor"] is JsonValue growthValue
+            && growthValue.TryGetValue<decimal>(out decimal growthFactor))
+        {
+            JsonArray anchors = [];
+            decimal xp = baseXp;
+            for (int level = 1; level < maxLevel; level++)
+            {
+                anchors.Add(new JsonObject
+                {
+                    ["level"] = level,
+                    ["xpToNext"] = decimal.ToInt64(decimal.Ceiling(xp))
+                });
+                xp *= growthFactor;
+            }
+
+            levelProgression["xpAnchors"] = anchors;
+            levelProgression.Remove("baseXpToNext");
+            levelProgression.Remove("growthFactor");
+            changed = true;
+        }
+
+        if (package["statFormula"] is JsonObject statFormula)
+        {
+            changed |= statFormula.Remove("armorPerStamina");
+            changed |= statFormula.Remove("armorPerStrength");
+        }
+
+        if (package["monsters"] is JsonArray monsters)
+        {
+            foreach (JsonNode? monsterNode in monsters)
+            {
+                if (monsterNode is not JsonObject monster
+                    || monster["xpReward"] is not JsonValue xpValue
+                    || !xpValue.TryGetValue<int>(out int xpReward))
+                {
+                    continue;
+                }
+
+                monster.Remove("xpReward");
+                if (xpReward <= 0)
+                {
+                    if (monster["grantsXp"] is null)
+                        monster["grantsXp"] = false;
+                }
+                else
+                {
+                    monster["legacyXpReward"] = xpReward;
+                }
+                changed = true;
+            }
+        }
+
+        if (package["items"] is not JsonArray items)
+        {
+            return changed
+                ? package.ToJsonString(GameContentJson.SerializerOptions)
+                : payloadJson;
+        }
+
         foreach (JsonNode? itemNode in items)
         {
             if (itemNode is not JsonObject item)

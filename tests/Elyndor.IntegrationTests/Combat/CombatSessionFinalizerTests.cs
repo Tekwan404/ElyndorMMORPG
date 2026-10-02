@@ -50,7 +50,7 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
                 "MALE",
                 "WARRIOR",
                 Now);
-            character.SetExperience(90);
+            character.SetExperience(390);
             setup.Characters.Add(character);
             setup.CharacterVitals.Add(new CharacterVitals(
                 characterId,

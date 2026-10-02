@@ -9,6 +9,7 @@ using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.Progression;
 using Elyndor.Core.Talents;
 using Elyndor.Core.World;
 
@@ -33,7 +34,9 @@ public sealed record AfkFarmSimulationRequest(
     string ContentVersion,
     string? TargetMonsterId = null,
     AfkFarmSimulationSettings? Settings = null,
-    IReadOnlyDictionary<string, AbilityDefinition>? AbilitiesById = null);
+    IReadOnlyDictionary<string, AbilityDefinition>? AbilitiesById = null,
+    LevelProgressionDefinition? LevelProgression = null,
+    ProgressionBalanceProfile? ProgressionBalance = null);
 
 public sealed record AfkFarmSimulationResult(
     TimeSpan SimulatedDuration,
@@ -146,7 +149,15 @@ public static class AfkFarmSimulator
             defeatedMonsterIds.Add(monster.Id);
             successfulKillTime += fight.Elapsed;
             successfulEncounterPressureWindow += monster.AutoAttackInterval;
-            xp += monster.XpReward;
+            xp += request.LevelProgression is not null
+                && request.ProgressionBalance is not null
+                ? ProgressionRewardCalculator.ResolveMonsterXp(
+                    monster,
+                    request.Character.Level,
+                    1,
+                    request.LevelProgression,
+                    request.ProgressionBalance)
+                : monster.LegacyXpReward;
             gold += RollGold(monster, random);
             if (!string.IsNullOrWhiteSpace(monster.LootTableId))
                 loot.Add(new AfkFarmLootCandidate(monster.Id, monster.LootTableId));

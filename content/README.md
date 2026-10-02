@@ -23,6 +23,7 @@ Content belongs under the matching directory:
 ```text
 content/
 ├── abilities/
+├── balance/
 ├── bosses/
 ├── classes/
 ├── dungeons/
@@ -73,6 +74,17 @@ Validate the composed snapshot from the repository root:
 ```powershell
 dotnet run --project tools/Elyndor.ContentValidator -- content/package.json
 ```
+
+Combat balance diagnostics are explicit and never rewrite authored monsters:
+
+```powershell
+dotnet run --project tools/Elyndor.ContentValidator -- content/package.json --audit-balance
+dotnet run --project tools/Elyndor.ContentValidator -- content/package.json --benchmark-balance
+```
+
+`--audit-balance` compares Normal/Elite monsters with the versioned `combatBalance`
+curve and reports outliers. `--benchmark-balance` runs the authoritative combat simulator
+against Weak / Normal / Good equipment benchmarks and prints HP, Armor, EHP, DPS, TTK and TTD.
 
 The validator runs the same `ContentValidationPipeline` used by the server and Admin publish flow,
 then forces `GameContentIndexes` construction. Balance-only number changes should normally change

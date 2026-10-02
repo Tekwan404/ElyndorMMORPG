@@ -204,7 +204,7 @@ public sealed class AfkFarmCatchUpTests(PostgresFixture postgres) : IAsyncLifeti
             5,
             [],
             "AFK_CATCHUP_AI",
-            XpReward: 10,
+            LegacyXpReward: 10,
             GoldRewardMin: 2,
             GoldRewardMax: 4);
 

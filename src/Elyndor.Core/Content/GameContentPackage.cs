@@ -47,7 +47,9 @@ public sealed record GameContentPackage(
     IReadOnlyList<ProfessionDefinition>? Professions = null,
     IReadOnlyList<SkinningSourceDefinition>? SkinningSources = null,
     IReadOnlyList<ProfessionRecipeDefinition>? ProfessionRecipes = null,
-    IReadOnlyList<CharacterSkinDefinition>? CharacterSkins = null);
+    IReadOnlyList<CharacterSkinDefinition>? CharacterSkins = null,
+    CombatBalanceProfile? CombatBalance = null,
+    ProgressionBalanceProfile? ProgressionBalance = null);
 
 public sealed record AfkFarmRewardProfile(
     int ProcessingIntervalSeconds,
@@ -117,8 +119,6 @@ public sealed record StatFormulaProfile(
     decimal AttackPowerPerStrength,
     decimal AttackPowerPerAgility,
     decimal SpellPowerPerIntellect,
-    decimal ArmorPerStamina,
-    decimal ArmorPerStrength,
     decimal MagicResistancePerStamina,
     decimal MagicResistancePerIntellect,
     decimal CriticalChanceBase,

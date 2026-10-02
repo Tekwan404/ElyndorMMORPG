@@ -198,6 +198,7 @@ public sealed class QuestService(
                         : "LOCKED";
             }
 
+            int resolvedRewardXp = ResolveQuestXp(content, quest);
             entries.Add(new QuestJournalEntry(
                 quest.Id,
                 quest.DisplayName,
@@ -207,7 +208,7 @@ public sealed class QuestService(
                 quest.OfferLocationId,
                 status,
                 objectives,
-                quest.RewardXp,
+                resolvedRewardXp,
                 quest.RewardGold,
                 quest.RewardItems ?? [],
                 quest.PrerequisiteQuestIds ?? [],
@@ -478,10 +479,13 @@ public sealed class QuestService(
             contentSnapshot.Package.LevelProgression
             ?? throw new InvalidOperationException(
                 "Level progression content is required for quest rewards.");
+        int resolvedRewardXp = ResolveQuestXp(
+            contentSnapshot.Package,
+            quest);
         CharacterProgressionResult progression =
             CharacterProgression.GrantExperience(
                 character,
-                quest.RewardXp,
+                resolvedRewardXp,
                 leveling);
 
         if (quest.RewardGold > 0)
@@ -534,7 +538,7 @@ public sealed class QuestService(
             character.Id,
             quest.Id,
             mutationId,
-            quest.RewardXp,
+            resolvedRewardXp,
             quest.RewardGold,
             itemJson,
             now));
@@ -546,10 +550,25 @@ public sealed class QuestService(
             true,
             null,
             quest.Id,
-            quest.RewardXp,
+            resolvedRewardXp,
             quest.RewardGold,
             progression,
             quest.RewardItems ?? []);
+    }
+
+    private static int ResolveQuestXp(
+        GameContentPackage content,
+        QuestDefinition quest)
+    {
+        LevelProgressionDefinition leveling = content.LevelProgression
+            ?? throw new InvalidOperationException(
+                "Level progression content is required for quest rewards.");
+        return content.ProgressionBalance is null
+            ? quest.RewardXp
+            : ProgressionRewardCalculator.ResolveQuestXp(
+                quest,
+                leveling,
+                content.ProgressionBalance);
     }
 
     private async Task<bool> IsCompletedAsync(

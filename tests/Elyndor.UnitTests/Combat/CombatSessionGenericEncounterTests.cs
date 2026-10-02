@@ -440,8 +440,8 @@ public sealed class CombatSessionGenericEncounterTests
             AbilityIds: abilityIds,
             AiProfileId: aiProfileId,
             AutoAttackAttackPowerCoefficient: 0,
-            XpReward: 0,
             LootTableId: null,
+            GrantsXp: false,
             GoldRewardMin: 0,
             GoldRewardMax: 0);
 

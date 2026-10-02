@@ -55,7 +55,7 @@ public sealed class EclipsedCitadelPveContentTests
 
         Assert.Equal(160, indexes.MonstersById["ECLIPSED_CITADEL_WEAVER_L25"].Stats.SpellPower);
         Assert.Equal(215, indexes.MonstersById["ECLIPSED_CITADEL_ARCHON_L25"].Stats.SpellPower);
-        Assert.Equal(0, indexes.MonstersById["ARCHON_DEAD_STAR_CORE"].XpReward);
+        Assert.False(indexes.MonstersById["ARCHON_DEAD_STAR_CORE"].GrantsXp);
         Assert.Equal(0, indexes.MonstersById["ARCHON_DEAD_STAR_CORE"].GoldRewardMax);
         Assert.Null(indexes.MonstersById["ARCHON_DEAD_STAR_CORE"].LootTableId);
 

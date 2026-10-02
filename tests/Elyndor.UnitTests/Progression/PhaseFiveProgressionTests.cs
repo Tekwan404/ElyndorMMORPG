@@ -53,7 +53,20 @@ public sealed class PhaseFiveProgressionTests
             "Weapon");
         PrimaryStats equipment = EquipmentStatModifierResolver.Resolve([weapon]);
         StatFormulaProfile formula = new(
-            "TEST", 50, 10, 2, 1, 2, 2, 1, 1, 1, 5, 0.25m, 100, 95, 0.2m, 1);
+            "TEST",
+            MaxHpBase: 50,
+            MaxHpPerStamina: 10,
+            AttackPowerPerStrength: 2,
+            AttackPowerPerAgility: 1,
+            SpellPowerPerIntellect: 2,
+            MagicResistancePerStamina: 1,
+            MagicResistancePerIntellect: 1,
+            CriticalChanceBase: 5,
+            CriticalChancePerAgility: 0.25m,
+            CriticalDamageBase: 100,
+            AccuracyBase: 95,
+            DodgePerAgility: 0.2m,
+            AttackSpeedBase: 1);
         ClassProfile warrior = new(
             "WARRIOR", "STRENGTH", "RAGE",
             new PrimaryStats(12, 6, 4, 10),
