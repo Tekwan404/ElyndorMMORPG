@@ -54,17 +54,21 @@ public static class GameContentPackageCodec
     private static string UpgradeLegacyPayload(string payloadJson)
     {
         JsonNode? root = JsonNode.Parse(payloadJson);
-        if (root is not JsonObject package
-            || package["items"] is not JsonArray items)
-        {
+        if (root is not JsonObject package)
             return payloadJson;
-        }
 
         bool changed = false;
         if (package["statFormula"] is JsonObject statFormula)
         {
             changed |= statFormula.Remove("armorPerStamina");
             changed |= statFormula.Remove("armorPerStrength");
+        }
+
+        if (package["items"] is not JsonArray items)
+        {
+            return changed
+                ? package.ToJsonString(GameContentJson.SerializerOptions)
+                : payloadJson;
         }
 
         foreach (JsonNode? itemNode in items)
