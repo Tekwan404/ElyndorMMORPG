@@ -23,6 +23,7 @@ public sealed record WorldBossActiveResponse(
     decimal RewardPercentile,
     int RewardChestCount,
     int RewardEnhancedChestCount,
+    decimal MinimumContribution,
     bool RewardEligible,
     string? RewardTier,
     string? NextRewardTier,
