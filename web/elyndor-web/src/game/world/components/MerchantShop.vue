@@ -419,7 +419,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
     <section class="merchant">
       <header
         class="merchant__npc"
-        :style="{ '--merchant-scene': `url(${gameArt.world.capital})` }"
+        :style="{ '--merchant-scene': 'url(' + gameArt.world.capital + ')' }"
       >
         <div class="merchant__npc-shade" />
         <div class="merchant__portrait">
@@ -443,6 +443,12 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
         </div>
       </header>
 
+      <div class="merchant-reaction" data-merchant-reaction>
+        <span aria-hidden="true">“</span>
+        <p>{{ reaction }}</p>
+        <small>— Маркус</small>
+      </div>
+
       <nav class="merchant-tabs" aria-label="Разделы торговца">
         <button
           type="button"
@@ -460,7 +466,14 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
         >
           Продать
         </button>
-        <button type="button" disabled title="Будет добавлено вместе с системой обратного выкупа">Выкуп</button>
+        <button
+          type="button"
+          data-merchant-tab="buyback"
+          :class="{ active: activeTab === 'buyback' }"
+          @click="activeTab = 'buyback'"
+        >
+          Выкуп <span v-if="buybackItems.length">· {{ buybackItems.length }}</span>
+        </button>
       </nav>
 
       <section v-if="activeTab === 'buy'" class="merchant-panel merchant-panel--buy">
@@ -471,6 +484,30 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
           </div>
           <span>{{ visibleOffers.length }} / {{ merchant?.items.length ?? 0 }}</span>
         </header>
+
+        <div v-if="recommendedOffers.length" class="merchant-recommendations">
+          <small>МАРКУС СОВЕТУЕТ</small>
+          <div>
+            <button
+              v-for="item in recommendedOffers"
+              :key="item.definitionId"
+              type="button"
+              @click="selectOffer(item)"
+            >
+              <ItemIcon
+                :icon-id="item.iconId"
+                :item-id="item.definitionId"
+                :name="item.name"
+                :type="item.type"
+                :rarity="item.rarity"
+              />
+              <span>
+                <b>{{ item.name }}</b>
+                <em>{{ recommendationReason(item) }}</em>
+              </span>
+            </button>
+          </div>
+        </div>
 
         <div class="merchant-filter" aria-label="Фильтры витрины">
           <label class="merchant-filter__search">
@@ -487,7 +524,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
                 type="button"
                 :data-merchant-filter="filter"
                 :class="{ active: activeFilter === filter }"
-                @click="activeFilter = filter"
+                @click="activeFilter = filter; equipmentSubcategory = 'all'"
               >{{ filterLabel(filter) }}</button>
             </div>
 
@@ -502,18 +539,40 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
             </label>
           </div>
 
-          <button
-            type="button"
-            class="merchant-filter__affordable"
-            data-merchant-affordable
-            :aria-pressed="onlyAffordable"
-            :class="{ active: onlyAffordable }"
-            @click="onlyAffordable = !onlyAffordable"
-          >
-            <span class="merchant-filter__check">{{ onlyAffordable ? '✓' : '' }}</span>
-            Только то, что могу купить
-            <b>{{ affordableOfferCount }}</b>
-          </button>
+          <div v-if="activeFilter === 'Equipment'" class="merchant-filter__subcategories">
+            <button type="button" :class="{ active: equipmentSubcategory === 'all' }" @click="equipmentSubcategory = 'all'">Всё снаряжение</button>
+            <button type="button" :class="{ active: equipmentSubcategory === 'weapon' }" @click="equipmentSubcategory = 'weapon'">Оружие</button>
+            <button type="button" :class="{ active: equipmentSubcategory === 'armor' }" @click="equipmentSubcategory = 'armor'">Броня</button>
+            <button type="button" :class="{ active: equipmentSubcategory === 'accessory' }" @click="equipmentSubcategory = 'accessory'">Аксессуары</button>
+          </div>
+
+          <div class="merchant-filter__toggles">
+            <button
+              type="button"
+              class="merchant-filter__affordable"
+              data-merchant-affordable
+              :aria-pressed="onlyAffordable"
+              :class="{ active: onlyAffordable }"
+              @click="onlyAffordable = !onlyAffordable"
+            >
+              <span class="merchant-filter__check">{{ onlyAffordable ? '✓' : '' }}</span>
+              Только то, что могу купить
+              <b>{{ affordableOfferCount }}</b>
+            </button>
+
+            <button
+              type="button"
+              class="merchant-filter__affordable"
+              data-merchant-class
+              :aria-pressed="onlyForClass"
+              :class="{ active: onlyForClass }"
+              @click="onlyForClass = !onlyForClass"
+            >
+              <span class="merchant-filter__check">{{ onlyForClass ? '✓' : '' }}</span>
+              Для моего класса
+              <b>{{ characterClassId || '—' }}</b>
+            </button>
+          </div>
         </div>
 
         <div v-if="visibleOffers.length" class="merchant-buy">
@@ -524,19 +583,21 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
             </div>
 
             <div class="merchant-shelf" aria-label="Товары торговца">
-              <button
+              <article
                 v-for="item in visibleOffers"
                 :key="item.definitionId"
-                type="button"
                 class="offer-card"
+                role="button"
+                tabindex="0"
                 :class="{
                   active: selectedOffer?.definitionId === item.definitionId,
                   'is-unaffordable': !isAffordable(item),
+                  'purchase-pulse': purchasePulseId === item.definitionId,
                 }"
                 :data-rarity="item.rarity"
                 :data-merchant-offer="item.definitionId"
-                :aria-pressed="selectedOffer?.definitionId === item.definitionId"
                 @click="selectOffer(item)"
+                @keydown.enter="selectOffer(item)"
               >
                 <span class="offer-card__visual">
                   <span class="offer-card__icon">
@@ -554,20 +615,33 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
                 <span class="offer-card__copy">
                   <small>{{ itemTypeLabel(item) }}</small>
                   <strong>{{ item.name }}</strong>
+                  <span class="offer-card__badges">
+                    <i v-for="badge in offerBadges(item)" :key="badge">{{ badge }}</i>
+                  </span>
                   <span class="offer-card__description">{{ item.description }}</span>
                 </span>
 
                 <span class="offer-card__footer">
                   <b><MoneyAmount :amount="item.buyPriceGold" /></b>
-                  <em v-if="inventoryCount(item) > 0">В сумке: {{ inventoryCount(item) }}</em>
-                  <em v-else-if="!isAffordable(item)" class="offer-card__shortfall">Не хватает золота</em>
-                  <em v-else>В наличии</em>
+                  <button
+                    type="button"
+                    class="offer-card__quick-buy"
+                    :disabled="buyPending || !isAffordable(item)"
+                    @click.stop="buy(item, 1)"
+                  >
+                    Купить
+                  </button>
                 </span>
-              </button>
+              </article>
             </div>
           </div>
 
-          <article v-if="selectedOffer" class="merchant-detail" data-merchant-detail :data-rarity="selectedOffer.rarity">
+          <article
+            v-if="selectedOffer"
+            class="merchant-detail"
+            data-merchant-detail
+            :data-rarity="selectedOffer.rarity"
+          >
             <div class="merchant-detail__banner">
               <small>ВЫБРАННЫЙ ТОВАР</small>
               <span>{{ rarityLabel(selectedOffer) }}</span>
@@ -587,9 +661,8 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
               <div>
                 <small>{{ itemTypeLabel(selectedOffer) }}</small>
                 <h3>{{ selectedOffer.name }}</h3>
-                <span v-if="inventoryCount(selectedOffer) > 0">
-                  Уже в сумке: {{ inventoryCount(selectedOffer) }}
-                </span>
+                <span v-if="inventoryCount(selectedOffer) > 0">Уже в сумке: {{ inventoryCount(selectedOffer) }}</span>
+                <span v-if="selectedOffer.requiredLevel">Требуется уровень: {{ selectedOffer.requiredLevel }}</span>
               </div>
             </div>
 
@@ -608,27 +681,67 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
               </small>
             </div>
 
+            <div v-if="selectedOffer.type === 'Equipment'" class="merchant-compare">
+              <header>
+                <span>Сравнение с надетым</span>
+                <small>{{ equippedForOffer(selectedOffer)?.name ?? 'Слот пуст' }}</small>
+              </header>
+              <div v-if="selectedComparisonRows.length">
+                <p v-for="row in selectedComparisonRows" :key="row.key">
+                  <span>{{ row.label }}</span>
+                  <em>{{ row.current }}</em>
+                  <b :class="{ positive: row.delta > 0, negative: row.delta < 0 }">
+                    {{ row.delta > 0 ? '+' : '' }}{{ row.delta }}
+                  </b>
+                </p>
+              </div>
+              <small v-else>У предмета нет сравнимых базовых характеристик.</small>
+            </div>
+
             <div class="merchant-detail__quote">
               <span aria-hidden="true">“</span>
-              <p>{{ isAffordable(selectedOffer) ? 'Бери, пока есть. В дороге пригодится.' : 'Хорошая вещь. Вернёшься с монетой — придержу.' }}</p>
+              <p>{{ reaction }}</p>
               <small>— Маркус</small>
+            </div>
+
+            <div v-if="selectedOffer.type !== 'Equipment'" class="merchant-quantity">
+              <span>Количество</span>
+              <div class="merchant-quantity__stepper">
+                <button type="button" @click="setBuyQuantity(selectedQuantity - 1)">−</button>
+                <b data-buy-quantity>{{ selectedQuantity }}</b>
+                <button type="button" @click="setBuyQuantity(selectedQuantity + 1)">+</button>
+              </div>
+              <div class="merchant-quantity__quick">
+                <button
+                  v-for="qty in [1, 5, 10]"
+                  :key="qty"
+                  type="button"
+                  :disabled="qty > selectedOfferMaxQuantity"
+                  @click="setBuyQuantity(qty)"
+                >
+                  {{ qty }}
+                </button>
+                <button type="button" @click="setBuyQuantity(maxAffordableQuantity)">MAX</button>
+              </div>
+              <small>После покупки: {{ inventoryCount(selectedOffer) + selectedQuantity }} в сумке</small>
             </div>
 
             <footer class="merchant-detail__purchase">
               <div>
-                <small>Цена у Маркуса</small>
-                <strong><MoneyAmount :amount="selectedOffer.buyPriceGold" /></strong>
-                <span :class="{ danger: !isAffordable(selectedOffer) }">
-                  {{ isAffordable(selectedOffer) ? 'Можно купить сейчас' : 'Недостаточно золота' }}
+                <small>Итого</small>
+                <strong><MoneyAmount :amount="selectedTotalPrice" /></strong>
+                <span :class="{ danger: !selectedCanAfford }">
+                  {{ selectedCanAfford ? 'Можно купить сейчас' : 'Недостаточно золота' }}
                 </span>
               </div>
               <UIButton
                 data-buy-selected
                 :loading="buyPending"
-                :disabled="buyPending || !isAffordable(selectedOffer)"
-                @click="buy(selectedOffer.definitionId)"
+                :disabled="buyPending || !selectedCanAfford"
+                @click="buySelected"
               >
-                Купить · <MoneyAmount :amount="selectedOffer.buyPriceGold" />
+                Купить {{ selectedQuantity > 1 ? '×' + selectedQuantity : '' }} ·
+                <MoneyAmount :amount="selectedTotalPrice" />
               </UIButton>
             </footer>
           </article>
@@ -647,21 +760,32 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
           <p>По этим фильтрам ничего не нашлось.</p>
           <button
             type="button"
-            @click="searchQuery = ''; activeFilter = 'all'; onlyAffordable = false"
+            @click="searchQuery = ''; activeFilter = 'all'; onlyAffordable = false; onlyForClass = false"
           >
             Сбросить фильтры
           </button>
         </div>
       </section>
 
-      <section v-else class="merchant-panel merchant-panel--sell">
+      <section v-else-if="activeTab === 'sell'" class="merchant-panel merchant-panel--sell">
         <header class="merchant-panel__heading">
           <div>
             <small>СДАТЬ МАРКУСУ</small>
-            <strong>Предметы, которые торговец готов выкупить</strong>
+            <strong>Отметьте вещи и продайте пачкой</strong>
           </div>
           <span>{{ sellableItems.length }} предметов</span>
         </header>
+
+        <div v-if="sellableItems.length" class="sell-toolbar">
+          <button type="button" @click="selectAllSellable">
+            {{ selectedSellIds.length === sellableItems.length ? 'Снять выбор' : 'Выбрать всё' }}
+          </button>
+          <span>Выбрано: {{ selectedSellItems.length }}</span>
+          <b><MoneyAmount :amount="selectedSellValue" /></b>
+          <UIButton :disabled="sellPending || !selectedSellItems.length" @click="sellSelected">
+            Продать выбранное
+          </UIButton>
+        </div>
 
         <p v-if="protectedItemsCount > 0" class="protected-hint">
           <IconGenerator :config="{ id: 'merchant-locked-items', glyph: 'lock', category: 'utility', state: 'locked' }" />
@@ -669,7 +793,22 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
         </p>
 
         <div v-if="sellableItems.length" class="sell-list">
-          <article v-for="item in sellableItems" :key="item.id" class="sell-card" :data-sell-item="item.id">
+          <article
+            v-for="item in sellableItems"
+            :key="item.id"
+            class="sell-card"
+            :class="{ selected: selectedSellIds.includes(item.id) }"
+            :data-sell-item="item.id"
+          >
+            <label class="sell-card__select">
+              <input
+                type="checkbox"
+                :checked="selectedSellIds.includes(item.id)"
+                @change="toggleSellSelection(item.id)"
+              />
+              <span />
+            </label>
+
             <span class="sell-card__icon" :data-rarity="item.rarity">
               <ItemIcon
                 :icon-id="item.iconId"
@@ -680,15 +819,19 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
                 :rarity="item.rarity"
               />
             </span>
+
             <div class="sell-card__copy">
               <small>{{ inventoryItemTypeLabel(item) }}</small>
               <strong>{{ item.name }}</strong>
               <span>В сумке: {{ item.quantity }}</span>
+              <em v-if="isValuable(item)">⚠ Ценный предмет — потребуется подтверждение</em>
             </div>
+
             <div class="sell-card__price">
               <small>за штуку</small>
               <strong><MoneyAmount :amount="item.sellPriceGold" /></strong>
             </div>
+
             <div class="sell-card__actions">
               <UIButton variant="ghost" :disabled="sellPending" @click="sell(item, 1)">
                 Продать 1
@@ -704,6 +847,62 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
         <div v-else class="merchant-empty">
           <span class="merchant-empty__mark">◇</span>
           <p>В сумке пока нет вещей, которые Маркус готов купить.</p>
+        </div>
+      </section>
+
+      <section v-else class="merchant-panel merchant-panel--buyback">
+        <header class="merchant-panel__heading">
+          <div>
+            <small>ОБРАТНЫЙ ВЫКУП</small>
+            <strong>Последние 12 проданных позиций</strong>
+          </div>
+          <span>{{ buybackItems.length }} предметов</span>
+        </header>
+
+        <div v-if="buybackItems.length" class="buyback-list">
+          <article
+            v-for="item in buybackItems"
+            :key="item.characterItemId"
+            class="buyback-card"
+            :data-buyback-item="item.characterItemId"
+          >
+            <span class="sell-card__icon" :data-rarity="item.rarity">
+              <ItemIcon
+                :icon-id="item.iconId"
+                :item-id="item.definitionId"
+                :name="item.name"
+                :type="item.type"
+                :rarity="item.rarity"
+              />
+            </span>
+
+            <div class="buyback-card__copy">
+              <small>{{ rarityLabel(item) }}</small>
+              <strong>{{ item.name }}</strong>
+              <span>
+                Количество: {{ item.quantity }}
+                <template v-if="item.enhancementLevel"> · +{{ item.enhancementLevel }}</template>
+              </span>
+            </div>
+
+            <div class="buyback-card__price">
+              <small>Вернуть за</small>
+              <b><MoneyAmount :amount="item.buybackPriceGold" /></b>
+            </div>
+
+            <UIButton
+              :loading="buybackPending"
+              :disabled="buybackPending || !canAffordMoney(merchant?.gold ?? 0, item.buybackPriceGold)"
+              @click="buyback(item)"
+            >
+              Выкупить
+            </UIButton>
+          </article>
+        </div>
+
+        <div v-else class="merchant-empty">
+          <span class="merchant-empty__mark">↶</span>
+          <p>Выкуп пуст. Здесь появятся последние проданные Маркусу вещи.</p>
         </div>
       </section>
     </section>
