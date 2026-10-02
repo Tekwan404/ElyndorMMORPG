@@ -46,12 +46,16 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
             source => source.MonsterId == "WHISPERING_FOREST_MOLODOI_VOLK_L1"
                 && source.ItemId == "ROUGH_HIDE");
 
+        QuestDefinition alpha = quests.Single(quest => quest.Id == "QUEST_05_ALPHA_OF_WHISPERS");
+        Assert.Equal(["QUEST_01_FIRST_HUNT"], alpha.PrerequisiteQuestIds ?? []);
+
         QuestDefinition broodmother = quests.Single(quest => quest.Id == "CONTRACT_BROODMOTHER_GATE");
         Assert.Equal(QuestType.Contract, broodmother.Type);
         Assert.Equal("STARTER_TOWN", broodmother.OfferLocationId);
         Assert.Equal("BF-014", broodmother.ContractNumber);
         Assert.Equal("Высокая", broodmother.ThreatLevel);
         Assert.Contains("QUEST_13_BROODMOTHER_TRACE", broodmother.PrerequisiteQuestIds ?? []);
+        Assert.Null(broodmother.UnlockLocationId);
 
         QuestDefinition levelTwenty = quests.Single(quest => quest.Id == "QUEST_20_BLIGHTED_ALPHA");
         Assert.Contains("QUEST_19_VETERAN_BANDITS", levelTwenty.PrerequisiteQuestIds ?? []);
@@ -225,6 +229,37 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
         Assert.Equal(
             QuestStateStatuses.Completed,
             persisted.Quests.Single(q => q.Id == "QUEST_01_FIRST_HUNT").Status);
+    }
+
+    [Fact]
+    public async Task AlphaContractBecomesAvailableAfterFirstHuntWithoutOptionalErrands()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(
+            level: 5,
+            locationId: "STARTER_TOWN");
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        context.QuestRewardGrants.Add(new QuestRewardGrant(
+            characterId,
+            "QUEST_01_FIRST_HUNT",
+            Guid.CreateVersion7(),
+            90,
+            15,
+            "[]",
+            Now));
+        await context.SaveChangesAsync();
+
+        (QuestService service, _) = await CreateServiceAsync(context);
+        QuestJournalSnapshot journal = await service.GetAsync(
+            accountId,
+            CancellationToken.None);
+
+        Assert.Equal(
+            "AVAILABLE",
+            journal.Quests.Single(q => q.Id == "QUEST_05_ALPHA_OF_WHISPERS").Status);
+        Assert.NotEqual(
+            QuestStateStatuses.Completed,
+            journal.Quests.Single(q => q.Id == "QUEST_04_SILKEN_THREAT").Status);
     }
 
     [Fact]
