@@ -184,7 +184,7 @@ public sealed class WorldBossLifecycleTests(PostgresFixture postgres) : IAsyncLi
         Assert.Equal("Архон Пепла", result.Active!.Name);
         Assert.Equal("WORLD_BOSS_ASH_ARCHON_L30", result.Active.MonsterId);
         Assert.Equal("namestnik-tsitadeli", result.Active.ArtId);
-        Assert.Equal(1_000_000m, result.Active.MaxHealth);
+        Assert.Equal(100_000m, result.Active.MaxHealth);
         Assert.Equal(5_000m, result.Active.MinimumContribution);
         Assert.Equal(73_420m, result.Active.PersonalDamage);
         Assert.Equal(73_420m, result.Active.PartyDamage);
