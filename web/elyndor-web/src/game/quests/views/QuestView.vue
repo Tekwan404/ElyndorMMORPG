@@ -41,7 +41,7 @@ const targetNames: Readonly<Record<string, string>> = {
   DEEP_WOLF_L10: 'Матёрый лесной волк', ALPHA_WOLF_L11: 'Старый альфа-волк', SPIDER_BROODMOTHER_L14: 'Паучья Прародительница',
   BANDIT_ROGUE_L15: 'Лесной разбойник', BANDIT_ARCHER_L16: 'Разбойник-лучник', CORRUPTED_BOAR_L17: 'Осквернённый вепрь',
   BLIGHTED_SPIDER_L18: 'Осквернённый паук', BANDIT_ROGUE_L19: 'Опытный лесной разбойник', ALPHA_WOLF_L20: 'Осквернённый альфа-волк',
-  WOLF_HIDE: 'Шкура волка', WOLF_FANG: 'Волчий клык', BOAR_TUSK: 'Кабаний клык',
+  WOLF_HIDE: 'Шкура волка', ROUGH_HIDE: 'Грубая шкура', WOLF_FANG: 'Волчий клык', BOAR_TUSK: 'Кабаний клык',
   SPIDER_SILK: 'Паучий шёлк', SPIDER_VENOM_SAC: 'Ядовитая железа паука',
 }
 const errorMessages: Readonly<Record<string, string>> = {
