@@ -615,8 +615,18 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
         return new SimulationEquipment(modifiers, setPieces);
     }
 
-    private static bool CanEquip(ClassProfile classProfile, ItemDefinition item)
+    private bool CanEquip(ClassProfile classProfile, ItemDefinition item)
     {
+        string? explicitClassOwner = (content.ClassProfiles ?? [])
+            .Select(profile => profile.Id)
+            .FirstOrDefault(classId =>
+                item.Id.StartsWith($"{classId}_", StringComparison.Ordinal)
+                || item.Id.Contains($"_{classId}_", StringComparison.Ordinal)
+                || item.RandomAffixPoolId?.StartsWith($"{classId}_", StringComparison.Ordinal) == true);
+        if (explicitClassOwner is not null
+            && !string.Equals(explicitClassOwner, classProfile.Id, StringComparison.Ordinal))
+            return false;
+
         if (item.WeaponCategory is not null
             && !classProfile.AllowedWeaponCategories.Contains(item.WeaponCategory, StringComparer.Ordinal))
             return false;
