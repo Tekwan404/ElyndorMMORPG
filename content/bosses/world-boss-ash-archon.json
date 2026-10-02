@@ -35,13 +35,13 @@
       ],
       "aiProfileId": "WORLD_BOSS_ASH_ARCHON_AI",
       "version": 1,
-      "xpReward": 0,
       "lootTableId": null,
       "goldRewardMin": 0,
       "goldRewardMax": 0,
       "displayName": "Архон Пепла",
       "description": "Мировой босс 30 уровня. Его здоровье общее для всех одновременно идущих боёв.",
-      "artId": "namestnik-tsitadeli"
+      "artId": "namestnik-tsitadeli",
+      "grantsXp": false
     }
   ],
   "monsterAiProfiles": [
