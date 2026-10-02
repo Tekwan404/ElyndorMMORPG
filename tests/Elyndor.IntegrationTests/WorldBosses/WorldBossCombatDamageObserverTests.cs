@@ -2,6 +2,7 @@ using Elyndor.Core.Characters;
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Identity;
+using Elyndor.Core.Parties;
 using Elyndor.Core.WorldBosses;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.WorldBosses;
@@ -76,6 +77,38 @@ public sealed class WorldBossCombatDamageObserverTests(PostgresFixture postgres)
         Assert.Equal(7_000m, (await verify.WorldBossSpawns.SingleAsync()).CurrentHealth);
         Assert.Equal(3_000m, (await verify.WorldBossContributions.SingleAsync()).Damage);
         Assert.Single(await verify.WorldBossDamageMutations.ToListAsync());
+    }
+
+    [Fact]
+    public async Task PartyContributionUsesMembershipAtDamageTimeInsteadOfBindingSnapshot()
+    {
+        Seed seed = await SeedAsync();
+        Guid partyId = Guid.CreateVersion7();
+
+        await using (GameDbContext arrange = postgres.CreateDbContext())
+        {
+            arrange.Parties.Add(Party.Create(
+                partyId,
+                Guid.CreateVersion7(),
+                seed.CharacterId,
+                Now));
+            await arrange.SaveChangesAsync();
+        }
+
+        await using ServiceProvider provider = Services();
+        WorldBossCombatDamageObserver observer = new(
+            provider.GetRequiredService<IServiceScopeFactory>());
+
+        await observer.ObserveAsync(
+            seed.SessionId,
+            [Participant(seed)],
+            [Damage(seed.PlayerActorId, seed.BossActorId, 2_500m, 7)],
+            CancellationToken.None);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        WorldBossPartyContribution party = await verify.WorldBossPartyContributions.SingleAsync();
+        Assert.Equal(partyId, party.PartyId);
+        Assert.Equal(2_500m, party.Damage);
     }
 
     [Fact]
