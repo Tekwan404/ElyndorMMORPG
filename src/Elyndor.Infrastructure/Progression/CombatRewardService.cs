@@ -160,6 +160,9 @@ public sealed class CombatRewardService(
         ResolvedRewardSource[] rewardSources = ResolveRewardSources(snapshot, indexes);
         LevelProgressionDefinition progression = content.LevelProgression
             ?? throw new InvalidOperationException("Level progression content is required for combat rewards.");
+        ProgressionBalanceProfile? progressionBalance = content.ProgressionBalance;
+        Guid[] eligibleCharacterIds = ResolveEligibleCharacterIds(snapshot);
+        int eligiblePartySize = Math.Max(1, eligibleCharacterIds.Length);
 
         List<CombatRewardSourceAudit> sourceAudits = [];
         List<LootRoll> rolledPersonalLoot = [];
@@ -167,7 +170,14 @@ public sealed class CombatRewardService(
         int goldEarned = 0;
         foreach (ResolvedRewardSource source in rewardSources)
         {
-            int sourceXp = source.Monster.XpReward;
+            int sourceXp = progressionBalance is null
+                ? source.Monster.XpReward
+                : ProgressionRewardCalculator.ResolveMonsterXp(
+                    source.Monster,
+                    character.Level,
+                    eligiblePartySize,
+                    progression,
+                    progressionBalance);
             int sourceGold = RollGold(source.Monster);
             string sourceQualityProfileId = QualityProfileFor(source.Monster);
             IReadOnlyList<LootRoll> sourceLoot = RollLoot(source.Monster, indexes)
@@ -234,7 +244,6 @@ public sealed class CombatRewardService(
             personalLoot.Add(roll);
         }
 
-        Guid[] eligibleCharacterIds = ResolveEligibleCharacterIds(snapshot);
         foreach (LootRoll roll in sharedValuableLoot)
         {
             if (!indexes.ItemsById.TryGetValue(roll.ItemId, out ItemDefinition? item))
