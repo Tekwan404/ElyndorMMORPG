@@ -706,6 +706,17 @@ public sealed partial class CombatSession
         return Result(true, null, before);
     }
 
+    public void SynchronizePrimaryEnemyHealthBeforeRegistration(decimal currentHealth)
+    {
+        if (Status != CombatSessionStatus.Active)
+            throw new InvalidOperationException("Only an active combat session can be synchronized.");
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(currentHealth);
+        if (currentHealth > _primaryEnemy.Actor.MaxHp)
+            throw new ArgumentOutOfRangeException(nameof(currentHealth));
+
+        _primaryEnemy.Actor.SetCurrentHp(currentHealth);
+    }
+
     public IReadOnlyList<CombatEvent> GetEventsAfter(long sequence) =>
         _events.Where(item => item.Sequence > sequence).ToArray();
 
