@@ -719,6 +719,18 @@ public sealed partial class CombatSession
     }
 
     public decimal PrimaryEnemyMaxHp => _primaryEnemy.Actor.MaxHp;
+    public bool RequiresExternalSynchronization { get; private set; }
+
+    public void EnableExternalSynchronization()
+    {
+        if (Status != CombatSessionStatus.Active)
+        {
+            throw new InvalidOperationException(
+                "External synchronization can only be enabled for an active combat session.");
+        }
+
+        RequiresExternalSynchronization = true;
+    }
 
     public bool SynchronizePrimaryEnemyFromAuthority(
         decimal currentHealth,
