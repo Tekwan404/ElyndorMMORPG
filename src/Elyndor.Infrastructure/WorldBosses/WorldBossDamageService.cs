@@ -3,6 +3,7 @@ using Elyndor.Infrastructure.Content;
 using Elyndor.Core.WorldBosses;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Elyndor.Infrastructure.WorldBosses;
 
@@ -30,9 +31,11 @@ public sealed record WorldBossDamageCommitResult(
 public sealed class WorldBossDamageService(
     GameDbContext db,
     TimeProvider time,
-    IContentSnapshotProvider? contentProvider = null)
+    IContentSnapshotProvider? contentProvider = null,
+    IWorldBossUpdatePublisher? updatePublisher = null,
+    ILogger<WorldBossDamageService>? logger = null)
 {
-    public Task<WorldBossDamageCommitResult> ApplyDamageAsync(
+    public async Task<WorldBossDamageCommitResult> ApplyDamageAsync(
         Guid spawnId,
         Guid characterId,
         Guid combatSessionId,
@@ -43,7 +46,9 @@ public sealed class WorldBossDamageService(
     {
         Validate(spawnId, characterId, combatSessionId, partyId, requestedDamage, mutationId);
 
-        return db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        WorldBossDamageCommitResult result = await db.Database
+            .CreateExecutionStrategy()
+            .ExecuteAsync(async () =>
         {
             db.ChangeTracker.Clear();
             await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
@@ -198,6 +203,53 @@ public sealed class WorldBossDamageService(
                 defeatedNow,
                 phaseChanged);
         });
+
+        if (result.DefeatedNow && updatePublisher is not null)
+            await PublishDefeatedSafelyAsync(spawnId, cancellationToken);
+
+        return result;
+    }
+
+    private async Task PublishDefeatedSafelyAsync(
+        Guid spawnId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            DateTimeOffset? defeatedAtUtc = await db.WorldBossSpawns
+                .AsNoTracking()
+                .Where(spawn => spawn.Id == spawnId)
+                .Select(spawn => spawn.DefeatedAtUtc)
+                .SingleOrDefaultAsync(cancellationToken);
+            if (defeatedAtUtc is null)
+                return;
+
+            Guid[] participantAccountIds = await (
+                from contribution in db.WorldBossContributions.AsNoTracking()
+                join character in db.Characters.AsNoTracking()
+                    on contribution.CharacterId equals character.Id
+                where contribution.SpawnId == spawnId
+                select character.AccountId)
+                .Distinct()
+                .ToArrayAsync(cancellationToken);
+
+            await updatePublisher!.PublishDefeatedAsync(
+                spawnId,
+                defeatedAtUtc.Value,
+                participantAccountIds,
+                cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Durable defeat already committed; authoritative reads recover missed realtime.
+        }
+        catch (Exception exception)
+        {
+            logger?.LogError(
+                exception,
+                "World boss {SpawnId} was defeated, but realtime defeat delivery failed.",
+                spawnId);
+        }
     }
 
     private static void Validate(
