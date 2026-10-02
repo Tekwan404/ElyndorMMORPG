@@ -390,8 +390,12 @@ public static class AfkFarmSimulator
         foreach (AbilityDefinition ability in abilities)
         {
             DateTimeOffset readyAt = now;
-            if (ability.UsesGlobalCooldown && runtime.GlobalCooldownEndsAtUtc > readyAt)
-                readyAt = runtime.GlobalCooldownEndsAtUtc;
+            if (ability.UsesGlobalCooldown
+                && runtime.GlobalCooldownEndsAtUtc is { } gcdAt
+                && gcdAt > readyAt)
+            {
+                readyAt = gcdAt;
+            }
             if (runtime.Cooldowns.TryGetValue(ability.Id, out DateTimeOffset cooldownAt)
                 && cooldownAt > readyAt)
             {
