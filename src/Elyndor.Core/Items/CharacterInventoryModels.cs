@@ -249,30 +249,21 @@ public sealed class CharacterItem
         Quantity -= quantity;
     }
 
-    public void MoveToMerchantBuyback(
-        string merchantId,
-        Guid saleOperationId,
-        DateTimeOffset soldAtUtc)
+    public void MoveToMerchantBuyback(DateTimeOffset soldAtUtc)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(merchantId);
-        if (saleOperationId == Guid.Empty)
-            throw new ArgumentException("Sale operation identifier cannot be empty.", nameof(saleOperationId));
         if (soldAtUtc.Offset != TimeSpan.Zero)
             throw new ArgumentException("Buyback timestamps must be UTC.", nameof(soldAtUtc));
         if (Storage != "INVENTORY" || TransactionLockId.HasValue || IsLocked)
             throw new InvalidOperationException("Only unlocked inventory items can move to merchant buyback.");
 
+        // Keep acquisition/source metadata intact: generated item provenance must survive a sale.
         Storage = "BUYBACK";
         AcquiredAtUtc = soldAtUtc;
-        SourceType = "MERCHANT_BUYBACK";
-        SourceOperationId = saleOperationId;
-        SourceEntryId = merchantId;
     }
 
     public void RestoreFromMerchantBuyback()
     {
         if (Storage != "BUYBACK"
-            || !string.Equals(SourceType, "MERCHANT_BUYBACK", StringComparison.Ordinal)
             || TransactionLockId.HasValue)
         {
             throw new InvalidOperationException("Item is not available for merchant buyback.");
