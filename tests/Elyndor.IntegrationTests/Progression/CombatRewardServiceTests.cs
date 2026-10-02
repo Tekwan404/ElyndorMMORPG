@@ -422,6 +422,44 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
     }
 
     [Fact]
+    public async Task EligibleDuoSplitsSharedXpPoolInsteadOfDuplicatingFullReward()
+    {
+        (Guid firstCharacterId, _) = await CreateCharacterAsync(
+            0,
+            100,
+            level: 14,
+            name: "XpOwner");
+        (Guid secondCharacterId, _) = await CreateCharacterAsync(
+            0,
+            100,
+            level: 14,
+            name: "XpOther");
+        CombatSessionSnapshot snapshot = MultiplayerBossVictorySnapshot(
+            Guid.CreateVersion7(),
+            firstCharacterId,
+            secondCharacterId);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        CombatRewardService service = await CreateServiceAsync(context);
+
+        CombatRewardApplicationResult first = await service.ApplyVictoryAsync(
+            firstCharacterId,
+            snapshot,
+            CancellationToken.None);
+        CombatRewardApplicationResult second = await service.ApplyVictoryAsync(
+            secondCharacterId,
+            snapshot,
+            CancellationToken.None);
+
+        Assert.Equal(19_561, first.XpEarned);
+        Assert.Equal(first.XpEarned, second.XpEarned);
+        Assert.True(first.XpEarned < 30_094);
+        Assert.Equal(
+            39_122,
+            first.XpEarned + second.XpEarned);
+    }
+
+    [Fact]
     public async Task SharedValuableLootIsRolledOnceWhenOnlyTheFirstPersonalRollFindsIt()
     {
         (Guid firstCharacterId, _) = await CreateCharacterAsync(
