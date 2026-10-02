@@ -452,8 +452,9 @@ public static class WorldBossLeaderboardRewardPolicy
         ArgumentNullException.ThrowIfNull(profile);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rank);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(eligibleParticipants);
-        if (rank > eligibleParticipants)
-            throw new ArgumentOutOfRangeException(nameof(rank));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(
+            rank,
+            eligibleParticipants);
 
         decimal percentile = CalculatePercentile(rank, eligibleParticipants);
         IReadOnlyList<WorldBossLeaderboardRewardTierDefinition> tiers =
@@ -497,8 +498,9 @@ public static class WorldBossLeaderboardRewardPolicy
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rank);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(eligibleParticipants);
-        if (rank > eligibleParticipants)
-            throw new ArgumentOutOfRangeException(nameof(rank));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(
+            rank,
+            eligibleParticipants);
 
         return decimal.Round(
             (eligibleParticipants - rank + 1) * 100m / eligibleParticipants,
