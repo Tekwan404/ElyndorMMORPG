@@ -23,6 +23,7 @@ describe('PartyView', () => {
 
     expect(wrapper.text()).toContain('Группа')
     expect(wrapper.text()).toContain('Tekwan')
+    expect(wrapper.find('.ui-panel__title').text()).toContain('Группа · 1/5')
     expect(wrapper.find('[data-party-disband]').exists()).toBe(true)
     await wrapper.get('[data-party-open-dungeons]').trigger('click')
     expect(wrapper.emitted('open-world')).toEqual([[]])
@@ -35,7 +36,7 @@ describe('PartyView', () => {
     party.snapshot = {
       ...party.snapshot!,
       activeDungeonRunId: 'run-1',
-      members: party.snapshot!.members.map(member => ({
+      members: party.snapshot!.members.map((member) => ({
         ...member,
         activeDungeonRunId: 'run-1',
         locationId: 'STARTER_TOWN',
@@ -59,6 +60,53 @@ describe('PartyView', () => {
     await wrapper.get('[data-party-dungeon-return]').trigger('click')
     expect(returnToRun).toHaveBeenCalledWith('run-1')
   })
+
+  it('keeps a destructive confirmation open and guarded until the server answers, and allows retry after failure', async () => {
+    const { party, dungeon } = preparePartyView('STARTER_TOWN')
+    vi.spyOn(party, 'refresh').mockResolvedValue(undefined)
+    vi.spyOn(dungeon, 'refresh').mockResolvedValue(undefined)
+    let finish!: () => void
+    vi.spyOn(party, 'disband').mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = () => {
+            party.errorCode = 'party_disband_failed'
+            resolve()
+          }
+        }),
+    )
+    const wrapper = mount(PartyView, { global: { stubs: { Teleport: true } } })
+    await flushPromises()
+    await wrapper.get('[data-party-disband]').trigger('click')
+    await wrapper.get('[data-party-confirm]').trigger('click')
+    expect(wrapper.find('[role="dialog"]').exists()).toBe(true)
+    expect(wrapper.get('[data-party-confirm]').attributes('disabled')).toBeDefined()
+    finish()
+    await flushPromises()
+    expect(wrapper.get('[role="dialog"] [role="alert"]').text()).not.toBe('')
+    expect(wrapper.get('[data-party-confirm]').attributes('disabled')).toBeUndefined()
+    wrapper.unmount()
+  })
+
+  it('does not offer to create a group while initial loading has not finished', async () => {
+    const { party, dungeon } = preparePartyView('STARTER_TOWN')
+    party.snapshot = null
+    let finish!: () => void
+    vi.spyOn(party, 'refresh').mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve
+        }),
+    )
+    vi.spyOn(dungeon, 'refresh').mockResolvedValue(undefined)
+    const wrapper = mount(PartyView)
+    expect(wrapper.text()).toContain('Загружаем группу')
+    expect(wrapper.text()).not.toContain('Создать группу')
+    finish()
+    await flushPromises()
+    expect(wrapper.text()).toContain('Создать группу')
+    wrapper.unmount()
+  })
 })
 
 function preparePartyView(locationId: string) {
@@ -80,15 +128,17 @@ function preparePartyView(locationId: string) {
     partyId: 'party-1',
     leaderCharacterId: CHARACTER_ID,
     version: 1,
-    members: [{
-      characterId: CHARACTER_ID,
-      name: 'Tekwan',
-      level: 25,
-      classId: 'WARRIOR',
-      isLeader: true,
-      joinedAtUtc: '2026-09-10T00:00:00Z',
-      locationId,
-    }],
+    members: [
+      {
+        characterId: CHARACTER_ID,
+        name: 'Tekwan',
+        level: 25,
+        classId: 'WARRIOR',
+        isLeader: true,
+        joinedAtUtc: '2026-09-10T00:00:00Z',
+        locationId,
+      },
+    ],
   }
 
   const dungeon = useDungeonStore()
@@ -127,13 +177,15 @@ function dungeonRun(): DungeonRun {
     encounterCount: 5,
     partyId: 'party-1',
     members: [{ characterId: CHARACTER_ID, state: 'Active', joinedAtUtc: '2026-09-13T00:00:00Z' }],
-    encounters: [{
-      encounterId: 'encounter-1',
-      encounterIndex: 0,
-      monsterId: 'M1',
-      state: 'Pending',
-      wipeCount: 0,
-      characterIds: [],
-    }],
+    encounters: [
+      {
+        encounterId: 'encounter-1',
+        encounterIndex: 0,
+        monsterId: 'M1',
+        state: 'Pending',
+        wipeCount: 0,
+        characterIds: [],
+      },
+    ],
   }
 }

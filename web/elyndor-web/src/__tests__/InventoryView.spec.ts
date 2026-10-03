@@ -1,12 +1,89 @@
-import { flushPromises, mount } from '@vue/test-utils'
+import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { BootstrapSnapshot, InventoryItem } from '@/api/contracts'
 import InventoryView from '@/game/character/views/InventoryView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 
+enableAutoUnmount(afterEach)
+
 describe('InventoryView', () => {
+  it('offers pending-loot read retry without disabling the inventory', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot([equipment('BLADE', 'Клинок', 'Rare', 1, 3)], currentWeapon())
+    const load = vi.spyOn(store, 'getPendingLoot').mockRejectedValueOnce(new Error('network')).mockResolvedValue({ items: [] })
+    const wrapper = mount(InventoryView)
+    await flushPromises()
+    expect(wrapper.get('[data-pending-loot-read-error]').text()).toContain('Повторить')
+    expect(wrapper.get('[data-item-id="BLADE"]').attributes('disabled')).toBeUndefined()
+    await wrapper.get('[data-pending-loot-read-error] button').trigger('click')
+    await flushPromises()
+    expect(load).toHaveBeenCalledTimes(2)
+    expect(wrapper.find('[data-pending-loot-read-error]').exists()).toBe(false)
+  })
+  it('does not use a consumable while its protection operation is pending', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot([consumable('POTION', 'Зелье')], currentWeapon())
+    store.snapshot.character!.vitals.currentHp = 100
+    vi.spyOn(store, 'isMutationPending').mockImplementation(key => key === 'inventory:set-lock')
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-item-id="POTION"]').trigger('click')
+    const button = [...document.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')].find(button => button.textContent?.includes('Использовать'))!
+    expect(button.disabled).toBe(true)
+  })
+  it('blocks protection changes while the same inventory equipment operation is pending', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot([equipment('BLADE', 'Клинок', 'Rare', 1, 3)], currentWeapon())
+    vi.spyOn(store, 'isMutationPending').mockImplementation(key => key === 'inventory:equip')
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-item-id="BLADE"]').trigger('click')
+    expect(document.querySelector<HTMLButtonElement>('[data-item-lock-action]')!.disabled).toBe(true)
+  })
+  it('keeps a failed consumable action open with visible feedback', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot([consumable('POTION', 'Зелье')], currentWeapon())
+    store.snapshot.character!.vitals.currentHp = 100
+    const use = vi.spyOn(store, 'useConsumable').mockImplementation(async () => { store.errorCode = 'inventory_consumable_failed' })
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-item-id="POTION"]').trigger('click')
+    const button = [...document.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')].find(button => button.textContent?.includes('Использовать'))!
+    button.click()
+    await flushPromises()
+    expect(use).toHaveBeenCalledWith('POTION')
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull()
+    expect(document.body.textContent).toContain('Не удалось использовать')
+    expect(wrapper.find('[data-inventory-feedback]').exists()).toBe(false)
+  })
+  it('reviews destructive actions in a game dialog before removing the item', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot([equipment('RARE_BLADE', 'Редкий клинок', 'Rare', 1, 3)], currentWeapon())
+    const discard = vi.spyOn(store, 'discardInventoryItems').mockResolvedValue(true)
+    vi.spyOn(window, 'confirm').mockReturnValue(false)
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-item-id="RARE_BLADE"]').trigger('click')
+    await flushPromises()
+    document.querySelector<HTMLButtonElement>('[data-item-discard-action]')!.click()
+    await flushPromises()
+    expect(document.querySelector('[data-confirmation]')?.textContent).toContain('Уничтожить')
+    expect(discard).not.toHaveBeenCalled()
+    document.querySelector<HTMLButtonElement>('[data-confirm-accept]')!.click()
+    await flushPromises()
+    expect(discard).toHaveBeenCalledWith([{ characterItemId: 'RARE_BLADE', quantity: 1 }])
+    wrapper.unmount()
+  })
+
+  it('does not invent ranger bonuses for an unrelated set item', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot([item({ ...equipment('SET_BLADE', 'Меч ордена', 'Rare', 1, 3), setId: 'ORDER_WARRIOR' })], currentWeapon())
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-item-id="SET_BLADE"]').trigger('click')
+    await flushPromises()
+    const dialog = document.querySelector('[role="dialog"]')!
+    expect(dialog.textContent).not.toContain('комплекта Следопыта')
+    expect(dialog.querySelector('[data-item-set]')).not.toBeNull()
+    wrapper.unmount()
+  })
   beforeEach(() => {
     setActivePinia(createPinia())
     globalThis.localStorage.clear()

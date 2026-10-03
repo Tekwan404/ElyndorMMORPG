@@ -63,6 +63,7 @@ const canUseAfkFarm = computed(() =>
 const canExplore = computed(() =>
   !isTravelling.value && world.value?.currentLocation.dangerLevel !== 'SAFE',
 )
+const explorePending = computed(() => session.isMutationPending('world:explore') || combat.lifecyclePending)
 const canStartWorldCombat = computed(() =>
   party.snapshot === null
     || party.snapshot.leaderCharacterId === character.value?.id,
@@ -113,7 +114,7 @@ const dangerLabel = computed(() => {
   return 'ОПАСНАЯ ОБЛАСТЬ'
 })
 const worldErrorMessage = computed(() => {
-  const code = session.errorCode
+  const code = session.errorCode ?? (!combat.isActive ? combat.errorCode : null)
   if (!code) return null
   if (code === 'world_encounter_unavailable') return 'В этой области сейчас не удалось найти противника.'
   if (code === 'world_encounter_location_unavailable') return 'Текущее положение героя не удалось подтвердить.'
@@ -173,7 +174,8 @@ async function explore(): Promise<void> {
     || !canStartWorldCombat.value
     || combat.isActive
     || session.mutationPending
-    || combat.pending) return
+    || combat.pending
+    || explorePending.value) return
 
   dismissCombatResult()
   const encounter = await session.explore()
@@ -232,7 +234,7 @@ async function stopAfkFarm(): Promise<void> {
 }
 
 async function startTraining(): Promise<void> {
-  if (isTravelling.value || !isCityLocation.value || combat.pending) return
+  if (isTravelling.value || !isCityLocation.value || session.mutationPending || combat.isActive || combat.pending) return
   if (await combat.startTraining()) {
     lastEnemyName.value = 'Тренировочный манекен'
     dismissCombatResult()
@@ -348,7 +350,8 @@ onMounted(() => {
         <div v-if="canExplore && lastCombatResult !== 'Victory' && canStartWorldCombat" class="scene__actions" aria-label="Действия локации">
           <UIButton
             data-explore
-            :loading="session.mutationPending"
+            :loading="explorePending"
+            :disabled="session.mutationPending || combat.pending || combat.isActive"
             @click="explore"
           >
             Исследовать
@@ -370,9 +373,9 @@ onMounted(() => {
       @open-party="emit('open-party')"
     />
 
-    <div v-if="session.errorCode" class="world-error" role="alert">
-      <strong>{{ worldErrorMessage }}</strong>
-    </div>
+    <UIToast v-if="worldErrorMessage" tone="danger" placement="inline" role="alert" data-world-error>
+      {{ worldErrorMessage }}
+    </UIToast>
 
     <UICard v-if="activeAfkFarm" class="afk-status" data-afk-active>
       <div>
@@ -390,8 +393,8 @@ onMounted(() => {
       </div>
       <p>Доберитесь до места боя и присоединитесь к группе.</p>
       <UIButton
-        :loading="combat.pending"
-        :disabled="isTravelling"
+        :loading="combat.lifecyclePending"
+        :disabled="isTravelling || combat.pending"
         data-attach-party-combat
         @click="attachToPartyCombat"
       >Войти в бой</UIButton>
@@ -415,7 +418,7 @@ onMounted(() => {
           </li>
         </ul>
       </div>
-      <UIButton v-if="canExplore && canStartWorldCombat" data-explore-after-victory :loading="session.mutationPending" @click="explore">Исследовать дальше</UIButton>
+      <UIButton v-if="canExplore && canStartWorldCombat" data-explore-after-victory :loading="explorePending" :disabled="session.mutationPending || combat.pending || combat.isActive" @click="explore">Исследовать дальше</UIButton>
       <UIButton variant="secondary" data-dismiss-combat-result @click="dismissCombatResult">Закрыть</UIButton>
     </UICard>
 
@@ -581,8 +584,8 @@ onMounted(() => {
           </div>
           <UIButton
             data-start-training
-            :disabled="isTravelling"
-            :loading="combat.pending"
+            :disabled="isTravelling || session.mutationPending || combat.pending || combat.isActive"
+            :loading="combat.lifecyclePending"
             @click="startTraining"
           >
             {{ isTravelling ? 'В пути' : 'Тренироваться' }}
@@ -909,29 +912,6 @@ onMounted(() => {
   color: #c4cad8;
   font-size: var(--ui-font-size-sm);
   line-height: 1.55;
-}
-
-.world-error {
-  display: grid;
-  gap: 2px;
-  margin: 0;
-  padding: var(--ui-space-3) var(--ui-space-4);
-  border: 1px solid rgb(216 95 114 / 38%);
-  border-left: 3px solid var(--ui-color-danger);
-  border-radius: var(--ui-radius-md);
-  background: linear-gradient(90deg, rgb(216 95 114 / 9%), var(--ui-color-surface-1));
-  color: var(--ui-color-text-secondary);
-}
-
-.world-error strong {
-  color: #ef9bab;
-  font-size: var(--ui-font-size-sm);
-}
-
-.world-error small {
-  color: var(--ui-color-text-muted);
-  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-  font-size: .6rem;
 }
 
 .reward-card {

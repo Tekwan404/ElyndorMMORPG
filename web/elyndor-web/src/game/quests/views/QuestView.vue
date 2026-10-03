@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { formatMoney } from '@/shared/money'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, shallowRef } from 'vue'
 
 import type { Quest, QuestObjective } from '@/api/contracts'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import type { GlyphName } from '@/ui/icons/icon.types'
 import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
-import { UIButton, UICard } from '@/ui/components'
+import { UIButton, UICard, UIConfirmation, UILoadingState, UITabs, UIToast } from '@/ui/components'
+import { useConfirmation } from '@/ui/composables/useConfirmation'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
 type JournalTab = 'story' | 'errands' | 'contracts' | 'completed'
@@ -15,6 +16,15 @@ type JournalTab = 'story' | 'errands' | 'contracts' | 'completed'
 const emit = defineEmits<{ 'open-world': []; 'open-guild': [] }>()
 
 const session = useGameSessionStore()
+const confirmation = useConfirmation()
+const journalLoading = shallowRef(false)
+const journalError = shallowRef<string | null>(null)
+const actionError = shallowRef<string | null>(null)
+const actionNotice = shallowRef('')
+const noticeTone = shallowRef<'success' | 'info'>('success')
+const abandoningId = shallowRef<string | null>(null)
+const abandonPendingKey = 'mutation:/api/v1/quests/abandon'
+let tabSelectedByPlayer = false
 const activeTab = ref<JournalTab>('story')
 const tabs: readonly { id: JournalTab; label: string }[] = [
   { id: 'story', label: 'Сюжет' },
@@ -22,6 +32,13 @@ const tabs: readonly { id: JournalTab; label: string }[] = [
   { id: 'contracts', label: 'Контракты' },
   { id: 'completed', label: 'Завершено' },
 ]
+const journalTabs = computed(() => tabs.map(tab => ({ value: tab.id, label: `${tab.label} · ${tabCount(tab.id)}` })))
+function selectTab(value: string): void {
+  const tab = tabs.find(tab => tab.id === value)
+  if (!tab) return
+  activeTab.value = tab.id
+  tabSelectedByPlayer = true
+}
 
 const quests = computed(() => session.questJournal?.quests ?? [])
 const trackedQuests = computed(() => quests.value.filter(quest =>
@@ -63,10 +80,10 @@ const errorMessages: Readonly<Record<string, string>> = {
   quest_not_ready: 'Цели задания ещё не выполнены.', quest_items_protected: 'Не удалось забрать необходимые предметы из инвентаря.',
   quest_claim_conflict: 'Награда уже обрабатывается. Обновите журнал.',
 }
-const questError = computed(() => {
-  const code = session.errorCode
-  return code?.startsWith('quest_') ? (errorMessages[code] ?? 'Не удалось выполнить действие с заданием.') : null
-})
+const questError = computed(() => actionError.value ?? journalError.value)
+function actionErrorMessage(): string {
+  return errorMessages[session.errorCode ?? ''] ?? 'Не удалось выполнить действие с заданием. Проверьте связь и повторите попытку.'
+}
 
 function tabCount(tab: JournalTab): number {
   if (tab === 'completed') return quests.value.filter(quest => quest.status === 'COMPLETED').length
@@ -103,15 +120,78 @@ function emptyMessage(tab: JournalTab): string {
 const canOpenGuild = computed(() =>
   locationKind(session.snapshot?.world?.currentLocation.id) === 'city',
 )
-async function abandon(questId: string): Promise<void> { await session.abandonQuest(questId) }
-async function claim(questId: string): Promise<void> { await session.claimQuest(questId) }
+function claimPending(questId: string): boolean {
+  return session.isMutationPending(`quest:claim:${questId}`)
+}
+function questActionPending(questId: string): boolean {
+  return claimPending(questId) || abandoningId.value !== null || session.isMutationPending(abandonPendingKey)
+}
+async function abandon(questId: string): Promise<void> {
+  const quest = quests.value.find(quest => quest.id === questId)
+  if (!quest || quest.status !== 'ACTIVE' || questActionPending(questId)) return
+  if (!await confirmation.ask({
+    title: 'Отказаться от задания?',
+    message: `Оставить задание «${quest.displayName}»?`,
+    confirmLabel: 'Отказаться',
+  })) return
+  if (questActionPending(questId) || quests.value.find(quest => quest.id === questId)?.status !== 'ACTIVE') return
 
-onMounted(async () => {
-  await session.refreshQuestJournal()
-  const first = (['story', 'errands', 'contracts'] as const).find(tab => tabCount(tab) > 0)
-  if (first) activeTab.value = first
-  else if (tabCount('completed') > 0) activeTab.value = 'completed'
-})
+  abandoningId.value = questId
+  actionError.value = null
+  actionNotice.value = ''
+  try {
+    await session.abandonQuest(questId)
+    const current = quests.value.find(quest => quest.id === questId)
+    if (session.errorCode || current?.status === 'ACTIVE' || current?.status === 'READY_TO_CLAIM') {
+      actionError.value = actionErrorMessage()
+    } else {
+      noticeTone.value = 'success'
+      actionNotice.value = 'Задание оставлено.'
+    }
+  } catch {
+    actionError.value = actionErrorMessage()
+  } finally {
+    abandoningId.value = null
+  }
+}
+async function claim(questId: string): Promise<void> {
+  if (questActionPending(questId)) return
+  actionError.value = null
+  actionNotice.value = ''
+  try {
+    const result = await session.claimQuest(questId)
+    if (!result) {
+      actionError.value = actionErrorMessage()
+      return
+    }
+    noticeTone.value = result.granted ? 'success' : 'info'
+    actionNotice.value = result.granted ? 'Награда получена.' : 'Награда уже была получена.'
+  } catch {
+    actionError.value = actionErrorMessage()
+  }
+}
+async function loadJournal(selectInitialTab = false): Promise<void> {
+  if (journalLoading.value) return
+  journalLoading.value = true
+  journalError.value = null
+  try {
+    const result = await session.refreshQuestJournal()
+    if (!result) {
+      journalError.value = 'Не удалось загрузить журнал. Проверьте связь и повторите попытку.'
+      return
+    }
+    if (selectInitialTab && !tabSelectedByPlayer) {
+      const first = (['story', 'errands', 'contracts'] as const).find(tab => tabCount(tab) > 0)
+      if (first) activeTab.value = first
+      else if (tabCount('completed') > 0) activeTab.value = 'completed'
+    }
+  } catch {
+    journalError.value = 'Не удалось загрузить журнал. Проверьте связь и повторите попытку.'
+  } finally {
+    journalLoading.value = false
+  }
+}
+onMounted(() => void loadJournal(true))
 </script>
 
 <template>
@@ -133,28 +213,15 @@ onMounted(async () => {
       <p>Сюжет и поручения появляются в локациях. Официальные контракты принимаются у представителей Гильдии авантюристов.</p>
     </UICard>
 
-    <nav class="quest-tabs" aria-label="Разделы журнала">
-      <button
-        v-for="tab in tabs"
-        :key="tab.id"
-        type="button"
-        class="quest-tabs__button"
-        :class="{ 'quest-tabs__button--active': activeTab === tab.id }"
-        :data-quest-tab="tab.id"
-        :aria-current="activeTab === tab.id ? 'page' : undefined"
-        @click="activeTab = tab.id"
-      >
-        <span>{{ tab.label }}</span>
-        <b>{{ tabCount(tab.id) }}</b>
-      </button>
-    </nav>
+    <UITabs class="quest-tabs" :model-value="activeTab" :tabs="journalTabs" label="Разделы журнала" @update:model-value="selectTab" />
 
-    <p v-if="questError" class="quests__error" role="alert">{{ questError }}</p>
+    <UIToast v-if="questError" tone="danger">
+      {{ questError }}
+      <UIButton v-if="journalError" data-retry-quest-journal variant="secondary" :loading="journalLoading" @click="loadJournal()">Повторить</UIButton>
+    </UIToast>
+    <UIToast v-if="actionNotice" :tone="noticeTone" data-quest-feedback>{{ actionNotice }}</UIToast>
 
-    <UICard v-if="session.questJournal === null && !questError" class="quests__empty">
-      <strong>Загружаем журнал…</strong>
-      <p>Получаем актуальное состояние заданий с сервера.</p>
-    </UICard>
+    <UILoadingState v-if="session.questJournal === null && journalLoading" state="loading" title="Загружаем журнал…" message="Получаем актуальное состояние заданий с сервера." />
 
     <div v-else-if="visibleQuests.length" class="quests__list">
       <UICard
@@ -222,7 +289,9 @@ onMounted(async () => {
             v-if="quest.status === 'ACTIVE'"
             data-abandon-quest
             variant="secondary"
-            :disabled="session.mutationPending"
+            :loading="abandoningId === quest.id"
+            loading-label="Отказываемся…"
+            :disabled="questActionPending(quest.id)"
             @click="abandon(quest.id)"
           >
             Отказаться
@@ -230,7 +299,9 @@ onMounted(async () => {
           <UIButton
             v-else-if="quest.status === 'READY_TO_CLAIM'"
             data-claim-quest
-            :disabled="session.mutationPending"
+            :loading="claimPending(quest.id)"
+            loading-label="Получаем награду…"
+            :disabled="questActionPending(quest.id)"
             @click="claim(quest.id)"
           >
             Получить награду
@@ -243,9 +314,7 @@ onMounted(async () => {
       </UICard>
     </div>
 
-    <UICard v-else class="quests__empty">
-      <strong>Здесь пока пусто</strong>
-      <p>{{ emptyMessage(activeTab) }}</p>
+    <UILoadingState v-else-if="session.questJournal !== null" state="empty" title="Здесь пока пусто" :message="emptyMessage(activeTab)">
       <div class="quests__empty-actions">
         <UIButton data-quest-open-world variant="secondary" @click="emit('open-world')">Вернуться в мир</UIButton>
         <UIButton
@@ -254,7 +323,8 @@ onMounted(async () => {
           @click="emit('open-guild')"
         >Открыть гильдию</UIButton>
       </div>
-    </UICard>
+    </UILoadingState>
+    <UIConfirmation :request="confirmation.request.value" @resolve="confirmation.settle" />
   </section>
 </template>
 
@@ -269,10 +339,6 @@ onMounted(async () => {
 .quests__counter span{color:var(--ui-color-text-muted);font-size:var(--ui-font-size-xs);text-transform:uppercase}
 .quest-philosophy{border-color:color-mix(in srgb,var(--ui-color-primary) 26%,var(--ui-color-border));background:linear-gradient(110deg,rgb(146 136 255 / 8%),transparent 60%),var(--ui-gradient-panel)}
 .quest-philosophy strong{font-family:var(--ui-font-display)}.quest-philosophy p{margin:.3rem 0 0;color:var(--ui-color-text-muted);font-size:.7rem;line-height:1.45}
-.quest-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
-.quest-tabs__button{display:flex;min-height:38px;align-items:center;justify-content:space-between;gap:6px;padding:7px 9px;border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:rgb(255 255 255 / 2%);color:var(--ui-color-text-muted);font:inherit;font-size:.68rem;cursor:pointer}
-.quest-tabs__button b{display:grid;min-width:1.35rem;height:1.35rem;place-items:center;border-radius:var(--ui-radius-round);background:rgb(255 255 255 / 5%);font-size:.62rem}
-.quest-tabs__button--active{border-color:color-mix(in srgb,var(--ui-color-primary) 45%,var(--ui-color-border));background:color-mix(in srgb,var(--ui-color-primary) 10%,transparent);color:var(--ui-color-text-primary)}
 .quests__list{display:grid;gap:var(--ui-space-3)}
 .quest-card{display:grid;gap:var(--ui-space-3)}
 .quest-card__topline{display:flex;align-items:center;justify-content:space-between;gap:var(--ui-space-2);color:var(--ui-color-text-muted);font-size:var(--ui-font-size-xs)}
@@ -287,12 +353,6 @@ onMounted(async () => {
 .quest-card__rewards{display:grid;gap:5px}.quest-card__rewards small{color:var(--ui-color-gold);font-size:var(--ui-font-size-xs);font-weight:800;letter-spacing:.08em}.quest-card__rewards div{display:flex;flex-wrap:wrap;gap:6px}.quest-card__rewards span{padding:4px 7px;border:1px solid rgb(232 200 102 / 14%);border-radius:var(--ui-radius-round);background:rgb(232 200 102 / 4%);color:#ddd3a5;font-size:var(--ui-font-size-xs)}.quest-card__rewards .quest-reward-item{display:inline-flex;align-items:center;gap:4px}.quest-reward-item :deep(.item-icon){width:20px;height:20px;flex:0 0 auto}
 .quest-card__unlock{margin:0;padding-top:var(--ui-space-2);border-top:1px solid var(--ui-color-border);color:var(--ui-color-text-muted);font-size:.7rem}.quest-card__unlock strong{color:var(--ui-color-text-primary)}
 .quest-card__actions{display:flex;justify-content:flex-end}.quest-card__completed-mark{display:inline-flex;align-items:center;gap:6px;color:var(--ui-color-success);font-size:var(--ui-font-size-xs);font-weight:700}.quest-card__completed-mark :deep(.icon-generator){width:20px;height:20px}.quest-card--completed{opacity:.74}
-.quests__empty{text-align:center}.quests__empty p{margin-bottom:0;color:var(--ui-color-text-muted)}
-.quests__error{margin:0;padding:9px 11px;border:1px solid color-mix(in srgb,var(--ui-color-danger) 36%,transparent);border-radius:var(--ui-radius-md);background:color-mix(in srgb,var(--ui-color-danger) 8%,transparent);color:var(--ui-color-danger);font-size:.72rem}
-.quest-tabs{display:flex;overflow-x:auto;gap:6px;padding-bottom:2px;scrollbar-width:none}
-.quest-tabs::-webkit-scrollbar{display:none}
-.quest-tabs__button{min-width:max-content;min-height:var(--ui-touch-target);padding:7px 12px;font-size:var(--ui-font-size-xs)}
-.quest-tabs__button b{font-size:var(--ui-font-size-xs)}
 .quest-philosophy p{font-size:var(--ui-font-size-sm)}
 .quests__empty-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:var(--ui-space-2);margin-top:var(--ui-space-3)}
 </style>

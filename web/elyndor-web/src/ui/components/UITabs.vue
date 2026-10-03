@@ -1,10 +1,23 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   modelValue: string
   tabs: readonly { value: string; label: string; disabled?: boolean }[]
   label?: string
 }>()
-defineEmits<{ 'update:modelValue': [value: string] }>()
+const emit = defineEmits<{ 'update:modelValue': [value: string] }>()
+function navigate(event: KeyboardEvent, value: string) {
+  const enabled = props.tabs.filter(tab => !tab.disabled)
+  if (!enabled.length || !['ArrowRight', 'ArrowLeft', 'Home', 'End'].includes(event.key)) return
+  event.preventDefault()
+  const index = enabled.findIndex(tab => tab.value === value)
+  const next = event.key === 'Home' ? 0 : event.key === 'End' ? enabled.length - 1
+    : (index + (event.key === 'ArrowRight' ? 1 : -1) + enabled.length) % enabled.length
+  const target = enabled[next]!
+  emit('update:modelValue', target.value)
+  const root = (event.currentTarget as HTMLElement).parentElement
+  const buttons = root?.querySelectorAll<HTMLButtonElement>('[data-tab]')
+  Array.from(buttons ?? []).find(button => button.dataset.tab === target.value)?.focus()
+}
 </script>
 
 <template>
@@ -18,6 +31,8 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
       :data-tab="tab.value"
       :aria-selected="tab.value === modelValue"
       :disabled="tab.disabled"
+      :tabindex="tab.value === modelValue ? 0 : -1"
+      @keydown="navigate($event, tab.value)"
       @click="!tab.disabled && $emit('update:modelValue', tab.value)"
     >
       {{ tab.label }}
@@ -38,7 +53,7 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
 
 .ui-tabs__tab {
   min-width: var(--ui-touch-target);
-  min-height: calc(var(--ui-touch-target) - 4px);
+  min-height: var(--ui-touch-target);
   padding: var(--ui-space-2) var(--ui-space-3);
   border: 1px solid transparent;
   border-radius: calc(var(--ui-radius-md) - 3px);

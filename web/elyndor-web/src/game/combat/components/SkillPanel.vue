@@ -111,6 +111,8 @@ onUnmounted(cancelInspection)
         @pointercancel="cancelInspection"
         @pointerleave="cancelInspection"
         @contextmenu.prevent
+        @keydown.f1.prevent="inspectedAbility = ability"
+        @keydown.esc="inspectedAbility = null"
         @click="activate(ability)"
       >
         <span class="skill-panel__icon">

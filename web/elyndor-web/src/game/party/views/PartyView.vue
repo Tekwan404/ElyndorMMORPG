@@ -6,7 +6,7 @@ import { usePartyStore } from '@/game/party/partyStore'
 import { socialErrorMessage } from '@/game/social/socialPresentation'
 import { locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
-import { UIButton, UIModal, UIPanel } from '@/ui/components'
+import { UIButton, UILoadingState, UIModal, UIPanel, UIToast } from '@/ui/components'
 
 const props = withDefaults(defineProps<{ embedded?: boolean }>(), { embedded: false })
 const emit = defineEmits<{ 'open-world': [] }>()
@@ -17,26 +17,37 @@ const session = useGameSessionStore()
 const currentCharacterId = computed(() => session.snapshot?.character?.id ?? '')
 const currentLocationId = computed(() => session.snapshot?.world?.currentLocation.id ?? '')
 const isLeader = computed(() => party.snapshot?.leaderCharacterId === currentCharacterId.value)
-const currentMember = computed(() => party.snapshot?.members.find(
-  (member) => member.characterId === currentCharacterId.value,
-) ?? null)
-const leaderMember = computed(() => party.snapshot?.members.find(
-  (member) => member.characterId === party.snapshot?.leaderCharacterId,
-) ?? null)
-const currentDungeonMember = computed(() => dungeon.current?.members.find(
-  (member) => member.characterId === currentCharacterId.value,
-) ?? null)
-const currentDungeonRun = computed(() => currentDungeonMember.value?.state === 'Active'
-  ? dungeon.current
-  : null)
-const currentDungeonPreview = computed(() => dungeon.previews.find(
-  (preview) => preview.id === currentDungeonRun.value?.dungeonId,
-) ?? null)
-const currentDungeonEncounter = computed(() => currentDungeonRun.value?.encounters.find(
-  (encounter) => encounter.encounterIndex === currentDungeonRun.value?.currentEncounterIndex,
-) ?? null)
-const currentDungeonEntryLocationId = computed(() =>
-  currentDungeonPreview.value?.entryLocationId ?? currentDungeonRun.value?.dungeonId ?? '',
+const currentMember = computed(
+  () =>
+    party.snapshot?.members.find((member) => member.characterId === currentCharacterId.value) ??
+    null,
+)
+const leaderMember = computed(
+  () =>
+    party.snapshot?.members.find(
+      (member) => member.characterId === party.snapshot?.leaderCharacterId,
+    ) ?? null,
+)
+const currentDungeonMember = computed(
+  () =>
+    dungeon.current?.members.find((member) => member.characterId === currentCharacterId.value) ??
+    null,
+)
+const currentDungeonRun = computed(() =>
+  currentDungeonMember.value?.state === 'Active' ? dungeon.current : null,
+)
+const currentDungeonPreview = computed(
+  () =>
+    dungeon.previews.find((preview) => preview.id === currentDungeonRun.value?.dungeonId) ?? null,
+)
+const currentDungeonEncounter = computed(
+  () =>
+    currentDungeonRun.value?.encounters.find(
+      (encounter) => encounter.encounterIndex === currentDungeonRun.value?.currentEncounterIndex,
+    ) ?? null,
+)
+const currentDungeonEntryLocationId = computed(
+  () => currentDungeonPreview.value?.entryLocationId ?? currentDungeonRun.value?.dungeonId ?? '',
 )
 const dungeonStageNumber = computed(() => {
   const run = currentDungeonRun.value
@@ -52,12 +63,14 @@ const dungeonStateLabel = computed(() => {
   if (currentDungeonEncounter.value?.state === 'Active') return 'В бою'
   return 'Между боями'
 })
-const canReturnToDungeonRun = computed(() => Boolean(
-  currentDungeonRun.value?.state === 'Active'
-    && currentDungeonEntryLocationId.value
-    && currentLocationId.value !== currentDungeonEntryLocationId.value
-    && currentDungeonEncounter.value?.state !== 'Active',
-))
+const canReturnToDungeonRun = computed(() =>
+  Boolean(
+    currentDungeonRun.value?.state === 'Active' &&
+    currentDungeonEntryLocationId.value &&
+    currentLocationId.value !== currentDungeonEntryLocationId.value &&
+    currentDungeonEncounter.value?.state !== 'Active',
+  ),
+)
 const canFollowLeader = computed(() => {
   const leader = leaderMember.value
   if (!leader?.locationId || leader.characterId === currentCharacterId.value) return false
@@ -65,11 +78,12 @@ const canFollowLeader = computed(() => {
   return leader.locationId !== currentMember.value?.locationId
 })
 
-type PendingAction =
-  | { type: 'disband' }
-  | { type: 'leave' }
-  | { type: 'kick'; characterId: string }
+type PendingAction = { type: 'disband' } | { type: 'leave' } | { type: 'kick'; characterId: string }
 const pendingAction = ref<PendingAction | null>(null)
+const pending = ref<string | null>(null)
+const feedback = ref<string | null>(null)
+const actionError = ref<string | null>(null)
+const hasLoaded = ref(false)
 let refreshTimer: ReturnType<typeof setInterval> | null = null
 
 const confirmationTitle = computed(() => {
@@ -84,12 +98,39 @@ const confirmationMessage = computed(() => {
 })
 
 onMounted(() => {
-  void party.refresh()
-  void dungeon.refresh()
+  void refresh()
   refreshTimer = setInterval(() => {
-    void party.refresh(true)
+    if (!pending.value && !pendingAction.value) void party.refresh(true)
   }, 5_000)
 })
+
+async function refresh(): Promise<void> {
+  await Promise.all([party.refresh(), dungeon.refresh()])
+  hasLoaded.value = true
+}
+
+async function act(key: string, action: () => Promise<void>, message: string): Promise<boolean> {
+  if (pending.value) return false
+  pending.value = key
+  feedback.value = null
+  actionError.value = null
+  try {
+    await action()
+    const code =
+      key === 'return' ? dungeon.errorCode : key === 'follow' ? session.errorCode : party.errorCode
+    if (code) {
+      actionError.value = socialErrorMessage(code)
+      return false
+    }
+    feedback.value = message
+    return true
+  } catch {
+    actionError.value = 'Не удалось выполнить действие. Попробуйте ещё раз.'
+    return false
+  } finally {
+    pending.value = null
+  }
+}
 
 onUnmounted(() => {
   if (refreshTimer !== null) clearInterval(refreshTimer)
@@ -109,16 +150,17 @@ function locationLabel(locationId?: string | null): string {
 async function returnToDungeonRun(): Promise<void> {
   const run = currentDungeonRun.value
   if (!run || !canReturnToDungeonRun.value) return
-  await dungeon.returnToRun(run.runId)
-  await party.refresh(true)
+  await act('return', () => dungeon.returnToRun(run.runId), 'Вы вернулись в забег.')
 }
 
 async function followLeader(): Promise<void> {
   const targetLocationId = leaderMember.value?.locationId
   if (!targetLocationId || !canFollowLeader.value) return
-  party.clearLeaderLocationChange()
-  await session.travel(targetLocationId)
-  await party.refresh()
+  const followed = await act('follow', () => session.travel(targetLocationId), 'Переход выполнен.')
+  if (followed) {
+    party.clearLeaderLocationChange()
+    await party.refresh()
+  }
 }
 
 async function kickMember(characterId: string): Promise<void> {
@@ -126,7 +168,12 @@ async function kickMember(characterId: string): Promise<void> {
 }
 
 async function transferLeadership(characterId: string): Promise<void> {
-  if (characterId !== currentCharacterId.value) await party.transferLeadership(characterId)
+  if (characterId !== currentCharacterId.value)
+    await act(
+      `transfer:${characterId}`,
+      () => party.transferLeadership(characterId),
+      'Лидерство передано.',
+    )
 }
 
 async function disbandParty(): Promise<void> {
@@ -134,16 +181,27 @@ async function disbandParty(): Promise<void> {
 }
 
 function requestConfirmation(action: PendingAction): void {
+  if (pending.value) return
+  actionError.value = null
   pendingAction.value = action
 }
 
 async function confirmPendingAction(): Promise<void> {
   const action = pendingAction.value
-  if (!action) return
-  pendingAction.value = null
-  if (action.type === 'disband' && isLeader.value) await disbandParty()
-  if (action.type === 'leave') await party.leave()
-  if (action.type === 'kick') await kickMember(action.characterId)
+  if (!action || pending.value) return
+  const success = await act(
+    'confirm',
+    async () => {
+      if (action.type === 'disband') {
+        if (!isLeader.value) throw new Error('party_not_leader')
+        await disbandParty()
+      }
+      if (action.type === 'leave') await party.leave()
+      if (action.type === 'kick') await kickMember(action.characterId)
+    },
+    'Действие с группой выполнено.',
+  )
+  if (success) pendingAction.value = null
 }
 </script>
 
@@ -155,63 +213,136 @@ async function confirmPendingAction(): Promise<void> {
         <h1>Группа</h1>
       </div>
       <div class="party-view__header-actions">
-        <UIButton data-party-open-dungeons variant="secondary" @click="emit('open-world')">Подземелья</UIButton>
+        <UIButton data-party-open-dungeons variant="secondary" @click="emit('open-world')"
+          >Подземелья</UIButton
+        >
         <span>{{ party.snapshot?.members.length ?? 0 }} / 5</span>
       </div>
     </header>
 
-    <p v-if="party.errorCode" class="error-state" role="alert">{{ socialErrorMessage(party.errorCode) }}</p>
-    <p v-if="dungeon.errorCode" class="error-state" role="alert">{{ socialErrorMessage(dungeon.errorCode) }}</p>
+    <UIToast v-if="actionError && !pendingAction" tone="danger">{{ actionError }}</UIToast>
+    <UIToast v-else-if="party.errorCode || dungeon.errorCode" tone="danger">
+      {{ socialErrorMessage(party.errorCode || dungeon.errorCode || '') }}
+      <UIButton variant="secondary" :loading="party.loading || dungeon.loading" @click="refresh"
+        >Повторить загрузку</UIButton
+      >
+    </UIToast>
+    <UIToast v-if="feedback" tone="success">{{ feedback }}</UIToast>
+    <UILoadingState v-if="!hasLoaded && !party.snapshot" state="loading" title="Загружаем группу" />
 
-    <UIPanel v-if="currentDungeonRun" title="Текущий забег" data-party-dungeon-run>
+    <UIPanel v-if="currentDungeonRun" data-party-dungeon-run>
+      <template #title>Текущий забег</template>
       <div class="dungeon-run-summary">
         <div>
           <strong>{{ currentDungeonRun.displayName }}</strong>
           <small>
-            Этап {{ dungeonStageNumber }} / {{ currentDungeonRun.encounterCount }} · {{ dungeonStateLabel }}
+            Этап {{ dungeonStageNumber }} / {{ currentDungeonRun.encounterCount }} ·
+            {{ dungeonStateLabel }}
           </small>
         </div>
         <p v-if="canReturnToDungeonRun">Ты вне подземелья. Прогресс забега сохранён.</p>
         <UIButton
           v-if="canReturnToDungeonRun"
           data-party-dungeon-return
+          :loading="pending === 'return'"
+          :disabled="pending !== null"
           @click="returnToDungeonRun"
-        >Вернуться в забег</UIButton>
+          >Вернуться в забег</UIButton
+        >
       </div>
     </UIPanel>
 
     <UIPanel
-      v-if="party.leaderLocationChange && party.leaderLocationChange.leaderCharacterId !== currentCharacterId"
-      title="Лидер сменил локацию"
+      v-if="
+        party.leaderLocationChange &&
+        party.leaderLocationChange.leaderCharacterId !== currentCharacterId
+      "
     >
+      <template #title>Лидер сменил локацию</template>
       <div class="leader-move">
         <p>
           <strong>{{ party.leaderLocationChange.leaderName }}</strong>
           перешёл в {{ locationLabel(party.leaderLocationChange.locationId) }}.
         </p>
         <div class="actions">
-          <UIButton v-if="canFollowLeader" @click="followLeader">Следовать</UIButton>
+          <UIButton
+            v-if="canFollowLeader"
+            :loading="pending === 'follow'"
+            :disabled="pending !== null"
+            @click="followLeader"
+            >Следовать</UIButton
+          >
           <UIButton variant="ghost" @click="party.clearLeaderLocationChange">Скрыть</UIButton>
         </div>
       </div>
     </UIPanel>
 
-    <UIPanel v-if="party.invites.length" title="Приглашения">
+    <UIPanel v-if="party.invites.length">
+      <template #title>Приглашения</template>
       <article v-for="invite in party.invites" :key="invite.id" class="invite-row">
-        <div><strong>Приглашение в группу</strong><small>от {{ invite.inviterName ?? 'героя' }}</small></div>
+        <div>
+          <strong>Приглашение в группу</strong><small>от {{ invite.inviterName ?? 'героя' }}</small>
+        </div>
         <div class="actions">
-          <UIButton @click="party.acceptInvite(invite.id)">Принять</UIButton>
-          <UIButton variant="secondary" @click="party.declineInvite(invite.id)">Отклонить</UIButton>
+          <UIButton
+            :loading="pending === `accept:${invite.id}`"
+            :disabled="pending !== null"
+            @click="
+              act(
+                `accept:${invite.id}`,
+                () => party.acceptInvite(invite.id),
+                'Приглашение принято.',
+              )
+            "
+            >Принять</UIButton
+          >
+          <UIButton
+            variant="secondary"
+            :loading="pending === `decline:${invite.id}`"
+            :disabled="pending !== null"
+            @click="
+              act(
+                `decline:${invite.id}`,
+                () => party.declineInvite(invite.id),
+                'Приглашение отклонено.',
+              )
+            "
+            >Отклонить</UIButton
+          >
         </div>
       </article>
     </UIPanel>
 
-    <UIPanel v-if="party.snapshot" :title="`Группа · ${party.snapshot.members.length}/5`">
-      <UIButton v-if="isLeader" variant="danger" data-party-disband @click="requestConfirmation({ type: 'disband' })">Распустить группу</UIButton>
-      <article v-for="member in party.snapshot.members" :key="member.characterId" class="member-row">
+    <UIPanel v-if="party.snapshot">
+      <template #title>Группа · {{ party.snapshot.members.length }}/5</template>
+      <UIButton
+        v-if="isLeader"
+        variant="danger"
+        :disabled="pending !== null"
+        data-party-disband
+        @click="requestConfirmation({ type: 'disband' })"
+        >Распустить группу</UIButton
+      >
+      <article
+        v-for="member in party.snapshot.members"
+        :key="member.characterId"
+        class="member-row"
+      >
         <div v-if="isLeader && member.characterId !== currentCharacterId" class="member-actions">
-          <UIButton variant="secondary" @click="transferLeadership(member.characterId)">Передать лидерство</UIButton>
-          <UIButton variant="danger" :data-party-kick="member.characterId" @click="requestConfirmation({ type: 'kick', characterId: member.characterId })">Исключить</UIButton>
+          <UIButton
+            variant="secondary"
+            :loading="pending === `transfer:${member.characterId}`"
+            :disabled="pending !== null"
+            @click="transferLeadership(member.characterId)"
+            >Передать лидерство</UIButton
+          >
+          <UIButton
+            variant="danger"
+            :disabled="pending !== null"
+            :data-party-kick="member.characterId"
+            @click="requestConfirmation({ type: 'kick', characterId: member.characterId })"
+            >Исключить</UIButton
+          >
         </div>
         <div class="member-copy">
           <strong>{{ member.name }} <span v-if="member.isLeader">★</span></strong>
@@ -222,55 +353,202 @@ async function confirmPendingAction(): Promise<void> {
           </small>
         </div>
         <div class="member-state">
-          <span v-if="member.characterId === currentCharacterId && member.isLeader" class="leader-label">лидер</span>
+          <span
+            v-if="member.characterId === currentCharacterId && member.isLeader"
+            class="leader-label"
+            >лидер</span
+          >
           <UIButton
             v-if="member.isLeader && member.characterId !== currentCharacterId && canFollowLeader"
             variant="secondary"
+            :loading="pending === 'follow'"
+            :disabled="pending !== null"
             @click="followLeader"
-          >Следовать</UIButton>
+            >Следовать</UIButton
+          >
         </div>
       </article>
-      <UIButton variant="danger" data-party-leave @click="requestConfirmation({ type: 'leave' })">Покинуть группу</UIButton>
+      <UIButton
+        variant="danger"
+        :disabled="pending !== null"
+        data-party-leave
+        @click="requestConfirmation({ type: 'leave' })"
+        >Покинуть группу</UIButton
+      >
     </UIPanel>
 
-    <UIPanel v-else title="Группа">
-      <p class="empty-state">Создайте группу для совместных походов.</p>
-      <UIButton @click="party.create">Создать группу</UIButton>
+    <UIPanel v-else-if="hasLoaded && !party.errorCode">
+      <template #title>Группа</template>
+      <UILoadingState
+        state="empty"
+        title="Вы пока без группы"
+        message="Создайте группу для совместных походов."
+      />
+      <UIButton
+        :loading="pending === 'create'"
+        :disabled="pending !== null"
+        @click="act('create', party.create, 'Группа создана.')"
+        >Создать группу</UIButton
+      >
     </UIPanel>
   </div>
-  <UIModal :open="pendingAction !== null" :title="confirmationTitle" @close="pendingAction = null">
+  <UIModal
+    :open="pendingAction !== null"
+    :title="confirmationTitle"
+    :busy="pending !== null"
+    @close="pendingAction = null"
+  >
     <p class="party-confirmation">{{ confirmationMessage }}</p>
+    <UIToast v-if="actionError" tone="danger">{{ actionError }}</UIToast>
     <template #actions>
-      <UIButton variant="ghost" @click="pendingAction = null">Отмена</UIButton>
-      <UIButton variant="danger" data-party-confirm @click="confirmPendingAction">Подтвердить</UIButton>
+      <UIButton variant="ghost" :disabled="pending !== null" @click="pendingAction = null"
+        >Отмена</UIButton
+      >
+      <UIButton
+        variant="danger"
+        :loading="pending === 'confirm'"
+        :disabled="pending !== null"
+        data-party-confirm
+        @click="confirmPendingAction"
+        >Подтвердить</UIButton
+      >
     </template>
   </UIModal>
 </template>
 
 <style scoped>
-.party-view { display: grid; gap: 12px; padding: 14px; }
-.party-view--embedded { padding: 0; }
-.party-view__header { display: flex; align-items: end; justify-content: space-between; gap: 10px; }
-.party-view__header small { color: var(--ui-color-primary); font-size: .55rem; letter-spacing: .14em; }
-h1 { margin: 2px 0 0; font-family: var(--ui-font-display); font-size: 1.35rem; }
-.party-view__header-actions { display: flex; align-items: center; gap: 8px; }
-.party-view__header-actions > span { color: var(--ui-color-text-muted); font-size: .68rem; white-space: nowrap; }
-.party-view__header-actions :deep(.ui-button) { min-height: 2.15rem; padding-inline: .62rem; font-size: .65rem; }
-.dungeon-run-summary { display: grid; gap: 9px; }
-.dungeon-run-summary > div { display: grid; gap: 3px; }
-.dungeon-run-summary small { color: var(--ui-color-text-muted); font-size: .68rem; }
-.dungeon-run-summary p { margin: 0; color: var(--ui-color-text-secondary); font-size: .72rem; line-height: 1.45; }
-.dungeon-run-summary :deep(.ui-button) { justify-self: start; }
-.member-row, .invite-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 0; border-bottom: 1px solid rgb(255 255 255 / 7%); }
-.member-row > .member-copy, .invite-row div:first-child { display: grid; gap: 3px; }
-.member-row small, .invite-row small, .empty-state { color: var(--ui-color-text-muted); font-size: .68rem; }
-.member-location { color: var(--ui-color-text-secondary) !important; }
-.member-state { display: grid; justify-items: end; gap: 5px; }
-.member-state :deep(.ui-button) { min-height: 1.85rem; padding-inline: .5rem; font-size: .6rem; }
-.error-state { color: var(--ui-color-danger, #ff8d8d); font-size: .72rem; }
-.leader-label { color: var(--ui-color-primary); font-size: .62rem; }
-.actions, .member-actions { display: flex; gap: 6px; align-items: center; }
-.leader-move { display: grid; gap: 10px; }
-.leader-move p { margin: 0; color: var(--ui-color-text-secondary); font-size: .72rem; line-height: 1.45; }
-.party-confirmation { margin: 0; color: var(--ui-color-text-secondary); line-height: 1.5; }
+.party-view {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+.party-view--embedded {
+  padding: 0;
+}
+.party-view__header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 10px;
+}
+.party-view__header small {
+  color: var(--ui-color-primary);
+  font-size: 0.55rem;
+  letter-spacing: 0.14em;
+}
+h1 {
+  margin: 2px 0 0;
+  font-family: var(--ui-font-display);
+  font-size: 1.35rem;
+}
+.party-view__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.party-view__header-actions > span {
+  color: var(--ui-color-text-muted);
+  font-size: 0.68rem;
+  white-space: nowrap;
+}
+.party-view__header-actions :deep(.ui-button) {
+  padding-inline: 0.62rem;
+}
+.dungeon-run-summary {
+  display: grid;
+  gap: 9px;
+}
+.dungeon-run-summary > div {
+  display: grid;
+  gap: 3px;
+}
+.dungeon-run-summary small {
+  color: var(--ui-color-text-muted);
+  font-size: 0.68rem;
+}
+.dungeon-run-summary p {
+  margin: 0;
+  color: var(--ui-color-text-secondary);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+.dungeon-run-summary :deep(.ui-button) {
+  justify-self: start;
+}
+.member-row,
+.invite-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgb(255 255 255 / 7%);
+}
+.member-row > .member-copy,
+.invite-row div:first-child {
+  display: grid;
+  gap: 3px;
+}
+.member-row small,
+.invite-row small {
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-sm);
+}
+.member-location {
+  color: var(--ui-color-text-secondary) !important;
+}
+.member-state {
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+}
+.member-state :deep(.ui-button) {
+  padding-inline: 0.5rem;
+}
+.leader-label {
+  color: var(--ui-color-primary);
+  font-size: 0.62rem;
+}
+.actions,
+.member-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.leader-move {
+  display: grid;
+  gap: 10px;
+}
+.leader-move p {
+  margin: 0;
+  color: var(--ui-color-text-secondary);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+.party-confirmation {
+  margin: 0;
+  color: var(--ui-color-text-secondary);
+  line-height: 1.5;
+}
+@media (max-width: 480px) {
+  .party-view__header {
+    flex-wrap: wrap;
+  }
+  .member-row,
+  .invite-row {
+    flex-wrap: wrap;
+  }
+  .member-copy {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .member-actions {
+    order: 3;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .actions {
+    flex-wrap: wrap;
+  }
+}
 </style>

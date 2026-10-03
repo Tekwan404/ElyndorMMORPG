@@ -5,6 +5,7 @@ withDefaults(
     type?: 'button' | 'submit' | 'reset'
     disabled?: boolean
     loading?: boolean
+    loadingLabel?: string
   }>(),
   { variant: 'primary', type: 'button' },
 )
@@ -19,7 +20,8 @@ withDefaults(
     :aria-busy="loading ? 'true' : undefined"
   >
     <span v-if="loading" class="ui-button__spinner" aria-hidden="true" />
-    <span><slot /></span>
+    <span v-if="loading && loadingLabel">{{ loadingLabel }}</span>
+    <span v-else><slot /></span>
   </button>
 </template>
 
@@ -73,6 +75,13 @@ withDefaults(
   cursor: not-allowed;
   opacity: .42;
   filter: saturate(.7);
+}
+
+.ui-button[aria-busy='true'] { opacity: .8; }
+.ui-button:focus-visible { outline: 2px solid var(--ui-color-focus); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .ui-button { transition: none; }
+  .ui-button__spinner { animation-duration: 2s; }
 }
 
 .ui-button--primary {

@@ -1,12 +1,26 @@
-import { flushPromises, mount } from '@vue/test-utils'
+import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { BootstrapSnapshot, InventoryItem } from '@/api/contracts'
 import CharacterOverviewV2 from '@/game/character/views/CharacterOverviewV2.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 
+enableAutoUnmount(afterEach)
+
 describe('CharacterOverviewV2', () => {
+  it('shares item identity and reports successful unequip', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot({ head: equipment('HELM', 'Шлем', 'Head') })
+    const unequip = vi.spyOn(store, 'unequip').mockResolvedValue()
+    const wrapper = mount(CharacterOverviewV2)
+    await wrapper.get('[data-equipment-slot="head"]').trigger('click')
+    expect(document.querySelector('.item-identity')).not.toBeNull()
+    document.querySelector<HTMLButtonElement>('[data-unequip-selected]')!.click()
+    await flushPromises()
+    expect(unequip).toHaveBeenCalledWith('Head')
+    expect(wrapper.text()).toContain('Предмет снят')
+  })
   beforeEach(() => {
     setActivePinia(createPinia())
     document.body.innerHTML = ''
