@@ -266,7 +266,7 @@ public sealed class WorldBossSettlementService(
             }
 
             List<WorldBossLootItemResult> itemResults = [];
-            for (var ordinal = 0; ordinal < chestLoot.Count; ordinal++)
+            for (var ordinal = 0; ordinal < chestLoot.Length; ordinal++)
             {
                 LootRoll roll = chestLoot[ordinal];
                 WorldBossGrantedItemSnapshot granted = await GrantItemAsync(
