@@ -2590,6 +2590,7 @@ public sealed partial class CombatSession
                     break;
 
                 case CombatEventType.EffectApplied
+                    or CombatEventType.EffectRefreshed
                     when sourceIsPlayer
                          && targetsEnemy
                          && !string.IsNullOrWhiteSpace(combatEvent.DefinitionId):
