@@ -1,0 +1,53 @@
+{
+  "contentVersion": "0.36.1",
+  "balanceVersion": "0.29.1",
+  "publishedAtUtc": "2026-10-03T05:15:00+00:00",
+  "items": [
+    {
+      "id": "WORLD_BOSS_ASH_ARCHON_CHEST",
+      "name": "Сундук Архонта Пепла",
+      "type": "LootContainer",
+      "rarity": "Epic",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Персональный сундук мирового босса. При открытии даёт золото и один предмет из таблицы добычи Архонта Пепла.",
+      "version": 1,
+      "iconId": "chest",
+      "premiumEligible": false,
+      "lootContainerTableId": "WORLD_BOSS_ASH_ARCHON_LOOT",
+      "lootContainerGoldMin": 250,
+      "lootContainerGoldMax": 500
+    },
+    {
+      "id": "WORLD_BOSS_ASH_ARCHON_TOP5_CHEST",
+      "name": "Усиленный сундук Архонта Пепла",
+      "type": "LootContainer",
+      "rarity": "Legendary",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Усиленный сундук для TOP 5 мирового босса. При открытии даёт золото и один предмет из улучшенной таблицы добычи.",
+      "version": 1,
+      "iconId": "chest",
+      "premiumEligible": false,
+      "lootContainerTableId": "WORLD_BOSS_ASH_ARCHON_TOP5_LOOT",
+      "lootContainerGoldMin": 250,
+      "lootContainerGoldMax": 500
+    }
+  ]
+}
