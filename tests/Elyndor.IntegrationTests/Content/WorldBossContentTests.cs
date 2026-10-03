@@ -104,6 +104,19 @@ public sealed class WorldBossContentTests
         Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "KOLTSO_RAZBITOGO_OTRAZHENIIA_L60");
         Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "PECHAT_TRIEDINSTVA_L60");
 
+        string[] rewardItemIds = chest.SelectionGroups[0].Entries
+            .Select(entry => entry.ItemId)
+            .ToArray();
+        Assert.Equal(7, rewardItemIds.Length);
+        Assert.All(rewardItemIds, rewardItemId =>
+        {
+            ItemDefinition rewardItem = package.Items!.Single(item => item.Id == rewardItemId);
+            Assert.Equal(60, rewardItem.RequiredLevel);
+            Assert.Equal(60, rewardItem.ItemLevelMin);
+            Assert.Equal(60, rewardItem.ItemLevelMax);
+        });
+        Assert.DoesNotContain(rewardItemIds, itemId => itemId.EndsWith("_L25", StringComparison.Ordinal));
+
         WorldBossLeaderboardRewardTierDefinition[] leaderboardTiers =
             rewardProfile.LeaderboardTiers!.ToArray();
         Assert.Contains(
