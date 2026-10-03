@@ -2660,6 +2660,10 @@ public sealed partial class CombatSession
                     }
                     break;
 
+                case CombatEventType.HealingApplied:
+                    targetStatistics.HealingReceived += Math.Max(0, combatEvent.Amount);
+                    break;
+
                 case CombatEventType.DamageBlocked:
                     targetStatistics.Blocked += Math.Max(0, combatEvent.Amount);
                     break;
@@ -2717,6 +2721,7 @@ public sealed partial class CombatSession
         public decimal DamageDealt { get; set; }
         public decimal DamageTaken { get; set; }
         public decimal HealingDone { get; set; }
+        public decimal HealingReceived { get; set; }
         public decimal ArmorMitigated { get; set; }
         public decimal Blocked { get; set; }
         public decimal ShieldAbsorbed { get; set; }
@@ -2769,7 +2774,8 @@ public sealed partial class CombatSession
                 Dodges,
                 Deaths,
                 abilities,
-                DamageSources.ToSnapshot());
+                DamageSources.ToSnapshot(),
+                HealingReceived);
         }
     }
 
