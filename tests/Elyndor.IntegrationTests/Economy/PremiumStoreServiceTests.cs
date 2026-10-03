@@ -72,8 +72,9 @@ public sealed class PremiumStoreServiceTests(PostgresFixture postgres) : IAsyncL
             2_000,
             "test-store-unlimited",
             CancellationToken.None);
-        var content = new StaticContentSnapshotProvider(
-            await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json")));
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        var content = new StaticContentSnapshotProvider(package);
         PremiumStoreService store = new(context, content, new FixedTimeProvider(Now));
 
         for (int purchase = 0; purchase < 25; purchase++)
@@ -92,7 +93,7 @@ public sealed class PremiumStoreServiceTests(PostgresFixture postgres) : IAsyncL
             item => item.Offer.Sku == "REFORGE_STONES_SMALL");
         Assert.True(offer.CanPurchase);
         Assert.Null(offer.Offer.PerAccountLimit);
-        Assert.All(content.Package.PremiumStoreOffers!, item => Assert.Null(item.PerAccountLimit));
+        Assert.All(package.PremiumStoreOffers!, item => Assert.Null(item.PerAccountLimit));
     }
 
     private async Task<Guid> CreateAccountAsync()
