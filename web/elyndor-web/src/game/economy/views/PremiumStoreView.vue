@@ -21,6 +21,7 @@ const session = useGameSessionStore()
 const store = ref<PremiumStoreSnapshot | null>(null)
 const skinBalance = ref<number | null>(null)
 const error = ref<string | null>(null)
+const success = ref<string | null>(null)
 const promoCode = ref('')
 const activeCategory = ref<PremiumStoreCategory>('recommended')
 const selectedProduct = ref<PremiumStoreProduct | null>(null)
@@ -32,6 +33,20 @@ const selectedProductPending = computed(() => Boolean(
   selectedProduct.value?.sku
   && session.isMutationPending(`premium:buy:${selectedProduct.value.sku}`),
 ))
+const currentBalance = computed(() => skinBalance.value ?? store.value?.crystalBalance ?? 0)
+const selectedCanAfford = computed(() => !selectedProduct.value || currentBalance.value >= selectedProduct.value.price)
+const selectedBalanceAfter = computed(() => selectedProduct.value
+  ? Math.max(0, currentBalance.value - selectedProduct.value.price)
+  : currentBalance.value)
+
+const storeErrorText: Record<string, string> = {
+  premium_store_insufficient_crystals: 'Недостаточно Осколков Эфира для этой покупки.',
+  premium_store_inventory_full: 'В инвентаре недостаточно места для покупки.',
+  premium_store_limit_reached: 'Для этого товара достигнут лимит покупок.',
+  premium_store_offer_not_found: 'Товар больше недоступен. Обновите лавку.',
+  premium_store_offer_disabled: 'Товар временно недоступен.',
+  premium_store_operation_conflict: 'Покупка уже была обработана другим запросом.',
+}
 
 const previewController = createAppearancePreviewController({
   capture: () => previewCosmeticId.value,
@@ -92,16 +107,25 @@ function equipOwned(product: PremiumStoreProduct): void {
 }
 
 async function purchase(product: PremiumStoreProduct): Promise<void> {
+  success.value = null
+  error.value = null
   if (product.owned && !product.repeatable) {
     equipOwned(product)
     return
   }
   if (!product.backendBacked || !product.sku || !product.canPurchase) return
-  const result = await session.buyPremiumStoreOffer(product.sku)
-  if (!result) {
-    error.value = 'Покупка не выполнена.'
+  if (currentBalance.value < product.price) {
+    error.value = storeErrorText.premium_store_insufficient_crystals!
     return
   }
+
+  const result = await session.buyPremiumStoreOffer(product.sku)
+  if (!result) {
+    error.value = storeErrorText[session.errorCode ?? ''] ?? 'Покупка не выполнена. Обновите лавку и попробуйте ещё раз.'
+    return
+  }
+
+  success.value = `${product.title}${product.quantity && product.quantity > 1 ? ` ×${product.quantity}` : ''} добавлено в инвентарь.`
   await load()
   const refreshed = products.value.find((item) => item.id === product.id || item.sku === product.sku)
   selectedProduct.value = refreshed ?? null
@@ -133,6 +157,7 @@ onBeforeUnmount(() => previewController.close())
       <div>
         <small>ELYNDOR</small>
         <h1>ЛАВКА</h1>
+        <p>Артефакты, материалы и услуги без лишней суеты.</p>
       </div>
       <div class="currency-balance" :title="PREMIUM_CURRENCY.displayName">
         <span aria-hidden="true">{{ PREMIUM_CURRENCY.symbol }}</span>
@@ -152,6 +177,12 @@ onBeforeUnmount(() => previewController.close())
         {{ tab.label }}
       </button>
     </nav>
+
+    <div v-if="success" class="store-notice store-notice--success" role="status">
+      <span aria-hidden="true">✓</span>
+      <strong>{{ success }}</strong>
+      <button type="button" aria-label="Скрыть сообщение" @click="success = null">×</button>
+    </div>
 
     <CharacterSkinStoreView v-if="activeCategory === 'skins'" @balance="updateSkinBalance" />
     <UILoadingState v-else-if="!store && !error" state="loading" title="Открываем лавку" />
@@ -176,9 +207,12 @@ onBeforeUnmount(() => previewController.close())
         <section v-if="forgeSupplies.length" class="store-section forge-section" data-forge-supplies>
           <div class="section-heading">
             <div><small>УСИЛЕНИЕ СНАРЯЖЕНИЯ</small><h2>Кузнечные припасы</h2></div>
-            <button type="button" @click="selectCategory('convenience')">Все</button>
+            <div class="section-heading__actions">
+              <span class="unlimited-pill">БЕЗ ЛИМИТА</span>
+              <button type="button" @click="selectCategory('convenience')">Все</button>
+            </div>
           </div>
-          <p class="forge-section__lead">Материалы доставляются прямо в инвентарь. Цена и количество подтверждаются сервером.</p>
+          <p class="forge-section__lead">Покупка повторяемая. Материалы сразу попадают в инвентарь, а цена и количество подтверждаются сервером.</p>
           <div class="forge-grid">
             <PremiumStoreProductCard v-for="product in forgeSupplies" :key="product.id" :product="product" layout="compact" @open="openProduct" />
           </div>
@@ -248,17 +282,32 @@ onBeforeUnmount(() => previewController.close())
           <h2>{{ selectedProduct.title }}</h2>
           <p>{{ selectedProduct.description }}</p>
           <p v-if="selectedProduct.inventoryCapacity" class="effect-line">+{{ selectedProduct.inventoryCapacity }} ячеек к единому инвентарю</p>
+          <div v-if="selectedProduct.backendBacked" class="purchase-summary" data-purchase-summary>
+            <div>
+              <span>Получишь</span>
+              <strong>{{ selectedProduct.quantity && selectedProduct.quantity > 1 ? `×${selectedProduct.quantity}` : '×1' }} {{ selectedProduct.title }}</strong>
+            </div>
+            <div>
+              <span>Стоимость</span>
+              <strong>{{ PREMIUM_CURRENCY.symbol }} {{ formatBalance(selectedProduct.price) }}</strong>
+            </div>
+            <div>
+              <span>Баланс после</span>
+              <strong :class="{ 'is-insufficient': !selectedCanAfford }">{{ PREMIUM_CURRENCY.symbol }} {{ formatBalance(selectedBalanceAfter) }}</strong>
+            </div>
+          </div>
+          <p v-if="selectedProduct.backendBacked && selectedProduct.repeatable" class="repeatable-note">Повторная покупка доступна · без лимита аккаунта</p>
           <ul v-if="selectedProduct.bundle" class="bundle-list">
             <li v-for="itemId in selectedProduct.bundle" :key="itemId">{{ products.find((item) => item.id === itemId)?.title ?? itemId }}</li>
           </ul>
           <div class="detail-actions">
             <UIButton v-if="selectedProduct.previewable && selectedProduct.cosmeticId" variant="secondary" @click="preview(selectedProduct)">ПРИМЕРИТЬ</UIButton>
             <UIButton
-              :disabled="(!selectedProduct.backendBacked && !selectedProduct.owned) || (!selectedProduct.canPurchase && !selectedProduct.owned) || selectedProductPending"
+              :disabled="(!selectedProduct.backendBacked && !selectedProduct.owned) || (!selectedProduct.canPurchase && !selectedProduct.owned) || !selectedCanAfford || selectedProductPending"
               :loading="selectedProductPending"
               @click="purchase(selectedProduct)"
             >
-              {{ selectedProduct.backendBacked || selectedProduct.owned ? purchaseLabel(selectedProduct) : `${PREMIUM_CURRENCY.symbol} ${selectedProduct.price} — ПРИОБРЕСТИ` }}
+              {{ !selectedCanAfford && selectedProduct.backendBacked ? 'НЕДОСТАТОЧНО ОСКОЛКОВ' : selectedProduct.backendBacked || selectedProduct.owned ? purchaseLabel(selectedProduct) : `${PREMIUM_CURRENCY.symbol} ${selectedProduct.price} — ПРИОБРЕСТИ` }}
             </UIButton>
           </div>
           <small v-if="!selectedProduct.backendBacked" class="foundation-note">Витринный контент подготовлен; покупка будет активна после подключения соответствующего domain-товара или сервиса.</small>
@@ -280,5 +329,5 @@ onBeforeUnmount(() => previewController.close())
 </template>
 
 <style scoped>
-.premium-store{display:grid;gap:14px;width:100%;min-width:0;max-width:920px;margin:0 auto;padding:2px 0 24px;overflow-x:clip}.store-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 2px 2px}.store-header>div:first-child{display:grid;gap:1px}.store-header small,.section-heading small,.category-title small,.currency-sheet>small{color:#8b819e;font-size:10px;font-weight:900;letter-spacing:.16em}.store-header h1{margin:0;color:#e9d8ad;font-family:Georgia,'Times New Roman',serif;font-size:22px;letter-spacing:.12em}.currency-balance{display:flex;align-items:center;gap:7px;min-height:44px;padding:5px 6px 5px 12px;border:1px solid rgb(195 155 77 / 35%);border-radius:999px;background:linear-gradient(100deg,rgb(46 30 67 / 58%),rgb(11 16 27 / 86%));color:#f0d48c}.currency-balance>span{color:#b995df;font-size:18px}.currency-balance strong{font-size:14px;white-space:nowrap}.currency-balance button{display:grid;place-items:center;width:34px;height:34px;border:1px solid rgb(214 177 98 / 50%);border-radius:50%;background:#2a2135;color:#f1d697;font-size:22px;line-height:1;cursor:pointer}.store-tabs{display:flex;gap:5px;width:100%;overflow-x:auto;padding:1px 2px 6px;scrollbar-width:none;overscroll-behavior-inline:contain}.store-tabs::-webkit-scrollbar{display:none}.store-tabs button{flex:0 0 auto;min-height:44px;padding:0 14px;border:1px solid transparent;border-radius:999px;background:transparent;color:#918b9d;font:inherit;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer}.store-tabs button.active{border-color:rgb(208 169 88 / 36%);background:linear-gradient(180deg,rgb(67 47 80 / 58%),rgb(20 21 33 / 72%));color:#ead39c}.store-home,.category-view{display:grid;gap:20px;min-width:0}.store-section{display:grid;gap:9px;min-width:0}.section-heading{display:flex;align-items:end;justify-content:space-between;gap:10px;padding:0 2px}.section-heading>div,.category-title{display:grid;gap:2px}.section-heading h2,.category-title h2,.product-detail h2,.currency-sheet h2{margin:0;color:#eee5d2;font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700}.section-heading button{min-width:44px;min-height:44px;border:0;background:transparent;color:#b99b61;font:inherit;font-size:11px;font-weight:800;cursor:pointer}.section-note{margin:-1px 4px 0;color:#85808e;font-size:11px;line-height:1.45}.forge-section{position:relative;padding:14px 12px 12px;border:1px solid rgb(193 133 68 / 28%);border-radius:16px;background:radial-gradient(circle at 12% 0,rgb(199 105 44 / 14%),transparent 35%),linear-gradient(150deg,rgb(27 21 23 / 82%),rgb(8 12 20 / 86%));box-shadow:inset 0 1px rgb(255 214 139 / 5%)}.forge-section::before{content:"";position:absolute;inset:0 auto 0 0;width:2px;border-radius:16px;background:linear-gradient(transparent,#d18946,transparent)}.forge-section__lead{margin:0;color:#a59b91;font-size:11px;line-height:1.45}.forge-grid,.popular-grid,.category-grid{display:grid;grid-template-columns:1fr;gap:8px;min-width:0}.promo-panel{padding:10px 12px;border:1px solid rgb(157 134 91 / 20%);border-radius:12px;background:rgb(8 12 21 / 54%);color:#a79eae;font-size:12px}.promo-panel summary{min-height:36px;cursor:pointer;font-weight:800}.promo-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;padding-top:8px}.promo-form input{min-width:0;min-height:44px;padding:0 11px;border:1px solid rgb(157 134 91 / 28%);border-radius:9px;background:rgb(0 0 0 / 22%);color:var(--ui-color-text-primary);font:inherit}.category-title{padding:5px 2px 0}.category-title h2{font-size:24px}.empty-category,.inline-error{margin:0;padding:14px;border:1px solid rgb(170 130 80 / 20%);border-radius:10px;color:#8f8998;text-align:center}.store-error{display:grid;gap:10px;justify-items:center;padding:28px 18px;border:1px solid rgb(184 84 84 / 32%);border-radius:12px;color:var(--ui-color-danger)}.inline-error{color:var(--ui-color-danger)}.sheet-backdrop{position:fixed;z-index:80;inset:0;display:flex;align-items:flex-end;justify-content:center;padding:18px 10px max(10px,env(safe-area-inset-bottom));background:rgb(2 5 10 / 76%);backdrop-filter:blur(4px)}.product-sheet,.currency-sheet{position:relative;width:min(100%,620px);max-height:min(88dvh,760px);overflow-y:auto;border:1px solid rgb(211 171 91 / 38%);border-radius:20px 20px 12px 12px;background:linear-gradient(165deg,#111728,#080b13 72%);box-shadow:0 -18px 60px rgb(0 0 0 / 48%)}.sheet-close{position:absolute;z-index:5;top:10px;right:10px;display:grid;place-items:center;width:44px;height:44px;border:1px solid rgb(223 194 139 / 22%);border-radius:50%;background:rgb(6 9 16 / 65%);color:#d9c8a6;font-size:25px;cursor:pointer}.product-preview{position:relative;display:grid;place-items:center;min-height:260px;overflow:hidden;background:radial-gradient(circle at 50% 38%,rgb(121 70 177 / 22%),transparent 44%),linear-gradient(180deg,#171927,#0c101a)}.product-preview.is-previewing{background:radial-gradient(circle at 50% 38%,rgb(190 96 63 / 33%),transparent 40%),radial-gradient(circle at 50% 50%,rgb(121 70 177 / 20%),transparent 58%),linear-gradient(180deg,#171927,#0c101a)}.product-preview>small{position:absolute;bottom:10px;color:#e1bd73;font-size:10px;font-weight:900;letter-spacing:.15em}.product-preview__item{width:148px;height:148px;filter:drop-shadow(0 20px 32px rgb(0 0 0 / 52%))}.product-preview__item :deep(img){width:100%;height:100%;object-fit:contain}.preview-figure{width:116px;height:176px;border:1px solid rgb(225 183 96 / 36%);border-radius:52% 52% 35% 35%;background:radial-gradient(circle at 50% 19%,#e2ad7b 0 8%,transparent 9%),linear-gradient(155deg,rgb(153 63 48 / 72%),rgb(58 37 91 / 72%));box-shadow:0 18px 45px rgb(0 0 0 / 42%)}.product-preview--spatial-ring .preview-figure{width:128px;height:128px;border:17px solid #b68b47;border-radius:50%;background:radial-gradient(circle,rgb(110 64 174 / 58%) 0 34%,transparent 36%);box-shadow:inset 0 0 17px rgb(255 230 178 / 32%),0 0 38px rgb(113 72 175 / 24%)}.product-preview--ash-border .preview-figure{width:220px;height:120px;border-radius:15px;background:radial-gradient(circle at 25% 55%,rgb(202 102 63 / 60%),transparent 25%),radial-gradient(circle at 73% 40%,rgb(122 80 173 / 65%),transparent 28%),linear-gradient(145deg,#39231f,#171525)}.detail-badge{position:absolute;z-index:2;top:14px;left:14px;padding:5px 8px;border:1px solid rgb(214 178 101 / 45%);border-radius:999px;background:rgb(18 13 24 / 82%);color:#f1cf83;font-size:10px;font-weight:900;letter-spacing:.09em}.product-detail{display:grid;gap:9px;padding:18px 16px 20px}.product-detail>small:first-child{color:#c1a567;font-size:11px;font-weight:800}.product-detail h2{font-size:23px}.product-detail p{margin:0;color:#aaa4b0;font-size:13px;line-height:1.5}.product-detail .effect-line{color:#d5b570;font-weight:800}.bundle-list{display:grid;gap:5px;margin:0;padding:10px 10px 10px 28px;border:1px solid rgb(195 155 77 / 18%);border-radius:10px;color:#a9a1af;font-size:12px}.detail-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:5px}.detail-actions :deep(.ui-button){min-height:48px}.foundation-note{color:#716d7b!important;font-size:10px!important;line-height:1.4!important}.currency-sheet{display:grid;justify-items:center;gap:9px;padding:28px 20px;text-align:center}.currency-sheet h2{font-size:25px}.ether-mark{display:grid;place-items:center;width:74px;height:74px;margin:8px 0;border:1px solid rgb(188 146 223 / 45%);border-radius:50%;background:radial-gradient(circle,rgb(115 73 168 / 44%),rgb(17 18 30 / 65%));color:#c8a4e4;font-size:34px}.currency-sheet p{margin:0;color:#aaa3b1;font-size:13px}@media (min-width:390px){.forge-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.forge-grid>:first-child{grid-column:1/-1}.popular-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.popular-grid :deep(.store-product--compact){grid-template-columns:1fr;grid-template-areas:"art" "copy" "footer"}.popular-grid :deep(.store-product--compact .store-product__art){min-height:106px}.popular-grid :deep(.store-product--compact .store-product__copy){padding-top:9px}}@media (min-width:700px){.premium-store{padding-inline:10px}.forge-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.forge-grid>:first-child{grid-column:auto}.category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.category-grid--cosmetics{grid-template-columns:1fr}.detail-actions{grid-template-columns:1fr 1.5fr}.sheet-backdrop{align-items:center}.product-sheet{display:grid;grid-template-columns:48% 52%;border-radius:20px}.product-preview{min-height:440px}.product-detail{align-content:center;padding:30px 24px}.currency-sheet{border-radius:20px}}
+.premium-store{display:grid;gap:14px;width:100%;min-width:0;max-width:920px;margin:0 auto;padding:2px 0 24px;overflow-x:clip}.store-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 2px 2px}.store-header>div:first-child{display:grid;gap:1px}.store-header p{max-width:330px;margin:2px 0 0;color:#797483;font-size:10px;line-height:1.35}.store-header small,.section-heading small,.category-title small,.currency-sheet>small{color:#8b819e;font-size:10px;font-weight:900;letter-spacing:.16em}.store-header h1{margin:0;color:#e9d8ad;font-family:Georgia,'Times New Roman',serif;font-size:22px;letter-spacing:.12em}.currency-balance{display:flex;align-items:center;gap:7px;min-height:44px;padding:5px 6px 5px 12px;border:1px solid rgb(195 155 77 / 35%);border-radius:999px;background:linear-gradient(100deg,rgb(46 30 67 / 58%),rgb(11 16 27 / 86%));color:#f0d48c}.currency-balance>span{color:#b995df;font-size:18px}.currency-balance strong{font-size:14px;white-space:nowrap}.currency-balance button{display:grid;place-items:center;width:34px;height:34px;border:1px solid rgb(214 177 98 / 50%);border-radius:50%;background:#2a2135;color:#f1d697;font-size:22px;line-height:1;cursor:pointer}.store-tabs{display:flex;gap:5px;width:100%;overflow-x:auto;padding:1px 2px 6px;scrollbar-width:none;overscroll-behavior-inline:contain}.store-tabs::-webkit-scrollbar{display:none}.store-tabs button{flex:0 0 auto;min-height:44px;padding:0 14px;border:1px solid transparent;border-radius:999px;background:transparent;color:#918b9d;font:inherit;font-size:12px;font-weight:800;white-space:nowrap;cursor:pointer}.store-tabs button.active{border-color:rgb(208 169 88 / 36%);background:linear-gradient(180deg,rgb(67 47 80 / 58%),rgb(20 21 33 / 72%));color:#ead39c}.store-home,.category-view{display:grid;gap:20px;min-width:0}.store-section{display:grid;gap:9px;min-width:0}.section-heading{display:flex;align-items:end;justify-content:space-between;gap:10px;padding:0 2px}.section-heading__actions{display:flex;align-items:center;gap:4px}.unlimited-pill{padding:4px 7px;border:1px solid rgb(117 164 122 / 28%);border-radius:999px;background:rgb(54 92 61 / 16%);color:#9ab79a;font-size:8px;font-weight:900;letter-spacing:.08em}.section-heading>div,.category-title{display:grid;gap:2px}.section-heading h2,.category-title h2,.product-detail h2,.currency-sheet h2{margin:0;color:#eee5d2;font-family:Georgia,'Times New Roman',serif;font-size:19px;font-weight:700}.section-heading button{min-width:44px;min-height:44px;border:0;background:transparent;color:#b99b61;font:inherit;font-size:11px;font-weight:800;cursor:pointer}.section-note{margin:-1px 4px 0;color:#85808e;font-size:11px;line-height:1.45}.forge-section{position:relative;padding:14px 12px 12px;border:1px solid rgb(193 133 68 / 28%);border-radius:16px;background:radial-gradient(circle at 12% 0,rgb(199 105 44 / 14%),transparent 35%),linear-gradient(150deg,rgb(27 21 23 / 82%),rgb(8 12 20 / 86%));box-shadow:inset 0 1px rgb(255 214 139 / 5%)}.forge-section::before{content:"";position:absolute;inset:0 auto 0 0;width:2px;border-radius:16px;background:linear-gradient(transparent,#d18946,transparent)}.forge-section__lead{margin:0;color:#a59b91;font-size:11px;line-height:1.45}.forge-grid,.popular-grid,.category-grid{display:grid;grid-template-columns:1fr;gap:8px;min-width:0}.promo-panel{padding:10px 12px;border:1px solid rgb(157 134 91 / 20%);border-radius:12px;background:rgb(8 12 21 / 54%);color:#a79eae;font-size:12px}.promo-panel summary{min-height:36px;cursor:pointer;font-weight:800}.promo-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;padding-top:8px}.promo-form input{min-width:0;min-height:44px;padding:0 11px;border:1px solid rgb(157 134 91 / 28%);border-radius:9px;background:rgb(0 0 0 / 22%);color:var(--ui-color-text-primary);font:inherit}.category-title{padding:5px 2px 0}.category-title h2{font-size:24px}.empty-category,.inline-error{margin:0;padding:14px;border:1px solid rgb(170 130 80 / 20%);border-radius:10px;color:#8f8998;text-align:center}.store-notice{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:9px;padding:10px 12px;border:1px solid rgb(104 160 112 / 28%);border-radius:12px;background:linear-gradient(135deg,rgb(37 72 46 / 34%),rgb(8 14 20 / 78%));color:#b6d4ba;font-size:11px}.store-notice>span{display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:rgb(93 153 103 / 20%);font-weight:900}.store-notice button{width:30px;height:30px;border:0;background:transparent;color:#8b9d8e;font-size:18px;cursor:pointer}.store-error{display:grid;gap:10px;justify-items:center;padding:28px 18px;border:1px solid rgb(184 84 84 / 32%);border-radius:12px;color:var(--ui-color-danger)}.inline-error{color:var(--ui-color-danger)}.sheet-backdrop{position:fixed;z-index:80;inset:0;display:flex;align-items:flex-end;justify-content:center;padding:18px 10px max(10px,env(safe-area-inset-bottom));background:rgb(2 5 10 / 76%);backdrop-filter:blur(4px)}.product-sheet,.currency-sheet{position:relative;width:min(100%,620px);max-height:min(88dvh,760px);overflow-y:auto;border:1px solid rgb(211 171 91 / 38%);border-radius:20px 20px 12px 12px;background:linear-gradient(165deg,#111728,#080b13 72%);box-shadow:0 -18px 60px rgb(0 0 0 / 48%)}.sheet-close{position:absolute;z-index:5;top:10px;right:10px;display:grid;place-items:center;width:44px;height:44px;border:1px solid rgb(223 194 139 / 22%);border-radius:50%;background:rgb(6 9 16 / 65%);color:#d9c8a6;font-size:25px;cursor:pointer}.product-preview{position:relative;display:grid;place-items:center;min-height:260px;overflow:hidden;background:radial-gradient(circle at 50% 38%,rgb(121 70 177 / 22%),transparent 44%),linear-gradient(180deg,#171927,#0c101a)}.product-preview.is-previewing{background:radial-gradient(circle at 50% 38%,rgb(190 96 63 / 33%),transparent 40%),radial-gradient(circle at 50% 50%,rgb(121 70 177 / 20%),transparent 58%),linear-gradient(180deg,#171927,#0c101a)}.product-preview>small{position:absolute;bottom:10px;color:#e1bd73;font-size:10px;font-weight:900;letter-spacing:.15em}.product-preview__item{width:148px;height:148px;filter:drop-shadow(0 20px 32px rgb(0 0 0 / 52%))}.product-preview__item :deep(img){width:100%;height:100%;object-fit:contain}.preview-figure{width:116px;height:176px;border:1px solid rgb(225 183 96 / 36%);border-radius:52% 52% 35% 35%;background:radial-gradient(circle at 50% 19%,#e2ad7b 0 8%,transparent 9%),linear-gradient(155deg,rgb(153 63 48 / 72%),rgb(58 37 91 / 72%));box-shadow:0 18px 45px rgb(0 0 0 / 42%)}.product-preview--spatial-ring .preview-figure{width:128px;height:128px;border:17px solid #b68b47;border-radius:50%;background:radial-gradient(circle,rgb(110 64 174 / 58%) 0 34%,transparent 36%);box-shadow:inset 0 0 17px rgb(255 230 178 / 32%),0 0 38px rgb(113 72 175 / 24%)}.product-preview--ash-border .preview-figure{width:220px;height:120px;border-radius:15px;background:radial-gradient(circle at 25% 55%,rgb(202 102 63 / 60%),transparent 25%),radial-gradient(circle at 73% 40%,rgb(122 80 173 / 65%),transparent 28%),linear-gradient(145deg,#39231f,#171525)}.detail-badge{position:absolute;z-index:2;top:14px;left:14px;padding:5px 8px;border:1px solid rgb(214 178 101 / 45%);border-radius:999px;background:rgb(18 13 24 / 82%);color:#f1cf83;font-size:10px;font-weight:900;letter-spacing:.09em}.product-detail{display:grid;gap:9px;padding:18px 16px 20px}.product-detail>small:first-child{color:#c1a567;font-size:11px;font-weight:800}.product-detail h2{font-size:23px}.product-detail p{margin:0;color:#aaa4b0;font-size:13px;line-height:1.5}.product-detail .effect-line{color:#d5b570;font-weight:800}.purchase-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;overflow:hidden;border:1px solid rgb(195 155 77 / 20%);border-radius:11px;background:rgb(195 155 77 / 14%)}.purchase-summary>div{display:grid;gap:3px;padding:10px 8px;background:rgb(8 12 20 / 92%)}.purchase-summary span{color:#77717f;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}.purchase-summary strong{overflow:hidden;color:#d9c49a;font-size:11px;line-height:1.25;text-overflow:ellipsis}.purchase-summary strong.is-insufficient{color:#d48b8b}.repeatable-note{padding:7px 9px;border-radius:8px;background:rgb(78 116 82 / 10%);color:#8da792!important;font-size:10px!important;font-weight:700}.bundle-list{display:grid;gap:5px;margin:0;padding:10px 10px 10px 28px;border:1px solid rgb(195 155 77 / 18%);border-radius:10px;color:#a9a1af;font-size:12px}.detail-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:5px}.detail-actions :deep(.ui-button){min-height:48px}.foundation-note{color:#716d7b!important;font-size:10px!important;line-height:1.4!important}.currency-sheet{display:grid;justify-items:center;gap:9px;padding:28px 20px;text-align:center}.currency-sheet h2{font-size:25px}.ether-mark{display:grid;place-items:center;width:74px;height:74px;margin:8px 0;border:1px solid rgb(188 146 223 / 45%);border-radius:50%;background:radial-gradient(circle,rgb(115 73 168 / 44%),rgb(17 18 30 / 65%));color:#c8a4e4;font-size:34px}.currency-sheet p{margin:0;color:#aaa3b1;font-size:13px}@media (min-width:390px){.forge-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.forge-grid>:first-child{grid-column:1/-1}.popular-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.popular-grid :deep(.store-product--compact){grid-template-columns:1fr;grid-template-areas:"art" "copy" "footer"}.popular-grid :deep(.store-product--compact .store-product__art){min-height:106px}.popular-grid :deep(.store-product--compact .store-product__copy){padding-top:9px}}@media (min-width:700px){.premium-store{padding-inline:10px}.forge-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.forge-grid>:first-child{grid-column:auto}.category-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.category-grid--cosmetics{grid-template-columns:1fr}.detail-actions{grid-template-columns:1fr 1.5fr}.sheet-backdrop{align-items:center}.product-sheet{display:grid;grid-template-columns:48% 52%;border-radius:20px}.product-preview{min-height:440px}.product-detail{align-content:center;padding:30px 24px}.currency-sheet{border-radius:20px}}
 </style>
