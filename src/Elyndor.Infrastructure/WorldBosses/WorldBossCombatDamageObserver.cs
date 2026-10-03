@@ -37,13 +37,18 @@ public sealed class WorldBossCombatDamageObserver(IServiceScopeFactory scopeFact
             return;
 
         Guid[] characterIds = events
-            .Where(combatEvent => combatEvent.Type == CombatEventType.DamageDealt
-                && combatEvent.TargetActorId == binding.BossActorId
-                && combatEvent.SourceActorId is not null)
+            .Where(combatEvent =>
+                (combatEvent.Type == CombatEventType.DamageDealt
+                    && combatEvent.TargetActorId == binding.BossActorId
+                    && combatEvent.SourceActorId is not null)
+                || (combatEvent.Type == CombatEventType.HealingApplied
+                    && combatEvent.Amount > 0))
             .Select(combatEvent =>
             {
+                Guid actorId = combatEvent.SourceActorId
+                    ?? combatEvent.ActorId;
                 return session.TryResolveContributionCharacterId(
-                    combatEvent.SourceActorId!.Value,
+                    actorId,
                     out Guid ownerCharacterId)
                         ? ownerCharacterId
                         : Guid.Empty;
@@ -60,9 +65,58 @@ public sealed class WorldBossCombatDamageObserver(IServiceScopeFactory scopeFact
                 cancellationToken);
         WorldBossDamageService damageService =
             scope.ServiceProvider.GetRequiredService<WorldBossDamageService>();
+        WorldBossHealingContributionService healingService =
+            scope.ServiceProvider.GetRequiredService<WorldBossHealingContributionService>();
 
         foreach (CombatEvent combatEvent in events)
         {
+            if (combatEvent.Type == CombatEventType.HealingApplied
+                && combatEvent.Amount > 0)
+            {
+                Guid healerActorId = combatEvent.SourceActorId
+                    ?? combatEvent.ActorId;
+                if (!session.TryResolveContributionCharacterId(
+                        healerActorId,
+                        out Guid healerCharacterId))
+                {
+                    continue;
+                }
+
+                if (combatEvent.Sequence <= 0)
+                {
+                    throw new InvalidOperationException(
+                        "Authoritative combat healing events must have a positive sequence.");
+                }
+
+                WorldBossHealingCommitResult healingResult =
+                    await healingService.ApplyHealingAsync(
+                        binding.SpawnId,
+                        healerCharacterId,
+                        combatSessionId,
+                        currentPartyByCharacter.TryGetValue(
+                            healerCharacterId,
+                            out Guid healerPartyId)
+                                ? healerPartyId
+                                : null,
+                        combatEvent.Amount,
+                        CreateHealingMutationId(
+                            combatSessionId,
+                            combatEvent.Sequence),
+                        cancellationToken);
+
+                if (!healingResult.Succeeded
+                    && healingResult.ErrorCode is not (
+                        WorldBossErrorCodes.AlreadyDefeated
+                        or WorldBossErrorCodes.Expired
+                        or WorldBossErrorCodes.NotActive))
+                {
+                    throw new InvalidOperationException(
+                        $"World boss healing bridge failed with '{healingResult.ErrorCode}'.");
+                }
+
+                continue;
+            }
+
             if (combatEvent.Type != CombatEventType.DamageDealt
                 || combatEvent.Amount <= 0
                 || combatEvent.TargetActorId != binding.BossActorId
@@ -121,15 +175,35 @@ public sealed class WorldBossCombatDamageObserver(IServiceScopeFactory scopeFact
         }
     }
 
-    internal static Guid CreateMutationId(Guid combatSessionId, long eventSequence)
+    internal static Guid CreateHealingMutationId(
+        Guid combatSessionId,
+        long eventSequence) =>
+        CreateMutationIdCore(
+            combatSessionId,
+            eventSequence,
+            discriminator: 1);
+
+    internal static Guid CreateMutationId(
+        Guid combatSessionId,
+        long eventSequence) =>
+        CreateMutationIdCore(
+            combatSessionId,
+            eventSequence,
+            discriminator: 0);
+
+    private static Guid CreateMutationIdCore(
+        Guid combatSessionId,
+        long eventSequence,
+        byte discriminator)
     {
         if (combatSessionId == Guid.Empty)
             throw new ArgumentException("Combat session identifier cannot be empty.", nameof(combatSessionId));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(eventSequence);
 
-        Span<byte> input = stackalloc byte[24];
+        Span<byte> input = stackalloc byte[25];
         combatSessionId.TryWriteBytes(input);
-        BinaryPrimitives.WriteInt64LittleEndian(input[16..], eventSequence);
+        BinaryPrimitives.WriteInt64LittleEndian(input[16..24], eventSequence);
+        input[24] = discriminator;
         Span<byte> hash = stackalloc byte[32];
         SHA256.HashData(input, hash);
         return new Guid(hash[..16]);
