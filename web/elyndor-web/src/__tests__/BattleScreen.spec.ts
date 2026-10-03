@@ -1,4 +1,4 @@
-import { mount } from '@vue/test-utils'
+import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -64,7 +64,72 @@ function ability(index: number): CombatAbility {
 }
 
 describe('BattleScreen', () => {
-  beforeEach(() => setActivePinia(createPinia()))
+  it('retains the flee confirmation and shows the failed action in the dialog', async () => {
+    const store = useCombatSessionStore()
+    store.snapshot = { sessionId: 'session', sequence: 1, status: 'Active', serverTimeUtc: '2026-09-25T12:00:00Z', contentVersion: 'test', balanceVersion: 'test', player: actor('local', 'Player'), enemy: actor('enemy', 'Monster') }
+    vi.spyOn(store, 'flee').mockImplementation(async () => { store.errorCode = 'combat_action_failed'; return false })
+    const wrapper = mount(BattleScreen)
+    await wrapper.get('[data-combat-exit]').trigger('click')
+    const submit = [...document.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')].find(button => button.textContent?.trim() === 'Сбежать')!
+    submit.click()
+    await flushPromises()
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull()
+    expect(document.querySelector('[role="dialog"] [role="alert"]')).not.toBeNull()
+    wrapper.unmount()
+  })
+  it('keeps commands blocked until resume succeeds and retains retry on sync failure', async () => {
+    const store = useCombatSessionStore()
+    store.snapshot = { sessionId: 'session', sequence: 1, status: 'Active', serverTimeUtc: '2026-09-25T12:00:00Z', contentVersion: 'test', balanceVersion: 'test', player: actor('local', 'Player', [ability(1)]), enemy: actor('enemy', 'Monster') }
+    store.connectionState = 'disconnected'
+    vi.spyOn(store, 'connect').mockImplementation(async () => { store.connectionState = 'connected' })
+    let complete!: (success: boolean) => void
+    vi.spyOn(store, 'resume').mockImplementation(() => new Promise<boolean>(resolve => { complete = resolve }))
+    const wrapper = mount(BattleScreen)
+    await wrapper.get('[data-combat-connection] button').trigger('click')
+    await flushPromises()
+    expect(wrapper.get('[data-ability-slot]').attributes('aria-disabled')).toBe('true')
+    expect(wrapper.get('.battle-arena__enemy').attributes('disabled')).toBeDefined()
+    complete(false)
+    await flushPromises()
+    expect(wrapper.get('[data-combat-connection]').text()).toContain('Повторить подключение')
+    expect(wrapper.get('[data-ability-slot]').attributes('aria-disabled')).toBe('true')
+    wrapper.unmount()
+  })
+  it('offers explicit reconnect after transport closes', () => {
+    const store = useCombatSessionStore()
+    store.snapshot = { sessionId: 'session', sequence: 1, status: 'Active', serverTimeUtc: '2026-09-25T12:00:00Z', contentVersion: 'test', balanceVersion: 'test', player: actor('local', 'Player', [ability(1)]), enemy: actor('enemy', 'Monster') }
+    store.connectionState = 'disconnected'
+    const wrapper = mount(BattleScreen)
+    expect(wrapper.get('[data-combat-connection]').text()).toContain('Повторить подключение')
+    expect(wrapper.get('[data-ability-slot]').attributes('aria-disabled')).toBe('true')
+    wrapper.unmount()
+  })
+  it('announces reconnect and prevents sending abilities until sync completes', async () => {
+    const store = useCombatSessionStore()
+    store.snapshot = { sessionId: 'session', sequence: 1, status: 'Active', serverTimeUtc: '2026-09-25T12:00:00Z', contentVersion: 'test', balanceVersion: 'test', player: actor('local', 'Player', [ability(1)]), enemy: actor('enemy', 'Monster') }
+    store.connectionState = 'reconnecting'
+    const wrapper = mount(BattleScreen)
+    expect(wrapper.get('[data-combat-connection]').text()).toContain('Восстанавливаем')
+    expect(wrapper.get('[data-ability-slot]').attributes('aria-disabled')).toBe('true')
+    store.connectionState = 'connected'
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('[data-combat-connection]').exists()).toBe(false)
+    expect(wrapper.get('[data-ability-slot]').attributes('aria-disabled')).toBe('false')
+    wrapper.unmount()
+  })
+
+  it('lets keyboard users inspect an ability without activating it', async () => {
+    const store = useCombatSessionStore()
+    store.snapshot = { sessionId: 'session', sequence: 1, status: 'Active', serverTimeUtc: '2026-09-25T12:00:00Z', contentVersion: 'test', balanceVersion: 'test', player: actor('local', 'Player', [ability(1)]), enemy: actor('enemy', 'Monster') }
+    const wrapper = mount(BattleScreen)
+    await wrapper.get('[data-ability-slot]').trigger('keydown', { key: 'F1' })
+    expect(wrapper.get('[data-ability-inspection]').text()).toContain(ability(1).displayName)
+    wrapper.unmount()
+  })
+  beforeEach(() => {
+    setActivePinia(createPinia())
+    useCombatSessionStore().connectionState = 'connected'
+  })
 
   it('uses one screen for party formation, skills, controls and collapsed log', () => {
     const store = useCombatSessionStore()

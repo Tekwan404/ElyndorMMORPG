@@ -6,8 +6,12 @@ import { apiClient, ApiRequestError } from '@/api/apiClient'
 import type { EquipmentSlot, InventoryItem, OpenLootContainerResponse, PendingLootItem, SpatialInventorySnapshot } from '@/api/contracts'
 import { consumableSummary } from '@/game/items/consumablePresentation'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
+import ItemIdentity from '@/game/items/components/ItemIdentity.vue'
+import ItemSetSummary from '@/game/items/components/ItemSetSummary.vue'
+import UIConfirmation from '@/ui/components/UIConfirmation.vue'
+import { useConfirmation } from '@/ui/composables/useConfirmation'
 import { useGameSessionStore } from '@/stores/gameSession'
-import { ItemQualityStars, UIButton, UILoadingState, UIModal } from '@/ui/components'
+import { ItemQualityStars, UIButton, UILoadingState, UIModal, UIToast } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
 const props = defineProps<{
@@ -15,6 +19,13 @@ const props = defineProps<{
 }>()
 
 const session = useGameSessionStore()
+const confirmation = useConfirmation()
+const actionNotice = ref('')
+const equipmentPending = computed(() => session.isMutationPending('inventory:equip'))
+const consumablePending = computed(() => session.isMutationPending('inventory:use-consumable'))
+const consumableActionError = ref<string | null>(null)
+const lockPending = computed(() => session.isMutationPending('inventory:set-lock'))
+const itemActionPending = computed(() => equipmentPending.value || consumablePending.value || lockPending.value || bulkActionPending.value || spatialActionPending.value || containerActionPending.value)
 const character = computed(() => session.snapshot?.character)
 const inventory = computed(() => character.value?.inventory)
 const spatialInventory = ref<SpatialInventorySnapshot | null>(null)
@@ -39,6 +50,9 @@ const bulkActionPending = ref(false)
 const pendingLootItems = ref<PendingLootItem[]>([])
 const pendingLootLoading = ref(false)
 const pendingLootActionError = ref<string | null>(null)
+const pendingLootReadError = ref(false)
+const pendingLootReadPending = ref(false)
+let pendingLootReadSequence = 0
 const containerActionPending = ref(false)
 const containerActionError = ref<string | null>(null)
 const openedContainer = ref<OpenLootContainerResponse | null>(null)
@@ -395,7 +409,7 @@ async function discardInventoryItems(items: InventoryItem[]): Promise<boolean> {
   const message = valuable
     ? `Уничтожить ${items.length} выбранных позиций? Среди них есть Rare+ или улучшенные вещи. Действие нельзя отменить.`
     : `Уничтожить ${items.length} выбранных позиций? Действие нельзя отменить.`
-  if (!window.confirm(message)) return false
+  if (!await confirmation.ask({ title: 'Уничтожить предметы?', message, confirmLabel: 'Уничтожить' })) return false
 
   bulkActionPending.value = true
   bulkActionError.value = null
@@ -412,6 +426,7 @@ async function discardInventoryItems(items: InventoryItem[]): Promise<boolean> {
     }
     selectedItemIds.value = new Set()
     selectedQuantities.value = {}
+    actionNotice.value = 'Выбранные предметы уничтожены.'
     return true
   } finally {
     bulkActionPending.value = false
@@ -440,7 +455,7 @@ async function sellSelectedItems(): Promise<void> {
   const message = valuable
     ? `Продать ${items.length} позиций за ${formatMoney(items.reduce((sum, item) => sum + item.sellPriceGold * selectedQuantity(item), 0))}? Среди них есть Rare+ или улучшенные вещи.`
     : `Продать ${items.length} позиций за ${formatMoney(items.reduce((sum, item) => sum + item.sellPriceGold * selectedQuantity(item), 0))}?`
-  if (!window.confirm(message)) return
+  if (!await confirmation.ask({ title: 'Продать предметы?', message, confirmLabel: 'Продать' })) return
 
   bulkActionPending.value = true
   bulkActionError.value = null
@@ -477,9 +492,9 @@ async function sellSelectedItems(): Promise<void> {
 async function sellSelectedItem(): Promise<void> {
   const item = selectedItem.value
   if (!item || item.sellPriceGold <= 0 || item.isLocked || !canSellHere.value) return
-  const confirmed = !isValuableInventoryItem(item) || window.confirm(
-    `Продать ценный предмет «${item.name}» за ${formatMoney(item.sellPriceGold * item.quantity)}?`,
-  )
+  const confirmed = !isValuableInventoryItem(item) || await confirmation.ask({
+    title: 'Продать ценный предмет?', message: `Продать «${item.name}» за ${formatMoney(item.sellPriceGold * item.quantity)}?`, confirmLabel: 'Продать',
+  })
   if (!confirmed) return
   const updated = await session.sellMerchantItem(MARCUS_MERCHANT_ID, item.id, item.quantity)
   if (updated) selectedItem.value = null
@@ -495,16 +510,24 @@ function inventoryBulkError(code: string | null): string {
 }
 
 async function refreshPendingLoot(): Promise<void> {
+  const requestId = ++pendingLootReadSequence
   if (!character.value?.id) {
     pendingLootItems.value = []
+    pendingLootReadError.value = false
+    pendingLootReadPending.value = false
     return
   }
 
+  pendingLootReadPending.value = true
   try {
     const response = await session.getPendingLoot()
+    if (requestId !== pendingLootReadSequence) return
     pendingLootItems.value = Array.isArray(response?.items) ? response.items : []
+    pendingLootReadError.value = false
   } catch {
-    // Pending loot remains durable on the server; a transient read failure must not block inventory use.
+    if (requestId === pendingLootReadSequence) pendingLootReadError.value = true
+  } finally {
+    if (requestId === pendingLootReadSequence) pendingLootReadPending.value = false
   }
 }
 
@@ -538,7 +561,7 @@ async function discardPendingLootItems(items: PendingLootItem[]): Promise<void> 
   const message = valuable
     ? `Отказаться от ${items.length} позиций добычи? Среди них есть Rare+ предметы. Вернуть их будет нельзя.`
     : `Отказаться от ${items.length} позиций добычи? Вернуть их будет нельзя.`
-  if (!window.confirm(message)) return
+  if (!await confirmation.ask({ title: 'Отказаться от добычи?', message, confirmLabel: 'Отказаться' })) return
 
   pendingLootLoading.value = true
   pendingLootActionError.value = null
@@ -557,6 +580,7 @@ async function discardPendingLootItems(items: PendingLootItem[]): Promise<void> 
 function openItem(item: InventoryItem | null): void {
   selectedItem.value = item
   equipmentActionError.value = null
+  consumableActionError.value = null
   spatialActionError.value = null
   if (item) markItemSeen(item.id)
 }
@@ -684,10 +708,6 @@ function rarityName(rarity: InventoryItem['rarity']): string {
   return 'Обычный'
 }
 
-function rarityLabel(item: InventoryItem): string {
-  return rarityName(item.rarity)
-}
-
 function typeLabel(item: InventoryItem): string {
   if (isSpatialArtifact(item)) return 'Пространственный артефакт'
   if (item.type === 'Material') return 'Материал'
@@ -734,10 +754,14 @@ function spatialActionErrorLabel(code: string | null): string | null {
 
 async function equipSelected(targetSlot?: EquipmentSlot): Promise<void> {
   const item = selectedItem.value
-  if (!item || item.type !== 'Equipment') return
+  if (!item || item.type !== 'Equipment' || itemActionPending.value) return
+  actionNotice.value = ''
   await session.equip(item.id, targetSlot)
   equipmentActionError.value = session.errorCode
-  if (!equipmentActionError.value) selectedItem.value = null
+  if (!equipmentActionError.value) {
+    actionNotice.value = `Надето: ${item.name}`
+    selectedItem.value = null
+  }
 }
 
 async function equipSelectedSpatialArtifact(): Promise<void> {
@@ -812,8 +836,14 @@ function isCombatOnlyConsumable(item: InventoryItem): boolean {
 async function useSelected(): Promise<void> {
   const item = selectedItem.value
   if (!item || item.type !== 'Consumable' || !canUseConsumableOutOfCombat(item)) return
+  if (itemActionPending.value) return
+  consumableActionError.value = null
   await session.useConsumable(item.id)
-  selectedItem.value = null
+  consumableActionError.value = session.errorCode
+  if (!consumableActionError.value) {
+    actionNotice.value = `Использовано: ${item.name}`
+    selectedItem.value = null
+  }
 }
 
 async function openSelectedContainer(): Promise<void> {
@@ -838,9 +868,10 @@ async function openSelectedContainer(): Promise<void> {
 
 async function toggleSelectedLock(): Promise<void> {
   const item = selectedItem.value
-  if (!item || session.mutationPending) return
+  if (!item || itemActionPending.value) return
 
   await session.setItemLock(item.id, !item.isLocked)
+  if (selectedItem.value?.id !== item.id) return
   const refreshed = session.snapshot?.character?.inventory.items.find(
     candidate => candidate.id === item.id,
   )
@@ -977,6 +1008,10 @@ async function toggleSelectedLock(): Promise<void> {
       </template>
     </UIModal>
 
+    <UIToast v-if="!isContextualSlotMode && pendingLootReadError" tone="danger" data-pending-loot-read-error>
+      Не удалось загрузить незабранную добычу. Инвентарь остаётся доступен.
+      <UIButton :loading="pendingLootReadPending" loading-label="Загружаем…" variant="secondary" @click="refreshPendingLoot">Повторить</UIButton>
+    </UIToast>
     <section
       v-if="!isContextualSlotMode && pendingLootItems.length"
       class="pending-loot-panel"
@@ -1173,23 +1208,11 @@ async function toggleSelectedLock(): Promise<void> {
       />
     </section>
 
-    <UIModal :open="selectedItem !== null" :title="selectedItem?.name ?? ''" @close="openItem(null)">
+    <UIToast v-if="actionNotice" tone="success" data-inventory-feedback>{{ actionNotice }}</UIToast>
+    <UIConfirmation :request="confirmation.request.value" @resolve="confirmation.settle" />
+    <UIModal :open="selectedItem !== null" :title="selectedItem?.name ?? ''" :busy="equipmentPending || consumablePending || lockPending || bulkActionPending || spatialActionPending || containerActionPending" @close="openItem(null)">
       <article v-if="selectedItem" class="item-detail">
-        <div class="item-detail__identity">
-          <span class="item-detail__icon" :data-rarity="selectedItem.rarity">
-            <ItemIcon :icon-id="selectedItem.iconId" :item-id="selectedItem.id" :name="selectedItem.name" :type="selectedItem.type" :equipment-slot="selectedItem.slot" :rarity="selectedItem.rarity" loading="eager" />
-          </span>
-          <div>
-            <p>{{ rarityLabel(selectedItem) }} · {{ typeLabel(selectedItem) }}</p>
-            <ItemQualityStars
-              v-if="selectedItem.generatedItem"
-              :id="`inventory-detail-${selectedItem.id}`"
-              :stars="selectedItem.generatedItem.stars"
-            />
-            <strong>Количество: {{ selectedItem.quantity }}</strong>
-            <span v-if="selectedItem.isLocked" class="item-detail__locked">Предмет защищён</span>
-          </div>
-        </div>
+        <ItemIdentity :item="selectedItem" :subtitle="typeLabel(selectedItem)" />
         <section
           v-if="selectedItem.type === 'Equipment'"
           class="item-detail__levels"
@@ -1251,13 +1274,14 @@ async function toggleSelectedLock(): Promise<void> {
           <p v-else class="item-detail__hint">Характеристики предметов совпадают.</p>
         </section>
         <p v-if="selectedItem.weaponBaseAttackIntervalSeconds" class="item-detail__hint">Базовый интервал автоатаки: {{ selectedItem.weaponBaseAttackIntervalSeconds }} сек.</p>
-        <p v-if="selectedItem.setId" class="item-detail__hint">Часть комплекта Следопыта. Бонусы активируются за 3 и 6 надетых предметов.</p>
+        <ItemSetSummary v-if="selectedItem.setId" :set-id="selectedItem.setId" :items="inventory?.items ?? []" />
         <p v-if="selectedItem.sellPriceGold > 0 && !selectedItem.isLocked && !selectedItem.equippedSlot" class="item-detail__hint">
           Маркус купит {{ selectedItem.type === 'Equipment' ? 'этот предмет' : 'этот предмет за штуку' }} за {{ formatMoney(selectedItem.sellPriceGold) }}.
         </p>
         <p v-if="selectedItem.isLocked" class="item-detail__hint item-detail__hint--locked">Предмет защищён от продажи торговцу. Снимите защиту, если захотите его продать.</p>
         <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">{{ consumableSummary(selectedItem.consumableActions, selectedItem.consumableCooldownSeconds) }}</p>
         <p v-if="selectedItem.type === 'Consumable' && isCombatOnlyConsumable(selectedItem)" class="item-detail__hint">Этот расходник используется только во время боя.</p>
+        <UIToast v-if="selectedItem.type === 'Consumable' && consumableActionError" tone="danger">Не удалось использовать предмет. Повторите попытку.</UIToast>
         <p
           v-if="selectedEquipmentCompatibilityReason"
           class="item-detail__error"
@@ -1301,8 +1325,9 @@ async function toggleSelectedLock(): Promise<void> {
             <UIButton
               v-if="!isContextualSlotMode || isContextualTarget('MainHand')"
               data-equip-target="MainHand"
-              :loading="session.mutationPending"
-              :disabled="session.mutationPending || selectedEquipmentLevelReason !== null"
+              :loading="equipmentPending"
+              loading-label="Надеваем…"
+              :disabled="itemActionPending || selectedEquipmentLevelReason !== null"
               @click="equipSelected('MainHand')"
             >
               В основную руку
@@ -1310,8 +1335,9 @@ async function toggleSelectedLock(): Promise<void> {
             <UIButton
               v-if="!isContextualSlotMode || isContextualTarget('OffHand')"
               data-equip-target="OffHand"
-              :loading="session.mutationPending"
-              :disabled="session.mutationPending || selectedEquipmentLevelReason !== null"
+              :loading="equipmentPending"
+              loading-label="Надеваем…"
+              :disabled="itemActionPending || selectedEquipmentLevelReason !== null"
               @click="equipSelected('OffHand')"
             >
               Во вторую руку
@@ -1320,8 +1346,9 @@ async function toggleSelectedLock(): Promise<void> {
           <UIButton
             v-else
             data-equip-action
-            :loading="session.mutationPending"
-            :disabled="session.mutationPending || selectedEquipmentLevelReason !== null"
+            :loading="equipmentPending"
+            loading-label="Надеваем…"
+            :disabled="itemActionPending || selectedEquipmentLevelReason !== null"
             @click="equipSelected()"
           >
             Надеть
@@ -1338,8 +1365,9 @@ async function toggleSelectedLock(): Promise<void> {
         </UIButton>
         <UIButton
           v-if="selectedItem?.type === 'Consumable'"
-          :loading="session.mutationPending"
-          :disabled="session.mutationPending || !canUseConsumableOutOfCombat(selectedItem)"
+          :loading="consumablePending"
+          loading-label="Используем…"
+          :disabled="itemActionPending || !canUseConsumableOutOfCombat(selectedItem)"
           @click="useSelected"
         >
           Использовать
@@ -1377,8 +1405,9 @@ async function toggleSelectedLock(): Promise<void> {
           v-if="selectedItem"
           variant="secondary"
           data-item-lock-action
-          :loading="session.mutationPending"
-          :disabled="session.mutationPending || spatialActionPending"
+          :loading="lockPending"
+          loading-label="Сохраняем…"
+          :disabled="itemActionPending"
           @click="toggleSelectedLock"
         >
           {{ selectedItem.isLocked ? 'Снять защиту' : 'Защитить' }}
@@ -2112,17 +2141,6 @@ async function toggleSelectedLock(): Promise<void> {
   color: var(--ui-color-text-muted);
 }
 
-.item-detail__locked {
-  width: fit-content;
-  margin-top: 2px;
-  padding: 3px 6px;
-  border: 1px solid rgb(232 200 102 / 38%);
-  border-radius: var(--ui-radius-round);
-  color: var(--ui-color-gold);
-  font-size: .54rem;
-  font-weight: 800;
-  letter-spacing: .07em;
-}
 
 .item-detail__icon {
   display: grid;

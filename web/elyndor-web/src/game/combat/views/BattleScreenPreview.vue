@@ -9,6 +9,8 @@ import ArenaBattlefield from '@/game/pvp/components/ArenaBattlefield.vue'
 
 const route = useRoute()
 const combat = useCombatSessionStore()
+const previousConnectionState = combat.connectionState
+combat.connectionState = 'connected'
 const partySize = computed(() => Math.max(1, Math.min(5, Number(route.query.party) || 3)))
 const abilityCount = computed(() => Math.max(4, Math.min(20, Number(route.query.abilities) || 4)))
 
@@ -167,6 +169,7 @@ function transferAggro(): void {
 }
 
 onUnmounted(() => {
+  combat.connectionState = previousConnectionState
   if (combat.snapshot?.sessionId === 'battle-preview') combat.snapshot = null
 })
 </script>

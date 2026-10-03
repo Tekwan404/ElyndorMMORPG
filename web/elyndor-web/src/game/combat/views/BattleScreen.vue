@@ -16,13 +16,23 @@ import CombatEffectStrip from '@/game/combat/CombatEffectStrip.vue'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
-import { UIButton, UIModal } from '@/ui/components'
+import { UIButton, UIModal, UIToast } from '@/ui/components'
 
 const emit = defineEmits<{ leave: [] }>()
 const battle = useBattle()
+const reconnectPending = shallowRef(false)
+const reconnectFailed = shallowRef(false)
+const connectionRecovering = computed(() => battle.connectionState.value !== 'connected' || reconnectPending.value || reconnectFailed.value)
+async function retryConnection(): Promise<void> {
+  if (reconnectPending.value) return
+  reconnectPending.value = true
+  reconnectFailed.value = false
+  try { reconnectFailed.value = !(await battle.reconnect()) } finally { reconnectPending.value = false }
+}
 const session = useGameSessionStore()
 const now = shallowRef(Date.now())
 const fleeConfirmationOpen = shallowRef(false)
+const fleeActionFailed = shallowRef(false)
 const pendingLoot = shallowRef<PendingLootItem[]>([])
 const pendingLootLoading = shallowRef(false)
 const pendingLootError = shallowRef<string | null>(null)
@@ -137,7 +147,7 @@ function lootRollRemaining(endsAtUtc: string): number {
 
 function consumableCanAffect(item: InventoryItem): boolean {
   const player = localActor.value
-  if (!player) return false
+  if (!player || connectionRecovering.value) return false
   return item.consumableActions.some((action) => {
     if (action.type === 'RestoreHp') return player.hp < player.maxHp
     if (action.type === 'RestoreResource') {
@@ -219,8 +229,13 @@ async function leaveBattle(): Promise<void> {
 }
 
 async function fleeBattle(): Promise<void> {
-  fleeConfirmationOpen.value = false
-  if (await battle.flee()) emit('leave')
+  fleeActionFailed.value = false
+  if (await battle.flee()) {
+    fleeConfirmationOpen.value = false
+    emit('leave')
+  } else {
+    fleeActionFailed.value = true
+  }
 }
 
 function rarityLabel(rarity: string): string {
@@ -276,7 +291,7 @@ onUnmounted(() => window.clearInterval(timer))
           <strong>Бой уже идёт</strong><small>Войдите, чтобы присоединиться к группе.</small>
         </div>
         <UIButton
-          :disabled="battle.lifecyclePending.value"
+          :disabled="battle.lifecyclePending.value || connectionRecovering"
           @click="battle.attachCombat(snapshot.sessionId)"
           >Войти в бой</UIButton
         >
@@ -293,6 +308,7 @@ onUnmounted(() => window.clearInterval(timer))
           :numbers="battle.eventProjection.value.numbers"
           :companion="battle.companion.value"
           :battlefield-art="battlefieldArt"
+          :enemy-disabled="connectionRecovering"
           :disabled="battle.targetPending.value || !isActive"
           @select-friendly="battle.selectFriendlyActor"
           @select-enemy="battle.selectEnemyActor"
@@ -367,7 +383,7 @@ onUnmounted(() => window.clearInterval(timer))
           :resource="localActor.resource"
           :queued-ability-ids="queuedAbilityIds"
           :now="now"
-          :disabled="battle.abilityPending.value"
+          :disabled="battle.abilityPending.value || connectionRecovering"
           @use="useAbility"
         />
         <ConsumableBar
@@ -380,12 +396,12 @@ onUnmounted(() => window.clearInterval(timer))
         />
         <BattleControls
           :auto-attack-enabled="localActor.autoAttackEnabled"
-          :auto-attack-disabled="battle.autoAttackPending.value"
-          :lifecycle-disabled="battle.lifecyclePending.value"
-          :flee-disabled="battle.fleePending.value"
+          :auto-attack-disabled="battle.autoAttackPending.value || connectionRecovering"
+          :lifecycle-disabled="battle.lifecyclePending.value || connectionRecovering"
+          :flee-disabled="battle.fleePending.value || connectionRecovering"
           :training="battle.isTraining.value"
           @toggle-auto-attack="battle.toggleAutoAttack"
-          @flee="fleeConfirmationOpen = true"
+          @flee="fleeActionFailed = false; fleeConfirmationOpen = true"
           @reset-training="battle.resetTraining"
           @leave="leaveBattle"
         />
@@ -522,24 +538,31 @@ onUnmounted(() => window.clearInterval(timer))
       </section>
 
       <CombatLog :entries="battle.eventProjection.value.logEntries" />
-      <p
-        v-if="battle.errorCode.value"
-        class="battle-screen__error"
-        role="alert"
-        aria-live="assertive"
+      <UIToast v-if="connectionRecovering && isActive" tone="info" placement="overlay" data-combat-connection>
+        <template v-if="reconnectFailed">Не удалось синхронизировать бой. Повторите подключение.</template>
+        <template v-else-if="battle.connectionState.value === 'disconnected'">Соединение с боем потеряно.</template>
+        <template v-else>Восстанавливаем соединение с боем. Дождитесь актуального состояния.</template>
+        <UIButton v-if="battle.connectionState.value === 'disconnected' || reconnectFailed || reconnectPending" :loading="reconnectPending" loading-label="Подключаем…" @click="retryConnection">Повторить подключение</UIButton>
+      </UIToast>
+      <UIToast
+        v-else-if="battle.errorCode.value"
+        tone="danger"
+        placement="overlay"
         data-combat-error-toast
       >
-        {{ combatErrorMessage }} <small>{{ battle.errorCode.value }}</small>
-      </p>
+        {{ combatErrorMessage }}
+      </UIToast>
 
       <UIModal
         :open="fleeConfirmationOpen"
+        :busy="battle.fleePending.value"
         title="Сбежать из боя?"
         @close="fleeConfirmationOpen = false"
       >
         <p>После выхода вернуться в этот бой нельзя.</p>
         <template #actions>
-          <UIButton variant="ghost" @click="fleeConfirmationOpen = false">Остаться</UIButton>
+          <UIToast v-if="fleeActionFailed" tone="danger">Не удалось выйти из боя. Повторите попытку.</UIToast>
+          <UIButton variant="ghost" :disabled="battle.fleePending.value" @click="fleeConfirmationOpen = false">Остаться</UIButton>
           <UIButton variant="danger" :loading="battle.fleePending.value" @click="fleeBattle"
             >Сбежать</UIButton
           >
@@ -807,27 +830,6 @@ onUnmounted(() => window.clearInterval(timer))
   color: #ddd5ca;
   font: inherit;
   font-size: 0.5rem;
-}
-.battle-screen__error {
-  position: fixed;
-  z-index: 1000;
-  right: max(0.65rem, env(safe-area-inset-right));
-  bottom: max(0.65rem, env(safe-area-inset-bottom));
-  left: max(0.65rem, env(safe-area-inset-left));
-  max-width: 32rem;
-  margin: 0 auto;
-  padding: 0.55rem 0.7rem;
-  border: 1px solid rgb(209 75 93 / 42%);
-  border-radius: 8px;
-  box-shadow: 0 10px 28px rgb(0 0 0 / 48%);
-  background: rgb(24 8 13 / 96%);
-  color: #f1a0aa;
-  font-size: 0.62rem;
-  line-height: 1.35;
-  pointer-events: none;
-}
-.battle-screen__error small {
-  color: #98777d;
 }
 .battle-screen__missing {
   display: grid;

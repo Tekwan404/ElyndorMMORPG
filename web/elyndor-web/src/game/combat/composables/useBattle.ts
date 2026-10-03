@@ -126,6 +126,15 @@ export function useBattle() {
     companion,
     eventProjection,
     selectFriendlyActor,
+    reconnect: async () => {
+      try {
+        await combat.connect()
+        return await combat.resume()
+      } catch {
+        // The store records the transport error; the disconnected notice retains retry.
+        return false
+      }
+    },
     selectEnemyActor: combat.selectTarget,
     useAbility: combat.useAbility,
     useConsumable: combat.useConsumable,

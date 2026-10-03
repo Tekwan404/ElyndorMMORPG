@@ -13,7 +13,7 @@ import {
 } from '@/game/world/locationDetails'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
-import { UIButton, UIModal } from '@/ui/components'
+import { UIButton, UILoadingState, UIModal } from '@/ui/components'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
@@ -21,6 +21,7 @@ const party = usePartyStore()
 const location = ref<DetailedWorldLocation | null>(null)
 const loading = ref(false)
 const failed = ref(false)
+let detailsRequestId = 0
 const afkOpen = ref(false)
 const afkDurationMinutes = ref(60)
 const afkTargetMonsterId = ref<string | null>(null)
@@ -59,6 +60,7 @@ const canExplore = computed(() =>
   && (location.value ?? currentLocation.value)?.dangerLevel !== 'SAFE'
   && canStartWorldCombat.value,
 )
+const explorePending = computed(() => session.isMutationPending('world:explore') || combat.lifecyclePending)
 const canUseAfkFarm = computed(() =>
   isRegion.value
   && !isTravelling.value
@@ -129,7 +131,7 @@ function rarityClass(rarity: string): string {
 }
 
 async function explore(): Promise<void> {
-  if (!canExplore.value || session.mutationPending || combat.pending) return
+  if (!canExplore.value || session.mutationPending || combat.pending || explorePending.value) return
   const encounter = await session.explore()
   if (!encounter) return
   await combat.startCombat(encounter)
@@ -176,27 +178,35 @@ async function startAfkFarm(): Promise<void> {
   if (started) afkOpen.value = false
 }
 
+async function loadLocationDetails(): Promise<void> {
+  const requestId = ++detailsRequestId
+  const locationId = currentLocationId.value
+  const contentVersion = session.snapshot?.contentVersion
+  location.value = null
+  failed.value = false
+  loading.value = false
+  if (!locationId || !contentVersion || isTravelling.value) return
+
+  loading.value = true
+  try {
+    const catalog = await loadLocationCatalog(contentVersion)
+    if (requestId !== detailsRequestId) return
+    location.value = catalog.find(entry => entry.id === locationId) ?? null
+    failed.value = location.value === null
+  } catch {
+    if (requestId === detailsRequestId) failed.value = true
+  } finally {
+    if (requestId === detailsRequestId) loading.value = false
+  }
+}
+
 watch(
   [() => currentLocation.value?.id, () => session.snapshot?.contentVersion],
-  async ([locationId, contentVersion]) => {
-    location.value = null
-    failed.value = false
+  () => {
     afkOpen.value = false
     afkPreview.value = null
     afkTargetMonsterId.value = null
-    if (!locationId || !contentVersion || isTravelling.value) return
-
-    loading.value = true
-    try {
-      const catalog = await loadLocationCatalog(contentVersion)
-      if (currentLocation.value?.id !== locationId) return
-      location.value = catalog.find(entry => entry.id === locationId) ?? null
-      failed.value = location.value === null
-    } catch {
-      failed.value = true
-    } finally {
-      loading.value = false
-    }
+    void loadLocationDetails()
   },
   { immediate: true },
 )
@@ -227,15 +237,15 @@ watch(
         <div v-if="canExplore && canStartWorldCombat" class="location-overview__actions" aria-label="Действия локации">
           <UIButton
             data-explore
-            :loading="session.mutationPending"
-            :disabled="combat.pending || isTravelling"
+            :loading="explorePending"
+            :disabled="session.mutationPending || combat.pending || isTravelling"
             @click="explore"
           >Исследовать</UIButton>
           <UIButton
             v-if="canUseAfkFarm"
             data-afk-farming
             variant="secondary"
-            :disabled="session.mutationPending || combat.pending"
+            :disabled="session.mutationPending || combat.pending || explorePending"
             @click="openAfkFarm"
           >Автоматическая охота</UIButton>
         </div>
@@ -244,7 +254,7 @@ watch(
 
     <slot name="primary-actions" />
 
-    <div v-if="loading" class="location-overview__state">Загружаем сведения об области…</div>
+    <UILoadingState v-if="loading" state="loading" title="Загружаем сведения об области…" />
 
     <template v-else-if="location">
       <details v-if="residents.length" class="location-overview__section" data-location-residents>
@@ -316,14 +326,22 @@ watch(
         </div>
       </details>
 
-      <div v-if="!residents.length && !loot.length" class="location-overview__quiet">
-        Здесь нет открытого списка противников или добычи. Доступные действия показаны ниже.
-      </div>
+      <UILoadingState
+        v-if="!residents.length && !loot.length"
+        state="empty"
+        title="Здесь нет открытого списка противников или добычи."
+        message="Доступные действия показаны выше."
+      />
     </template>
 
-    <div v-else-if="failed" class="location-overview__state location-overview__state--muted">
-      Подробности области недоступны. Основные действия локации остаются доступны ниже.
-    </div>
+    <UILoadingState
+      v-else-if="failed"
+      state="error"
+      title="Подробности области недоступны."
+      message="Основные действия локации остаются доступны выше."
+    >
+      <UIButton variant="secondary" data-retry-location-details @click="loadLocationDetails">Повторить</UIButton>
+    </UILoadingState>
 
     <UIModal :open="afkOpen" title="Автоматическая охота" @close="afkOpen = false">
       <div class="location-overview__afk" data-afk-farm-modal>
@@ -656,19 +674,6 @@ watch(
 .location-overview__loot--epic strong { color: #bd91e8; }
 .location-overview__loot--rare strong { color: #83a9e7; }
 .location-overview__loot--uncommon strong { color: #82bd7d; }
-
-.location-overview__state,
-.location-overview__quiet {
-  padding: 12px;
-  border: 1px solid rgb(255 255 255 / 7%);
-  border-radius: 12px;
-  background: rgb(13 17 24 / 78%);
-  color: #aaa497;
-  font-size: 12px;
-  text-align: center;
-}
-
-.location-overview__state--muted { opacity: .72; }
 
 .location-overview__afk,
 .location-overview__afk-preview,

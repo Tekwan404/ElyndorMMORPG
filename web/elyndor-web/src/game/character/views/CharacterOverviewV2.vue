@@ -5,8 +5,10 @@ import type { CharacterStats, EquipmentSlot, InventoryItem } from '@/api/contrac
 import { resolveCharacterArt } from '@/assets/characterArt'
 import { classLabel, raceLabel } from '@/game/character/characterPresentation'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
+import ItemIdentity from '@/game/items/components/ItemIdentity.vue'
+import ItemSetSummary from '@/game/items/components/ItemSetSummary.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
-import { UIButton, UIModal } from '@/ui/components'
+import { UIButton, UIModal, UIToast } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName } from '@/ui/icons/icon.types'
 
@@ -21,6 +23,8 @@ const character = computed(() => session.snapshot?.character)
 const selectedItem = ref<InventoryItem | null>(null)
 const selectedEquipmentSlot = ref<EquipmentSlot | null>(null)
 const equipmentActionError = ref<string | null>(null)
+const equipmentNotice = ref('')
+const equipmentPending = computed(() => session.isMutationPending('inventory:unequip'))
 
 type RuntimeInventoryItem = InventoryItem & {
   itemLevel?: number | null
@@ -212,10 +216,14 @@ function changeSelectedEquipment(): void {
 }
 
 async function unequipSelected(): Promise<void> {
-  if (!selectedEquipmentSlot.value || session.mutationPending) return
+  if (!selectedEquipmentSlot.value || equipmentPending.value) return
+  equipmentNotice.value = ''
   await session.unequip(selectedEquipmentSlot.value)
   equipmentActionError.value = session.errorCode
-  if (!equipmentActionError.value) closeItem()
+  if (!equipmentActionError.value) {
+    equipmentNotice.value = 'Предмет снят и возвращён в инвентарь.'
+    closeItem()
+  }
 }
 
 function equipmentErrorMessage(code: string | null): string | null {
@@ -224,18 +232,6 @@ function equipmentErrorMessage(code: string | null): string | null {
   if (code === 'inventory_invalid_slot') return 'Сервер не распознал слот снаряжения.'
   if (code === 'inventory_item_transaction_locked') return 'Предмет занят другой операцией. Повторите попытку.'
   return 'Не удалось изменить снаряжение. Повторите попытку.'
-}
-
-function rarityLabel(item: InventoryItem): string {
-  const labels: Record<string, string> = {
-    Common: 'Обычный',
-    Uncommon: 'Необычный',
-    Rare: 'Редкий',
-    Epic: 'Эпический',
-    Legendary: 'Легендарный',
-    Unique: 'Уникальный',
-  }
-  return labels[item.rarity] ?? item.rarity
 }
 
 function slotLabel(slot: EquipmentSlot | null): string {
@@ -492,18 +488,10 @@ function affixValue(statId: string, value: number): string {
       </div>
     </section>
 
-    <UIModal :open="selectedItem !== null" :title="selectedItem?.name ?? ''" @close="closeItem">
+    <UIToast v-if="equipmentNotice" tone="success">{{ equipmentNotice }}</UIToast>
+    <UIModal :open="selectedItem !== null" :title="selectedItem?.name ?? ''" :busy="equipmentPending" @close="closeItem">
       <article v-if="selectedItem" class="item-detail">
-        <header class="item-detail__hero" :data-rarity="selectedItem.rarity">
-          <div class="item-detail__icon">
-            <ItemIcon :icon-id="selectedItem.iconId" :item-id="selectedItem.id" :name="selectedItem.name" :type="selectedItem.type" :equipment-slot="selectedItem.slot" :rarity="selectedItem.rarity" loading="eager" />
-          </div>
-          <div class="item-detail__identity">
-            <strong>{{ selectedItem.name }}</strong>
-            <span>{{ rarityLabel(selectedItem) }}</span>
-            <small>{{ slotLabel(selectedItem.slot) }}<template v-if="categoryLabel(selectedItem)"> · {{ categoryLabel(selectedItem) }}</template></small>
-          </div>
-        </header>
+        <ItemIdentity :item="selectedItem" :show-quantity="false" :subtitle="[slotLabel(selectedItem.slot), categoryLabel(selectedItem)].filter(Boolean).join(' · ')" />
 
         <section class="item-meta" aria-label="Требования предмета">
           <div>
@@ -567,10 +555,7 @@ function affixValue(statId: string, value: number): string {
           </div>
         </section>
 
-        <section v-if="selectedItem.setId" class="item-section item-section--set">
-          <h3>Комплект</h3>
-          <p>{{ selectedItem.setId }}</p>
-        </section>
+        <ItemSetSummary v-if="selectedItem.setId" :set-id="selectedItem.setId" :items="character.inventory.items" />
 
         <section v-if="selectedItem.description" class="item-section item-section--description">
           <h3>Описание</h3>
@@ -592,7 +577,7 @@ function affixValue(statId: string, value: number): string {
         <UIButton
           v-if="selectedEquipmentSlot"
           data-change-equipment
-          :disabled="session.mutationPending"
+          :disabled="equipmentPending"
           @click="changeSelectedEquipment"
         >
           Сменить
@@ -601,8 +586,9 @@ function affixValue(statId: string, value: number): string {
           v-if="selectedEquipmentSlot"
           data-unequip-selected
           variant="secondary"
-          :loading="session.mutationPending"
-          :disabled="session.mutationPending"
+          :loading="equipmentPending"
+          loading-label="Снимаем…"
+          :disabled="equipmentPending"
           @click="unequipSelected"
         >
           Снять
@@ -939,66 +925,6 @@ function affixValue(statId: string, value: number): string {
   gap: var(--ui-space-3);
 }
 
-.item-detail__hero {
-  display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  align-items: center;
-  gap: var(--ui-space-3);
-  padding: var(--ui-space-3);
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-lg);
-  background: linear-gradient(135deg, rgb(146 136 255 / 8%), rgb(8 12 20 / 92%));
-}
-
-.item-detail__hero[data-rarity='Legendary'],
-.item-detail__hero[data-rarity='Unique'] {
-  border-color: color-mix(in srgb, var(--ui-color-gold) 65%, var(--ui-color-border));
-  background: linear-gradient(135deg, rgb(232 200 102 / 9%), rgb(8 12 20 / 92%));
-}
-
-.item-detail__hero[data-rarity='Epic'] {
-  border-color: color-mix(in srgb, var(--ui-color-primary) 64%, var(--ui-color-border));
-}
-
-.item-detail__icon {
-  display: grid;
-  width: 72px;
-  height: 72px;
-  place-items: center;
-  overflow: hidden;
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: var(--ui-radius-md);
-  background: rgb(2 5 9 / 78%);
-  font-size: 2rem;
-}
-
-.item-detail__icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.item-detail__identity {
-  display: grid;
-  min-width: 0;
-  gap: 3px;
-}
-
-.item-detail__identity strong {
-  font-family: var(--ui-font-display);
-  font-size: 1.05rem;
-  line-height: 1.15;
-}
-
-.item-detail__identity span {
-  color: var(--ui-color-gold);
-  font-size: var(--ui-font-size-sm);
-  font-weight: 700;
-}
-
-.item-detail__identity small {
-  color: var(--ui-color-text-muted);
-}
 
 .item-meta {
   display: grid;

@@ -21,10 +21,10 @@ withDefaults(
     <strong>{{
       title ||
       (state === 'loading'
-        ? 'Loading'
+        ? 'Загрузка…'
         : state === 'empty'
-          ? 'Nothing here yet'
-          : 'Something went wrong')
+          ? 'Пока ничего нет'
+          : 'Не удалось загрузить')
     }}</strong>
     <p v-if="message">{{ message }}</p>
     <slot />

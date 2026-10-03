@@ -20,6 +20,7 @@ const props = withDefaults(
     companion?: CombatActorSnapshot | null
     battlefieldArt?: string | null
     disabled: boolean
+    enemyDisabled?: boolean
     layoutWidthPx?: number
   }>(),
   {
@@ -113,7 +114,7 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
         type="button"
         :aria-pressed="enemy.actorId === selectedEnemyActorId"
         :data-target-actor-id="enemy.actorId"
-        :disabled="disabled || enemy.hp <= 0"
+        :disabled="disabled || enemyDisabled || enemy.hp <= 0"
         @click="emit('selectEnemy', enemy.actorId)"
       >
         <span>{{ enemy.name }}</span>
@@ -154,7 +155,7 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
       class="battle-arena__enemy enemy-figure"
       :data-enemy-scale="enemyScale"
       :aria-label="`${primaryEnemy.name}, ${Math.round(enemyHealthRatio)}% HP`"
-      :disabled="disabled || primaryEnemy.hp <= 0"
+      :disabled="disabled || enemyDisabled || primaryEnemy.hp <= 0"
       @click="emit('selectEnemy', primaryEnemy.actorId)"
     >
       <span class="battle-arena__enemy-art">

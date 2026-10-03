@@ -137,7 +137,7 @@ describe('WorldView', () => {
     await flushPromises()
 
     expect(wrapper.get('[data-explore]').attributes('disabled')).toBeDefined()
-    expect(wrapper.get('[role="alert"]').text()).toContain('В этой области сейчас не удалось найти противника.')
+    expect(wrapper.get('[data-world-error][role="alert"]').text()).toContain('В этой области сейчас не удалось найти противника.')
   })
 
   it('surfaces available story from the current location instead of the journal', async () => {

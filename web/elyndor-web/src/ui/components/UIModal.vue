@@ -1,30 +1,31 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, useId } from 'vue'
+import { useId, useTemplateRef } from 'vue'
+import { useModalLayer } from '@/ui/composables/useModalLayer'
 
-const props = defineProps<{ open: boolean; title: string }>()
+const props = defineProps<{ open: boolean; title: string; busy?: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 const titleId = useId()
 
-function onKeydown(event: KeyboardEvent) {
-  if (props.open && event.key === 'Escape') emit('close')
+const dialog = useTemplateRef<HTMLElement>('dialog')
+function close() {
+  if (!props.busy) emit('close')
 }
-
-onMounted(() => document.addEventListener('keydown', onKeydown))
-onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
+const { layerIndex } = useModalLayer({ open: () => props.open, root: dialog, close })
 </script>
 
 <template>
   <Teleport to="body">
-    <div v-if="open" class="ui-modal" @click.self="$emit('close')">
-      <section class="ui-modal__dialog" role="dialog" aria-modal="true" :aria-labelledby="titleId">
+    <div v-if="open" class="ui-modal" :style="{ zIndex: `calc(var(--ui-z-modal) + ${layerIndex})` }" @click.self="close">
+      <section ref="dialog" class="ui-modal__dialog" role="dialog" aria-modal="true" :aria-labelledby="titleId" :aria-busy="busy || undefined" tabindex="-1">
         <header class="ui-modal__header">
           <h2 :id="titleId">{{ title }}</h2>
           <button
             data-modal-close
             class="ui-modal__close"
             type="button"
-            aria-label="Close"
-            @click="$emit('close')"
+            aria-label="Закрыть"
+            :disabled="busy"
+            @click="close"
           >
             ×
           </button>
@@ -49,9 +50,10 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 }
 .ui-modal__dialog {
   width: min(100%, var(--ui-content-width));
-  max-height: calc(var(--ui-viewport-height) - var(--ui-space-7));
+  max-height: calc(var(--ui-viewport-height) - var(--ui-safe-area-top) - var(--ui-safe-area-bottom) - var(--ui-space-7));
   margin-inline: auto;
   overflow: auto;
+  overscroll-behavior: contain;
   border: 1px solid rgb(205 177 113 / 42%);
   border-radius: var(--ui-radius-lg);
   background:
@@ -59,13 +61,16 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
   box-shadow: var(--ui-shadow-modal);
 }
 .ui-modal__header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--ui-space-3);
   padding: var(--ui-space-4);
   border-bottom: 1px solid rgb(205 177 113 / 24%);
-  background: linear-gradient(90deg, rgb(205 177 113 / 8%), transparent 60%);
+  background: var(--ui-color-surface-1);
 }
 .ui-modal__header h2 {
   margin: 0;
@@ -88,12 +93,18 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
   color: var(--ui-color-text-secondary);
 }
 .ui-modal__actions {
+  position: sticky;
+  bottom: 0;
+  flex-wrap: wrap;
+  background: var(--ui-color-surface-1);
   display: flex;
   justify-content: flex-end;
   gap: var(--ui-space-2);
   padding: var(--ui-space-4);
   border-top: 1px solid var(--ui-color-border);
 }
+.ui-modal__close:focus-visible { outline: 2px solid var(--ui-color-focus); outline-offset: 2px; }
+.ui-modal__close:disabled { opacity: .5; }
 @media (min-width: 540px) {
   .ui-modal {
     align-items: center;
