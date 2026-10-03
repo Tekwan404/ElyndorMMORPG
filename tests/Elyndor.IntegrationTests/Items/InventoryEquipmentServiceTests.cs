@@ -88,6 +88,89 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
     }
 
     [Fact]
+    public async Task DiscardItemsRemovesSelectedQuantitiesOnceAndIsReplaySafe()
+    {
+        (Guid accountId, Guid characterId) =
+            await CreateCharacterAsync(currentHp: 100);
+        Guid hides = await AddItemAsync(characterId, "WOLF_HIDE", 5);
+        Guid potions = await AddItemAsync(characterId, "SMALL_HEALING_POTION", 3);
+        Guid mutationId = Guid.CreateVersion7();
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+        InventoryDiscardSelection[] selection =
+        [
+            new(hides, 2),
+            new(potions, 1)
+        ];
+
+        InventoryOperationResult first = await service.DiscardItemsAsync(
+            accountId,
+            selection,
+            mutationId,
+            CancellationToken.None);
+        InventoryOperationResult replay = await service.DiscardItemsAsync(
+            accountId,
+            selection,
+            mutationId,
+            CancellationToken.None);
+        InventoryOperationResult mismatch = await service.DiscardItemsAsync(
+            accountId,
+            [new InventoryDiscardSelection(hides, 1)],
+            mutationId,
+            CancellationToken.None);
+
+        Assert.True(first.IsSuccess);
+        Assert.True(replay.IsSuccess);
+        Assert.False(mismatch.IsSuccess);
+        Assert.Equal(InventoryErrorCodes.MutationConflict, mismatch.ErrorCode);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(3, await verify.CharacterItems
+            .Where(item => item.Id == hides)
+            .Select(item => item.Quantity)
+            .SingleAsync());
+        Assert.Equal(2, await verify.CharacterItems
+            .Where(item => item.Id == potions)
+            .Select(item => item.Quantity)
+            .SingleAsync());
+        Assert.Equal(1, await verify.CharacterMutations.CountAsync(
+            mutation => mutation.CharacterId == characterId));
+    }
+
+    [Fact]
+    public async Task DiscardItemsRejectsProtectedItemWithoutChangingStack()
+    {
+        (Guid accountId, Guid characterId) =
+            await CreateCharacterAsync(currentHp: 100);
+        Guid itemId = await AddItemAsync(characterId, "WOLF_HIDE", 4);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+        InventoryOperationResult locked = await service.SetItemLockAsync(
+            accountId,
+            itemId,
+            true,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+        InventoryOperationResult discarded = await service.DiscardItemsAsync(
+            accountId,
+            [new InventoryDiscardSelection(itemId, 2)],
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(locked.IsSuccess);
+        Assert.False(discarded.IsSuccess);
+        Assert.Equal(InventoryErrorCodes.ItemLocked, discarded.ErrorCode);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(4, await verify.CharacterItems
+            .Where(item => item.Id == itemId)
+            .Select(item => item.Quantity)
+            .SingleAsync());
+    }
+
+    [Fact]
     public async Task SameConsumableMutationIsAppliedOnlyOnce()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(currentHp: 25);
