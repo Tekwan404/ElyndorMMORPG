@@ -3453,16 +3453,14 @@
       "itemDefinitionId": "REFORGE_STONE",
       "quantity": 10,
       "crystalPrice": 25,
-      "enabled": true,
-      "perAccountLimit": 20
+      "enabled": true
     },
     {
       "sku": "FORGE_SCRAP_SMALL",
       "itemDefinitionId": "FORGE_SCRAP",
       "quantity": 20,
       "crystalPrice": 20,
-      "enabled": true,
-      "perAccountLimit": 20
+      "enabled": true
     }
   ],
   "inventoryProfile": {
