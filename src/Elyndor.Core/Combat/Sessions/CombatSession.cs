@@ -23,6 +23,7 @@ public sealed partial class CombatSession
     private readonly Dictionary<Guid, CombatPlayerRuntimeState> _playerStatesByActorId;
     private CombatPlayerRuntimeState _activePlayerState = null!;
     private readonly CombatParticipantDefinition? _companion;
+    private readonly Guid _companionOwnerActorId;
     private readonly List<CombatParticipantDefinition> _enemies;
     private readonly Dictionary<Guid, CombatParticipantDefinition> _enemiesById;
     private readonly CombatRuntimeState? _companionRuntime;
@@ -50,7 +51,7 @@ public sealed partial class CombatSession
     private readonly HashSet<string> _processedCommandIds = new(StringComparer.Ordinal);
     private readonly HashSet<Guid> _deadActors = [];
     private readonly List<CombatEvent> _events = [];
-    private readonly Dictionary<Guid, Dictionary<string, int>> _abilityUsesByActorId = [];
+    private readonly Dictionary<Guid, CombatSessionStatisticsState> _statisticsByActorId = [];
     private readonly CombatParticipantRoster _participantRoster;
     private readonly ContributionLedger _contributionLedger;
     private readonly Dictionary<string, DateTimeOffset> _talentInternalCooldowns = new(StringComparer.Ordinal);
@@ -250,6 +251,7 @@ public sealed partial class CombatSession
         ContentVersion = contentVersion;
         BalanceVersion = balanceVersion;
         _companion = companion;
+        _companionOwnerActorId = player.Actor.ActorId;
         _enemies = enemies.ToList();
         _enemiesById = _enemies.ToDictionary(enemy => enemy.Actor.ActorId);
         _primaryEnemyActorId = _enemies[0].Actor.ActorId;
@@ -270,7 +272,11 @@ public sealed partial class CombatSession
                         .Concat(enemies.Select(item => item.Actor))));
             state.InitializeTalentRuntime(_random);
             state.SelectedTargetActorId = _primaryEnemyActorId;
-            _playerStatesByActorId.Add(playerDefinition.Participant.Actor.ActorId, state);
+            Guid actorId = playerDefinition.Participant.Actor.ActorId;
+            _playerStatesByActorId.Add(actorId, state);
+            _statisticsByActorId.Add(
+                actorId,
+                new CombatSessionStatisticsState(startedAtUtc));
         }
         _activePlayerState = _playerStatesByActorId[player.Actor.ActorId];
         InitializeSetPassiveLoadoutSnapshot();
@@ -2555,40 +2561,283 @@ public sealed partial class CombatSession
 
     private void RecordSessionStatistics(CombatEvent combatEvent)
     {
-        if (combatEvent.Type != CombatEventType.AbilityUsed
-            || string.IsNullOrWhiteSpace(combatEvent.DefinitionId))
-        {
-            return;
-        }
-
         Guid sourceActorId = combatEvent.SourceActorId ?? combatEvent.ActorId;
-        if (!_playerStatesByActorId.ContainsKey(sourceActorId))
-            return;
+        Guid targetActorId = combatEvent.TargetActorId ?? combatEvent.ActorId;
+        bool sourceIsPlayer = _statisticsByActorId.TryGetValue(
+            sourceActorId,
+            out CombatSessionStatisticsState? directSourceStatistics);
+        bool sourceIsCompanion = _companion is not null
+            && sourceActorId == _companion.Actor.ActorId
+            && _statisticsByActorId.TryGetValue(
+                _companionOwnerActorId,
+                out CombatSessionStatisticsState? companionOwnerStatistics);
+        CombatSessionStatisticsState? sourceStatistics = sourceIsPlayer
+            ? directSourceStatistics
+            : sourceIsCompanion
+                ? companionOwnerStatistics
+                : null;
+        bool targetsEnemy = _enemiesById.ContainsKey(targetActorId);
 
-        if (!_abilityUsesByActorId.TryGetValue(
-                sourceActorId,
-                out Dictionary<string, int>? abilityUses))
+        if (sourceStatistics is not null)
         {
-            abilityUses = new Dictionary<string, int>(StringComparer.Ordinal);
-            _abilityUsesByActorId[sourceActorId] = abilityUses;
+            switch (combatEvent.Type)
+            {
+                case CombatEventType.AbilityUsed
+                    when sourceIsPlayer
+                         && !string.IsNullOrWhiteSpace(combatEvent.DefinitionId):
+                    sourceStatistics.GetAbility(combatEvent.DefinitionId).Uses++;
+                    break;
+
+                case CombatEventType.EffectApplied
+                    when sourceIsPlayer
+                         && targetsEnemy
+                         && !string.IsNullOrWhiteSpace(combatEvent.DefinitionId):
+                    sourceStatistics.GetAbility(combatEvent.DefinitionId).Applications++;
+                    break;
+
+                case CombatEventType.EffectTicked
+                    when sourceIsPlayer
+                         && targetsEnemy
+                         && combatEvent.IsPeriodic
+                         && !string.IsNullOrWhiteSpace(combatEvent.DefinitionId):
+                    sourceStatistics.GetAbility(combatEvent.DefinitionId).PeriodicTicks++;
+                    break;
+
+                case CombatEventType.DamageDealt when targetsEnemy:
+                {
+                    decimal amount = Math.Max(0, combatEvent.Amount);
+                    sourceStatistics.DamageDealt += amount;
+                    sourceStatistics.DamageSources.Add(
+                        combatEvent,
+                        amount,
+                        sourceIsCompanion);
+
+                    if (sourceIsPlayer
+                        && !string.IsNullOrWhiteSpace(combatEvent.DefinitionId)
+                        && !string.Equals(
+                            combatEvent.DefinitionId,
+                            "AUTO_ATTACK",
+                            StringComparison.Ordinal))
+                    {
+                        MutableCombatAbilityStatistics ability =
+                            sourceStatistics.GetAbility(combatEvent.DefinitionId);
+                        ability.Hits++;
+                        ability.Damage += amount;
+                        ability.MaxHit = Math.Max(ability.MaxHit, amount);
+                        if (combatEvent.IsCritical)
+                            ability.CriticalHits++;
+                    }
+
+                    if (sourceIsPlayer && combatEvent.IsCritical)
+                        sourceStatistics.CriticalHits++;
+                    break;
+                }
+
+                case CombatEventType.HealingApplied:
+                    sourceStatistics.HealingDone += Math.Max(0, combatEvent.Amount);
+                    break;
+            }
         }
 
-        abilityUses.TryGetValue(combatEvent.DefinitionId, out int current);
-        abilityUses[combatEvent.DefinitionId] = current + 1;
+        if (_statisticsByActorId.TryGetValue(
+                targetActorId,
+                out CombatSessionStatisticsState? targetStatistics))
+        {
+            switch (combatEvent.Type)
+            {
+                case CombatEventType.DamageDealt:
+                    targetStatistics.DamageTaken += Math.Max(0, combatEvent.Amount);
+                    if (combatEvent.RawDamage > 0
+                        && combatEvent.DamageAfterMitigation >= 0)
+                    {
+                        targetStatistics.ArmorMitigated += Math.Max(
+                            0,
+                            combatEvent.RawDamage - combatEvent.DamageAfterMitigation);
+                    }
+                    break;
+
+                case CombatEventType.DamageBlocked:
+                    targetStatistics.Blocked += Math.Max(0, combatEvent.Amount);
+                    break;
+
+                case CombatEventType.ShieldAbsorbed:
+                    targetStatistics.ShieldAbsorbed += Math.Max(0, combatEvent.Amount);
+                    break;
+
+                case CombatEventType.Dodge:
+                    targetStatistics.Dodges++;
+                    break;
+            }
+        }
+
+        if (combatEvent.Type == CombatEventType.ResourceChanged
+            && _statisticsByActorId.TryGetValue(
+                combatEvent.ActorId,
+                out CombatSessionStatisticsState? resourceStatistics))
+        {
+            if (combatEvent.Amount > 0)
+                resourceStatistics.ResourceGained += combatEvent.Amount;
+            else if (combatEvent.Amount < 0)
+                resourceStatistics.ResourceSpent += -combatEvent.Amount;
+        }
+
+        if (combatEvent.Type == CombatEventType.ActorDied
+            && _statisticsByActorId.TryGetValue(
+                combatEvent.ActorId,
+                out CombatSessionStatisticsState? deathStatistics))
+        {
+            deathStatistics.Deaths++;
+        }
     }
 
     private CombatSessionStatisticsSnapshot BuildStatisticsSnapshot(Guid playerActorId)
     {
-        if (!_abilityUsesByActorId.TryGetValue(
+        if (!_statisticsByActorId.TryGetValue(
                 playerActorId,
-                out Dictionary<string, int>? abilityUses))
+                out CombatSessionStatisticsState? statistics))
         {
             return new CombatSessionStatisticsSnapshot(
-                new Dictionary<string, int>(StringComparer.Ordinal));
+                new Dictionary<string, int>(StringComparer.Ordinal),
+                StartedAtUtc: _combatStartedAtUtc);
         }
 
-        return new CombatSessionStatisticsSnapshot(
-            new Dictionary<string, int>(abilityUses, StringComparer.Ordinal));
+        return statistics.ToSnapshot();
+    }
+
+    private sealed class CombatSessionStatisticsState(DateTimeOffset startedAtUtc)
+    {
+        private readonly Dictionary<string, MutableCombatAbilityStatistics> _abilities =
+            new(StringComparer.Ordinal);
+
+        public DateTimeOffset StartedAtUtc { get; } = startedAtUtc;
+        public decimal DamageDealt { get; set; }
+        public decimal DamageTaken { get; set; }
+        public decimal HealingDone { get; set; }
+        public decimal ArmorMitigated { get; set; }
+        public decimal Blocked { get; set; }
+        public decimal ShieldAbsorbed { get; set; }
+        public decimal ResourceGained { get; set; }
+        public decimal ResourceSpent { get; set; }
+        public int CriticalHits { get; set; }
+        public int Dodges { get; set; }
+        public int Deaths { get; set; }
+        public MutableDamageSourceStatistics DamageSources { get; } = new();
+
+        public MutableCombatAbilityStatistics GetAbility(string abilityId)
+        {
+            if (!_abilities.TryGetValue(
+                    abilityId,
+                    out MutableCombatAbilityStatistics? ability))
+            {
+                ability = new MutableCombatAbilityStatistics(abilityId);
+                _abilities.Add(abilityId, ability);
+            }
+
+            return ability;
+        }
+
+        public CombatSessionStatisticsSnapshot ToSnapshot()
+        {
+            Dictionary<string, CombatAbilityStatisticsSnapshot> abilities =
+                _abilities.ToDictionary(
+                    pair => pair.Key,
+                    pair => pair.Value.ToSnapshot(),
+                    StringComparer.Ordinal);
+            Dictionary<string, int> abilityUses = abilities
+                .Where(pair => pair.Value.Uses > 0)
+                .ToDictionary(
+                    pair => pair.Key,
+                    pair => pair.Value.Uses,
+                    StringComparer.Ordinal);
+
+            return new CombatSessionStatisticsSnapshot(
+                abilityUses,
+                StartedAtUtc,
+                DamageDealt,
+                DamageTaken,
+                HealingDone,
+                ArmorMitigated,
+                Blocked,
+                ShieldAbsorbed,
+                ResourceGained,
+                ResourceSpent,
+                CriticalHits,
+                Dodges,
+                Deaths,
+                abilities,
+                DamageSources.ToSnapshot());
+        }
+    }
+
+    private sealed class MutableCombatAbilityStatistics(string id)
+    {
+        public string Id { get; } = id;
+        public int Uses { get; set; }
+        public int Applications { get; set; }
+        public int Hits { get; set; }
+        public int CriticalHits { get; set; }
+        public int PeriodicTicks { get; set; }
+        public decimal Damage { get; set; }
+        public decimal MaxHit { get; set; }
+
+        public CombatAbilityStatisticsSnapshot ToSnapshot() =>
+            new(
+                Id,
+                Uses,
+                Applications,
+                Hits,
+                CriticalHits,
+                PeriodicTicks,
+                Damage,
+                MaxHit);
+    }
+
+    private sealed class MutableDamageSourceStatistics
+    {
+        public decimal AutoAttack { get; private set; }
+        public decimal DirectOrProc { get; private set; }
+        public decimal Periodic { get; private set; }
+        public decimal Reflected { get; private set; }
+        public decimal Companion { get; private set; }
+        public decimal Other { get; private set; }
+
+        public void Add(
+            CombatEvent combatEvent,
+            decimal amount,
+            bool isCompanion)
+        {
+            if (amount <= 0)
+                return;
+
+            if (isCompanion)
+            {
+                Companion += amount;
+                return;
+            }
+
+            if (combatEvent.IsReflected)
+                Reflected += amount;
+            else if (combatEvent.IsPeriodic)
+                Periodic += amount;
+            else if (string.Equals(
+                         combatEvent.DefinitionId,
+                         "AUTO_ATTACK",
+                         StringComparison.Ordinal))
+                AutoAttack += amount;
+            else if (!string.IsNullOrWhiteSpace(combatEvent.DefinitionId))
+                DirectOrProc += amount;
+            else
+                Other += amount;
+        }
+
+        public CombatDamageSourceStatisticsSnapshot ToSnapshot() =>
+            new(
+                AutoAttack,
+                DirectOrProc,
+                Periodic,
+                Reflected,
+                Companion,
+                Other);
     }
 
     private CombatCommandResult Result(
