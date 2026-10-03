@@ -102,8 +102,14 @@ const capacityWarning = computed(() => isOverflow.value || (freeSlots.value !== 
 const selectedItems = computed(() =>
   bagItems.value.filter(item => selectedItemIds.value.has(item.id)),
 )
+const selectedSellableItems = computed(() =>
+  selectedItems.value.filter(item => item.sellPriceGold > 0 && !item.isLocked),
+)
+const selectedUnsellableCount = computed(() =>
+  selectedItems.value.length - selectedSellableItems.value.length,
+)
 const selectedSellValue = computed(() =>
-  selectedItems.value.reduce(
+  selectedSellableItems.value.reduce(
     (sum, item) => sum + item.sellPriceGold * selectedQuantity(item),
     0,
   ),
@@ -424,7 +430,7 @@ async function sellSelectedItems(): Promise<void> {
     return
   }
 
-  const items = [...selectedItems.value].filter(item => item.sellPriceGold > 0 && !item.isLocked)
+  const items = [...selectedSellableItems.value]
   if (!items.length || bulkActionPending.value) return
   const valuable = items.some(isValuableInventoryItem)
   const message = valuable
@@ -435,6 +441,8 @@ async function sellSelectedItems(): Promise<void> {
   bulkActionPending.value = true
   bulkActionError.value = null
   try {
+    const remainingIds = new Set(selectedItemIds.value)
+    let failed = false
     for (const item of items) {
       const updated = await session.sellMerchantItem(
         MARCUS_MERCHANT_ID,
@@ -442,12 +450,21 @@ async function sellSelectedItems(): Promise<void> {
         selectedQuantity(item),
       )
       if (!updated) {
+        failed = true
         bulkActionError.value = 'Не удалось продать все выбранные предметы. Уже проданные позиции сохранены.'
         break
       }
+      remainingIds.delete(item.id)
     }
-    selectedItemIds.value = new Set()
-    selectedQuantities.value = {}
+
+    selectedItemIds.value = remainingIds
+    selectedQuantities.value = Object.fromEntries(
+      Object.entries(selectedQuantities.value)
+        .filter(([itemId]) => remainingIds.has(itemId)),
+    )
+    if (!failed && remainingIds.size > 0) {
+      bulkActionError.value = `${remainingIds.size} выбранных поз. нельзя продать — они оставлены выбранными.`
+    }
   } finally {
     bulkActionPending.value = false
   }
@@ -882,7 +899,9 @@ async function toggleSelectedLock(): Promise<void> {
       <section v-if="selectionMode" class="inventory-bulk-bar" data-inventory-bulk-bar>
         <div>
           <strong>Выбрано: {{ selectedItems.length }}</strong>
-          <small v-if="canSellHere && selectedItems.length">Продажа: {{ formatMoney(selectedSellValue) }}</small>
+          <small v-if="canSellHere && selectedItems.length">
+            Можно продать: {{ selectedSellableItems.length }} из {{ selectedItems.length }} · {{ formatMoney(selectedSellValue) }}
+          </small>
           <small v-else-if="!canSellHere">Продажа доступна у Маркуса в Стартовом городе</small>
         </div>
         <div class="inventory-bulk-bar__actions">
@@ -891,7 +910,7 @@ async function toggleSelectedLock(): Promise<void> {
           </button>
           <UIButton
             variant="secondary"
-            :disabled="bulkActionPending || !selectedItems.length || !canSellHere || !selectedItems.some(item => item.sellPriceGold > 0)"
+            :disabled="bulkActionPending || !selectedSellableItems.length || !canSellHere"
             @click="sellSelectedItems"
           >
             Продать
