@@ -1,7 +1,8 @@
 # Elyndor — MASTER Project Index
 
-**Package:** MASTER Source of Truth v7.1
-**Purpose:** точка входа в полный проектный пакет.
+**Purpose:** индекс игровых и UI design contracts. Исторические phase/status
+таблицы ниже не являются текущим списком реализованных функций; сверяйтесь с
+production-кодом, composed content и тестами. Текущая навигация — `docs/README.md`.
 
 ---
 
@@ -9,7 +10,7 @@
 
 ```text
 README.md
-→ docs/source-of-truth/00_README_SOURCE_OF_TRUTH.md
+→ docs/source-of-truth/README.md
 → docs/source-of-truth/00_MASTER_PROJECT_INDEX.md
 → нужная system specification
 → нужная UI specification

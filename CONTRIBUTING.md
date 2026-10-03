@@ -57,6 +57,8 @@ Elyndor развивается небольшими, проверяемыми в
 Полный локальный набор:
 
 ```powershell
+node --test tools/repository/check-layout.test.mjs
+node tools/repository/check-layout.mjs
 dotnet build Elyndor.slnx --configuration Release
 dotnet test Elyndor.slnx --configuration Release
 dotnet run --project tools/Elyndor.ContentValidator -- content/package.json

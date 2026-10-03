@@ -71,6 +71,17 @@ jobs:
       - name: Restore backend
         run: dotnet restore Elyndor.slnx
 
+      - name: Check repository layout
+        run: |
+          node --test tools/repository/check-layout.test.mjs
+          node tools/repository/check-layout.mjs
+
+      - name: Test offline asset tools
+        run: |
+          python3 -m venv .artifacts/asset-tool-venv
+          .artifacts/asset-tool-venv/bin/python -m pip install -r tools/assets/requirements.txt
+          .artifacts/asset-tool-venv/bin/python -m unittest discover -s tools/assets -p 'test_*.py'
+
       - name: Build backend
         run: dotnet build Elyndor.slnx --configuration Release --no-restore
 
