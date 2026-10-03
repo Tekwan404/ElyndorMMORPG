@@ -172,8 +172,9 @@ public sealed class WorldBossSettlementService(
                     character => character.AccountId,
                     cancellationToken);
         WorldBossContribution[] eligible = contributions
-            .Where(contribution => contribution.Damage >= rewardProfile.MinimumContribution)
-            .OrderByDescending(contribution => contribution.Damage)
+            .Where(contribution =>
+                contribution.ContributionScore >= rewardProfile.MinimumContribution)
+            .OrderByDescending(contribution => contribution.ContributionScore)
             .ThenBy(contribution => contribution.CharacterId)
             .ToArray();
 
@@ -204,7 +205,7 @@ public sealed class WorldBossSettlementService(
 
             WorldBossLeaderboardRewardResolution leaderboardReward =
                 ResolveLeaderboardReward(
-                    contribution.Damage,
+                    contribution.ContributionScore,
                     eligibleIndex + 1,
                     eligible.Length,
                     rewardProfile);
@@ -316,7 +317,7 @@ public sealed class WorldBossSettlementService(
             var settlement = new WorldBossRewardSettlement(
                 spawnId,
                 character.Id,
-                contribution.Damage,
+                contribution.ContributionScore,
                 tier,
                 totalGold,
                 rewardProfile.BossExperience,
@@ -328,7 +329,7 @@ public sealed class WorldBossSettlementService(
 
             rewards.Add(new(
                 character.Id,
-                contribution.Damage,
+                contribution.ContributionScore,
                 tier,
                 leaderboardReward.Rank,
                 leaderboardReward.EligibleParticipants,
@@ -365,7 +366,7 @@ public sealed class WorldBossSettlementService(
                         ",",
                         reward.Items.Select(item => item.ItemId));
                 string details =
-                    $"damage={reward.Contribution:0.##} "
+                    $"score={reward.Contribution:0.##} "
                     + $"xp={reward.Experience} "
                     + $"gold={reward.BossGold + reward.ChestGold} "
                     + $"chests={reward.ChestCount} "
