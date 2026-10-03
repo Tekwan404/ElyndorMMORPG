@@ -211,47 +211,33 @@ public sealed class WorldBossSettlementService(
                     rewardProfile);
             WorldBossRewardTier tier = leaderboardReward.Tier;
             Guid lootSeed = CreateLootSeed(spawnId, character.Id);
-            var random = new SeededGameRandom(SeedToInt32(lootSeed));
 
             int totalChestCount = checked(
                 leaderboardReward.ChestCount + leaderboardReward.EnhancedChestCount);
             int chestGold = 0;
-            List<LootRoll> chestLoot = [];
-            LootTableDefinition rewardChestTable = chestTable;
-            if (totalChestCount > 0
-                && !string.IsNullOrWhiteSpace(leaderboardReward.LootTableId))
+            LootRoll[] chestLoot = [];
+            if (totalChestCount > 0)
             {
-                if (!content.Indexes.LootTablesById.TryGetValue(
-                        leaderboardReward.LootTableId,
-                        out LootTableDefinition? configuredChestTable)
-                    || configuredChestTable is null)
+                if (string.IsNullOrWhiteSpace(leaderboardReward.ChestItemId)
+                    || !content.Indexes.ItemsById.TryGetValue(
+                        leaderboardReward.ChestItemId,
+                        out ItemDefinition? chestDefinition)
+                    || chestDefinition.Type != ItemType.LootContainer)
                 {
                     throw new InvalidOperationException(
-                        $"World boss reward chest '{leaderboardReward.LootTableId}' is missing from content.");
+                        $"World boss reward tier '{leaderboardReward.Tier}' is missing a valid loot-container item.");
                 }
 
-                rewardChestTable = configuredChestTable;
+                chestLoot =
+                [
+                    new LootRoll(
+                        chestDefinition.Id,
+                        totalChestCount,
+                        SourceQualityProfileId: "NORMAL")
+                ];
             }
 
-            for (var chestIndex = 0; chestIndex < totalChestCount; chestIndex++)
-            {
-                chestGold = checked(chestGold + RollInclusive(
-                    rewardProfile.ChestGoldMin,
-                    rewardProfile.ChestGoldMax,
-                    random));
-                LootRoll[] chestRolls = LootRoller.Roll(rewardChestTable, random)
-                    .Select(roll => roll with { SourceQualityProfileId = "BOSS" })
-                    .ToArray();
-                if (chestRolls.Length == 0)
-                {
-                    throw new InvalidOperationException(
-                        $"World boss chest '{rewardChestTable.Id}' did not produce an item.");
-                }
-
-                chestLoot.AddRange(chestRolls);
-            }
-
-            int totalGold = checked(rewardProfile.BossGold + chestGold);
+            int totalGold = rewardProfile.BossGold;
 
             CharacterProgressionResult progression =
                 CharacterProgression.GrantExperience(
@@ -394,7 +380,7 @@ public sealed class WorldBossSettlementService(
                 .Select(contribution => new WorldBossRewardDelivery(
                     accountByCharacterId[contribution.CharacterId],
                     contribution.CharacterId,
-                    contribution.Damage,
+                    contribution.ContributionScore,
                     rewardByCharacterId.GetValueOrDefault(contribution.CharacterId)))
                 .ToArray();
 
