@@ -55,6 +55,9 @@ public sealed partial class CombatSession
             [CombatReaction.ArcherCompanionDamage] = ApplyArcherCompanionDamageHooks,
             [CombatReaction.ArcherHealing] = ApplyArcherHealingHooks,
         },
+        new CombatAbilityReactionHandlers(
+            OnPyromancerAbilityStarted, OnMageAbilityStarted, OnArcherAbilityStarted,
+            OnPlayerAbilitySucceeded, OnPyromancerAbilityResolved, OnMageAbilityResolved, OnArcherAbilityResolved),
         RunProcHooks,
         CaptureProcOrigin);
 

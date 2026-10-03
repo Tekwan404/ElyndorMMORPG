@@ -1,3 +1,4 @@
+using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Combat;
@@ -6,6 +7,7 @@ namespace Elyndor.Core.Combat;
 internal sealed class CombatEventRouter(
     Func<CombatReactionContext> context,
     IReadOnlyDictionary<CombatReaction, Action<CombatEvent>> handlers,
+    CombatAbilityReactionHandlers abilityHandlers,
     Action<CombatEvent, string, Action> runProcHooks,
     Func<CombatEvent, CombatEvent> captureProcOrigin)
 {
@@ -13,6 +15,21 @@ internal sealed class CombatEventRouter(
     private readonly IReadOnlyDictionary<CombatReaction, Action<CombatEvent>> _handlers = handlers;
     private readonly Action<CombatEvent, string, Action> _runProcHooks = runProcHooks;
     private readonly Func<CombatEvent, CombatEvent> _captureProcOrigin = captureProcOrigin;
+
+    public void DispatchAbilityStarted(AbilityDefinition ability, DateTimeOffset now)
+    {
+        abilityHandlers.PyromancerStarted(ability, now);
+        abilityHandlers.MageStarted(ability, now);
+        abilityHandlers.ArcherStarted(ability, now);
+    }
+
+    public void DispatchAbilityResolved(AbilityDefinition ability, AbilityExecutionResult execution, DateTimeOffset now)
+    {
+        abilityHandlers.WarriorResolved(ability, execution, now);
+        abilityHandlers.PyromancerResolved(ability, execution, now);
+        abilityHandlers.MageResolved(ability, execution, now);
+        abilityHandlers.ArcherResolved(ability, execution, now);
+    }
 
     public CombatEvent[] Normalize(
         IEnumerable<CombatEvent> events, Guid sourceActorId, Guid targetActorId,

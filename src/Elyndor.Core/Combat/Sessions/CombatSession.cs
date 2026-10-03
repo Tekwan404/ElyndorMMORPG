@@ -959,27 +959,10 @@ public sealed partial class CombatSession
             _player.Actor.ActorId,
             primaryTargetActorId,
             command.AbilityId);
-        OnPyromancerAbilityStarted(ability, now);
-        OnMageAbilityStarted(ability, now);
-        OnArcherAbilityStarted(ability, now);
+        EventRouter.DispatchAbilityStarted(ability, now);
         if (ability.Type != AbilityType.Casted)
         {
-            OnPlayerAbilitySucceeded(
-                ability,
-                execution,
-                now);
-            OnPyromancerAbilityResolved(
-                ability,
-                execution,
-                now);
-            OnMageAbilityResolved(
-                ability,
-                execution,
-                now);
-            OnArcherAbilityResolved(
-                ability,
-                execution,
-                now);
+            EventRouter.DispatchAbilityResolved(ability, execution, now);
         }
         Append(new CombatEvent(
             CombatEventType.AbilityUsed,
@@ -1883,22 +1866,7 @@ public sealed partial class CombatSession
             cast.Ability.Id);
         if (runtime == _playerRuntime)
         {
-            OnPlayerAbilitySucceeded(
-                cast.Ability,
-                completion,
-                now);
-            OnPyromancerAbilityResolved(
-                cast.Ability,
-                completion,
-                now);
-            OnMageAbilityResolved(
-                cast.Ability,
-                completion,
-                now);
-            OnArcherAbilityResolved(
-                cast.Ability,
-                completion,
-                now);
+            EventRouter.DispatchAbilityResolved(cast.Ability, completion, now);
         }
     }
 

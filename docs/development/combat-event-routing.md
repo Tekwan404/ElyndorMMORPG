@@ -99,9 +99,42 @@ Local verification on the extracted production path:
 Authoritative state mutation orchestration, publication/sequencing/statistics,
 single-writer lifecycle, active participant selection, encounter callbacks,
 reflection execution, threat implementation, death dedup/outcome/kill credit,
-ability execution and started/resolved callbacks, cooldown/resource timing, and
+ability execution and implementations of started/resolved callbacks, cooldown/resource timing, and
 all existing class mechanics remain in the session and its partial files.
 
-Next safe extraction: routing of ability-started/resolved notifications to existing
-class adapters, with separate characterization of post-execution callbacks. Do not
-combine it with damage/healing/effect formula extraction or scheduler changes.
+## Ability notification routing follow-up
+
+Ability execution remains in the session/AbilityEngine. CombatEventRouter now also
+routes started/resolved notifications through CombatAbilityReactionHandlers, bound
+to the unchanged class methods. PvE and hosted Arena share this registration; the
+Arena fallback without a mechanics host is unchanged.
+
+The authoritative ordering is intentionally preserved:
+
+- Successful Execute: ApplyKernelEvents, then started (Pyromancer, Mage, Archer).
+- Non-casted Execute: resolved (Warrior, Pyromancer, Mage, Archer) after started.
+- Successful player CompleteCast: ApplyKernelEvents, then the same resolved order.
+- Failed Execute and interrupted casts do not dispatch resolved callbacks.
+- PvE AbilityUsed publication and Arena interrupt handling keep their old positions.
+
+Started reactions consume primary buffs and must not be wrapped in a proc-origin
+scope. Resolved reactions retain their existing per-mechanic RunResolvedProcHooks
+scopes. Neither execution events nor actor mutations are replayed by the router.
+
+16 additional real-session characterization cases passed before production edits,
+then again after extraction in both PvE and hosted Arena. They cover instant/casted
+fire-buff consumption and Clearcasting Afterglow, generic completion before class
+resolved reactions, timestamps, duplicate commands, next-attack arming and cooldown,
+Archer Exposed Defense consumption/refresh, insufficient resources, and interrupted
+casts. The focused combat/PvP/talent suite now passes 757 cases.
+
+The follow-up full Release solution test run passed 1022 unit and 485 integration
+tests, with zero failures/skips (Testcontainers PostgreSQL 18.4).
+The full Release solution build also passed with zero warnings/errors, and
+git diff --check was clean. No frontend or database schema changes were made.
+
+Only callback implementations and execution timing remain in CombatSession; the
+class notification graph is no longer duplicated in UseAbility, CompleteReadyCast,
+and PlayerMechanics. A next extraction should first characterize ability modifier
+composition before separating its routing; do not combine it with formulas or time
+advancement.

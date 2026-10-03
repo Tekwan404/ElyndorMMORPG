@@ -143,18 +143,13 @@ public sealed partial class CombatSession
 
     internal void MechanicsAbilityStarted(AbilityDefinition ability, DateTimeOffset now)
     {
-        OnPyromancerAbilityStarted(ability, now);
-        OnMageAbilityStarted(ability, now);
-        OnArcherAbilityStarted(ability, now);
+        EventRouter.DispatchAbilityStarted(ability, now);
     }
 
     internal void MechanicsAbilityResolved(
         AbilityDefinition ability, AbilityExecutionResult execution, DateTimeOffset now)
     {
-        OnPlayerAbilitySucceeded(ability, execution, now);
-        OnPyromancerAbilityResolved(ability, execution, now);
-        OnMageAbilityResolved(ability, execution, now);
-        OnArcherAbilityResolved(ability, execution, now);
+        EventRouter.DispatchAbilityResolved(ability, execution, now);
     }
 
     internal void HandleMechanicsEvents(
