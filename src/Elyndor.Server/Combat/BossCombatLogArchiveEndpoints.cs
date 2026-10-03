@@ -782,7 +782,7 @@ internal static class BossCombatLogArchive
     private static void WriteKeyEvents(
         StringBuilder builder,
         CombatSessionSnapshot snapshot,
-        IReadOnlyList<CombatEvent> events,
+        CombatEvent[] events,
         IReadOnlyDictionary<Guid, string> actorNames)
     {
         CombatEvent[] keyEvents = events
