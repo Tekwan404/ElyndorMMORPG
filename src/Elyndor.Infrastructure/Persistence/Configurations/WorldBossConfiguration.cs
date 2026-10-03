@@ -45,11 +45,13 @@ public sealed class WorldBossContributionConfiguration : IEntityTypeConfiguratio
         builder.ToTable("world_boss_contributions", table =>
         {
             table.HasCheckConstraint("ck_world_boss_contributions_damage_non_negative", "\"Damage\" >= 0");
+            table.HasCheckConstraint("ck_world_boss_contributions_healing_non_negative", "\"Healing\" >= 0");
             table.HasCheckConstraint("ck_world_boss_contributions_activity_order", "\"LastActivityAtUtc\" >= \"FirstActivityAtUtc\"");
         });
 
         builder.HasKey(x => new { x.SpawnId, x.CharacterId }).HasName("pk_world_boss_contributions");
         builder.Property(x => x.Damage).HasPrecision(18, 3).IsRequired();
+        builder.Property(x => x.Healing).HasPrecision(18, 3).IsRequired();
 
         builder.HasOne<WorldBossSpawn>().WithMany().HasForeignKey(x => x.SpawnId)
             .OnDelete(DeleteBehavior.Cascade)
@@ -58,8 +60,8 @@ public sealed class WorldBossContributionConfiguration : IEntityTypeConfiguratio
             .OnDelete(DeleteBehavior.Cascade)
             .HasConstraintName("fk_world_boss_contributions_character");
 
-        builder.HasIndex(x => new { x.SpawnId, x.Damage })
-            .IsDescending(false, true)
+        builder.HasIndex(x => new { x.SpawnId, x.Damage, x.Healing })
+            .IsDescending(false, true, true)
             .HasDatabaseName("ix_world_boss_contributions_leaderboard");
         builder.HasIndex(x => new { x.CharacterId, x.LastActivityAtUtc })
             .HasDatabaseName("ix_world_boss_contributions_character_activity");
@@ -71,10 +73,14 @@ public sealed class WorldBossPartyContributionConfiguration : IEntityTypeConfigu
     public void Configure(EntityTypeBuilder<WorldBossPartyContribution> builder)
     {
         builder.ToTable("world_boss_party_contributions", table =>
-            table.HasCheckConstraint("ck_world_boss_party_contributions_damage_non_negative", "\"Damage\" >= 0"));
+        {
+            table.HasCheckConstraint("ck_world_boss_party_contributions_damage_non_negative", "\"Damage\" >= 0");
+            table.HasCheckConstraint("ck_world_boss_party_contributions_healing_non_negative", "\"Healing\" >= 0");
+        });
 
         builder.HasKey(x => new { x.SpawnId, x.PartyId }).HasName("pk_world_boss_party_contributions");
         builder.Property(x => x.Damage).HasPrecision(18, 3).IsRequired();
+        builder.Property(x => x.Healing).HasPrecision(18, 3).IsRequired();
 
         builder.HasOne<WorldBossSpawn>().WithMany().HasForeignKey(x => x.SpawnId)
             .OnDelete(DeleteBehavior.Cascade)
@@ -86,6 +92,32 @@ public sealed class WorldBossPartyContributionConfiguration : IEntityTypeConfigu
         builder.HasIndex(x => new { x.SpawnId, x.Damage })
             .IsDescending(false, true)
             .HasDatabaseName("ix_world_boss_party_contributions_leaderboard");
+    }
+}
+
+public sealed class WorldBossHealingMutationConfiguration : IEntityTypeConfiguration<WorldBossHealingMutation>
+{
+    public void Configure(EntityTypeBuilder<WorldBossHealingMutation> builder)
+    {
+        builder.ToTable("world_boss_healing_mutations", table =>
+            table.HasCheckConstraint("ck_world_boss_healing_mutations_amount_positive", "\"EffectiveHealing\" > 0"));
+
+        builder.HasKey(x => new { x.SpawnId, x.MutationId })
+            .HasName("pk_world_boss_healing_mutations");
+        builder.Property(x => x.EffectiveHealing).HasPrecision(18, 3).IsRequired();
+
+        builder.HasOne<WorldBossSpawn>().WithMany().HasForeignKey(x => x.SpawnId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .HasConstraintName("fk_world_boss_healing_mutations_spawn");
+        builder.HasOne<Character>().WithMany().HasForeignKey(x => x.CharacterId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .HasConstraintName("fk_world_boss_healing_mutations_character");
+        builder.HasOne<Party>().WithMany().HasForeignKey(x => x.PartyId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .HasConstraintName("fk_world_boss_healing_mutations_party");
+
+        builder.HasIndex(x => x.CombatSessionId)
+            .HasDatabaseName("ix_world_boss_healing_mutations_combat_session");
     }
 }
 
