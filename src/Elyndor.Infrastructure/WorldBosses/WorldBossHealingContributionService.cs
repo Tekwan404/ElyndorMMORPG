@@ -31,7 +31,9 @@ public sealed class WorldBossHealingContributionService(
             effectiveHealing,
             mutationId);
 
-        return await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        WorldBossHealingCommitResult result = await db.Database
+            .CreateExecutionStrategy()
+            .ExecuteAsync(async () =>
         {
             db.ChangeTracker.Clear();
             await using var transaction =
@@ -44,7 +46,7 @@ public sealed class WorldBossHealingContributionService(
             if (spawn is null)
             {
                 await transaction.RollbackAsync(CancellationToken.None);
-                return new(false, WorldBossErrorCodes.SpawnNotFound, false, 0);
+                return new WorldBossHealingCommitResult(false, WorldBossErrorCodes.SpawnNotFound, false, 0);
             }
 
             WorldBossHealingMutation? existing =
@@ -60,8 +62,16 @@ public sealed class WorldBossHealingContributionService(
                     && existing.EffectiveHealing == effectiveHealing;
                 await transaction.RollbackAsync(CancellationToken.None);
                 return matches
-                    ? new(true, null, true, existing.EffectiveHealing)
-                    : new(false, WorldBossErrorCodes.MutationConflict, false, 0);
+                    ? new WorldBossHealingCommitResult(
+                        true,
+                        null,
+                        true,
+                        existing.EffectiveHealing)
+                    : new WorldBossHealingCommitResult(
+                        false,
+                        WorldBossErrorCodes.MutationConflict,
+                        false,
+                        0);
             }
 
             DateTimeOffset now = time.GetUtcNow();
@@ -71,7 +81,7 @@ public sealed class WorldBossHealingContributionService(
                 spawn.TryExpire(now);
                 await db.SaveChangesAsync(cancellationToken);
                 await transaction.CommitAsync(CancellationToken.None);
-                return new(false, WorldBossErrorCodes.Expired, false, 0);
+                return new WorldBossHealingCommitResult(false, WorldBossErrorCodes.Expired, false, 0);
             }
 
             string? inactiveError = spawn.Status switch
@@ -84,7 +94,7 @@ public sealed class WorldBossHealingContributionService(
             if (inactiveError is not null)
             {
                 await transaction.RollbackAsync(CancellationToken.None);
-                return new(false, inactiveError, false, 0);
+                return new WorldBossHealingCommitResult(false, inactiveError, false, 0);
             }
 
             WorldBossContribution? personal =
@@ -125,8 +135,14 @@ public sealed class WorldBossHealingContributionService(
 
             await db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(CancellationToken.None);
-            return new(true, null, false, effectiveHealing);
+            return new WorldBossHealingCommitResult(
+                true,
+                null,
+                false,
+                effectiveHealing);
         });
+
+        return result;
     }
 
     private static void Validate(
