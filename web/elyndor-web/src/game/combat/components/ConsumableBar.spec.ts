@@ -16,16 +16,23 @@ function consumable(id: string, quantity: number, name = 'Лечебное зе�
     slot: null,
     equippedSlot: null,
     stats: {
-      stamina: 0,
       strength: 0,
       agility: 0,
       intellect: 0,
-      spirit: 0,
-      armor: 0,
+      stamina: 0,
+      maxHp: 0,
       attackPower: 0,
       spellPower: 0,
-      critRating: 0,
-      hasteRating: 0,
+      criticalChance: 0,
+      criticalDamage: 0,
+      accuracy: 0,
+      armor: 0,
+      magicResistance: 0,
+      dodge: 0,
+      armorPenetration: 0,
+      magicPenetration: 0,
+      attackSpeed: 0,
+      maxResource: 0,
     },
     description: '',
     setId: null,
@@ -34,7 +41,15 @@ function consumable(id: string, quantity: number, name = 'Лечебное зе�
     weaponBaseAttackIntervalSeconds: null,
     attackSpeedPercent: 0,
     dodgePercent: 0,
-    consumableActions: [{ type: 'RestoreHp', amount: 100 }],
+    consumableActions: [
+      {
+        type: 'RestoreHp',
+        amount: 100,
+        resourceType: null,
+        effectId: null,
+        dispelCategory: null,
+      },
+    ],
     consumableCooldownCategoryId: 'HEALING_POTION',
     consumableCooldownSeconds: 30,
     buyPriceGold: 0,
@@ -42,7 +57,7 @@ function consumable(id: string, quantity: number, name = 'Лечебное зе�
     isLocked: false,
     iconId: null,
     appearanceProfileId: null,
-  } as InventoryItem
+  }
 }
 
 describe('ConsumableBar', () => {
