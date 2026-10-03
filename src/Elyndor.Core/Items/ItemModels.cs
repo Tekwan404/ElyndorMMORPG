@@ -7,6 +7,7 @@ public enum ItemType
     Equipment,
     Material,
     Consumable,
+    LootContainer,
     SpatialArtifact
 }
 
@@ -205,7 +206,10 @@ public sealed record ItemDefinition(
     int GenerationVersion = 1,
     bool PremiumEligible = true,
     int InventoryCapacityBonus = 0,
-    ItemGenerationMode GenerationMode = ItemGenerationMode.Fixed);
+    ItemGenerationMode GenerationMode = ItemGenerationMode.Fixed,
+    string? LootContainerTableId = null,
+    int LootContainerGoldMin = 0,
+    int LootContainerGoldMax = 0);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,
