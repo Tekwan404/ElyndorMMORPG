@@ -148,6 +148,7 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<WorldBossContribution> WorldBossContributions => Set<WorldBossContribution>();
     public DbSet<WorldBossPartyContribution> WorldBossPartyContributions => Set<WorldBossPartyContribution>();
     public DbSet<WorldBossDamageMutation> WorldBossDamageMutations => Set<WorldBossDamageMutation>();
+    public DbSet<WorldBossHealingMutation> WorldBossHealingMutations => Set<WorldBossHealingMutation>();
     public DbSet<WorldBossRewardSettlement> WorldBossRewardSettlements => Set<WorldBossRewardSettlement>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
