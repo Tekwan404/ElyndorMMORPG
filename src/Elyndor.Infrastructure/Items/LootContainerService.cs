@@ -287,7 +287,7 @@ public sealed class LootContainerService(
                 now,
                 definition.Version));
             remaining -= quantity;
-            stackFreeSlots--;
+            freeSlots--;
         }
 
         if (remaining <= 0)
