@@ -59,6 +59,41 @@ public sealed class PremiumStoreServiceTests(PostgresFixture postgres) : IAsyncL
         Assert.Equal(20, verify.CharacterItems.Where(item => item.ItemDefinitionId == "ENHANCEMENT_ORE").Sum(item => item.Quantity));
     }
 
+    [Fact]
+    public async Task TestStoreOffersRemainRepeatableBeyondFormerLifetimeLimit()
+    {
+        Guid accountId = await CreateAccountAsync();
+        await using GameDbContext context = postgres.CreateDbContext();
+        CrystalWalletService wallet = new(context, new FixedTimeProvider(Now));
+        await wallet.GrantAsync(
+            accountId,
+            Guid.CreateVersion7(),
+            CrystalLedgerEntryType.AdminGrant,
+            2_000,
+            "test-store-unlimited",
+            CancellationToken.None);
+        var content = new StaticContentSnapshotProvider(
+            await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json")));
+        PremiumStoreService store = new(context, content, new FixedTimeProvider(Now));
+
+        for (int purchase = 0; purchase < 25; purchase++)
+        {
+            PremiumStorePurchaseResult result = await store.PurchaseAsync(
+                accountId,
+                "REFORGE_STONES_SMALL",
+                Guid.CreateVersion7(),
+                CancellationToken.None);
+            Assert.True(result.Succeeded, result.ErrorCode);
+        }
+
+        PremiumStoreSnapshot snapshot = await store.GetAsync(accountId, CancellationToken.None);
+        PremiumStoreOfferSnapshot offer = Assert.Single(
+            snapshot.Offers,
+            item => item.Offer.Sku == "REFORGE_STONES_SMALL");
+        Assert.True(offer.CanPurchase);
+        Assert.Null(offer.Offer.PerAccountLimit);
+    }
+
     private async Task<Guid> CreateAccountAsync()
     {
         Guid accountId = Guid.CreateVersion7();
