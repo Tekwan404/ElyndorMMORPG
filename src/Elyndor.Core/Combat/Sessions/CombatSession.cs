@@ -50,6 +50,7 @@ public sealed partial class CombatSession
     private readonly HashSet<string> _processedCommandIds = new(StringComparer.Ordinal);
     private readonly HashSet<Guid> _deadActors = [];
     private readonly List<CombatEvent> _events = [];
+    private readonly Dictionary<Guid, Dictionary<string, int>> _abilityUsesByActorId = [];
     private readonly CombatParticipantRoster _participantRoster;
     private readonly ContributionLedger _contributionLedger;
     private readonly Dictionary<string, DateTimeOffset> _talentInternalCooldowns = new(StringComparer.Ordinal);
@@ -867,7 +868,8 @@ public sealed partial class CombatSession
             players,
             _participantRoster.Participants,
             contributionEligible,
-            participantContributions);
+            participantContributions,
+            BuildStatisticsSnapshot(requester.Definition.Actor.ActorId));
     }
 
     public CombatCommandResult Cancel(DateTimeOffset now)
@@ -2544,10 +2546,49 @@ public sealed partial class CombatSession
         }
         Sequence++;
         CombatEvent sequenced = combatEvent with { Sequence = Sequence };
+        RecordSessionStatistics(sequenced);
         _events.Add(sequenced);
         if (_events.Count > RetainedEventLimit)
             _events.RemoveRange(0, _events.Count - RetainedEventLimit);
         _contributionLedger.Record(sequenced);
+    }
+
+    private void RecordSessionStatistics(CombatEvent combatEvent)
+    {
+        if (combatEvent.Type != CombatEventType.AbilityUsed
+            || string.IsNullOrWhiteSpace(combatEvent.DefinitionId))
+        {
+            return;
+        }
+
+        Guid sourceActorId = combatEvent.SourceActorId ?? combatEvent.ActorId;
+        if (!_playerStatesByActorId.ContainsKey(sourceActorId))
+            return;
+
+        if (!_abilityUsesByActorId.TryGetValue(
+                sourceActorId,
+                out Dictionary<string, int>? abilityUses))
+        {
+            abilityUses = new Dictionary<string, int>(StringComparer.Ordinal);
+            _abilityUsesByActorId[sourceActorId] = abilityUses;
+        }
+
+        abilityUses.TryGetValue(combatEvent.DefinitionId, out int current);
+        abilityUses[combatEvent.DefinitionId] = current + 1;
+    }
+
+    private CombatSessionStatisticsSnapshot BuildStatisticsSnapshot(Guid playerActorId)
+    {
+        if (!_abilityUsesByActorId.TryGetValue(
+                playerActorId,
+                out Dictionary<string, int>? abilityUses))
+        {
+            return new CombatSessionStatisticsSnapshot(
+                new Dictionary<string, int>(StringComparer.Ordinal));
+        }
+
+        return new CombatSessionStatisticsSnapshot(
+            new Dictionary<string, int>(abilityUses, StringComparer.Ordinal));
     }
 
     private CombatCommandResult Result(
