@@ -919,7 +919,7 @@ internal static class BossCombatLogArchive
                     .Append(FormatNumber(total))
                     .Append(" · tick=")
                     .Append(FormatNumber(minimum))
-                    .Append("…")
+                    .Append('…')
                     .Append(FormatNumber(maximum))
                     .Append(" · seq=#")
                     .Append(first.Sequence.ToString(CultureInfo.InvariantCulture))
