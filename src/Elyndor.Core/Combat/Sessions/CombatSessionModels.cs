@@ -131,6 +131,7 @@ public sealed record CombatDamageSourceStatisticsSnapshot(
     decimal DirectOrProc = 0,
     decimal Periodic = 0,
     decimal Reflected = 0,
+    decimal Companion = 0,
     decimal Other = 0);
 
 public sealed record CombatSessionStatisticsSnapshot(
