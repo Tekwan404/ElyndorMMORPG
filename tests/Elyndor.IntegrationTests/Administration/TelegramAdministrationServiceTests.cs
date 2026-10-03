@@ -214,7 +214,7 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
         WorldBossSpawn spawn = await context.WorldBossSpawns.AsNoTracking().SingleAsync();
         Assert.Equal("WORLD_BOSS_ASH_ARCHON", spawn.BossDefinitionId);
         Assert.Equal(WorldBossSpawnStatus.Active, spawn.Status);
-        Assert.Equal(100_000m, spawn.CurrentHealth);
+        Assert.Equal(1_000_000m, spawn.CurrentHealth);
         Assert.Equal(1, await context.AdminCommandAudits.CountAsync());
     }
 
