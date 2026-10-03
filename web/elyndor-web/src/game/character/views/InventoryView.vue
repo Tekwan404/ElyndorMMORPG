@@ -105,9 +105,6 @@ const selectedItems = computed(() =>
 const selectedSellableItems = computed(() =>
   selectedItems.value.filter(item => item.sellPriceGold > 0 && !item.isLocked),
 )
-const selectedUnsellableCount = computed(() =>
-  selectedItems.value.length - selectedSellableItems.value.length,
-)
 const selectedSellValue = computed(() =>
   selectedSellableItems.value.reduce(
     (sum, item) => sum + item.sellPriceGold * selectedQuantity(item),
