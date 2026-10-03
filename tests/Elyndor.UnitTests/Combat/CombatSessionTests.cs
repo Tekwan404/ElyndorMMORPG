@@ -1390,6 +1390,10 @@ public sealed class CombatSessionTests
         Assert.Equal(160, ally.Snapshot.Players!.Single(player => player.ActorId == allyId).Hp);
         Assert.Equal("FEMALE", ally.Snapshot.Players!.Single(player => player.ActorId == allyId).GenderId);
         Assert.Equal("MAGE_FEMALE_FIRE", ally.Snapshot.Players!.Single(player => player.ActorId == allyId).SkinId);
+        Assert.Equal(10, session.Snapshot(PlayerId).Statistics!.HealingDone);
+        Assert.Equal(0, session.Snapshot(PlayerId).Statistics!.HealingReceived);
+        Assert.Equal(0, session.Snapshot(allyId).Statistics!.HealingDone);
+        Assert.Equal(10, session.Snapshot(allyId).Statistics!.HealingReceived);
     }
 
     [Fact]

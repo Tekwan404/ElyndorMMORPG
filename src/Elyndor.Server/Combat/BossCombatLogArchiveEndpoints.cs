@@ -474,8 +474,7 @@ internal static class BossCombatLogArchive
 
         builder.AppendLine();
         builder.AppendLine("── RAW EVENTS ──");
-        foreach (CombatEvent combatEvent in events)
-            WriteEvent(builder, combatEvent, actorNames);
+        WriteRawEvents(builder, events, actorNames);
 
         return builder.ToString();
     }
@@ -521,6 +520,12 @@ internal static class BossCombatLogArchive
                 .Where(combatEvent =>
                     combatEvent.Type == CombatEventType.HealingApplied
                     && combatEvent.SourceActorId == playerActorId)
+                .Sum(combatEvent => Math.Max(0, combatEvent.Amount));
+        decimal healingReceived = statistics?.HealingReceived
+            ?? events
+                .Where(combatEvent =>
+                    combatEvent.Type == CombatEventType.HealingApplied
+                    && combatEvent.TargetActorId == playerActorId)
                 .Sum(combatEvent => Math.Max(0, combatEvent.Amount));
         int criticalHits = statistics?.CriticalHits
             ?? events.Count(combatEvent =>
@@ -570,7 +575,8 @@ internal static class BossCombatLogArchive
         builder.Append("Урон: ").Append(FormatNumber(damageDealt))
             .Append(" · DPS: ").AppendLine(FormatNumber(dps));
         builder.Append("Получено урона: ").AppendLine(FormatNumber(damageReceived));
-        builder.Append("Лечение: ").AppendLine(FormatNumber(healingDone));
+        builder.Append("Исходящее лечение: ").AppendLine(FormatNumber(healingDone));
+        builder.Append("Получено лечения: ").AppendLine(FormatNumber(healingReceived));
         builder.Append("Критов: ")
             .Append(criticalHits.ToString(CultureInfo.InvariantCulture))
             .Append(" · уклонений: ")
@@ -846,11 +852,14 @@ internal static class BossCombatLogArchive
             : Math.Max(0, combatEvent.Amount);
 
     internal static bool ShouldArchiveEvent(CombatEvent combatEvent) =>
-        !(string.Equals(
-                combatEvent.DefinitionId,
-                "COMBAT_REGEN",
-                StringComparison.Ordinal)
-            && combatEvent.Amount == 0);
+        !IsCombatRegen(combatEvent)
+        || decimal.Round(combatEvent.Amount, 2) != 0;
+
+    private static bool IsCombatRegen(CombatEvent combatEvent) =>
+        string.Equals(
+            combatEvent.DefinitionId,
+            "COMBAT_REGEN",
+            StringComparison.Ordinal);
 
     internal static string FormatAbilitySummary(
         CombatSessionSnapshot snapshot,
@@ -878,6 +887,54 @@ internal static class BossCombatLogArchive
                 .ThenBy(pair => pair.Key, StringComparer.Ordinal)
                 .Take(8)
                 .Select(pair => $"{pair.Key}×{pair.Value}"));
+    }
+
+    private static void WriteRawEvents(
+        StringBuilder builder,
+        CombatEvent[] events,
+        Dictionary<Guid, string> actorNames)
+    {
+        CombatEvent[] regeneration = events
+            .Where(IsCombatRegen)
+            .ToArray();
+        if (regeneration.Length > 0)
+        {
+            builder.Append("[COMBAT_REGEN aggregated: ")
+                .Append(regeneration.Length.ToString(CultureInfo.InvariantCulture))
+                .AppendLine(" events]");
+
+            foreach (IGrouping<Guid, CombatEvent> group in regeneration
+                         .GroupBy(item => item.SourceActorId ?? item.ActorId)
+                         .OrderBy(group => ResolveActorName(group.Key, actorNames), StringComparer.Ordinal))
+            {
+                CombatEvent first = group.First();
+                CombatEvent last = group.Last();
+                decimal total = group.Sum(item => item.Amount);
+                decimal minimum = group.Min(item => item.Amount);
+                decimal maximum = group.Max(item => item.Amount);
+                builder.Append(ResolveActorName(group.Key, actorNames))
+                    .Append(" · ticks=")
+                    .Append(group.Count().ToString(CultureInfo.InvariantCulture))
+                    .Append(" · total=+")
+                    .Append(FormatNumber(total))
+                    .Append(" · tick=")
+                    .Append(FormatNumber(minimum))
+                    .Append('…')
+                    .Append(FormatNumber(maximum))
+                    .Append(" · seq=#")
+                    .Append(first.Sequence.ToString(CultureInfo.InvariantCulture))
+                    .Append("–#")
+                    .AppendLine(last.Sequence.ToString(CultureInfo.InvariantCulture));
+            }
+
+            builder.AppendLine();
+        }
+
+        foreach (CombatEvent combatEvent in events)
+        {
+            if (!IsCombatRegen(combatEvent))
+                WriteEvent(builder, combatEvent, actorNames);
+        }
     }
 
     private static void WriteEvent(

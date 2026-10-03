@@ -149,7 +149,8 @@ public sealed record CombatSessionStatisticsSnapshot(
     int Dodges = 0,
     int Deaths = 0,
     IReadOnlyDictionary<string, CombatAbilityStatisticsSnapshot>? Abilities = null,
-    CombatDamageSourceStatisticsSnapshot? DamageSources = null);
+    CombatDamageSourceStatisticsSnapshot? DamageSources = null,
+    decimal HealingReceived = 0);
 
 public sealed record CombatSessionSnapshot(
     Guid SessionId,
