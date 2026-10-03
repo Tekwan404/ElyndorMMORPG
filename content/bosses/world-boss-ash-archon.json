@@ -4,29 +4,29 @@
   "publishedAtUtc": "2026-10-02T13:40:00+00:00",
   "monsters": [
     {
-      "id": "WORLD_BOSS_ASH_ARCHON_L30",
+      "id": "WORLD_BOSS_ASH_ARCHON_L60",
       "name": "Архон Пепла",
       "rank": "Boss",
-      "level": 30,
-      "maxHp": 100000,
+      "level": 60,
+      "maxHp": 1000000,
       "stats": {
-        "level": 30,
-        "accuracy": 103,
-        "dodge": 7,
-        "criticalChance": 12,
+        "level": 60,
+        "accuracy": 108,
+        "dodge": 8,
+        "criticalChance": 15,
         "criticalDamage": 1,
-        "armor": 210,
-        "magicResistance": 230,
-        "armorPenetration": 0.03,
-        "magicPenetration": 0.055,
-        "attackPower": 190,
-        "spellPower": 290
+        "armor": 550,
+        "magicResistance": 575,
+        "armorPenetration": 0.08,
+        "magicPenetration": 0.1,
+        "attackPower": 375,
+        "spellPower": 575
       },
       "autoAttackInterval": "00:00:02.4",
-      "autoAttackBaseDamage": 155,
+      "autoAttackBaseDamage": 410,
       "autoAttackAttackPowerCoefficient": 0.45,
-      "autoAttackBaseDamageMin": 140,
-      "autoAttackBaseDamageMax": 170,
+      "autoAttackBaseDamageMin": 370,
+      "autoAttackBaseDamageMax": 450,
       "abilityIds": [
         "ARCHON_DEAD_STAR_BRAND",
         "ARCHON_ECLIPSE_ASH",
@@ -34,12 +34,12 @@
         "ARCHON_DEAD_STAR_COLLAPSE"
       ],
       "aiProfileId": "WORLD_BOSS_ASH_ARCHON_AI",
-      "version": 1,
+      "version": 2,
       "lootTableId": null,
       "goldRewardMin": 0,
       "goldRewardMax": 0,
       "displayName": "Архон Пепла",
-      "description": "Мировой босс 30 уровня. Его здоровье общее для всех одновременно идущих боёв.",
+      "description": "Мировой босс 60 уровня. Его здоровье общее для всех одновременно идущих боёв.",
       "artId": "namestnik-tsitadeli",
       "grantsXp": false
     }
@@ -81,8 +81,8 @@
   "encounters": [
     {
       "id": "WB_ASH_ARCHON_V1",
-      "monsterId": "WORLD_BOSS_ASH_ARCHON_L30",
-      "version": 1,
+      "monsterId": "WORLD_BOSS_ASH_ARCHON_L60",
+      "version": 2,
       "displayName": "Архон Пепла",
       "phases": [
         {
@@ -147,8 +147,8 @@
     {
       "id": "WORLD_BOSS_ASH_ARCHON",
       "name": "Архон Пепла",
-      "level": 30,
-      "baseMaxHealth": 100000,
+      "level": 60,
+      "baseMaxHealth": 1000000,
       "durationSeconds": 1800,
       "encounterProfileId": "WB_ASH_ARCHON_V1",
       "lootTableId": "WORLD_BOSS_ASH_ARCHON_LOOT",
