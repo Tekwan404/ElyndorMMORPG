@@ -18,8 +18,8 @@ public sealed class WorldBossContentTests
             item => item.Id == "WORLD_BOSS_ASH_ARCHON");
 
         Assert.Equal("Архон Пепла", boss.Name);
-        Assert.Equal(30, boss.Level);
-        Assert.Equal(100_000m, boss.BaseMaxHealth);
+        Assert.Equal(60, boss.Level);
+        Assert.Equal(1_000_000m, boss.BaseMaxHealth);
         Assert.Equal(1_800, boss.DurationSeconds);
         Assert.Equal("WB_ASH_ARCHON_V1", boss.EncounterProfileId);
         Assert.Equal("ASH_SHARD", boss.TokenCurrencyId);
@@ -41,9 +41,9 @@ public sealed class WorldBossContentTests
         var monster = package.Monsters!.Single(
             item => item.Id == encounter.MonsterId);
 
-        Assert.Equal("WORLD_BOSS_ASH_ARCHON_L30", monster.Id);
-        Assert.Equal(30, monster.Level);
-        Assert.Equal(100_000m, monster.MaxHp);
+        Assert.Equal("WORLD_BOSS_ASH_ARCHON_L60", monster.Id);
+        Assert.Equal(60, monster.Level);
+        Assert.Equal(1_000_000m, monster.MaxHp);
         Assert.False(monster.GrantsXp);
         Assert.Equal(0, monster.LegacyXpReward);
         Assert.Equal(0, monster.GoldRewardMin);
@@ -62,7 +62,7 @@ public sealed class WorldBossContentTests
     }
 
     [Fact]
-    public async Task AshArchonRewardProfileMovesThreeUniqueWeaponsOutOfDungeonIntoPersonalChest()
+    public async Task AshArchonRewardProfileUsesLevel60PersonalChestLoot()
     {
         var package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
@@ -85,9 +85,9 @@ public sealed class WorldBossContentTests
 
         string[] uniqueIds =
         [
-            "UNIQUE_WARRIOR_BLACKHEART_L25",
-            "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25",
-            "UNIQUE_ARCHER_LAST_CONSTELLATION_L25"
+            "UNIQUE_WARRIOR_BLACKHEART_L60",
+            "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L60",
+            "UNIQUE_ARCHER_LAST_CONSTELLATION_L60"
         ];
         Assert.All(uniqueIds, uniqueId =>
         {
@@ -99,10 +99,10 @@ public sealed class WorldBossContentTests
 
         Assert.Single(chest.SelectionGroups!);
         Assert.Equal(1, chest.SelectionGroups![0].Rolls);
-        Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "FOKUS_OSTATOCHNOI_MANY");
-        Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "LUK_TROINOGO_ASPEKTA");
-        Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "KOLTSO_RAZBITOGO_OTRAZHENIIA");
-        Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "PECHAT_TRIEDINSTVA");
+        Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "FOKUS_OSTATOCHNOI_MANY_L60");
+        Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "LUK_TROINOGO_ASPEKTA_L60");
+        Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "KOLTSO_RAZBITOGO_OTRAZHENIIA_L60");
+        Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "PECHAT_TRIEDINSTVA_L60");
 
         WorldBossLeaderboardRewardTierDefinition[] leaderboardTiers =
             rewardProfile.LeaderboardTiers!.ToArray();
