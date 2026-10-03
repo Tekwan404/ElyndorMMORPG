@@ -793,7 +793,7 @@ internal static class BossCombatLogArchive
             return;
 
         DateTimeOffset origin = snapshot.Statistics?.StartedAtUtc
-            ?? (events.Count > 0
+            ?? (events.Length > 0
                 ? events[0].OccurredAtUtc
                 : snapshot.ServerTimeUtc);
 
