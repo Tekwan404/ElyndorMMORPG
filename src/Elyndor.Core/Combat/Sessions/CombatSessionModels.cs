@@ -116,6 +116,9 @@ public sealed record CombatActorSnapshot(
     string? SkinId = null,
     int? Level = null);
 
+public sealed record CombatSessionStatisticsSnapshot(
+    IReadOnlyDictionary<string, int> AbilityUses);
+
 public sealed record CombatSessionSnapshot(
     Guid SessionId,
     long Sequence,
@@ -132,7 +135,8 @@ public sealed record CombatSessionSnapshot(
     IReadOnlyList<CombatActorSnapshot>? Players = null,
     IReadOnlyList<CombatParticipantSnapshot>? ParticipantRoster = null,
     bool? PlayerContributionEligible = null,
-    IReadOnlyList<ContributionEligibilityResult>? ParticipantContributions = null);
+    IReadOnlyList<ContributionEligibilityResult>? ParticipantContributions = null,
+    CombatSessionStatisticsSnapshot? Statistics = null);
 
 public static class CombatErrorCodes
 {
