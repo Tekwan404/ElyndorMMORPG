@@ -1,5 +1,6 @@
 using Elyndor.Core.WorldBosses;
 using Elyndor.Core.Content;
+using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Content;
 
 namespace Elyndor.IntegrationTests.Content;
@@ -122,6 +123,24 @@ public sealed class WorldBossContentTests
         Assert.Equal(2, topFive.ChestCount);
         Assert.True(topFive.Enhanced);
         Assert.Equal("WORLD_BOSS_ASH_ARCHON_TOP5_LOOT", topFive.LootTableId);
+        Assert.Equal("WORLD_BOSS_ASH_ARCHON_TOP5_CHEST", topFive.ChestItemId);
+
+        WorldBossLeaderboardRewardTierDefinition top95 = Assert.Single(
+            leaderboardTiers,
+            tier => tier.Tier == WorldBossRewardTier.Top95);
+        Assert.Equal("WORLD_BOSS_ASH_ARCHON_CHEST", top95.ChestItemId);
+
+        ItemDefinition normalChest = package.Items!.Single(
+            item => item.Id == "WORLD_BOSS_ASH_ARCHON_CHEST");
+        Assert.Equal(ItemType.LootContainer, normalChest.Type);
+        Assert.Equal("WORLD_BOSS_ASH_ARCHON_LOOT", normalChest.LootContainerTableId);
+        Assert.Equal(250, normalChest.LootContainerGoldMin);
+        Assert.Equal(500, normalChest.LootContainerGoldMax);
+
+        ItemDefinition enhancedChest = package.Items!.Single(
+            item => item.Id == "WORLD_BOSS_ASH_ARCHON_TOP5_CHEST");
+        Assert.Equal(ItemType.LootContainer, enhancedChest.Type);
+        Assert.Equal("WORLD_BOSS_ASH_ARCHON_TOP5_LOOT", enhancedChest.LootContainerTableId);
 
         var topFiveChest = package.LootTables!.Single(
             table => table.Id == topFive.LootTableId);

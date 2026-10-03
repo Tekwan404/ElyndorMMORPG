@@ -338,9 +338,11 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
         Assert.Equal(2, reward.EnhancedChestCount);
         Assert.Equal(200_000, reward.Experience);
         Assert.Equal(1_000, reward.BossGold);
-        Assert.InRange(reward.ChestGold, 500, 1_000);
-        Assert.Equal(reward.BossGold + reward.ChestGold, reward.TotalGold);
-        Assert.Equal(2, reward.Items.Count);
+        Assert.Equal(0, reward.ChestGold);
+        Assert.Equal(reward.BossGold, reward.TotalGold);
+        WorldBossRewardItemResponse chest = Assert.Single(reward.Items);
+        Assert.Equal("WORLD_BOSS_ASH_ARCHON_TOP5_CHEST", chest.ItemId);
+        Assert.Equal(2, chest.Quantity);
     }
 
     private async Task SeedAccountAsync(Guid accountId, long telegramUserId)

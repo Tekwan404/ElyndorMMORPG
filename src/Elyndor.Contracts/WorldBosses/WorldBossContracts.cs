@@ -17,7 +17,11 @@ public sealed record WorldBossActiveResponse(
     DateTimeOffset ExpiresAtUtc,
     int Participants,
     decimal PersonalDamage,
+    decimal PersonalHealing,
+    decimal PersonalContribution,
     decimal PartyDamage,
+    decimal PartyHealing,
+    decimal PartyContribution,
     int EligibleParticipants,
     int? PersonalRewardRank,
     decimal RewardPercentile,
@@ -36,13 +40,17 @@ public sealed record WorldBossPersonalLeaderboardEntryResponse(
     int Rank,
     Guid CharacterId,
     string Name,
-    decimal Damage);
+    decimal Damage,
+    decimal Healing,
+    decimal Contribution);
 
 public sealed record WorldBossPartyLeaderboardEntryResponse(
     int Rank,
     Guid PartyId,
     string LeaderName,
-    decimal Damage);
+    decimal Damage,
+    decimal Healing,
+    decimal Contribution);
 
 public sealed record WorldBossLeaderboardResponse(
     Guid SpawnId,
@@ -50,9 +58,13 @@ public sealed record WorldBossLeaderboardResponse(
     IReadOnlyList<WorldBossPartyLeaderboardEntryResponse> Parties,
     int? PersonalRank,
     decimal PersonalDamage,
+    decimal PersonalHealing,
+    decimal PersonalContribution,
     Guid? PartyId,
     int? PartyRank,
-    decimal PartyDamage);
+    decimal PartyDamage,
+    decimal PartyHealing,
+    decimal PartyContribution);
 
 
 public sealed record WorldBossRewardItemResponse(

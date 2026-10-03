@@ -129,7 +129,7 @@ onUnmounted(() => {
         <p class="result-card__kicker">Сражение завершено</p>
         <h1>{{ boss?.name ?? 'Архон Пепла' }} повержен</h1>
         <p class="result-card__contribution">
-          Твой вклад: <strong>{{ formatNumber(settlement?.contribution ?? 0) }} урона</strong>
+          Твой вклад: <strong>{{ formatNumber(settlement?.contribution ?? 0) }} очков</strong>
         </p>
 
         <template v-if="reward">
@@ -156,7 +156,7 @@ onUnmounted(() => {
             <div>
               <span>Золото</span>
               <strong>+{{ formatNumber(reward.totalGold) }}</strong>
-              <small>{{ formatNumber(reward.bossGold) }} босс + {{ formatNumber(reward.chestGold) }} сундуки</small>
+              <small>Награда за убийство босса. Золото сундуков выдаётся при открытии.</small>
             </div>
             <div>
               <span>Сундуки</span>
@@ -172,8 +172,8 @@ onUnmounted(() => {
 
           <section v-if="reward.items.length" class="boss-chest">
             <div class="boss-chest__title">
-              <span>{{ reward.enhancedChestCount > 0 ? 'Усиленная добыча TOP 5' : 'Сундук Архона Пепла' }}</span>
-              <small>Персональная добыча</small>
+              <span>Полученные сундуки</span>
+              <small>Открой их в инвентаре</small>
             </div>
             <article
               v-for="(item, index) in reward.items"
@@ -194,7 +194,7 @@ onUnmounted(() => {
                   · roll {{ item.generatedItem.rollQuality.toFixed(1) }}%
                   <template v-if="item.generatedItem.stars > 0"> · {{ '★'.repeat(item.generatedItem.stars) }}</template>
                 </small>
-                <small>{{ item.pending ? 'Ожидает места в инвентаре.' : 'Предмет сохранён в инвентарь.' }}</small>
+                <small>{{ item.pending ? 'Ожидает места в инвентаре.' : 'Сундук сохранён в инвентарь и ещё не открыт.' }}</small>
               </div>
             </article>
           </section>
@@ -241,8 +241,16 @@ onUnmounted(() => {
 
         <div class="boss-card__metrics">
           <div><span>Участники</span><strong>{{ boss.participants }}</strong></div>
-          <div><span>Мой урон</span><strong>{{ formatNumber(boss.personalDamage) }}</strong></div>
-          <div><span>Урон группы</span><strong>{{ formatNumber(boss.partyDamage) }}</strong></div>
+          <div>
+            <span>Мой вклад</span>
+            <strong>{{ formatNumber(boss.personalContribution) }}</strong>
+            <small>{{ formatNumber(boss.personalDamage) }} урон · {{ formatNumber(boss.personalHealing) }} лечение</small>
+          </div>
+          <div>
+            <span>Вклад группы</span>
+            <strong>{{ formatNumber(boss.partyContribution) }}</strong>
+            <small>{{ formatNumber(boss.partyDamage) }} урон · {{ formatNumber(boss.partyHealing) }} лечение</small>
+          </div>
         </div>
         </div>
       </section>
@@ -280,7 +288,7 @@ onUnmounted(() => {
             <small>Награды за итоговый рейтинг</small>
             <h2>Чем выше вклад — тем сильнее добыча</h2>
           </div>
-          <span>мин. {{ formatNumber(boss.minimumContribution) }} урона</span>
+          <span>мин. {{ formatNumber(boss.minimumContribution) }} очков вклада</span>
         </header>
 
         <div class="reward-ladder__grid">
@@ -327,7 +335,8 @@ onUnmounted(() => {
               >
                 <b>#{{ entry.rank }}</b>
                 <span>{{ entry.name }}</span>
-                <strong>{{ formatNumber(entry.damage) }}</strong>
+                <strong>{{ formatNumber(entry.contribution) }}</strong>
+                <small>{{ formatNumber(entry.damage) }} урон · {{ formatNumber(entry.healing) }} хил</small>
               </li>
             </ol>
             <p v-else class="leaderboard__empty">Первые удары ещё не нанесены.</p>
@@ -342,7 +351,8 @@ onUnmounted(() => {
               >
                 <b>#{{ entry.rank }}</b>
                 <span>{{ entry.leaderName }}</span>
-                <strong>{{ formatNumber(entry.damage) }}</strong>
+                <strong>{{ formatNumber(entry.contribution) }}</strong>
+                <small>{{ formatNumber(entry.damage) }} урон · {{ formatNumber(entry.healing) }} хил</small>
               </li>
             </ol>
             <p v-else class="leaderboard__empty">Группы ещё не отметились.</p>
@@ -595,6 +605,18 @@ onUnmounted(() => {
 
 .boss-card__metrics strong {
   font-variant-numeric: tabular-nums;
+}
+
+.boss-card__metrics small {
+  color: var(--ui-color-text-muted);
+  font-size: .68rem;
+}
+
+.leaderboard li small {
+  grid-column: 2 / 4;
+  margin-top: -5px;
+  color: var(--ui-color-text-muted);
+  font-size: .66rem;
 }
 
 .reward-progress,

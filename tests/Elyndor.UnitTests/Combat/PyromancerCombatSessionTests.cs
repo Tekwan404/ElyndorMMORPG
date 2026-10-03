@@ -160,6 +160,60 @@ public sealed class PyromancerCombatSessionTests
     }
 
     [Fact]
+    public void PlayerDotEmitsAuthoritativeDamageWhileAnotherParticipantIsAlive()
+    {
+        Guid allyActorId = Guid.Parse("51000000-0000-0000-0000-000000000002");
+        CombatParticipantDefinition ally = new(
+            Actor(allyActorId, hp: 200, resource: 0, spellPower: 0),
+            CombatActorKind.Player,
+            "WARRIOR",
+            "Ally",
+            "RAGE",
+            new AutoAttackProfile(TimeSpan.FromSeconds(60), 0, 0, 0),
+            new HashSet<string>(StringComparer.Ordinal),
+            CanAutoAttack: false);
+        ResolvedTalentModifiers talents = Talents(
+            Hook("F-2-1", TalentModifierKeys.OnAbilityUsed, 1, 40));
+        TestFight fight = CreateFight(
+            talents,
+            playerSpellPower: 40,
+            playerCriticalChance: 100,
+            playerCriticalDamage: 0,
+            enemyHp: 10_000,
+            additionalPlayers:
+            [
+                new(Guid.NewGuid(), ally, ResolvedTalentModifiers.Empty)
+            ]);
+
+        DateTimeOffset startedAt = Now.AddMilliseconds(1);
+        Assert.True(fight.Session.Handle(
+            PlayerId,
+            new UseAbilityCommand("party-ignite", "MAGE_FIREBALL", EnemyId),
+            startedAt).Succeeded);
+        DateTimeOffset completedAt = startedAt.AddSeconds(1.8);
+        CombatCommandResult completed = fight.Session.AdvanceTo(completedAt);
+        Assert.Contains(
+            completed.Snapshot.Enemy.Effects,
+            effect => effect.Id == "MAGE_FIRE_IGNITE");
+
+        CombatCommandResult ticked = fight.Session.AdvanceTo(completedAt.AddSeconds(1));
+
+        CombatEvent effectTick = Assert.Single(ticked.Events, combatEvent =>
+            combatEvent.Type == CombatEventType.EffectTicked
+            && combatEvent.DefinitionId == "MAGE_FIRE_IGNITE");
+        CombatEvent damage = Assert.Single(ticked.Events, combatEvent =>
+            combatEvent.Type == CombatEventType.DamageDealt
+            && combatEvent.DefinitionId == "MAGE_FIRE_IGNITE"
+            && combatEvent.SourceActorId == PlayerId
+            && combatEvent.TargetActorId == EnemyId
+            && combatEvent.IsPeriodic);
+
+        Assert.True(damage.Sequence > 0);
+        Assert.Equal(effectTick.Amount, damage.Amount);
+        Assert.Equal(DamageType.Magical, damage.DamageType);
+    }
+
+    [Fact]
     public void PyroblastAlwaysAppliesItsBaselineBurn()
     {
         TestFight fight = CreateFight(
@@ -375,7 +429,8 @@ public sealed class PyromancerCombatSessionTests
         decimal playerCriticalChance = 0,
         decimal playerCriticalDamage = 0,
         decimal enemyHp = 1_000,
-        decimal randomValue = 0.5m)
+        decimal randomValue = 0.5m,
+        IReadOnlyList<CombatPlayerDefinition>? additionalPlayers = null)
     {
         CombatActorState playerActor = Actor(
             PlayerId,
@@ -421,7 +476,8 @@ public sealed class PyromancerCombatSessionTests
             new MonsterAiProfile("PASSIVE", []),
             talents,
             Random(500, randomValue),
-            Now);
+            Now,
+            additionalPlayers: additionalPlayers);
         return new TestFight(session, playerActor, enemyActor);
     }
 

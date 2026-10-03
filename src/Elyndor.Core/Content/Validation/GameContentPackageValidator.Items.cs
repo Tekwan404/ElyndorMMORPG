@@ -96,6 +96,10 @@ public static partial class GameContentPackageValidator
                     item.ConsumableCooldownSeconds != 0
                     || item.ConsumableActions is { Count: > 0 }
                     || !string.IsNullOrWhiteSpace(item.ConsumableCooldownCategoryId);
+                bool hasLootContainerData =
+                    !string.IsNullOrWhiteSpace(item.LootContainerTableId)
+                    || item.LootContainerGoldMin != 0
+                    || item.LootContainerGoldMax != 0;
                 bool invalidConsumableShape =
                     item.Type == ItemType.Consumable
                     && HasInvalidConsumableShape(
@@ -106,13 +110,22 @@ public static partial class GameContentPackageValidator
                 {
                     ItemType.Material => !item.Stackable || item.MaxStack < 2 || item.Slot is not null
                         || HasEquipmentModifiers(item)
-                        || hasConsumableData,
+                        || hasConsumableData
+                        || hasLootContainerData,
                     ItemType.Equipment => item.Stackable || item.MaxStack != 1 || item.Slot is null
                         || hasConsumableData
+                        || hasLootContainerData
                         || item.WeaponBaseAttackIntervalSeconds is <= 0,
                     ItemType.Consumable => !item.Stackable || item.MaxStack < 2 || item.Slot is not null
                         || HasEquipmentModifiers(item)
+                        || hasLootContainerData
                         || invalidConsumableShape,
+                    ItemType.LootContainer => !item.Stackable || item.MaxStack < 2 || item.Slot is not null
+                        || HasEquipmentModifiers(item)
+                        || hasConsumableData
+                        || string.IsNullOrWhiteSpace(item.LootContainerTableId)
+                        || item.LootContainerGoldMin < 0
+                        || item.LootContainerGoldMax < item.LootContainerGoldMin,
                     _ => true
                 };
                 if (string.IsNullOrWhiteSpace(item.Name)
@@ -207,6 +220,22 @@ public static partial class GameContentPackageValidator
                                 $"Loot selection entry for '{entry.ItemId}' is invalid."));
                         }
                     }
+                }
+            }
+
+            for (var itemIndex = 0; itemIndex < items.Count; itemIndex++)
+            {
+                ItemDefinition item = items[itemIndex];
+                if (item.Type != ItemType.LootContainer)
+                    continue;
+
+                if (string.IsNullOrWhiteSpace(item.LootContainerTableId)
+                    || !lootTableIds.Contains(item.LootContainerTableId))
+                {
+                    errors.Add(new(
+                        "MISSING_LOOT_CONTAINER_TABLE_REFERENCE",
+                        $"items[{itemIndex}].lootContainerTableId",
+                        $"Loot container '{item.Id}' references missing loot table '{item.LootContainerTableId}'."));
                 }
             }
 

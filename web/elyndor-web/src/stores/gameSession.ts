@@ -19,6 +19,7 @@ import type {
   EquipmentSlot,
   MerchantSnapshot,
   PendingLootSnapshot,
+  OpenLootContainerResponse,
   PremiumStoreSnapshot,
   PremiumStorePurchaseResponse,
   CharacterSkinStoreSnapshot,
@@ -378,6 +379,30 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       'mutationId',
       { characterItemId },
     )
+  }
+
+  async function openLootContainer(
+    characterItemId: string,
+  ): Promise<OpenLootContainerResponse | null> {
+    const pendingKey = `inventory:open-container:${characterItemId}`
+    if (!beginMutation(pendingKey)) return null
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      const result = await runReplaySafeGameMutation<OpenLootContainerResponse>({
+        key: pendingKey,
+        path: '/api/v1/inventory/open-container',
+        idField: 'mutationId',
+        intent: { characterItemId },
+      })
+      await refreshSnapshot()
+      return result
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      endMutation(pendingKey)
+    }
   }
 
   async function setItemLock(characterItemId: string, isLocked: boolean): Promise<void> {
@@ -921,6 +946,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     equip,
     unequip,
     useConsumable,
+    openLootContainer,
     setItemLock,
     getSalvagePreview,
     salvageItem,

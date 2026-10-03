@@ -116,6 +116,41 @@ public sealed record CombatActorSnapshot(
     string? SkinId = null,
     int? Level = null);
 
+public sealed record CombatAbilityStatisticsSnapshot(
+    string Id,
+    int Uses = 0,
+    int Applications = 0,
+    int Hits = 0,
+    int CriticalHits = 0,
+    int PeriodicTicks = 0,
+    decimal Damage = 0,
+    decimal MaxHit = 0);
+
+public sealed record CombatDamageSourceStatisticsSnapshot(
+    decimal AutoAttack = 0,
+    decimal DirectOrProc = 0,
+    decimal Periodic = 0,
+    decimal Reflected = 0,
+    decimal Companion = 0,
+    decimal Other = 0);
+
+public sealed record CombatSessionStatisticsSnapshot(
+    IReadOnlyDictionary<string, int> AbilityUses,
+    DateTimeOffset? StartedAtUtc = null,
+    decimal DamageDealt = 0,
+    decimal DamageTaken = 0,
+    decimal HealingDone = 0,
+    decimal ArmorMitigated = 0,
+    decimal Blocked = 0,
+    decimal ShieldAbsorbed = 0,
+    decimal ResourceGained = 0,
+    decimal ResourceSpent = 0,
+    int CriticalHits = 0,
+    int Dodges = 0,
+    int Deaths = 0,
+    IReadOnlyDictionary<string, CombatAbilityStatisticsSnapshot>? Abilities = null,
+    CombatDamageSourceStatisticsSnapshot? DamageSources = null);
+
 public sealed record CombatSessionSnapshot(
     Guid SessionId,
     long Sequence,
@@ -132,7 +167,8 @@ public sealed record CombatSessionSnapshot(
     IReadOnlyList<CombatActorSnapshot>? Players = null,
     IReadOnlyList<CombatParticipantSnapshot>? ParticipantRoster = null,
     bool? PlayerContributionEligible = null,
-    IReadOnlyList<ContributionEligibilityResult>? ParticipantContributions = null);
+    IReadOnlyList<ContributionEligibilityResult>? ParticipantContributions = null,
+    CombatSessionStatisticsSnapshot? Statistics = null);
 
 public static class CombatErrorCodes
 {

@@ -2700,6 +2700,10 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 3)
                         .HasColumnType("numeric(18,3)");
 
+                    b.Property<decimal>("Healing")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
                     b.Property<DateTimeOffset>("FirstActivityAtUtc")
                         .HasColumnType("timestamp with time zone");
 
@@ -2712,8 +2716,8 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.HasIndex("CharacterId", "LastActivityAtUtc")
                         .HasDatabaseName("ix_world_boss_contributions_character_activity");
 
-                    b.HasIndex("SpawnId", "Damage")
-                        .IsDescending(false, true)
+                    b.HasIndex("SpawnId", "Damage", "Healing")
+                        .IsDescending(false, true, true)
                         .HasDatabaseName("ix_world_boss_contributions_leaderboard");
 
                     b.ToTable("world_boss_contributions", "game", t =>
@@ -2721,6 +2725,8 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("ck_world_boss_contributions_activity_order", "\"LastActivityAtUtc\" >= \"FirstActivityAtUtc\"");
 
                             t.HasCheckConstraint("ck_world_boss_contributions_damage_non_negative", "\"Damage\" >= 0");
+
+                            t.HasCheckConstraint("ck_world_boss_contributions_healing_non_negative", "\"Healing\" >= 0");
                         });
                 });
 
@@ -2771,6 +2777,48 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossHealingMutation", b =>
+                {
+                    b.Property<Guid>("SpawnId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MutationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CommittedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CombatSessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("EffectiveHealing")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
+                    b.Property<Guid?>("PartyId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("SpawnId", "MutationId")
+                        .HasName("pk_world_boss_healing_mutations");
+
+                    b.HasIndex("CharacterId")
+                        .HasDatabaseName("ix_world_boss_healing_mutations_character");
+
+                    b.HasIndex("CombatSessionId")
+                        .HasDatabaseName("ix_world_boss_healing_mutations_combat_session");
+
+                    b.HasIndex("PartyId")
+                        .HasDatabaseName("ix_world_boss_healing_mutations_party");
+
+                    b.ToTable("world_boss_healing_mutations", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_world_boss_healing_mutations_amount_positive", "\"EffectiveHealing\" > 0");
+                        });
+                });
+
             modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossPartyContribution", b =>
                 {
                     b.Property<Guid>("SpawnId")
@@ -2783,18 +2831,24 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 3)
                         .HasColumnType("numeric(18,3)");
 
+                    b.Property<decimal>("Healing")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("numeric(18,3)");
+
                     b.HasKey("SpawnId", "PartyId")
                         .HasName("pk_world_boss_party_contributions");
 
                     b.HasIndex("PartyId");
 
-                    b.HasIndex("SpawnId", "Damage")
-                        .IsDescending(false, true)
+                    b.HasIndex("SpawnId", "Damage", "Healing")
+                        .IsDescending(false, true, true)
                         .HasDatabaseName("ix_world_boss_party_contributions_leaderboard");
 
                     b.ToTable("world_boss_party_contributions", "game", t =>
                         {
                             t.HasCheckConstraint("ck_world_boss_party_contributions_damage_non_negative", "\"Damage\" >= 0");
+
+                            t.HasCheckConstraint("ck_world_boss_party_contributions_healing_non_negative", "\"Healing\" >= 0");
                         });
                 });
 
@@ -3615,6 +3669,29 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_world_boss_damage_mutations_spawn");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossHealingMutation", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_world_boss_healing_mutations_character");
+
+                    b.HasOne("Elyndor.Core.Parties.Party", null)
+                        .WithMany()
+                        .HasForeignKey("PartyId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_world_boss_healing_mutations_party");
+
+                    b.HasOne("Elyndor.Core.WorldBosses.WorldBossSpawn", null)
+                        .WithMany()
+                        .HasForeignKey("SpawnId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_world_boss_healing_mutations_spawn");
                 });
 
             modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossPartyContribution", b =>

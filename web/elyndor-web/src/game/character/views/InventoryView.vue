@@ -3,7 +3,7 @@ import { formatMoney } from '@/shared/money'
 import { computed, ref, watch } from 'vue'
 
 import { apiClient, ApiRequestError } from '@/api/apiClient'
-import type { EquipmentSlot, InventoryItem, PendingLootItem, SpatialInventorySnapshot } from '@/api/contracts'
+import type { EquipmentSlot, InventoryItem, OpenLootContainerResponse, PendingLootItem, SpatialInventorySnapshot } from '@/api/contracts'
 import { consumableSummary } from '@/game/items/consumablePresentation'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -24,7 +24,7 @@ const spatialActionError = ref<string | null>(null)
 let spatialInventoryRequestSequence = 0
 const selectedItem = ref<InventoryItem | null>(null)
 const equipmentActionError = ref<string | null>(null)
-const typeFilter = ref<'all' | 'equipment' | 'artifact' | 'material' | 'consumable'>('all')
+const typeFilter = ref<'all' | 'equipment' | 'artifact' | 'material' | 'consumable' | 'container'>('all')
 const rarityFilter = ref<'all' | InventoryItem['rarity']>('all')
 const equipableOnly = ref(false)
 const newOnly = ref(false)
@@ -39,6 +39,9 @@ const bulkActionPending = ref(false)
 const pendingLootItems = ref<PendingLootItem[]>([])
 const pendingLootLoading = ref(false)
 const pendingLootActionError = ref<string | null>(null)
+const containerActionPending = ref(false)
+const containerActionError = ref<string | null>(null)
+const openedContainer = ref<OpenLootContainerResponse | null>(null)
 const MARCUS_MERCHANT_ID = 'MARCUS_SUPPLIES'
 const contextualSlot = computed(() => props.slotFilter ?? null)
 const isContextualSlotMode = computed(() => contextualSlot.value !== null)
@@ -63,6 +66,7 @@ const filteredItems = computed(() => bagItems.value.filter((item) => {
     || (typeFilter.value === 'artifact' && isSpatialArtifact(item))
     || (typeFilter.value === 'material' && item.type === 'Material')
     || (typeFilter.value === 'consumable' && item.type === 'Consumable')
+    || (typeFilter.value === 'container' && item.type === 'LootContainer')
   const rarityMatches = rarityFilter.value === 'all' || item.rarity === rarityFilter.value
   const equipableMatches = !equipableOnly.value || canEquipNow(item)
   const newMatches = !newOnly.value || newItemIds.value.has(item.id)
@@ -688,6 +692,7 @@ function typeLabel(item: InventoryItem): string {
   if (isSpatialArtifact(item)) return 'Пространственный артефакт'
   if (item.type === 'Material') return 'Материал'
   if (item.type === 'Consumable') return 'Расходник'
+  if (item.type === 'LootContainer') return 'Сундук'
   const labels: Record<string, string> = {
     MainHand: 'Основная рука', OffHand: 'Вторая рука', Weapon: 'Оружие',
     Head: 'Шлем', Chest: 'Нагрудник', Hands: 'Перчатки', Legs: 'Поножи',
@@ -811,6 +816,26 @@ async function useSelected(): Promise<void> {
   selectedItem.value = null
 }
 
+async function openSelectedContainer(): Promise<void> {
+  const item = selectedItem.value
+  if (!item || item.type !== 'LootContainer' || containerActionPending.value) return
+
+  containerActionPending.value = true
+  containerActionError.value = null
+  try {
+    const result = await session.openLootContainer(item.id)
+    if (!result) {
+      containerActionError.value = session.errorCode ?? 'loot_container_open_failed'
+      return
+    }
+
+    selectedItem.value = null
+    openedContainer.value = result
+  } finally {
+    containerActionPending.value = false
+  }
+}
+
 async function toggleSelectedLock(): Promise<void> {
   const item = selectedItem.value
   if (!item || session.mutationPending) return
@@ -889,6 +914,7 @@ async function toggleSelectedLock(): Promise<void> {
           <button type="button" :class="{ active: typeFilter === 'equipment' }" @click="typeFilter = 'equipment'">Снаряжение</button>
           <button type="button" :class="{ active: typeFilter === 'artifact' }" @click="typeFilter = 'artifact'">Артефакты</button>
           <button type="button" :class="{ active: typeFilter === 'consumable' }" @click="typeFilter = 'consumable'">Расходники</button>
+          <button type="button" :class="{ active: typeFilter === 'container' }" @click="typeFilter = 'container'">Сундуки</button>
           <button type="button" :class="{ active: typeFilter === 'material' }" @click="typeFilter = 'material'">Материалы</button>
         </div>
       </div>
@@ -1247,6 +1273,13 @@ async function toggleSelectedLock(): Promise<void> {
           {{ selectedEquipmentLevelReason }}
         </p>
         <p
+          v-if="containerActionError"
+          class="item-detail__error"
+          role="alert"
+        >
+          Не удалось открыть сундук: {{ containerActionError }}
+        </p>
+        <p
           v-if="selectedItem.type === 'Equipment' && inventoryActionError(equipmentActionError)"
           class="item-detail__error"
           role="alert"
@@ -1312,6 +1345,15 @@ async function toggleSelectedLock(): Promise<void> {
           Использовать
         </UIButton>
         <UIButton
+          v-if="selectedItem?.type === 'LootContainer'"
+          data-open-loot-container
+          :loading="containerActionPending"
+          :disabled="containerActionPending || session.mutationPending"
+          @click="openSelectedContainer"
+        >
+          Открыть сундук
+        </UIButton>
+        <UIButton
           v-if="selectedItem && canSellHere && selectedItem.sellPriceGold > 0 && !selectedItem.isLocked"
           variant="secondary"
           data-item-sell-action
@@ -1341,6 +1383,40 @@ async function toggleSelectedLock(): Promise<void> {
         >
           {{ selectedItem.isLocked ? 'Снять защиту' : 'Защитить' }}
         </UIButton>
+      </template>
+    </UIModal>
+
+    <UIModal
+      :open="openedContainer !== null"
+      title="Сундук открыт"
+      @close="openedContainer = null"
+    >
+      <section v-if="openedContainer" class="loot-container-result">
+        <p v-if="openedContainer.gold > 0">
+          Золото: <strong>+{{ formatNumber(openedContainer.gold) }}</strong>
+        </p>
+        <article
+          v-for="item in openedContainer.items"
+          :key="item.definitionId"
+          class="loot-container-result__item"
+          :data-rarity="item.rarity"
+        >
+          <ItemIcon
+            :icon-id="item.iconId"
+            :item-id="item.definitionId"
+            :name="item.name"
+            :type="'Equipment'"
+            :rarity="item.rarity"
+          />
+          <div>
+            <strong>{{ item.name }}</strong>
+            <small>{{ item.rarity }}<template v-if="item.quantity > 1"> · ×{{ item.quantity }}</template></small>
+            <small v-if="item.pending">Нет места — предмет отправлен в незабранную добычу.</small>
+          </div>
+        </article>
+      </section>
+      <template #actions>
+        <UIButton @click="openedContainer = null">Готово</UIButton>
       </template>
     </UIModal>
   </section>
@@ -2236,4 +2312,41 @@ async function toggleSelectedLock(): Promise<void> {
     grid-template-columns: 2.8rem minmax(0, 1fr);
   }
 }
+
+.loot-container-result {
+  display: grid;
+  gap: var(--ui-space-3);
+}
+
+.loot-container-result > p {
+  margin: 0;
+  color: var(--ui-color-text-secondary);
+}
+
+.loot-container-result__item {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: var(--ui-space-3);
+  align-items: center;
+  padding: var(--ui-space-3);
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
+  background: rgb(0 0 0 / 20%);
+}
+
+.loot-container-result__item > :first-child {
+  width: 48px;
+  height: 48px;
+}
+
+.loot-container-result__item > div {
+  display: grid;
+  gap: 2px;
+}
+
+.loot-container-result__item small {
+  color: var(--ui-color-text-muted);
+  font-size: var(--ui-font-size-xs);
+}
+
 </style>

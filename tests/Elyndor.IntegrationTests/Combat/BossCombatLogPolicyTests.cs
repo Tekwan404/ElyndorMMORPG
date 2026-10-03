@@ -7,6 +7,58 @@ namespace Elyndor.IntegrationTests.Combat;
 
 public sealed class BossCombatLogPolicyTests
 {
+    [Fact]
+    public void ArchiveDropsZeroCombatRegenNoise()
+    {
+        CombatEvent zeroRegen = new(
+            CombatEventType.ResourceChanged,
+            new DateTimeOffset(2026, 10, 3, 6, 0, 0, TimeSpan.Zero),
+            Guid.CreateVersion7(),
+            "COMBAT_REGEN",
+            0);
+
+        Assert.False(BossCombatLogArchive.ShouldArchiveEvent(zeroRegen));
+        Assert.True(BossCombatLogArchive.ShouldArchiveEvent(
+            zeroRegen with { Amount = 1 }));
+        Assert.True(BossCombatLogArchive.ShouldArchiveEvent(
+            zeroRegen with { DefinitionId = "OTHER_REGEN" }));
+    }
+
+    [Fact]
+    public void AbilitySummaryUsesCumulativeSessionStatistics()
+    {
+        CombatSessionSnapshot snapshot = Snapshot(
+            Monster("WORLD_BOSS_ASH_ARCHON_L30", "Архон Пепла", MonsterRank.Boss))
+            with
+            {
+                Statistics = new CombatSessionStatisticsSnapshot(
+                    new Dictionary<string, int>(StringComparer.Ordinal)
+                    {
+                        ["MAGE_IGNITE"] = 17,
+                        ["MAGE_FIREBALL"] = 4
+                    })
+            };
+        CombatEvent[] retainedEvents =
+        [
+            new CombatEvent(
+                CombatEventType.AbilityUsed,
+                new DateTimeOffset(2026, 10, 3, 6, 5, 0, TimeSpan.Zero),
+                snapshot.Player.ActorId,
+                "MAGE_IGNITE",
+                SourceActorId: snapshot.Player.ActorId,
+                TargetActorId: snapshot.Enemy.ActorId)
+            {
+                Sequence = 1499
+            }
+        ];
+
+        string summary = BossCombatLogArchive.FormatAbilitySummary(
+            snapshot,
+            retainedEvents);
+
+        Assert.Equal("MAGE_IGNITE×17, MAGE_FIREBALL×4", summary);
+    }
+
     [Theory]
     [InlineData("ARCHON_OF_THE_DEAD_STAR", "Обычный босс")]
     [InlineData("WORLD_BOSS_ASH_ARCHON_L30", "Архон Пепла")]

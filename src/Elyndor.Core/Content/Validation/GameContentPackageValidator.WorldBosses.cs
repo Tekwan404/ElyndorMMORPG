@@ -135,7 +135,8 @@ public static partial class GameContentPackageValidator
                         || tier.ChestCount < 0
                         || tier.MaxRank is <= 0
                         || tier.Enhanced && tier.ChestCount <= 0
-                        || tier.Enhanced && string.IsNullOrWhiteSpace(tier.LootTableId))
+                        || tier.Enhanced && string.IsNullOrWhiteSpace(tier.LootTableId)
+                        || tier.ChestCount > 0 && string.IsNullOrWhiteSpace(tier.ChestItemId))
                     || leaderboardTiers
                         .Select(tier => tier.Tier)
                         .Distinct()
@@ -150,6 +151,19 @@ public static partial class GameContentPackageValidator
 
                 foreach (WorldBossLeaderboardRewardTierDefinition leaderboardTier in leaderboardTiers)
                 {
+                    if (leaderboardTier.ChestCount > 0)
+                    {
+                        ItemDefinition? chestItem = package.Items?.FirstOrDefault(item =>
+                            string.Equals(item.Id, leaderboardTier.ChestItemId, StringComparison.Ordinal));
+                        if (chestItem?.Type != ItemType.LootContainer)
+                        {
+                            errors.Add(new(
+                                "INVALID_WORLD_BOSS_CHEST_ITEM",
+                                $"{path}.rewardProfileId",
+                                $"World boss leaderboard reward tier '{leaderboardTier.Tier}' references an invalid chest item."));
+                        }
+                    }
+
                     if (string.IsNullOrWhiteSpace(leaderboardTier.LootTableId))
                         continue;
 

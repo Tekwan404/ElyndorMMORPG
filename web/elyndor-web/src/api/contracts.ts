@@ -384,7 +384,7 @@ export type EquipmentSlot =
   | 'MainHand' | 'OffHand' | 'Head' | 'Shoulders' | 'Chest' | 'Hands' | 'Legs' | 'Feet'
   | 'Cloak' | 'Amulet' | 'Ring1' | 'Ring2'
   | 'Weapon' | 'Boots' | 'Accessory' | 'Waist' | 'Wrist'
-export type ItemType = 'Equipment' | 'Material' | 'Consumable'
+export type ItemType = 'Equipment' | 'Material' | 'Consumable' | 'LootContainer'
 export type ItemRarity = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary' | 'Unique'
 
 export interface ConsumableAction {
@@ -456,6 +456,21 @@ export interface InventoryItem {
   reforgeSlotKey?: string | null
   transactionLocked?: boolean
   bindState?: 'UNBOUND' | 'BOUND' | string
+}
+
+export interface LootContainerRewardItem {
+  definitionId: string
+  name: string
+  rarity: ItemRarity
+  quantity: number
+  iconId: string | null
+  pending: boolean
+}
+
+export interface OpenLootContainerResponse {
+  wasReplay: boolean
+  gold: number
+  items: LootContainerRewardItem[]
 }
 
 export interface SpatialArtifactSnapshot {

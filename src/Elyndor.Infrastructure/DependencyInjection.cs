@@ -68,6 +68,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<ArenaLobbyService>();
         builder.Services.AddScoped<ArenaInvitationService>();
         builder.Services.AddScoped<WorldBossDamageService>();
+        builder.Services.AddScoped<WorldBossHealingContributionService>();
         builder.Services.AddScoped<WorldBossLifecycleService>();
         builder.Services.AddScoped<WorldBossReadService>();
         builder.Services.AddScoped<WorldBossEnterService>();
@@ -85,6 +86,7 @@ public static class DependencyInjection
             builder.Services.AddHostedService<ArenaMatchmakingWorker>();
         }
         builder.Services.AddScoped<InventoryEquipmentService>();
+        builder.Services.AddScoped<LootContainerService>();
         builder.Services.AddScoped<SpatialInventoryService>();
         builder.Services.AddScoped<ItemReforgeService>();
         builder.Services.AddScoped<ItemSalvageService>();

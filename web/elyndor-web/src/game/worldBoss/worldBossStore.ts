@@ -26,7 +26,11 @@ export interface WorldBossActiveSnapshot {
   expiresAtUtc: string
   participants: number
   personalDamage: number
+  personalHealing: number
+  personalContribution: number
   partyDamage: number
+  partyHealing: number
+  partyContribution: number
   eligibleParticipants: number
   personalRewardRank: number | null
   rewardPercentile: number
@@ -47,6 +51,8 @@ export interface WorldBossPersonalLeaderboardEntry {
   characterId: string
   name: string
   damage: number
+  healing: number
+  contribution: number
 }
 
 export interface WorldBossPartyLeaderboardEntry {
@@ -54,6 +60,8 @@ export interface WorldBossPartyLeaderboardEntry {
   partyId: string
   leaderName: string
   damage: number
+  healing: number
+  contribution: number
 }
 
 export interface WorldBossLeaderboard {
@@ -62,9 +70,13 @@ export interface WorldBossLeaderboard {
   parties: WorldBossPartyLeaderboardEntry[]
   personalRank: number | null
   personalDamage: number
+  personalHealing: number
+  personalContribution: number
   partyId: string | null
   partyRank: number | null
   partyDamage: number
+  partyHealing: number
+  partyContribution: number
 }
 
 export interface WorldBossItemStats {
@@ -431,7 +443,7 @@ export const useWorldBossStore = defineStore('worldBoss', () => {
       active.value = {
         ...active.value,
         currentHealth: 0,
-        personalDamage: event.contribution,
+        personalContribution: event.contribution,
       }
     }
   }

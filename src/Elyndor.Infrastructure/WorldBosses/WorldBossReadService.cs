@@ -22,7 +22,11 @@ public sealed record WorldBossActiveSnapshot(
     DateTimeOffset ExpiresAtUtc,
     int Participants,
     decimal PersonalDamage,
+    decimal PersonalHealing,
+    decimal PersonalContribution,
     decimal PartyDamage,
+    decimal PartyHealing,
+    decimal PartyContribution,
     int EligibleParticipants,
     int? PersonalRewardRank,
     decimal RewardPercentile,
@@ -45,13 +49,17 @@ public sealed record WorldBossPersonalLeaderboardEntry(
     int Rank,
     Guid CharacterId,
     string Name,
-    decimal Damage);
+    decimal Damage,
+    decimal Healing,
+    decimal Contribution);
 
 public sealed record WorldBossPartyLeaderboardEntry(
     int Rank,
     Guid PartyId,
     string LeaderName,
-    decimal Damage);
+    decimal Damage,
+    decimal Healing,
+    decimal Contribution);
 
 public sealed record WorldBossLeaderboardReadResult(
     bool CharacterFound,
@@ -61,9 +69,13 @@ public sealed record WorldBossLeaderboardReadResult(
     IReadOnlyList<WorldBossPartyLeaderboardEntry> Parties,
     int? PersonalRank,
     decimal PersonalDamage,
+    decimal PersonalHealing,
+    decimal PersonalContribution,
     Guid? PartyId,
     int? PartyRank,
-    decimal PartyDamage);
+    decimal PartyDamage,
+    decimal PartyHealing,
+    decimal PartyContribution);
 
 public sealed record WorldBossRewardSnapshot(
     Guid SpawnId,
@@ -121,23 +133,37 @@ public sealed class WorldBossReadService(
 
         int participants = await db.WorldBossContributions.AsNoTracking()
             .CountAsync(contribution => contribution.SpawnId == spawn.Id, cancellationToken);
-        decimal personalDamage = await db.WorldBossContributions.AsNoTracking()
+        var personalContributionRow = await db.WorldBossContributions.AsNoTracking()
             .Where(contribution => contribution.SpawnId == spawn.Id
                 && contribution.CharacterId == characterId.Value)
-            .Select(contribution => (decimal?)contribution.Damage)
-            .SingleOrDefaultAsync(cancellationToken) ?? 0m;
+            .Select(contribution => new
+            {
+                contribution.Damage,
+                contribution.Healing
+            })
+            .SingleOrDefaultAsync(cancellationToken);
+        decimal personalDamage = personalContributionRow?.Damage ?? 0m;
+        decimal personalHealing = personalContributionRow?.Healing ?? 0m;
+        decimal personalContribution = checked(personalDamage + personalHealing);
 
         Guid? partyId = await db.PartyMembers.AsNoTracking()
             .Where(member => member.CharacterId == characterId.Value)
             .Select(member => (Guid?)member.PartyId)
             .SingleOrDefaultAsync(cancellationToken);
-        decimal partyDamage = partyId is null
-            ? 0m
+        var partyContributionRow = partyId is null
+            ? null
             : await db.WorldBossPartyContributions.AsNoTracking()
                 .Where(contribution => contribution.SpawnId == spawn.Id
                     && contribution.PartyId == partyId.Value)
-                .Select(contribution => (decimal?)contribution.Damage)
-                .SingleOrDefaultAsync(cancellationToken) ?? 0m;
+                .Select(contribution => new
+                {
+                    contribution.Damage,
+                    contribution.Healing
+                })
+                .SingleOrDefaultAsync(cancellationToken);
+        decimal partyDamage = partyContributionRow?.Damage ?? 0m;
+        decimal partyHealing = partyContributionRow?.Healing ?? 0m;
+        decimal partyContribution = checked(partyDamage + partyHealing);
 
         string? monsterId = null;
         string? artId = null;
@@ -162,7 +188,7 @@ public sealed class WorldBossReadService(
             characterId.Value,
             content,
             definition,
-            personalDamage,
+            personalContribution,
             cancellationToken);
 
         return new WorldBossActiveReadResult(
@@ -182,7 +208,11 @@ public sealed class WorldBossReadService(
                 spawn.ExpiresAtUtc,
                 participants,
                 personalDamage,
+                personalHealing,
+                personalContribution,
                 partyDamage,
+                partyHealing,
+                partyContribution,
                 rewardProgress.EligibleParticipants,
                 rewardProgress.PersonalRank,
                 rewardProgress.Percentile,
@@ -270,7 +300,7 @@ public sealed class WorldBossReadService(
         if (characterId is null)
         {
             return new WorldBossLeaderboardReadResult(
-                false, false, spawnId, [], [], null, 0, null, null, 0);
+                false, false, spawnId, [], [], null, 0, 0, 0, null, null, 0, 0, 0);
         }
 
         bool spawnExists = await db.WorldBossSpawns.AsNoTracking()
@@ -278,7 +308,7 @@ public sealed class WorldBossReadService(
         if (!spawnExists)
         {
             return new WorldBossLeaderboardReadResult(
-                true, false, spawnId, [], [], null, 0, null, null, 0);
+                true, false, spawnId, [], [], null, 0, 0, 0, null, null, 0, 0, 0);
         }
 
         var playerRows = await (
@@ -286,12 +316,14 @@ public sealed class WorldBossReadService(
             join character in db.Characters.AsNoTracking()
                 on contribution.CharacterId equals character.Id
             where contribution.SpawnId == spawnId
-            orderby contribution.Damage descending, contribution.CharacterId
+            orderby contribution.Damage + contribution.Healing descending, contribution.CharacterId
             select new
             {
                 contribution.CharacterId,
                 character.Name,
-                contribution.Damage
+                contribution.Damage,
+                contribution.Healing,
+                Contribution = contribution.Damage + contribution.Healing
             })
             .Take(50)
             .ToListAsync(cancellationToken);
@@ -304,7 +336,9 @@ public sealed class WorldBossReadService(
                 index + 1,
                 row.CharacterId,
                 row.Name,
-                row.Damage));
+                row.Damage,
+                row.Healing,
+                row.Contribution));
         }
 
         var personalContribution = await db.WorldBossContributions.AsNoTracking()
@@ -313,14 +347,16 @@ public sealed class WorldBossReadService(
             .Select(contribution => new
             {
                 contribution.CharacterId,
-                contribution.Damage
+                contribution.Damage,
+                contribution.Healing,
+                Contribution = contribution.Damage + contribution.Healing
             })
             .SingleOrDefaultAsync(cancellationToken);
         Guid[] rankedCharacterIds = personalContribution is null
             ? []
             : await db.WorldBossContributions.AsNoTracking()
                 .Where(contribution => contribution.SpawnId == spawnId)
-                .OrderByDescending(contribution => contribution.Damage)
+                .OrderByDescending(contribution => contribution.Damage + contribution.Healing)
                 .ThenBy(contribution => contribution.CharacterId)
                 .Select(contribution => contribution.CharacterId)
                 .ToArrayAsync(cancellationToken);
@@ -329,6 +365,8 @@ public sealed class WorldBossReadService(
             : Array.IndexOf(rankedCharacterIds, personalContribution.CharacterId);
         int? personalRank = personalIndex < 0 ? null : personalIndex + 1;
         decimal? personalDamageValue = personalContribution?.Damage;
+        decimal? personalHealingValue = personalContribution?.Healing;
+        decimal? personalContributionValue = personalContribution?.Contribution;
 
         Guid? partyId = await db.PartyMembers.AsNoTracking()
             .Where(member => member.CharacterId == characterId.Value)
@@ -342,45 +380,57 @@ public sealed class WorldBossReadService(
             join leader in db.Characters.AsNoTracking()
                 on party.LeaderCharacterId equals leader.Id
             where contribution.SpawnId == spawnId
-            orderby contribution.Damage descending, contribution.PartyId
+            orderby contribution.Damage + contribution.Healing descending, contribution.PartyId
             select new
             {
                 contribution.PartyId,
                 LeaderName = leader.Name,
-                contribution.Damage
+                contribution.Damage,
+                contribution.Healing,
+                Contribution = contribution.Damage + contribution.Healing
             })
             .Take(25)
             .ToListAsync(cancellationToken);
 
         List<WorldBossPartyLeaderboardEntry> parties = [];
-        decimal? previousPartyDamage = null;
+        decimal? previousPartyContribution = null;
         var partyRank = 0;
         for (int index = 0; index < partyRows.Count; index++)
         {
             var row = partyRows[index];
-            if (previousPartyDamage != row.Damage)
+            if (previousPartyContribution != row.Contribution)
                 partyRank = index + 1;
             parties.Add(new(
                 partyRank,
                 row.PartyId,
                 row.LeaderName,
-                row.Damage));
-            previousPartyDamage = row.Damage;
+                row.Damage,
+                row.Healing,
+                row.Contribution));
+            previousPartyContribution = row.Contribution;
         }
 
-        decimal? partyDamageValue = partyId is null
+        var currentPartyContribution = partyId is null
             ? null
             : await db.WorldBossPartyContributions.AsNoTracking()
                 .Where(contribution => contribution.SpawnId == spawnId
                     && contribution.PartyId == partyId.Value)
-                .Select(contribution => (decimal?)contribution.Damage)
+                .Select(contribution => new
+                {
+                    contribution.Damage,
+                    contribution.Healing,
+                    Contribution = contribution.Damage + contribution.Healing
+                })
                 .SingleOrDefaultAsync(cancellationToken);
-        int? currentPartyRank = partyDamageValue is null
+        decimal? partyDamageValue = currentPartyContribution?.Damage;
+        decimal? partyHealingValue = currentPartyContribution?.Healing;
+        decimal? partyContributionValue = currentPartyContribution?.Contribution;
+        int? currentPartyRank = partyContributionValue is null
             ? null
             : 1 + await db.WorldBossPartyContributions.AsNoTracking()
                 .CountAsync(
                     contribution => contribution.SpawnId == spawnId
-                        && contribution.Damage > partyDamageValue.Value,
+                        && contribution.Damage + contribution.Healing > partyContributionValue.Value,
                     cancellationToken);
 
         return new WorldBossLeaderboardReadResult(
@@ -391,9 +441,13 @@ public sealed class WorldBossReadService(
             parties,
             personalRank,
             personalDamageValue ?? 0m,
+            personalHealingValue ?? 0m,
+            personalContributionValue ?? 0m,
             partyId,
             currentPartyRank,
-            partyDamageValue ?? 0m);
+            partyDamageValue ?? 0m,
+            partyHealingValue ?? 0m,
+            partyContributionValue ?? 0m);
     }
 
     private async Task<WorldBossRewardProgress> ResolveRewardProgressAsync(
@@ -401,7 +455,7 @@ public sealed class WorldBossReadService(
         Guid characterId,
         GameContentSnapshot content,
         WorldBossDefinition? definition,
-        decimal personalDamage,
+        decimal personalContribution,
         CancellationToken cancellationToken)
     {
         if (definition is null
@@ -418,18 +472,18 @@ public sealed class WorldBossReadService(
                 .OrderBy(tier => tier.MinimumContribution)
                 .ToArray();
             WorldBossRewardTierThresholdDefinition? current = orderedTiers
-                .LastOrDefault(tier => personalDamage >= tier.MinimumContribution);
+                .LastOrDefault(tier => personalContribution >= tier.MinimumContribution);
             WorldBossRewardTierThresholdDefinition? next = orderedTiers
-                .FirstOrDefault(tier => personalDamage < tier.MinimumContribution);
+                .FirstOrDefault(tier => personalContribution < tier.MinimumContribution);
 
             return new(
-                personalDamage >= profile.MinimumContribution,
+                personalContribution >= profile.MinimumContribution,
                 current?.Tier.ToString(),
                 next?.Tier.ToString(),
                 next?.MinimumContribution,
                 next is null
                     ? 0m
-                    : Math.Max(0m, next.MinimumContribution - personalDamage),
+                    : Math.Max(0m, next.MinimumContribution - personalContribution),
                 0,
                 null,
                 0m,
@@ -440,15 +494,15 @@ public sealed class WorldBossReadService(
 
         var eligibleRows = await db.WorldBossContributions.AsNoTracking()
             .Where(contribution => contribution.SpawnId == spawnId
-                && contribution.Damage >= profile.MinimumContribution)
-            .OrderByDescending(contribution => contribution.Damage)
+                && contribution.Damage + contribution.Healing >= profile.MinimumContribution)
+            .OrderByDescending(contribution => contribution.Damage + contribution.Healing)
             .ThenBy(contribution => contribution.CharacterId)
             .Select(contribution => contribution.CharacterId)
             .ToArrayAsync(cancellationToken);
 
         int eligibleParticipants = eligibleRows.Length;
         int index = Array.IndexOf(eligibleRows, characterId);
-        if (personalDamage < profile.MinimumContribution
+        if (personalContribution < profile.MinimumContribution
             || index < 0
             || eligibleParticipants == 0)
         {

@@ -172,8 +172,9 @@ public sealed class WorldBossSettlementService(
                     character => character.AccountId,
                     cancellationToken);
         WorldBossContribution[] eligible = contributions
-            .Where(contribution => contribution.Damage >= rewardProfile.MinimumContribution)
-            .OrderByDescending(contribution => contribution.Damage)
+            .Where(contribution =>
+                contribution.ContributionScore >= rewardProfile.MinimumContribution)
+            .OrderByDescending(contribution => contribution.ContributionScore)
             .ThenBy(contribution => contribution.CharacterId)
             .ToArray();
 
@@ -204,53 +205,39 @@ public sealed class WorldBossSettlementService(
 
             WorldBossLeaderboardRewardResolution leaderboardReward =
                 ResolveLeaderboardReward(
-                    contribution.Damage,
+                    contribution.ContributionScore,
                     eligibleIndex + 1,
                     eligible.Length,
                     rewardProfile);
             WorldBossRewardTier tier = leaderboardReward.Tier;
             Guid lootSeed = CreateLootSeed(spawnId, character.Id);
-            var random = new SeededGameRandom(SeedToInt32(lootSeed));
 
             int totalChestCount = checked(
                 leaderboardReward.ChestCount + leaderboardReward.EnhancedChestCount);
             int chestGold = 0;
-            List<LootRoll> chestLoot = [];
-            LootTableDefinition rewardChestTable = chestTable;
-            if (totalChestCount > 0
-                && !string.IsNullOrWhiteSpace(leaderboardReward.LootTableId))
+            LootRoll[] chestLoot = [];
+            if (totalChestCount > 0)
             {
-                if (!content.Indexes.LootTablesById.TryGetValue(
-                        leaderboardReward.LootTableId,
-                        out LootTableDefinition? configuredChestTable)
-                    || configuredChestTable is null)
+                if (string.IsNullOrWhiteSpace(leaderboardReward.ChestItemId)
+                    || !content.Indexes.ItemsById.TryGetValue(
+                        leaderboardReward.ChestItemId,
+                        out ItemDefinition? chestDefinition)
+                    || chestDefinition.Type != ItemType.LootContainer)
                 {
                     throw new InvalidOperationException(
-                        $"World boss reward chest '{leaderboardReward.LootTableId}' is missing from content.");
+                        $"World boss reward tier '{leaderboardReward.Tier}' is missing a valid loot-container item.");
                 }
 
-                rewardChestTable = configuredChestTable;
+                chestLoot =
+                [
+                    new LootRoll(
+                        chestDefinition.Id,
+                        totalChestCount,
+                        SourceQualityProfileId: "NORMAL")
+                ];
             }
 
-            for (var chestIndex = 0; chestIndex < totalChestCount; chestIndex++)
-            {
-                chestGold = checked(chestGold + RollInclusive(
-                    rewardProfile.ChestGoldMin,
-                    rewardProfile.ChestGoldMax,
-                    random));
-                LootRoll[] chestRolls = LootRoller.Roll(rewardChestTable, random)
-                    .Select(roll => roll with { SourceQualityProfileId = "BOSS" })
-                    .ToArray();
-                if (chestRolls.Length == 0)
-                {
-                    throw new InvalidOperationException(
-                        $"World boss chest '{rewardChestTable.Id}' did not produce an item.");
-                }
-
-                chestLoot.AddRange(chestRolls);
-            }
-
-            int totalGold = checked(rewardProfile.BossGold + chestGold);
+            int totalGold = rewardProfile.BossGold;
 
             CharacterProgressionResult progression =
                 CharacterProgression.GrantExperience(
@@ -279,7 +266,7 @@ public sealed class WorldBossSettlementService(
             }
 
             List<WorldBossLootItemResult> itemResults = [];
-            for (var ordinal = 0; ordinal < chestLoot.Count; ordinal++)
+            for (var ordinal = 0; ordinal < chestLoot.Length; ordinal++)
             {
                 LootRoll roll = chestLoot[ordinal];
                 WorldBossGrantedItemSnapshot granted = await GrantItemAsync(
@@ -316,7 +303,7 @@ public sealed class WorldBossSettlementService(
             var settlement = new WorldBossRewardSettlement(
                 spawnId,
                 character.Id,
-                contribution.Damage,
+                contribution.ContributionScore,
                 tier,
                 totalGold,
                 rewardProfile.BossExperience,
@@ -328,7 +315,7 @@ public sealed class WorldBossSettlementService(
 
             rewards.Add(new(
                 character.Id,
-                contribution.Damage,
+                contribution.ContributionScore,
                 tier,
                 leaderboardReward.Rank,
                 leaderboardReward.EligibleParticipants,
@@ -365,7 +352,7 @@ public sealed class WorldBossSettlementService(
                         ",",
                         reward.Items.Select(item => item.ItemId));
                 string details =
-                    $"damage={reward.Contribution:0.##} "
+                    $"score={reward.Contribution:0.##} "
                     + $"xp={reward.Experience} "
                     + $"gold={reward.BossGold + reward.ChestGold} "
                     + $"chests={reward.ChestCount} "
@@ -393,7 +380,7 @@ public sealed class WorldBossSettlementService(
                 .Select(contribution => new WorldBossRewardDelivery(
                     accountByCharacterId[contribution.CharacterId],
                     contribution.CharacterId,
-                    contribution.Damage,
+                    contribution.ContributionScore,
                     rewardByCharacterId.GetValueOrDefault(contribution.CharacterId)))
                 .ToArray();
 
@@ -701,6 +688,7 @@ public sealed class WorldBossSettlementService(
             WorldBossLeaderboardRewardPolicy.CalculatePercentile(rank, eligibleParticipants),
             1,
             0,
+            null,
             null);
     }
 
