@@ -86,6 +86,7 @@ public static class DependencyInjection
             builder.Services.AddHostedService<ArenaMatchmakingWorker>();
         }
         builder.Services.AddScoped<InventoryEquipmentService>();
+        builder.Services.AddScoped<LootContainerService>();
         builder.Services.AddScoped<SpatialInventoryService>();
         builder.Services.AddScoped<ItemReforgeService>();
         builder.Services.AddScoped<ItemSalvageService>();
