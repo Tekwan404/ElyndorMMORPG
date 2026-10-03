@@ -109,9 +109,7 @@ public sealed class PartyService(
             return new PartyOperationResult(true, null, snapshot);
         }
 
-        if (await dbContext.PartyMembers.AnyAsync(
-                member => member.CharacterId == character.Id,
-                cancellationToken))
+        if (await IsInGroupContextAsync(character.Id, cancellationToken))
         {
             await transaction.CommitAsync(cancellationToken);
             return PartyOperationResult.Failure(PartyErrorCodes.AlreadyInParty);
@@ -250,9 +248,7 @@ public sealed class PartyService(
             return PartyOperationResult.Failure(PartyErrorCodes.InvalidRequest);
         if (party.Members.Count >= Party.MaxPartySize)
             return PartyOperationResult.Failure(PartyErrorCodes.PartyFull);
-        if (await dbContext.PartyMembers.AnyAsync(
-                member => member.CharacterId == targetCharacterId,
-                cancellationToken))
+        if (await IsInGroupContextAsync(targetCharacterId, cancellationToken))
             return PartyOperationResult.Failure(PartyErrorCodes.AlreadyInParty);
         if (!await dbContext.Characters.AnyAsync(
                 character => character.Id == targetCharacterId,
@@ -317,9 +313,8 @@ public sealed class PartyService(
         if (pendingInvite is null || pendingInvite.TargetCharacterId != target.Id)
             return PartyOperationResult.Failure(PartyErrorCodes.InviteNotFound);
 
-        // A character can receive invites from multiple parties. Serialize all accepts
-        // for that character before locking the selected party so the unique membership
-        // constraint becomes a normal AlreadyInParty result instead of a race exception.
+        // Party and raid accepts share the same character lock. This guarantees that
+        // the durable Party/Raid membership checks are observed in one serialization order.
         await AcquireCharacterLockAsync(target.Id, cancellationToken);
         await AcquirePartyLockAsync(pendingInvite.PartyId, cancellationToken);
         PartyInvite? invite = await dbContext.PartyInvites
@@ -333,9 +328,7 @@ public sealed class PartyService(
             return PartyOperationResult.Failure(PartyErrorCodes.InviteExpired);
         if (invite.Status != PartyInviteStatus.Pending)
             return PartyOperationResult.Failure(PartyErrorCodes.InvalidState);
-        if (await dbContext.PartyMembers.AnyAsync(
-                member => member.CharacterId == target.Id,
-                cancellationToken))
+        if (await IsInGroupContextAsync(target.Id, cancellationToken))
             return PartyOperationResult.Failure(PartyErrorCodes.AlreadyInParty);
 
         Party? party = await GetPartyAsync(invite.PartyId, cancellationToken);
@@ -634,6 +627,12 @@ public sealed class PartyService(
             character => character.AccountId == accountId,
             cancellationToken);
 
+    private async Task<bool> IsInGroupContextAsync(
+        Guid characterId,
+        CancellationToken cancellationToken) =>
+        await dbContext.PartyMembers.AnyAsync(member => member.CharacterId == characterId, cancellationToken)
+        || await dbContext.RaidMembers.AnyAsync(member => member.CharacterId == characterId, cancellationToken);
+
     private async Task AcquirePartyLockAsync(
         Guid partyId,
         CancellationToken cancellationToken)
@@ -654,7 +653,7 @@ public sealed class PartyService(
         if (!dbContext.Database.IsNpgsql())
             return;
 
-        string lockKey = $"party-creation:{characterId:N}";
+        string lockKey = $"group-membership:{characterId:N}";
         await dbContext.Database.ExecuteSqlInterpolatedAsync(
             $"SELECT pg_advisory_xact_lock(hashtext({lockKey}))",
             cancellationToken);
