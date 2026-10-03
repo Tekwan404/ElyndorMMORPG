@@ -26,6 +26,6 @@ public sealed class PremiumStoreConsumableContentTests
         Assert.Equal(20, offer.Quantity);
         Assert.Equal(30, offer.CrystalPrice);
         Assert.True(offer.Enabled);
-        Assert.Equal(20, offer.PerAccountLimit);
+        Assert.Null(offer.PerAccountLimit);
     }
 }
