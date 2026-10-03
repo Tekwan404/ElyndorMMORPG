@@ -156,7 +156,7 @@ onUnmounted(() => {
             <div>
               <span>Золото</span>
               <strong>+{{ formatNumber(reward.totalGold) }}</strong>
-              <small>{{ formatNumber(reward.bossGold) }} босс + {{ formatNumber(reward.chestGold) }} сундуки</small>
+              <small>Награда за убийство босса. Золото сундуков выдаётся при открытии.</small>
             </div>
             <div>
               <span>Сундуки</span>
@@ -172,8 +172,8 @@ onUnmounted(() => {
 
           <section v-if="reward.items.length" class="boss-chest">
             <div class="boss-chest__title">
-              <span>{{ reward.enhancedChestCount > 0 ? 'Усиленная добыча TOP 5' : 'Сундук Архона Пепла' }}</span>
-              <small>Персональная добыча</small>
+              <span>Полученные сундуки</span>
+              <small>Открой их в инвентаре</small>
             </div>
             <article
               v-for="(item, index) in reward.items"
@@ -194,7 +194,7 @@ onUnmounted(() => {
                   · roll {{ item.generatedItem.rollQuality.toFixed(1) }}%
                   <template v-if="item.generatedItem.stars > 0"> · {{ '★'.repeat(item.generatedItem.stars) }}</template>
                 </small>
-                <small>{{ item.pending ? 'Ожидает места в инвентаре.' : 'Предмет сохранён в инвентарь.' }}</small>
+                <small>{{ item.pending ? 'Ожидает места в инвентаре.' : 'Сундук сохранён в инвентарь и ещё не открыт.' }}</small>
               </div>
             </article>
           </section>
