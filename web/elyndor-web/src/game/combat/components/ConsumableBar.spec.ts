@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import type { InventoryItem } from '@/api/contracts'
 import ConsumableBar from './ConsumableBar.vue'
@@ -95,7 +95,7 @@ describe('ConsumableBar', () => {
   })
 
   it('keeps cooldown and availability behavior for the aggregated slot', () => {
-    const cooldownRemaining = vi.fn(() => 4_000)
+    const cooldownRemaining = () => 4_000
     const wrapper = mount(ConsumableBar, {
       props: {
         items: [consumable('HEALING_POTION', 20), consumable('HEALING_POTION', 1)],
