@@ -118,6 +118,10 @@ public sealed class WorldBossHealingMutationConfiguration : IEntityTypeConfigura
             .OnDelete(DeleteBehavior.Restrict)
             .HasConstraintName("fk_world_boss_healing_mutations_party");
 
+        builder.HasIndex(x => x.CharacterId)
+            .HasDatabaseName("ix_world_boss_healing_mutations_character");
+        builder.HasIndex(x => x.PartyId)
+            .HasDatabaseName("ix_world_boss_healing_mutations_party");
         builder.HasIndex(x => x.CombatSessionId)
             .HasDatabaseName("ix_world_boss_healing_mutations_combat_session");
     }
