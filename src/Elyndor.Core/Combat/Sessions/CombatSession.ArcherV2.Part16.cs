@@ -9,15 +9,13 @@ public sealed partial class CombatSession
 private bool ArcherTalentCooldownReady(
 string key,
 DateTimeOffset now) =>
-!_talentInternalCooldowns.TryGetValue(key, out DateTimeOffset readyAt)
-|| readyAt <= now;
+_procGuard.IsReady(_player.Actor.ActorId, key, now);
 private void StartArcherTalentCooldown(
 string key,
 TimeSpan duration,
 DateTimeOffset now)
 {
-if (duration > TimeSpan.Zero)
-_talentInternalCooldowns[key] = now + duration;
+_procGuard.StartCooldown(_player.Actor.ActorId, key, now, duration);
 }
 private static decimal ArcherHpPercent(CombatActorState actor) =>
 actor.MaxHp <= 0

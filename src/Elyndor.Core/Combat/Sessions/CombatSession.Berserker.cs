@@ -85,6 +85,12 @@ public sealed partial class CombatSession
         AbilityDefinition ability,
         AbilityExecutionResult execution,
         DateTimeOffset now)
+        => RunResolvedProcHooks(execution, "warrior-resolved", () => OnSafePlayerAbilitySucceeded(ability, execution, now));
+
+    private void OnSafePlayerAbilitySucceeded(
+        AbilityDefinition ability,
+        AbilityExecutionResult execution,
+        DateTimeOffset now)
     {
         if (Status != CombatSessionStatus.Active) return;
 
@@ -407,7 +413,7 @@ public sealed partial class CombatSession
             _random,
             now);
         ApplyKernelEvents(
-            secondary.Events,
+            secondary.Events.Select(item => item with { IsProc = true, ProcDepth = 1, ProcOriginId = definitionId }),
             _player.Actor.ActorId,
             target.Actor.ActorId,
             definitionId,
@@ -453,7 +459,7 @@ public sealed partial class CombatSession
                 _random,
                 now);
             ApplyKernelEvents(
-                extra.Events,
+                extra.Events.Select(item => item with { IsProc = true, ProcDepth = 1, ProcOriginId = deathWhirlwind.TalentId }),
                 _player.Actor.ActorId,
                 target.Actor.ActorId,
                 "B-8-1");
@@ -707,17 +713,13 @@ public sealed partial class CombatSession
     }
 
     private bool TalentCooldownReady(string talentId, DateTimeOffset now) =>
-        !_talentInternalCooldowns.TryGetValue(talentId, out DateTimeOffset readyAt)
-        || readyAt <= now;
+        _procGuard.IsReady(_player.Actor.ActorId, talentId, now);
 
     private void StartTalentCooldown(
         ResolvedTalentEventHook hook,
         DateTimeOffset now)
     {
-        if (hook.InternalCooldown > TimeSpan.Zero)
-        {
-            _talentInternalCooldowns[hook.TalentId] = now + hook.InternalCooldown;
-        }
+        _procGuard.StartCooldown(_player.Actor.ActorId, hook.TalentId, now, hook.InternalCooldown);
     }
 
     private static bool ReduceCooldown(

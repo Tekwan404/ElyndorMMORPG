@@ -49,7 +49,6 @@ public sealed partial class CombatSession
     private DateTimeOffset? _lastMageManaSpendAtUtc;
     private DateTimeOffset? _coldBloodReadyAtUtc;
     private int _arcanePowerManaSpendCount;
-    private readonly Dictionary<Guid, DateTimeOffset> _deepFreezeReadyAt = [];
     private readonly List<PendingMageResourceRefund> _pendingMageResourceRefunds = [];
 
     private sealed record PendingMageResourceRefund(
@@ -335,6 +334,12 @@ public sealed partial class CombatSession
     }
 
     private void OnMageAbilityResolved(
+        AbilityDefinition ability,
+        AbilityExecutionResult execution,
+        DateTimeOffset now)
+        => RunResolvedProcHooks(execution, "mage-resolved", () => OnSafeMageAbilityResolved(ability, execution, now));
+
+    private void OnSafeMageAbilityResolved(
         AbilityDefinition ability,
         AbilityExecutionResult execution,
         DateTimeOffset now)
@@ -794,7 +799,8 @@ public sealed partial class CombatSession
         bool frozen = HasOwnEffect(target, FreezeEffectId, now);
         bool deep = HasOwnEffect(target, DeepChillEffectId, now);
         if (!frozen && !deep) return;
-        if (_deepFreezeReadyAt.TryGetValue(target.ActorId, out DateTimeOffset readyAt) && readyAt > now)
+        string cooldownKey = $"{deepFreeze.TalentId}:{target.ActorId}";
+        if (!_procGuard.IsReady(_player.Actor.ActorId, cooldownKey, now))
             return;
 
         decimal directDamage = execution.Events
@@ -812,7 +818,7 @@ public sealed partial class CombatSession
                 "MAGE_DEEP_FREEZE_STUN", EffectKind.Stun, deepFreeze.Duration, 1,
                 EffectStackPolicy.Replace, 0, SourceSpecific: true), now);
 
-        _deepFreezeReadyAt[target.ActorId] = now + deepFreeze.InternalCooldown;
+        _procGuard.StartCooldown(_player.Actor.ActorId, cooldownKey, now, deepFreeze.InternalCooldown);
     }
 
     private void SyncMageConditionalEffects(DateTimeOffset now)

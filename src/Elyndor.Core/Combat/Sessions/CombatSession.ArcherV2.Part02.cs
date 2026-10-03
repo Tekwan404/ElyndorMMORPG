@@ -10,6 +10,11 @@ private void OnArcherAbilityResolved(
 AbilityDefinition ability,
 AbilityExecutionResult execution,
 DateTimeOffset now)
+=> RunResolvedProcHooks(execution, "archer-resolved", () => OnSafeArcherAbilityResolved(ability, execution, now));
+private void OnSafeArcherAbilityResolved(
+AbilityDefinition ability,
+AbilityExecutionResult execution,
+DateTimeOffset now)
 {
 if (!IsArcher || Status != CombatSessionStatus.Active)
 return;

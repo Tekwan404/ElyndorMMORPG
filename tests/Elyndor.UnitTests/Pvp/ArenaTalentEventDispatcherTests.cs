@@ -10,6 +10,41 @@ namespace Elyndor.UnitTests.Pvp;
 public sealed class ArenaTalentEventDispatcherTests
 {
     [Fact]
+    public void ArenaBlockProcHonorsCooldownAndReplayAcrossEventConversion()
+    {
+        Guid defender = Guid.NewGuid();
+        var guard = new ProcGuard();
+        var hook = Hook("G-2-5", TalentModifierKeys.OnDamageTaken, "BLOCK", 3)
+            with { InternalCooldown = TimeSpan.FromSeconds(5) };
+        var talents = Talents(hook);
+        CombatEvent block = new(CombatEventType.DamageBlocked, DateTimeOffset.UnixEpoch,
+            defender, Amount: 10, SourceActorId: Guid.NewGuid(), TargetActorId: defender);
+        CombatEvent damage = block with { Type = CombatEventType.DamageDealt, Amount = 0 };
+        ArenaTalentCombatEvent input = Assert.Single(ArenaTalentEventDispatcher.FromDamageEvents([block, damage]));
+        Assert.Single(ArenaTalentEventDispatcher.Dispatch(talents, input, new SequenceGameRandom(0), guard));
+        ArenaTalentCombatEvent replay = Assert.Single(ArenaTalentEventDispatcher.FromDamageEvents([block, damage]));
+        Assert.Empty(ArenaTalentEventDispatcher.Dispatch(talents, replay, new SequenceGameRandom(0), guard));
+        var duringCooldown = new ArenaTalentCombatEvent(ArenaTalentEventType.OnDamageTaken,
+            block.SourceActorId!.Value, defender, DateTimeOffset.UnixEpoch.AddSeconds(4), WasBlocked: true);
+        Assert.Empty(ArenaTalentEventDispatcher.Dispatch(talents, duringCooldown, new SequenceGameRandom(0), guard));
+        var ready = new ArenaTalentCombatEvent(ArenaTalentEventType.OnDamageTaken,
+            block.SourceActorId.Value, defender, DateTimeOffset.UnixEpoch.AddSeconds(5), WasBlocked: true);
+        Assert.Single(ArenaTalentEventDispatcher.Dispatch(talents, ready, new SequenceGameRandom(0), guard));
+    }
+
+    [Theory]
+    [InlineData(true, false, 0)]
+    [InlineData(false, true, 1)]
+    [InlineData(false, false, 2)]
+    public void UnsafeDamageDoesNotCreateArenaTriggers(bool periodic, bool proc, int depth)
+    {
+        CombatEvent input = new(CombatEventType.DamageDealt, DateTimeOffset.UnixEpoch,
+            Guid.NewGuid(), Amount: 10, SourceActorId: Guid.NewGuid(),
+            TargetActorId: Guid.NewGuid(), IsPeriodic: periodic, IsProc: proc, ProcDepth: depth);
+        Assert.Empty(ArenaTalentEventDispatcher.FromDamageEvents([input]));
+    }
+
+    [Fact]
     public void SuccessfulAbilityProducesCastHitCritAndDamageTakenWithDamageContext()
     {
         Guid source = Guid.NewGuid();

@@ -5,6 +5,33 @@ namespace Elyndor.UnitTests.Combat;
 
 public sealed class SetPassiveEvaluatorTests
 {
+    [Theory]
+    [InlineData(true, false, 0)]
+    [InlineData(false, true, 1)]
+    [InlineData(false, false, 2)]
+    public void UnsafeBlockDoesNotAdvanceEveryNth(bool periodic, bool proc, int depth)
+    {
+        Guid defender = Guid.NewGuid();
+        var evaluator = new SetPassiveEvaluator([GuardianFourPiece()]);
+        var state = new SetPassiveRuntimeState();
+        var input = BlockEvent(Guid.NewGuid(), defender, 1) with
+        { IsPeriodic = periodic, IsProc = proc, ProcDepth = depth };
+        Assert.Empty(evaluator.Evaluate(input, PieceCounts((defender, GuardianSetId, 4)), state));
+        Assert.Equal(0, state.Count);
+    }
+
+    [Fact]
+    public void ReplayedBlockDoesNotProcTwice()
+    {
+        Guid defender = Guid.NewGuid();
+        var evaluator = new SetPassiveEvaluator([GuardianTwoPiece()]);
+        var state = new SetPassiveRuntimeState();
+        CombatEvent input = BlockEvent(Guid.NewGuid(), defender, 10) with { Sequence = 1 };
+        var pieces = PieceCounts((defender, GuardianSetId, 2));
+        Assert.Single(evaluator.Evaluate(input, pieces, state));
+        Assert.Empty(evaluator.Evaluate(input, pieces, state));
+    }
+
     private const string GuardianSetId = "SET_ANCIENT_MINE_WARRIOR_GUARDIAN";
     private const string GuardianTwoPieceId = "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_2PC_PASSIVE";
     private const string GuardianFourPieceId = "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_4PC_PASSIVE";

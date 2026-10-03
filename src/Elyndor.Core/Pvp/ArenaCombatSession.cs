@@ -30,6 +30,8 @@ public sealed record ArenaCommandResult(bool Succeeded, string? ErrorCode, Arena
 
 public sealed class ArenaCombatSession
 {
+    private readonly ProcGuard _procGuard = new();
+    private bool _executingTalentProc;
     private static readonly AbilityDefinition AutoAttackTalentMarker = new(
         "AUTO_ATTACK", AbilityType.Instant, AbilityTargetType.SingleEnemy,
         0, TimeSpan.Zero, TimeSpan.Zero, false, GlobalCooldownCategory.None,
@@ -687,9 +689,20 @@ public sealed class ArenaCombatSession
             IReadOnlyList<ArenaTalentRuntimeEffect> effects = ArenaTalentEventDispatcher.Dispatch(
                 owner.EffectiveTalentModifiers,
                 talentEvent,
-                _random);
+                _random,
+                _procGuard);
             foreach (ArenaTalentRuntimeEffect effect in effects)
-                ExecuteTalentEffect(effect, now);
+            {
+                _executingTalentProc = true;
+                try
+                {
+                    ExecuteTalentEffect(effect, now);
+                }
+                finally
+                {
+                    _executingTalentProc = false;
+                }
+            }
         }
     }
 
@@ -1026,7 +1039,12 @@ public sealed class ArenaCombatSession
     {
         foreach (CombatEvent combatEvent in events) Append(combatEvent);
     }
-    private void Append(CombatEvent combatEvent) => _events.Add(combatEvent with { Sequence = ++_sequence });
+    private void Append(CombatEvent combatEvent) => _events.Add(combatEvent with
+    {
+        Sequence = ++_sequence,
+        IsProc = combatEvent.IsProc || _executingTalentProc,
+        ProcDepth = _executingTalentProc ? Math.Max(1, combatEvent.ProcDepth) : combatEvent.ProcDepth
+    });
 
     private static void ValidateClassAbilityHandlers(ArenaFighter fighter, bool hasPlayerMechanics)
     {

@@ -222,6 +222,12 @@ public sealed partial class CombatSession
         AbilityDefinition ability,
         AbilityExecutionResult execution,
         DateTimeOffset now)
+        => RunResolvedProcHooks(execution, "pyromancer-resolved", () => OnSafePyromancerAbilityResolved(ability, execution, now));
+
+    private void OnSafePyromancerAbilityResolved(
+        AbilityDefinition ability,
+        AbilityExecutionResult execution,
+        DateTimeOffset now)
     {
         if (!IsMage || Status != CombatSessionStatus.Active) return;
 

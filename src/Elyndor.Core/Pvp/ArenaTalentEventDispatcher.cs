@@ -53,7 +53,14 @@ public sealed record ArenaTalentCombatEvent(
     bool WasCritical = false,
     bool WasBlocked = false,
     decimal CurrentDamage = 0,
-    decimal TargetHealthPercent = 100);
+    decimal TargetHealthPercent = 100,
+    bool IsPeriodic = false,
+    bool IsProc = false,
+    int ProcDepth = 0,
+    long Sequence = 0)
+{
+    internal object ProcDispatchToken { get; init; } = new();
+}
 
 public sealed record ArenaTalentRuntimeEffect(
     ArenaTalentEffectKind Kind,
@@ -271,11 +278,25 @@ public static class ArenaTalentEventDispatcher
     public static IReadOnlyList<ArenaTalentRuntimeEffect> Dispatch(
         ResolvedTalentModifiers talents,
         ArenaTalentCombatEvent combatEvent,
-        IGameRandom random)
+        IGameRandom random,
+        ProcGuard? guard = null)
     {
         ArgumentNullException.ThrowIfNull(talents);
         ArgumentNullException.ThrowIfNull(combatEvent);
         ArgumentNullException.ThrowIfNull(random);
+
+        if (!ProcGuard.IsEligible(combatEvent.IsPeriodic, combatEvent.IsProc, combatEvent.ProcDepth))
+            return [];
+        guard ??= new ProcGuard();
+        Guid owner = combatEvent.Type is ArenaTalentEventType.OnDamageTaken or ArenaTalentEventType.OnIncomingDamage
+            ? combatEvent.TargetActorId : combatEvent.SourceActorId;
+        if (!guard.TryObserve(owner, $"arena:{combatEvent.Type}", combatEvent.ProcDispatchToken, combatEvent.Sequence))
+            return [];
+        talents = talents with
+        {
+            EventHooks = talents.EventHooks.Where(hook => guard.IsReady(owner, hook.TalentId,
+                combatEvent.OccurredAtUtc)).ToArray()
+        };
 
         List<ArenaTalentRuntimeEffect> effects = [];
 
@@ -312,6 +333,12 @@ public static class ArenaTalentEventDispatcher
             effects.Add(ExecuteRule(rule, combatEvent));
         }
 
+        foreach (string talentId in effects.Select(effect => effect.SourceTalentId).Distinct(StringComparer.Ordinal))
+        {
+            ResolvedTalentEventHook? hook = talents.EventHooks.FirstOrDefault(item => item.TalentId == talentId);
+            if (hook is not null)
+                guard.StartCooldown(owner, talentId, combatEvent.OccurredAtUtc, hook.InternalCooldown);
+        }
         return effects;
     }
 
@@ -323,6 +350,10 @@ public static class ArenaTalentEventDispatcher
         DateTimeOffset occurredAtUtc)
     {
         ArgumentNullException.ThrowIfNull(ability);
+        ArgumentNullException.ThrowIfNull(events);
+        CombatEvent? castEvent = events.FirstOrDefault(item => item.Type == CombatEventType.AbilityCompleted);
+        if (castEvent is not null && !ProcGuard.IsEligible(castEvent))
+            return [];
         List<ArenaTalentCombatEvent> result =
         [
             new(
@@ -330,7 +361,9 @@ public static class ArenaTalentEventDispatcher
                 sourceActorId,
                 targetActorId,
                 occurredAtUtc,
-                ability)
+                ability,
+                Sequence: castEvent?.Sequence ?? 0)
+            { ProcDispatchToken = castEvent?.ProcDispatchToken ?? new object() }
         ];
         result.AddRange(FromDamageEvents(events, ability));
         return result;
@@ -346,6 +379,8 @@ public static class ArenaTalentEventDispatcher
 
         foreach (CombatEvent combatEvent in events)
         {
+            if (!ProcGuard.IsEligible(combatEvent))
+                continue;
             if (combatEvent.SourceActorId is not Guid sourceActorId
                 || combatEvent.TargetActorId is not Guid targetActorId)
             {
@@ -382,7 +417,9 @@ public static class ArenaTalentEventDispatcher
                     combatEvent.Amount,
                     combatEvent.DamageType,
                     state.WasCritical,
-                    state.WasBlocked));
+                    state.WasBlocked,
+                    Sequence: combatEvent.Sequence)
+                { ProcDispatchToken = combatEvent.ProcDispatchToken });
             }
 
             if (state.WasCritical)
@@ -396,7 +433,9 @@ public static class ArenaTalentEventDispatcher
                     combatEvent.Amount,
                     combatEvent.DamageType,
                     true,
-                    state.WasBlocked));
+                    state.WasBlocked,
+                    Sequence: combatEvent.Sequence)
+                { ProcDispatchToken = combatEvent.ProcDispatchToken });
             }
 
             if (combatEvent.Amount > 0 || state.WasBlocked)
@@ -410,7 +449,9 @@ public static class ArenaTalentEventDispatcher
                     combatEvent.Amount,
                     combatEvent.DamageType,
                     state.WasCritical,
-                    state.WasBlocked));
+                    state.WasBlocked,
+                    Sequence: combatEvent.Sequence)
+                { ProcDispatchToken = combatEvent.ProcDispatchToken });
             }
 
             states.Remove(key);
