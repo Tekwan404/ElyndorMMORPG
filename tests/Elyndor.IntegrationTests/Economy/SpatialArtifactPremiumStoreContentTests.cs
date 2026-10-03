@@ -43,7 +43,7 @@ public sealed class SpatialArtifactPremiumStoreContentTests
             Assert.Equal(1, offer.Quantity);
             Assert.Equal(crystalPrice, offer.CrystalPrice);
             Assert.True(offer.Enabled);
-            Assert.Equal(1, offer.PerAccountLimit);
+            Assert.Null(offer.PerAccountLimit);
         }
     }
 }

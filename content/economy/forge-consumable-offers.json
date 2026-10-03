@@ -5,8 +5,7 @@
       "itemDefinitionId": "ENHANCEMENT_ORE",
       "quantity": 20,
       "crystalPrice": 30,
-      "enabled": true,
-      "perAccountLimit": 20
+      "enabled": true
     }
   ]
 }

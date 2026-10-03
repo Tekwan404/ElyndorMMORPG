@@ -27,7 +27,7 @@ public sealed class SpatialArtifactPremiumStoreServiceTests(PostgresFixture post
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
-    public async Task CatalogListsSpatialArtifactsAndPurchaseGrantsArtifactOnce()
+    public async Task CatalogListsSpatialArtifactsAndPurchaseRemainsRepeatable()
     {
         Guid accountId = await CreateAccountAsync();
         await using GameDbContext context = postgres.CreateDbContext();
@@ -60,15 +60,24 @@ public sealed class SpatialArtifactPremiumStoreServiceTests(PostgresFixture post
         Assert.True(purchase.Succeeded);
         Assert.Equal(650, purchase.CrystalBalance);
 
-        await using GameDbContext verify = postgres.CreateDbContext();
-        Assert.Single(verify.CharacterItems.Where(item =>
-            item.ItemDefinitionId == "SPATIAL_EXPANDED_RING"));
-
         PremiumStoreSnapshot afterPurchase = await store.GetAsync(accountId, CancellationToken.None);
         PremiumStoreOfferSnapshot purchasedOffer = Assert.Single(
             afterPurchase.Offers,
             offer => offer.Offer.Sku == "SPATIAL_EXPANDED_RING");
-        Assert.False(purchasedOffer.CanPurchase);
+        Assert.True(purchasedOffer.CanPurchase);
+
+        PremiumStorePurchaseResult secondPurchase = await store.PurchaseAsync(
+            accountId,
+            "SPATIAL_EXPANDED_RING",
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(secondPurchase.Succeeded);
+        Assert.Equal(300, secondPurchase.CrystalBalance);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(2, verify.CharacterItems.Count(item =>
+            item.ItemDefinitionId == "SPATIAL_EXPANDED_RING"));
     }
 
     private async Task<Guid> CreateAccountAsync()
