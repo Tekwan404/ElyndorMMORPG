@@ -1232,9 +1232,9 @@ async function toggleSelectedLock(): Promise<void> {
   position: sticky;
   top: .5rem;
   z-index: 4;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: .75rem;
   padding: .65rem .75rem;
   border: 1px solid color-mix(in srgb, var(--ui-color-primary) 42%, var(--ui-color-border));
