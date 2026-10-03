@@ -1947,8 +1947,10 @@ public sealed partial class CombatSession
         CombatActorState target,
         DateTimeOffset tickAt)
     {
-        CombatActorState? source = effect.SourceId == _player.Actor.ActorId
-            ? _player.Actor
+        CombatActorState? source = _playerStatesByActorId.TryGetValue(
+                effect.SourceId,
+                out CombatPlayerRuntimeState? playerSource)
+            ? playerSource.Definition.Actor
             : _companion is not null && effect.SourceId == _companion.Actor.ActorId
                 ? _companion.Actor
                 : _enemiesById.TryGetValue(
