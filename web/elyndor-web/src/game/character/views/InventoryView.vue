@@ -3,7 +3,7 @@ import { formatMoney } from '@/shared/money'
 import { computed, ref, watch } from 'vue'
 
 import { apiClient, ApiRequestError } from '@/api/apiClient'
-import type { EquipmentSlot, InventoryItem, SpatialInventorySnapshot } from '@/api/contracts'
+import type { EquipmentSlot, InventoryItem, PendingLootItem, SpatialInventorySnapshot } from '@/api/contracts'
 import { consumableSummary } from '@/game/items/consumablePresentation'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -36,6 +36,9 @@ const selectedItemIds = ref<Set<string>>(new Set())
 const selectedQuantities = ref<Record<string, number>>({})
 const bulkActionError = ref<string | null>(null)
 const bulkActionPending = ref(false)
+const pendingLootItems = ref<PendingLootItem[]>([])
+const pendingLootLoading = ref(false)
+const pendingLootActionError = ref<string | null>(null)
 const MARCUS_MERCHANT_ID = 'MARCUS_SUPPLIES'
 const contextualSlot = computed(() => props.slotFilter ?? null)
 const isContextualSlotMode = computed(() => contextualSlot.value !== null)
@@ -487,6 +490,65 @@ function inventoryBulkError(code: string | null): string {
   return 'Не удалось выполнить массовое действие.'
 }
 
+async function refreshPendingLoot(): Promise<void> {
+  if (!character.value?.id) {
+    pendingLootItems.value = []
+    return
+  }
+
+  try {
+    pendingLootItems.value = (await session.getPendingLoot()).items
+  } catch {
+    // Pending loot remains durable on the server; a transient read failure must not block inventory use.
+  }
+}
+
+function isValuablePendingLoot(item: PendingLootItem): boolean {
+  return rarityRank(item.rarity) >= rarityRank('Rare')
+    || (item.generatedItem?.stars ?? 0) > 0
+}
+
+async function claimPendingLootItems(items: PendingLootItem[]): Promise<void> {
+  if (!items.length || pendingLootLoading.value) return
+  pendingLootLoading.value = true
+  pendingLootActionError.value = null
+  try {
+    const succeeded = await session.claimPendingLoot(items.map(item => item.id))
+    if (!succeeded) {
+      pendingLootActionError.value = session.errorCode === 'inventory_full'
+        ? 'Инвентарь заполнен. Освободите место и повторите попытку.'
+        : 'Не удалось забрать добычу.'
+      return
+    }
+    await refreshPendingLoot()
+    await refreshSpatialInventory()
+  } finally {
+    pendingLootLoading.value = false
+  }
+}
+
+async function discardPendingLootItems(items: PendingLootItem[]): Promise<void> {
+  if (!items.length || pendingLootLoading.value) return
+  const valuable = items.some(isValuablePendingLoot)
+  const message = valuable
+    ? `Отказаться от ${items.length} позиций добычи? Среди них есть Rare+ предметы. Вернуть их будет нельзя.`
+    : `Отказаться от ${items.length} позиций добычи? Вернуть их будет нельзя.`
+  if (!window.confirm(message)) return
+
+  pendingLootLoading.value = true
+  pendingLootActionError.value = null
+  try {
+    const succeeded = await session.discardPendingLoot(items.map(item => item.id))
+    if (!succeeded) {
+      pendingLootActionError.value = 'Не удалось отказаться от добычи.'
+      return
+    }
+    await refreshPendingLoot()
+  } finally {
+    pendingLootLoading.value = false
+  }
+}
+
 function openItem(item: InventoryItem | null): void {
   selectedItem.value = item
   equipmentActionError.value = null
@@ -576,6 +638,7 @@ watch(
   () => {
     syncNewItems()
     void refreshSpatialInventory()
+    void refreshPendingLoot()
   },
   { immediate: true },
 )
@@ -877,6 +940,63 @@ async function toggleSelectedLock(): Promise<void> {
         <UIButton data-apply-inventory-filters @click="filtersOpen = false">Готово</UIButton>
       </template>
     </UIModal>
+
+    <section
+      v-if="!isContextualSlotMode && pendingLootItems.length"
+      class="pending-loot-panel"
+      data-pending-loot-panel
+    >
+      <header>
+        <div>
+          <small>НЕЗАБРАННАЯ ДОБЫЧА</small>
+          <strong>{{ pendingLootItems.length }} поз.</strong>
+        </div>
+        <span>Не занимает место, пока не заберёте</span>
+      </header>
+
+      <p v-if="pendingLootActionError" class="item-detail__error" role="alert">
+        {{ pendingLootActionError }}
+      </p>
+
+      <div class="pending-loot-list">
+        <article v-for="item in pendingLootItems" :key="item.id" :data-rarity="item.rarity">
+          <span class="pending-loot-list__icon">
+            <ItemIcon
+              :icon-id="item.iconId"
+              :item-id="item.definitionId"
+              :name="item.name"
+              :type="item.type"
+              :rarity="item.rarity"
+            />
+          </span>
+          <div class="pending-loot-list__copy">
+            <small>{{ rarityLabel(item as unknown as InventoryItem) }}</small>
+            <strong>{{ item.name }}<span v-if="item.quantity > 1"> ×{{ item.quantity }}</span></strong>
+          </div>
+          <div class="pending-loot-list__actions">
+            <button type="button" :disabled="pendingLootLoading" @click="claimPendingLootItems([item])">
+              Забрать
+            </button>
+            <button type="button" :disabled="pendingLootLoading" @click="discardPendingLootItems([item])">
+              Отказаться
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <footer>
+        <UIButton :disabled="pendingLootLoading" @click="claimPendingLootItems([...pendingLootItems])">
+          Забрать всё
+        </UIButton>
+        <UIButton
+          variant="secondary"
+          :disabled="pendingLootLoading"
+          @click="discardPendingLootItems([...pendingLootItems])"
+        >
+          Отказаться от всего
+        </UIButton>
+      </footer>
+    </section>
 
     <section v-if="inventory" class="bag-surface">
       <header v-if="bagItems.length" class="bag-surface__header">
@@ -1223,6 +1343,92 @@ async function toggleSelectedLock(): Promise<void> {
   margin-inline: auto;
   gap: var(--ui-space-3);
   padding: var(--ui-space-4) var(--ui-space-3) var(--ui-space-7);
+}
+
+.pending-loot-panel {
+  display: grid;
+  gap: .65rem;
+  padding: .75rem;
+  border: 1px solid color-mix(in srgb, var(--ui-color-primary) 38%, var(--ui-color-border));
+  border-radius: var(--ui-radius-md);
+  background: rgb(255 255 255 / 2%);
+}
+
+.pending-loot-panel > header,
+.pending-loot-panel > footer,
+.pending-loot-list article,
+.pending-loot-list__actions {
+  display: flex;
+  align-items: center;
+}
+
+.pending-loot-panel > header,
+.pending-loot-panel > footer {
+  justify-content: space-between;
+  gap: .6rem;
+}
+
+.pending-loot-panel > header > div,
+.pending-loot-list__copy {
+  display: grid;
+  gap: .1rem;
+}
+
+.pending-loot-panel > header small,
+.pending-loot-list small {
+  color: var(--ui-color-text-muted);
+  font-size: .58rem;
+}
+
+.pending-loot-panel > header > span {
+  color: var(--ui-color-text-muted);
+  font-size: .58rem;
+  text-align: right;
+}
+
+.pending-loot-list {
+  display: grid;
+  gap: .4rem;
+}
+
+.pending-loot-list article {
+  gap: .55rem;
+  padding: .45rem;
+  border: 1px solid rgb(255 255 255 / 6%);
+  border-radius: .6rem;
+  background: rgb(0 0 0 / 12%);
+}
+
+.pending-loot-list__icon {
+  width: 2.45rem;
+  height: 2.45rem;
+  flex: 0 0 auto;
+}
+
+.pending-loot-list__icon :deep(.item-icon) {
+  width: 100%;
+  height: 100%;
+}
+
+.pending-loot-list__copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.pending-loot-list__actions {
+  gap: .3rem;
+}
+
+.pending-loot-list__actions button {
+  min-height: 1.9rem;
+  padding: 0 .5rem;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-round);
+  background: rgb(255 255 255 / 4%);
+  color: var(--ui-color-text-primary);
+  font: inherit;
+  font-size: .6rem;
+  font-weight: 700;
 }
 
 .bag-surface__header-actions {
