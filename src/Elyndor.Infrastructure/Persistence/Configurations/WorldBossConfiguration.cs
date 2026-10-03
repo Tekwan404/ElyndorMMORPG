@@ -52,6 +52,7 @@ public sealed class WorldBossContributionConfiguration : IEntityTypeConfiguratio
         builder.HasKey(x => new { x.SpawnId, x.CharacterId }).HasName("pk_world_boss_contributions");
         builder.Property(x => x.Damage).HasPrecision(18, 3).IsRequired();
         builder.Property(x => x.Healing).HasPrecision(18, 3).IsRequired();
+        builder.Ignore(x => x.ContributionScore);
 
         builder.HasOne<WorldBossSpawn>().WithMany().HasForeignKey(x => x.SpawnId)
             .OnDelete(DeleteBehavior.Cascade)
@@ -81,6 +82,7 @@ public sealed class WorldBossPartyContributionConfiguration : IEntityTypeConfigu
         builder.HasKey(x => new { x.SpawnId, x.PartyId }).HasName("pk_world_boss_party_contributions");
         builder.Property(x => x.Damage).HasPrecision(18, 3).IsRequired();
         builder.Property(x => x.Healing).HasPrecision(18, 3).IsRequired();
+        builder.Ignore(x => x.ContributionScore);
 
         builder.HasOne<WorldBossSpawn>().WithMany().HasForeignKey(x => x.SpawnId)
             .OnDelete(DeleteBehavior.Cascade)
