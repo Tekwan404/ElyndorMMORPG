@@ -39,7 +39,7 @@ public sealed partial class CombatSession
             ProcessAzraelEncounterEvent(combatEvent);
             ProcessKaelMorEncounterEvent(combatEvent);
             ProcessEnemyInterruptUtilityEvent(combatEvent);
-            ProcessPaladinKernelEvent(combatEvent);
+            EventRouter.DispatchPaladin(combatEvent);
         }
         finally
         {
