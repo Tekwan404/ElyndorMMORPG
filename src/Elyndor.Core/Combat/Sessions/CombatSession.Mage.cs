@@ -56,16 +56,6 @@ public sealed partial class CombatSession
         decimal Amount,
         string TalentId);
 
-    private AbilityDefinition ResolveMageAbility(AbilityDefinition ability, DateTimeOffset now)
-    {
-        if (!IsMage || !ability.IsSpell)
-            return ability;
-
-        ability = ResolveArcaneMageAbility(ability, now);
-        ability = ResolveFrostMageAbility(ability, now);
-        return ability;
-    }
-
     private AbilityDefinition ResolveArcaneMageAbility(AbilityDefinition ability, DateTimeOffset now)
     {
         decimal resourceCost = ability.ResourceCost;

@@ -134,8 +134,7 @@ public sealed partial class CombatSession
 
     internal AbilityDefinition ResolveMechanicsAbilityForSnapshot(
         AbilityDefinition baseAbility, DateTimeOffset now) =>
-        ResolveArcherAbility(ResolveMageAbility(ResolvePyromancerAbility(
-            ResolveWarlordAbility(ResolvePlayerAbility(baseAbility, now), now), now), now), now);
+        ComposePlayerAbility(baseAbility, now);
 
     internal IReadOnlyDictionary<Guid, AbilityTargetModifier> ResolveMechanicsTargetModifiers(
         AbilityDefinition ability, IReadOnlyList<Guid> targetIds, DateTimeOffset now) =>
@@ -143,18 +142,13 @@ public sealed partial class CombatSession
 
     internal void MechanicsAbilityStarted(AbilityDefinition ability, DateTimeOffset now)
     {
-        OnPyromancerAbilityStarted(ability, now);
-        OnMageAbilityStarted(ability, now);
-        OnArcherAbilityStarted(ability, now);
+        EventRouter.DispatchAbilityStarted(ability, now);
     }
 
     internal void MechanicsAbilityResolved(
         AbilityDefinition ability, AbilityExecutionResult execution, DateTimeOffset now)
     {
-        OnPlayerAbilitySucceeded(ability, execution, now);
-        OnPyromancerAbilityResolved(ability, execution, now);
-        OnMageAbilityResolved(ability, execution, now);
-        OnArcherAbilityResolved(ability, execution, now);
+        EventRouter.DispatchAbilityResolved(ability, execution, now);
     }
 
     internal void HandleMechanicsEvents(
@@ -174,7 +168,7 @@ public sealed partial class CombatSession
             || combatEvent.TargetActorId != _player.Actor.ActorId)
             return;
         CurrentTimeUtc = combatEvent.OccurredAtUtc;
-        ApplyMechanicsHooks(combatEvent);
+        EventRouter.Dispatch(combatEvent, hosted: true);
         ProcessGenericDamageReflection(combatEvent);
         if (!_player.Actor.IsDead
             && combatEvent.Type is CombatEventType.EffectApplied
@@ -249,15 +243,6 @@ public sealed partial class CombatSession
         }
     }
 
-    private void ApplyMechanicsHooks(CombatEvent combatEvent)
-    {
-        ProcessPaladinKernelEvent(combatEvent);
-        RunProcHooks(combatEvent, "sets", () => ApplySetPassiveHooks(combatEvent));
-        ApplyTalentHooks(combatEvent);
-        if (combatEvent.Type == CombatEventType.DamageBlocked)
-            RunProcHooks(combatEvent, "guardian-block", () => ApplyGuardianBlockHooks(combatEvent));
-    }
-
     private void ApplyMechanicsKernelEvents(IEnumerable<CombatEvent> events)
     {
         foreach (CombatEvent combatEvent in events)
@@ -266,7 +251,7 @@ public sealed partial class CombatSession
                 && !_deadActors.Add(combatEvent.ActorId))
                 continue;
             Append(combatEvent);
-            ApplyMechanicsHooks(combatEvent);
+            EventRouter.Dispatch(combatEvent, hosted: true);
             if (combatEvent.TargetActorId == _player.Actor.ActorId)
                 ProcessGenericDamageReflection(combatEvent);
             // CurrentHp also catches simultaneous deaths while the enclosing fight
@@ -296,12 +281,6 @@ public sealed partial class CombatSession
             IsUnblockable: death.IsUnblockable,
             IsCritical: death.IsCritical,
             IsReflected: death.IsReflected));
-        // Kill credit is a terminal lifecycle notification, not a periodic hit proc.
-        // Preserve OnKill rewards/resources even when the lethal hit was periodic or secondary.
-        TriggerTalent(TalentModifierKeys.OnEnemyKilled, death.OccurredAtUtc);
-        ApplyBerserkerEnemyKilledHooks(death.OccurredAtUtc);
-        ApplyPyromancerEnemyKilledHooks(death);
-        ApplyArcherEnemyKilledHooks(death.OccurredAtUtc);
-        ApplyWarlordEnemyKilledHooks(death);
+        EventRouter.DispatchKill(death);
     }
 }

@@ -23,12 +23,10 @@ public sealed partial class CombatSession
     private bool _deathsEmbraceArmed;
     private bool _deathsEmbraceConsumed;
 
-    private AbilityDefinition ResolvePlayerAbility(
-        AbilityDefinition baseAbility,
+    private AbilityDefinition ResolveBerserkerAbility(
+        AbilityDefinition ability,
         DateTimeOffset now)
     {
-        AbilityDefinition ability = TalentAbilityResolver.Apply(baseAbility, _playerTalents);
-
         if (IsBerserkActive(now)
             && TryGetBerserkerHook("B-5-4", out ResolvedTalentEventHook frenzy)
             && IsAttackingAbility(ability))
@@ -50,13 +48,8 @@ public sealed partial class CombatSession
             };
         }
 
-        return ResolvePaladinAbility(ability, now);
+        return ability;
     }
-
-    private AbilityDefinition ResolvePlayerAbilityForSnapshot(
-        AbilityDefinition baseAbility,
-        DateTimeOffset now) =>
-        ResolvePlayerAbility(baseAbility, now);
 
     private AbilityTargetModifier ResolveBerserkerTargetAbilityModifier(
         AbilityDefinition ability,
