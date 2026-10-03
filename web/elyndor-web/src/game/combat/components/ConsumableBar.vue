@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
 import type { InventoryItem } from '@/api/contracts'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
 
@@ -10,20 +12,44 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ use: [item: InventoryItem] }>()
 
+const groupedItems = computed<InventoryItem[]>(() => {
+  const grouped = new Map<string, InventoryItem>()
+
+  for (const item of props.items) {
+    const existing = grouped.get(item.definitionId)
+    grouped.set(
+      item.definitionId,
+      existing
+        ? {
+            ...existing,
+            quantity: existing.quantity + item.quantity,
+          }
+        : { ...item },
+    )
+  }
+
+  return [...grouped.values()]
+})
+
 function available(item: InventoryItem): boolean {
   return !props.isPending(item) && props.cooldownRemaining(item) <= 0 && props.canUse(item)
 }
 </script>
 
 <template>
-  <section v-if="items.length" class="consumable-bar" aria-label="Расходники" data-consumable-bar>
-    <strong>Расходники</strong>
+  <section
+    v-if="groupedItems.length"
+    class="consumable-bar"
+    aria-label="Расходники"
+    data-consumable-bar
+  >
     <div class="consumable-bar__items">
       <button
-        v-for="item in items"
+        v-for="item in groupedItems"
         :key="item.definitionId"
         type="button"
         :data-combat-consumable="item.definitionId"
+        :data-rarity="item.rarity"
         :disabled="!available(item)"
         :aria-label="`${item.name}, ${item.quantity} шт.`"
         @click="emit('use', item)"
@@ -37,10 +63,7 @@ function available(item: InventoryItem): boolean {
           decorative
           loading="eager"
         />
-        <span
-          ><small>{{ item.name }}</small
-          ><b>×{{ item.quantity }}</b></span
-        >
+        <b class="consumable-bar__quantity">×{{ item.quantity }}</b>
         <em v-if="cooldownRemaining(item) > 0">{{ Math.ceil(cooldownRemaining(item) / 1000) }}с</em>
       </button>
     </div>
@@ -52,17 +75,11 @@ function available(item: InventoryItem): boolean {
   display: flex;
   min-width: 0;
   align-items: center;
-  gap: 0.45rem;
-}
-.consumable-bar > strong {
-  flex: none;
-  color: #9db9ae;
-  font-size: 0.5rem;
 }
 .consumable-bar__items {
   display: flex;
   min-width: 0;
-  gap: 0.3rem;
+  gap: 0.28rem;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -72,41 +89,41 @@ function available(item: InventoryItem): boolean {
 .consumable-bar button {
   position: relative;
   display: grid;
-  min-width: 6.3rem;
-  min-height: 44px;
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
   flex: none;
-  grid-template-columns: 34px 1fr;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.24rem 0.38rem;
+  place-items: center;
+  padding: 0.18rem;
   border: 1px solid rgb(82 171 143 / 30%);
-  border-radius: 7px;
+  border-radius: 8px;
   background: rgb(5 14 15 / 76%);
   color: #e3e0d8;
   font: inherit;
-  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 .consumable-bar button:disabled {
   filter: grayscale(0.65);
   opacity: 0.5;
 }
 .consumable-bar button :deep(.item-icon) {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
 }
-.consumable-bar button span {
-  display: grid;
-  min-width: 0;
-}
-.consumable-bar button small {
-  overflow: hidden;
-  font-size: 0.46rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.consumable-bar button b {
-  color: #91d7bd;
-  font-size: 0.52rem;
+.consumable-bar__quantity {
+  position: absolute;
+  right: 0.08rem;
+  bottom: 0.06rem;
+  min-width: 1.25rem;
+  padding: 0.06rem 0.16rem;
+  border-radius: 4px;
+  background: rgb(2 7 8 / 88%);
+  color: #e8f7f1;
+  font-size: 0.5rem;
+  line-height: 1;
+  text-align: center;
+  text-shadow: 0 1px 2px #000;
 }
 .consumable-bar button em {
   position: absolute;
