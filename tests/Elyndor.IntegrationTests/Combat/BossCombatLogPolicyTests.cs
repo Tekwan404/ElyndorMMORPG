@@ -28,7 +28,7 @@ public sealed class BossCombatLogPolicyTests
     public void AbilitySummaryUsesCumulativeSessionStatistics()
     {
         CombatSessionSnapshot snapshot = Snapshot(
-            Monster("WORLD_BOSS_ASH_ARCHON_L30", "Архон Пепла", MonsterRank.Boss))
+            Monster("WORLD_BOSS_ASH_ARCHON_L60", "Архон Пепла", MonsterRank.Boss))
             with
             {
                 Statistics = new CombatSessionStatisticsSnapshot(
@@ -61,7 +61,7 @@ public sealed class BossCombatLogPolicyTests
 
     [Theory]
     [InlineData("ARCHON_OF_THE_DEAD_STAR", "Обычный босс")]
-    [InlineData("WORLD_BOSS_ASH_ARCHON_L30", "Архон Пепла")]
+    [InlineData("WORLD_BOSS_ASH_ARCHON_L60", "Архон Пепла")]
     public void TryResolveAcceptsBossRank(string definitionId, string name)
     {
         CombatSessionSnapshot snapshot = Snapshot(
