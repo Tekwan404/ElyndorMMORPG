@@ -25,6 +25,36 @@ public sealed class CombatSessionTests
     private static readonly Guid EnemyThreeId = Guid.Parse("50000000-0000-0000-0000-000000000001");
 
     [Fact]
+    public void SessionStatisticsAggregateAuthoritativeCombatReportMetrics()
+    {
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerResource: 100,
+            canAutoAttack: false);
+
+        CombatCommandResult result = session.Handle(
+            PlayerId,
+            new UseAbilityCommand("report-strike", "STRIKE", Guid.Empty),
+            Now);
+
+        Assert.True(result.Succeeded, result.ErrorCode);
+        CombatSessionStatisticsSnapshot statistics =
+            Assert.IsType<CombatSessionStatisticsSnapshot>(
+                session.Snapshot(PlayerId).Statistics);
+        CombatAbilityStatisticsSnapshot strike =
+            Assert.IsType<CombatAbilityStatisticsSnapshot>(
+                statistics.Abilities!["STRIKE"]);
+
+        Assert.Equal(Now, statistics.StartedAtUtc);
+        Assert.Equal(1, strike.Uses);
+        Assert.Equal(1, strike.Hits);
+        Assert.True(strike.Damage > 0);
+        Assert.Equal(strike.Damage, statistics.DamageDealt);
+        Assert.Equal(strike.Damage, statistics.DamageSources!.DirectOrProc);
+        Assert.Equal(strike.Damage, strike.MaxHit);
+    }
+
+    [Fact]
     public void SessionStatisticsKeepAbilityUsesBeyondRetainedEventBuffer()
     {
         const string abilityId = "MAGE_IGNITE";
