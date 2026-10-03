@@ -20,13 +20,32 @@ describe('PremiumStoreView', () => {
     await flushPromises()
 
     expect(wrapper.get('[data-forge-supplies]').text()).toContain('Кузнечные припасы')
+    expect(wrapper.get('[data-forge-supplies]').text()).toContain('БЕЗ ЛИМИТА')
     expect(wrapper.get('[data-product-id="enhancement-ore-20"]').text()).toContain('Закалочная руда')
     expect(wrapper.get('[data-product-id="enhancement-ore-20"]').text()).toContain('×20')
 
     await wrapper.get('[data-product-id="enhancement-ore-20"]').trigger('click')
 
     expect(wrapper.get('[role="dialog"]').text()).toContain('Закалочная руда')
+    expect(wrapper.get('[data-purchase-summary]').text()).toContain('Баланс после')
+    expect(wrapper.get('[data-purchase-summary]').text()).toContain('70')
+    expect(wrapper.get('[role="dialog"]').text()).toContain('без лимита аккаунта')
     expect(wrapper.find('[role="dialog"] [data-icon-id="ore"]').exists()).toBe(true)
+  })
+
+  it('explains insufficient currency instead of leaving an ambiguous disabled purchase button', async () => {
+    const session = useGameSessionStore()
+    const poor = snapshot()
+    poor.crystalBalance = 10
+    vi.spyOn(session, 'getPremiumStore').mockResolvedValue(poor)
+
+    const wrapper = mount(PremiumStoreView)
+    await flushPromises()
+    await wrapper.get('[data-product-id="enhancement-ore-20"]').trigger('click')
+
+    const dialog = wrapper.get('[role="dialog"]')
+    expect(dialog.text()).toContain('НЕДОСТАТОЧНО ОСКОЛКОВ')
+    expect(dialog.get('button.ui-button').attributes('disabled')).toBeDefined()
   })
 })
 
