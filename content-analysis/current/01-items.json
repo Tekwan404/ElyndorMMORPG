@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "0.33.0",
-  "balanceVersion": "0.27.0",
-  "publishedAtUtc": "2026-09-27T18:00:00+00:00",
-  "total": 783,
+  "contentVersion": "0.36.0",
+  "balanceVersion": "0.29.0",
+  "publishedAtUtc": "2026-10-03T08:47:00+00:00",
+  "total": 796,
   "items": [
     {
       "id": "APPRENTICE_CLOTH_ROBE",
@@ -1040,6 +1040,15 @@
         "professionRecipes": [],
         "skinningSources": [
           {
+            "id": "SKIN_DEEP_FOREST_GLUBINNYI_PAUK_L8",
+            "monsterId": "DEEP_FOREST_GLUBINNYI_PAUK_L8",
+            "requiredSkill": 95,
+            "skillUpUntil": 155,
+            "itemId": "CHITIN_FRAGMENT",
+            "minQuantity": 2,
+            "maxQuantity": 3
+          },
+          {
             "id": "SKIN_DEEP_SPIDER_L8",
             "monsterId": "DEEP_SPIDER_L8",
             "requiredSkill": 95,
@@ -1051,6 +1060,33 @@
           {
             "id": "SKIN_GIANT_SPIDER_L3",
             "monsterId": "GIANT_SPIDER_L3",
+            "requiredSkill": 20,
+            "skillUpUntil": 70,
+            "itemId": "CHITIN_FRAGMENT",
+            "minQuantity": 1,
+            "maxQuantity": 2
+          },
+          {
+            "id": "SKIN_WHISPERING_FOREST_GIGANTSKII_PAUK_L5",
+            "monsterId": "WHISPERING_FOREST_GIGANTSKII_PAUK_L5",
+            "requiredSkill": 50,
+            "skillUpUntil": 100,
+            "itemId": "CHITIN_FRAGMENT",
+            "minQuantity": 2,
+            "maxQuantity": 3
+          },
+          {
+            "id": "SKIN_WHISPERING_FOREST_IADOVITYI_PAUK_L3",
+            "monsterId": "WHISPERING_FOREST_IADOVITYI_PAUK_L3",
+            "requiredSkill": 20,
+            "skillUpUntil": 70,
+            "itemId": "CHITIN_FRAGMENT",
+            "minQuantity": 1,
+            "maxQuantity": 2
+          },
+          {
+            "id": "SKIN_WHISPERING_FOREST_LESNOI_PAUK_L3",
+            "monsterId": "WHISPERING_FOREST_LESNOI_PAUK_L3",
             "requiredSkill": 20,
             "skillUpUntil": 70,
             "itemId": "CHITIN_FRAGMENT",
@@ -1229,7 +1265,7 @@
             "quantity": 20,
             "crystalPrice": 30,
             "enabled": true,
-            "perAccountLimit": 20
+            "perAccountLimit": null
           }
         ],
         "professionRecipes": [],
@@ -1317,7 +1353,7 @@
             "quantity": 20,
             "crystalPrice": 20,
             "enabled": true,
-            "perAccountLimit": 20
+            "perAccountLimit": null
           }
         ],
         "professionRecipes": [],
@@ -1957,6 +1993,15 @@
             "maxQuantity": 3
           },
           {
+            "id": "SKIN_DEEP_FOREST_VOLK_CHASHCHOBY_L6",
+            "monsterId": "DEEP_FOREST_VOLK_CHASHCHOBY_L6",
+            "requiredSkill": 65,
+            "skillUpUntil": 120,
+            "itemId": "LIGHT_HIDE",
+            "minQuantity": 1,
+            "maxQuantity": 3
+          },
+          {
             "id": "SKIN_DEEP_WOLF_L6",
             "monsterId": "DEEP_WOLF_L6",
             "requiredSkill": 65,
@@ -1973,6 +2018,51 @@
             "itemId": "LIGHT_HIDE",
             "minQuantity": 1,
             "maxQuantity": 2
+          },
+          {
+            "id": "SKIN_WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4",
+            "monsterId": "WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4",
+            "requiredSkill": 50,
+            "skillUpUntil": 100,
+            "itemId": "LIGHT_HIDE",
+            "minQuantity": 2,
+            "maxQuantity": 3
+          },
+          {
+            "id": "SKIN_WHISPERING_FOREST_KABAN_L4",
+            "monsterId": "WHISPERING_FOREST_KABAN_L4",
+            "requiredSkill": 35,
+            "skillUpUntil": 85,
+            "itemId": "LIGHT_HIDE",
+            "minQuantity": 1,
+            "maxQuantity": 2
+          },
+          {
+            "id": "SKIN_WHISPERING_FOREST_LESNOI_VOLK_L3",
+            "monsterId": "WHISPERING_FOREST_LESNOI_VOLK_L3",
+            "requiredSkill": 35,
+            "skillUpUntil": 85,
+            "itemId": "LIGHT_HIDE",
+            "minQuantity": 1,
+            "maxQuantity": 2
+          },
+          {
+            "id": "SKIN_WHISPERING_FOREST_MATIORYI_VOLK_L4",
+            "monsterId": "WHISPERING_FOREST_MATIORYI_VOLK_L4",
+            "requiredSkill": 35,
+            "skillUpUntil": 85,
+            "itemId": "LIGHT_HIDE",
+            "minQuantity": 1,
+            "maxQuantity": 2
+          },
+          {
+            "id": "SKIN_WHISPERING_FOREST_MATIORYI_VOZHAK_L4",
+            "monsterId": "WHISPERING_FOREST_MATIORYI_VOZHAK_L4",
+            "requiredSkill": 50,
+            "skillUpUntil": 100,
+            "itemId": "LIGHT_HIDE",
+            "minQuantity": 2,
+            "maxQuantity": 3
           }
         ],
         "startingClasses": []
@@ -4173,7 +4263,7 @@
             "quantity": 10,
             "crystalPrice": 25,
             "enabled": true,
-            "perAccountLimit": 20
+            "perAccountLimit": null
           }
         ],
         "professionRecipes": [],
@@ -4271,6 +4361,51 @@
             "monsterId": "FOREST_WOLF_L1",
             "requiredSkill": 1,
             "skillUpUntil": 45,
+            "itemId": "ROUGH_HIDE",
+            "minQuantity": 1,
+            "maxQuantity": 2
+          },
+          {
+            "id": "SKIN_WHISPERING_FOREST_LESNOI_KABAN_L2",
+            "monsterId": "WHISPERING_FOREST_LESNOI_KABAN_L2",
+            "requiredSkill": 10,
+            "skillUpUntil": 55,
+            "itemId": "ROUGH_HIDE",
+            "minQuantity": 1,
+            "maxQuantity": 2
+          },
+          {
+            "id": "SKIN_WHISPERING_FOREST_MOLODOI_VOLK_L1",
+            "monsterId": "WHISPERING_FOREST_MOLODOI_VOLK_L1",
+            "requiredSkill": 1,
+            "skillUpUntil": 45,
+            "itemId": "ROUGH_HIDE",
+            "minQuantity": 1,
+            "maxQuantity": 2
+          },
+          {
+            "id": "SKIN_WHISPERING_FOREST_RAZIARIONNYI_KABAN_L3",
+            "monsterId": "WHISPERING_FOREST_RAZIARIONNYI_KABAN_L3",
+            "requiredSkill": 20,
+            "skillUpUntil": 70,
+            "itemId": "ROUGH_HIDE",
+            "minQuantity": 1,
+            "maxQuantity": 2
+          },
+          {
+            "id": "SKIN_WHISPERING_FOREST_SERYI_VOLK_L1",
+            "monsterId": "WHISPERING_FOREST_SERYI_VOLK_L1",
+            "requiredSkill": 1,
+            "skillUpUntil": 45,
+            "itemId": "ROUGH_HIDE",
+            "minQuantity": 1,
+            "maxQuantity": 2
+          },
+          {
+            "id": "SKIN_WHISPERING_FOREST_VOLK_OKHOTNIK_L2",
+            "monsterId": "WHISPERING_FOREST_VOLK_OKHOTNIK_L2",
+            "requiredSkill": 10,
+            "skillUpUntil": 55,
             "itemId": "ROUGH_HIDE",
             "minQuantity": 1,
             "maxQuantity": 2
@@ -4591,7 +4726,7 @@
       "id": "SMALL_HEALING_POTION",
       "name": "Малое зелье лечения",
       "level": 1,
-      "description": "Мгновенно восстанавливает 50 здоровья. Лечебные зелья этой категории можно использовать раз в 5 секунд.",
+      "description": "Мгновенно восстанавливает 120 здоровья. Лечебные зелья этой категории можно использовать раз в 5 секунд.",
       "type": "Consumable",
       "rarity": "Common",
       "iconId": null,
@@ -4646,7 +4781,7 @@
         "actions": [
           {
             "type": "RestoreHp",
-            "amount": 50,
+            "amount": 120,
             "resourceType": null,
             "effectId": null,
             "dispelCategory": null
@@ -4955,7 +5090,7 @@
             "quantity": 1,
             "crystalPrice": 425,
             "enabled": true,
-            "perAccountLimit": 1
+            "perAccountLimit": null
           }
         ],
         "professionRecipes": [],
@@ -5043,7 +5178,7 @@
             "quantity": 1,
             "crystalPrice": 75,
             "enabled": true,
-            "perAccountLimit": 1
+            "perAccountLimit": null
           }
         ],
         "professionRecipes": [],
@@ -5131,7 +5266,7 @@
             "quantity": 1,
             "crystalPrice": 350,
             "enabled": true,
-            "perAccountLimit": 1
+            "perAccountLimit": null
           }
         ],
         "professionRecipes": [],
@@ -5219,7 +5354,7 @@
             "quantity": 1,
             "crystalPrice": 125,
             "enabled": true,
-            "perAccountLimit": 1
+            "perAccountLimit": null
           }
         ],
         "professionRecipes": [],
@@ -5307,7 +5442,7 @@
             "quantity": 1,
             "crystalPrice": 600,
             "enabled": true,
-            "perAccountLimit": 1
+            "perAccountLimit": null
           }
         ],
         "professionRecipes": [],
@@ -5395,7 +5530,7 @@
             "quantity": 1,
             "crystalPrice": 300,
             "enabled": true,
-            "perAccountLimit": 1
+            "perAccountLimit": null
           }
         ],
         "professionRecipes": [],
@@ -5483,7 +5618,7 @@
             "quantity": 1,
             "crystalPrice": 900,
             "enabled": true,
-            "perAccountLimit": 1
+            "perAccountLimit": null
           }
         ],
         "professionRecipes": [],
@@ -5855,6 +5990,24 @@
           {
             "id": "SKIN_CORRUPTED_BOAR_L7",
             "monsterId": "CORRUPTED_BOAR_L7",
+            "requiredSkill": 80,
+            "skillUpUntil": 140,
+            "itemId": "THICK_HIDE",
+            "minQuantity": 1,
+            "maxQuantity": 2
+          },
+          {
+            "id": "SKIN_DEEP_FOREST_ALFA_VOLK_L7",
+            "monsterId": "DEEP_FOREST_ALFA_VOLK_L7",
+            "requiredSkill": 80,
+            "skillUpUntil": 140,
+            "itemId": "THICK_HIDE",
+            "minQuantity": 2,
+            "maxQuantity": 3
+          },
+          {
+            "id": "SKIN_DEEP_FOREST_OSKVERNIONNYI_KABAN_L7",
+            "monsterId": "DEEP_FOREST_OSKVERNIONNYI_KABAN_L7",
             "requiredSkill": 80,
             "skillUpUntil": 140,
             "itemId": "THICK_HIDE",
@@ -6300,6 +6453,164 @@
         "sellPriceGold": 0,
         "tradePolicyId": null,
         "premiumEligible": true,
+        "inventoryCapacityBonus": 0
+      },
+      "consumable": null,
+      "generation": {
+        "generationMode": "Fixed",
+        "itemLevelMin": null,
+        "itemLevelMax": null,
+        "primaryStatRanges": null,
+        "guaranteedAffixStatIds": [],
+        "randomAffixPoolId": null,
+        "randomAffixStatIds": [],
+        "affixCountProfileId": null,
+        "affixCountProfile": null,
+        "extraAffixBudgetCap": 0,
+        "prefixSuffixPolicyId": null,
+        "generationVersion": 1
+      },
+      "possibleAffixes": [],
+      "set": null,
+      "acquisition": {
+        "lootTableIds": [],
+        "merchantIds": [],
+        "premiumOffers": [],
+        "professionRecipes": [],
+        "skinningSources": [],
+        "startingClasses": []
+      }
+    },
+    {
+      "id": "WORLD_BOSS_ASH_ARCHON_CHEST",
+      "name": "Сундук Архонта Пепла",
+      "level": 1,
+      "description": "Персональный сундук мирового босса. При открытии даёт золото и один предмет из таблицы добычи Архонта Пепла.",
+      "type": "LootContainer",
+      "rarity": "Epic",
+      "iconId": "chest",
+      "version": 1,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0,
+        "maxHpFlat": 0,
+        "attackPowerFlat": 0,
+        "spellPowerFlat": 0,
+        "criticalChancePercent": 0,
+        "criticalDamagePercent": 0,
+        "accuracyPercent": 0,
+        "attackSpeedPercent": 0,
+        "dodgePercent": 0,
+        "armorFlat": 0,
+        "magicResistanceFlat": 0,
+        "armorPenetrationPercent": 0,
+        "magicPenetrationPercent": 0,
+        "maxResourceFlat": 0,
+        "weaponDamageMin": null,
+        "weaponDamageMax": null,
+        "blockChancePercent": 0,
+        "blockValueMin": 0,
+        "blockValueMax": 0
+      },
+      "equipment": {
+        "slot": null,
+        "weaponCategory": null,
+        "armorCategory": null,
+        "offHandCategory": null,
+        "weaponBaseAttackIntervalSeconds": null,
+        "appearanceProfileId": null,
+        "uniqueEquippedGroup": null
+      },
+      "stack": {
+        "stackable": true,
+        "maxStack": 20
+      },
+      "economy": {
+        "buyPriceGold": 0,
+        "sellPriceGold": 0,
+        "tradePolicyId": null,
+        "premiumEligible": false,
+        "inventoryCapacityBonus": 0
+      },
+      "consumable": null,
+      "generation": {
+        "generationMode": "Fixed",
+        "itemLevelMin": null,
+        "itemLevelMax": null,
+        "primaryStatRanges": null,
+        "guaranteedAffixStatIds": [],
+        "randomAffixPoolId": null,
+        "randomAffixStatIds": [],
+        "affixCountProfileId": null,
+        "affixCountProfile": null,
+        "extraAffixBudgetCap": 0,
+        "prefixSuffixPolicyId": null,
+        "generationVersion": 1
+      },
+      "possibleAffixes": [],
+      "set": null,
+      "acquisition": {
+        "lootTableIds": [],
+        "merchantIds": [],
+        "premiumOffers": [],
+        "professionRecipes": [],
+        "skinningSources": [],
+        "startingClasses": []
+      }
+    },
+    {
+      "id": "WORLD_BOSS_ASH_ARCHON_TOP5_CHEST",
+      "name": "Усиленный сундук Архонта Пепла",
+      "level": 1,
+      "description": "Усиленный сундук для TOP 5 мирового босса. При открытии даёт золото и один предмет из улучшенной таблицы добычи.",
+      "type": "LootContainer",
+      "rarity": "Legendary",
+      "iconId": "chest",
+      "version": 1,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0,
+        "maxHpFlat": 0,
+        "attackPowerFlat": 0,
+        "spellPowerFlat": 0,
+        "criticalChancePercent": 0,
+        "criticalDamagePercent": 0,
+        "accuracyPercent": 0,
+        "attackSpeedPercent": 0,
+        "dodgePercent": 0,
+        "armorFlat": 0,
+        "magicResistanceFlat": 0,
+        "armorPenetrationPercent": 0,
+        "magicPenetrationPercent": 0,
+        "maxResourceFlat": 0,
+        "weaponDamageMin": null,
+        "weaponDamageMax": null,
+        "blockChancePercent": 0,
+        "blockValueMin": 0,
+        "blockValueMax": 0
+      },
+      "equipment": {
+        "slot": null,
+        "weaponCategory": null,
+        "armorCategory": null,
+        "offHandCategory": null,
+        "weaponBaseAttackIntervalSeconds": null,
+        "appearanceProfileId": null,
+        "uniqueEquippedGroup": null
+      },
+      "stack": {
+        "stackable": true,
+        "maxStack": 20
+      },
+      "economy": {
+        "buyPriceGold": 0,
+        "sellPriceGold": 0,
+        "tradePolicyId": null,
+        "premiumEligible": false,
         "inventoryCapacityBonus": 0
       },
       "consumable": null,
@@ -12193,6 +12504,99 @@
       }
     },
     {
+      "id": "MINOR_HEALING_POTION",
+      "name": "Зелье лечения",
+      "level": 3,
+      "description": "Мгновенно восстанавливает 150 здоровья. Лечебные зелья этой категории можно использовать раз в 5 секунд.",
+      "type": "Consumable",
+      "rarity": "Common",
+      "iconId": null,
+      "version": 1,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0,
+        "maxHpFlat": 0,
+        "attackPowerFlat": 0,
+        "spellPowerFlat": 0,
+        "criticalChancePercent": 0,
+        "criticalDamagePercent": 0,
+        "accuracyPercent": 0,
+        "attackSpeedPercent": 0,
+        "dodgePercent": 0,
+        "armorFlat": 0,
+        "magicResistanceFlat": 0,
+        "armorPenetrationPercent": 0,
+        "magicPenetrationPercent": 0,
+        "maxResourceFlat": 0,
+        "weaponDamageMin": null,
+        "weaponDamageMax": null,
+        "blockChancePercent": 0,
+        "blockValueMin": 0,
+        "blockValueMax": 0
+      },
+      "equipment": {
+        "slot": null,
+        "weaponCategory": null,
+        "armorCategory": null,
+        "offHandCategory": null,
+        "weaponBaseAttackIntervalSeconds": null,
+        "appearanceProfileId": null,
+        "uniqueEquippedGroup": null
+      },
+      "stack": {
+        "stackable": true,
+        "maxStack": 20
+      },
+      "economy": {
+        "buyPriceGold": 28,
+        "sellPriceGold": 0,
+        "tradePolicyId": null,
+        "premiumEligible": true,
+        "inventoryCapacityBonus": 0
+      },
+      "consumable": {
+        "consumableCooldownSeconds": 5,
+        "consumableCooldownCategoryId": "HEALING_POTION",
+        "actions": [
+          {
+            "type": "RestoreHp",
+            "amount": 150,
+            "resourceType": null,
+            "effectId": null,
+            "dispelCategory": null
+          }
+        ]
+      },
+      "generation": {
+        "generationMode": "Fixed",
+        "itemLevelMin": null,
+        "itemLevelMax": null,
+        "primaryStatRanges": null,
+        "guaranteedAffixStatIds": [],
+        "randomAffixPoolId": null,
+        "randomAffixStatIds": [],
+        "affixCountProfileId": null,
+        "affixCountProfile": null,
+        "extraAffixBudgetCap": 0,
+        "prefixSuffixPolicyId": null,
+        "generationVersion": 1
+      },
+      "possibleAffixes": [],
+      "set": null,
+      "acquisition": {
+        "lootTableIds": [],
+        "merchantIds": [
+          "MARCUS_SUPPLIES"
+        ],
+        "premiumOffers": [],
+        "professionRecipes": [],
+        "skinningSources": [],
+        "startingClasses": []
+      }
+    },
+    {
       "id": "KLYK_MATIOROGO_VOZHAKA",
       "name": "Клык Матёрого Вожака",
       "level": 4,
@@ -13775,6 +14179,99 @@
           "LOOT_FLOWER_MEADOW_TERNOVYI_BES_L7"
         ],
         "merchantIds": [],
+        "premiumOffers": [],
+        "professionRecipes": [],
+        "skinningSources": [],
+        "startingClasses": []
+      }
+    },
+    {
+      "id": "HEALING_POTION",
+      "name": "Крепкое зелье лечения",
+      "level": 5,
+      "description": "Мгновенно восстанавливает 200 здоровья. Лечебные зелья этой категории можно использовать раз в 5 секунд.",
+      "type": "Consumable",
+      "rarity": "Common",
+      "iconId": null,
+      "version": 1,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0,
+        "maxHpFlat": 0,
+        "attackPowerFlat": 0,
+        "spellPowerFlat": 0,
+        "criticalChancePercent": 0,
+        "criticalDamagePercent": 0,
+        "accuracyPercent": 0,
+        "attackSpeedPercent": 0,
+        "dodgePercent": 0,
+        "armorFlat": 0,
+        "magicResistanceFlat": 0,
+        "armorPenetrationPercent": 0,
+        "magicPenetrationPercent": 0,
+        "maxResourceFlat": 0,
+        "weaponDamageMin": null,
+        "weaponDamageMax": null,
+        "blockChancePercent": 0,
+        "blockValueMin": 0,
+        "blockValueMax": 0
+      },
+      "equipment": {
+        "slot": null,
+        "weaponCategory": null,
+        "armorCategory": null,
+        "offHandCategory": null,
+        "weaponBaseAttackIntervalSeconds": null,
+        "appearanceProfileId": null,
+        "uniqueEquippedGroup": null
+      },
+      "stack": {
+        "stackable": true,
+        "maxStack": 20
+      },
+      "economy": {
+        "buyPriceGold": 38,
+        "sellPriceGold": 0,
+        "tradePolicyId": null,
+        "premiumEligible": true,
+        "inventoryCapacityBonus": 0
+      },
+      "consumable": {
+        "consumableCooldownSeconds": 5,
+        "consumableCooldownCategoryId": "HEALING_POTION",
+        "actions": [
+          {
+            "type": "RestoreHp",
+            "amount": 200,
+            "resourceType": null,
+            "effectId": null,
+            "dispelCategory": null
+          }
+        ]
+      },
+      "generation": {
+        "generationMode": "Fixed",
+        "itemLevelMin": null,
+        "itemLevelMax": null,
+        "primaryStatRanges": null,
+        "guaranteedAffixStatIds": [],
+        "randomAffixPoolId": null,
+        "randomAffixStatIds": [],
+        "affixCountProfileId": null,
+        "affixCountProfile": null,
+        "extraAffixBudgetCap": 0,
+        "prefixSuffixPolicyId": null,
+        "generationVersion": 1
+      },
+      "possibleAffixes": [],
+      "set": null,
+      "acquisition": {
+        "lootTableIds": [],
+        "merchantIds": [
+          "MARCUS_SUPPLIES"
+        ],
         "premiumOffers": [],
         "professionRecipes": [],
         "skinningSources": [],
@@ -21636,6 +22133,99 @@
           "LOOT_FLOWER_MEADOW_KORNEVOI_DUKH_L7"
         ],
         "merchantIds": [],
+        "premiumOffers": [],
+        "professionRecipes": [],
+        "skinningSources": [],
+        "startingClasses": []
+      }
+    },
+    {
+      "id": "MAJOR_HEALING_POTION",
+      "name": "Большое зелье лечения",
+      "level": 8,
+      "description": "Мгновенно восстанавливает 250 здоровья. Лечебные зелья этой категории можно использовать раз в 5 секунд.",
+      "type": "Consumable",
+      "rarity": "Uncommon",
+      "iconId": null,
+      "version": 1,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0,
+        "maxHpFlat": 0,
+        "attackPowerFlat": 0,
+        "spellPowerFlat": 0,
+        "criticalChancePercent": 0,
+        "criticalDamagePercent": 0,
+        "accuracyPercent": 0,
+        "attackSpeedPercent": 0,
+        "dodgePercent": 0,
+        "armorFlat": 0,
+        "magicResistanceFlat": 0,
+        "armorPenetrationPercent": 0,
+        "magicPenetrationPercent": 0,
+        "maxResourceFlat": 0,
+        "weaponDamageMin": null,
+        "weaponDamageMax": null,
+        "blockChancePercent": 0,
+        "blockValueMin": 0,
+        "blockValueMax": 0
+      },
+      "equipment": {
+        "slot": null,
+        "weaponCategory": null,
+        "armorCategory": null,
+        "offHandCategory": null,
+        "weaponBaseAttackIntervalSeconds": null,
+        "appearanceProfileId": null,
+        "uniqueEquippedGroup": null
+      },
+      "stack": {
+        "stackable": true,
+        "maxStack": 20
+      },
+      "economy": {
+        "buyPriceGold": 52,
+        "sellPriceGold": 0,
+        "tradePolicyId": null,
+        "premiumEligible": true,
+        "inventoryCapacityBonus": 0
+      },
+      "consumable": {
+        "consumableCooldownSeconds": 5,
+        "consumableCooldownCategoryId": "HEALING_POTION",
+        "actions": [
+          {
+            "type": "RestoreHp",
+            "amount": 250,
+            "resourceType": null,
+            "effectId": null,
+            "dispelCategory": null
+          }
+        ]
+      },
+      "generation": {
+        "generationMode": "Fixed",
+        "itemLevelMin": null,
+        "itemLevelMax": null,
+        "primaryStatRanges": null,
+        "guaranteedAffixStatIds": [],
+        "randomAffixPoolId": null,
+        "randomAffixStatIds": [],
+        "affixCountProfileId": null,
+        "affixCountProfile": null,
+        "extraAffixBudgetCap": 0,
+        "prefixSuffixPolicyId": null,
+        "generationVersion": 1
+      },
+      "possibleAffixes": [],
+      "set": null,
+      "acquisition": {
+        "lootTableIds": [],
+        "merchantIds": [
+          "MARCUS_SUPPLIES"
+        ],
         "premiumOffers": [],
         "professionRecipes": [],
         "skinningSources": [],
@@ -52196,6 +52786,99 @@
           "LOOT_BLIGHTED_GROVE_TENEVOI_BRAKONER_L17"
         ],
         "merchantIds": [],
+        "premiumOffers": [],
+        "professionRecipes": [],
+        "skinningSources": [],
+        "startingClasses": []
+      }
+    },
+    {
+      "id": "SUPERIOR_HEALING_POTION",
+      "name": "Превосходное зелье лечения",
+      "level": 15,
+      "description": "Мгновенно восстанавливает 500 здоровья. Лечебные зелья этой категории можно использовать раз в 5 секунд.",
+      "type": "Consumable",
+      "rarity": "Rare",
+      "iconId": null,
+      "version": 1,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0,
+        "maxHpFlat": 0,
+        "attackPowerFlat": 0,
+        "spellPowerFlat": 0,
+        "criticalChancePercent": 0,
+        "criticalDamagePercent": 0,
+        "accuracyPercent": 0,
+        "attackSpeedPercent": 0,
+        "dodgePercent": 0,
+        "armorFlat": 0,
+        "magicResistanceFlat": 0,
+        "armorPenetrationPercent": 0,
+        "magicPenetrationPercent": 0,
+        "maxResourceFlat": 0,
+        "weaponDamageMin": null,
+        "weaponDamageMax": null,
+        "blockChancePercent": 0,
+        "blockValueMin": 0,
+        "blockValueMax": 0
+      },
+      "equipment": {
+        "slot": null,
+        "weaponCategory": null,
+        "armorCategory": null,
+        "offHandCategory": null,
+        "weaponBaseAttackIntervalSeconds": null,
+        "appearanceProfileId": null,
+        "uniqueEquippedGroup": null
+      },
+      "stack": {
+        "stackable": true,
+        "maxStack": 20
+      },
+      "economy": {
+        "buyPriceGold": 95,
+        "sellPriceGold": 0,
+        "tradePolicyId": null,
+        "premiumEligible": true,
+        "inventoryCapacityBonus": 0
+      },
+      "consumable": {
+        "consumableCooldownSeconds": 5,
+        "consumableCooldownCategoryId": "HEALING_POTION",
+        "actions": [
+          {
+            "type": "RestoreHp",
+            "amount": 500,
+            "resourceType": null,
+            "effectId": null,
+            "dispelCategory": null
+          }
+        ]
+      },
+      "generation": {
+        "generationMode": "Fixed",
+        "itemLevelMin": null,
+        "itemLevelMax": null,
+        "primaryStatRanges": null,
+        "guaranteedAffixStatIds": [],
+        "randomAffixPoolId": null,
+        "randomAffixStatIds": [],
+        "affixCountProfileId": null,
+        "affixCountProfile": null,
+        "extraAffixBudgetCap": 0,
+        "prefixSuffixPolicyId": null,
+        "generationVersion": 1
+      },
+      "possibleAffixes": [],
+      "set": null,
+      "acquisition": {
+        "lootTableIds": [],
+        "merchantIds": [
+          "MARCUS_SUPPLIES"
+        ],
         "premiumOffers": [],
         "professionRecipes": [],
         "skinningSources": [],
@@ -118968,7 +119651,7 @@
       "set": null,
       "acquisition": {
         "lootTableIds": [
-          "ECLIPSED_CITADEL_BOSS_LOOT"
+          "LOOT_MOON_ASH_MARSHES_POZHIRATEL_SVETA_L25"
         ],
         "merchantIds": [],
         "premiumOffers": [],
@@ -119172,7 +119855,7 @@
       "set": null,
       "acquisition": {
         "lootTableIds": [
-          "ECLIPSED_CITADEL_BOSS_LOOT"
+          "LOOT_MOON_ASH_MARSHES_POZHIRATEL_SVETA_L25"
         ],
         "merchantIds": [],
         "premiumOffers": [],
@@ -119361,7 +120044,7 @@
       "set": null,
       "acquisition": {
         "lootTableIds": [
-          "ECLIPSED_CITADEL_BOSS_LOOT"
+          "LOOT_MOON_ASH_MARSHES_POZHIRATEL_SVETA_L25"
         ],
         "merchantIds": [],
         "premiumOffers": [],
@@ -168781,6 +169464,1520 @@
       "acquisition": {
         "lootTableIds": [
           "LOOT_BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40"
+        ],
+        "merchantIds": [],
+        "premiumOffers": [],
+        "professionRecipes": [],
+        "skinningSources": [],
+        "startingClasses": []
+      }
+    },
+    {
+      "id": "FOKUS_OSTATOCHNOI_MANY_L60",
+      "name": "Фокус остаточной маны",
+      "level": 60,
+      "description": "Версия 60 уровня из сундука Архонта Пепла; магический фокус для сборок с большим запасом маны.",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "iconId": "items_outside_sets/shattered_order_citadel/residual_mana_focus",
+      "version": 1,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0,
+        "maxHpFlat": 0,
+        "attackPowerFlat": 0,
+        "spellPowerFlat": 0,
+        "criticalChancePercent": 0,
+        "criticalDamagePercent": 0,
+        "accuracyPercent": 0,
+        "attackSpeedPercent": 0,
+        "dodgePercent": 0,
+        "armorFlat": 0,
+        "magicResistanceFlat": 0,
+        "armorPenetrationPercent": 0,
+        "magicPenetrationPercent": 0,
+        "maxResourceFlat": 0,
+        "weaponDamageMin": null,
+        "weaponDamageMax": null,
+        "blockChancePercent": 0,
+        "blockValueMin": 0,
+        "blockValueMax": 0
+      },
+      "equipment": {
+        "slot": "OffHand",
+        "weaponCategory": null,
+        "armorCategory": null,
+        "offHandCategory": "FOCUS",
+        "weaponBaseAttackIntervalSeconds": null,
+        "appearanceProfileId": null,
+        "uniqueEquippedGroup": null
+      },
+      "stack": {
+        "stackable": false,
+        "maxStack": 1
+      },
+      "economy": {
+        "buyPriceGold": 0,
+        "sellPriceGold": 0,
+        "tradePolicyId": "ORDINARY_TRADEABLE",
+        "premiumEligible": true,
+        "inventoryCapacityBonus": 0
+      },
+      "consumable": null,
+      "generation": {
+        "generationMode": "Rolled",
+        "itemLevelMin": 60,
+        "itemLevelMax": 60,
+        "primaryStatRanges": null,
+        "guaranteedAffixStatIds": [
+          "INTELLECT",
+          "STAMINA"
+        ],
+        "randomAffixPoolId": "MAGE_OFFHAND",
+        "randomAffixStatIds": [
+          "ACCURACY",
+          "ATTACK_SPEED",
+          "CRITICAL_CHANCE",
+          "INTELLECT",
+          "MAGIC_PENETRATION",
+          "MAX_RESOURCE",
+          "SPELL_POWER",
+          "STAMINA"
+        ],
+        "affixCountProfileId": "LEVEL_57_60",
+        "affixCountProfile": {
+          "id": "LEVEL_57_60",
+          "guaranteedCount": 2,
+          "minimumBonusCount": 1,
+          "maximumBonusCount": 2
+        },
+        "extraAffixBudgetCap": 0.06,
+        "prefixSuffixPolicyId": "WORLD_V1",
+        "generationVersion": 1
+      },
+      "possibleAffixes": [
+        {
+          "statId": "ACCURACY",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_ACCURACY",
+              "kind": "SUFFIX",
+              "low": "Зоркости",
+              "medium": "Верного Взгляда",
+              "high": "Безошибочного Взгляда"
+            }
+          ]
+        },
+        {
+          "statId": "ATTACK_SPEED",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_SPEED",
+              "kind": "SUFFIX",
+              "low": "Ветра",
+              "medium": "Быстрого Ветра",
+              "high": "Буревого Ветра"
+            }
+          ]
+        },
+        {
+          "statId": "CRITICAL_CHANCE",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_CRIT",
+              "kind": "SUFFIX",
+              "low": "Сокола",
+              "medium": "Острого Сокола",
+              "high": "Небесного Сокола"
+            }
+          ]
+        },
+        {
+          "statId": "INTELLECT",
+          "isGuaranteed": true,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_INTELLECT",
+              "kind": "PREFIX",
+              "low": "Учёный",
+              "medium": "Мудрый",
+              "high": "Всеведущий"
+            }
+          ]
+        },
+        {
+          "statId": "MAGIC_PENETRATION",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_MAGIC_PEN",
+              "kind": "SUFFIX",
+              "low": "Разлома",
+              "medium": "Глубокого Разлома",
+              "high": "Бездонного Разлома"
+            }
+          ]
+        },
+        {
+          "statId": "MAX_RESOURCE",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_RESOURCE",
+              "kind": "SUFFIX",
+              "low": "Потока",
+              "medium": "Источника",
+              "high": "Бесконечности"
+            }
+          ]
+        },
+        {
+          "statId": "SPELL_POWER",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": []
+        },
+        {
+          "statId": "STAMINA",
+          "isGuaranteed": true,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_STAMINA",
+              "kind": "PREFIX",
+              "low": "Выносливый",
+              "medium": "Стойкий",
+              "high": "Несокрушимый"
+            }
+          ]
+        }
+      ],
+      "set": null,
+      "acquisition": {
+        "lootTableIds": [
+          "WORLD_BOSS_ASH_ARCHON_LOOT",
+          "WORLD_BOSS_ASH_ARCHON_TOP5_LOOT"
+        ],
+        "merchantIds": [],
+        "premiumOffers": [],
+        "professionRecipes": [],
+        "skinningSources": [],
+        "startingClasses": []
+      }
+    },
+    {
+      "id": "KOLTSO_RAZBITOGO_OTRAZHENIIA_L60",
+      "name": "Кольцо Единой Клятвы",
+      "level": 60,
+      "description": "Версия 60 уровня из сундука Архонта Пепла; универсальное кольцо, сохранившее силу неудавшейся клятвы Каэль-Мора.",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "iconId": "items_outside_sets/shattered_order_citadel/broken_reflection_ring",
+      "version": 1,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0,
+        "maxHpFlat": 0,
+        "attackPowerFlat": 0,
+        "spellPowerFlat": 0,
+        "criticalChancePercent": 0,
+        "criticalDamagePercent": 0,
+        "accuracyPercent": 0,
+        "attackSpeedPercent": 0,
+        "dodgePercent": 0,
+        "armorFlat": 0,
+        "magicResistanceFlat": 0,
+        "armorPenetrationPercent": 0,
+        "magicPenetrationPercent": 0,
+        "maxResourceFlat": 0,
+        "weaponDamageMin": null,
+        "weaponDamageMax": null,
+        "blockChancePercent": 0,
+        "blockValueMin": 0,
+        "blockValueMax": 0
+      },
+      "equipment": {
+        "slot": "Ring1",
+        "weaponCategory": null,
+        "armorCategory": null,
+        "offHandCategory": null,
+        "weaponBaseAttackIntervalSeconds": null,
+        "appearanceProfileId": null,
+        "uniqueEquippedGroup": null
+      },
+      "stack": {
+        "stackable": false,
+        "maxStack": 1
+      },
+      "economy": {
+        "buyPriceGold": 0,
+        "sellPriceGold": 0,
+        "tradePolicyId": "ORDINARY_TRADEABLE",
+        "premiumEligible": true,
+        "inventoryCapacityBonus": 0
+      },
+      "consumable": null,
+      "generation": {
+        "generationMode": "Rolled",
+        "itemLevelMin": 60,
+        "itemLevelMax": 60,
+        "primaryStatRanges": null,
+        "guaranteedAffixStatIds": [],
+        "randomAffixPoolId": "ACCESSORY_GENERAL",
+        "randomAffixStatIds": [
+          "ACCURACY",
+          "AGILITY",
+          "ARMOR_PENETRATION",
+          "ATTACK_SPEED",
+          "CRITICAL_CHANCE",
+          "CRITICAL_DAMAGE",
+          "DODGE",
+          "INTELLECT",
+          "MAGIC_PENETRATION",
+          "MAX_HP",
+          "MAX_RESOURCE",
+          "STAMINA",
+          "STRENGTH"
+        ],
+        "affixCountProfileId": "ACCESSORY_LEVEL_57_60",
+        "affixCountProfile": {
+          "id": "ACCESSORY_LEVEL_57_60",
+          "guaranteedCount": 0,
+          "minimumBonusCount": 4,
+          "maximumBonusCount": 5
+        },
+        "extraAffixBudgetCap": 0.06,
+        "prefixSuffixPolicyId": "WORLD_V1",
+        "generationVersion": 1
+      },
+      "possibleAffixes": [
+        {
+          "statId": "ACCURACY",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_ACCURACY",
+              "kind": "SUFFIX",
+              "low": "Зоркости",
+              "medium": "Верного Взгляда",
+              "high": "Безошибочного Взгляда"
+            }
+          ]
+        },
+        {
+          "statId": "AGILITY",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_AGILITY",
+              "kind": "PREFIX",
+              "low": "Проворный",
+              "medium": "Ловкий",
+              "high": "Стремительный"
+            }
+          ]
+        },
+        {
+          "statId": "ARMOR_PENETRATION",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_ARMOR_PEN",
+              "kind": "SUFFIX",
+              "low": "Клыка",
+              "medium": "Пробоя",
+              "high": "Раскола"
+            }
+          ]
+        },
+        {
+          "statId": "ATTACK_SPEED",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_SPEED",
+              "kind": "SUFFIX",
+              "low": "Ветра",
+              "medium": "Быстрого Ветра",
+              "high": "Буревого Ветра"
+            }
+          ]
+        },
+        {
+          "statId": "CRITICAL_CHANCE",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_CRIT",
+              "kind": "SUFFIX",
+              "low": "Сокола",
+              "medium": "Острого Сокола",
+              "high": "Небесного Сокола"
+            }
+          ]
+        },
+        {
+          "statId": "CRITICAL_DAMAGE",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": []
+        },
+        {
+          "statId": "DODGE",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_DODGE",
+              "kind": "SUFFIX",
+              "low": "Тени",
+              "medium": "Глубокой Тени",
+              "high": "Неуловимой Тени"
+            }
+          ]
+        },
+        {
+          "statId": "INTELLECT",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_INTELLECT",
+              "kind": "PREFIX",
+              "low": "Учёный",
+              "medium": "Мудрый",
+              "high": "Всеведущий"
+            }
+          ]
+        },
+        {
+          "statId": "MAGIC_PENETRATION",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_MAGIC_PEN",
+              "kind": "SUFFIX",
+              "low": "Разлома",
+              "medium": "Глубокого Разлома",
+              "high": "Бездонного Разлома"
+            }
+          ]
+        },
+        {
+          "statId": "MAX_HP",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": []
+        },
+        {
+          "statId": "MAX_RESOURCE",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_RESOURCE",
+              "kind": "SUFFIX",
+              "low": "Потока",
+              "medium": "Источника",
+              "high": "Бесконечности"
+            }
+          ]
+        },
+        {
+          "statId": "STAMINA",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_STAMINA",
+              "kind": "PREFIX",
+              "low": "Выносливый",
+              "medium": "Стойкий",
+              "high": "Несокрушимый"
+            }
+          ]
+        },
+        {
+          "statId": "STRENGTH",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_STRENGTH",
+              "kind": "PREFIX",
+              "low": "Крепкий",
+              "medium": "Могучий",
+              "high": "Титанический"
+            }
+          ]
+        }
+      ],
+      "set": null,
+      "acquisition": {
+        "lootTableIds": [
+          "WORLD_BOSS_ASH_ARCHON_LOOT",
+          "WORLD_BOSS_ASH_ARCHON_TOP5_LOOT"
+        ],
+        "merchantIds": [],
+        "premiumOffers": [],
+        "professionRecipes": [],
+        "skinningSources": [],
+        "startingClasses": []
+      }
+    },
+    {
+      "id": "LUK_TROINOGO_ASPEKTA_L60",
+      "name": "Лук тройного аспекта",
+      "level": 60,
+      "description": "Версия 60 уровня из сундука Архонта Пепла; три последовательных выстрела получают разные вторичные эффекты.",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "iconId": "items_outside_sets/shattered_order_citadel/triple_aspect_bow",
+      "version": 1,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0,
+        "maxHpFlat": 0,
+        "attackPowerFlat": 0,
+        "spellPowerFlat": 0,
+        "criticalChancePercent": 0,
+        "criticalDamagePercent": 0,
+        "accuracyPercent": 0,
+        "attackSpeedPercent": 0,
+        "dodgePercent": 0,
+        "armorFlat": 0,
+        "magicResistanceFlat": 0,
+        "armorPenetrationPercent": 0,
+        "magicPenetrationPercent": 0,
+        "maxResourceFlat": 0,
+        "weaponDamageMin": 285,
+        "weaponDamageMax": 390,
+        "blockChancePercent": 0,
+        "blockValueMin": 0,
+        "blockValueMax": 0
+      },
+      "equipment": {
+        "slot": "MainHand",
+        "weaponCategory": "BOW",
+        "armorCategory": null,
+        "offHandCategory": null,
+        "weaponBaseAttackIntervalSeconds": 2.7,
+        "appearanceProfileId": null,
+        "uniqueEquippedGroup": null
+      },
+      "stack": {
+        "stackable": false,
+        "maxStack": 1
+      },
+      "economy": {
+        "buyPriceGold": 0,
+        "sellPriceGold": 0,
+        "tradePolicyId": "ORDINARY_TRADEABLE",
+        "premiumEligible": true,
+        "inventoryCapacityBonus": 0
+      },
+      "consumable": null,
+      "generation": {
+        "generationMode": "Rolled",
+        "itemLevelMin": 60,
+        "itemLevelMax": 60,
+        "primaryStatRanges": null,
+        "guaranteedAffixStatIds": [
+          "AGILITY",
+          "STAMINA"
+        ],
+        "randomAffixPoolId": "ARCHER_WEAPON",
+        "randomAffixStatIds": [
+          "ACCURACY",
+          "AGILITY",
+          "ARMOR_PENETRATION",
+          "ATTACK_POWER",
+          "ATTACK_SPEED",
+          "CRITICAL_CHANCE",
+          "STAMINA"
+        ],
+        "affixCountProfileId": "LEVEL_57_60",
+        "affixCountProfile": {
+          "id": "LEVEL_57_60",
+          "guaranteedCount": 2,
+          "minimumBonusCount": 1,
+          "maximumBonusCount": 2
+        },
+        "extraAffixBudgetCap": 0.06,
+        "prefixSuffixPolicyId": "WORLD_V1",
+        "generationVersion": 1
+      },
+      "possibleAffixes": [
+        {
+          "statId": "ACCURACY",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_ACCURACY",
+              "kind": "SUFFIX",
+              "low": "Зоркости",
+              "medium": "Верного Взгляда",
+              "high": "Безошибочного Взгляда"
+            }
+          ]
+        },
+        {
+          "statId": "AGILITY",
+          "isGuaranteed": true,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_AGILITY",
+              "kind": "PREFIX",
+              "low": "Проворный",
+              "medium": "Ловкий",
+              "high": "Стремительный"
+            }
+          ]
+        },
+        {
+          "statId": "ARMOR_PENETRATION",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_ARMOR_PEN",
+              "kind": "SUFFIX",
+              "low": "Клыка",
+              "medium": "Пробоя",
+              "high": "Раскола"
+            }
+          ]
+        },
+        {
+          "statId": "ATTACK_POWER",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": []
+        },
+        {
+          "statId": "ATTACK_SPEED",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_SPEED",
+              "kind": "SUFFIX",
+              "low": "Ветра",
+              "medium": "Быстрого Ветра",
+              "high": "Буревого Ветра"
+            }
+          ]
+        },
+        {
+          "statId": "CRITICAL_CHANCE",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_CRIT",
+              "kind": "SUFFIX",
+              "low": "Сокола",
+              "medium": "Острого Сокола",
+              "high": "Небесного Сокола"
+            }
+          ]
+        },
+        {
+          "statId": "STAMINA",
+          "isGuaranteed": true,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_STAMINA",
+              "kind": "PREFIX",
+              "low": "Выносливый",
+              "medium": "Стойкий",
+              "high": "Несокрушимый"
+            }
+          ]
+        }
+      ],
+      "set": null,
+      "acquisition": {
+        "lootTableIds": [
+          "WORLD_BOSS_ASH_ARCHON_LOOT",
+          "WORLD_BOSS_ASH_ARCHON_TOP5_LOOT"
+        ],
+        "merchantIds": [],
+        "premiumOffers": [],
+        "professionRecipes": [],
+        "skinningSources": [],
+        "startingClasses": []
+      }
+    },
+    {
+      "id": "PECHAT_TRIEDINSTVA_L60",
+      "name": "Печать Верховного Магистра",
+      "level": 60,
+      "description": "Версия 60 уровня из сундука Архонта Пепла; сильное универсальное кольцо для магических и гибридных сборок.",
+      "type": "Equipment",
+      "rarity": "Epic",
+      "iconId": "items_outside_sets/shattered_order_citadel/triune_seal",
+      "version": 1,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0,
+        "maxHpFlat": 0,
+        "attackPowerFlat": 0,
+        "spellPowerFlat": 0,
+        "criticalChancePercent": 0,
+        "criticalDamagePercent": 0,
+        "accuracyPercent": 0,
+        "attackSpeedPercent": 0,
+        "dodgePercent": 0,
+        "armorFlat": 0,
+        "magicResistanceFlat": 0,
+        "armorPenetrationPercent": 0,
+        "magicPenetrationPercent": 0,
+        "maxResourceFlat": 0,
+        "weaponDamageMin": null,
+        "weaponDamageMax": null,
+        "blockChancePercent": 0,
+        "blockValueMin": 0,
+        "blockValueMax": 0
+      },
+      "equipment": {
+        "slot": "Ring1",
+        "weaponCategory": null,
+        "armorCategory": null,
+        "offHandCategory": null,
+        "weaponBaseAttackIntervalSeconds": null,
+        "appearanceProfileId": null,
+        "uniqueEquippedGroup": null
+      },
+      "stack": {
+        "stackable": false,
+        "maxStack": 1
+      },
+      "economy": {
+        "buyPriceGold": 0,
+        "sellPriceGold": 0,
+        "tradePolicyId": "ORDINARY_TRADEABLE",
+        "premiumEligible": true,
+        "inventoryCapacityBonus": 0
+      },
+      "consumable": null,
+      "generation": {
+        "generationMode": "Rolled",
+        "itemLevelMin": 60,
+        "itemLevelMax": 60,
+        "primaryStatRanges": null,
+        "guaranteedAffixStatIds": [],
+        "randomAffixPoolId": "ACCESSORY_GENERAL",
+        "randomAffixStatIds": [
+          "ACCURACY",
+          "AGILITY",
+          "ARMOR_PENETRATION",
+          "ATTACK_SPEED",
+          "CRITICAL_CHANCE",
+          "CRITICAL_DAMAGE",
+          "DODGE",
+          "INTELLECT",
+          "MAGIC_PENETRATION",
+          "MAX_HP",
+          "MAX_RESOURCE",
+          "STAMINA",
+          "STRENGTH"
+        ],
+        "affixCountProfileId": "ACCESSORY_LEVEL_57_60",
+        "affixCountProfile": {
+          "id": "ACCESSORY_LEVEL_57_60",
+          "guaranteedCount": 0,
+          "minimumBonusCount": 4,
+          "maximumBonusCount": 5
+        },
+        "extraAffixBudgetCap": 0.06,
+        "prefixSuffixPolicyId": "WORLD_V1",
+        "generationVersion": 1
+      },
+      "possibleAffixes": [
+        {
+          "statId": "ACCURACY",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_ACCURACY",
+              "kind": "SUFFIX",
+              "low": "Зоркости",
+              "medium": "Верного Взгляда",
+              "high": "Безошибочного Взгляда"
+            }
+          ]
+        },
+        {
+          "statId": "AGILITY",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_AGILITY",
+              "kind": "PREFIX",
+              "low": "Проворный",
+              "medium": "Ловкий",
+              "high": "Стремительный"
+            }
+          ]
+        },
+        {
+          "statId": "ARMOR_PENETRATION",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_ARMOR_PEN",
+              "kind": "SUFFIX",
+              "low": "Клыка",
+              "medium": "Пробоя",
+              "high": "Раскола"
+            }
+          ]
+        },
+        {
+          "statId": "ATTACK_SPEED",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_SPEED",
+              "kind": "SUFFIX",
+              "low": "Ветра",
+              "medium": "Быстрого Ветра",
+              "high": "Буревого Ветра"
+            }
+          ]
+        },
+        {
+          "statId": "CRITICAL_CHANCE",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_CRIT",
+              "kind": "SUFFIX",
+              "low": "Сокола",
+              "medium": "Острого Сокола",
+              "high": "Небесного Сокола"
+            }
+          ]
+        },
+        {
+          "statId": "CRITICAL_DAMAGE",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": []
+        },
+        {
+          "statId": "DODGE",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_DODGE",
+              "kind": "SUFFIX",
+              "low": "Тени",
+              "medium": "Глубокой Тени",
+              "high": "Неуловимой Тени"
+            }
+          ]
+        },
+        {
+          "statId": "INTELLECT",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_INTELLECT",
+              "kind": "PREFIX",
+              "low": "Учёный",
+              "medium": "Мудрый",
+              "high": "Всеведущий"
+            }
+          ]
+        },
+        {
+          "statId": "MAGIC_PENETRATION",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_MAGIC_PEN",
+              "kind": "SUFFIX",
+              "low": "Разлома",
+              "medium": "Глубокого Разлома",
+              "high": "Бездонного Разлома"
+            }
+          ]
+        },
+        {
+          "statId": "MAX_HP",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": []
+        },
+        {
+          "statId": "MAX_RESOURCE",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_RESOURCE",
+              "kind": "SUFFIX",
+              "low": "Потока",
+              "medium": "Источника",
+              "high": "Бесконечности"
+            }
+          ]
+        },
+        {
+          "statId": "STAMINA",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_STAMINA",
+              "kind": "PREFIX",
+              "low": "Выносливый",
+              "medium": "Стойкий",
+              "high": "Несокрушимый"
+            }
+          ]
+        },
+        {
+          "statId": "STRENGTH",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_STRENGTH",
+              "kind": "PREFIX",
+              "low": "Крепкий",
+              "medium": "Могучий",
+              "high": "Титанический"
+            }
+          ]
+        }
+      ],
+      "set": null,
+      "acquisition": {
+        "lootTableIds": [
+          "WORLD_BOSS_ASH_ARCHON_LOOT",
+          "WORLD_BOSS_ASH_ARCHON_TOP5_LOOT"
+        ],
+        "merchantIds": [],
+        "premiumOffers": [],
+        "professionRecipes": [],
+        "skinningSources": [],
+        "startingClasses": []
+      }
+    },
+    {
+      "id": "UNIQUE_ARCHER_LAST_CONSTELLATION_L60",
+      "name": "Лук Последнего Созвездия",
+      "level": 60,
+      "description": "Именной лук Архонта Пепла 60 уровня. Unique не является отдельным сетовым тиром.",
+      "type": "Equipment",
+      "rarity": "Unique",
+      "iconId": null,
+      "version": 1,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0,
+        "maxHpFlat": 0,
+        "attackPowerFlat": 0,
+        "spellPowerFlat": 0,
+        "criticalChancePercent": 0,
+        "criticalDamagePercent": 0,
+        "accuracyPercent": 0,
+        "attackSpeedPercent": 0,
+        "dodgePercent": 0,
+        "armorFlat": 0,
+        "magicResistanceFlat": 0,
+        "armorPenetrationPercent": 0,
+        "magicPenetrationPercent": 0,
+        "maxResourceFlat": 0,
+        "weaponDamageMin": 350,
+        "weaponDamageMax": 470,
+        "blockChancePercent": 0,
+        "blockValueMin": 0,
+        "blockValueMax": 0
+      },
+      "equipment": {
+        "slot": "MainHand",
+        "weaponCategory": "BOW",
+        "armorCategory": null,
+        "offHandCategory": null,
+        "weaponBaseAttackIntervalSeconds": null,
+        "appearanceProfileId": null,
+        "uniqueEquippedGroup": null
+      },
+      "stack": {
+        "stackable": false,
+        "maxStack": 1
+      },
+      "economy": {
+        "buyPriceGold": 0,
+        "sellPriceGold": 0,
+        "tradePolicyId": "ORDINARY_TRADEABLE",
+        "premiumEligible": true,
+        "inventoryCapacityBonus": 0
+      },
+      "consumable": null,
+      "generation": {
+        "generationMode": "Rolled",
+        "itemLevelMin": 60,
+        "itemLevelMax": 60,
+        "primaryStatRanges": null,
+        "guaranteedAffixStatIds": [
+          "AGILITY",
+          "CRITICAL_CHANCE",
+          "STAMINA"
+        ],
+        "randomAffixPoolId": "ARCHER_WEAPON",
+        "randomAffixStatIds": [
+          "ACCURACY",
+          "AGILITY",
+          "ARMOR_PENETRATION",
+          "ATTACK_POWER",
+          "ATTACK_SPEED",
+          "CRITICAL_CHANCE",
+          "STAMINA"
+        ],
+        "affixCountProfileId": "LEVEL_60_UNIQUE",
+        "affixCountProfile": {
+          "id": "LEVEL_60_UNIQUE",
+          "guaranteedCount": 3,
+          "minimumBonusCount": 2,
+          "maximumBonusCount": 2
+        },
+        "extraAffixBudgetCap": 0.08,
+        "prefixSuffixPolicyId": null,
+        "generationVersion": 1
+      },
+      "possibleAffixes": [
+        {
+          "statId": "ACCURACY",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_ACCURACY",
+              "kind": "SUFFIX",
+              "low": "Зоркости",
+              "medium": "Верного Взгляда",
+              "high": "Безошибочного Взгляда"
+            }
+          ]
+        },
+        {
+          "statId": "AGILITY",
+          "isGuaranteed": true,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_AGILITY",
+              "kind": "PREFIX",
+              "low": "Проворный",
+              "medium": "Ловкий",
+              "high": "Стремительный"
+            }
+          ]
+        },
+        {
+          "statId": "ARMOR_PENETRATION",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_ARMOR_PEN",
+              "kind": "SUFFIX",
+              "low": "Клыка",
+              "medium": "Пробоя",
+              "high": "Раскола"
+            }
+          ]
+        },
+        {
+          "statId": "ATTACK_POWER",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": []
+        },
+        {
+          "statId": "ATTACK_SPEED",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_SPEED",
+              "kind": "SUFFIX",
+              "low": "Ветра",
+              "medium": "Быстрого Ветра",
+              "high": "Буревого Ветра"
+            }
+          ]
+        },
+        {
+          "statId": "CRITICAL_CHANCE",
+          "isGuaranteed": true,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_CRIT",
+              "kind": "SUFFIX",
+              "low": "Сокола",
+              "medium": "Острого Сокола",
+              "high": "Небесного Сокола"
+            }
+          ]
+        },
+        {
+          "statId": "STAMINA",
+          "isGuaranteed": true,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_STAMINA",
+              "kind": "PREFIX",
+              "low": "Выносливый",
+              "medium": "Стойкий",
+              "high": "Несокрушимый"
+            }
+          ]
+        }
+      ],
+      "set": null,
+      "acquisition": {
+        "lootTableIds": [
+          "WORLD_BOSS_ASH_ARCHON_LOOT",
+          "WORLD_BOSS_ASH_ARCHON_TOP5_LOOT"
+        ],
+        "merchantIds": [],
+        "premiumOffers": [],
+        "professionRecipes": [],
+        "skinningSources": [],
+        "startingClasses": []
+      }
+    },
+    {
+      "id": "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L60",
+      "name": "Око Погасшей Звезды",
+      "level": 60,
+      "description": "Именной посох Архонта Пепла 60 уровня. Unique не является отдельным сетовым тиром.",
+      "type": "Equipment",
+      "rarity": "Unique",
+      "iconId": null,
+      "version": 1,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0,
+        "maxHpFlat": 0,
+        "attackPowerFlat": 0,
+        "spellPowerFlat": 0,
+        "criticalChancePercent": 0,
+        "criticalDamagePercent": 0,
+        "accuracyPercent": 0,
+        "attackSpeedPercent": 0,
+        "dodgePercent": 0,
+        "armorFlat": 0,
+        "magicResistanceFlat": 0,
+        "armorPenetrationPercent": 0,
+        "magicPenetrationPercent": 0,
+        "maxResourceFlat": 0,
+        "weaponDamageMin": 335,
+        "weaponDamageMax": 450,
+        "blockChancePercent": 0,
+        "blockValueMin": 0,
+        "blockValueMax": 0
+      },
+      "equipment": {
+        "slot": "MainHand",
+        "weaponCategory": "STAFF",
+        "armorCategory": null,
+        "offHandCategory": null,
+        "weaponBaseAttackIntervalSeconds": null,
+        "appearanceProfileId": null,
+        "uniqueEquippedGroup": null
+      },
+      "stack": {
+        "stackable": false,
+        "maxStack": 1
+      },
+      "economy": {
+        "buyPriceGold": 0,
+        "sellPriceGold": 0,
+        "tradePolicyId": "ORDINARY_TRADEABLE",
+        "premiumEligible": true,
+        "inventoryCapacityBonus": 0
+      },
+      "consumable": null,
+      "generation": {
+        "generationMode": "Rolled",
+        "itemLevelMin": 60,
+        "itemLevelMax": 60,
+        "primaryStatRanges": null,
+        "guaranteedAffixStatIds": [
+          "CRITICAL_CHANCE",
+          "INTELLECT",
+          "STAMINA"
+        ],
+        "randomAffixPoolId": "MAGE_WEAPON",
+        "randomAffixStatIds": [
+          "ACCURACY",
+          "ATTACK_SPEED",
+          "CRITICAL_CHANCE",
+          "INTELLECT",
+          "MAGIC_PENETRATION",
+          "MAX_RESOURCE",
+          "SPELL_POWER",
+          "STAMINA"
+        ],
+        "affixCountProfileId": "LEVEL_60_UNIQUE",
+        "affixCountProfile": {
+          "id": "LEVEL_60_UNIQUE",
+          "guaranteedCount": 3,
+          "minimumBonusCount": 2,
+          "maximumBonusCount": 2
+        },
+        "extraAffixBudgetCap": 0.08,
+        "prefixSuffixPolicyId": null,
+        "generationVersion": 1
+      },
+      "possibleAffixes": [
+        {
+          "statId": "ACCURACY",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_ACCURACY",
+              "kind": "SUFFIX",
+              "low": "Зоркости",
+              "medium": "Верного Взгляда",
+              "high": "Безошибочного Взгляда"
+            }
+          ]
+        },
+        {
+          "statId": "ATTACK_SPEED",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_SPEED",
+              "kind": "SUFFIX",
+              "low": "Ветра",
+              "medium": "Быстрого Ветра",
+              "high": "Буревого Ветра"
+            }
+          ]
+        },
+        {
+          "statId": "CRITICAL_CHANCE",
+          "isGuaranteed": true,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_CRIT",
+              "kind": "SUFFIX",
+              "low": "Сокола",
+              "medium": "Острого Сокола",
+              "high": "Небесного Сокола"
+            }
+          ]
+        },
+        {
+          "statId": "INTELLECT",
+          "isGuaranteed": true,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_INTELLECT",
+              "kind": "PREFIX",
+              "low": "Учёный",
+              "medium": "Мудрый",
+              "high": "Всеведущий"
+            }
+          ]
+        },
+        {
+          "statId": "MAGIC_PENETRATION",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_MAGIC_PEN",
+              "kind": "SUFFIX",
+              "low": "Разлома",
+              "medium": "Глубокого Разлома",
+              "high": "Бездонного Разлома"
+            }
+          ]
+        },
+        {
+          "statId": "MAX_RESOURCE",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_RESOURCE",
+              "kind": "SUFFIX",
+              "low": "Потока",
+              "medium": "Источника",
+              "high": "Бесконечности"
+            }
+          ]
+        },
+        {
+          "statId": "SPELL_POWER",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": []
+        },
+        {
+          "statId": "STAMINA",
+          "isGuaranteed": true,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_STAMINA",
+              "kind": "PREFIX",
+              "low": "Выносливый",
+              "medium": "Стойкий",
+              "high": "Несокрушимый"
+            }
+          ]
+        }
+      ],
+      "set": null,
+      "acquisition": {
+        "lootTableIds": [
+          "WORLD_BOSS_ASH_ARCHON_LOOT",
+          "WORLD_BOSS_ASH_ARCHON_TOP5_LOOT"
+        ],
+        "merchantIds": [],
+        "premiumOffers": [],
+        "professionRecipes": [],
+        "skinningSources": [],
+        "startingClasses": []
+      }
+    },
+    {
+      "id": "UNIQUE_WARRIOR_BLACKHEART_L60",
+      "name": "Черносерд",
+      "level": 60,
+      "description": "Именное оружие Архонта Пепла 60 уровня. Unique не является отдельным сетовым тиром.",
+      "type": "Equipment",
+      "rarity": "Unique",
+      "iconId": null,
+      "version": 1,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0,
+        "maxHpFlat": 0,
+        "attackPowerFlat": 0,
+        "spellPowerFlat": 0,
+        "criticalChancePercent": 0,
+        "criticalDamagePercent": 0,
+        "accuracyPercent": 0,
+        "attackSpeedPercent": 0,
+        "dodgePercent": 0,
+        "armorFlat": 0,
+        "magicResistanceFlat": 0,
+        "armorPenetrationPercent": 0,
+        "magicPenetrationPercent": 0,
+        "maxResourceFlat": 0,
+        "weaponDamageMin": 365,
+        "weaponDamageMax": 485,
+        "blockChancePercent": 0,
+        "blockValueMin": 0,
+        "blockValueMax": 0
+      },
+      "equipment": {
+        "slot": "MainHand",
+        "weaponCategory": "TWO_HAND_SWORD",
+        "armorCategory": null,
+        "offHandCategory": null,
+        "weaponBaseAttackIntervalSeconds": null,
+        "appearanceProfileId": null,
+        "uniqueEquippedGroup": null
+      },
+      "stack": {
+        "stackable": false,
+        "maxStack": 1
+      },
+      "economy": {
+        "buyPriceGold": 0,
+        "sellPriceGold": 0,
+        "tradePolicyId": "ORDINARY_TRADEABLE",
+        "premiumEligible": true,
+        "inventoryCapacityBonus": 0
+      },
+      "consumable": null,
+      "generation": {
+        "generationMode": "Rolled",
+        "itemLevelMin": 60,
+        "itemLevelMax": 60,
+        "primaryStatRanges": null,
+        "guaranteedAffixStatIds": [
+          "CRITICAL_CHANCE",
+          "STAMINA",
+          "STRENGTH"
+        ],
+        "randomAffixPoolId": "WARRIOR_WEAPON",
+        "randomAffixStatIds": [
+          "ACCURACY",
+          "ARMOR_PENETRATION",
+          "ATTACK_POWER",
+          "ATTACK_SPEED",
+          "CRITICAL_CHANCE",
+          "STAMINA",
+          "STRENGTH"
+        ],
+        "affixCountProfileId": "LEVEL_60_UNIQUE",
+        "affixCountProfile": {
+          "id": "LEVEL_60_UNIQUE",
+          "guaranteedCount": 3,
+          "minimumBonusCount": 2,
+          "maximumBonusCount": 2
+        },
+        "extraAffixBudgetCap": 0.08,
+        "prefixSuffixPolicyId": null,
+        "generationVersion": 1
+      },
+      "possibleAffixes": [
+        {
+          "statId": "ACCURACY",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_ACCURACY",
+              "kind": "SUFFIX",
+              "low": "Зоркости",
+              "medium": "Верного Взгляда",
+              "high": "Безошибочного Взгляда"
+            }
+          ]
+        },
+        {
+          "statId": "ARMOR_PENETRATION",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_ARMOR_PEN",
+              "kind": "SUFFIX",
+              "low": "Клыка",
+              "medium": "Пробоя",
+              "high": "Раскола"
+            }
+          ]
+        },
+        {
+          "statId": "ATTACK_POWER",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": []
+        },
+        {
+          "statId": "ATTACK_SPEED",
+          "isGuaranteed": false,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_SPEED",
+              "kind": "SUFFIX",
+              "low": "Ветра",
+              "medium": "Быстрого Ветра",
+              "high": "Буревого Ветра"
+            }
+          ]
+        },
+        {
+          "statId": "CRITICAL_CHANCE",
+          "isGuaranteed": true,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "SUFFIX_CRIT",
+              "kind": "SUFFIX",
+              "low": "Сокола",
+              "medium": "Острого Сокола",
+              "high": "Небесного Сокола"
+            }
+          ]
+        },
+        {
+          "statId": "STAMINA",
+          "isGuaranteed": true,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_STAMINA",
+              "kind": "PREFIX",
+              "low": "Выносливый",
+              "medium": "Стойкий",
+              "high": "Несокрушимый"
+            }
+          ]
+        },
+        {
+          "statId": "STRENGTH",
+          "isGuaranteed": true,
+          "isRandom": true,
+          "names": [
+            {
+              "id": "PREFIX_STRENGTH",
+              "kind": "PREFIX",
+              "low": "Крепкий",
+              "medium": "Могучий",
+              "high": "Титанический"
+            }
+          ]
+        }
+      ],
+      "set": null,
+      "acquisition": {
+        "lootTableIds": [
+          "WORLD_BOSS_ASH_ARCHON_LOOT",
+          "WORLD_BOSS_ASH_ARCHON_TOP5_LOOT"
         ],
         "merchantIds": [],
         "premiumOffers": [],

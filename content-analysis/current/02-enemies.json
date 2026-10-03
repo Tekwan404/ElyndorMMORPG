@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "0.33.0",
-  "balanceVersion": "0.27.0",
-  "publishedAtUtc": "2026-09-27T18:00:00+00:00",
-  "total": 256,
+  "contentVersion": "0.36.0",
+  "balanceVersion": "0.29.0",
+  "publishedAtUtc": "2026-10-03T08:47:00+00:00",
+  "total": 257,
   "enemies": [
     {
       "id": "FOREST_WOLF_L1",
@@ -12,6 +12,7 @@
       "level": 1,
       "description": "Лесной волк кружит рядом и выжидает момент для рывка.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-lesnoy-volk",
       "version": 1,
       "maxHp": 105,
@@ -122,6 +123,7 @@
       },
       "rewards": {
         "xpReward": 40,
+        "grantsXp": true,
         "goldRewardMin": 4,
         "goldRewardMax": 7,
         "lootTableId": "WHISPERING_FOREST_WOLF",
@@ -229,6 +231,7 @@
       "level": 1,
       "description": "Молодой волк. первый лес, волки, кабаны, пауки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "molodoi-volk",
       "version": 1,
       "maxHp": 105,
@@ -272,6 +275,7 @@
       },
       "rewards": {
         "xpReward": 40,
+        "grantsXp": true,
         "goldRewardMin": 4,
         "goldRewardMax": 6,
         "lootTableId": "LOOT_WHISPERING_FOREST_MOLODOI_VOLK_L1",
@@ -315,6 +319,7 @@
       "level": 1,
       "description": "Серый волк. первый лес, волки, кабаны, пауки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "seryi-volk",
       "version": 1,
       "maxHp": 105,
@@ -358,6 +363,7 @@
       },
       "rewards": {
         "xpReward": 40,
+        "grantsXp": true,
         "goldRewardMin": 4,
         "goldRewardMax": 6,
         "lootTableId": "LOOT_WHISPERING_FOREST_SERYI_VOLK_L1",
@@ -401,6 +407,7 @@
       "level": 2,
       "description": "Тяжёлый кабан защищает свою территорию и атакует короткими мощными бросками.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "forest-boar",
       "version": 1,
       "maxHp": 145,
@@ -443,7 +450,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 60,
+        "xpReward": 83,
+        "grantsXp": true,
         "goldRewardMin": 5,
         "goldRewardMax": 8,
         "lootTableId": "WHISPERING_FOREST_BOAR",
@@ -551,6 +559,7 @@
       "level": 2,
       "description": "Лесной кабан. первый лес, волки, кабаны, пауки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "lesnoi-kaban",
       "version": 1,
       "maxHp": 175,
@@ -593,7 +602,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 80,
+        "xpReward": 83,
+        "grantsXp": true,
         "goldRewardMin": 6,
         "goldRewardMax": 8,
         "lootTableId": "LOOT_WHISPERING_FOREST_LESNOI_KABAN_L2",
@@ -637,6 +647,7 @@
       "level": 2,
       "description": "Волк-охотник. первый лес, волки, кабаны, пауки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "volk-okhotnik",
       "version": 1,
       "maxHp": 130,
@@ -679,7 +690,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 80,
+        "xpReward": 83,
+        "grantsXp": true,
         "goldRewardMin": 6,
         "goldRewardMax": 8,
         "lootTableId": "LOOT_WHISPERING_FOREST_VOLK_OKHOTNIK_L2",
@@ -729,6 +741,7 @@
       "level": 3,
       "description": "Крупный паук атакует быстро и старается не дать противнику передышки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-gigantskiy-pauk",
       "version": 1,
       "maxHp": 130,
@@ -838,7 +851,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 90,
+        "xpReward": 123,
+        "grantsXp": true,
         "goldRewardMin": 6,
         "goldRewardMax": 10,
         "lootTableId": "WHISPERING_FOREST_SPIDER",
@@ -940,6 +954,7 @@
       "level": 3,
       "description": "Ядовитый паук. первый лес, волки, кабаны, пауки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "iadovityi-pauk",
       "version": 1,
       "maxHp": 170,
@@ -982,7 +997,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 120,
+        "xpReward": 123,
+        "grantsXp": true,
         "goldRewardMin": 7,
         "goldRewardMax": 10,
         "lootTableId": "LOOT_WHISPERING_FOREST_IADOVITYI_PAUK_L3",
@@ -1032,6 +1048,7 @@
       "level": 3,
       "description": "Лесной паук. первый лес, волки, кабаны, пауки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "lesnoi-pauk",
       "version": 1,
       "maxHp": 170,
@@ -1074,7 +1091,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 120,
+        "xpReward": 123,
+        "grantsXp": true,
         "goldRewardMin": 7,
         "goldRewardMax": 10,
         "lootTableId": "LOOT_WHISPERING_FOREST_LESNOI_PAUK_L3",
@@ -1118,6 +1136,7 @@
       "level": 3,
       "description": "Лесной волк. первый лес, волки, кабаны, пауки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-lesnoy-volk",
       "version": 1,
       "maxHp": 190,
@@ -1160,7 +1179,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 120,
+        "xpReward": 123,
+        "grantsXp": true,
         "goldRewardMin": 7,
         "goldRewardMax": 10,
         "lootTableId": "LOOT_WHISPERING_FOREST_LESNOI_VOLK_L3",
@@ -1204,6 +1224,7 @@
       "level": 3,
       "description": "Разъярённый кабан. первый лес, волки, кабаны, пауки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "raziarionnyi-kaban",
       "version": 1,
       "maxHp": 220,
@@ -1246,7 +1267,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 120,
+        "xpReward": 123,
+        "grantsXp": true,
         "goldRewardMin": 7,
         "goldRewardMax": 10,
         "lootTableId": "LOOT_WHISPERING_FOREST_RAZIARIONNYI_KABAN_L3",
@@ -1290,6 +1312,7 @@
       "level": 3,
       "description": "Голодный лесной волк, защищающий свою территорию.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "wolf",
       "version": 1,
       "maxHp": 180,
@@ -1399,7 +1422,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 0,
+        "xpReward": 123,
+        "grantsXp": true,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -1417,6 +1441,7 @@
       "level": 4,
       "description": "Полевой волк. ранний хаб профессий и светлая зона.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "polevoi-volk",
       "version": 1,
       "maxHp": 235,
@@ -1459,7 +1484,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 150,
+        "xpReward": 159,
+        "grantsXp": true,
         "goldRewardMin": 9,
         "goldRewardMax": 12,
         "lootTableId": "LOOT_FLOWER_MEADOW_POLEVOI_VOLK_L4",
@@ -1503,6 +1529,7 @@
       "level": 4,
       "description": "Лесной волк кружит рядом и выжидает момент для рывка.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-lesnoy-volk",
       "version": 1,
       "maxHp": 190,
@@ -1612,7 +1639,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 130,
+        "xpReward": 159,
+        "grantsXp": true,
         "goldRewardMin": 8,
         "goldRewardMax": 12,
         "lootTableId": "WHISPERING_FOREST_WOLF",
@@ -1720,6 +1748,7 @@
       "level": 4,
       "description": "Дикий кабан-вожак. первый лес, волки, кабаны, пауки.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "dikii-kaban-vozhak",
       "version": 1,
       "maxHp": 420,
@@ -1762,7 +1791,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 210,
+        "xpReward": 278,
+        "grantsXp": true,
         "goldRewardMin": 11,
         "goldRewardMax": 15,
         "lootTableId": "LOOT_WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4",
@@ -1806,6 +1836,7 @@
       "level": 4,
       "description": "Кабан. первый лес, волки, кабаны, пауки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-kaban",
       "version": 1,
       "maxHp": 270,
@@ -1848,7 +1879,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 150,
+        "xpReward": 159,
+        "grantsXp": true,
         "goldRewardMin": 9,
         "goldRewardMax": 12,
         "lootTableId": "LOOT_WHISPERING_FOREST_KABAN_L4",
@@ -1892,6 +1924,7 @@
       "level": 4,
       "description": "Матёрый волк. первый лес, волки, кабаны, пауки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "matioryi-volk",
       "version": 1,
       "maxHp": 235,
@@ -1934,7 +1967,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 150,
+        "xpReward": 159,
+        "grantsXp": true,
         "goldRewardMin": 9,
         "goldRewardMax": 12,
         "lootTableId": "LOOT_WHISPERING_FOREST_MATIORYI_VOLK_L4",
@@ -1978,6 +2012,7 @@
       "level": 4,
       "description": "Матёрый вожак. первый лес, волки, кабаны, пауки.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "matioryi-vozhak",
       "version": 1,
       "maxHp": 360,
@@ -2020,7 +2055,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 210,
+        "xpReward": 278,
+        "grantsXp": true,
         "goldRewardMin": 11,
         "goldRewardMax": 15,
         "lootTableId": "LOOT_WHISPERING_FOREST_MATIORYI_VOZHAK_L4",
@@ -2076,6 +2112,7 @@
       "level": 5,
       "description": "Матёрый альфа-волк заметно сильнее обычной стаи.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "alpha-wolf",
       "version": 1,
       "maxHp": 270,
@@ -2185,7 +2222,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 190,
+        "xpReward": 192,
+        "grantsXp": true,
         "goldRewardMin": 10,
         "goldRewardMax": 15,
         "lootTableId": "WHISPERING_FOREST_WOLF",
@@ -2293,6 +2331,7 @@
       "level": 5,
       "description": "Луговой кабан. ранний хаб профессий и светлая зона.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "lugovoi-kaban",
       "version": 1,
       "maxHp": 320,
@@ -2335,7 +2374,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 190,
+        "xpReward": 192,
+        "grantsXp": true,
         "goldRewardMin": 10,
         "goldRewardMax": 14,
         "lootTableId": "LOOT_FLOWER_MEADOW_LUGOVOI_KABAN_L5",
@@ -2379,6 +2419,7 @@
       "level": 5,
       "description": "Одичавший олень. ранний хаб профессий и светлая зона.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "odichavshii-olen",
       "version": 1,
       "maxHp": 275,
@@ -2421,7 +2462,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 190,
+        "xpReward": 192,
+        "grantsXp": true,
         "goldRewardMin": 10,
         "goldRewardMax": 14,
         "lootTableId": "LOOT_FLOWER_MEADOW_ODICHAVSHII_OLEN_L5",
@@ -2465,6 +2507,7 @@
       "level": 5,
       "description": "Гигантский паук. первый лес, волки, кабаны, пауки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-gigantskiy-pauk",
       "version": 1,
       "maxHp": 245,
@@ -2507,7 +2550,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 190,
+        "xpReward": 192,
+        "grantsXp": true,
         "goldRewardMin": 10,
         "goldRewardMax": 14,
         "lootTableId": "LOOT_WHISPERING_FOREST_GIGANTSKII_PAUK_L5",
@@ -2551,6 +2595,7 @@
       "level": 5,
       "description": "Лесной разбойник. первый лес, волки, кабаны, пауки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-lesnoy-razboynik",
       "version": 1,
       "maxHp": 270,
@@ -2593,7 +2638,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 190,
+        "xpReward": 192,
+        "grantsXp": true,
         "goldRewardMin": 10,
         "goldRewardMax": 14,
         "lootTableId": "LOOT_WHISPERING_FOREST_LESNOI_RAZBOINIK_L5",
@@ -2637,6 +2683,7 @@
       "level": 6,
       "description": "Волк чащобы. порча, ловушки, гоблины и усиленные звери.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "volk-chashchoby",
       "version": 1,
       "maxHp": 325,
@@ -2679,7 +2726,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 430,
+        "xpReward": 488,
+        "grantsXp": true,
         "goldRewardMin": 13,
         "goldRewardMax": 18,
         "lootTableId": "LOOT_DEEP_FOREST_VOLK_CHASHCHOBY_L6",
@@ -2723,6 +2771,7 @@
       "level": 6,
       "description": "Лесной волк кружит рядом и выжидает момент для рывка.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "wolf",
       "version": 1,
       "maxHp": 330,
@@ -2832,7 +2881,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 280,
+        "xpReward": 488,
+        "grantsXp": true,
         "goldRewardMin": 12,
         "goldRewardMax": 18,
         "lootTableId": "DEEP_FOREST_COMMON",
@@ -3216,6 +3266,7 @@
       "level": 6,
       "description": "Жалящий роевик. ранний хаб профессий и светлая зона.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "zhaliashchii-roevik",
       "version": 1,
       "maxHp": 290,
@@ -3258,7 +3309,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 430,
+        "xpReward": 488,
+        "grantsXp": true,
         "goldRewardMin": 13,
         "goldRewardMax": 18,
         "lootTableId": "LOOT_FLOWER_MEADOW_ZHALIASHCHII_ROEVIK_L6",
@@ -3302,6 +3354,7 @@
       "level": 7,
       "description": "Искажённый лесом кабан стал крупнее, злее и опаснее.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "corrupted-boar",
       "version": 1,
       "maxHp": 430,
@@ -3344,7 +3397,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 420,
+        "xpReward": 749,
+        "grantsXp": true,
         "goldRewardMin": 15,
         "goldRewardMax": 22,
         "lootTableId": "DEEP_FOREST_COMMON",
@@ -3728,6 +3782,7 @@
       "level": 7,
       "description": "Альфа-волк. порча, ловушки, гоблины и усиленные звери.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "alfa-volk",
       "version": 1,
       "maxHp": 375,
@@ -3770,7 +3825,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 670,
+        "xpReward": 749,
+        "grantsXp": true,
         "goldRewardMin": 16,
         "goldRewardMax": 22,
         "lootTableId": "LOOT_DEEP_FOREST_ALFA_VOLK_L7",
@@ -3820,6 +3876,7 @@
       "level": 7,
       "description": "Осквернённый кабан. порча, ловушки, гоблины и усиленные звери.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "oskvernionnyi-kaban",
       "version": 1,
       "maxHp": 435,
@@ -3862,7 +3919,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 670,
+        "xpReward": 749,
+        "grantsXp": true,
         "goldRewardMin": 16,
         "goldRewardMax": 22,
         "lootTableId": "LOOT_DEEP_FOREST_OSKVERNIONNYI_KABAN_L7",
@@ -3906,6 +3964,7 @@
       "level": 7,
       "description": "Корневой дух. ранний хаб профессий и светлая зона.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kornevoi-dukh",
       "version": 1,
       "maxHp": 340,
@@ -3948,7 +4007,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 670,
+        "xpReward": 749,
+        "grantsXp": true,
         "goldRewardMin": 16,
         "goldRewardMax": 22,
         "lootTableId": "LOOT_FLOWER_MEADOW_KORNEVOI_DUKH_L7",
@@ -3998,6 +4058,7 @@
       "level": 7,
       "description": "Матка роевиков. ранний хаб профессий и светлая зона.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "matka-roevikov",
       "version": 1,
       "maxHp": 515,
@@ -4040,7 +4101,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 910,
+        "xpReward": 1310,
+        "grantsXp": true,
         "goldRewardMin": 20,
         "goldRewardMax": 28,
         "lootTableId": "LOOT_FLOWER_MEADOW_MATKA_ROEVIKOV_L7",
@@ -4096,6 +4158,7 @@
       "level": 7,
       "description": "Терновый бес. ранний хаб профессий и светлая зона.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "ternovyi-bes",
       "version": 1,
       "maxHp": 370,
@@ -4138,7 +4201,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 670,
+        "xpReward": 749,
+        "grantsXp": true,
         "goldRewardMin": 16,
         "goldRewardMax": 22,
         "lootTableId": "LOOT_FLOWER_MEADOW_TERNOVYI_BES_L7",
@@ -4182,6 +4246,7 @@
       "level": 8,
       "description": "Глубинный паук. порча, ловушки, гоблины и усиленные звери.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "glubinnyi-pauk",
       "version": 1,
       "maxHp": 380,
@@ -4224,7 +4289,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 920,
+        "xpReward": 981,
+        "grantsXp": true,
         "goldRewardMin": 19,
         "goldRewardMax": 26,
         "lootTableId": "LOOT_DEEP_FOREST_GLUBINNYI_PAUK_L8",
@@ -4268,6 +4334,7 @@
       "level": 8,
       "description": "Крупный паук атакует быстро и старается не дать противнику передышки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "giant-spider",
       "version": 1,
       "maxHp": 360,
@@ -4377,7 +4444,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 620,
+        "xpReward": 981,
+        "grantsXp": true,
         "goldRewardMin": 18,
         "goldRewardMax": 26,
         "lootTableId": "DEEP_FOREST_COMMON",
@@ -4761,6 +4829,7 @@
       "level": 8,
       "description": "Полевой мародёр. ранний хаб профессий и светлая зона.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "polevoi-marodior",
       "version": 1,
       "maxHp": 420,
@@ -4803,7 +4872,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 920,
+        "xpReward": 981,
+        "grantsXp": true,
         "goldRewardMin": 19,
         "goldRewardMax": 26,
         "lootTableId": "LOOT_FLOWER_MEADOW_POLEVOI_MARODIOR_L8",
@@ -4853,6 +4923,7 @@
       "level": 9,
       "description": "Гоблин-разведчик. порча, ловушки, гоблины и усиленные звери.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "goblin-razvedchik",
       "version": 1,
       "maxHp": 425,
@@ -4895,7 +4966,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 1160,
+        "xpReward": 1188,
+        "grantsXp": true,
         "goldRewardMin": 22,
         "goldRewardMax": 30,
         "lootTableId": "LOOT_DEEP_FOREST_GOBLIN_RAZVEDCHIK_L9",
@@ -4939,6 +5011,7 @@
       "level": 9,
       "description": "Гоблин-разведчик промышляет на опасных тропах и нападает на одиноких путников.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "goblin-scout",
       "version": 1,
       "maxHp": 440,
@@ -4981,7 +5054,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 930,
+        "xpReward": 1188,
+        "grantsXp": true,
         "goldRewardMin": 22,
         "goldRewardMax": 31,
         "lootTableId": "DEEP_FOREST_COMMON",
@@ -5365,6 +5439,7 @@
       "level": 9,
       "description": "Грабители. разбойники, наёмники, подрывники и дорога.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "grabiteli",
       "version": 1,
       "maxHp": 470,
@@ -5407,7 +5482,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 1160,
+        "xpReward": 1188,
+        "grantsXp": true,
         "goldRewardMin": 22,
         "goldRewardMax": 30,
         "lootTableId": "LOOT_OLD_ROAD_GRABITELI_L9",
@@ -5451,6 +5527,7 @@
       "level": 9,
       "description": "Лучники. разбойники, наёмники, подрывники и дорога.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "luchniki",
       "version": 1,
       "maxHp": 425,
@@ -5493,7 +5570,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 1160,
+        "xpReward": 1188,
+        "grantsXp": true,
         "goldRewardMin": 22,
         "goldRewardMax": 30,
         "lootTableId": "LOOT_OLD_ROAD_LUCHNIKI_L9",
@@ -5537,6 +5615,7 @@
       "level": 10,
       "description": "Гоблин-капканщик. порча, ловушки, гоблины и усиленные звери.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "goblin-kapkanshchik",
       "version": 1,
       "maxHp": 520,
@@ -5579,7 +5658,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 1400,
+        "xpReward": 1375,
+        "grantsXp": true,
         "goldRewardMin": 26,
         "goldRewardMax": 34,
         "lootTableId": "LOOT_DEEP_FOREST_GOBLIN_KAPKANSHCHIK_L10",
@@ -5629,6 +5709,7 @@
       "level": 10,
       "description": "Лесной дух. порча, ловушки, гоблины и усиленные звери.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "lesnoi-dukh",
       "version": 1,
       "maxHp": 480,
@@ -5671,7 +5752,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 1400,
+        "xpReward": 1375,
+        "grantsXp": true,
         "goldRewardMin": 26,
         "goldRewardMax": 34,
         "lootTableId": "LOOT_DEEP_FOREST_LESNOI_DUKH_L10",
@@ -5721,6 +5803,7 @@
       "level": 10,
       "description": "Лесной волк кружит рядом и выжидает момент для рывка.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "wolf",
       "version": 1,
       "maxHp": 520,
@@ -5830,7 +5913,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 1400,
+        "xpReward": 1375,
+        "grantsXp": true,
         "goldRewardMin": 26,
         "goldRewardMax": 36,
         "lootTableId": "DEEP_FOREST_COMMON",
@@ -6214,6 +6298,7 @@
       "level": 10,
       "description": "Наёмники. разбойники, наёмники, подрывники и дорога.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "naiomniki",
       "version": 1,
       "maxHp": 520,
@@ -6256,7 +6341,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 1400,
+        "xpReward": 1375,
+        "grantsXp": true,
         "goldRewardMin": 26,
         "goldRewardMax": 34,
         "lootTableId": "LOOT_OLD_ROAD_NAIOMNIKI_L10",
@@ -6300,6 +6386,7 @@
       "level": 10,
       "description": "Подрывники. разбойники, наёмники, подрывники и дорога.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "podryvniki",
       "version": 1,
       "maxHp": 520,
@@ -6342,7 +6429,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 1400,
+        "xpReward": 1375,
+        "grantsXp": true,
         "goldRewardMin": 26,
         "goldRewardMax": 34,
         "lootTableId": "LOOT_OLD_ROAD_PODRYVNIKI_L10",
@@ -6386,6 +6474,7 @@
       "level": 11,
       "description": "Матёрый альфа-волк заметно сильнее обычной стаи.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "alpha-wolf",
       "version": 1,
       "maxHp": 680,
@@ -6495,7 +6584,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 2100,
+        "xpReward": 2893,
+        "grantsXp": true,
         "goldRewardMin": 30,
         "goldRewardMax": 42,
         "lootTableId": "DEEP_FOREST_COMMON",
@@ -6879,6 +6969,7 @@
       "level": 11,
       "description": "Сгусток лесной порчи. порча, ловушки, гоблины и усиленные звери.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "sgustok-lesnoi-porchi",
       "version": 1,
       "maxHp": 615,
@@ -6921,7 +7012,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 2720,
+        "xpReward": 2893,
+        "grantsXp": true,
         "goldRewardMin": 30,
         "goldRewardMax": 40,
         "lootTableId": "LOOT_DEEP_FOREST_SGUSTOK_LESNOI_PORCHI_L11",
@@ -6971,6 +7063,7 @@
       "level": 11,
       "description": "Гоблин-мародёр. разбойники, наёмники, подрывники и дорога.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "goblin-marodior",
       "version": 1,
       "maxHp": 665,
@@ -7013,7 +7106,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 2720,
+        "xpReward": 2893,
+        "grantsXp": true,
         "goldRewardMin": 30,
         "goldRewardMax": 40,
         "lootTableId": "LOOT_OLD_ROAD_GOBLIN_MARODIOR_L11",
@@ -7057,6 +7151,7 @@
       "level": 12,
       "description": "Боевой пёс тракта. разбойники, наёмники, подрывники и дорога.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "boevoi-pios-trakta",
       "version": 1,
       "maxHp": 830,
@@ -7099,7 +7194,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 4040,
+        "xpReward": 4273,
+        "grantsXp": true,
         "goldRewardMin": 34,
         "goldRewardMax": 46,
         "lootTableId": "LOOT_OLD_ROAD_BOEVOI_PIOS_TRAKTA_L12",
@@ -7143,6 +7239,7 @@
       "level": 12,
       "description": "Дорожный падальщик. разбойники, наёмники, подрывники и дорога.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "dorozhnyi-padalshchik",
       "version": 1,
       "maxHp": 830,
@@ -7185,7 +7282,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 4040,
+        "xpReward": 4273,
+        "grantsXp": true,
         "goldRewardMin": 34,
         "goldRewardMax": 46,
         "lootTableId": "LOOT_OLD_ROAD_DOROZHNYI_PADALSHCHIK_L12",
@@ -7229,6 +7327,7 @@
       "level": 12,
       "description": "Нетопырь. руда, тяжёлая броня и вход в Древнюю шахту.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "netopyr",
       "version": 1,
       "maxHp": 810,
@@ -7271,7 +7370,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 4040,
+        "xpReward": 4273,
+        "grantsXp": true,
         "goldRewardMin": 34,
         "goldRewardMax": 46,
         "lootTableId": "LOOT_STONE_SPURS_NETOPYR_L12",
@@ -7315,6 +7415,7 @@
       "level": 12,
       "description": "Ползун. руда, тяжёлая броня и вход в Древнюю шахту.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "polzun",
       "version": 1,
       "maxHp": 810,
@@ -7357,7 +7458,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 4040,
+        "xpReward": 4273,
+        "grantsXp": true,
         "goldRewardMin": 34,
         "goldRewardMax": 46,
         "lootTableId": "LOOT_STONE_SPURS_POLZUN_L12",
@@ -7401,6 +7503,7 @@
       "level": 13,
       "description": "Бродячий наёмник. разбойники, наёмники, подрывники и дорога.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "brodiachii-naiomnik",
       "version": 1,
       "maxHp": 960,
@@ -7443,7 +7546,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 5360,
+        "xpReward": 5533,
+        "grantsXp": true,
         "goldRewardMin": 38,
         "goldRewardMax": 52,
         "lootTableId": "LOOT_OLD_ROAD_BRODIACHII_NAIOMNIK_L13",
@@ -7493,6 +7597,7 @@
       "level": 13,
       "description": "Капитан. разбойники, наёмники, подрывники и дорога.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kapitan",
       "version": 1,
       "maxHp": 1485,
@@ -7535,7 +7640,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 7240,
+        "xpReward": 9682,
+        "grantsXp": true,
         "goldRewardMin": 48,
         "goldRewardMax": 65,
         "lootTableId": "LOOT_OLD_ROAD_KAPITAN_L13",
@@ -7579,6 +7685,7 @@
       "level": 13,
       "description": "Капитан Пыльной дороги. разбойники, наёмники, подрывники и дорога.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kapitan-pylnoi-dorogi",
       "version": 1,
       "maxHp": 1485,
@@ -7621,7 +7728,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 7240,
+        "xpReward": 9682,
+        "grantsXp": true,
         "goldRewardMin": 48,
         "goldRewardMax": 65,
         "lootTableId": "LOOT_OLD_ROAD_KAPITAN_PYLNOI_DOROGI_L13",
@@ -7671,6 +7779,7 @@
       "level": 13,
       "description": "Разбойник-лучник. разбойники, наёмники, подрывники и дорога.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "razboinik-luchnik",
       "version": 1,
       "maxHp": 860,
@@ -7713,7 +7822,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 5360,
+        "xpReward": 5533,
+        "grantsXp": true,
         "goldRewardMin": 38,
         "goldRewardMax": 52,
         "lootTableId": "LOOT_OLD_ROAD_RAZBOINIK_LUCHNIK_L13",
@@ -7763,6 +7873,7 @@
       "level": 14,
       "description": "Призванный Прародительницей паучок. Не даёт отдельной награды и существует только внутри боя с боссом.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "giant-spider",
       "version": 1,
       "maxHp": 260,
@@ -7806,6 +7917,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -7823,6 +7935,7 @@
       "level": 14,
       "description": "Дорожный мародёр. разбойники, наёмники, подрывники и дорога.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "dorozhnyi-marodior",
       "version": 1,
       "maxHp": 1105,
@@ -7865,7 +7978,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 6680,
+        "xpReward": 6688,
+        "grantsXp": true,
         "goldRewardMin": 42,
         "goldRewardMax": 57,
         "lootTableId": "LOOT_OLD_ROAD_DOROZHNYI_MARODIOR_L14",
@@ -7909,6 +8023,7 @@
       "level": 14,
       "description": "Разбойник-подрывник. разбойники, наёмники, подрывники и дорога.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "razboinik-podryvnik",
       "version": 1,
       "maxHp": 1105,
@@ -7951,7 +8066,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 6680,
+        "xpReward": 6688,
+        "grantsXp": true,
         "goldRewardMin": 42,
         "goldRewardMax": 57,
         "lootTableId": "LOOT_OLD_ROAD_RAZBOINIK_PODRYVNIK_L14",
@@ -7995,6 +8111,7 @@
       "level": 14,
       "description": "Хозяйка глубоких паутинных ходов. Каждые 20 секунд призывает двух паучков, пока рядом не окажется до четырёх. Убийство по взятому контракту открывает путь в земли 15–20 уровня.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "spider-broodmother",
       "version": 1,
       "maxHp": 4200,
@@ -8168,7 +8285,8 @@
         "maxActiveSummons": 4
       },
       "rewards": {
-        "xpReward": 8500,
+        "xpReward": 30094,
+        "grantsXp": true,
         "goldRewardMin": 90,
         "goldRewardMax": 130,
         "lootTableId": "BROODMOTHER_BOSS_LOOT",
@@ -8380,6 +8498,7 @@
       "level": 14,
       "description": "Глубинный лазутчик. руда, тяжёлая броня и вход в Древнюю шахту.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "glubinnyi-lazutchik",
       "version": 1,
       "maxHp": 1105,
@@ -8422,7 +8541,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 6680,
+        "xpReward": 6688,
+        "grantsXp": true,
         "goldRewardMin": 42,
         "goldRewardMax": 57,
         "lootTableId": "LOOT_STONE_SPURS_GLUBINNYI_LAZUTCHIK_L14",
@@ -8466,6 +8586,7 @@
       "level": 14,
       "description": "Обезумевший шахтёр. руда, тяжёлая броня и вход в Древнюю шахту.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "obezumevshii-shakhtior",
       "version": 1,
       "maxHp": 1105,
@@ -8508,7 +8629,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 6680,
+        "xpReward": 6688,
+        "grantsXp": true,
         "goldRewardMin": 42,
         "goldRewardMax": 57,
         "lootTableId": "LOOT_STONE_SPURS_OBEZUMEVSHII_SHAKHTIOR_L14",
@@ -8558,6 +8680,7 @@
       "level": 14,
       "description": "Руннокаменный страж. руда, тяжёлая броня и вход в Древнюю шахту.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "runnokamennyi-strazh",
       "version": 1,
       "maxHp": 1305,
@@ -8600,7 +8723,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 6680,
+        "xpReward": 6688,
+        "grantsXp": true,
         "goldRewardMin": 42,
         "goldRewardMax": 57,
         "lootTableId": "LOOT_STONE_SPURS_RUNNOKAMENNYI_STRAZH_L14",
@@ -8644,6 +8768,7 @@
       "level": 15,
       "description": "Тяжёлый подземный вепрь, покрытый шрамами и каменной пылью.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kaban",
       "version": 1,
       "maxHp": 1400,
@@ -8686,7 +8811,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 9000,
+        "xpReward": 7750,
+        "grantsXp": true,
         "goldRewardMin": 50,
         "goldRewardMax": 65,
         "lootTableId": "ANCIENT_MINE_E2_LOOT",
@@ -8721,79 +8847,79 @@
               "entries": [
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_FEET",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_BERSERKER_FEET",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_WARLORD_FEET",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_FIRE_FEET",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_ARCANE_FEET",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_FROST_FEET",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_MARKSMANSHIP_FEET",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_BEAST_MASTERY_FEET",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_SURVIVAL_FEET",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_HOLY_FEET",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_PROTECTION_FEET",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_RETRIBUTION_FEET",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "RUNNYI_FONAR_SHTREKA",
-                  "weight": 40.0,
+                  "weight": 40,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 }
@@ -8821,6 +8947,7 @@
       "level": 15,
       "description": "Матёрый волк, приспособившийся к тёмным штрекам Древней шахты.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "lesnoi-volk",
       "version": 1,
       "maxHp": 1150,
@@ -8930,7 +9057,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 8000,
+        "xpReward": 7750,
+        "grantsXp": true,
         "goldRewardMin": 45,
         "goldRewardMax": 60,
         "lootTableId": "ANCIENT_MINE_E1_LOOT",
@@ -8971,79 +9099,79 @@
               "entries": [
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_HANDS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_BERSERKER_HANDS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_WARLORD_HANDS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_FIRE_HANDS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_ARCANE_HANDS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_FROST_HANDS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_MARKSMANSHIP_HANDS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_BEAST_MASTERY_HANDS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_SURVIVAL_HANDS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_HOLY_HANDS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_PROTECTION_HANDS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_RETRIBUTION_HANDS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "MOLOT_KHOZIAINA_ZHIL",
-                  "weight": 40.0,
+                  "weight": 40,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 }
@@ -9071,6 +9199,7 @@
       "level": 15,
       "description": "Разбойник поджидает добычу среди деревьев и атакует с близкой дистанции.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-lesnoy-razboynik",
       "version": 1,
       "maxHp": 1050,
@@ -9113,7 +9242,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 7500,
+        "xpReward": 7750,
+        "grantsXp": true,
         "goldRewardMin": 42,
         "goldRewardMax": 58,
         "lootTableId": "BLIGHTED_GROVE_COMMON",
@@ -9329,6 +9459,7 @@
       "level": 15,
       "description": "Порченый кабан. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "porchenyi-kaban",
       "version": 1,
       "maxHp": 1475,
@@ -9371,7 +9502,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 8000,
+        "xpReward": 7750,
+        "grantsXp": true,
         "goldRewardMin": 47,
         "goldRewardMax": 63,
         "lootTableId": "LOOT_BLIGHTED_GROVE_PORCHENYI_KABAN_L15",
@@ -9415,6 +9547,7 @@
       "level": 15,
       "description": "Порченый волк. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "porchenyi-volk",
       "version": 1,
       "maxHp": 1275,
@@ -9457,7 +9590,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 8000,
+        "xpReward": 7750,
+        "grantsXp": true,
         "goldRewardMin": 47,
         "goldRewardMax": 63,
         "lootTableId": "LOOT_BLIGHTED_GROVE_PORCHENYI_VOLK_L15",
@@ -9501,6 +9635,7 @@
       "level": 15,
       "description": "Камнеглот. руда, тяжёлая броня и вход в Древнюю шахту.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kamneglot",
       "version": 1,
       "maxHp": 1475,
@@ -9543,7 +9678,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 8000,
+        "xpReward": 7750,
+        "grantsXp": true,
         "goldRewardMin": 47,
         "goldRewardMax": 63,
         "lootTableId": "LOOT_STONE_SPURS_KAMNEGLOT_L15",
@@ -9593,6 +9729,7 @@
       "level": 15,
       "description": "Рудный жук. руда, тяжёлая броня и вход в Древнюю шахту.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "rudnyi-zhuk",
       "version": 1,
       "maxHp": 1940,
@@ -9635,7 +9772,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 10800,
+        "xpReward": 13563,
+        "grantsXp": true,
         "goldRewardMin": 58,
         "goldRewardMax": 79,
         "lootTableId": "LOOT_STONE_SPURS_RUDNYI_ZHUK_L15",
@@ -9679,6 +9817,7 @@
       "level": 16,
       "description": "Усиленная подземная Прародительница. Каждые 20 секунд призывает двух паучков, пока рядом не окажется до четырёх.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "spider-broodmother",
       "version": 1,
       "maxHp": 3500,
@@ -9789,7 +9928,8 @@
         "maxActiveSummons": 4
       },
       "rewards": {
-        "xpReward": 20000,
+        "xpReward": 43702,
+        "grantsXp": true,
         "goldRewardMin": 150,
         "goldRewardMax": 220,
         "lootTableId": "ANCIENT_MINE_BOSS_LOOT",
@@ -9933,79 +10073,79 @@
               "entries": [
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_CHEST",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_BERSERKER_CHEST",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_WARLORD_CHEST",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_FIRE_CHEST",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_ARCANE_CHEST",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_FROST_CHEST",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_MARKSMANSHIP_CHEST",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_BEAST_MASTERY_CHEST",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_SURVIVAL_CHEST",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_HOLY_CHEST",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_PROTECTION_CHEST",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_RETRIBUTION_CHEST",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "DUNGEON_MINES_WARRIOR_LEGENDARY_SHIELD",
-                  "weight": 20.0,
+                  "weight": 20,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 }
@@ -10033,6 +10173,7 @@
       "level": 16,
       "description": "Опытный караульный, занявший старый нижний пост Древней шахты.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "shakhtnyi-dozornyi",
       "version": 1,
       "maxHp": 1350,
@@ -10075,7 +10216,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 11500,
+        "xpReward": 9712,
+        "grantsXp": true,
         "goldRewardMin": 60,
         "goldRewardMax": 80,
         "lootTableId": "ANCIENT_MINE_E4_LOOT",
@@ -10122,79 +10264,79 @@
               "entries": [
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_LEGS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_BERSERKER_LEGS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_WARLORD_LEGS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_FIRE_LEGS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_ARCANE_LEGS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_FROST_LEGS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_MARKSMANSHIP_LEGS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_BEAST_MASTERY_LEGS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_SURVIVAL_LEGS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_HOLY_LEGS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_PROTECTION_LEGS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_RETRIBUTION_LEGS",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "BLIGHTED_GROVE_RING",
-                  "weight": 40.0,
+                  "weight": 40,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 }
@@ -10222,6 +10364,7 @@
       "level": 16,
       "description": "Призванный паучок. Не даёт отдельной награды и существует только внутри боя с боссом.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "shakhtnyi-pauk",
       "version": 1,
       "maxHp": 340,
@@ -10265,6 +10408,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -10282,6 +10426,7 @@
       "level": 16,
       "description": "Быстрый глубинный паук, охраняющий кристальные галереи шахты.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "shakhtnyi-pauk",
       "version": 1,
       "maxHp": 1250,
@@ -10391,7 +10536,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 10000,
+        "xpReward": 9712,
+        "grantsXp": true,
         "goldRewardMin": 55,
         "goldRewardMax": 70,
         "lootTableId": "ANCIENT_MINE_E3_LOOT",
@@ -10432,79 +10578,79 @@
               "entries": [
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_HEAD",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_BERSERKER_HEAD",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_WARRIOR_WARLORD_HEAD",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_FIRE_HEAD",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_ARCANE_HEAD",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_MAGE_FROST_HEAD",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_MARKSMANSHIP_HEAD",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_BEAST_MASTERY_HEAD",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_ARCHER_SURVIVAL_HEAD",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_HOLY_HEAD",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_PROTECTION_HEAD",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "SET_ANCIENT_MINE_PALADIN_RETRIBUTION_HEAD",
-                  "weight": 5.0,
+                  "weight": 5,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 },
                 {
                   "itemId": "KIRASA_KAMNEGLOTA",
-                  "weight": 40.0,
+                  "weight": 40,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 }
@@ -10532,6 +10678,7 @@
       "level": 16,
       "description": "Разбойник-лучник держится на расстоянии, но в текущем прототипе использует общий боевой AI.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "bandit-archer",
       "version": 1,
       "maxHp": 980,
@@ -10574,7 +10721,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 11000,
+        "xpReward": 9712,
+        "grantsXp": true,
         "goldRewardMin": 46,
         "goldRewardMax": 64,
         "lootTableId": "BLIGHTED_GROVE_COMMON",
@@ -10790,6 +10938,7 @@
       "level": 16,
       "description": "Пепельный налётчик. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pepelnyi-naliotchik",
       "version": 1,
       "maxHp": 1440,
@@ -10832,7 +10981,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 9600,
+        "xpReward": 9712,
+        "grantsXp": true,
         "goldRewardMin": 51,
         "goldRewardMax": 69,
         "lootTableId": "LOOT_BLIGHTED_GROVE_PEPELNYI_NALIOTCHIK_L16",
@@ -10876,6 +11026,7 @@
       "level": 16,
       "description": "Порченый паук. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "porchenyi-pauk",
       "version": 1,
       "maxHp": 1295,
@@ -10918,7 +11069,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 9600,
+        "xpReward": 9712,
+        "grantsXp": true,
         "goldRewardMin": 51,
         "goldRewardMax": 69,
         "lootTableId": "LOOT_BLIGHTED_GROVE_PORCHENYI_PAUK_L16",
@@ -10962,6 +11114,7 @@
       "level": 16,
       "description": "Хозяин жил. руда, тяжёлая броня и вход в Древнюю шахту.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "khoziain-zhil",
       "version": 1,
       "maxHp": 2230,
@@ -11004,7 +11157,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 12960,
+        "xpReward": 16995,
+        "grantsXp": true,
         "goldRewardMin": 64,
         "goldRewardMax": 86,
         "lootTableId": "LOOT_STONE_SPURS_KHOZIAIN_ZHIL_L16",
@@ -11054,6 +11208,7 @@
       "level": 16,
       "description": "Молодой камнеглот. руда, тяжёлая броня и вход в Древнюю шахту.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "molodoi-kamneglot",
       "version": 1,
       "maxHp": 1700,
@@ -11096,7 +11251,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 9600,
+        "xpReward": 9712,
+        "grantsXp": true,
         "goldRewardMin": 51,
         "goldRewardMax": 69,
         "lootTableId": "LOOT_STONE_SPURS_MOLODOI_KAMNEGLOT_L16",
@@ -11140,6 +11296,7 @@
       "level": 17,
       "description": "Браконьер чащи. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "brakoner-chashchi",
       "version": 1,
       "maxHp": 1630,
@@ -11182,7 +11339,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 11200,
+        "xpReward": 11528,
+        "grantsXp": true,
         "goldRewardMin": 55,
         "goldRewardMax": 75,
         "lootTableId": "LOOT_BLIGHTED_GROVE_BRAKONER_CHASHCHI_L17",
@@ -11226,6 +11384,7 @@
       "level": 17,
       "description": "Собиратель порчи. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "sobiratel-porchi",
       "version": 1,
       "maxHp": 1500,
@@ -11268,7 +11427,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 11200,
+        "xpReward": 11528,
+        "grantsXp": true,
         "goldRewardMin": 55,
         "goldRewardMax": 75,
         "lootTableId": "LOOT_BLIGHTED_GROVE_SOBIRATEL_PORCHI_L17",
@@ -11312,6 +11472,7 @@
       "level": 17,
       "description": "Теневой браконьер. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "tenevoi-brakoner",
       "version": 1,
       "maxHp": 1630,
@@ -11354,7 +11515,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 11200,
+        "xpReward": 11528,
+        "grantsXp": true,
         "goldRewardMin": 55,
         "goldRewardMax": 75,
         "lootTableId": "LOOT_BLIGHTED_GROVE_TENEVOI_BRAKONER_L17",
@@ -11404,6 +11566,7 @@
       "level": 17,
       "description": "Искажённый лесом кабан стал крупнее, злее и опаснее.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "corrupted-boar",
       "version": 1,
       "maxHp": 1320,
@@ -11446,7 +11609,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 16500,
+        "xpReward": 11528,
+        "grantsXp": true,
         "goldRewardMin": 50,
         "goldRewardMax": 70,
         "lootTableId": "BLIGHTED_GROVE_COMMON",
@@ -11662,6 +11826,7 @@
       "level": 18,
       "description": "Пепельный стрелок. организованное Затмение, огонь и руны.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pepelnyi-strelok",
       "version": 1,
       "maxHp": 1640,
@@ -11704,7 +11869,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 12800,
+        "xpReward": 13214,
+        "grantsXp": true,
         "goldRewardMin": 60,
         "goldRewardMax": 80,
         "lootTableId": "LOOT_ASHEN_BORDER_PEPELNYI_STRELOK_L18",
@@ -11754,6 +11920,7 @@
       "level": 18,
       "description": "Рекрут Затмения. организованное Затмение, огонь и руны.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "rekrut-zatmeniia",
       "version": 1,
       "maxHp": 1820,
@@ -11796,7 +11963,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 12800,
+        "xpReward": 13214,
+        "grantsXp": true,
         "goldRewardMin": 60,
         "goldRewardMax": 80,
         "lootTableId": "LOOT_ASHEN_BORDER_REKRUT_ZATMENIIA_L18",
@@ -11840,6 +12008,7 @@
       "level": 18,
       "description": "Шипастый хищник. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "shipastyi-khishchnik",
       "version": 1,
       "maxHp": 1820,
@@ -11882,7 +12051,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 12800,
+        "xpReward": 13214,
+        "grantsXp": true,
         "goldRewardMin": 60,
         "goldRewardMax": 80,
         "lootTableId": "LOOT_BLIGHTED_GROVE_SHIPASTYI_KHISHCHNIK_L18",
@@ -11926,6 +12096,7 @@
       "level": 18,
       "description": "Заражённый олень. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "zarazhionnyi-olen",
       "version": 1,
       "maxHp": 1855,
@@ -11968,7 +12139,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 12800,
+        "xpReward": 13214,
+        "grantsXp": true,
         "goldRewardMin": 60,
         "goldRewardMax": 80,
         "lootTableId": "LOOT_BLIGHTED_GROVE_ZARAZHIONNYI_OLEN_L18",
@@ -12012,6 +12184,7 @@
       "level": 18,
       "description": "Крупный паук атакует быстро и старается не дать противнику передышки.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "giant-spider",
       "version": 1,
       "maxHp": 1120,
@@ -12121,7 +12294,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 24500,
+        "xpReward": 13214,
+        "grantsXp": true,
         "goldRewardMin": 55,
         "goldRewardMax": 76,
         "lootTableId": "BLIGHTED_GROVE_COMMON",
@@ -12337,6 +12511,7 @@
       "level": 19,
       "description": "Культист Затмения. организованное Затмение, огонь и руны.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kultist-zatmeniia",
       "version": 1,
       "maxHp": 2010,
@@ -12379,7 +12554,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 14400,
+        "xpReward": 14784,
+        "grantsXp": true,
         "goldRewardMin": 64,
         "goldRewardMax": 86,
         "lootTableId": "LOOT_ASHEN_BORDER_KULTIST_ZATMENIIA_L19",
@@ -12423,6 +12599,7 @@
       "level": 19,
       "description": "Разбойник поджидает добычу среди деревьев и атакует с близкой дистанции.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "bandit-rogue",
       "version": 1,
       "maxHp": 1350,
@@ -12465,7 +12642,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 36500,
+        "xpReward": 14784,
+        "grantsXp": true,
         "goldRewardMin": 60,
         "goldRewardMax": 82,
         "lootTableId": "BLIGHTED_GROVE_COMMON",
@@ -12681,6 +12859,7 @@
       "level": 19,
       "description": "Болотный василиск. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "bolotnyi-vasilisk",
       "version": 1,
       "maxHp": 2050,
@@ -12723,7 +12902,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 14400,
+        "xpReward": 14784,
+        "grantsXp": true,
         "goldRewardMin": 64,
         "goldRewardMax": 86,
         "lootTableId": "LOOT_BLIGHTED_GROVE_BOLOTNYI_VASILISK_L19",
@@ -12767,6 +12947,7 @@
       "level": 19,
       "description": "Ядовитая матрона чащи. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "iadovitaia-matrona-chashchi",
       "version": 1,
       "maxHp": 2010,
@@ -12809,7 +12990,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 14400,
+        "xpReward": 14784,
+        "grantsXp": true,
         "goldRewardMin": 64,
         "goldRewardMax": 86,
         "lootTableId": "LOOT_BLIGHTED_GROVE_IADOVITAIA_MATRONA_CHASHCHI_L19",
@@ -12853,6 +13035,7 @@
       "level": 19,
       "description": "Лесная ведьма. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "lesnaia-vedma",
       "version": 1,
       "maxHp": 2865,
@@ -12895,7 +13078,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 19440,
+        "xpReward": 25873,
+        "grantsXp": true,
         "goldRewardMin": 80,
         "goldRewardMax": 108,
         "lootTableId": "LOOT_BLIGHTED_GROVE_LESNAIA_VEDMA_L19",
@@ -12951,6 +13135,7 @@
       "level": 19,
       "description": "Матёрый вожак. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "matioryi-vozhak",
       "version": 1,
       "maxHp": 3180,
@@ -12993,7 +13178,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 19440,
+        "xpReward": 25873,
+        "grantsXp": true,
         "goldRewardMin": 80,
         "goldRewardMax": 108,
         "lootTableId": "LOOT_BLIGHTED_GROVE_MATIORYI_VOZHAK_L19",
@@ -13043,6 +13229,7 @@
       "level": 19,
       "description": "Порченный древень. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "porchennyi-dreven",
       "version": 1,
       "maxHp": 2010,
@@ -13085,7 +13272,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 14400,
+        "xpReward": 14784,
+        "grantsXp": true,
         "goldRewardMin": 64,
         "goldRewardMax": 86,
         "lootTableId": "LOOT_BLIGHTED_GROVE_PORCHENNYI_DREVEN_L19",
@@ -13129,6 +13317,7 @@
       "level": 20,
       "description": "Матёрый альфа-волк заметно сильнее обычной стаи.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "alpha-wolf",
       "version": 1,
       "maxHp": 1700,
@@ -13238,7 +13427,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 55000,
+        "xpReward": 16250,
+        "grantsXp": true,
         "goldRewardMin": 68,
         "goldRewardMax": 92,
         "lootTableId": "BLIGHTED_GROVE_COMMON",
@@ -13454,6 +13644,7 @@
       "level": 20,
       "description": "Заклинатель тлеющих рун. организованное Затмение, огонь и руны.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "zaklinatel-tleiushchikh-run",
       "version": 1,
       "maxHp": 2025,
@@ -13496,7 +13687,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 16000,
+        "xpReward": 16250,
+        "grantsXp": true,
         "goldRewardMin": 68,
         "goldRewardMax": 92,
         "lootTableId": "LOOT_ASHEN_BORDER_ZAKLINATEL_TLEIUSHCHIKH_RUN_L20",
@@ -13546,6 +13738,7 @@
       "level": 20,
       "description": "Глашатай порчи. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "glashatai-porchi",
       "version": 1,
       "maxHp": 3410,
@@ -13588,7 +13781,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 21600,
+        "xpReward": 28438,
+        "grantsXp": true,
         "goldRewardMin": 85,
         "goldRewardMax": 115,
         "lootTableId": "LOOT_BLIGHTED_GROVE_GLASHATAI_PORCHI_L20",
@@ -13632,6 +13826,7 @@
       "level": 20,
       "description": "Лозовый душитель. порча, яд, чума и подготовка к подземелью 20.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "lozovyi-dushitel",
       "version": 1,
       "maxHp": 2200,
@@ -13674,7 +13869,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 16000,
+        "xpReward": 16250,
+        "grantsXp": true,
         "goldRewardMin": 68,
         "goldRewardMax": 92,
         "lootTableId": "LOOT_BLIGHTED_GROVE_LOZOVYI_DUSHITEL_L20",
@@ -13718,6 +13914,7 @@
       "level": 20,
       "description": "Босс контента «Сердце Осквернённой Чащи». Механики и лут определяются отдельной таблицей.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "krivokoren-strazh-serdtsa",
       "version": 1,
       "maxHp": 26000,
@@ -13760,7 +13957,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 61200,
+        "xpReward": 73125,
+        "grantsXp": true,
         "goldRewardMin": 306,
         "goldRewardMax": 414,
         "lootTableId": "LOOT_HEART_OF_BLIGHTED_GROVE_BOSS_KRIVOKOREN_STRAZH_SERDTSA_L20",
@@ -14099,6 +14297,7 @@
       "level": 20,
       "description": "Босс контента «Сердце Осквернённой Чащи». Механики и лут определяются отдельной таблицей.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "matrona-iadovitykh-loz",
       "version": 1,
       "maxHp": 28000,
@@ -14141,7 +14340,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 66960,
+        "xpReward": 73125,
+        "grantsXp": true,
         "goldRewardMin": 329,
         "goldRewardMax": 446,
         "lootTableId": "LOOT_HEART_OF_BLIGHTED_GROVE_BOSS_MATRONA_IADOVITYKH_LOZ_L20",
@@ -14343,6 +14543,7 @@
       "level": 20,
       "description": "Босс контента «Сердце Осквернённой Чащи». Механики и лут определяются отдельной таблицей.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "propovednik-gnili-sal-ver",
       "version": 1,
       "maxHp": 30000,
@@ -14385,7 +14586,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 72720,
+        "xpReward": 73125,
+        "grantsXp": true,
         "goldRewardMin": 353,
         "goldRewardMax": 478,
         "lootTableId": "LOOT_HEART_OF_BLIGHTED_GROVE_BOSS_PROPOVEDNIK_GNILI_SAL_VER_L20",
@@ -14580,6 +14782,7 @@
       "level": 20,
       "description": "Босс контента «Сердце Осквернённой Чащи». Механики и лут определяются отдельной таблицей.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "serdtse-chashchi-oskvernionnyi-dukh",
       "version": 1,
       "maxHp": 34000,
@@ -14622,7 +14825,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 78479,
+        "xpReward": 73125,
+        "grantsXp": true,
         "goldRewardMin": 377,
         "goldRewardMax": 510,
         "lootTableId": "LOOT_HEART_OF_BLIGHTED_GROVE_BOSS_SERDTSE_CHASHCHI_OSKVERNIONNYI_DUKH_L20",
@@ -14968,6 +15172,7 @@
       "level": 20,
       "description": "Гниющий культист — противник контента «Сердце Осквернённой Чащи».",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "gniiushchii-kultist",
       "version": 1,
       "maxHp": 3410,
@@ -15010,7 +15215,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 21600,
+        "xpReward": 28438,
+        "grantsXp": true,
         "goldRewardMin": 85,
         "goldRewardMax": 115,
         "lootTableId": "LOOT_HEART_OF_BLIGHTED_GROVE_GNIIUSHCHII_KULTIST_L20",
@@ -15053,6 +15259,7 @@
       "level": 20,
       "description": "Ядовитый лозовик — противник контента «Сердце Осквернённой Чащи».",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "iadovityi-lozovik",
       "version": 1,
       "maxHp": 3410,
@@ -15095,7 +15302,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 21600,
+        "xpReward": 28438,
+        "grantsXp": true,
         "goldRewardMin": 85,
         "goldRewardMax": 115,
         "lootTableId": "LOOT_HEART_OF_BLIGHTED_GROVE_IADOVITYI_LOZOVIK_L20",
@@ -15138,6 +15346,7 @@
       "level": 20,
       "description": "Порченый древень — противник контента «Сердце Осквернённой Чащи».",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "porchenyi-dreven",
       "version": 1,
       "maxHp": 3410,
@@ -15180,7 +15389,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 21600,
+        "xpReward": 28438,
+        "grantsXp": true,
         "goldRewardMin": 85,
         "goldRewardMax": 115,
         "lootTableId": "LOOT_HEART_OF_BLIGHTED_GROVE_PORCHENYI_DREVEN_L20",
@@ -15223,6 +15433,7 @@
       "level": 20,
       "description": "Сердечный страж — противник контента «Сердце Осквернённой Чащи».",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "serdechnyi-strazh",
       "version": 1,
       "maxHp": 4025,
@@ -15265,7 +15476,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 21600,
+        "xpReward": 28438,
+        "grantsXp": true,
         "goldRewardMin": 85,
         "goldRewardMax": 115,
         "lootTableId": "LOOT_HEART_OF_BLIGHTED_GROVE_SERDECHNYI_STRAZH_L20",
@@ -15308,6 +15520,7 @@
       "level": 21,
       "description": "Обугленный древень. организованное Затмение, огонь и руны.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "obuglennyi-dreven",
       "version": 1,
       "maxHp": 2400,
@@ -15350,7 +15563,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 17600,
+        "xpReward": 18095,
+        "grantsXp": true,
         "goldRewardMin": 72,
         "goldRewardMax": 98,
         "lootTableId": "LOOT_ASHEN_BORDER_OBUGLENNYI_DREVEN_L21",
@@ -15394,6 +15608,7 @@
       "level": 21,
       "description": "Пепельный элементаль. организованное Затмение, огонь и руны.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pepelnyi-elemental",
       "version": 1,
       "maxHp": 2210,
@@ -15436,7 +15651,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 17600,
+        "xpReward": 18095,
+        "grantsXp": true,
         "goldRewardMin": 72,
         "goldRewardMax": 98,
         "lootTableId": "LOOT_ASHEN_BORDER_PEPELNYI_ELEMENTAL_L21",
@@ -15480,6 +15696,7 @@
       "level": 21,
       "description": "Болотный клык. яд, болезнь, высасывание здоровья и магические болота.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "bolotnyi-klyk",
       "version": 1,
       "maxHp": 2450,
@@ -15522,7 +15739,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 17600,
+        "xpReward": 18095,
+        "grantsXp": true,
         "goldRewardMin": 72,
         "goldRewardMax": 98,
         "lootTableId": "LOOT_MOON_ASH_MARSHES_BOLOTNYI_KLYK_L21",
@@ -15566,6 +15784,7 @@
       "level": 21,
       "description": "Лунный василиск. яд, болезнь, высасывание здоровья и магические болота.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "lunnyi-vasilisk",
       "version": 1,
       "maxHp": 2450,
@@ -15608,7 +15827,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 17600,
+        "xpReward": 18095,
+        "grantsXp": true,
         "goldRewardMin": 72,
         "goldRewardMax": 98,
         "lootTableId": "LOOT_MOON_ASH_MARSHES_LUNNYI_VASILISK_L21",
@@ -15658,6 +15878,7 @@
       "level": 22,
       "description": "Глашатай Затмения. организованное Затмение, огонь и руны.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "glashatai-zatmeniia",
       "version": 1,
       "maxHp": 4030,
@@ -15700,7 +15921,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 25920,
+        "xpReward": 34602,
+        "grantsXp": true,
         "goldRewardMin": 96,
         "goldRewardMax": 129,
         "lootTableId": "LOOT_ASHEN_BORDER_GLASHATAI_ZATMENIIA_L22",
@@ -15750,6 +15972,7 @@
       "level": 22,
       "description": "Палач границы. организованное Затмение, огонь и руны.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "palach-granitsy",
       "version": 1,
       "maxHp": 4030,
@@ -15792,7 +16015,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 25920,
+        "xpReward": 34602,
+        "grantsXp": true,
         "goldRewardMin": 96,
         "goldRewardMax": 129,
         "lootTableId": "LOOT_ASHEN_BORDER_PALACH_GRANITSY_L22",
@@ -15842,6 +16066,7 @@
       "level": 22,
       "description": "Пепельный налётчик. организованное Затмение, огонь и руны.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pepelnyi-naliotchik",
       "version": 1,
       "maxHp": 2600,
@@ -15884,7 +16109,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 19200,
+        "xpReward": 19773,
+        "grantsXp": true,
         "goldRewardMin": 76,
         "goldRewardMax": 103,
         "lootTableId": "LOOT_ASHEN_BORDER_PEPELNYI_NALIOTCHIK_L22",
@@ -15928,6 +16154,7 @@
       "level": 22,
       "description": "Пепельный волк. организованное Затмение, огонь и руны.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pepelnyi-volk",
       "version": 1,
       "maxHp": 2650,
@@ -15970,7 +16197,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 19200,
+        "xpReward": 19773,
+        "grantsXp": true,
         "goldRewardMin": 76,
         "goldRewardMax": 103,
         "lootTableId": "LOOT_ASHEN_BORDER_PEPELNYI_VOLK_L22",
@@ -16008,6 +16236,7 @@
       "level": 22,
       "description": "Пиявочник. яд, болезнь, высасывание здоровья и магические болота.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "piiavochnik",
       "version": 1,
       "maxHp": 2340,
@@ -16050,7 +16279,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 19200,
+        "xpReward": 19773,
+        "grantsXp": true,
         "goldRewardMin": 76,
         "goldRewardMax": 103,
         "lootTableId": "LOOT_MOON_ASH_MARSHES_PIIAVOCHNIK_L22",
@@ -16094,6 +16324,7 @@
       "level": 22,
       "description": "Топяной роевик. яд, болезнь, высасывание здоровья и магические болота.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "topianoi-roevik",
       "version": 1,
       "maxHp": 2340,
@@ -16136,7 +16367,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 19200,
+        "xpReward": 19773,
+        "grantsXp": true,
         "goldRewardMin": 76,
         "goldRewardMax": 103,
         "lootTableId": "LOOT_MOON_ASH_MARSHES_TOPIANOI_ROEVIK_L22",
@@ -16180,6 +16412,7 @@
       "level": 23,
       "description": "Дозорный границы. организованное Затмение, огонь и руны.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "dozornyi-granitsy",
       "version": 1,
       "maxHp": 2800,
@@ -16222,7 +16455,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 20800,
+        "xpReward": 21304,
+        "grantsXp": true,
         "goldRewardMin": 81,
         "goldRewardMax": 109,
         "lootTableId": "LOOT_ASHEN_BORDER_DOZORNYI_GRANITSY_L23",
@@ -16266,6 +16500,7 @@
       "level": 23,
       "description": "Пепельный гончий зверь. организованное Затмение, огонь и руны.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pepelnyi-gonchii-zver",
       "version": 1,
       "maxHp": 2855,
@@ -16308,7 +16543,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 20800,
+        "xpReward": 21304,
+        "grantsXp": true,
         "goldRewardMin": 81,
         "goldRewardMax": 109,
         "lootTableId": "LOOT_ASHEN_BORDER_PEPELNYI_GONCHII_ZVER_L23",
@@ -16346,6 +16582,7 @@
       "level": 23,
       "description": "Болотный страж. яд, болезнь, высасывание здоровья и магические болота.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "bolotnyi-strazh",
       "version": 1,
       "maxHp": 3305,
@@ -16388,7 +16625,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 20800,
+        "xpReward": 21304,
+        "grantsXp": true,
         "goldRewardMin": 81,
         "goldRewardMax": 109,
         "lootTableId": "LOOT_MOON_ASH_MARSHES_BOLOTNYI_STRAZH_L23",
@@ -16432,6 +16670,7 @@
       "level": 23,
       "description": "Утонувший паломник. яд, болезнь, высасывание здоровья и магические болота.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "utonuvshii-palomnik",
       "version": 1,
       "maxHp": 2575,
@@ -16474,7 +16713,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 20800,
+        "xpReward": 21304,
+        "grantsXp": true,
         "goldRewardMin": 81,
         "goldRewardMax": 109,
         "lootTableId": "LOOT_MOON_ASH_MARSHES_UTONUVSHII_PALOMNIK_L23",
@@ -16524,6 +16764,7 @@
       "level": 23,
       "description": "Ведьма трясины. яд, болезнь, высасывание здоровья и магические болота.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "vedma-triasiny",
       "version": 1,
       "maxHp": 2575,
@@ -16566,7 +16807,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 20800,
+        "xpReward": 21304,
+        "grantsXp": true,
         "goldRewardMin": 81,
         "goldRewardMax": 109,
         "lootTableId": "LOOT_MOON_ASH_MARSHES_VEDMA_TRIASINY_L23",
@@ -16610,6 +16852,7 @@
       "level": 24,
       "description": "Рекрут Затмения. армия Цитадели, руны, конструкты и кузницы.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "rekrut-zatmeniia",
       "version": 1,
       "maxHp": 3000,
@@ -16652,7 +16895,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 22400,
+        "xpReward": 22708,
+        "grantsXp": true,
         "goldRewardMin": 85,
         "goldRewardMax": 115,
         "lootTableId": "LOOT_ECLIPSE_OUTSKIRTS_REKRUT_ZATMENIIA_L24",
@@ -16696,6 +16940,7 @@
       "level": 24,
       "description": "Болотный пожиратель. яд, болезнь, высасывание здоровья и магические болота.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "bolotnyi-pozhiratel",
       "version": 1,
       "maxHp": 3000,
@@ -16738,7 +16983,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 22400,
+        "xpReward": 22708,
+        "grantsXp": true,
         "goldRewardMin": 85,
         "goldRewardMax": 115,
         "lootTableId": "LOOT_MOON_ASH_MARSHES_BOLOTNYI_POZHIRATEL_L24",
@@ -16782,6 +17028,7 @@
       "level": 25,
       "description": "Связанная с Архонтом боевая цель без собственной награды.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "namestnik-tsitadeli",
       "version": 1,
       "maxHp": 2500,
@@ -16825,6 +17072,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -16842,6 +17090,7 @@
       "level": 25,
       "description": "Финальный босс 25 уровня. Источник лучших легендарных предметов и трёх именных Unique-оружий.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "namestnik-tsitadeli",
       "version": 2,
       "maxHp": 25000,
@@ -16939,7 +17188,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -17044,7 +17294,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -17238,7 +17489,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 85000,
+        "xpReward": 108000,
+        "grantsXp": true,
         "goldRewardMin": 500,
         "goldRewardMax": 750,
         "lootTableId": "ECLIPSED_CITADEL_BOSS_LOOT",
@@ -17308,24 +17560,6 @@
             {
               "itemId": "ACC_LEGENDARY_23_RING",
               "dropChance": 0.06,
-              "minQuantity": 1,
-              "maxQuantity": 1
-            },
-            {
-              "itemId": "UNIQUE_WARRIOR_BLACKHEART_L25",
-              "dropChance": 0.0075,
-              "minQuantity": 1,
-              "maxQuantity": 1
-            },
-            {
-              "itemId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25",
-              "dropChance": 0.0075,
-              "minQuantity": 1,
-              "maxQuantity": 1
-            },
-            {
-              "itemId": "UNIQUE_ARCHER_LAST_CONSTELLATION_L25",
-              "dropChance": 0.0075,
               "minQuantity": 1,
               "maxQuantity": 1
             },
@@ -17530,6 +17764,7 @@
       "level": 25,
       "description": "Последний страж перед тронным залом Архонта.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "alebardshchik-bastiona",
       "version": 2,
       "maxHp": 5100,
@@ -17626,7 +17861,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -17775,7 +18011,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 36000,
+        "xpReward": 42000,
+        "grantsXp": true,
         "goldRewardMin": 150,
         "goldRewardMax": 200,
         "lootTableId": "ECLIPSED_CITADEL_E4_LOOT",
@@ -17912,7 +18149,7 @@
                 },
                 {
                   "itemId": "ACC_LEGENDARY_23_RING",
-                  "weight": 35.0,
+                  "weight": 35,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 }
@@ -17940,6 +18177,7 @@
       "level": 25,
       "description": "Тяжёлый страж внутренних залов, закованный в чёрный камень.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kamennyi-strazh",
       "version": 2,
       "maxHp": 5600,
@@ -18035,7 +18273,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -18107,7 +18346,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 30000,
+        "xpReward": 42000,
+        "grantsXp": true,
         "goldRewardMin": 125,
         "goldRewardMax": 170,
         "lootTableId": "ECLIPSED_CITADEL_E2_LOOT",
@@ -18278,6 +18518,7 @@
       "level": 25,
       "description": "Первый элитный страж внешней печати Цитадели Затмения.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "soldat-zatmeniia",
       "version": 2,
       "maxHp": 4200,
@@ -18374,7 +18615,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -18457,7 +18699,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -18544,7 +18787,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 26000,
+        "xpReward": 42000,
+        "grantsXp": true,
         "goldRewardMin": 110,
         "goldRewardMax": 150,
         "lootTableId": "ECLIPSED_CITADEL_E1_LOOT",
@@ -18681,7 +18925,7 @@
                 },
                 {
                   "itemId": "CHESHUICHATYI_PLASHCH_VASILISKA",
-                  "weight": 35.0,
+                  "weight": 35,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 }
@@ -18709,6 +18953,7 @@
       "level": 25,
       "description": "Искажённый ткач, питающийся светом затмённого кристалла.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "giant-spider",
       "version": 2,
       "maxHp": 4500,
@@ -18805,7 +19050,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -18910,7 +19156,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -18997,7 +19244,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 32000,
+        "xpReward": 42000,
+        "grantsXp": true,
         "goldRewardMin": 135,
         "goldRewardMax": 180,
         "lootTableId": "ECLIPSED_CITADEL_E3_LOOT",
@@ -19134,7 +19382,7 @@
                 },
                 {
                   "itemId": "PECHAT_UMBRY",
-                  "weight": 35.0,
+                  "weight": 35,
                   "minQuantity": 1,
                   "maxQuantity": 1
                 }
@@ -19162,6 +19410,7 @@
       "level": 25,
       "description": "Стрелок Затмения. армия Цитадели, руны, конструкты и кузницы.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "strelok-zatmeniia",
       "version": 1,
       "maxHp": 2880,
@@ -19205,6 +19454,7 @@
       },
       "rewards": {
         "xpReward": 24000,
+        "grantsXp": true,
         "goldRewardMin": 89,
         "goldRewardMax": 121,
         "lootTableId": "LOOT_ECLIPSE_OUTSKIRTS_STRELOK_ZATMENIIA_L25",
@@ -19248,6 +19498,7 @@
       "level": 25,
       "description": "Луннопепельный утопленник. яд, болезнь, высасывание здоровья и магические болота.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "lunnopepelnyi-utoplennik",
       "version": 1,
       "maxHp": 3200,
@@ -19291,6 +19542,7 @@
       },
       "rewards": {
         "xpReward": 24000,
+        "grantsXp": true,
         "goldRewardMin": 89,
         "goldRewardMax": 121,
         "lootTableId": "LOOT_MOON_ASH_MARSHES_LUNNOPEPELNYI_UTOPLENNIK_L25",
@@ -19334,6 +19586,7 @@
       "level": 25,
       "description": "Матерь топей. яд, болезнь, высасывание здоровья и магические болота.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "mater-topei",
       "version": 1,
       "maxHp": 5855,
@@ -19376,7 +19629,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 32400,
+        "xpReward": 42000,
+        "grantsXp": true,
         "goldRewardMin": 112,
         "goldRewardMax": 151,
         "lootTableId": "LOOT_MOON_ASH_MARSHES_MATER_TOPEI_L25",
@@ -19426,6 +19680,7 @@
       "level": 25,
       "description": "Пожиратель света. яд, болезнь, высасывание здоровья и магические болота.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pozhiratel-sveta",
       "version": 1,
       "maxHp": 5855,
@@ -19468,7 +19723,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 32400,
+        "xpReward": 42000,
+        "grantsXp": true,
         "goldRewardMin": 112,
         "goldRewardMax": 151,
         "lootTableId": "LOOT_MOON_ASH_MARSHES_POZHIRATEL_SVETA_L25",
@@ -19498,6 +19754,24 @@
               "dropChance": 0.08,
               "minQuantity": 1,
               "maxQuantity": 1
+            },
+            {
+              "itemId": "UNIQUE_WARRIOR_BLACKHEART_L25",
+              "dropChance": 0.003,
+              "minQuantity": 1,
+              "maxQuantity": 1
+            },
+            {
+              "itemId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25",
+              "dropChance": 0.003,
+              "minQuantity": 1,
+              "maxQuantity": 1
+            },
+            {
+              "itemId": "UNIQUE_ARCHER_LAST_CONSTELLATION_L25",
+              "dropChance": 0.003,
+              "minQuantity": 1,
+              "maxQuantity": 1
             }
           ],
           "version": 1,
@@ -19518,6 +19792,7 @@
       "level": 25,
       "description": "Ведьмак топей. яд, болезнь, высасывание здоровья и магические болота.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "vedmak-topei",
       "version": 1,
       "maxHp": 2945,
@@ -19561,6 +19836,7 @@
       },
       "rewards": {
         "xpReward": 24000,
+        "grantsXp": true,
         "goldRewardMin": 89,
         "goldRewardMax": 121,
         "lootTableId": "LOOT_MOON_ASH_MARSHES_VEDMAK_TOPEI_L25",
@@ -19604,6 +19880,7 @@
       "level": 25,
       "description": "Атакующий аспект, накапливающий давление на цели.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "zhrets-ugasshego-sveta",
       "version": 1,
       "maxHp": 5200,
@@ -19699,7 +19976,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -19757,6 +20035,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -19783,6 +20062,7 @@
       "level": 25,
       "description": "Защитный аспект, закрывающий щитом самого ослабленного клона.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "charodei-raskola",
       "version": 1,
       "maxHp": 5600,
@@ -19870,6 +20150,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -19896,6 +20177,7 @@
       "level": 25,
       "description": "На 65% раскалывается на три связанных аспекта, которые нужно добить в одном 10-секундном окне.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "magistr-razbitogo-ordena",
       "version": 1,
       "maxHp": 26000,
@@ -20133,7 +20415,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 90000,
+        "xpReward": 108000,
+        "grantsXp": true,
         "goldRewardMin": 550,
         "goldRewardMax": 800,
         "lootTableId": "LOOT_OBSERVATORY_AZRAEL_L25",
@@ -20281,6 +20564,7 @@
       "level": 25,
       "description": "Поддерживающий аспект с прерываемым групповым лечением.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "khranitel-razloma",
       "version": 1,
       "maxHp": 4800,
@@ -20368,6 +20652,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -20394,6 +20679,7 @@
       "level": 25,
       "description": "Прерываемым каналом возвращает Веллариусу 5 маны.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "charodei-raskola",
       "version": 1,
       "maxHp": 2400,
@@ -20481,6 +20767,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -20507,6 +20794,7 @@
       "level": 25,
       "description": "На 70% и 35% здоровья поднимает астральный барьер и призывает трёх хранителей купола.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "rytsar-zerkalnogo-iadra",
       "version": 1,
       "maxHp": 18000,
@@ -20549,7 +20837,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 55000,
+        "xpReward": 108000,
+        "grantsXp": true,
         "goldRewardMin": 300,
         "goldRewardMax": 450,
         "lootTableId": "LOOT_OBSERVATORY_CASTELLAN_L25",
@@ -20697,6 +20986,7 @@
       "level": 25,
       "description": "Наращивает давление на текущей цели.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "rytsar-zerkalnogo-iadra",
       "version": 1,
       "maxHp": 3200,
@@ -20770,7 +21060,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -20828,6 +21119,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -20854,6 +21146,7 @@
       "level": 25,
       "description": "Пока жив, усиливает астральный барьер Кастеляна с 50% до 70%.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "oskolochnyi-strazh",
       "version": 1,
       "maxHp": 3600,
@@ -20897,6 +21190,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -20923,6 +21217,7 @@
       "level": 25,
       "description": "Периодически начинает прерываемое восстановление.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "zhrets-ugasshego-sveta",
       "version": 1,
       "maxHp": 2800,
@@ -21033,6 +21328,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -21059,6 +21355,7 @@
       "level": 25,
       "description": "На 65% и 30% вырывает души игроков. Неубитая за 18 секунд душа усиливает и лечит босса.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "khranitel-razloma",
       "version": 1,
       "maxHp": 23000,
@@ -21101,7 +21398,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 75000,
+        "xpReward": 108000,
+        "grantsXp": true,
         "goldRewardMin": 400,
         "goldRewardMax": 600,
         "lootTableId": "LOOT_OBSERVATORY_MOR_ET_L25",
@@ -21249,6 +21547,7 @@
       "level": 25,
       "description": "Быстрая копия лучника с кровотечением и повышенным критическим шансом.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "sumerechnyi-luchnik",
       "version": 1,
       "maxHp": 3200,
@@ -21344,7 +21643,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -21402,6 +21702,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -21428,6 +21729,7 @@
       "level": 25,
       "description": "Хрупкая копия мага с опасным прерываемым кастом.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "charodei-raskola",
       "version": 1,
       "maxHp": 2800,
@@ -21538,6 +21840,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -21564,6 +21867,7 @@
       "level": 25,
       "description": "Стойкая копия паладина с прерываемым самоисцелением.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "prizrachnyi-palomnik",
       "version": 1,
       "maxHp": 3600,
@@ -21674,6 +21978,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -21700,6 +22005,7 @@
       "level": 25,
       "description": "Тяжёлая и бронированная копия классового профиля воина.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "prizrachnyi-palomnik",
       "version": 1,
       "maxHp": 3900,
@@ -21810,6 +22116,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -21836,6 +22143,7 @@
       "level": 25,
       "description": "Тратит настоящую ману на прерываемые заклинания; на 10% превращает весь остаток маны в щит.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "magistr-razbitogo-ordena",
       "version": 1,
       "maxHp": 22000,
@@ -22194,7 +22502,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 65000,
+        "xpReward": 108000,
+        "grantsXp": true,
         "goldRewardMin": 350,
         "goldRewardMax": 500,
         "lootTableId": "LOOT_OBSERVATORY_VELARIUS_L25",
@@ -22342,6 +22651,7 @@
       "level": 26,
       "description": "Могильный аколит. армия Цитадели, руны, конструкты и кузницы.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "mogilnyi-akolit",
       "version": 1,
       "maxHp": 3145,
@@ -22384,7 +22694,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 26200,
+        "xpReward": 26474,
+        "grantsXp": true,
         "goldRewardMin": 95,
         "goldRewardMax": 129,
         "lootTableId": "LOOT_ECLIPSE_OUTSKIRTS_MOGILNYI_AKOLIT_L26",
@@ -22428,6 +22739,7 @@
       "level": 26,
       "description": "Похититель осколков. армия Цитадели, руны, конструкты и кузницы.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pokhititel-oskolkov",
       "version": 1,
       "maxHp": 3145,
@@ -22470,7 +22782,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 26200,
+        "xpReward": 26474,
+        "grantsXp": true,
         "goldRewardMin": 95,
         "goldRewardMax": 129,
         "lootTableId": "LOOT_ECLIPSE_OUTSKIRTS_POKHITITEL_OSKOLKOV_L26",
@@ -22520,6 +22833,7 @@
       "level": 26,
       "description": "Болотная мать. яд, болезнь, высасывание здоровья и магические болота.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "bolotnaia-mat",
       "version": 1,
       "maxHp": 5300,
@@ -22562,7 +22876,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 35370,
+        "xpReward": 46330,
+        "grantsXp": true,
         "goldRewardMin": 119,
         "goldRewardMax": 161,
         "lootTableId": "LOOT_MOON_ASH_MARSHES_BOLOTNAIA_MAT_L26",
@@ -22606,6 +22921,7 @@
       "level": 26,
       "description": "Призрачный паломник. яд, болезнь, высасывание здоровья и магические болота.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-prizrachnyy-palomnik",
       "version": 1,
       "maxHp": 3420,
@@ -22648,7 +22964,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 26200,
+        "xpReward": 26474,
+        "grantsXp": true,
         "goldRewardMin": 95,
         "goldRewardMax": 129,
         "lootTableId": "LOOT_MOON_ASH_MARSHES_PRIZRACHNYI_PALOMNIK_L26",
@@ -22692,6 +23009,7 @@
       "level": 27,
       "description": "Заклинатель раскола. армия Цитадели, руны, конструкты и кузницы.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "zaklinatel-raskola",
       "version": 1,
       "maxHp": 3350,
@@ -22734,7 +23052,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 28400,
+        "xpReward": 28765,
+        "grantsXp": true,
         "goldRewardMin": 101,
         "goldRewardMax": 137,
         "lootTableId": "LOOT_ECLIPSE_OUTSKIRTS_ZAKLINATEL_RASKOLA_L27",
@@ -22778,6 +23097,7 @@
       "level": 27,
       "description": "Фанатик Раскола. отражения, мана, щиты и зеркальная магия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "fanatik-raskola",
       "version": 1,
       "maxHp": 3640,
@@ -22820,7 +23140,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 28400,
+        "xpReward": 28765,
+        "grantsXp": true,
         "goldRewardMin": 101,
         "goldRewardMax": 137,
         "lootTableId": "LOOT_SHATTERED_LANDS_FANATIK_RASKOLA_L27",
@@ -22864,6 +23185,7 @@
       "level": 27,
       "description": "Рыцарь Раскола. отражения, мана, щиты и зеркальная магия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "rytsar-raskola",
       "version": 1,
       "maxHp": 3640,
@@ -22906,7 +23228,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 28400,
+        "xpReward": 28765,
+        "grantsXp": true,
         "goldRewardMin": 101,
         "goldRewardMax": 137,
         "lootTableId": "LOOT_SHATTERED_LANDS_RYTSAR_RASKOLA_L27",
@@ -22950,6 +23273,7 @@
       "level": 28,
       "description": "Палач Затмения. армия Цитадели, руны, конструкты и кузницы.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "palach-zatmeniia",
       "version": 1,
       "maxHp": 5985,
@@ -22992,7 +23316,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 41310,
+        "xpReward": 54063,
+        "grantsXp": true,
         "goldRewardMin": 134,
         "goldRewardMax": 181,
         "lootTableId": "LOOT_ECLIPSE_OUTSKIRTS_PALACH_ZATMENIIA_L28",
@@ -23042,6 +23367,7 @@
       "level": 28,
       "description": "Подмастерье рунного кузнеца. армия Цитадели, руны, конструкты и кузницы.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "podmastere-runnogo-kuznetsa",
       "version": 1,
       "maxHp": 3860,
@@ -23084,7 +23410,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 30600,
+        "xpReward": 30893,
+        "grantsXp": true,
         "goldRewardMin": 107,
         "goldRewardMax": 145,
         "lootTableId": "LOOT_ECLIPSE_OUTSKIRTS_PODMASTERE_RUNNOGO_KUZNETSA_L28",
@@ -23128,6 +23455,7 @@
       "level": 28,
       "description": "Рунный страж Затмения. армия Цитадели, руны, конструкты и кузницы.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "runnyi-strazh-zatmeniia",
       "version": 1,
       "maxHp": 4555,
@@ -23170,7 +23498,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 30600,
+        "xpReward": 30893,
+        "grantsXp": true,
         "goldRewardMin": 107,
         "goldRewardMax": 145,
         "lootTableId": "LOOT_ECLIPSE_OUTSKIRTS_RUNNYI_STRAZH_ZATMENIIA_L28",
@@ -23214,6 +23543,7 @@
       "level": 28,
       "description": "Проводник маны. отражения, мана, щиты и зеркальная магия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "provodnik-many",
       "version": 1,
       "maxHp": 3550,
@@ -23256,7 +23586,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 30600,
+        "xpReward": 30893,
+        "grantsXp": true,
         "goldRewardMin": 107,
         "goldRewardMax": 145,
         "lootTableId": "LOOT_SHATTERED_LANDS_PROVODNIK_MANY_L28",
@@ -23300,6 +23631,7 @@
       "level": 28,
       "description": "Стрелок Раскола. отражения, мана, щиты и зеркальная магия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "strelok-raskola",
       "version": 1,
       "maxHp": 3475,
@@ -23342,7 +23674,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 30600,
+        "xpReward": 30893,
+        "grantsXp": true,
         "goldRewardMin": 107,
         "goldRewardMax": 145,
         "lootTableId": "LOOT_SHATTERED_LANDS_STRELOK_RASKOLA_L28",
@@ -23386,6 +23719,7 @@
       "level": 28,
       "description": "Жрец отражений. отражения, мана, щиты и зеркальная магия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "zhrets-otrazhenii",
       "version": 1,
       "maxHp": 3550,
@@ -23428,7 +23762,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 30600,
+        "xpReward": 30893,
+        "grantsXp": true,
         "goldRewardMin": 107,
         "goldRewardMax": 145,
         "lootTableId": "LOOT_SHATTERED_LANDS_ZHRETS_OTRAZHENII_L28",
@@ -23472,6 +23807,7 @@
       "level": 29,
       "description": "Часовой Умбры. армия Цитадели, руны, конструкты и кузницы.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "chasovoi-umbry",
       "version": 1,
       "maxHp": 6325,
@@ -23514,7 +23850,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 44280,
+        "xpReward": 57529,
+        "grantsXp": true,
         "goldRewardMin": 141,
         "goldRewardMax": 191,
         "lootTableId": "LOOT_ECLIPSE_OUTSKIRTS_CHASOVOI_UMBRY_L29",
@@ -23558,6 +23895,7 @@
       "level": 29,
       "description": "Отражение мага. отражения, мана, щиты и зеркальная магия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "otrazhenie-maga",
       "version": 1,
       "maxHp": 3755,
@@ -23600,7 +23938,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 32800,
+        "xpReward": 32874,
+        "grantsXp": true,
         "goldRewardMin": 113,
         "goldRewardMax": 153,
         "lootTableId": "LOOT_SHATTERED_LANDS_OTRAZHENIE_MAGA_L29",
@@ -23644,6 +23983,7 @@
       "level": 29,
       "description": "Отражение воина. отражения, мана, щиты и зеркальная магия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "otrazhenie-voina",
       "version": 1,
       "maxHp": 4080,
@@ -23686,7 +24026,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 32800,
+        "xpReward": 32874,
+        "grantsXp": true,
         "goldRewardMin": 113,
         "goldRewardMax": 153,
         "lootTableId": "LOOT_SHATTERED_LANDS_OTRAZHENIE_VOINA_L29",
@@ -23730,6 +24071,7 @@
       "level": 29,
       "description": "Пустотный ученик. отражения, мана, щиты и зеркальная магия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pustotnyi-uchenik",
       "version": 1,
       "maxHp": 3755,
@@ -23772,7 +24114,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 32800,
+        "xpReward": 32874,
+        "grantsXp": true,
         "goldRewardMin": 113,
         "goldRewardMax": 153,
         "lootTableId": "LOOT_SHATTERED_LANDS_PUSTOTNYI_UCHENIK_L29",
@@ -23816,6 +24159,7 @@
       "level": 30,
       "description": "Бронеспин. позднее горное дело, тяжёлая броня, огонь и кузни.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "bronespin",
       "version": 1,
       "maxHp": 5075,
@@ -23858,7 +24202,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 35000,
+        "xpReward": 34722,
+        "grantsXp": true,
         "goldRewardMin": 119,
         "goldRewardMax": 161,
         "lootTableId": "LOOT_BLACKSTONE_HIGHLANDS_BRONESPIN_L30",
@@ -23902,6 +24247,7 @@
       "level": 30,
       "description": "Чернокаменный волк. позднее горное дело, тяжёлая броня, огонь и кузни.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "chernokamennyi-volk",
       "version": 1,
       "maxHp": 4385,
@@ -23944,7 +24290,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 35000,
+        "xpReward": 34722,
+        "grantsXp": true,
         "goldRewardMin": 119,
         "goldRewardMax": 161,
         "lootTableId": "LOOT_BLACKSTONE_HIGHLANDS_CHERNOKAMENNYI_VOLK_L30",
@@ -23988,6 +24335,7 @@
       "level": 30,
       "description": "Осколочный страж. отражения, мана, щиты и зеркальная магия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-oskolochnyy-strazh",
       "version": 1,
       "maxHp": 5075,
@@ -24030,7 +24378,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 35000,
+        "xpReward": 34722,
+        "grantsXp": true,
         "goldRewardMin": 119,
         "goldRewardMax": 161,
         "lootTableId": "LOOT_SHATTERED_LANDS_OSKOLOCHNYI_STRAZH_L30",
@@ -24068,6 +24417,7 @@
       "level": 30,
       "description": "Отражение лучника. отражения, мана, щиты и зеркальная магия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "otrazhenie-luchnika",
       "version": 1,
       "maxHp": 3870,
@@ -24110,7 +24460,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 35000,
+        "xpReward": 34722,
+        "grantsXp": true,
         "goldRewardMin": 119,
         "goldRewardMax": 161,
         "lootTableId": "LOOT_SHATTERED_LANDS_OTRAZHENIE_LUCHNIKA_L30",
@@ -24154,6 +24505,7 @@
       "level": 30,
       "description": "Зеркальный страж. отражения, мана, щиты и зеркальная магия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "zerkalnyi-strazh",
       "version": 1,
       "maxHp": 5075,
@@ -24196,7 +24548,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 35000,
+        "xpReward": 34722,
+        "grantsXp": true,
         "goldRewardMin": 119,
         "goldRewardMax": 161,
         "lootTableId": "LOOT_SHATTERED_LANDS_ZERKALNYI_STRAZH_L30",
@@ -24234,6 +24587,7 @@
       "level": 30,
       "description": "Хранительница Запретного Архива, пробуждающая осквернённые фолианты.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "arkhimag-vellarius",
       "version": 2,
       "maxHp": 52000,
@@ -24435,7 +24789,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -24518,7 +24873,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -24561,7 +24917,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -24755,7 +25112,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 146475,
+        "xpReward": 156250,
+        "grantsXp": true,
         "goldRewardMin": 577,
         "goldRewardMax": 780,
         "lootTableId": "LOOT_SHATTERED_ORDER_CITADEL_BOSS_ARKHIMAG_VELLARIUS_L30",
@@ -24963,6 +25321,7 @@
       "level": 30,
       "description": "Командор Зала Павших Знамён, возвращающий погибших рыцарей в строй.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "khranitel-dush-mor-et",
       "version": 2,
       "maxHp": 56000,
@@ -25059,7 +25418,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -25179,7 +25539,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 159075,
+        "xpReward": 156250,
+        "grantsXp": true,
         "goldRewardMin": 618,
         "goldRewardMax": 837,
         "lootTableId": "LOOT_SHATTERED_ORDER_CITADEL_BOSS_KHRANITEL_DUSH_MOR_ET_L30",
@@ -25525,6 +25886,7 @@
       "level": 30,
       "description": "Последний Магистр, связавший души павших неудавшейся общей клятвой.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "triedinyi-magistr-azrael",
       "version": 2,
       "maxHp": 62000,
@@ -25706,7 +26068,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -25749,7 +26112,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -25792,7 +26156,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -25875,7 +26240,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -25918,7 +26284,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -26035,7 +26402,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 171674,
+        "xpReward": 156250,
+        "grantsXp": true,
         "goldRewardMin": 660,
         "goldRewardMax": 893,
         "lootTableId": "LOOT_SHATTERED_ORDER_CITADEL_BOSS_TRIEDINYI_MAGISTR_AZRAEL_L30",
@@ -26243,6 +26611,7 @@
       "level": 30,
       "description": "Хранитель Врат Раскола, объявивший всех вошедших предателями.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "zerkalnyi-kastelan",
       "version": 2,
       "maxHp": 48000,
@@ -26326,7 +26695,8 @@
                   ],
                   "displayName": "Клеймо предателя",
                   "description": "Обжигает цель и взрывается по окончании.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -26369,7 +26739,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -26474,7 +26845,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -26638,7 +27010,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 133875,
+        "xpReward": 156250,
+        "grantsXp": true,
         "goldRewardMin": 535,
         "goldRewardMax": 724,
         "lootTableId": "LOOT_SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30",
@@ -26990,6 +27363,7 @@
       "level": 30,
       "description": "Запретный маг с прерываемыми теневыми чарами.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-charodey-raskola",
       "version": 2,
       "maxHp": 6130,
@@ -27064,7 +27438,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -27213,7 +27588,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 47250,
+        "xpReward": 60764,
+        "grantsXp": true,
         "goldRewardMin": 149,
         "goldRewardMax": 201,
         "lootTableId": "LOOT_SHATTERED_ORDER_CITADEL_CHARODEI_RASKOLA_L30",
@@ -27256,6 +27632,7 @@
       "level": 30,
       "description": "Один из магов замороженного Запретного Архива.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "iskazhionnyi-poslushnik",
       "version": 2,
       "maxHp": 6665,
@@ -27352,7 +27729,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -27501,7 +27879,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 47250,
+        "xpReward": 60764,
+        "grantsXp": true,
         "goldRewardMin": 149,
         "goldRewardMax": 201,
         "lootTableId": "LOOT_SHATTERED_ORDER_CITADEL_ISKAZHIONNYI_POSLUSHNIK_L30",
@@ -27544,6 +27923,7 @@
       "level": 30,
       "description": "Приоритетная цель с прерываемыми лечением и оберегом.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-khranitel-razloma",
       "version": 2,
       "maxHp": 6665,
@@ -27680,7 +28060,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -27738,7 +28119,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 47250,
+        "xpReward": 60764,
+        "grantsXp": true,
         "goldRewardMin": 149,
         "goldRewardMax": 201,
         "lootTableId": "LOOT_SHATTERED_ORDER_CITADEL_KHRANITEL_RAZLOMA_L30",
@@ -27781,6 +28163,7 @@
       "level": 30,
       "description": "Поднятый на службу рыцарь, истощающий группу нечестивой аурой.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-magistr-razbitogo-ordena",
       "version": 2,
       "maxHp": 6130,
@@ -27855,7 +28238,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -27975,7 +28359,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 47250,
+        "xpReward": 60764,
+        "grantsXp": true,
         "goldRewardMin": 149,
         "goldRewardMax": 201,
         "lootTableId": "LOOT_SHATTERED_ORDER_CITADEL_MAGISTR_RAZBITOGO_ORDENA_L30",
@@ -28018,6 +28403,7 @@
       "level": 30,
       "description": "Бронированный ветеран одной из враждующих частей Ордена.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-oskolochnyy-strazh",
       "version": 2,
       "maxHp": 7865,
@@ -28176,7 +28562,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -28234,7 +28621,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 47250,
+        "xpReward": 60764,
+        "grantsXp": true,
         "goldRewardMin": 149,
         "goldRewardMax": 201,
         "lootTableId": "LOOT_SHATTERED_ORDER_CITADEL_OSKOLOCHNYI_STRAZH_L30",
@@ -28277,6 +28665,7 @@
       "level": 30,
       "description": "Тяжёлый боец, режущий эффективность лечения и готовящий Казнь.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "otrazhionnyi-zver",
       "version": 2,
       "maxHp": 6800,
@@ -28373,7 +28762,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -28522,7 +28912,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 47250,
+        "xpReward": 60764,
+        "grantsXp": true,
         "goldRewardMin": 149,
         "goldRewardMax": 201,
         "lootTableId": "LOOT_SHATTERED_ORDER_CITADEL_OTRAZHIONNYI_ZVER_L30",
@@ -28565,6 +28956,7 @@
       "level": 30,
       "description": "Редкий элитный страж перед Троном Единой Клятвы.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-rytsar-zerkalnogo-yadra",
       "version": 2,
       "maxHp": 6665,
@@ -28639,7 +29031,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -28722,7 +29115,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -28780,7 +29174,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 47250,
+        "xpReward": 60764,
+        "grantsXp": true,
         "goldRewardMin": 149,
         "goldRewardMax": 201,
         "lootTableId": "LOOT_SHATTERED_ORDER_CITADEL_RYTSAR_ZERKALNOGO_IADRA_L30",
@@ -28823,6 +29218,7 @@
       "level": 30,
       "description": "Защитник с башенным щитом, пережидающий опасные окна под Стеной щитов.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-rytsar-zerkalnogo-yadra",
       "version": 2,
       "maxHp": 6665,
@@ -28959,7 +29355,8 @@
                   "onExpireActions": null,
                   "displayName": null,
                   "description": null,
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -29046,7 +29443,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 47250,
+        "xpReward": 60764,
+        "grantsXp": true,
         "goldRewardMin": 149,
         "goldRewardMax": 201,
         "lootTableId": "LOOT_SHATTERED_ORDER_CITADEL_ZERKALNYI_CHASOVOI_L30",
@@ -29089,6 +29487,7 @@
       "level": 30,
       "description": "Приоритетная цель, усиливающая магию Элларии.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "charodei-raskola",
       "version": 1,
       "maxHp": 5200,
@@ -29132,6 +29531,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -29149,6 +29549,7 @@
       "level": 30,
       "description": "Поднятое Реваном подкрепление без отдельной награды.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "prizrachnyi-palomnik",
       "version": 1,
       "maxHp": 4800,
@@ -29259,6 +29660,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -29276,6 +29678,7 @@
       "level": 30,
       "description": "Привязанная к испытуемому заклинательница.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "charodei-raskola",
       "version": 1,
       "maxHp": 3000,
@@ -29386,6 +29789,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -29412,6 +29816,7 @@
       "level": 30,
       "description": "Привязанная к испытуемому ближняя Тень.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "prizrachnyi-palomnik",
       "version": 1,
       "maxHp": 3600,
@@ -29522,6 +29927,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -29548,6 +29954,7 @@
       "level": 31,
       "description": "Крылатый охотник. позднее горное дело, тяжёлая броня, огонь и кузни.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "krylatyi-okhotnik",
       "version": 1,
       "maxHp": 4120,
@@ -29590,7 +29997,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 37600,
+        "xpReward": 37634,
+        "grantsXp": true,
         "goldRewardMin": 126,
         "goldRewardMax": 170,
         "lootTableId": "LOOT_BLACKSTONE_HIGHLANDS_KRYLATYI_OKHOTNIK_L31",
@@ -29640,6 +30048,7 @@
       "level": 31,
       "description": "Чародей раскола. отражения, мана, щиты и зеркальная магия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-charodey-raskola",
       "version": 1,
       "maxHp": 4215,
@@ -29682,7 +30091,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 37600,
+        "xpReward": 37634,
+        "grantsXp": true,
         "goldRewardMin": 126,
         "goldRewardMax": 170,
         "lootTableId": "LOOT_SHATTERED_LANDS_CHARODEI_RASKOLA_L31",
@@ -29726,6 +30136,7 @@
       "level": 31,
       "description": "Искажённый послушник. отражения, мана, щиты и зеркальная магия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "iskazhionnyi-poslushnik",
       "version": 1,
       "maxHp": 4580,
@@ -29768,7 +30179,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 37600,
+        "xpReward": 37634,
+        "grantsXp": true,
         "goldRewardMin": 126,
         "goldRewardMax": 170,
         "lootTableId": "LOOT_SHATTERED_LANDS_ISKAZHIONNYI_POSLUSHNIK_L31",
@@ -29812,6 +30224,7 @@
       "level": 31,
       "description": "Хранитель раскола. отражения, мана, щиты и зеркальная магия.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "khranitel-raskola",
       "version": 1,
       "maxHp": 8375,
@@ -29854,7 +30267,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 50760,
+        "xpReward": 65860,
+        "grantsXp": true,
         "goldRewardMin": 157,
         "goldRewardMax": 213,
         "lootTableId": "LOOT_SHATTERED_LANDS_KHRANITEL_RASKOLA_L31",
@@ -29898,6 +30312,7 @@
       "level": 31,
       "description": "Зеркальный часовой. отражения, мана, щиты и зеркальная магия.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "zerkalnyi-chasovoi",
       "version": 1,
       "maxHp": 7100,
@@ -29940,7 +30355,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 50760,
+        "xpReward": 65860,
+        "grantsXp": true,
         "goldRewardMin": 157,
         "goldRewardMax": 213,
         "lootTableId": "LOOT_SHATTERED_LANDS_ZERKALNYI_CHASOVOI_L31",
@@ -29984,6 +30400,7 @@
       "level": 32,
       "description": "Горный налётчик. позднее горное дело, тяжёлая броня, огонь и кузни.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "gornyi-naliotchik",
       "version": 1,
       "maxHp": 4860,
@@ -30026,7 +30443,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 40200,
+        "xpReward": 40365,
+        "grantsXp": true,
         "goldRewardMin": 133,
         "goldRewardMax": 179,
         "lootTableId": "LOOT_BLACKSTONE_HIGHLANDS_GORNYI_NALIOTCHIK_L32",
@@ -30070,6 +30488,7 @@
       "level": 32,
       "description": "Кузнец чёрного железа. позднее горное дело, тяжёлая броня, огонь и кузни.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kuznets-chiornogo-zheleza",
       "version": 1,
       "maxHp": 4860,
@@ -30112,7 +30531,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 40200,
+        "xpReward": 40365,
+        "grantsXp": true,
         "goldRewardMin": 133,
         "goldRewardMax": 179,
         "lootTableId": "LOOT_BLACKSTONE_HIGHLANDS_KUZNETS_CHIORNOGO_ZHELEZA_L32",
@@ -30156,6 +30576,7 @@
       "level": 32,
       "description": "Обсидиановый скорпион. позднее горное дело, тяжёлая броня, огонь и кузни.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "obsidianovyi-skorpion",
       "version": 1,
       "maxHp": 4860,
@@ -30198,7 +30619,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 40200,
+        "xpReward": 40365,
+        "grantsXp": true,
         "goldRewardMin": 133,
         "goldRewardMax": 179,
         "lootTableId": "LOOT_BLACKSTONE_HIGHLANDS_OBSIDIANOVYI_SKORPION_L32",
@@ -30236,6 +30658,7 @@
       "level": 32,
       "description": "Хранитель разлома. отражения, мана, щиты и зеркальная магия.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "enemy-khranitel-razloma",
       "version": 1,
       "maxHp": 7535,
@@ -30278,7 +30701,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 54270,
+        "xpReward": 70638,
+        "grantsXp": true,
         "goldRewardMin": 166,
         "goldRewardMax": 224,
         "lootTableId": "LOOT_SHATTERED_LANDS_KHRANITEL_RAZLOMA_L32",
@@ -30322,6 +30746,7 @@
       "level": 32,
       "description": "Отражённый зверь. отражения, мана, щиты и зеркальная магия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "otrazhionnyi-zver",
       "version": 1,
       "maxHp": 4955,
@@ -30364,7 +30789,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 40200,
+        "xpReward": 40365,
+        "grantsXp": true,
         "goldRewardMin": 133,
         "goldRewardMax": 179,
         "lootTableId": "LOOT_SHATTERED_LANDS_OTRAZHIONNYI_ZVER_L32",
@@ -30408,6 +30834,7 @@
       "level": 33,
       "description": "Костяной исполин. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kostianoi-ispolin",
       "version": 1,
       "maxHp": 5140,
@@ -30450,7 +30877,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 42800,
+        "xpReward": 42929,
+        "grantsXp": true,
         "goldRewardMin": 139,
         "goldRewardMax": 189,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_KOSTIANOI_ISPOLIN_L33",
@@ -30494,6 +30922,7 @@
       "level": 33,
       "description": "Костяной рыцарь. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kostianoi-rytsar",
       "version": 1,
       "maxHp": 5140,
@@ -30536,7 +30965,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 42800,
+        "xpReward": 42929,
+        "grantsXp": true,
         "goldRewardMin": 139,
         "goldRewardMax": 189,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_KOSTIANOI_RYTSAR_L33",
@@ -30580,6 +31010,7 @@
       "level": 33,
       "description": "Костяной шакал. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kostianoi-shakal",
       "version": 1,
       "maxHp": 5245,
@@ -30622,7 +31053,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 42800,
+        "xpReward": 42929,
+        "grantsXp": true,
         "goldRewardMin": 139,
         "goldRewardMax": 189,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_KOSTIANOI_SHAKAL_L33",
@@ -30666,6 +31098,7 @@
       "level": 34,
       "description": "Каменное чудовище. позднее горное дело, тяжёлая броня, огонь и кузни.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kamennoe-chudovishche",
       "version": 1,
       "maxHp": 6395,
@@ -30708,7 +31141,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 45400,
+        "xpReward": 45343,
+        "grantsXp": true,
         "goldRewardMin": 146,
         "goldRewardMax": 198,
         "lootTableId": "LOOT_BLACKSTONE_HIGHLANDS_KAMENNOE_CHUDOVISHCHE_L34",
@@ -30752,6 +31186,7 @@
       "level": 34,
       "description": "Пиромант нагорья. позднее горное дело, тяжёлая броня, огонь и кузни.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "piromant-nagoria",
       "version": 1,
       "maxHp": 4985,
@@ -30794,7 +31229,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 45400,
+        "xpReward": 45343,
+        "grantsXp": true,
         "goldRewardMin": 146,
         "goldRewardMax": 198,
         "lootTableId": "LOOT_BLACKSTONE_HIGHLANDS_PIROMANT_NAGORIA_L34",
@@ -30838,6 +31274,7 @@
       "level": 34,
       "description": "Рунный голем. позднее горное дело, тяжёлая броня, огонь и кузни.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "runnyi-golem",
       "version": 1,
       "maxHp": 9915,
@@ -30880,7 +31317,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 61290,
+        "xpReward": 79350,
+        "grantsXp": true,
         "goldRewardMin": 183,
         "goldRewardMax": 247,
         "lootTableId": "LOOT_BLACKSTONE_HIGHLANDS_RUNNYI_GOLEM_L34",
@@ -30930,6 +31368,7 @@
       "level": 34,
       "description": "Страж Чёрного перевала. позднее горное дело, тяжёлая броня, огонь и кузни.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "strazh-chiornogo-perevala",
       "version": 1,
       "maxHp": 9915,
@@ -30972,7 +31411,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 61290,
+        "xpReward": 79350,
+        "grantsXp": true,
         "goldRewardMin": 183,
         "goldRewardMax": 247,
         "lootTableId": "LOOT_BLACKSTONE_HIGHLANDS_STRAZH_CHIORNOGO_PEREVALA_L34",
@@ -31022,6 +31462,7 @@
       "level": 34,
       "description": "Багровая гарпия. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "bagrovaia-garpiia",
       "version": 1,
       "maxHp": 4880,
@@ -31064,7 +31505,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 45400,
+        "xpReward": 45343,
+        "grantsXp": true,
         "goldRewardMin": 146,
         "goldRewardMax": 198,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_BAGROVAIA_GARPIIA_L34",
@@ -31114,6 +31556,7 @@
       "level": 34,
       "description": "Багровый культист. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "bagrovyi-kultist",
       "version": 1,
       "maxHp": 4985,
@@ -31156,7 +31599,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 45400,
+        "xpReward": 45343,
+        "grantsXp": true,
         "goldRewardMin": 146,
         "goldRewardMax": 198,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_BAGROVYI_KULTIST_L34",
@@ -31200,6 +31644,7 @@
       "level": 34,
       "description": "Чумной жрец. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "chumnoi-zhrets",
       "version": 1,
       "maxHp": 4985,
@@ -31242,7 +31687,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 45400,
+        "xpReward": 45343,
+        "grantsXp": true,
         "goldRewardMin": 146,
         "goldRewardMax": 198,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_CHUMNOI_ZHRETS_L34",
@@ -31292,6 +31738,7 @@
       "level": 34,
       "description": "Падальщик. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "padalshchik",
       "version": 1,
       "maxHp": 4880,
@@ -31334,7 +31781,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 45400,
+        "xpReward": 45343,
+        "grantsXp": true,
         "goldRewardMin": 146,
         "goldRewardMax": 198,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_PADALSHCHIK_L34",
@@ -31378,6 +31826,7 @@
       "level": 34,
       "description": "Теневой некромант. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "tenevoi-nekromant",
       "version": 1,
       "maxHp": 4985,
@@ -31420,7 +31869,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 45400,
+        "xpReward": 45343,
+        "grantsXp": true,
         "goldRewardMin": 146,
         "goldRewardMax": 198,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_TENEVOI_NEKROMANT_L34",
@@ -31464,6 +31914,7 @@
       "level": 35,
       "description": "Чернокаменный громила. позднее горное дело, тяжёлая броня, огонь и кузни.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "chernokamennyi-gromila",
       "version": 1,
       "maxHp": 5700,
@@ -31506,7 +31957,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 48000,
+        "xpReward": 47619,
+        "grantsXp": true,
         "goldRewardMin": 153,
         "goldRewardMax": 207,
         "lootTableId": "LOOT_BLACKSTONE_HIGHLANDS_CHERNOKAMENNYI_GROMILA_L35",
@@ -31550,6 +32002,7 @@
       "level": 35,
       "description": "Ходячий мертвец. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "khodiachii-mertvets",
       "version": 1,
       "maxHp": 5700,
@@ -31592,7 +32045,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 48000,
+        "xpReward": 47619,
+        "grantsXp": true,
         "goldRewardMin": 153,
         "goldRewardMax": 207,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_KHODIACHII_MERTVETS_L35",
@@ -31636,6 +32090,7 @@
       "level": 35,
       "description": "Костяной великан. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kostianoi-velikan",
       "version": 1,
       "maxHp": 5700,
@@ -31678,7 +32133,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 48000,
+        "xpReward": 47619,
+        "grantsXp": true,
         "goldRewardMin": 153,
         "goldRewardMax": 207,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_KOSTIANOI_VELIKAN_L35",
@@ -31722,6 +32178,7 @@
       "level": 35,
       "description": "Пожиратель душ. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pozhiratel-dush",
       "version": 1,
       "maxHp": 5700,
@@ -31764,7 +32221,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 48000,
+        "xpReward": 47619,
+        "grantsXp": true,
         "goldRewardMin": 153,
         "goldRewardMax": 207,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_POZHIRATEL_DUSH_L35",
@@ -31808,6 +32266,7 @@
       "level": 36,
       "description": "Чумной слуга. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "chumnoi-sluga",
       "version": 1,
       "maxHp": 6040,
@@ -31850,7 +32309,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 51400,
+        "xpReward": 51376,
+        "grantsXp": true,
         "goldRewardMin": 162,
         "goldRewardMax": 218,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_CHUMNOI_SLUGA_L36",
@@ -31894,6 +32354,7 @@
       "level": 36,
       "description": "Кладбищенский аколит. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kladbishchenskii-akolit",
       "version": 1,
       "maxHp": 5555,
@@ -31936,7 +32397,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 51400,
+        "xpReward": 51376,
+        "grantsXp": true,
         "goldRewardMin": 162,
         "goldRewardMax": 218,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_KLADBISHCHENSKII_AKOLIT_L36",
@@ -31980,6 +32442,7 @@
       "level": 36,
       "description": "Разложившийся пехотинец. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "razlozhivshiisia-pekhotinets",
       "version": 1,
       "maxHp": 6040,
@@ -32022,7 +32485,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 51400,
+        "xpReward": 51376,
+        "grantsXp": true,
         "goldRewardMin": 162,
         "goldRewardMax": 218,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_RAZLOZHIVSHIISIA_PEKHOTINETS_L36",
@@ -32066,6 +32530,7 @@
       "level": 36,
       "description": "Скелет-лучник. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "skelet-luchnik",
       "version": 1,
       "maxHp": 5435,
@@ -32108,7 +32573,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 51400,
+        "xpReward": 51376,
+        "grantsXp": true,
         "goldRewardMin": 162,
         "goldRewardMax": 218,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_SKELET_LUCHNIK_L36",
@@ -32152,6 +32618,7 @@
       "level": 36,
       "description": "Скелет-мечник. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "skelet-mechnik",
       "version": 1,
       "maxHp": 6040,
@@ -32194,7 +32661,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 51400,
+        "xpReward": 51376,
+        "grantsXp": true,
         "goldRewardMin": 162,
         "goldRewardMax": 218,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_SKELET_MECHNIK_L36",
@@ -32238,6 +32706,7 @@
       "level": 36,
       "description": "Обсидиановый гончий. преддверие Чёрного Бастиона и финальная открытого мира-подготовка.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "obsidianovyi-gonchii",
       "version": 1,
       "maxHp": 6160,
@@ -32280,7 +32749,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 51400,
+        "xpReward": 51376,
+        "grantsXp": true,
         "goldRewardMin": 162,
         "goldRewardMax": 218,
         "lootTableId": "LOOT_OBSIDIAN_EDGE_OBSIDIANOVYI_GONCHII_L36",
@@ -32324,6 +32794,7 @@
       "level": 36,
       "description": "Пепельный рыцарь. преддверие Чёрного Бастиона и финальная открытого мира-подготовка.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pepelnyi-rytsar",
       "version": 1,
       "maxHp": 6040,
@@ -32366,7 +32837,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 51400,
+        "xpReward": 51376,
+        "grantsXp": true,
         "goldRewardMin": 162,
         "goldRewardMax": 218,
         "lootTableId": "LOOT_OBSIDIAN_EDGE_PEPELNYI_RYTSAR_L36",
@@ -32416,6 +32888,7 @@
       "level": 37,
       "description": "Безымянный маршал. нежить, души, проклятия и некромантия.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "bezymiannyi-marshal",
       "version": 1,
       "maxHp": 9890,
@@ -32458,7 +32931,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 73980,
+        "xpReward": 96018,
+        "grantsXp": true,
         "goldRewardMin": 212,
         "goldRewardMax": 288,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_BEZYMIANNYI_MARSHAL_L37",
@@ -32502,6 +32976,7 @@
       "level": 37,
       "description": "Чумной магистр. нежить, души, проклятия и некромантия.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "chumnoi-magistr",
       "version": 1,
       "maxHp": 9100,
@@ -32544,7 +33019,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 73980,
+        "xpReward": 96018,
+        "grantsXp": true,
         "goldRewardMin": 212,
         "goldRewardMax": 288,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_CHUMNOI_MAGISTR_L37",
@@ -32588,6 +33064,7 @@
       "level": 37,
       "description": "Костяной надсмотрщик. нежить, души, проклятия и некромантия.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kostianoi-nadsmotrshchik",
       "version": 1,
       "maxHp": 9890,
@@ -32630,7 +33107,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 73980,
+        "xpReward": 96018,
+        "grantsXp": true,
         "goldRewardMin": 212,
         "goldRewardMax": 288,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_KOSTIANOI_NADSMOTRSHCHIK_L37",
@@ -32674,6 +33152,7 @@
       "level": 37,
       "description": "Костяной пёс. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "kostianoi-pios",
       "version": 1,
       "maxHp": 6510,
@@ -32716,7 +33195,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 54800,
+        "xpReward": 54867,
+        "grantsXp": true,
         "goldRewardMin": 170,
         "goldRewardMax": 230,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_KOSTIANOI_PIOS_L37",
@@ -32760,6 +33240,7 @@
       "level": 37,
       "description": "Мертвенный рыцарь. нежить, души, проклятия и некромантия.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "mertvennyi-rytsar",
       "version": 1,
       "maxHp": 9890,
@@ -32802,7 +33283,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 73980,
+        "xpReward": 96018,
+        "grantsXp": true,
         "goldRewardMin": 212,
         "goldRewardMax": 288,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_MERTVENNYI_RYTSAR_L37",
@@ -32846,6 +33328,7 @@
       "level": 37,
       "description": "Погребальный страж. нежить, души, проклятия и некромантия.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pogrebalnyi-strazh",
       "version": 1,
       "maxHp": 7530,
@@ -32888,7 +33371,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 54800,
+        "xpReward": 54867,
+        "grantsXp": true,
         "goldRewardMin": 170,
         "goldRewardMax": 230,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_POGREBALNYI_STRAZH_L37",
@@ -32932,6 +33416,7 @@
       "level": 37,
       "description": "Предвестник пустоши. нежить, души, проклятия и некромантия.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "predvestnik-pustoshi",
       "version": 1,
       "maxHp": 9890,
@@ -32974,7 +33459,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 73980,
+        "xpReward": 96018,
+        "grantsXp": true,
         "goldRewardMin": 212,
         "goldRewardMax": 288,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_PREDVESTNIK_PUSTOSHI_L37",
@@ -33018,6 +33504,7 @@
       "level": 37,
       "description": "Инквизитор Бастиона. преддверие Чёрного Бастиона и финальная открытого мира-подготовка.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "inkvizitor-bastiona",
       "version": 1,
       "maxHp": 6380,
@@ -33060,7 +33547,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 54800,
+        "xpReward": 54867,
+        "grantsXp": true,
         "goldRewardMin": 170,
         "goldRewardMax": 230,
         "lootTableId": "LOOT_OBSIDIAN_EDGE_INKVIZITOR_BASTIONA_L37",
@@ -33104,6 +33592,7 @@
       "level": 37,
       "description": "Рунный разрушитель. преддверие Чёрного Бастиона и финальная открытого мира-подготовка.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "runnyi-razrushitel",
       "version": 1,
       "maxHp": 7530,
@@ -33146,7 +33635,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 54800,
+        "xpReward": 54867,
+        "grantsXp": true,
         "goldRewardMin": 170,
         "goldRewardMax": 230,
         "lootTableId": "LOOT_OBSIDIAN_EDGE_RUNNYI_RAZRUSHITEL_L37",
@@ -33190,6 +33680,7 @@
       "level": 37,
       "description": "Стрелок Бастиона. преддверие Чёрного Бастиона и финальная открытого мира-подготовка.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "strelok-bastiona",
       "version": 1,
       "maxHp": 5740,
@@ -33232,7 +33723,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 54800,
+        "xpReward": 54867,
+        "grantsXp": true,
         "goldRewardMin": 170,
         "goldRewardMax": 230,
         "lootTableId": "LOOT_OBSIDIAN_EDGE_STRELOK_BASTIONA_L37",
@@ -33282,6 +33774,7 @@
       "level": 38,
       "description": "Могильный колдун. нежить, души, проклятия и некромантия.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "mogilnyi-koldun",
       "version": 1,
       "maxHp": 10415,
@@ -33324,7 +33817,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 78570,
+        "xpReward": 101709,
+        "grantsXp": true,
         "goldRewardMin": 223,
         "goldRewardMax": 302,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_MOGILNYI_KOLDUN_L38",
@@ -33368,6 +33862,7 @@
       "level": 38,
       "description": "Погребальная банши. нежить, души, проклятия и некромантия.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pogrebalnaia-banshi",
       "version": 1,
       "maxHp": 9585,
@@ -33410,7 +33905,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 78570,
+        "xpReward": 101709,
+        "grantsXp": true,
         "goldRewardMin": 223,
         "goldRewardMax": 302,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_POGREBALNAIA_BANSHI_L38",
@@ -33454,6 +33950,7 @@
       "level": 38,
       "description": "Владыка склепа. нежить, души, проклятия и некромантия.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "vladyka-sklepa",
       "version": 1,
       "maxHp": 10415,
@@ -33496,7 +33993,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 78570,
+        "xpReward": 101709,
+        "grantsXp": true,
         "goldRewardMin": 223,
         "goldRewardMax": 302,
         "lootTableId": "LOOT_CRIMSON_WASTELAND_VLADYKA_SKLEPA_L38",
@@ -33540,6 +34038,7 @@
       "level": 38,
       "description": "Призрачный знаменосец. преддверие Чёрного Бастиона и финальная открытого мира-подготовка.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "prizrachnyi-znamenosets",
       "version": 1,
       "maxHp": 6180,
@@ -33582,7 +34081,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 58200,
+        "xpReward": 58120,
+        "grantsXp": true,
         "goldRewardMin": 178,
         "goldRewardMax": 241,
         "lootTableId": "LOOT_OBSIDIAN_EDGE_PRIZRACHNYI_ZNAMENOSETS_L38",
@@ -33626,6 +34126,7 @@
       "level": 39,
       "description": "Чёрный голем. преддверие Чёрного Бастиона и финальная открытого мира-подготовка.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "chiornyi-golem",
       "version": 1,
       "maxHp": 12915,
@@ -33668,7 +34169,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 83160,
+        "xpReward": 107025,
+        "grantsXp": true,
         "goldRewardMin": 234,
         "goldRewardMax": 316,
         "lootTableId": "LOOT_OBSIDIAN_EDGE_CHIORNYI_GOLEM_L39",
@@ -33712,6 +34214,7 @@
       "level": 39,
       "description": "Магистр Бастиона. преддверие Чёрного Бастиона и финальная открытого мира-подготовка.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "magistr-bastiona",
       "version": 1,
       "maxHp": 10070,
@@ -33754,7 +34257,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 83160,
+        "xpReward": 107025,
+        "grantsXp": true,
         "goldRewardMin": 234,
         "goldRewardMax": 316,
         "lootTableId": "LOOT_OBSIDIAN_EDGE_MAGISTR_BASTIONA_L39",
@@ -33804,6 +34308,7 @@
       "level": 39,
       "description": "Предвестник Первого Стража. преддверие Чёрного Бастиона и финальная открытого мира-подготовка.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "predvestnik-pervogo-strazha",
       "version": 1,
       "maxHp": 12915,
@@ -33846,7 +34351,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 83160,
+        "xpReward": 107025,
+        "grantsXp": true,
         "goldRewardMin": 234,
         "goldRewardMax": 316,
         "lootTableId": "LOOT_OBSIDIAN_EDGE_PREDVESTNIK_PERVOGO_STRAZHA_L39",
@@ -33890,6 +34396,7 @@
       "level": 39,
       "description": "Страж врат. преддверие Чёрного Бастиона и финальная открытого мира-подготовка.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "strazh-vrat",
       "version": 1,
       "maxHp": 8330,
@@ -33932,7 +34439,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 61600,
+        "xpReward": 61157,
+        "grantsXp": true,
         "goldRewardMin": 187,
         "goldRewardMax": 253,
         "lootTableId": "LOOT_OBSIDIAN_EDGE_STRAZH_VRAT_L39",
@@ -33970,6 +34478,7 @@
       "level": 40,
       "description": "Пробуждённый Арк-Тором страж без отдельной награды.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "runnyi-koloss-ark-tor",
       "version": 1,
       "maxHp": 11000,
@@ -34095,6 +34604,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -34112,6 +34622,7 @@
       "level": 40,
       "description": "Приоритетная цель, прерываемо лечащая Маршала.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "inkvizitor-seira",
       "version": 1,
       "maxHp": 7500,
@@ -34237,6 +34748,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -34254,6 +34766,7 @@
       "level": 40,
       "description": "Подкрепление Маршала без отдельной награды.",
       "rank": "Normal",
+      "balanceArchetypeId": "STANDARD",
       "artId": "soldat-zatmeniia",
       "version": 1,
       "maxHp": 9000,
@@ -34379,6 +34892,7 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,
@@ -34396,6 +34910,7 @@
       "level": 40,
       "description": "Бастионный палач — противник контента «Чёрный Бастион».",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "bastionnyi-palach",
       "version": 1,
       "maxHp": 11470,
@@ -34438,7 +34953,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 87750,
+        "xpReward": 112000,
+        "grantsXp": true,
         "goldRewardMin": 244,
         "goldRewardMax": 331,
         "lootTableId": "LOOT_BLACK_BASTION_BASTIONNYI_PALACH_L40",
@@ -34481,6 +34997,7 @@
       "level": 40,
       "description": "Тёмная инквизиторша, защищающая и возвращающая в бой своего Палача.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "inkvizitor-seira",
       "version": 2,
       "maxHp": 90000,
@@ -34617,7 +35134,8 @@
                   "onExpireActions": null,
                   "displayName": "Чёрный оберег",
                   "description": "Тёмный щит поглощает входящий урон.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -34719,7 +35237,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 272025,
+        "xpReward": 288000,
+        "grantsXp": true,
         "goldRewardMin": 948,
         "goldRewardMax": 1282,
         "lootTableId": "LOOT_BLACK_BASTION_BOSS_INKVIZITOR_SEIRA_L40",
@@ -34872,6 +35391,7 @@
       "level": 40,
       "description": "Комендант Чёрного Бастиона, давящий группу рассечениями, чёрным пламенем и оглушающими ударами.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "komendant-vrat-ragnor",
       "version": 2,
       "maxHp": 85000,
@@ -35031,7 +35551,8 @@
                   "onExpireActions": null,
                   "displayName": "Чёрное воспламенение",
                   "description": "Чёрное пламя обжигает цель и усиливает входящий урон.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -35074,7 +35595,8 @@
                   "onExpireActions": null,
                   "displayName": "Чёрное воспламенение",
                   "description": "Входящий урон увеличен на 15%.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -35117,7 +35639,8 @@
                   "onExpireActions": null,
                   "displayName": "Чёрное воспламенение",
                   "description": "Цель временно теряет контроль над действиями.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -35222,7 +35745,8 @@
                   "onExpireActions": null,
                   "displayName": "Сотрясение врат",
                   "description": "Короткое оглушение от сокрушительного удара.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -35339,7 +35863,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 248625,
+        "xpReward": 288000,
+        "grantsXp": true,
         "goldRewardMin": 880,
         "goldRewardMax": 1189,
         "lootTableId": "LOOT_BLACK_BASTION_BOSS_KOMENDANT_VRAT_RAGNOR_L40",
@@ -35492,6 +36017,7 @@
       "level": 40,
       "description": "Магистр разрушительной звёздной магии, отмечающий игроков живой бомбой.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "magistr-chiornoi-zvezdy",
       "version": 2,
       "maxHp": 115000,
@@ -35611,7 +36137,8 @@
                   "onExpireActions": null,
                   "displayName": "Горение маны",
                   "description": "Магический эффект можно рассеять.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -35837,7 +36364,8 @@
                   ],
                   "displayName": "Живая Чёрная Звезда",
                   "description": "По окончании наносит большой урон владельцу и всей группе.",
-                  "iconId": "mage-pyroblast"
+                  "iconId": "mage-pyroblast",
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -35954,7 +36482,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 342225,
+        "xpReward": 288000,
+        "grantsXp": true,
         "goldRewardMin": 1154,
         "goldRewardMax": 1559,
         "lootTableId": "LOOT_BLACK_BASTION_BOSS_MAGISTR_CHIORNOI_ZVEZDY_L40",
@@ -36203,6 +36732,7 @@
       "level": 40,
       "description": "Полевой командир, зовущий резервистов и лекаря, когда бой складывается не в его пользу.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "marshal-pepelnogo-znameni",
       "version": 2,
       "maxHp": 105000,
@@ -36278,7 +36808,8 @@
                   "onExpireActions": null,
                   "displayName": "Пепельный шквал",
                   "description": "Скорость атак увеличена на 30%.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -36361,7 +36892,8 @@
                   "onExpireActions": null,
                   "displayName": "Ярость Маршала",
                   "description": "Урон увеличен на 20%.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -36404,7 +36936,8 @@
                   "onExpireActions": null,
                   "displayName": "Ярость Маршала",
                   "description": "Скорость атак увеличена на 20%.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -36509,7 +37042,8 @@
                   "onExpireActions": null,
                   "displayName": "Разрушение брони",
                   "description": "Броня снижена; эффект суммируется до пяти раз.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -36611,7 +37145,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 318824,
+        "xpReward": 288000,
+        "grantsXp": true,
         "goldRewardMin": 1085,
         "goldRewardMax": 1467,
         "lootTableId": "LOOT_BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40",
@@ -36764,6 +37299,7 @@
       "level": 40,
       "description": "Первый Страж Бастиона, сочетающий тяжёлые серии ударов, клейма и защитный аватар.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pervyi-strazh-mor-kar",
       "version": 2,
       "maxHp": 130000,
@@ -36862,7 +37398,8 @@
                   "onExpireActions": null,
                   "displayName": "Длань Первого Стража",
                   "description": "Цель оглушена.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -37051,7 +37588,8 @@
                   "onExpireActions": null,
                   "displayName": "Аватар Чёрного Бастиона",
                   "description": "Сопротивление магии резко повышено.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -37094,7 +37632,8 @@
                   "onExpireActions": null,
                   "displayName": "Аватар Чёрного Бастиона",
                   "description": "Атаки усилены энергией Бастиона.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -37137,7 +37676,8 @@
                   "onExpireActions": null,
                   "displayName": "Аватар Чёрного Бастиона",
                   "description": "Скорость атак увеличена на 15%.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -37242,7 +37782,8 @@
                   "onExpireActions": null,
                   "displayName": "Клеймо Стража",
                   "description": "Броня снижена; эффект суммируется до пяти раз.",
-                  "iconId": null
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
                 },
                 "canMiss": true,
                 "canCrit": true,
@@ -37374,7 +37915,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 365625,
+        "xpReward": 288000,
+        "grantsXp": true,
         "goldRewardMin": 1222,
         "goldRewardMax": 1652,
         "lootTableId": "LOOT_BLACK_BASTION_BOSS_PERVYI_STRAZH_MOR_KAR_L40",
@@ -37534,6 +38076,7 @@
       "level": 40,
       "description": "Рунный исполин, постепенно пробуждающий каменных хранителей зала.",
       "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
       "artId": "runnyi-koloss-ark-tor",
       "version": 2,
       "maxHp": 100000,
@@ -37658,7 +38201,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 295425,
+        "xpReward": 288000,
+        "grantsXp": true,
         "goldRewardMin": 1017,
         "goldRewardMax": 1374,
         "lootTableId": "LOOT_BLACK_BASTION_BOSS_RUNNYI_KOLOSS_ARK_TOR_L40",
@@ -37907,6 +38451,7 @@
       "level": 40,
       "description": "Чёрный инквизитор — противник контента «Чёрный Бастион».",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "chiornyi-inkvizitor",
       "version": 1,
       "maxHp": 11470,
@@ -37949,7 +38494,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 87750,
+        "xpReward": 112000,
+        "grantsXp": true,
         "goldRewardMin": 244,
         "goldRewardMax": 331,
         "lootTableId": "LOOT_BLACK_BASTION_CHIORNYI_INKVIZITOR_L40",
@@ -37992,6 +38538,7 @@
       "level": 40,
       "description": "Обсидиановая гончая — противник контента «Чёрный Бастион».",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "obsidianovaia-gonchaia",
       "version": 1,
       "maxHp": 11700,
@@ -38034,7 +38581,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 87750,
+        "xpReward": 112000,
+        "grantsXp": true,
         "goldRewardMin": 244,
         "goldRewardMax": 331,
         "lootTableId": "LOOT_BLACK_BASTION_OBSIDIANOVAIA_GONCHAIA_L40",
@@ -38077,6 +38625,7 @@
       "level": 40,
       "description": "Пепельный рыцарь — противник контента «Чёрный Бастион».",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "pepelnyi-rytsar",
       "version": 1,
       "maxHp": 11470,
@@ -38119,7 +38668,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 87750,
+        "xpReward": 112000,
+        "grantsXp": true,
         "goldRewardMin": 244,
         "goldRewardMax": 331,
         "lootTableId": "LOOT_BLACK_BASTION_PEPELNYI_RYTSAR_L40",
@@ -38162,6 +38712,7 @@
       "level": 40,
       "description": "Призрачный знаменосец — противник контента «Чёрный Бастион».",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "prizrachnyi-znamenosets",
       "version": 1,
       "maxHp": 11470,
@@ -38204,7 +38755,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 87750,
+        "xpReward": 112000,
+        "grantsXp": true,
         "goldRewardMin": 244,
         "goldRewardMax": 331,
         "lootTableId": "LOOT_BLACK_BASTION_PRIZRACHNYI_ZNAMENOSETS_L40",
@@ -38247,6 +38799,7 @@
       "level": 40,
       "description": "Рунный разрушитель — противник контента «Чёрный Бастион».",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "runnyi-razrushitel",
       "version": 1,
       "maxHp": 13535,
@@ -38289,7 +38842,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 87750,
+        "xpReward": 112000,
+        "grantsXp": true,
         "goldRewardMin": 244,
         "goldRewardMax": 331,
         "lootTableId": "LOOT_BLACK_BASTION_RUNNYI_RAZRUSHITEL_L40",
@@ -38332,6 +38886,7 @@
       "level": 40,
       "description": "Бастионный палач. преддверие Чёрного Бастиона и финальная открытого мира-подготовка.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "bastionnyi-palach",
       "version": 1,
       "maxHp": 11470,
@@ -38374,7 +38929,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 87750,
+        "xpReward": 112000,
+        "grantsXp": true,
         "goldRewardMin": 244,
         "goldRewardMax": 331,
         "lootTableId": "LOOT_OBSIDIAN_EDGE_BASTIONNYI_PALACH_L40",
@@ -38418,6 +38974,7 @@
       "level": 40,
       "description": "Обсидиановый часовой. преддверие Чёрного Бастиона и финальная открытого мира-подготовка.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "obsidianovyi-chasovoi",
       "version": 1,
       "maxHp": 11470,
@@ -38460,7 +39017,8 @@
         "maxActiveSummons": 0
       },
       "rewards": {
-        "xpReward": 87750,
+        "xpReward": 112000,
+        "grantsXp": true,
         "goldRewardMin": 244,
         "goldRewardMax": 331,
         "lootTableId": "LOOT_OBSIDIAN_EDGE_OBSIDIANOVYI_CHASOVOI_L40",
@@ -38504,6 +39062,7 @@
       "level": 40,
       "description": "Связанный с Сейрой защитник без отдельной награды.",
       "rank": "Elite",
+      "balanceArchetypeId": "STANDARD",
       "artId": "alebardshchik-bastiona",
       "version": 1,
       "maxHp": 24000,
@@ -38629,6 +39188,473 @@
       },
       "rewards": {
         "xpReward": 0,
+        "grantsXp": false,
+        "goldRewardMin": 0,
+        "goldRewardMax": 0,
+        "lootTableId": null,
+        "lootTable": null
+      },
+      "appearsIn": {
+        "worldLocationIds": [],
+        "dungeonEncounters": []
+      }
+    },
+    {
+      "id": "WORLD_BOSS_ASH_ARCHON_L60",
+      "name": "Архон Пепла",
+      "internalName": "Архон Пепла",
+      "level": 60,
+      "description": "Мировой босс 60 уровня. Его здоровье общее для всех одновременно идущих боёв.",
+      "rank": "Boss",
+      "balanceArchetypeId": "STANDARD",
+      "artId": "namestnik-tsitadeli",
+      "version": 2,
+      "maxHp": 1000000,
+      "stats": {
+        "level": 60,
+        "accuracy": 108,
+        "dodge": 8,
+        "criticalChance": 15,
+        "criticalDamage": 1,
+        "armor": 550,
+        "magicResistance": 575,
+        "armorPenetration": 0.08,
+        "magicPenetration": 0.1,
+        "attackPower": 375,
+        "spellPower": 575,
+        "blockChance": 0,
+        "blockValueMin": 0,
+        "blockValueMax": 0
+      },
+      "combat": {
+        "autoAttackInterval": "00:00:02.4000000",
+        "autoAttackBaseDamage": 410,
+        "autoAttackBaseDamageMin": 370,
+        "autoAttackBaseDamageMax": 450,
+        "autoAttackAttackPowerCoefficient": 0.45
+      },
+      "abilityIds": [
+        "ARCHON_DEAD_STAR_BRAND",
+        "ARCHON_ECLIPSE_ASH",
+        "ARCHON_STAR_FRACTURE",
+        "ARCHON_DEAD_STAR_COLLAPSE"
+      ],
+      "abilities": [
+        {
+          "id": "ARCHON_DEAD_STAR_BRAND",
+          "found": true,
+          "definition": {
+            "id": "ARCHON_DEAD_STAR_BRAND",
+            "type": "Instant",
+            "targetType": "SingleEnemy",
+            "resourceCost": 0,
+            "cooldown": "00:00:07",
+            "castTime": "00:00:00",
+            "usesGlobalCooldown": false,
+            "globalCooldownCategory": "None",
+            "isSpell": true,
+            "school": "SHADOW",
+            "interruptible": false,
+            "allowSelfTarget": true,
+            "canUseWhileCasting": false,
+            "canUseWhileSilenced": false,
+            "actions": [
+              {
+                "type": "Damage",
+                "amount": 116,
+                "damageType": "Magical",
+                "effect": null,
+                "canMiss": true,
+                "canCrit": true,
+                "canDodge": false,
+                "attackPowerCoefficient": 0,
+                "duration": null,
+                "armorPenetrationBonus": 0,
+                "spellPowerCoefficient": 0.8,
+                "damagePerCharacterLevel": 0,
+                "isUnblockable": false,
+                "blockValueCoefficient": 0,
+                "healingCanCrit": false,
+                "resourceTarget": "Caster",
+                "dispelCategory": null,
+                "delay": null,
+                "interruptLockout": null,
+                "lifestealPercent": 0
+              },
+              {
+                "type": "ApplyEffect",
+                "amount": 0,
+                "damageType": "Physical",
+                "effect": {
+                  "id": "ARCHON_DEAD_STAR_BRAND_HEALING",
+                  "kind": "StatModifier",
+                  "duration": "00:00:08",
+                  "maxStacks": 1,
+                  "stackPolicy": "Refresh",
+                  "magnitude": 0.85,
+                  "tickInterval": null,
+                  "applicationPriority": 0,
+                  "isDynamic": false,
+                  "dispelCategory": null,
+                  "version": 1,
+                  "modifiedStat": "HealingReceivedMultiplier",
+                  "modifierMode": "Multiplicative",
+                  "sourceSpecific": false,
+                  "periodicDamageType": "True",
+                  "reflectedDamageCap": null,
+                  "onExpireActions": null,
+                  "displayName": null,
+                  "description": null,
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
+                },
+                "canMiss": true,
+                "canCrit": true,
+                "canDodge": true,
+                "attackPowerCoefficient": 0,
+                "duration": null,
+                "armorPenetrationBonus": 0,
+                "spellPowerCoefficient": 0,
+                "damagePerCharacterLevel": 0,
+                "isUnblockable": false,
+                "blockValueCoefficient": 0,
+                "healingCanCrit": false,
+                "resourceTarget": "Caster",
+                "dispelCategory": null,
+                "delay": null,
+                "interruptLockout": null,
+                "lifestealPercent": 0
+              }
+            ],
+            "canUseWhileStunned": false,
+            "damageMultiplier": 1,
+            "accuracyBonus": 0,
+            "criticalChanceBonus": 0,
+            "criticalDamageBonus": 0,
+            "magicPenetrationBonus": 0,
+            "displayName": "Клеймо Погасшей Звезды",
+            "description": "Теневой удар, временно снижающий получаемое лечение.",
+            "iconId": "mage-arcane-power",
+            "targetCount": 0,
+            "targetSelectorProfile": "EncounterOrder",
+            "runtimeParameters": null,
+            "requiredActiveEffectId": null,
+            "freeResourceCostWhileEffectId": null,
+            "consumeEffectId": null,
+            "requiresWeapon": false,
+            "requiresMobility": false,
+            "canUseWhileFeared": false
+          }
+        },
+        {
+          "id": "ARCHON_ECLIPSE_ASH",
+          "found": true,
+          "definition": {
+            "id": "ARCHON_ECLIPSE_ASH",
+            "type": "Casted",
+            "targetType": "SingleEnemy",
+            "resourceCost": 0,
+            "cooldown": "00:00:09",
+            "castTime": "00:00:01.4000000",
+            "usesGlobalCooldown": false,
+            "globalCooldownCategory": "None",
+            "isSpell": true,
+            "school": "SHADOW",
+            "interruptible": true,
+            "allowSelfTarget": true,
+            "canUseWhileCasting": false,
+            "canUseWhileSilenced": false,
+            "actions": [
+              {
+                "type": "Damage",
+                "amount": 80,
+                "damageType": "Magical",
+                "effect": null,
+                "canMiss": true,
+                "canCrit": true,
+                "canDodge": false,
+                "attackPowerCoefficient": 0,
+                "duration": null,
+                "armorPenetrationBonus": 0,
+                "spellPowerCoefficient": 0.4,
+                "damagePerCharacterLevel": 0,
+                "isUnblockable": false,
+                "blockValueCoefficient": 0,
+                "healingCanCrit": false,
+                "resourceTarget": "Caster",
+                "dispelCategory": null,
+                "delay": null,
+                "interruptLockout": null,
+                "lifestealPercent": 0
+              },
+              {
+                "type": "ApplyEffect",
+                "amount": 0,
+                "damageType": "Physical",
+                "effect": {
+                  "id": "ARCHON_ECLIPSE_ASH_DOT",
+                  "kind": "DamageOverTime",
+                  "duration": "00:00:08",
+                  "maxStacks": 1,
+                  "stackPolicy": "Refresh",
+                  "magnitude": 40,
+                  "tickInterval": "00:00:02",
+                  "applicationPriority": 0,
+                  "isDynamic": false,
+                  "dispelCategory": null,
+                  "version": 1,
+                  "modifiedStat": null,
+                  "modifierMode": "Flat",
+                  "sourceSpecific": false,
+                  "periodicDamageType": "Magical",
+                  "reflectedDamageCap": null,
+                  "onExpireActions": null,
+                  "displayName": null,
+                  "description": null,
+                  "iconId": null,
+                  "resourceCostPerAbsorbedDamage": 0
+                },
+                "canMiss": true,
+                "canCrit": true,
+                "canDodge": true,
+                "attackPowerCoefficient": 0,
+                "duration": null,
+                "armorPenetrationBonus": 0,
+                "spellPowerCoefficient": 0,
+                "damagePerCharacterLevel": 0,
+                "isUnblockable": false,
+                "blockValueCoefficient": 0,
+                "healingCanCrit": false,
+                "resourceTarget": "Caster",
+                "dispelCategory": null,
+                "delay": null,
+                "interruptLockout": null,
+                "lifestealPercent": 0
+              }
+            ],
+            "canUseWhileStunned": false,
+            "damageMultiplier": 1,
+            "accuracyBonus": 0,
+            "criticalChanceBonus": 0,
+            "criticalDamageBonus": 0,
+            "magicPenetrationBonus": 0,
+            "displayName": "Пепел Затмения",
+            "description": "Прерываемое заклинание, оставляющее на цели пепельный урон со временем.",
+            "iconId": "mage-arcane-spark",
+            "targetCount": 0,
+            "targetSelectorProfile": "EncounterOrder",
+            "runtimeParameters": null,
+            "requiredActiveEffectId": null,
+            "freeResourceCostWhileEffectId": null,
+            "consumeEffectId": null,
+            "requiresWeapon": false,
+            "requiresMobility": false,
+            "canUseWhileFeared": false
+          }
+        },
+        {
+          "id": "ARCHON_STAR_FRACTURE",
+          "found": true,
+          "definition": {
+            "id": "ARCHON_STAR_FRACTURE",
+            "type": "Casted",
+            "targetType": "AllEnemiesInCombat",
+            "resourceCost": 0,
+            "cooldown": "00:00:12",
+            "castTime": "00:00:02.4000000",
+            "usesGlobalCooldown": false,
+            "globalCooldownCategory": "None",
+            "isSpell": true,
+            "school": "SHADOW",
+            "interruptible": true,
+            "allowSelfTarget": true,
+            "canUseWhileCasting": false,
+            "canUseWhileSilenced": false,
+            "actions": [
+              {
+                "type": "Damage",
+                "amount": 88,
+                "damageType": "Magical",
+                "effect": null,
+                "canMiss": true,
+                "canCrit": true,
+                "canDodge": false,
+                "attackPowerCoefficient": 0,
+                "duration": null,
+                "armorPenetrationBonus": 0,
+                "spellPowerCoefficient": 0.8,
+                "damagePerCharacterLevel": 0,
+                "isUnblockable": false,
+                "blockValueCoefficient": 0,
+                "healingCanCrit": false,
+                "resourceTarget": "Caster",
+                "dispelCategory": null,
+                "delay": null,
+                "interruptLockout": null,
+                "lifestealPercent": 0
+              }
+            ],
+            "canUseWhileStunned": false,
+            "damageMultiplier": 1,
+            "accuracyBonus": 0,
+            "criticalChanceBonus": 0,
+            "criticalDamageBonus": 0,
+            "magicPenetrationBonus": 0,
+            "displayName": "Звёздный раскол",
+            "description": "Прерываемый теневой удар по всей группе.",
+            "iconId": "mage-arcane-explosion",
+            "targetCount": 0,
+            "targetSelectorProfile": "EncounterOrder",
+            "runtimeParameters": null,
+            "requiredActiveEffectId": null,
+            "freeResourceCostWhileEffectId": null,
+            "consumeEffectId": null,
+            "requiresWeapon": false,
+            "requiresMobility": false,
+            "canUseWhileFeared": false
+          }
+        },
+        {
+          "id": "ARCHON_DEAD_STAR_COLLAPSE",
+          "found": true,
+          "definition": {
+            "id": "ARCHON_DEAD_STAR_COLLAPSE",
+            "type": "Casted",
+            "targetType": "AllEnemiesInCombat",
+            "resourceCost": 0,
+            "cooldown": "00:00:13",
+            "castTime": "00:00:03",
+            "usesGlobalCooldown": false,
+            "globalCooldownCategory": "None",
+            "isSpell": true,
+            "school": "SHADOW",
+            "interruptible": true,
+            "allowSelfTarget": true,
+            "canUseWhileCasting": false,
+            "canUseWhileSilenced": false,
+            "actions": [
+              {
+                "type": "Damage",
+                "amount": 186,
+                "damageType": "Magical",
+                "effect": null,
+                "canMiss": true,
+                "canCrit": true,
+                "canDodge": false,
+                "attackPowerCoefficient": 0,
+                "duration": null,
+                "armorPenetrationBonus": 0,
+                "spellPowerCoefficient": 1,
+                "damagePerCharacterLevel": 0,
+                "isUnblockable": false,
+                "blockValueCoefficient": 0,
+                "healingCanCrit": false,
+                "resourceTarget": "Caster",
+                "dispelCategory": null,
+                "delay": null,
+                "interruptLockout": null,
+                "lifestealPercent": 0
+              }
+            ],
+            "canUseWhileStunned": false,
+            "damageMultiplier": 1,
+            "accuracyBonus": 0,
+            "criticalChanceBonus": 0,
+            "criticalDamageBonus": 0,
+            "magicPenetrationBonus": 0,
+            "displayName": "Коллапс Погасшей Звезды",
+            "description": "Опасный прерываемый теневой коллапс по всей группе.",
+            "iconId": "mage-blast-wave",
+            "targetCount": 0,
+            "targetSelectorProfile": "EncounterOrder",
+            "runtimeParameters": null,
+            "requiredActiveEffectId": null,
+            "freeResourceCostWhileEffectId": null,
+            "consumeEffectId": null,
+            "requiresWeapon": false,
+            "requiresMobility": false,
+            "canUseWhileFeared": false
+          }
+        }
+      ],
+      "aiProfileId": "WORLD_BOSS_ASH_ARCHON_AI",
+      "aiProfile": {
+        "id": "WORLD_BOSS_ASH_ARCHON_AI",
+        "priorityAbilityIds": [
+          "ARCHON_DEAD_STAR_COLLAPSE",
+          "ARCHON_STAR_FRACTURE",
+          "ARCHON_ECLIPSE_ASH",
+          "ARCHON_DEAD_STAR_BRAND"
+        ],
+        "version": 1,
+        "abilityRules": [
+          {
+            "abilityId": "ARCHON_DEAD_STAR_COLLAPSE",
+            "priority": 400,
+            "minHpPercent": null,
+            "maxHpPercent": null,
+            "targetSelector": "EncounterOrder",
+            "oncePerCombat": false,
+            "initialDelay": null,
+            "cooldownJitter": null,
+            "requiredEffectId": null,
+            "forbiddenEffectId": null,
+            "targetMinHpPercent": null,
+            "targetMaxHpPercent": null
+          },
+          {
+            "abilityId": "ARCHON_STAR_FRACTURE",
+            "priority": 300,
+            "minHpPercent": null,
+            "maxHpPercent": null,
+            "targetSelector": "EncounterOrder",
+            "oncePerCombat": false,
+            "initialDelay": "00:00:06",
+            "cooldownJitter": null,
+            "requiredEffectId": null,
+            "forbiddenEffectId": null,
+            "targetMinHpPercent": null,
+            "targetMaxHpPercent": null
+          },
+          {
+            "abilityId": "ARCHON_ECLIPSE_ASH",
+            "priority": 200,
+            "minHpPercent": null,
+            "maxHpPercent": null,
+            "targetSelector": "RandomEnemy",
+            "oncePerCombat": false,
+            "initialDelay": null,
+            "cooldownJitter": null,
+            "requiredEffectId": null,
+            "forbiddenEffectId": null,
+            "targetMinHpPercent": null,
+            "targetMaxHpPercent": null
+          },
+          {
+            "abilityId": "ARCHON_DEAD_STAR_BRAND",
+            "priority": 100,
+            "minHpPercent": null,
+            "maxHpPercent": null,
+            "targetSelector": "CurrentThreatTarget",
+            "oncePerCombat": false,
+            "initialDelay": null,
+            "cooldownJitter": null,
+            "requiredEffectId": null,
+            "forbiddenEffectId": null,
+            "targetMinHpPercent": null,
+            "targetMaxHpPercent": null
+          }
+        ]
+      },
+      "summoning": {
+        "summonMonsterId": null,
+        "summonIntervalSeconds": 0,
+        "summonCount": 0,
+        "maxActiveSummons": 0
+      },
+      "rewards": {
+        "xpReward": 0,
+        "grantsXp": false,
         "goldRewardMin": 0,
         "goldRewardMax": 0,
         "lootTableId": null,

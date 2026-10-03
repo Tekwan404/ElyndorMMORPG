@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "contentVersion": "0.33.0",
-  "balanceVersion": "0.27.0",
-  "publishedAtUtc": "2026-09-27T18:00:00+00:00",
+  "contentVersion": "0.36.0",
+  "balanceVersion": "0.29.0",
+  "publishedAtUtc": "2026-10-03T08:47:00+00:00",
   "totals": {
     "locations": 21,
     "dungeons": 6
@@ -196,7 +196,7 @@
         "minimum": 1,
         "maximum": 20
       },
-      "description": "Порча, яд, чума и подготовка к подземелью 20 уровня. Визуальная тема: осквернённая чаща в стилистике Elyndor.",
+      "description": "Порча, яд, чума и подготовка к подземелью 20 уровня. Локация открыта для исследования независимо от выполнения контрактов.",
       "dangerLevel": "DANGEROUS",
       "artId": "oskvernionnaia-chashcha",
       "transitions": [
@@ -205,7 +205,7 @@
         "ASHEN_BORDER",
         "HEART_OF_BLIGHTED_GROVE"
       ],
-      "requiredContractId": "CONTRACT_BROODMOTHER_GATE",
+      "requiredContractId": null,
       "travelDurationSeconds": 0,
       "allowAfk": true,
       "encounters": [
@@ -981,6 +981,28 @@
       ]
     },
     {
+      "id": "SHATTERED_ORDER_CITADEL_TEST",
+      "name": "Обсерватория Погасшего Неба",
+      "level": 25,
+      "levelRange": {
+        "minimum": 1,
+        "maximum": 25
+      },
+      "description": "Подземелье 25 уровня в покинутой башне астромантов. Веллариус собирает силу погасших светил, а четыре хранителя обсерватории стерегут звёздное снаряжение.",
+      "dangerLevel": "SAFE",
+      "artId": "ancient-ruins",
+      "transitions": [
+        "BLIGHTED_GROVE"
+      ],
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "encounters": [],
+      "dungeonIds": [
+        "SHATTERED_ORDER_CITADEL_TEST"
+      ]
+    },
+    {
       "id": "STARTER_TOWN",
       "name": "Стартовый город",
       "level": 1,
@@ -1138,28 +1160,6 @@
         }
       ],
       "dungeonIds": []
-    },
-    {
-      "id": "SHATTERED_ORDER_CITADEL_TEST",
-      "name": "Обсерватория Погасшего Неба",
-      "level": 25,
-      "levelRange": {
-        "minimum": 25,
-        "maximum": 25
-      },
-      "description": "Подземелье 25 уровня в покинутой башне астромантов. Веллариус собирает силу погасших светил, а четыре хранителя обсерватории стерегут звёздное снаряжение.",
-      "dangerLevel": "SAFE",
-      "artId": "ancient-ruins",
-      "transitions": [
-        "BLIGHTED_GROVE"
-      ],
-      "requiredContractId": null,
-      "travelDurationSeconds": 0,
-      "allowAfk": false,
-      "encounters": [],
-      "dungeonIds": [
-        "SHATTERED_ORDER_CITADEL_TEST"
-      ]
     }
   ],
   "dungeons": [

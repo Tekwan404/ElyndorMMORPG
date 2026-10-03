@@ -36,5 +36,12 @@ Thumbs.db
 
 # Generated build / publish artifacts
 /artifacts/
-# Generated artifacts
-/artifacts/
+/.artifacts/
+/.worktrees/
+**/__pycache__/
+*.pyc
+*.log
+*.bak
+*.tmp
+*.patch
+*.bundle
