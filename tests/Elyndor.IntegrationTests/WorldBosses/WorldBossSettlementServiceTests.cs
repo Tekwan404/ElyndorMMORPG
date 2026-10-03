@@ -70,12 +70,14 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
         Assert.Equal(2, reward.EnhancedChestCount);
         Assert.Equal(200_000, reward.Experience);
         Assert.Equal(1_000, reward.BossGold);
-        Assert.InRange(reward.ChestGold, 500, 1_000);
-        Assert.Equal(2, reward.Items.Count);
+        Assert.Equal(0, reward.ChestGold);
+        WorldBossLootItemResult chest = Assert.Single(reward.Items);
+        Assert.Equal("WORLD_BOSS_ASH_ARCHON_TOP5_CHEST", chest.ItemId);
+        Assert.Equal(2, chest.Quantity);
 
         CharacterState afterFirst = await ReadCharacterStateAsync(seed.CharacterId);
-        Assert.Equal(1_000 + reward.ChestGold, afterFirst.Gold);
-        Assert.Equal(2, afterFirst.ItemCount);
+        Assert.Equal(1_000, afterFirst.Gold);
+        Assert.Equal(1, afterFirst.ItemCount);
         Assert.Equal(1, afterFirst.SettlementCount);
         Assert.Equal(WorldBossSpawnStatus.Settled, afterFirst.SpawnStatus);
 
@@ -113,14 +115,46 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
 
         CharacterState state = await ReadCharacterStateAsync(seed.CharacterId);
         Assert.Equal(1, state.SettlementCount);
-        Assert.Equal(2, state.ItemCount);
-        Assert.InRange(state.Gold, 1_500, 2_000);
+        Assert.Equal(1, state.ItemCount);
+        Assert.Equal(1_000, state.Gold);
 
         await using GameDbContext verify = postgres.CreateDbContext();
         WorldBossRewardSettlement settlement =
             await verify.WorldBossRewardSettlements.SingleAsync();
         Assert.Equal(WorldBossRewardTier.Top5, settlement.RewardTier);
         Assert.Equal(200_000, settlement.Experience);
+    }
+
+    [Fact]
+    public async Task HealingOnlyContributionQualifiesForWorldBossReward()
+    {
+        GameContentPackage package = await LoadContentAsync();
+        Seed seed = await SeedDefeatedAsync(
+            package,
+            contributionDamage: 0m,
+            contributionHealing: 6_000m);
+
+        await using (GameDbContext db = postgres.CreateDbContext())
+        {
+            WorldBossSettlementBatchResult result =
+                await CreateService(db, package).SettleAsync(seed.SpawnId, default);
+
+            Assert.True(result.Succeeded, result.ErrorCode);
+            WorldBossSettlementCharacterResult reward = Assert.Single(result.Rewards);
+            Assert.Equal(6_000m, reward.Contribution);
+            Assert.Equal(WorldBossRewardTier.Top5, reward.Tier);
+            Assert.Equal(2, reward.EnhancedChestCount);
+            WorldBossLootItemResult chest = Assert.Single(reward.Items);
+            Assert.Equal("WORLD_BOSS_ASH_ARCHON_TOP5_CHEST", chest.ItemId);
+            Assert.Equal(2, chest.Quantity);
+        }
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        WorldBossContribution contribution =
+            await verify.WorldBossContributions.SingleAsync();
+        Assert.Equal(0m, contribution.Damage);
+        Assert.Equal(6_000m, contribution.Healing);
+        Assert.Equal(6_000m, contribution.ContributionScore);
     }
 
     [Fact]
@@ -202,7 +236,8 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
 
     private async Task<Seed> SeedDefeatedAsync(
         GameContentPackage package,
-        decimal contributionDamage)
+        decimal contributionDamage,
+        decimal contributionHealing = 0m)
     {
         Guid accountId = Guid.CreateVersion7();
         Guid characterId = Guid.CreateVersion7();
@@ -230,7 +265,7 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
         var spawn = new WorldBossSpawn(
             spawnId,
             "WORLD_BOSS_ASH_ARCHON",
-            1_000_000m,
+            100_000m,
             1,
             Now,
             Now.AddMinutes(30),
@@ -244,9 +279,18 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
             spawnId,
             characterId,
             Now.AddSeconds(1));
-        contribution.AddDamage(
-            contributionDamage,
-            Now.AddMinutes(1));
+        if (contributionDamage > 0)
+        {
+            contribution.AddDamage(
+                contributionDamage,
+                Now.AddMinutes(1));
+        }
+        if (contributionHealing > 0)
+        {
+            contribution.AddHealing(
+                contributionHealing,
+                Now.AddMinutes(1));
+        }
         db.WorldBossContributions.Add(contribution);
 
         await db.SaveChangesAsync();
