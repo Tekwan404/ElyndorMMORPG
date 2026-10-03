@@ -2566,11 +2566,12 @@ public sealed partial class CombatSession
         bool sourceIsPlayer = _statisticsByActorId.TryGetValue(
             sourceActorId,
             out CombatSessionStatisticsState? directSourceStatistics);
+        CombatSessionStatisticsState? companionOwnerStatistics = null;
         bool sourceIsCompanion = _companion is not null
             && sourceActorId == _companion.Actor.ActorId
             && _statisticsByActorId.TryGetValue(
                 _companionOwnerActorId,
-                out CombatSessionStatisticsState? companionOwnerStatistics);
+                out companionOwnerStatistics);
         CombatSessionStatisticsState? sourceStatistics = sourceIsPlayer
             ? directSourceStatistics
             : sourceIsCompanion
