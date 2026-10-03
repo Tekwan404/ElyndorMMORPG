@@ -91,8 +91,8 @@ public sealed class WorldBossPartyContributionConfiguration : IEntityTypeConfigu
             .OnDelete(DeleteBehavior.Restrict)
             .HasConstraintName("fk_world_boss_party_contributions_party");
 
-        builder.HasIndex(x => new { x.SpawnId, x.Damage })
-            .IsDescending(false, true)
+        builder.HasIndex(x => new { x.SpawnId, x.Damage, x.Healing })
+            .IsDescending(false, true, true)
             .HasDatabaseName("ix_world_boss_party_contributions_leaderboard");
     }
 }
