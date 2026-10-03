@@ -25,6 +25,116 @@ public sealed class CombatSessionTests
     private static readonly Guid EnemyThreeId = Guid.Parse("50000000-0000-0000-0000-000000000001");
 
     [Fact]
+    public void SessionStatisticsAggregateAuthoritativeCombatReportMetrics()
+    {
+        CombatSession session = CreateSession(
+            enemyHp: 10_000,
+            playerResource: 100,
+            canAutoAttack: false);
+
+        CombatCommandResult result = session.Handle(
+            PlayerId,
+            new UseAbilityCommand("report-strike", "STRIKE", Guid.Empty),
+            Now);
+
+        Assert.True(result.Succeeded, result.ErrorCode);
+        CombatSessionStatisticsSnapshot statistics =
+            Assert.IsType<CombatSessionStatisticsSnapshot>(
+                session.Snapshot(PlayerId).Statistics);
+        CombatAbilityStatisticsSnapshot strike =
+            Assert.IsType<CombatAbilityStatisticsSnapshot>(
+                statistics.Abilities!["STRIKE"]);
+
+        Assert.Equal(Now, statistics.StartedAtUtc);
+        Assert.Equal(1, strike.Uses);
+        Assert.Equal(1, strike.Hits);
+        Assert.True(strike.Damage > 0);
+        Assert.Equal(strike.Damage, statistics.DamageDealt);
+        Assert.Equal(strike.Damage, statistics.DamageSources!.DirectOrProc);
+        Assert.Equal(strike.Damage, strike.MaxHit);
+    }
+
+    [Fact]
+    public void SessionStatisticsKeepAbilityUsesBeyondRetainedEventBuffer()
+    {
+        const string abilityId = "MAGE_IGNITE";
+        int useCount = CombatSession.RetainedEventLimit + 25;
+        CombatParticipantDefinition player = new(
+            new CombatActorState(
+                PlayerId,
+                200,
+                200,
+                100,
+                100,
+                CombatStats.Default),
+            CombatActorKind.Player,
+            "MAGE",
+            "Mage",
+            "MANA",
+            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+            new HashSet<string>([abilityId], StringComparer.Ordinal),
+            CanAutoAttack: false);
+        CombatParticipantDefinition enemy = new(
+            new CombatActorState(
+                EnemyId,
+                1_000_000,
+                1_000_000,
+                0,
+                0,
+                CombatStats.Default),
+            CombatActorKind.Monster,
+            "TARGET",
+            "Target",
+            "NONE",
+            new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
+            new HashSet<string>(StringComparer.Ordinal),
+            CanAutoAttack: false);
+        AbilityDefinition ignite = new(
+            abilityId,
+            AbilityType.Instant,
+            AbilityTargetType.Self,
+            0,
+            TimeSpan.Zero,
+            TimeSpan.Zero,
+            false,
+            GlobalCooldownCategory.None,
+            true,
+            "FIRE",
+            Actions: []);
+
+        CombatSession session = new(
+            SessionId,
+            player,
+            enemy,
+            new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal)
+            {
+                [abilityId] = ignite
+            },
+            new MonsterAiProfile("PASSIVE_TEST_AI", []),
+            ResolvedTalentModifiers.Empty,
+            new ConstantRandom(),
+            Now);
+
+        for (int index = 0; index < useCount; index++)
+        {
+            CombatCommandResult result = session.Handle(
+                PlayerId,
+                new UseAbilityCommand($"ignite-{index}", abilityId, PlayerId),
+                Now);
+            Assert.True(result.Succeeded, result.ErrorCode);
+        }
+
+        int retainedAbilityUses = session.GetEventsAfter(0).Count(combatEvent =>
+            combatEvent.Type == CombatEventType.AbilityUsed
+            && combatEvent.DefinitionId == abilityId);
+        CombatSessionSnapshot snapshot = session.Snapshot(PlayerId);
+
+        Assert.True(retainedAbilityUses < useCount);
+        Assert.NotNull(snapshot.Statistics);
+        Assert.Equal(useCount, snapshot.Statistics!.AbilityUses[abilityId]);
+    }
+
+    [Fact]
     public void MixedClassSnapshotsKeepEachPlayersAbilities()
     {
         CombatPlayerDefinition[] others = new[] { ("MAGE", "MANA"), ("ARCHER", "FOCUS") }
