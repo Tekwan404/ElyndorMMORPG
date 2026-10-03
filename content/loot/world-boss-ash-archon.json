@@ -5,7 +5,7 @@
   "lootTables": [
     {
       "id": "WORLD_BOSS_ASH_ARCHON_LOOT",
-      "version": 1,
+      "version": 2,
       "entries": [],
       "selectionGroups": [
         {
@@ -14,43 +14,43 @@
           "selectionMode": "WeightedExclusive",
           "entries": [
             {
-              "itemId": "UNIQUE_WARRIOR_BLACKHEART_L25",
+              "itemId": "UNIQUE_WARRIOR_BLACKHEART_L60",
               "weight": 1,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
-              "itemId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25",
+              "itemId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L60",
               "weight": 1,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
-              "itemId": "UNIQUE_ARCHER_LAST_CONSTELLATION_L25",
+              "itemId": "UNIQUE_ARCHER_LAST_CONSTELLATION_L60",
               "weight": 1,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
-              "itemId": "FOKUS_OSTATOCHNOI_MANY",
+              "itemId": "FOKUS_OSTATOCHNOI_MANY_L60",
               "weight": 20,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
-              "itemId": "LUK_TROINOGO_ASPEKTA",
+              "itemId": "LUK_TROINOGO_ASPEKTA_L60",
               "weight": 20,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
-              "itemId": "KOLTSO_RAZBITOGO_OTRAZHENIIA",
+              "itemId": "KOLTSO_RAZBITOGO_OTRAZHENIIA_L60",
               "weight": 20,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
-              "itemId": "PECHAT_TRIEDINSTVA",
+              "itemId": "PECHAT_TRIEDINSTVA_L60",
               "weight": 20,
               "minQuantity": 1,
               "maxQuantity": 1
@@ -61,7 +61,7 @@
     },
     {
       "id": "WORLD_BOSS_ASH_ARCHON_TOP5_LOOT",
-      "version": 1,
+      "version": 2,
       "entries": [],
       "selectionGroups": [
         {
@@ -70,43 +70,43 @@
           "selectionMode": "WeightedExclusive",
           "entries": [
             {
-              "itemId": "UNIQUE_WARRIOR_BLACKHEART_L25",
+              "itemId": "UNIQUE_WARRIOR_BLACKHEART_L60",
               "weight": 4,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
-              "itemId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25",
+              "itemId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L60",
               "weight": 4,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
-              "itemId": "UNIQUE_ARCHER_LAST_CONSTELLATION_L25",
+              "itemId": "UNIQUE_ARCHER_LAST_CONSTELLATION_L60",
               "weight": 4,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
-              "itemId": "FOKUS_OSTATOCHNOI_MANY",
+              "itemId": "FOKUS_OSTATOCHNOI_MANY_L60",
               "weight": 10,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
-              "itemId": "LUK_TROINOGO_ASPEKTA",
+              "itemId": "LUK_TROINOGO_ASPEKTA_L60",
               "weight": 10,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
-              "itemId": "KOLTSO_RAZBITOGO_OTRAZHENIIA",
+              "itemId": "KOLTSO_RAZBITOGO_OTRAZHENIIA_L60",
               "weight": 10,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
-              "itemId": "PECHAT_TRIEDINSTVA",
+              "itemId": "PECHAT_TRIEDINSTVA_L60",
               "weight": 10,
               "minQuantity": 1,
               "maxQuantity": 1
