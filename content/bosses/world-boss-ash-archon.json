@@ -202,17 +202,20 @@
         {
           "tier": "Top85",
           "minimumPercentile": 85,
-          "chestCount": 1
+          "chestCount": 1,
+          "chestItemId": "WORLD_BOSS_ASH_ARCHON_CHEST"
         },
         {
           "tier": "Top95",
           "minimumPercentile": 95,
-          "chestCount": 1
+          "chestCount": 1,
+          "chestItemId": "WORLD_BOSS_ASH_ARCHON_CHEST"
         },
         {
           "tier": "Top99",
           "minimumPercentile": 99,
-          "chestCount": 2
+          "chestCount": 2,
+          "chestItemId": "WORLD_BOSS_ASH_ARCHON_CHEST"
         },
         {
           "tier": "Top5",
@@ -220,7 +223,8 @@
           "chestCount": 2,
           "maxRank": 5,
           "lootTableId": "WORLD_BOSS_ASH_ARCHON_TOP5_LOOT",
-          "enhanced": true
+          "enhanced": true,
+          "chestItemId": "WORLD_BOSS_ASH_ARCHON_TOP5_CHEST"
         }
       ]
     }
