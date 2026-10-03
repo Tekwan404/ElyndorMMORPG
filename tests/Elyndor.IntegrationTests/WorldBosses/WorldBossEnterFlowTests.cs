@@ -60,9 +60,9 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
             (await response.Content.ReadFromJsonAsync<CombatUpdateResponse>())!;
         Assert.True(entered.Succeeded, entered.ErrorCode);
         Assert.NotNull(entered.Snapshot);
-        Assert.Equal("WORLD_BOSS_ASH_ARCHON_L30", entered.Snapshot!.Enemy.DefinitionId);
-        Assert.Equal(100_000m, entered.Snapshot.Enemy.MaxHp);
-        Assert.Equal(100_000m, entered.Snapshot.Enemy.Hp);
+        Assert.Equal("WORLD_BOSS_ASH_ARCHON_L60", entered.Snapshot!.Enemy.DefinitionId);
+        Assert.Equal(1_000_000m, entered.Snapshot.Enemy.MaxHp);
+        Assert.Equal(1_000_000m, entered.Snapshot.Enemy.Hp);
 
         IssuedAccessToken token = IssueToken(factory, accountId, telegramUserId);
         await using HubConnection hub = CreateHubConnection(factory, token);
@@ -96,7 +96,7 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
             WorldBossCombatSessionBinding binding =
                 await verify.WorldBossCombatSessions.SingleAsync();
 
-            decimal globalDamage = 100_000m - spawn.CurrentHealth;
+            decimal globalDamage = 1_000_000m - spawn.CurrentHealth;
             Assert.True(globalDamage >= hit.Amount);
             Assert.Equal(globalDamage, contribution.Damage);
             Assert.Equal(entered.Snapshot.SessionId, binding.CombatSessionId);
@@ -210,7 +210,7 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
                     spawn => spawn.Id == spawnId)).CurrentHealth;
             }
 
-            decimal damageToPhaseTwo = currentGlobalHealth - 74_000m;
+            decimal damageToPhaseTwo = currentGlobalHealth - 740_000m;
             Assert.True(damageToPhaseTwo > 0);
             await using (AsyncServiceScope scope = factory.Services.CreateAsyncScope())
             {
@@ -226,7 +226,7 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
                         cancellationToken: default);
                 Assert.True(phaseDamage.Succeeded, phaseDamage.ErrorCode);
                 Assert.Equal(2, phaseDamage.Phase);
-                Assert.Equal(74_000m, phaseDamage.CurrentHealth);
+                Assert.Equal(740_000m, phaseDamage.CurrentHealth);
             }
 
             CombatUpdateResponse phaseSynced = await hub.InvokeAsync<CombatUpdateResponse>(
@@ -234,7 +234,7 @@ public sealed class WorldBossEnterFlowTests(PostgresFixture postgres) : IAsyncLi
                 entered.Snapshot.SessionId,
                 "world-boss-sync-phase");
             Assert.True(phaseSynced.Succeeded, phaseSynced.ErrorCode);
-            Assert.Equal(74_000m, phaseSynced.Snapshot!.Enemy.Hp);
+            Assert.Equal(740_000m, phaseSynced.Snapshot!.Enemy.Hp);
             Assert.Contains("ARCHON_STAR_FRACTURE", phaseSynced.Snapshot.Enemy.KnownAbilityIds);
 
             await using (AsyncServiceScope scope = factory.Services.CreateAsyncScope())

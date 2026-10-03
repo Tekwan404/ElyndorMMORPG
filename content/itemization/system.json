@@ -436,6 +436,24 @@
         "guaranteedCount": 0,
         "minimumBonusCount": 4,
         "maximumBonusCount": 5
+      },
+      {
+        "id": "LEVEL_57_60",
+        "guaranteedCount": 2,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVEL_60_UNIQUE",
+        "guaranteedCount": 3,
+        "minimumBonusCount": 2,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "ACCESSORY_LEVEL_57_60",
+        "guaranteedCount": 0,
+        "minimumBonusCount": 4,
+        "maximumBonusCount": 5
       }
     ],
     "qualityProfiles": [

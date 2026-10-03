@@ -23,7 +23,7 @@ describe('boss combat log eligibility', () => {
   })
 
   it('accepts world bosses', () => {
-    expect(isBossCombatLogEligible(snapshot('WORLD_BOSS_ASH_ARCHON_L30', 'Boss'))).toBe(true)
+    expect(isBossCombatLogEligible(snapshot('WORLD_BOSS_ASH_ARCHON_L60', 'Boss'))).toBe(true)
   })
 
   it('keeps training dummy diagnostics', () => {
