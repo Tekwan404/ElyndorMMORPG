@@ -27,10 +27,32 @@ describe('PremiumStoreView', () => {
     await wrapper.get('[data-product-id="enhancement-ore-20"]').trigger('click')
 
     expect(wrapper.get('[role="dialog"]').text()).toContain('Закалочная руда')
-    expect(wrapper.get('[data-purchase-summary]').text()).toContain('Баланс после')
+    expect(wrapper.get('[data-purchase-summary]').text()).toContain('После покупки')
     expect(wrapper.get('[data-purchase-summary]').text()).toContain('70')
-    expect(wrapper.get('[role="dialog"]').text()).toContain('без лимита аккаунта')
+    expect(wrapper.get('[role="dialog"]').text()).toContain('Можно покупать повторно')
+    expect(wrapper.get('.product-sheet').classes()).toContain('product-sheet--consumable')
     expect(wrapper.find('[role="dialog"] [data-icon-id="ore"]').exists()).toBe(true)
+  })
+
+  it('keeps a repeatable tester offer clickable even if catalog availability is stale', async () => {
+    const session = useGameSessionStore()
+    const stale = snapshot()
+    stale.crystalBalance = 9190
+    stale.offers[0]!.canPurchase = false
+    vi.spyOn(session, 'getPremiumStore').mockResolvedValue(stale)
+    const purchase = vi.spyOn(session, 'buyPremiumStoreOffer').mockResolvedValue({ crystalBalance: 9160 })
+
+    const wrapper = mount(PremiumStoreView)
+    await flushPromises()
+    await wrapper.get('[data-product-id="enhancement-ore-20"]').trigger('click')
+
+    const cta = wrapper.get('[data-purchase-cta]')
+    expect(cta.attributes('disabled')).toBeUndefined()
+
+    await cta.trigger('click')
+    await flushPromises()
+
+    expect(purchase).toHaveBeenCalledWith('ENHANCEMENT_ORE_SMALL')
   })
 
   it('explains insufficient currency instead of leaving an ambiguous disabled purchase button', async () => {
@@ -45,7 +67,7 @@ describe('PremiumStoreView', () => {
 
     const dialog = wrapper.get('[role="dialog"]')
     expect(dialog.text()).toContain('НЕДОСТАТОЧНО ОСКОЛКОВ')
-    expect(dialog.get('button.ui-button').attributes('disabled')).toBeDefined()
+    expect(dialog.get('[data-purchase-cta]').attributes('disabled')).toBeDefined()
   })
 })
 
