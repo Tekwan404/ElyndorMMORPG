@@ -9,6 +9,7 @@ using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Progression;
 using Elyndor.Server.Administration;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -50,6 +51,7 @@ public static class BossCombatLogArchiveEndpoints
         CombatSessionSnapshot? snapshot = null;
         IReadOnlyList<CombatEvent>? events = null;
         GameContentSnapshot? contentSnapshot = null;
+        CombatRewardApplicationResult? reward = null;
 
         CombatOperationResult current = registry.Resume(accountId);
         if (current.Succeeded
@@ -59,6 +61,7 @@ public static class BossCombatLogArchiveEndpoints
         {
             snapshot = current.Snapshot;
             contentSnapshot = current.ContentSnapshot;
+            reward = current.Reward;
 
             CombatOperationResult historyRead = await registry.ExecuteAsync(
                 accountId,
@@ -94,9 +97,10 @@ public static class BossCombatLogArchiveEndpoints
             snapshot,
             events,
             contentSnapshot,
+            reward,
             dbContext,
             messageSender,
-            loggerFactory.CreateLogger("Elyndor.TrainingDummyCombatLog"),
+            loggerFactory.CreateLogger("Elyndor.BossCombatLog"),
             timeProvider.GetUtcNow(),
             cancellationToken);
 
@@ -119,20 +123,20 @@ internal static class BossCombatLogArchive
         LoggerMessage.Define<Guid>(
             LogLevel.Error,
             new EventId(2301, nameof(DocumentSenderUnavailable)),
-            "Training dummy combat log sender does not support documents for session {SessionId}.");
+            "Boss combat log sender does not support documents for session {SessionId}.");
 
     private static readonly Action<ILogger, Guid, Guid, Exception?> DeliveryFailed =
         LoggerMessage.Define<Guid, Guid>(
             LogLevel.Error,
             new EventId(2302, nameof(DeliveryFailed)),
-            "Failed to send training dummy combat log {SessionId} for account {AccountId}; "
+            "Failed to send boss combat log {SessionId} for account {AccountId}; "
             + "the archived log is retained for retry.");
 
     private static readonly Action<ILogger, Guid, Guid, int, int, Exception?> DeliverySucceeded =
         LoggerMessage.Define<Guid, Guid, int, int>(
             LogLevel.Information,
             new EventId(2303, nameof(DeliverySucceeded)),
-            "Sent training dummy combat log {SessionId} for account {AccountId} "
+            "Sent boss combat log {SessionId} for account {AccountId} "
             + "with {EventCount} events ({DroppedEventCount} dropped from archive).");
 
     public static void Capture(
@@ -144,9 +148,7 @@ internal static class BossCombatLogArchive
         if (accountId == Guid.Empty
             || snapshot is null
             || snapshot.SessionId == Guid.Empty
-            || !TrainingDummyCombatLogPolicy.IsEligible(
-                (snapshot.Enemies ?? [snapshot.Enemy])
-                    .Select(enemy => enemy.DefinitionId)))
+            || !BossCombatLogPolicy.TryResolve(snapshot, out _))
         {
             return;
         }
@@ -154,9 +156,19 @@ internal static class BossCombatLogArchive
         ArchiveKey key = new(accountId, snapshot.SessionId);
         ArchiveEntry entry = Entries.GetOrAdd(
             key,
-            _ => new ArchiveEntry(snapshot, update.ContentSnapshot, capturedAtUtc));
+            _ => new ArchiveEntry(
+                snapshot,
+                update.ContentSnapshot,
+                update.Reward,
+                capturedAtUtc));
 
-        Merge(entry, snapshot, update.Events, update.ContentSnapshot, capturedAtUtc);
+        Merge(
+            entry,
+            snapshot,
+            update.Events,
+            update.ContentSnapshot,
+            update.Reward,
+            capturedAtUtc);
         Purge(capturedAtUtc);
     }
 
@@ -166,6 +178,7 @@ internal static class BossCombatLogArchive
         CombatSessionSnapshot? authoritativeSnapshot,
         IReadOnlyList<CombatEvent>? authoritativeEvents,
         GameContentSnapshot? authoritativeContent,
+        CombatRewardApplicationResult? authoritativeReward,
         GameDbContext dbContext,
         ITelegramMessageSender messageSender,
         ILogger logger,
@@ -185,12 +198,14 @@ internal static class BossCombatLogArchive
                 _ => new ArchiveEntry(
                     authoritativeSnapshot,
                     authoritativeContent,
+                    authoritativeReward,
                     nowUtc));
             Merge(
                 entry,
                 authoritativeSnapshot,
                 authoritativeEvents ?? [],
                 authoritativeContent,
+                authoritativeReward,
                 nowUtc);
         }
         else
@@ -208,6 +223,7 @@ internal static class BossCombatLogArchive
             CombatEvent[] events;
             int droppedEvents;
             bool alreadySent;
+            CombatRewardApplicationResult? reward;
 
             lock (entry.Gate)
             {
@@ -215,6 +231,7 @@ internal static class BossCombatLogArchive
                 events = entry.Events.Values.ToArray();
                 droppedEvents = entry.DroppedEvents;
                 alreadySent = entry.Sent;
+                reward = entry.Reward;
                 entry.UpdatedAtUtc = nowUtc;
             }
 
@@ -224,14 +241,13 @@ internal static class BossCombatLogArchive
             if (snapshot.Status == CombatSessionStatus.Active)
                 return new BossCombatLogResponse(false, "combat_log_combat_active");
 
-            CombatActorSnapshot[] enemies =
-                (snapshot.Enemies ?? [snapshot.Enemy]).ToArray();
-            if (!TrainingDummyCombatLogPolicy.IsEligible(
-                    enemies.Select(enemy => enemy.DefinitionId)))
+            if (!BossCombatLogPolicy.TryResolve(
+                    snapshot,
+                    out BossCombatLogTarget target))
             {
                 return new BossCombatLogResponse(
                     false,
-                    TrainingDummyCombatLogPolicy.IneligibleErrorCode);
+                    BossCombatLogPolicy.IneligibleErrorCode);
             }
 
             if (events.Length == 0)
@@ -260,10 +276,11 @@ internal static class BossCombatLogArchive
             CombatEvent[] ordered = events
                 .OrderBy(combatEvent => combatEvent.Sequence)
                 .ToArray();
-            string log = BuildLog(snapshot, ordered, droppedEvents);
-            string fileName = $"elyndor-training-dummy-{sessionId:N}.txt";
+            string log = BuildLog(snapshot, ordered, droppedEvents, reward, target);
+            string fileName =
+                $"elyndor-boss-{FileSegment(target.DefinitionId)}-{sessionId:N}.txt";
             string caption =
-                $"⚔️ Elyndor · {TrainingDummyCombatLogPolicy.DisplayName} · {ordered.Length} событий";
+                $"⚔️ Elyndor · {target.DisplayName} · {ordered.Length} событий";
 
             try
             {
@@ -311,6 +328,7 @@ internal static class BossCombatLogArchive
         CombatSessionSnapshot snapshot,
         IReadOnlyList<CombatEvent> events,
         GameContentSnapshot? contentSnapshot,
+        CombatRewardApplicationResult? reward,
         DateTimeOffset capturedAtUtc)
     {
         lock (entry.Gate)
@@ -318,6 +336,8 @@ internal static class BossCombatLogArchive
             entry.Snapshot = snapshot;
             if (contentSnapshot is not null)
                 entry.ContentSnapshot = contentSnapshot;
+            if (reward is not null)
+                entry.Reward = reward;
 
             foreach (CombatEvent combatEvent in events)
                 entry.Events[combatEvent.Sequence] = combatEvent;
@@ -369,7 +389,9 @@ internal static class BossCombatLogArchive
     private static string BuildLog(
         CombatSessionSnapshot snapshot,
         CombatEvent[] events,
-        int droppedEvents)
+        int droppedEvents,
+        CombatRewardApplicationResult? reward,
+        BossCombatLogTarget target)
     {
         Dictionary<Guid, string> actorNames = new();
         foreach (CombatActorSnapshot actor in snapshot.Players ?? [snapshot.Player])
@@ -390,10 +412,14 @@ internal static class BossCombatLogArchive
         long[] missingSequences = FindMissingSequences(events);
 
         StringBuilder builder = new();
-        builder.AppendLine("⚔️ ELYNDOR · ЛОГ ТРЕНИРОВКИ НА МАНЕКЕНЕ");
-        builder.Append("Цель: ").AppendLine(TrainingDummyCombatLogPolicy.DisplayName);
+        builder.AppendLine(target.IsTrainingDummy
+            ? "⚔️ ELYNDOR · ЛОГ ТРЕНИРОВКИ"
+            : "⚔️ ELYNDOR · ЛОГ БОСС-БОЯ");
+        builder.Append("Цель: ").AppendLine(target.DisplayName);
         builder.Append("Результат: ").AppendLine(result);
-        builder.Append("Сессия: ").AppendLine(snapshot.SessionId.ToString("D"));
+        builder.Append("Игрок: ").AppendLine(snapshot.Player.Name);
+        builder.Append("Correlation/Session: ").AppendLine(snapshot.SessionId.ToString("D"));
+        WriteSummary(builder, snapshot, events, reward, target);
         builder.Append("Контент: ").Append(snapshot.ContentVersion)
             .Append(" · баланс: ").AppendLine(snapshot.BalanceVersion);
         builder.Append("Событий: ")
@@ -423,6 +449,161 @@ internal static class BossCombatLogArchive
 
         return builder.ToString();
     }
+
+    private static void WriteSummary(
+        StringBuilder builder,
+        CombatSessionSnapshot snapshot,
+        CombatEvent[] events,
+        CombatRewardApplicationResult? reward,
+        BossCombatLogTarget target)
+    {
+        Guid playerActorId = snapshot.Player.ActorId;
+        HashSet<Guid> enemyActorIds = (snapshot.Enemies ?? [snapshot.Enemy])
+            .Select(enemy => enemy.ActorId)
+            .ToHashSet();
+
+        DateTimeOffset? startedAt = events
+            .FirstOrDefault(combatEvent =>
+                combatEvent.Type == CombatEventType.CombatStarted)
+            ?.OccurredAtUtc;
+        DateTimeOffset? endedAt = events.Length == 0
+            ? null
+            : events[^1].OccurredAtUtc;
+        if (startedAt is null && events.Length > 0)
+            startedAt = events[0].OccurredAtUtc;
+        if (startedAt is not null && endedAt is not null)
+        {
+            double seconds = Math.Max(
+                0,
+                (endedAt.Value - startedAt.Value).TotalSeconds);
+            builder.Append("Длительность: ")
+                .Append(seconds.ToString("0.0", CultureInfo.InvariantCulture))
+                .AppendLine(" сек.");
+        }
+
+        decimal damageDealt = events
+            .Where(combatEvent =>
+                combatEvent.Type == CombatEventType.DamageDealt
+                && combatEvent.SourceActorId == playerActorId
+                && combatEvent.TargetActorId is Guid targetActorId
+                && enemyActorIds.Contains(targetActorId))
+            .Sum(DamageAmount);
+        decimal damageReceived = events
+            .Where(combatEvent =>
+                combatEvent.Type == CombatEventType.DamageDealt
+                && combatEvent.TargetActorId == playerActorId)
+            .Sum(DamageAmount);
+        int criticalHits = events.Count(combatEvent =>
+            combatEvent.Type == CombatEventType.CriticalHit
+            && combatEvent.SourceActorId == playerActorId);
+        decimal armorMitigated = events
+            .Where(combatEvent =>
+                combatEvent.Type == CombatEventType.DamageDealt
+                && combatEvent.TargetActorId == playerActorId
+                && combatEvent.RawDamage > 0
+                && combatEvent.DamageAfterMitigation >= 0)
+            .Sum(combatEvent => Math.Max(
+                0,
+                combatEvent.RawDamage - combatEvent.DamageAfterMitigation));
+        decimal blocked = events
+            .Where(combatEvent =>
+                combatEvent.Type == CombatEventType.DamageBlocked
+                && combatEvent.TargetActorId == playerActorId)
+            .Sum(combatEvent => Math.Max(0, combatEvent.Amount));
+        int playerDeaths = events.Count(combatEvent =>
+            combatEvent.Type == CombatEventType.ActorDied
+            && (combatEvent.ActorId == playerActorId
+                || combatEvent.TargetActorId == playerActorId));
+
+        builder.Append("Урон боссу: ").AppendLine(FormatNumber(damageDealt));
+        builder.Append("Критов: ")
+            .AppendLine(criticalHits.ToString(CultureInfo.InvariantCulture));
+        builder.Append("Получено урона: ").AppendLine(FormatNumber(damageReceived));
+        builder.Append("Снято бронёй: ").AppendLine(FormatNumber(armorMitigated));
+        builder.Append("Заблокировано: ").AppendLine(FormatNumber(blocked));
+        builder.Append("Смертей игрока: ")
+            .AppendLine(playerDeaths.ToString(CultureInfo.InvariantCulture));
+        builder.Append("Финал HP/ресурс: ")
+            .Append(FormatNumber(snapshot.Player.Hp))
+            .Append('/')
+            .Append(FormatNumber(snapshot.Player.MaxHp))
+            .Append(" · ")
+            .Append(FormatNumber(snapshot.Player.Resource))
+            .Append('/')
+            .AppendLine(FormatNumber(snapshot.Player.MaxResource));
+
+        string abilities = string.Join(
+            ", ",
+            events
+                .Where(combatEvent =>
+                    combatEvent.Type == CombatEventType.AbilityUsed
+                    && combatEvent.SourceActorId == playerActorId
+                    && !string.IsNullOrWhiteSpace(combatEvent.DefinitionId))
+                .GroupBy(combatEvent => combatEvent.DefinitionId!, StringComparer.Ordinal)
+                .OrderByDescending(group => group.Count())
+                .ThenBy(group => group.Key, StringComparer.Ordinal)
+                .Take(8)
+                .Select(group => $"{group.Key}×{group.Count()}"));
+        builder.Append("Способности: ")
+            .AppendLine(string.IsNullOrWhiteSpace(abilities) ? "—" : abilities);
+
+        if (snapshot.PlayerContribution is not null)
+        {
+            builder.Append("Contribution: damage=")
+                .Append(FormatNumber(snapshot.PlayerContribution.DamageDealt))
+                .Append(" · actions=")
+                .Append(snapshot.PlayerContribution.QualifyingActions
+                    .ToString(CultureInfo.InvariantCulture))
+                .Append(" · eligible=")
+                .AppendLine((snapshot.PlayerContributionEligible ?? false)
+                    ? "yes"
+                    : "no");
+        }
+
+        if (reward is not null)
+        {
+            builder.Append("Награда боя: +")
+                .Append(reward.XpEarned.ToString(CultureInfo.InvariantCulture))
+                .Append(" XP · +")
+                .Append(reward.GoldEarned.ToString(CultureInfo.InvariantCulture))
+                .Append(" gold");
+            if (reward.Items.Count > 0)
+            {
+                builder.Append(" · ")
+                    .Append(string.Join(
+                        ", ",
+                        reward.Items.Select(item =>
+                            $"{item.Name}×{item.Quantity}")));
+            }
+            builder.AppendLine();
+        }
+        else if (target.DefinitionId.StartsWith("WORLD_BOSS_", StringComparison.Ordinal))
+        {
+            builder.AppendLine(
+                "Награда боя: рассчитывается глобальным World Boss settlement.");
+        }
+        else
+        {
+            builder.AppendLine("Награда боя: —");
+        }
+
+        if (events.Length > 0)
+        {
+            CombatEvent finalEvent = events[^1];
+            builder.Append("Финальное событие: #")
+                .Append(finalEvent.Sequence.ToString(CultureInfo.InvariantCulture))
+                .Append(' ')
+                .Append(finalEvent.Type);
+            if (!string.IsNullOrWhiteSpace(finalEvent.DefinitionId))
+                builder.Append(" · ").Append(Sanitize(finalEvent.DefinitionId, 80));
+            builder.AppendLine();
+        }
+    }
+
+    private static decimal DamageAmount(CombatEvent combatEvent) =>
+        combatEvent.AmountBeforeShields > 0
+            ? combatEvent.AmountBeforeShields
+            : Math.Max(0, combatEvent.Amount);
 
     private static void WriteEvent(
         StringBuilder builder,
@@ -539,6 +720,17 @@ internal static class BossCombatLogArchive
         decimal.Round(value, 2)
             .ToString("0.##", CultureInfo.InvariantCulture);
 
+    private static string FileSegment(string value)
+    {
+        string sanitized = new(
+            value
+                .ToLowerInvariant()
+                .Select(character =>
+                    char.IsLetterOrDigit(character) ? character : '-')
+                .ToArray());
+        return sanitized.Trim('-');
+    }
+
     private static string Sanitize(string? value, int maxLength)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -559,6 +751,7 @@ internal static class BossCombatLogArchive
     private sealed class ArchiveEntry(
         CombatSessionSnapshot snapshot,
         GameContentSnapshot? contentSnapshot,
+        CombatRewardApplicationResult? reward,
         DateTimeOffset updatedAtUtc)
     {
         public object Gate { get; } = new();
@@ -566,6 +759,7 @@ internal static class BossCombatLogArchive
         public SortedDictionary<long, CombatEvent> Events { get; } = [];
         public CombatSessionSnapshot Snapshot { get; set; } = snapshot;
         public GameContentSnapshot? ContentSnapshot { get; set; } = contentSnapshot;
+        public CombatRewardApplicationResult? Reward { get; set; } = reward;
         public DateTimeOffset UpdatedAtUtc { get; set; } = updatedAtUtc;
         public int DroppedEvents { get; set; }
         public bool Sent { get; set; }

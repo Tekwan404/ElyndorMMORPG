@@ -18,7 +18,7 @@ public sealed class WorldBossContentTests
 
         Assert.Equal("Архон Пепла", boss.Name);
         Assert.Equal(30, boss.Level);
-        Assert.Equal(1_000_000m, boss.BaseMaxHealth);
+        Assert.Equal(100_000m, boss.BaseMaxHealth);
         Assert.Equal(1_800, boss.DurationSeconds);
         Assert.Equal("WB_ASH_ARCHON_V1", boss.EncounterProfileId);
         Assert.Equal("ASH_SHARD", boss.TokenCurrencyId);
@@ -42,7 +42,7 @@ public sealed class WorldBossContentTests
 
         Assert.Equal("WORLD_BOSS_ASH_ARCHON_L30", monster.Id);
         Assert.Equal(30, monster.Level);
-        Assert.Equal(1_000_000m, monster.MaxHp);
+        Assert.Equal(100_000m, monster.MaxHp);
         Assert.False(monster.GrantsXp);
         Assert.Equal(0, monster.LegacyXpReward);
         Assert.Equal(0, monster.GoldRewardMin);

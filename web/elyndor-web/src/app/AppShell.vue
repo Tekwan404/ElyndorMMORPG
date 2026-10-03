@@ -8,6 +8,7 @@ import { classLabel, resourceLabel } from '@/game/character/characterPresentatio
 import CharacterCreationView from '@/game/character/views/CharacterCreationView.vue'
 import HeroView from '@/game/character/views/HeroView.vue'
 import BattleScreen from '@/game/combat/views/BattleScreen.vue'
+import BossCombatLogReporter from '@/game/combat/BossCombatLogReporter.vue'
 import MenuView, { type MenuSection } from '@/game/menu/views/MenuView.vue'
 import QuestView from '@/game/quests/views/QuestView.vue'
 import WorldBossView from '@/game/worldBoss/views/WorldBossView.vue'
@@ -222,6 +223,7 @@ onMounted(() => {
 
 <template>
   <div class="game-shell">
+    <BossCombatLogReporter />
     <button v-if="session.state === 'world' && trade.current?.state === 'OPEN' && !trade.joined && !combat.isActive"
       class="trade-notice" type="button" @click="openMenu('trade')">
       Вам предложили обмен · Открыть

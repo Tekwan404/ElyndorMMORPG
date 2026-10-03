@@ -64,6 +64,21 @@ public sealed class WorldBossSettlementService(
             new EventId(4202, nameof(RealtimeSettlementDeliveryFailed)),
             "World boss {SpawnId} settled, but realtime reward delivery failed.");
 
+    private static readonly Action<ILogger, Guid, int, int, Exception?> SettlementCompleted =
+        LoggerMessage.Define<Guid, int, int>(
+            LogLevel.Information,
+            new EventId(4204, nameof(SettlementCompleted)),
+            "World boss settlement completed: spawn {SpawnId}, rewards {RewardCount}, "
+            + "eligibleParticipants {EligibleParticipants}.");
+
+    private static readonly Action<ILogger, Guid, Guid, int, decimal, WorldBossRewardTier, string, Exception?>
+        CharacterRewardSettled =
+            LoggerMessage.Define<Guid, Guid, int, decimal, WorldBossRewardTier, string>(
+                LogLevel.Information,
+                new EventId(4205, nameof(CharacterRewardSettled)),
+                "World boss reward settled: spawn {SpawnId}, character {CharacterId}, "
+                + "rank {Rank}, percentile {Percentile}, tier {Tier}, {Details}.");
+
     public Task<WorldBossSettlementBatchResult> SettleAsync(
         Guid spawnId,
         CancellationToken cancellationToken)
@@ -333,6 +348,40 @@ public sealed class WorldBossSettlementService(
         await db.SaveChangesAsync(cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
         await transaction.CommitAsync(CancellationToken.None);
+
+        if (logger is not null)
+        {
+            SettlementCompleted(
+                logger,
+                spawnId,
+                rewards.Count,
+                eligible.Length,
+                null);
+            foreach (WorldBossSettlementCharacterResult reward in rewards)
+            {
+                string itemIds = reward.Items.Count == 0
+                    ? "none"
+                    : string.Join(
+                        ",",
+                        reward.Items.Select(item => item.ItemId));
+                string details =
+                    $"damage={reward.Contribution:0.##} "
+                    + $"xp={reward.Experience} "
+                    + $"gold={reward.BossGold + reward.ChestGold} "
+                    + $"chests={reward.ChestCount} "
+                    + $"enhancedChests={reward.EnhancedChestCount} "
+                    + $"items={itemIds}";
+                CharacterRewardSettled(
+                    logger,
+                    spawnId,
+                    reward.CharacterId,
+                    reward.Rank,
+                    reward.Percentile,
+                    reward.Tier,
+                    details,
+                    null);
+            }
+        }
 
         if (updatePublisher is not null)
         {

@@ -41,6 +41,13 @@ public sealed class WorldBossDamageService(
             new EventId(4201, nameof(RealtimeDefeatDeliveryFailed)),
             "World boss {SpawnId} was defeated, but realtime defeat delivery failed.");
 
+    private static readonly Action<ILogger, Guid, Guid, Guid, decimal, Exception?> BossDefeated =
+        LoggerMessage.Define<Guid, Guid, Guid, decimal>(
+            LogLevel.Information,
+            new EventId(4203, nameof(BossDefeated)),
+            "World boss defeated: spawn {SpawnId}, final character {CharacterId}, "
+            + "combatSession {CombatSessionId}, finalAppliedDamage {AppliedDamage}.");
+
     public async Task<WorldBossDamageCommitResult> ApplyDamageAsync(
         Guid spawnId,
         Guid characterId,
@@ -209,6 +216,17 @@ public sealed class WorldBossDamageService(
                 defeatedNow,
                 phaseChanged);
         });
+
+        if (result.DefeatedNow && logger is not null)
+        {
+            BossDefeated(
+                logger,
+                spawnId,
+                characterId,
+                combatSessionId,
+                result.AppliedDamage,
+                null);
+        }
 
         if (result.DefeatedNow && updatePublisher is not null)
             await PublishDefeatedSafelyAsync(spawnId, cancellationToken);
