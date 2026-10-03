@@ -430,7 +430,10 @@ internal static class BossCombatLogArchive
             _ => snapshot.Status.ToString().ToUpperInvariant()
         };
 
-        long[] missingSequences = FindMissingSequences(events, filteredSequences);
+        long[] missingSequences = FindMissingSequences(
+            events,
+            filteredSequences,
+            ignoreDroppedPrefix: droppedEvents > 0);
 
         StringBuilder builder = new();
         builder.AppendLine(target.IsTrainingDummy
@@ -944,13 +947,16 @@ internal static class BossCombatLogArchive
 
     private static long[] FindMissingSequences(
         CombatEvent[] events,
-        HashSet<long> filteredSequences)
+        HashSet<long> filteredSequences,
+        bool ignoreDroppedPrefix)
     {
         if (events.Length == 0)
             return [];
 
         List<long> missing = [];
-        long previous = 0;
+        long previous = ignoreDroppedPrefix
+            ? events[0].Sequence - 1
+            : 0;
         foreach (CombatEvent combatEvent in events)
         {
             for (long sequence = previous + 1;
