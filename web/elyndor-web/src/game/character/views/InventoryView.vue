@@ -665,13 +665,17 @@ function statRows(item: InventoryItem): string[] {
   ].filter(Boolean)
 }
 
-function rarityLabel(item: InventoryItem): string {
-  if (item.rarity === 'Unique') return 'Уникальный'
-  if (item.rarity === 'Legendary') return 'Легендарный'
-  if (item.rarity === 'Epic') return 'Эпический'
-  if (item.rarity === 'Rare') return 'Редкий'
-  if (item.rarity === 'Uncommon') return 'Необычный'
+function rarityName(rarity: InventoryItem['rarity']): string {
+  if (rarity === 'Unique') return 'Уникальный'
+  if (rarity === 'Legendary') return 'Легендарный'
+  if (rarity === 'Epic') return 'Эпический'
+  if (rarity === 'Rare') return 'Редкий'
+  if (rarity === 'Uncommon') return 'Необычный'
   return 'Обычный'
+}
+
+function rarityLabel(item: InventoryItem): string {
+  return rarityName(item.rarity)
 }
 
 function typeLabel(item: InventoryItem): string {
@@ -970,7 +974,7 @@ async function toggleSelectedLock(): Promise<void> {
             />
           </span>
           <div class="pending-loot-list__copy">
-            <small>{{ rarityLabel(item as unknown as InventoryItem) }}</small>
+            <small>{{ rarityName(item.rarity) }}</small>
             <strong>{{ item.name }}<span v-if="item.quantity > 1"> ×{{ item.quantity }}</span></strong>
           </div>
           <div class="pending-loot-list__actions">
