@@ -135,10 +135,11 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         Assert.Equal(9, character.Gold);
         Assert.Equal(1, await context.CombatRewardGrants.CountAsync());
 
-        int persistedLootQuantity = await context.CharacterItems
+        int pendingLootQuantity = await context.PendingLootItems
             .AsNoTracking()
             .SumAsync(item => item.Quantity);
-        Assert.Equal(first.Items.Sum(item => item.Quantity), persistedLootQuantity);
+        Assert.Equal(first.Items.Sum(item => item.Quantity), pendingLootQuantity);
+        Assert.Equal(0, await context.CharacterItems.CountAsync());
     }
 
     [Fact]
@@ -362,10 +363,11 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         Assert.Equal(granted.GoldEarned, character.Gold);
         Assert.Equal(1, await verify.CombatRewardGrants.CountAsync());
 
-        int persistedLootQuantity = await verify.CharacterItems
+        int pendingLootQuantity = await verify.PendingLootItems
             .AsNoTracking()
             .SumAsync(item => item.Quantity);
-        Assert.Equal(granted.Items.Sum(item => item.Quantity), persistedLootQuantity);
+        Assert.Equal(granted.Items.Sum(item => item.Quantity), pendingLootQuantity);
+        Assert.Equal(0, await verify.CharacterItems.CountAsync());
     }
 
     [Fact]
