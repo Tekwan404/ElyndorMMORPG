@@ -409,7 +409,7 @@ internal static class BossCombatLogArchive
     private static string BuildLog(
         CombatSessionSnapshot snapshot,
         CombatEvent[] events,
-        IReadOnlySet<long> filteredSequences,
+        HashSet<long> filteredSequences,
         int droppedEvents,
         CombatRewardApplicationResult? reward,
         BossCombatLogTarget target)
@@ -790,8 +790,9 @@ internal static class BossCombatLogArchive
             return;
 
         DateTimeOffset origin = snapshot.Statistics?.StartedAtUtc
-            ?? events.FirstOrDefault()?.OccurredAtUtc
-            ?? snapshot.ServerTimeUtc;
+            ?? (events.Count > 0
+                ? events[0].OccurredAtUtc
+                : snapshot.ServerTimeUtc);
 
         builder.AppendLine();
         builder.AppendLine("── KEY EVENTS ──");
@@ -943,7 +944,7 @@ internal static class BossCombatLogArchive
 
     private static long[] FindMissingSequences(
         CombatEvent[] events,
-        IReadOnlySet<long> filteredSequences)
+        HashSet<long> filteredSequences)
     {
         if (events.Length == 0)
             return [];
@@ -983,7 +984,7 @@ internal static class BossCombatLogArchive
 
     private static string ResolveActorName(
         Guid actorId,
-        Dictionary<Guid, string> names) =>
+        IReadOnlyDictionary<Guid, string> names) =>
         names.TryGetValue(actorId, out string? name)
             ? name
             : actorId.ToString("N")[..8];
