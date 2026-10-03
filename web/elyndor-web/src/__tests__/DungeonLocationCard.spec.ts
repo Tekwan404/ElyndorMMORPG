@@ -22,7 +22,9 @@ describe('DungeonLocationCard', () => {
     })
     await flushPromises()
 
-    expect(wrapper.get('[data-dungeon-id="ECLIPSED_CITADEL"]').text()).toContain('Цитадель Затмения')
+    expect(wrapper.get('[data-dungeon-id="ECLIPSED_CITADEL"]').text()).toContain(
+      'Цитадель Затмения',
+    )
     expect(wrapper.text()).not.toContain('Древняя шахта')
     expect(wrapper.text()).toContain('Предыдущий забег завершён')
     expect(wrapper.find('[data-create-dungeon]').exists()).toBe(true)
@@ -94,6 +96,92 @@ describe('DungeonLocationCard', () => {
     expect(status).toContain('БОСС')
     expect(status).toContain('Между боями')
     expect(status).not.toContain('Pending')
+  })
+
+  it('keeps run progress and retryable actions visible after a failed mutation', async () => {
+    const { dungeon } = prepareCard('ECLIPSED_CITADEL')
+    dungeon.current = activeCitadelRun()
+    vi.spyOn(dungeon, 'exitToCity').mockImplementation(async () => {
+      dungeon.errorCode = 'dungeon_city_exit_failed'
+    })
+    const wrapper = mount(DungeonLocationCard, { props: { dungeonId: 'ECLIPSED_CITADEL' } })
+    await flushPromises()
+    await wrapper.get('[data-dungeon-city-exit]').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('[data-dungeon-status]').exists()).toBe(true)
+    expect(wrapper.find('[data-dungeon-city-exit]').exists()).toBe(true)
+    expect(wrapper.find('[role="alert"]').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('shows pending feedback and guards competing run actions until navigation completes', async () => {
+    const { dungeon } = prepareCard('ECLIPSED_CITADEL')
+    dungeon.current = activeCitadelRun()
+    let finish!: () => void
+    vi.spyOn(dungeon, 'exitToCity').mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          finish = resolve
+        }),
+    )
+    const wrapper = mount(DungeonLocationCard, { props: { dungeonId: 'ECLIPSED_CITADEL' } })
+    await flushPromises()
+    await wrapper.get('[data-dungeon-city-exit]').trigger('click')
+    expect(wrapper.get('[data-dungeon-city-exit]').attributes('aria-busy')).toBe('true')
+    expect(wrapper.get('[data-dungeon-leave]').attributes('disabled')).toBeDefined()
+    finish()
+    await flushPromises()
+    expect(wrapper.get('[data-dungeon-city-exit]').attributes('disabled')).toBeUndefined()
+    wrapper.unmount()
+  })
+
+  it('confirms permanent leave and retains confirmation after a failed request', async () => {
+    const { dungeon } = prepareCard('ECLIPSED_CITADEL')
+    dungeon.current = activeCitadelRun()
+    const leave = vi.spyOn(dungeon, 'leaveRun').mockImplementation(async () => {
+      dungeon.errorCode = 'dungeon_leave_failed'
+    })
+    const wrapper = mount(DungeonLocationCard, {
+      props: { dungeonId: 'ECLIPSED_CITADEL' },
+      global: { stubs: { Teleport: true } },
+    })
+    await flushPromises()
+    await wrapper.get('[data-dungeon-leave]').trigger('click')
+    expect(leave).not.toHaveBeenCalled()
+    await wrapper.get('[data-dungeon-confirm-leave]').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('[role="dialog"] [role="alert"]').exists()).toBe(true)
+    leave.mockImplementation(async () => {
+      dungeon.errorCode = null
+      dungeon.current = null
+    })
+    await wrapper.get('[data-dungeon-confirm-leave]').trigger('click')
+    await flushPromises()
+    expect(wrapper.find('[role="dialog"]').exists()).toBe(false)
+    expect(wrapper.find('.ui-toast--success').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('preserves known run progress during reconciliation', async () => {
+    const { dungeon } = prepareCard('ECLIPSED_CITADEL')
+    dungeon.current = activeCitadelRun()
+    const wrapper = mount(DungeonLocationCard, { props: { dungeonId: 'ECLIPSED_CITADEL' } })
+    await flushPromises()
+    dungeon.loading = true
+    await flushPromises()
+    expect(wrapper.find('[data-dungeon-status]').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  it('does not offer a new run when membership could not be loaded despite a cached preview', async () => {
+    const { party } = prepareCard('ECLIPSED_CITADEL')
+    party.snapshot = null
+    vi.spyOn(party, 'refresh').mockImplementation(async () => { party.errorCode = 'party_load_failed' })
+    const wrapper = mount(DungeonLocationCard, { props: { dungeonId: 'ECLIPSED_CITADEL' } })
+    await flushPromises()
+    expect(wrapper.find('[data-create-dungeon]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('Повторить')
+    wrapper.unmount()
   })
 })
 
@@ -167,14 +255,16 @@ function citadelRun(): DungeonRun {
     encounterCount: 5,
     partyId: 'party-1',
     members: [{ characterId: CHARACTER_ID, state: 'Left', joinedAtUtc: '2026-09-10T00:00:00Z' }],
-    encounters: [{
-      encounterId: 'encounter-1',
-      encounterIndex: 0,
-      monsterId: 'M1',
-      state: 'Pending',
-      wipeCount: 0,
-      characterIds: [],
-    }],
+    encounters: [
+      {
+        encounterId: 'encounter-1',
+        encounterIndex: 0,
+        monsterId: 'M1',
+        state: 'Pending',
+        wipeCount: 0,
+        characterIds: [],
+      },
+    ],
   }
 }
 
@@ -191,13 +281,15 @@ function bossCitadelRun(): DungeonRun {
     ...activeCitadelRun(),
     currentEncounterIndex: 4,
     currentCheckpointId: 'FINAL_SEAL',
-    encounters: [{
-      encounterId: 'encounter-boss',
-      encounterIndex: 4,
-      monsterId: 'BOSS',
-      state: 'Pending',
-      wipeCount: 0,
-      characterIds: [],
-    }],
+    encounters: [
+      {
+        encounterId: 'encounter-boss',
+        encounterIndex: 4,
+        monsterId: 'BOSS',
+        state: 'Pending',
+        wipeCount: 0,
+        characterIds: [],
+      },
+    ],
   }
 }

@@ -63,7 +63,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await expect(merchantDialog.locator('.merchant__identity h2')).toContainText('Маркус')
   await expect(merchantDialog.locator('[data-merchant-offer]').first()).toBeVisible()
   await expect(merchantDialog.getByPlaceholder('Поиск по витрине…')).toBeVisible()
-  await merchantDialog.getByRole('button', { name: 'Close' }).click()
+  await merchantDialog.getByRole('button', { name: 'Закрыть', exact: true }).click()
   await expect(merchantDialog).toBeHidden()
 
   await page.getByRole('button', { name: 'Войти' }).click()
@@ -72,7 +72,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await expect(guildDialog.getByText('Селия', { exact: true })).toBeVisible()
   await expect(guildDialog.getByLabel('Гаррет, Мастер охоты')).toBeVisible()
   await page.screenshot({ path: '../../output/playwright/session-3-ui-guild.png', fullPage: true })
-  await guildDialog.getByRole('button', { name: 'Close' }).click()
+  await guildDialog.getByRole('button', { name: 'Закрыть', exact: true }).click()
   await expect(guildDialog).toBeHidden()
 
   await page.locator('[data-nav="world"]').click()

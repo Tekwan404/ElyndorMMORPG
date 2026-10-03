@@ -195,3 +195,47 @@ This baseline was followed by user approval of the core-loop-first order above.
   preview screenshot reviewed; error preview confirms fixed notification at 360px.
 - `git diff --check`: clean. No backend/content/API/dependency changes; backend
   tests not run. This does not certify real authenticated multiplayer flows.
+
+## Pass 2: Quest journal, Party and Dungeon run actions
+
+Production screens now share UITabs, UILoadingState, UIToast, UIButton and
+UIModal/UIConfirmation instead of local tab/error/loading treatments.
+
+- QuestView: accessible shared tabs, load retry (including generic network
+  errors), scoped quest pending keys, abandon review and truthful reward feedback.
+  A null claim response never displays success; tab changes made while loading
+  are not overwritten by initial-tab selection.
+- PartyView: initial membership loading/error cannot masquerade as an empty
+  group; panel titles use the existing slot contract. Destructive confirmation
+  stays open/busy through execution and failure. Group mutations show progress,
+  result/error; conflicting view actions are guarded and polling pauses during
+  confirmation/execution. Mobile member actions wrap, with shared 44px targets.
+- DungeonLocationCard: command errors no longer replace known run progress.
+  Initial membership/load failures remain blocking and retryable; cached preview
+  alone does not authorize a new run. Reconciliation preserves known progress.
+  Create/enter/restart/return/city-exit/start/leave show scoped pending feedback.
+  Permanent leave explicitly differs from temporary city exit and is confirmed.
+- Removed quest-local tab/loading/empty/error markup and tab/error CSS, party and
+  dungeon bespoke error styling, unsupported party panel title attributes and
+  sub-44px party button overrides.
+- Shell E2E close-button locators now match the shared Russian accessible label.
+
+No new backend contract, gameplay, content, dependencies or combat layout.
+This bounded pass does not claim all quest offer/NPC flows or all game screens
+are migrated: AdventurerGuildBoard/other offer panels and real authenticated
+party/dungeon wipe/reconnect validation remain follow-up work. Commerce,
+professions, Shop and AFK remain deferred. Existing set-bonus DTO limitation and
+specialized HUD consolidation from pass 1 remain unchanged.
+
+### Pass 2 verification
+
+- Final full unit run: 89 files, 419 tests passed (`--maxWorkers=2`).
+- Local full Playwright run: 7 passed, 1 skipped (real-database professions test).
+- Final build/typecheck passed; lint zero errors and 13 pre-existing warnings.
+- Browser production PartyView with mock stores at 360x780: no horizontal
+  overflow, all action buttons 44px; failed confirmation remains open and its
+  bottom-sheet screenshot was reviewed. Dungeon browser mount was inspected,
+  but full real-server dungeon flows remain unverified locally.
+- Failure-first regressions reproduced hidden progress, premature dismissal,
+  unknown initial membership and reconciliation replacement before fixes.
+- Final `git diff --check` clean. Backend unchanged; required CI still gates merge.

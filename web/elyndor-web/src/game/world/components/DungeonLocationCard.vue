@@ -7,7 +7,7 @@ import { useDungeonStore } from '@/game/party/dungeonStore'
 import { usePartyStore } from '@/game/party/partyStore'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
-import { UIButton } from '@/ui/components'
+import { UIButton, UILoadingState, UIModal, UIToast } from '@/ui/components'
 
 const props = defineProps<{ dungeonId: string }>()
 const emit = defineEmits<{ 'open-party': [] }>()
@@ -18,30 +18,39 @@ const combat = useCombatSessionStore()
 const session = useGameSessionStore()
 const hasLoaded = ref(false)
 const startEncounterError = ref<string | null>(null)
+const loadError = ref<string | null>(null)
+const pending = ref<string | null>(null)
+const feedback = ref<string | null>(null)
+const leaveConfirmation = ref(false)
 
 const currentCharacterId = computed(() => session.snapshot?.character?.id ?? '')
-const preview = computed(() =>
-  dungeon.previews.find(item => item.id === props.dungeonId) ?? null,
-)
+const preview = computed(() => dungeon.previews.find((item) => item.id === props.dungeonId) ?? null)
 const current = computed(() =>
   dungeon.current?.dungeonId === props.dungeonId ? dungeon.current : null,
 )
 const isLeader = computed(() => party.snapshot?.leaderCharacterId === currentCharacterId.value)
-const isSoloRun = computed(() => Boolean(
-  current.value
-    && current.value.partyId === currentCharacterId.value
-    && current.value.members.length === 1
-    && current.value.members[0]?.characterId === currentCharacterId.value,
-))
+const isSoloRun = computed(() =>
+  Boolean(
+    current.value &&
+    current.value.partyId === currentCharacterId.value &&
+    current.value.members.length === 1 &&
+    current.value.members[0]?.characterId === currentCharacterId.value,
+  ),
+)
 const canManageRun = computed(() => isSoloRun.value || isLeader.value)
 const canCreateRun = computed(() => !party.snapshot || isLeader.value)
-const currentMember = computed(() => current.value?.members.find(
-  member => member.characterId === currentCharacterId.value,
-) ?? null)
+const currentMember = computed(
+  () =>
+    current.value?.members.find((member) => member.characterId === currentCharacterId.value) ??
+    null,
+)
 const isActiveMember = computed(() => currentMember.value?.state === 'Active')
-const currentEncounter = computed(() => current.value?.encounters.find(
-  encounter => encounter.encounterIndex === current.value?.currentEncounterIndex,
-) ?? null)
+const currentEncounter = computed(
+  () =>
+    current.value?.encounters.find(
+      (encounter) => encounter.encounterIndex === current.value?.currentEncounterIndex,
+    ) ?? null,
+)
 const currentEncounterPreview = computed(() => {
   const index = current.value?.currentEncounterIndex
   if (index === undefined) return null
@@ -49,51 +58,57 @@ const currentEncounterPreview = computed(() => {
 })
 const hasActiveEncounter = computed(() => currentEncounter.value?.state === 'Active')
 const currentLocationId = computed(() => session.snapshot?.world?.currentLocation.id ?? '')
-const isInsideDungeon = computed(() => Boolean(
-  preview.value?.entryLocationId
-    && currentLocationId.value === preview.value.entryLocationId,
-))
-const canReturnToRun = computed(() => Boolean(
-  current.value?.state === 'Active'
-    && isActiveMember.value
-    && !isInsideDungeon.value
-    && !hasActiveEncounter.value,
-))
-const canExitToCity = computed(() => Boolean(
-  current.value
-    && current.value.state !== 'Abandoned'
-    && isActiveMember.value
-    && isInsideDungeon.value
-    && !hasActiveEncounter.value,
-))
-const canLeaveRun = computed(() => Boolean(
-  current.value
-    && isActiveMember.value
-    && !hasActiveEncounter.value,
-))
-const canStart = computed(() => Boolean(
-  current.value
-    && canManageRun.value
-    && isActiveMember.value
-    && isInsideDungeon.value
-    && current.value.state === 'Active'
-    && currentEncounter.value
-    && currentEncounter.value.state !== 'Active',
-))
+const isInsideDungeon = computed(() =>
+  Boolean(
+    preview.value?.entryLocationId && currentLocationId.value === preview.value.entryLocationId,
+  ),
+)
+const canReturnToRun = computed(() =>
+  Boolean(
+    current.value?.state === 'Active' &&
+    isActiveMember.value &&
+    !isInsideDungeon.value &&
+    !hasActiveEncounter.value,
+  ),
+)
+const canExitToCity = computed(() =>
+  Boolean(
+    current.value &&
+    current.value.state !== 'Abandoned' &&
+    isActiveMember.value &&
+    isInsideDungeon.value &&
+    !hasActiveEncounter.value,
+  ),
+)
+const canLeaveRun = computed(() =>
+  Boolean(current.value && isActiveMember.value && !hasActiveEncounter.value),
+)
+const canStart = computed(() =>
+  Boolean(
+    current.value &&
+    canManageRun.value &&
+    isActiveMember.value &&
+    isInsideDungeon.value &&
+    current.value.state === 'Active' &&
+    currentEncounter.value &&
+    currentEncounter.value.state !== 'Active',
+  ),
+)
 const minimumLevel = computed(() => preview.value?.minimumLevel ?? 1)
-const encounterCount = computed(() => preview.value?.encounters?.length ?? current.value?.encounterCount ?? 0)
+const encounterCount = computed(
+  () => preview.value?.encounters?.length ?? current.value?.encounterCount ?? 0,
+)
 const stageNumber = computed(() => {
   if (!current.value) return 0
   if (current.value.state === 'Completed') return current.value.encounterCount
   return Math.min(current.value.currentEncounterIndex + 1, current.value.encounterCount)
 })
-const dungeonArt = computed(() => locationPresentation(
-  props.dungeonId,
-  preview.value?.displayName,
-).art)
+const dungeonArt = computed(
+  () => locationPresentation(props.dungeonId, preview.value?.displayName).art,
+)
 const cardState = computed<'loading' | 'error' | 'ready'>(() => {
-  if (!hasLoaded.value || dungeon.loading) return 'loading'
-  if (dungeon.errorCode || !preview.value) return 'error'
+  if (!hasLoaded.value || (dungeon.loading && !preview.value)) return 'loading'
+  if (loadError.value || !preview.value) return 'error'
   return 'ready'
 })
 const runStateLabel = computed(() => {
@@ -124,9 +139,13 @@ const isBossStage = computed(() => currentEncounterPreview.value?.isBoss === tru
 
 async function refreshCard(): Promise<void> {
   hasLoaded.value = false
+  loadError.value = null
   startEncounterError.value = null
   try {
     await Promise.all([party.refresh(), dungeon.refresh()])
+    loadError.value = party.errorCode || dungeon.errorCode
+  } catch {
+    loadError.value = 'network_unavailable'
   } finally {
     hasLoaded.value = true
   }
@@ -140,40 +159,73 @@ async function createRun(): Promise<void> {
   if (!preview.value) return
   if (party.snapshot && party.snapshot.leaderCharacterId !== currentCharacterId.value) return
   startEncounterError.value = null
-  await dungeon.create(preview.value.id)
+  await act('create', () => dungeon.create(preview.value!.id), 'Забег создан.')
+}
+
+async function act(key: string, action: () => Promise<void>, message: string): Promise<boolean> {
+  if (pending.value) return false
+  pending.value = key
+  startEncounterError.value = null
+  feedback.value = null
+  try {
+    await action()
+    if (dungeon.errorCode || startEncounterError.value) return false
+    feedback.value = message
+    return true
+  } catch {
+    startEncounterError.value = 'Не удалось выполнить действие. Попробуйте ещё раз.'
+    return false
+  } finally {
+    pending.value = null
+  }
 }
 
 async function enterRun(): Promise<void> {
-  if (current.value && !currentMember.value) await dungeon.enter(current.value.runId)
+  if (current.value && !currentMember.value)
+    await act('enter', () => dungeon.enter(current.value!.runId), 'Вы вошли в забег.')
 }
 
 async function startEncounter(): Promise<void> {
   if (!current.value || !canStart.value) return
-  startEncounterError.value = null
-  await combat.connect()
-  const started = await combat.startDungeonEncounter(current.value.runId)
-  if (!started) {
-    startEncounterError.value = 'Не удалось начать бой. Забег обновлён — попробуйте ещё раз.'
-    await dungeon.refresh()
-    return
-  }
-  await dungeon.refresh()
+  const runId = current.value.runId
+  await act(
+    'start',
+    async () => {
+      await combat.connect()
+      const started = await combat.startDungeonEncounter(runId)
+      if (!started) {
+        startEncounterError.value = 'Не удалось начать бой. Забег обновлён — попробуйте ещё раз.'
+      }
+      await dungeon.refresh()
+    },
+    'Бой начат.',
+  )
 }
 
 async function restartEncounter(): Promise<void> {
-  if (current.value && canManageRun.value) await dungeon.restart(current.value.runId)
+  if (current.value && canManageRun.value)
+    await act('restart', () => dungeon.restart(current.value!.runId), 'Бой подготовлен к повтору.')
 }
 
 async function exitToCity(): Promise<void> {
-  if (current.value) await dungeon.exitToCity(current.value.runId)
+  if (current.value)
+    await act(
+      'exit',
+      () => dungeon.exitToCity(current.value!.runId),
+      'Вы вернулись в город. Прогресс забега сохранён.',
+    )
 }
 
 async function returnToRun(): Promise<void> {
-  if (current.value) await dungeon.returnToRun(current.value.runId)
+  if (current.value)
+    await act('return', () => dungeon.returnToRun(current.value!.runId), 'Вы вернулись в забег.')
 }
 
 async function leaveRun(): Promise<void> {
-  if (current.value) await dungeon.leaveRun(current.value.runId)
+  if (!current.value) return
+  const runId = current.value.runId
+  if (await act('leave', () => dungeon.leaveRun(runId), 'Вы покинули забег.'))
+    leaveConfirmation.value = false
 }
 </script>
 
@@ -187,173 +239,243 @@ async function leaveRun(): Promise<void> {
   >
     <div v-if="cardState !== 'ready'" class="dungeon-expedition__state" role="status">
       <template v-if="cardState === 'loading'">
-        <strong>Загружаем подземелье</strong>
-        <p>Проверяем доступ.</p>
+        <UILoadingState state="loading" title="Загружаем подземелье" />
       </template>
       <template v-else>
         <strong>Подземелье временно недоступно</strong>
         <p>Не удалось загрузить данные. Попробуйте ещё раз.</p>
-        <p v-if="dungeon.errorCode" class="dungeon-error" role="alert">{{ socialErrorMessage(dungeon.errorCode) }}</p>
+        <UIToast v-if="loadError" tone="danger">{{
+          socialErrorMessage(loadError)
+        }}</UIToast>
         <div class="dungeon-actions">
-          <UIButton variant="secondary" :loading="dungeon.loading" @click="refreshCard">Повторить</UIButton>
+          <UIButton variant="secondary" :loading="dungeon.loading" @click="refreshCard"
+            >Повторить</UIButton
+          >
         </div>
       </template>
     </div>
 
     <template v-else-if="preview">
-    <div class="dungeon-expedition__backdrop" />
-    <div class="dungeon-expedition__content">
-      <header class="dungeon-expedition__header">
-        <div>
-          <small>ПОДЗЕМЕЛЬЕ · 1–{{ preview.maximumPartySize }} ИГРОКОВ</small>
-          <h2>{{ preview.displayName }}</h2>
-          <p>{{ preview.description }}</p>
-        </div>
-        <div class="dungeon-expedition__level">
-          <span>УР.</span>
-          <strong>{{ minimumLevel }}+</strong>
-        </div>
-      </header>
-
-      <div class="dungeon-expedition__meta">
-        <span>{{ encounterCount }} боёв</span>
-        <span>Один игрок или группа до {{ preview.maximumPartySize }}</span>
-        <span>{{ runStateLabel }}</span>
-      </div>
-
-      <p v-if="dungeon.errorCode" class="dungeon-error" role="alert">
-        {{ socialErrorMessage(dungeon.errorCode) }}
-      </p>
-      <p v-if="startEncounterError" class="dungeon-error" role="alert">
-        {{ startEncounterError }}
-      </p>
-
-      <template v-if="current">
-        <div class="dungeon-run">
-          <div class="dungeon-run__heading">
-            <div>
-              <small>ТЕКУЩИЙ ЗАБЕГ</small>
-              <strong>{{ current.displayName }}</strong>
-            </div>
-            <span>{{ runStateLabel }}</span>
-          </div>
-
-          <div class="dungeon-status" data-dungeon-status>
-            <div>
-              <small>ЭТАП</small>
-              <strong>{{ stageNumber }} / {{ current.encounterCount }}</strong>
-            </div>
-            <div>
-              <small>ЦЕЛЬ</small>
-              <strong>{{ objectiveLabel }}</strong>
-            </div>
-            <div>
-              <small>СОСТОЯНИЕ</small>
-              <strong>{{ runStateLabel }}</strong>
-              <span>{{ encounterStateLabel }}</span>
-            </div>
-            <div v-if="isBossStage" class="dungeon-status__boss">
-              <small>ЦЕЛЬ ЭТАПА</small>
-              <strong>БОСС</strong>
-            </div>
-          </div>
-
-          <div
-            class="dungeon-progress"
-            :style="{ '--encounter-columns': Math.min(Math.max(encounterCount, 1), 5) }"
-            aria-label="Прогресс подземелья"
-          >
-            <div
-              v-for="encounter in current.encounters"
-              :key="encounter.encounterId"
-              class="dungeon-progress__step"
-              :data-state="encounter.state"
-              :aria-label="`Этап ${encounter.encounterIndex + 1} из ${current.encounterCount}`"
-            >
-              <i />
-              <small>Этап {{ encounter.encounterIndex + 1 }}</small>
-            </div>
-          </div>
-        </div>
-
-        <p v-if="current.state === 'Completed'" class="dungeon-hint">Подземелье пройдено. Можно выйти в город или начать новый забег.</p>
-        <p v-else-if="current.state === 'Abandoned'" class="dungeon-hint">Предыдущий забег завершён.</p>
-        <p v-else-if="canReturnToRun" class="dungeon-hint">Ты вне подземелья. Прогресс забега сохранён.</p>
-        <p v-else-if="!canManageRun" class="dungeon-hint">Следующий бой начинает лидер группы.</p>
-
-        <div class="dungeon-actions">
-          <UIButton
-            v-if="!currentMember && current.state === 'Active'"
-            variant="secondary"
-            @click="enterRun"
-          >Войти в забег</UIButton>
-          <UIButton
-            v-if="canReturnToRun"
-            data-dungeon-return
-            @click="returnToRun"
-          >Вернуться в забег</UIButton>
-          <UIButton
-            v-if="current.state !== 'Active' && canCreateRun"
-            data-create-dungeon
-            @click="createRun"
-          >Новый забег</UIButton>
-          <UIButton
-            v-else-if="canStart"
-            :loading="combat.pending"
-            data-start-dungeon
-            @click="startEncounter"
-          >Начать бой</UIButton>
-          <UIButton
-            v-if="canManageRun && current.encounters.some(encounter => encounter.state === 'Wiped')"
-            variant="secondary"
-            data-dungeon-restart
-            @click="restartEncounter"
-          >Повторить бой</UIButton>
-          <UIButton
-            v-if="canExitToCity"
-            variant="secondary"
-            data-dungeon-city-exit
-            @click="exitToCity"
-          >В город</UIButton>
-          <UIButton
-            v-if="canLeaveRun"
-            variant="danger"
-            data-dungeon-leave
-            @click="leaveRun"
-          >Покинуть забег</UIButton>
-          <UIButton v-if="party.snapshot" variant="secondary" @click="emit('open-party')">Состав группы</UIButton>
-        </div>
-      </template>
-
-      <template v-else>
-        <div class="dungeon-ready">
+      <div class="dungeon-expedition__backdrop" />
+      <div class="dungeon-expedition__content">
+        <header class="dungeon-expedition__header">
           <div>
-            <small>ПОДЗЕМЕЛЬЕ</small>
-            <strong>{{ party.snapshot ? 'Группа готова к забегу' : 'Можно войти одному' }}</strong>
-            <p>
-              {{ party.snapshot
-                ? 'Забег начинает лидер группы.'
-                : 'Можно начать забег без группы.' }}
-            </p>
+            <small>ПОДЗЕМЕЛЬЕ · 1–{{ preview.maximumPartySize }} ИГРОКОВ</small>
+            <h2>{{ preview.displayName }}</h2>
+            <p>{{ preview.description }}</p>
           </div>
+          <div class="dungeon-expedition__level">
+            <span>УР.</span>
+            <strong>{{ minimumLevel }}+</strong>
+          </div>
+        </header>
+
+        <div class="dungeon-expedition__meta">
+          <span>{{ encounterCount }} боёв</span>
+          <span>Один игрок или группа до {{ preview.maximumPartySize }}</span>
+          <span>{{ runStateLabel }}</span>
+        </div>
+
+        <UIToast v-if="dungeon.errorCode" tone="danger">
+          {{ socialErrorMessage(dungeon.errorCode) }}
+        </UIToast>
+        <UIToast v-if="startEncounterError" tone="danger">
+          {{ startEncounterError }}
+        </UIToast>
+        <UIToast v-if="feedback" tone="success">{{ feedback }}</UIToast>
+
+        <template v-if="current">
+          <div class="dungeon-run">
+            <div class="dungeon-run__heading">
+              <div>
+                <small>ТЕКУЩИЙ ЗАБЕГ</small>
+                <strong>{{ current.displayName }}</strong>
+              </div>
+              <span>{{ runStateLabel }}</span>
+            </div>
+
+            <div class="dungeon-status" data-dungeon-status>
+              <div>
+                <small>ЭТАП</small>
+                <strong>{{ stageNumber }} / {{ current.encounterCount }}</strong>
+              </div>
+              <div>
+                <small>ЦЕЛЬ</small>
+                <strong>{{ objectiveLabel }}</strong>
+              </div>
+              <div>
+                <small>СОСТОЯНИЕ</small>
+                <strong>{{ runStateLabel }}</strong>
+                <span>{{ encounterStateLabel }}</span>
+              </div>
+              <div v-if="isBossStage" class="dungeon-status__boss">
+                <small>ЦЕЛЬ ЭТАПА</small>
+                <strong>БОСС</strong>
+              </div>
+            </div>
+
+            <div
+              class="dungeon-progress"
+              :style="{ '--encounter-columns': Math.min(Math.max(encounterCount, 1), 5) }"
+              aria-label="Прогресс подземелья"
+            >
+              <div
+                v-for="encounter in current.encounters"
+                :key="encounter.encounterId"
+                class="dungeon-progress__step"
+                :data-state="encounter.state"
+                :aria-label="`Этап ${encounter.encounterIndex + 1} из ${current.encounterCount}`"
+              >
+                <i />
+                <small>Этап {{ encounter.encounterIndex + 1 }}</small>
+              </div>
+            </div>
+          </div>
+
+          <p v-if="current.state === 'Completed'" class="dungeon-hint">
+            Подземелье пройдено. Можно выйти в город или начать новый забег.
+          </p>
+          <p v-else-if="current.state === 'Abandoned'" class="dungeon-hint">
+            Предыдущий забег завершён.
+          </p>
+          <p v-else-if="canReturnToRun" class="dungeon-hint">
+            Ты вне подземелья. Прогресс забега сохранён.
+          </p>
+          <p v-else-if="!canManageRun" class="dungeon-hint">Следующий бой начинает лидер группы.</p>
+
           <div class="dungeon-actions">
             <UIButton
-              v-if="!party.snapshot"
-              data-create-dungeon
-              @click="createRun"
-            >Войти одному</UIButton>
+              v-if="!currentMember && current.state === 'Active'"
+              variant="secondary"
+              :loading="pending === 'enter'"
+              :disabled="pending !== null"
+              @click="enterRun"
+              >Войти в забег</UIButton
+            >
             <UIButton
-              v-else-if="isLeader"
+              v-if="canReturnToRun"
+              data-dungeon-return
+              :loading="pending === 'return'"
+              :disabled="pending !== null"
+              @click="returnToRun"
+              >Вернуться в забег</UIButton
+            >
+            <UIButton
+              v-if="current.state !== 'Active' && canCreateRun"
               data-create-dungeon
+              :loading="pending === 'create'"
+              :disabled="pending !== null"
               @click="createRun"
-            >Начать забег</UIButton>
-            <UIButton v-else variant="secondary" @click="emit('open-party')">Открыть группу</UIButton>
+              >Новый забег</UIButton
+            >
+            <UIButton
+              v-else-if="canStart"
+              :loading="pending === 'start'"
+              :disabled="pending !== null || combat.pending"
+              data-start-dungeon
+              @click="startEncounter"
+              >Начать бой</UIButton
+            >
+            <UIButton
+              v-if="
+                canManageRun && current.encounters.some((encounter) => encounter.state === 'Wiped')
+              "
+              variant="secondary"
+              data-dungeon-restart
+              :loading="pending === 'restart'"
+              :disabled="pending !== null"
+              @click="restartEncounter"
+              >Повторить бой</UIButton
+            >
+            <UIButton
+              v-if="canExitToCity"
+              variant="secondary"
+              data-dungeon-city-exit
+              :loading="pending === 'exit'"
+              :disabled="pending !== null"
+              @click="exitToCity"
+              >В город</UIButton
+            >
+            <UIButton
+              v-if="canLeaveRun"
+              variant="danger"
+              data-dungeon-leave
+              :disabled="pending !== null"
+              @click="leaveConfirmation = true"
+              >Покинуть забег</UIButton
+            >
+            <UIButton v-if="party.snapshot" variant="secondary" @click="emit('open-party')"
+              >Состав группы</UIButton
+            >
           </div>
-        </div>
-      </template>
-    </div>
+        </template>
+
+        <template v-else>
+          <div class="dungeon-ready">
+            <div>
+              <small>ПОДЗЕМЕЛЬЕ</small>
+              <strong>{{
+                party.snapshot ? 'Группа готова к забегу' : 'Можно войти одному'
+              }}</strong>
+              <p>
+                {{
+                  party.snapshot ? 'Забег начинает лидер группы.' : 'Можно начать забег без группы.'
+                }}
+              </p>
+            </div>
+            <div class="dungeon-actions">
+              <UIButton
+                v-if="!party.snapshot"
+                data-create-dungeon
+                :loading="pending === 'create'"
+                :disabled="pending !== null"
+                @click="createRun"
+                >Войти одному</UIButton
+              >
+              <UIButton
+                v-else-if="isLeader"
+                data-create-dungeon
+                :loading="pending === 'create'"
+                :disabled="pending !== null"
+                @click="createRun"
+                >Начать забег</UIButton
+              >
+              <UIButton v-else variant="secondary" @click="emit('open-party')"
+                >Открыть группу</UIButton
+              >
+            </div>
+          </div>
+        </template>
+      </div>
     </template>
   </section>
+  <UIModal
+    :open="leaveConfirmation"
+    title="Покинуть забег?"
+    :busy="pending !== null"
+    @close="leaveConfirmation = false"
+  >
+    <p>
+      Участие в этом забеге будет завершено. Чтобы временно выйти с сохранением прогресса,
+      используйте «В город».
+    </p>
+    <UIToast v-if="dungeon.errorCode || startEncounterError" tone="danger">{{
+      startEncounterError || socialErrorMessage(dungeon.errorCode || '')
+    }}</UIToast>
+    <template #actions>
+      <UIButton variant="ghost" :disabled="pending !== null" @click="leaveConfirmation = false"
+        >Отмена</UIButton
+      >
+      <UIButton
+        variant="danger"
+        data-dungeon-confirm-leave
+        :loading="pending === 'leave'"
+        :disabled="pending !== null"
+        @click="leaveRun"
+        >Покинуть забег</UIButton
+      >
+    </template>
+  </UIModal>
 </template>
 
 <style scoped>
@@ -368,7 +490,9 @@ async function leaveRun(): Promise<void> {
   background:
     linear-gradient(90deg, rgb(4 6 10 / 97%) 0 42%, rgb(4 6 10 / 78%) 68%, rgb(4 6 10 / 45%)),
     var(--dungeon-art) center / cover;
-  box-shadow: var(--ui-shadow-inset), 0 1.2rem 2.8rem rgb(0 0 0 / 35%);
+  box-shadow:
+    var(--ui-shadow-inset),
+    0 1.2rem 2.8rem rgb(0 0 0 / 35%);
 }
 
 .dungeon-expedition__backdrop {
@@ -408,9 +532,9 @@ async function leaveRun(): Promise<void> {
 .dungeon-run__heading small,
 .dungeon-status small {
   color: var(--ui-color-gold);
-  font-size: .54rem;
+  font-size: 0.54rem;
   font-weight: 800;
-  letter-spacing: .12em;
+  letter-spacing: 0.12em;
 }
 
 .dungeon-expedition h2 {
@@ -422,7 +546,7 @@ async function leaveRun(): Promise<void> {
 .dungeon-expedition p {
   margin: 0;
   color: #c2c8d4;
-  font-size: .72rem;
+  font-size: 0.72rem;
   line-height: 1.5;
 }
 
@@ -440,7 +564,7 @@ async function leaveRun(): Promise<void> {
 
 .dungeon-expedition__level span {
   color: var(--ui-color-text-muted);
-  font-size: .48rem;
+  font-size: 0.48rem;
 }
 
 .dungeon-expedition__level strong {
@@ -460,7 +584,7 @@ async function leaveRun(): Promise<void> {
   border-radius: var(--ui-radius-round);
   background: rgb(5 7 11 / 58%);
   color: var(--ui-color-text-secondary);
-  font-size: .58rem;
+  font-size: 0.58rem;
 }
 
 .dungeon-run,
@@ -489,7 +613,7 @@ async function leaveRun(): Promise<void> {
 
 .dungeon-run__heading > span {
   color: #d9c38a;
-  font-size: .56rem;
+  font-size: 0.56rem;
   font-weight: 800;
 }
 
@@ -513,12 +637,12 @@ async function leaveRun(): Promise<void> {
 .dungeon-status strong {
   overflow-wrap: anywhere;
   color: var(--ui-color-text-primary);
-  font-size: .66rem;
+  font-size: 0.66rem;
 }
 
 .dungeon-status span {
   color: var(--ui-color-text-muted);
-  font-size: .56rem;
+  font-size: 0.56rem;
 }
 
 .dungeon-status__boss {
@@ -546,15 +670,15 @@ async function leaveRun(): Promise<void> {
 }
 
 .dungeon-progress__step i {
-  width: .45rem;
-  height: .45rem;
+  width: 0.45rem;
+  height: 0.45rem;
   border-radius: 50%;
   background: #6f7789;
 }
 
 .dungeon-progress__step small {
   color: var(--ui-color-text-muted);
-  font-size: .52rem;
+  font-size: 0.52rem;
 }
 
 .dungeon-progress__step[data-state='Completed'] {
@@ -582,10 +706,6 @@ async function leaveRun(): Promise<void> {
 
 .dungeon-hint {
   color: var(--ui-color-text-muted) !important;
-}
-
-.dungeon-error {
-  color: var(--ui-color-danger, #ff8d8d) !important;
 }
 
 .dungeon-expedition--state {
