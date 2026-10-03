@@ -92,6 +92,7 @@ public sealed class PremiumStoreServiceTests(PostgresFixture postgres) : IAsyncL
             item => item.Offer.Sku == "REFORGE_STONES_SMALL");
         Assert.True(offer.CanPurchase);
         Assert.Null(offer.Offer.PerAccountLimit);
+        Assert.All(content.Package.PremiumStoreOffers!, item => Assert.Null(item.PerAccountLimit));
     }
 
     private async Task<Guid> CreateAccountAsync()
