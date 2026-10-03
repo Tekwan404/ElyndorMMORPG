@@ -332,6 +332,13 @@ function setSelectedQuantity(item: InventoryItem, raw: number | string): void {
   }
 }
 
+function onSelectedQuantityInput(item: InventoryItem, event: Event): void {
+  const target = event.target
+  if (target instanceof HTMLInputElement) {
+    setSelectedQuantity(item, target.value)
+  }
+}
+
 function toggleSelectionMode(): void {
   selectionMode.value = !selectionMode.value
   selectedItemIds.value = new Set()
@@ -915,7 +922,7 @@ async function toggleSelectedLock(): Promise<void> {
                 :value="selectedQuantity(item)"
                 :disabled="bulkActionPending"
                 :aria-label="`Количество: ${item.name}`"
-                @input="setSelectedQuantity(item, ($event.target as HTMLInputElement).value)"
+                @input="onSelectedQuantityInput(item, $event)"
               />
               <button
                 type="button"
