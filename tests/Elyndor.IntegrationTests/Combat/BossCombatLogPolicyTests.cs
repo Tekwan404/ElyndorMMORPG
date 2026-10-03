@@ -18,10 +18,16 @@ public sealed class BossCombatLogPolicyTests
             0);
 
         Assert.False(BossCombatLogArchive.ShouldArchiveEvent(zeroRegen));
+        Assert.False(BossCombatLogArchive.ShouldArchiveEvent(
+            zeroRegen with { Amount = 0.001m }));
+        Assert.False(BossCombatLogArchive.ShouldArchiveEvent(
+            zeroRegen with { Amount = 0.004m }));
+        Assert.True(BossCombatLogArchive.ShouldArchiveEvent(
+            zeroRegen with { Amount = 0.01m }));
         Assert.True(BossCombatLogArchive.ShouldArchiveEvent(
             zeroRegen with { Amount = 1 }));
         Assert.True(BossCombatLogArchive.ShouldArchiveEvent(
-            zeroRegen with { DefinitionId = "OTHER_REGEN" }));
+            zeroRegen with { DefinitionId = "OTHER_REGEN", Amount = 0.001m }));
     }
 
     [Fact]
