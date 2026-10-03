@@ -33,6 +33,7 @@ const filtersOpen = ref(false)
 const newItemIds = ref<Set<string>>(new Set())
 const selectionMode = ref(false)
 const selectedItemIds = ref<Set<string>>(new Set())
+const selectedQuantities = ref<Record<string, number>>({})
 const bulkActionError = ref<string | null>(null)
 const bulkActionPending = ref(false)
 const MARCUS_MERCHANT_ID = 'MARCUS_SUPPLIES'
@@ -102,7 +103,10 @@ const selectedItems = computed(() =>
   bagItems.value.filter(item => selectedItemIds.value.has(item.id)),
 )
 const selectedSellValue = computed(() =>
-  selectedItems.value.reduce((sum, item) => sum + item.sellPriceGold * item.quantity, 0),
+  selectedItems.value.reduce(
+    (sum, item) => sum + item.sellPriceGold * selectedQuantity(item),
+    0,
+  ),
 )
 const canSellHere = computed(() =>
   session.snapshot?.world?.currentLocation.id === 'STARTER_TOWN',
@@ -313,9 +317,25 @@ function isValuableInventoryItem(item: InventoryItem): boolean {
     || (item.reforgeCount ?? 0) > 0
 }
 
+function selectedQuantity(item: InventoryItem): number {
+  return Math.max(1, Math.min(item.quantity, selectedQuantities.value[item.id] ?? item.quantity))
+}
+
+function setSelectedQuantity(item: InventoryItem, raw: number | string): void {
+  const parsed = Number(raw)
+  const quantity = Number.isFinite(parsed)
+    ? Math.max(1, Math.min(item.quantity, Math.trunc(parsed)))
+    : item.quantity
+  selectedQuantities.value = {
+    ...selectedQuantities.value,
+    [item.id]: quantity,
+  }
+}
+
 function toggleSelectionMode(): void {
   selectionMode.value = !selectionMode.value
   selectedItemIds.value = new Set()
+  selectedQuantities.value = {}
   bulkActionError.value = null
 }
 
@@ -326,9 +346,16 @@ function toggleInventorySelection(item: InventoryItem): void {
   }
 
   const next = new Set(selectedItemIds.value)
-  if (next.has(item.id)) next.delete(item.id)
-  else next.add(item.id)
+  const quantities = { ...selectedQuantities.value }
+  if (next.has(item.id)) {
+    next.delete(item.id)
+    delete quantities[item.id]
+  } else {
+    next.add(item.id)
+    quantities[item.id] = item.quantity
+  }
   selectedItemIds.value = next
+  selectedQuantities.value = quantities
   bulkActionError.value = null
 }
 
@@ -339,6 +366,9 @@ function selectAllVisibleItems(): void {
   selectedItemIds.value = allSelected
     ? new Set()
     : new Set(selectable.map(item => item.id))
+  selectedQuantities.value = allSelected
+    ? {}
+    : Object.fromEntries(selectable.map(item => [item.id, item.quantity]))
   bulkActionError.value = null
 }
 
@@ -354,13 +384,17 @@ async function discardInventoryItems(items: InventoryItem[]): Promise<boolean> {
   bulkActionError.value = null
   try {
     const succeeded = await session.discardInventoryItems(
-      items.map(item => ({ characterItemId: item.id, quantity: item.quantity })),
+      items.map(item => ({
+        characterItemId: item.id,
+        quantity: selectedQuantity(item),
+      })),
     )
     if (!succeeded) {
       bulkActionError.value = inventoryBulkError(session.errorCode)
       return false
     }
     selectedItemIds.value = new Set()
+    selectedQuantities.value = {}
     return true
   } finally {
     bulkActionPending.value = false
@@ -387,21 +421,26 @@ async function sellSelectedItems(): Promise<void> {
   if (!items.length || bulkActionPending.value) return
   const valuable = items.some(isValuableInventoryItem)
   const message = valuable
-    ? `Продать ${items.length} позиций за ${formatMoney(items.reduce((sum, item) => sum + item.sellPriceGold * item.quantity, 0))}? Среди них есть Rare+ или улучшенные вещи.`
-    : `Продать ${items.length} позиций за ${formatMoney(items.reduce((sum, item) => sum + item.sellPriceGold * item.quantity, 0))}?`
+    ? `Продать ${items.length} позиций за ${formatMoney(items.reduce((sum, item) => sum + item.sellPriceGold * selectedQuantity(item), 0))}? Среди них есть Rare+ или улучшенные вещи.`
+    : `Продать ${items.length} позиций за ${formatMoney(items.reduce((sum, item) => sum + item.sellPriceGold * selectedQuantity(item), 0))}?`
   if (!window.confirm(message)) return
 
   bulkActionPending.value = true
   bulkActionError.value = null
   try {
     for (const item of items) {
-      const updated = await session.sellMerchantItem(MARCUS_MERCHANT_ID, item.id, item.quantity)
+      const updated = await session.sellMerchantItem(
+        MARCUS_MERCHANT_ID,
+        item.id,
+        selectedQuantity(item),
+      )
       if (!updated) {
         bulkActionError.value = 'Не удалось продать все выбранные предметы. Уже проданные позиции сохранены.'
         break
       }
     }
     selectedItemIds.value = new Set()
+    selectedQuantities.value = {}
   } finally {
     bulkActionPending.value = false
   }
@@ -857,6 +896,40 @@ async function toggleSelectedLock(): Promise<void> {
             Уничтожить
           </UIButton>
         </div>
+        <div v-if="selectedItems.some(item => item.quantity > 1)" class="inventory-bulk-quantities">
+          <label
+            v-for="item in selectedItems.filter(item => item.quantity > 1)"
+            :key="`quantity-${item.id}`"
+          >
+            <span>{{ item.name }}</span>
+            <span class="inventory-bulk-quantity-control">
+              <button
+                type="button"
+                :disabled="bulkActionPending || selectedQuantity(item) <= 1"
+                @click="setSelectedQuantity(item, selectedQuantity(item) - 1)"
+              >−</button>
+              <input
+                type="number"
+                min="1"
+                :max="item.quantity"
+                :value="selectedQuantity(item)"
+                :disabled="bulkActionPending"
+                :aria-label="`Количество: ${item.name}`"
+                @input="setSelectedQuantity(item, ($event.target as HTMLInputElement).value)"
+              />
+              <button
+                type="button"
+                :disabled="bulkActionPending || selectedQuantity(item) >= item.quantity"
+                @click="setSelectedQuantity(item, selectedQuantity(item) + 1)"
+              >+</button>
+              <button
+                type="button"
+                :disabled="bulkActionPending || selectedQuantity(item) === item.quantity"
+                @click="setSelectedQuantity(item, item.quantity)"
+              >MAX</button>
+            </span>
+          </label>
+        </div>
       </section>
       <p v-if="bulkActionError" class="item-detail__error" role="alert" data-inventory-bulk-error>
         {{ bulkActionError }}
@@ -1161,6 +1234,46 @@ async function toggleSelectedLock(): Promise<void> {
   border-radius: var(--ui-radius-md);
   background: color-mix(in srgb, var(--ui-color-surface-2) 94%, black);
   box-shadow: 0 .55rem 1.4rem rgb(0 0 0 / 28%);
+}
+
+.inventory-bulk-quantities {
+  grid-column: 1 / -1;
+  display: grid;
+  width: 100%;
+  gap: .35rem;
+  padding-top: .45rem;
+  border-top: 1px solid rgb(255 255 255 / 6%);
+}
+
+.inventory-bulk-quantities label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .65rem;
+  color: var(--ui-color-text-muted);
+  font-size: .62rem;
+}
+
+.inventory-bulk-quantity-control {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+}
+
+.inventory-bulk-quantity-control button,
+.inventory-bulk-quantity-control input {
+  min-width: 2rem;
+  min-height: 1.8rem;
+  border: 1px solid var(--ui-color-border);
+  border-radius: .45rem;
+  background: rgb(255 255 255 / 4%);
+  color: var(--ui-color-text-primary);
+  font: inherit;
+  text-align: center;
+}
+
+.inventory-bulk-quantity-control input {
+  width: 3.1rem;
 }
 
 .inventory-bulk-bar > div:first-child {
