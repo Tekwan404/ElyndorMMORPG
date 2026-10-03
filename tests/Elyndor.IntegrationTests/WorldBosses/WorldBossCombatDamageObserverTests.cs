@@ -85,6 +85,46 @@ public sealed class WorldBossCombatDamageObserverTests(PostgresFixture postgres)
     }
 
     [Fact]
+    public async Task EffectiveHealingFlowsIntoWorldBossContributionAndReplayIsSafe()
+    {
+        Seed seed = await SeedAsync();
+
+        await using ServiceProvider provider = Services();
+        WorldBossCombatDamageObserver observer = new(
+            provider.GetRequiredService<IServiceScopeFactory>());
+        CombatEvent healing = new(
+            CombatEventType.HealingApplied,
+            Now.AddSeconds(9),
+            seed.PlayerActorId,
+            DefinitionId: "TEST_HEAL",
+            Amount: 6_000m,
+            SourceActorId: seed.PlayerActorId,
+            TargetActorId: seed.PlayerActorId,
+            Sequence: 9);
+
+        CombatSession session = CreateSession(seed);
+        await observer.ObserveAsync(
+            session,
+            [Participant(seed)],
+            [healing],
+            CancellationToken.None);
+        await observer.ObserveAsync(
+            session,
+            [Participant(seed)],
+            [healing],
+            CancellationToken.None);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        WorldBossContribution contribution =
+            await verify.WorldBossContributions.SingleAsync();
+        Assert.Equal(0m, contribution.Damage);
+        Assert.Equal(6_000m, contribution.Healing);
+        Assert.Equal(6_000m, contribution.ContributionScore);
+        Assert.Equal(10_000m, (await verify.WorldBossSpawns.SingleAsync()).CurrentHealth);
+        Assert.Single(await verify.WorldBossHealingMutations.ToListAsync());
+    }
+
+    [Fact]
     public async Task PartyContributionUsesMembershipAtDamageTimeInsteadOfBindingSnapshot()
     {
         Seed seed = await SeedAsync();
@@ -169,6 +209,7 @@ public sealed class WorldBossCombatDamageObserverTests(PostgresFixture postgres)
         services.AddScoped<GameDbContext>(_ => postgres.CreateDbContext());
         services.AddSingleton<TimeProvider>(new FixedTime(Now.AddMinutes(1)));
         services.AddScoped<WorldBossDamageService>();
+        services.AddScoped<WorldBossHealingContributionService>();
         return services.BuildServiceProvider();
     }
 
