@@ -368,13 +368,6 @@ internal static class BossCombatLogArchive
                 entry.DroppedEvents++;
             }
 
-            if (entry.Events.Count > 0)
-            {
-                long earliestRetainedSequence = entry.Events.Keys.First();
-                entry.FilteredSequences.RemoveWhere(sequence =>
-                    sequence < earliestRetainedSequence);
-            }
-
             entry.UpdatedAtUtc = capturedAtUtc;
         }
     }
@@ -440,37 +433,43 @@ internal static class BossCombatLogArchive
 
         StringBuilder builder = new();
         builder.AppendLine(target.IsTrainingDummy
-            ? "⚔️ ELYNDOR · ЛОГ ТРЕНИРОВКИ"
-            : "⚔️ ELYNDOR · ЛОГ БОСС-БОЯ");
+            ? "⚔️ ELYNDOR · COMBAT REPORT"
+            : "⚔️ ELYNDOR · BOSS COMBAT REPORT");
         builder.Append("Цель: ").AppendLine(target.DisplayName);
         builder.Append("Результат: ").AppendLine(result);
         builder.Append("Игрок: ").AppendLine(snapshot.Player.Name);
         builder.Append("Correlation/Session: ").AppendLine(snapshot.SessionId.ToString("D"));
+
         WriteSummary(builder, snapshot, events, reward, target);
+        WriteKeyEvents(builder, snapshot, events, actorNames);
+
+        builder.AppendLine();
+        builder.AppendLine("── DIAGNOSTICS ──");
+        builder.Append("Generated: ")
+            .AppendLine(snapshot.Sequence.ToString(CultureInfo.InvariantCulture));
+        builder.Append("Archived: ")
+            .AppendLine(events.Length.ToString(CultureInfo.InvariantCulture));
+        builder.Append("Filtered noise: ")
+            .AppendLine(filteredSequences.Count.ToString(CultureInfo.InvariantCulture));
+        builder.Append("Dropped by archive limit: ")
+            .AppendLine(droppedEvents.ToString(CultureInfo.InvariantCulture));
+        builder.Append("Sequence gaps: ")
+            .AppendLine(FormatMissingSequences(missingSequences));
+        builder.Append("Full session statistics: ")
+            .AppendLine(snapshot.Statistics is null ? "no (legacy fallback)" : "yes");
         builder.Append("Контент: ").Append(snapshot.ContentVersion)
             .Append(" · баланс: ").AppendLine(snapshot.BalanceVersion);
-        builder.Append("Событий: ")
-            .AppendLine(events.Length.ToString(CultureInfo.InvariantCulture));
 
         if (events.Length > 0)
         {
-            builder.Append("Sequence: #")
+            builder.Append("Archived sequence: #")
                 .Append(events[0].Sequence.ToString(CultureInfo.InvariantCulture))
                 .Append("–#")
                 .AppendLine(events[^1].Sequence.ToString(CultureInfo.InvariantCulture));
         }
 
-        builder.Append("Пропуски sequence: ")
-            .AppendLine(FormatMissingSequences(missingSequences));
-
-        if (droppedEvents > 0)
-        {
-            builder.Append("Архив ограничен: отброшено старых событий: ")
-                .AppendLine(droppedEvents.ToString(CultureInfo.InvariantCulture));
-        }
-
-        builder.AppendLine("────────────────────");
-
+        builder.AppendLine();
+        builder.AppendLine("── RAW EVENTS ──");
         foreach (CombatEvent combatEvent in events)
             WriteEvent(builder, combatEvent, actorNames);
 
@@ -488,68 +487,100 @@ internal static class BossCombatLogArchive
         HashSet<Guid> enemyActorIds = (snapshot.Enemies ?? [snapshot.Enemy])
             .Select(enemy => enemy.ActorId)
             .ToHashSet();
+        CombatSessionStatisticsSnapshot? statistics = snapshot.Statistics;
 
-        DateTimeOffset? startedAt = events
-            .FirstOrDefault(combatEvent =>
-                combatEvent.Type == CombatEventType.CombatStarted)
-            ?.OccurredAtUtc;
-        DateTimeOffset? endedAt = events.Length == 0
-            ? null
-            : events[^1].OccurredAtUtc;
-        if (startedAt is null && events.Length > 0)
-            startedAt = events[0].OccurredAtUtc;
-        if (startedAt is not null && endedAt is not null)
+        DateTimeOffset? startedAt = statistics?.StartedAtUtc
+            ?? events.FirstOrDefault(combatEvent =>
+                combatEvent.Type == CombatEventType.CombatStarted)?.OccurredAtUtc
+            ?? events.FirstOrDefault()?.OccurredAtUtc;
+        DateTimeOffset endedAt = snapshot.ServerTimeUtc;
+        double seconds = startedAt is null
+            ? 0
+            : Math.Max(0, (endedAt - startedAt.Value).TotalSeconds);
+
+        decimal damageDealt = statistics?.DamageDealt
+            ?? events
+                .Where(combatEvent =>
+                    combatEvent.Type == CombatEventType.DamageDealt
+                    && combatEvent.SourceActorId == playerActorId
+                    && combatEvent.TargetActorId is Guid targetActorId
+                    && enemyActorIds.Contains(targetActorId))
+                .Sum(combatEvent => Math.Max(0, combatEvent.Amount));
+        decimal damageReceived = statistics?.DamageTaken
+            ?? events
+                .Where(combatEvent =>
+                    combatEvent.Type == CombatEventType.DamageDealt
+                    && combatEvent.TargetActorId == playerActorId)
+                .Sum(combatEvent => Math.Max(0, combatEvent.Amount));
+        decimal healingDone = statistics?.HealingDone
+            ?? events
+                .Where(combatEvent =>
+                    combatEvent.Type == CombatEventType.HealingApplied
+                    && combatEvent.SourceActorId == playerActorId)
+                .Sum(combatEvent => Math.Max(0, combatEvent.Amount));
+        int criticalHits = statistics?.CriticalHits
+            ?? events.Count(combatEvent =>
+                combatEvent.Type == CombatEventType.DamageDealt
+                && combatEvent.SourceActorId == playerActorId
+                && combatEvent.IsCritical);
+        decimal armorMitigated = statistics?.ArmorMitigated
+            ?? events
+                .Where(combatEvent =>
+                    combatEvent.Type == CombatEventType.DamageDealt
+                    && combatEvent.TargetActorId == playerActorId
+                    && combatEvent.RawDamage > 0
+                    && combatEvent.DamageAfterMitigation >= 0)
+                .Sum(combatEvent => Math.Max(
+                    0,
+                    combatEvent.RawDamage - combatEvent.DamageAfterMitigation));
+        decimal blocked = statistics?.Blocked
+            ?? events
+                .Where(combatEvent =>
+                    combatEvent.Type == CombatEventType.DamageBlocked
+                    && combatEvent.TargetActorId == playerActorId)
+                .Sum(combatEvent => Math.Max(0, combatEvent.Amount));
+        decimal absorbed = statistics?.ShieldAbsorbed
+            ?? events
+                .Where(combatEvent =>
+                    combatEvent.Type == CombatEventType.ShieldAbsorbed
+                    && combatEvent.TargetActorId == playerActorId)
+                .Sum(combatEvent => Math.Max(0, combatEvent.Amount));
+        int dodges = statistics?.Dodges
+            ?? events.Count(combatEvent =>
+                combatEvent.Type == CombatEventType.Dodge
+                && combatEvent.TargetActorId == playerActorId);
+        int playerDeaths = statistics?.Deaths
+            ?? events.Count(combatEvent =>
+                combatEvent.Type == CombatEventType.ActorDied
+                && combatEvent.ActorId == playerActorId);
+        decimal dps = seconds > 0 ? damageDealt / (decimal)seconds : 0;
+
+        builder.AppendLine();
+        builder.AppendLine("── ИТОГИ ──");
+        if (seconds > 0)
         {
-            double seconds = Math.Max(
-                0,
-                (endedAt.Value - startedAt.Value).TotalSeconds);
             builder.Append("Длительность: ")
                 .Append(seconds.ToString("0.0", CultureInfo.InvariantCulture))
                 .AppendLine(" сек.");
         }
-
-        decimal damageDealt = events
-            .Where(combatEvent =>
-                combatEvent.Type == CombatEventType.DamageDealt
-                && combatEvent.SourceActorId == playerActorId
-                && combatEvent.TargetActorId is Guid targetActorId
-                && enemyActorIds.Contains(targetActorId))
-            .Sum(DamageAmount);
-        decimal damageReceived = events
-            .Where(combatEvent =>
-                combatEvent.Type == CombatEventType.DamageDealt
-                && combatEvent.TargetActorId == playerActorId)
-            .Sum(DamageAmount);
-        int criticalHits = events.Count(combatEvent =>
-            combatEvent.Type == CombatEventType.CriticalHit
-            && combatEvent.SourceActorId == playerActorId);
-        decimal armorMitigated = events
-            .Where(combatEvent =>
-                combatEvent.Type == CombatEventType.DamageDealt
-                && combatEvent.TargetActorId == playerActorId
-                && combatEvent.RawDamage > 0
-                && combatEvent.DamageAfterMitigation >= 0)
-            .Sum(combatEvent => Math.Max(
-                0,
-                combatEvent.RawDamage - combatEvent.DamageAfterMitigation));
-        decimal blocked = events
-            .Where(combatEvent =>
-                combatEvent.Type == CombatEventType.DamageBlocked
-                && combatEvent.TargetActorId == playerActorId)
-            .Sum(combatEvent => Math.Max(0, combatEvent.Amount));
-        int playerDeaths = events.Count(combatEvent =>
-            combatEvent.Type == CombatEventType.ActorDied
-            && (combatEvent.ActorId == playerActorId
-                || combatEvent.TargetActorId == playerActorId));
-
-        builder.Append("Урон боссу: ").AppendLine(FormatNumber(damageDealt));
-        builder.Append("Критов: ")
-            .AppendLine(criticalHits.ToString(CultureInfo.InvariantCulture));
+        builder.Append("Урон: ").Append(FormatNumber(damageDealt))
+            .Append(" · DPS: ").AppendLine(FormatNumber(dps));
         builder.Append("Получено урона: ").AppendLine(FormatNumber(damageReceived));
-        builder.Append("Снято бронёй: ").AppendLine(FormatNumber(armorMitigated));
-        builder.Append("Заблокировано: ").AppendLine(FormatNumber(blocked));
-        builder.Append("Смертей игрока: ")
+        builder.Append("Лечение: ").AppendLine(FormatNumber(healingDone));
+        builder.Append("Критов: ")
+            .Append(criticalHits.ToString(CultureInfo.InvariantCulture))
+            .Append(" · уклонений: ")
+            .Append(dodges.ToString(CultureInfo.InvariantCulture))
+            .Append(" · смертей: ")
             .AppendLine(playerDeaths.ToString(CultureInfo.InvariantCulture));
+        builder.Append("Снято бронёй: ").Append(FormatNumber(armorMitigated))
+            .Append(" · заблокировано: ").Append(FormatNumber(blocked))
+            .Append(" · поглощено щитами: ").AppendLine(FormatNumber(absorbed));
+        if (statistics is not null)
+        {
+            builder.Append("Ресурс: +").Append(FormatNumber(statistics.ResourceGained))
+                .Append(" / -").AppendLine(FormatNumber(statistics.ResourceSpent));
+        }
         builder.Append("Финал HP/ресурс: ")
             .Append(FormatNumber(snapshot.Player.Hp))
             .Append('/')
@@ -559,14 +590,16 @@ internal static class BossCombatLogArchive
             .Append('/')
             .AppendLine(FormatNumber(snapshot.Player.MaxResource));
 
-        string abilities = FormatAbilitySummary(snapshot, events);
-        builder.Append("Способности: ")
-            .AppendLine(string.IsNullOrWhiteSpace(abilities) ? "—" : abilities);
+        WriteDamageSources(builder, statistics, damageDealt);
+        WriteAbilityBreakdown(builder, snapshot, events, damageDealt);
+        WritePartyBreakdown(builder, snapshot);
 
         if (snapshot.PlayerContribution is not null)
         {
-            builder.Append("Contribution: damage=")
-                .Append(FormatNumber(snapshot.PlayerContribution.DamageDealt))
+            builder.AppendLine();
+            builder.AppendLine("── CONTRIBUTION ──");
+            builder.Append("damage=").Append(FormatNumber(snapshot.PlayerContribution.DamageDealt))
+                .Append(" · healing=").Append(FormatNumber(snapshot.PlayerContribution.EffectiveHealing))
                 .Append(" · actions=")
                 .Append(snapshot.PlayerContribution.QualifyingActions
                     .ToString(CultureInfo.InvariantCulture))
@@ -576,9 +609,11 @@ internal static class BossCombatLogArchive
                     : "no");
         }
 
+        builder.AppendLine();
+        builder.AppendLine("── НАГРАДА ──");
         if (reward is not null)
         {
-            builder.Append("Награда боя: +")
+            builder.Append('+')
                 .Append(reward.XpEarned.ToString(CultureInfo.InvariantCulture))
                 .Append(" XP · +")
                 .Append(reward.GoldEarned.ToString(CultureInfo.InvariantCulture))
@@ -595,25 +630,209 @@ internal static class BossCombatLogArchive
         }
         else if (target.DefinitionId.StartsWith("WORLD_BOSS_", StringComparison.Ordinal))
         {
-            builder.AppendLine(
-                "Награда боя: рассчитывается глобальным World Boss settlement.");
+            builder.AppendLine("Рассчитывается глобальным World Boss settlement.");
         }
         else
         {
-            builder.AppendLine("Награда боя: —");
+            builder.AppendLine("—");
+        }
+    }
+
+    private static void WriteDamageSources(
+        StringBuilder builder,
+        CombatSessionStatisticsSnapshot? statistics,
+        decimal totalDamage)
+    {
+        CombatDamageSourceStatisticsSnapshot? sources = statistics?.DamageSources;
+        if (sources is null)
+            return;
+
+        builder.AppendLine();
+        builder.AppendLine("── ИСТОЧНИКИ УРОНА ──");
+        WriteDamageSource(builder, "Автоатака", sources.AutoAttack, totalDamage);
+        WriteDamageSource(builder, "Способности/proc", sources.DirectOrProc, totalDamage);
+        WriteDamageSource(builder, "DoT", sources.Periodic, totalDamage);
+        WriteDamageSource(builder, "Отражение", sources.Reflected, totalDamage);
+        WriteDamageSource(builder, "Компаньон", sources.Companion, totalDamage);
+        WriteDamageSource(builder, "Прочее", sources.Other, totalDamage);
+    }
+
+    private static void WriteDamageSource(
+        StringBuilder builder,
+        string name,
+        decimal damage,
+        decimal totalDamage)
+    {
+        if (damage <= 0)
+            return;
+
+        decimal percent = totalDamage > 0
+            ? damage / totalDamage * 100m
+            : 0;
+        builder.Append(name)
+            .Append(": ")
+            .Append(FormatNumber(damage))
+            .Append(" · ")
+            .Append(percent.ToString("0.0", CultureInfo.InvariantCulture))
+            .AppendLine("%");
+    }
+
+    private static void WriteAbilityBreakdown(
+        StringBuilder builder,
+        CombatSessionSnapshot snapshot,
+        IReadOnlyList<CombatEvent> events,
+        decimal totalDamage)
+    {
+        builder.AppendLine();
+        builder.AppendLine("── СПОСОБНОСТИ / EFFECTS ──");
+
+        IReadOnlyDictionary<string, CombatAbilityStatisticsSnapshot>? abilities =
+            snapshot.Statistics?.Abilities;
+        if (abilities is null || abilities.Count == 0)
+        {
+            string fallback = FormatAbilitySummary(snapshot, events);
+            builder.AppendLine(string.IsNullOrWhiteSpace(fallback) ? "—" : fallback);
+            return;
         }
 
-        if (events.Length > 0)
+        CombatAbilityStatisticsSnapshot[] ordered = abilities.Values
+            .Where(item =>
+                item.Uses > 0
+                || item.Applications > 0
+                || item.PeriodicTicks > 0
+                || item.Damage > 0)
+            .OrderByDescending(item => item.Damage)
+            .ThenByDescending(item => item.Uses)
+            .ThenBy(item => item.Id, StringComparer.Ordinal)
+            .Take(16)
+            .ToArray();
+
+        if (ordered.Length == 0)
         {
-            CombatEvent finalEvent = events[^1];
-            builder.Append("Финальное событие: #")
-                .Append(finalEvent.Sequence.ToString(CultureInfo.InvariantCulture))
-                .Append(' ')
-                .Append(finalEvent.Type);
-            if (!string.IsNullOrWhiteSpace(finalEvent.DefinitionId))
-                builder.Append(" · ").Append(Sanitize(finalEvent.DefinitionId, 80));
+            builder.AppendLine("—");
+            return;
+        }
+
+        foreach (CombatAbilityStatisticsSnapshot ability in ordered)
+        {
+            decimal percent = totalDamage > 0
+                ? ability.Damage / totalDamage * 100m
+                : 0;
+            builder.Append(ability.Id);
+
+            if (ability.Uses > 0)
+                builder.Append(" · uses=").Append(ability.Uses);
+            if (ability.Applications > 0)
+                builder.Append(" · applications=").Append(ability.Applications);
+            if (ability.PeriodicTicks > 0)
+                builder.Append(" · ticks=").Append(ability.PeriodicTicks);
+            if (ability.Hits > 0)
+                builder.Append(" · hits=").Append(ability.Hits);
+            if (ability.CriticalHits > 0)
+                builder.Append(" · crits=").Append(ability.CriticalHits);
+            if (ability.Damage > 0)
+            {
+                builder.Append(" · dmg=").Append(FormatNumber(ability.Damage))
+                    .Append(" (")
+                    .Append(percent.ToString("0.0", CultureInfo.InvariantCulture))
+                    .Append("%)")
+                    .Append(" · max=").Append(FormatNumber(ability.MaxHit));
+            }
+
             builder.AppendLine();
         }
+    }
+
+    private static void WritePartyBreakdown(
+        StringBuilder builder,
+        CombatSessionSnapshot snapshot)
+    {
+        if (snapshot.ParticipantContributions is not { Count: > 1 } contributions)
+            return;
+
+        Dictionary<Guid, string> names = (snapshot.Players ?? [snapshot.Player])
+            .ToDictionary(player => player.ActorId, player => player.Name);
+
+        builder.AppendLine();
+        builder.AppendLine("── ГРУППА ──");
+        foreach (ContributionEligibilityResult contribution in contributions
+                     .OrderByDescending(item => item.Snapshot.DamageDealt)
+                     .ThenBy(item => item.Snapshot.CharacterId))
+        {
+            string name = names.GetValueOrDefault(
+                contribution.Snapshot.CharacterId,
+                contribution.Snapshot.CharacterId.ToString("N")[..8]);
+            builder.Append(name)
+                .Append(" · damage=")
+                .Append(FormatNumber(contribution.Snapshot.DamageDealt))
+                .Append(" · healing=")
+                .Append(FormatNumber(contribution.Snapshot.EffectiveHealing))
+                .Append(" · actions=")
+                .Append(contribution.Snapshot.QualifyingActions
+                    .ToString(CultureInfo.InvariantCulture))
+                .Append(" · ")
+                .AppendLine(contribution.IsEligible ? "eligible" : contribution.Reason);
+        }
+    }
+
+    private static void WriteKeyEvents(
+        StringBuilder builder,
+        CombatSessionSnapshot snapshot,
+        IReadOnlyList<CombatEvent> events,
+        IReadOnlyDictionary<Guid, string> actorNames)
+    {
+        CombatEvent[] keyEvents = events
+            .Where(IsKeyEvent)
+            .Take(24)
+            .ToArray();
+        if (keyEvents.Length == 0)
+            return;
+
+        DateTimeOffset origin = snapshot.Statistics?.StartedAtUtc
+            ?? events.FirstOrDefault()?.OccurredAtUtc
+            ?? snapshot.ServerTimeUtc;
+
+        builder.AppendLine();
+        builder.AppendLine("── KEY EVENTS ──");
+        foreach (CombatEvent combatEvent in keyEvents)
+        {
+            builder.Append(FormatElapsed(origin, combatEvent.OccurredAtUtc))
+                .Append(" · ")
+                .Append(combatEvent.Type);
+
+            Guid sourceId = combatEvent.SourceActorId ?? combatEvent.ActorId;
+            builder.Append(" · ").Append(ResolveActorName(sourceId, actorNames));
+            if (combatEvent.TargetActorId is Guid targetActorId)
+                builder.Append(" → ").Append(ResolveActorName(targetActorId, actorNames));
+            if (!string.IsNullOrWhiteSpace(combatEvent.DefinitionId))
+                builder.Append(" · ").Append(Sanitize(combatEvent.DefinitionId, 80));
+            builder.AppendLine();
+        }
+    }
+
+    private static bool IsKeyEvent(CombatEvent combatEvent) =>
+        combatEvent.Type is
+            CombatEventType.ActorDied
+            or CombatEventType.AbilityInterrupted
+            or CombatEventType.EffectImmune
+            or CombatEventType.ActorSummoned
+            or CombatEventType.CombatEnded
+        || (!string.IsNullOrWhiteSpace(combatEvent.DefinitionId)
+            && combatEvent.DefinitionId.Contains(
+                "PHASE",
+                StringComparison.OrdinalIgnoreCase));
+
+    private static string FormatElapsed(
+        DateTimeOffset origin,
+        DateTimeOffset occurredAtUtc)
+    {
+        TimeSpan elapsed = occurredAtUtc - origin;
+        if (elapsed < TimeSpan.Zero)
+            elapsed = TimeSpan.Zero;
+
+        return elapsed.TotalHours >= 1
+            ? elapsed.ToString(@"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture)
+            : elapsed.ToString(@"mm\:ss\.fff", CultureInfo.InvariantCulture);
     }
 
     private static decimal DamageAmount(CombatEvent combatEvent) =>
