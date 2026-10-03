@@ -182,16 +182,29 @@ public sealed class WorldBossContribution
     public Guid SpawnId { get; private set; }
     public Guid CharacterId { get; private set; }
     public decimal Damage { get; private set; }
+    public decimal Healing { get; private set; }
+    public decimal ContributionScore => checked(Damage + Healing);
     public DateTimeOffset FirstActivityAtUtc { get; private set; }
     public DateTimeOffset LastActivityAtUtc { get; private set; }
 
     public void AddDamage(decimal appliedDamage, DateTimeOffset activityAtUtc)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(appliedDamage);
+        Touch(activityAtUtc);
+        Damage = checked(Damage + appliedDamage);
+    }
+
+    public void AddHealing(decimal effectiveHealing, DateTimeOffset activityAtUtc)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(effectiveHealing);
+        Touch(activityAtUtc);
+        Healing = checked(Healing + effectiveHealing);
+    }
+
+    private void Touch(DateTimeOffset activityAtUtc)
+    {
         EnsureUtc(activityAtUtc, nameof(activityAtUtc));
         ArgumentOutOfRangeException.ThrowIfLessThan(activityAtUtc, LastActivityAtUtc);
-
-        Damage = checked(Damage + appliedDamage);
         LastActivityAtUtc = activityAtUtc;
     }
 
@@ -218,13 +231,59 @@ public sealed class WorldBossPartyContribution
     public Guid SpawnId { get; private set; }
     public Guid PartyId { get; private set; }
     public decimal Damage { get; private set; }
+    public decimal Healing { get; private set; }
+    public decimal ContributionScore => checked(Damage + Healing);
 
     public void AddDamage(decimal appliedDamage)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(appliedDamage);
-
         Damage = checked(Damage + appliedDamage);
     }
+
+    public void AddHealing(decimal effectiveHealing)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(effectiveHealing);
+        Healing = checked(Healing + effectiveHealing);
+    }
+}
+
+public sealed class WorldBossHealingMutation
+{
+    private WorldBossHealingMutation() { }
+
+    public WorldBossHealingMutation(
+        Guid spawnId,
+        Guid mutationId,
+        Guid characterId,
+        Guid combatSessionId,
+        Guid? partyId,
+        decimal effectiveHealing,
+        DateTimeOffset committedAtUtc)
+    {
+        if (spawnId == Guid.Empty || mutationId == Guid.Empty || characterId == Guid.Empty || combatSessionId == Guid.Empty)
+            throw new ArgumentException("World boss healing mutation identifiers cannot be empty.");
+        if (partyId == Guid.Empty)
+            throw new ArgumentException("World boss party identifier cannot be empty.", nameof(partyId));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(effectiveHealing);
+        if (committedAtUtc.Offset != TimeSpan.Zero)
+            throw new ArgumentException("World boss mutation timestamps must be UTC.", nameof(committedAtUtc));
+
+        SpawnId = spawnId;
+        MutationId = mutationId;
+        CharacterId = characterId;
+        CombatSessionId = combatSessionId;
+        PartyId = partyId;
+        EffectiveHealing = effectiveHealing;
+        CommittedAtUtc = committedAtUtc;
+    }
+
+    public Guid SpawnId { get; private set; }
+    public Guid MutationId { get; private set; }
+    public Guid CharacterId { get; private set; }
+    public Guid CombatSessionId { get; private set; }
+    public Guid? PartyId { get; private set; }
+    public decimal EffectiveHealing { get; private set; }
+    public DateTimeOffset CommittedAtUtc { get; private set; }
 }
 
 public sealed class WorldBossDamageMutation
