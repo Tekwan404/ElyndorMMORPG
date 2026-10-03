@@ -171,6 +171,52 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
     }
 
     [Fact]
+    public async Task PendingLootCanBeClaimedAndDiscardedSelectively()
+    {
+        (Guid accountId, Guid characterId) =
+            await CreateCharacterAsync(currentHp: 100);
+        Guid rewardResolutionId = Guid.CreateVersion7();
+        Guid hidesPendingId = await AddPendingLootAsync(
+            characterId,
+            rewardResolutionId,
+            "WOLF_HIDE",
+            5);
+        Guid potionPendingId = await AddPendingLootAsync(
+            characterId,
+            rewardResolutionId,
+            "SMALL_HEALING_POTION",
+            2);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        InventoryOperationResult claimed = await service.ClaimPendingLootAsync(
+            accountId,
+            Guid.CreateVersion7(),
+            [hidesPendingId],
+            CancellationToken.None);
+        InventoryOperationResult discarded = await service.DiscardPendingLootAsync(
+            accountId,
+            [potionPendingId],
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(claimed.IsSuccess);
+        Assert.True(discarded.IsSuccess);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(5, await verify.CharacterItems
+            .Where(item => item.CharacterId == characterId
+                && item.ItemDefinitionId == "WOLF_HIDE")
+            .SumAsync(item => item.Quantity));
+        Assert.False(await verify.CharacterItems
+            .AnyAsync(item => item.CharacterId == characterId
+                && item.ItemDefinitionId == "SMALL_HEALING_POTION"));
+        Assert.False(await verify.PendingLootItems
+            .AnyAsync(item => item.CharacterId == characterId));
+    }
+
+    [Fact]
     public async Task SameConsumableMutationIsAppliedOnlyOnce()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(currentHp: 25);
@@ -1207,6 +1253,32 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
         context.CharacterItems.Add(new CharacterItem(itemId, characterId, definitionId, quantity, Now));
         await context.SaveChangesAsync();
         return itemId;
+    }
+
+    private async Task<Guid> AddPendingLootAsync(
+        Guid characterId,
+        Guid rewardResolutionId,
+        string definitionId,
+        int quantity)
+    {
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        ItemDefinition definition = content.Items!
+            .Single(item => item.Id == definitionId);
+        Guid pendingId = Guid.CreateVersion7();
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        context.PendingLootItems.Add(new PendingLootItem(
+            pendingId,
+            characterId,
+            rewardResolutionId,
+            definition.Id,
+            quantity,
+            definition.Version,
+            Now,
+            sourceType: "COMBAT"));
+        await context.SaveChangesAsync();
+        return pendingId;
     }
 
     private static async Task<InventoryEquipmentService> CreateServiceAsync(GameDbContext context)
