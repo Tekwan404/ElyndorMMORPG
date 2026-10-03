@@ -31,6 +31,11 @@ const newOnly = ref(false)
 const sortMode = ref<'default' | 'rarity' | 'slot' | 'new' | 'level' | 'name'>('default')
 const filtersOpen = ref(false)
 const newItemIds = ref<Set<string>>(new Set())
+const selectionMode = ref(false)
+const selectedItemIds = ref<Set<string>>(new Set())
+const bulkActionError = ref<string | null>(null)
+const bulkActionPending = ref(false)
+const MARCUS_MERCHANT_ID = 'MARCUS_SUPPLIES'
 const contextualSlot = computed(() => props.slotFilter ?? null)
 const isContextualSlotMode = computed(() => contextualSlot.value !== null)
 
@@ -93,6 +98,15 @@ const visibleCells = computed(() => {
   return Array.from({ length: slotCount }, (_, index) => sortedItems.value[index] ?? null)
 })
 const capacityWarning = computed(() => isOverflow.value || (freeSlots.value !== null && freeSlots.value <= 10))
+const selectedItems = computed(() =>
+  bagItems.value.filter(item => selectedItemIds.value.has(item.id)),
+)
+const selectedSellValue = computed(() =>
+  selectedItems.value.reduce((sum, item) => sum + item.sellPriceGold * item.quantity, 0),
+)
+const canSellHere = computed(() =>
+  session.snapshot?.world?.currentLocation.id === 'STARTER_TOWN',
+)
 const activeFilterCount = computed(() => [
   newOnly.value,
   rarityFilter.value !== 'all',
@@ -291,6 +305,126 @@ function comparisonDeltaLabel(delta: number): string {
 
 function formatNumber(value: number): string {
   return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.00$/, '')
+}
+
+function isValuableInventoryItem(item: InventoryItem): boolean {
+  return rarityRank(item.rarity) >= rarityRank('Rare')
+    || (item.generatedItem?.stars ?? 0) > 0
+    || (item.reforgeCount ?? 0) > 0
+}
+
+function toggleSelectionMode(): void {
+  selectionMode.value = !selectionMode.value
+  selectedItemIds.value = new Set()
+  bulkActionError.value = null
+}
+
+function toggleInventorySelection(item: InventoryItem): void {
+  if (item.isLocked) {
+    bulkActionError.value = 'Защищённые предметы сначала нужно разблокировать.'
+    return
+  }
+
+  const next = new Set(selectedItemIds.value)
+  if (next.has(item.id)) next.delete(item.id)
+  else next.add(item.id)
+  selectedItemIds.value = next
+  bulkActionError.value = null
+}
+
+function selectAllVisibleItems(): void {
+  const selectable = sortedItems.value.filter(item => !item.isLocked)
+  const allSelected = selectable.length > 0
+    && selectable.every(item => selectedItemIds.value.has(item.id))
+  selectedItemIds.value = allSelected
+    ? new Set()
+    : new Set(selectable.map(item => item.id))
+  bulkActionError.value = null
+}
+
+async function discardInventoryItems(items: InventoryItem[]): Promise<boolean> {
+  if (!items.length || bulkActionPending.value) return false
+  const valuable = items.some(isValuableInventoryItem)
+  const message = valuable
+    ? `Уничтожить ${items.length} выбранных позиций? Среди них есть Rare+ или улучшенные вещи. Действие нельзя отменить.`
+    : `Уничтожить ${items.length} выбранных позиций? Действие нельзя отменить.`
+  if (!window.confirm(message)) return false
+
+  bulkActionPending.value = true
+  bulkActionError.value = null
+  try {
+    const succeeded = await session.discardInventoryItems(
+      items.map(item => ({ characterItemId: item.id, quantity: item.quantity })),
+    )
+    if (!succeeded) {
+      bulkActionError.value = inventoryBulkError(session.errorCode)
+      return false
+    }
+    selectedItemIds.value = new Set()
+    return true
+  } finally {
+    bulkActionPending.value = false
+  }
+}
+
+async function discardSelectedItems(): Promise<void> {
+  await discardInventoryItems([...selectedItems.value])
+}
+
+async function discardSelectedItem(): Promise<void> {
+  const item = selectedItem.value
+  if (!item) return
+  if (await discardInventoryItems([item])) selectedItem.value = null
+}
+
+async function sellSelectedItems(): Promise<void> {
+  if (!canSellHere.value) {
+    bulkActionError.value = 'Продать выбранные вещи можно у торговца Маркуса в Стартовом городе.'
+    return
+  }
+
+  const items = [...selectedItems.value].filter(item => item.sellPriceGold > 0 && !item.isLocked)
+  if (!items.length || bulkActionPending.value) return
+  const valuable = items.some(isValuableInventoryItem)
+  const message = valuable
+    ? `Продать ${items.length} позиций за ${formatMoney(items.reduce((sum, item) => sum + item.sellPriceGold * item.quantity, 0))}? Среди них есть Rare+ или улучшенные вещи.`
+    : `Продать ${items.length} позиций за ${formatMoney(items.reduce((sum, item) => sum + item.sellPriceGold * item.quantity, 0))}?`
+  if (!window.confirm(message)) return
+
+  bulkActionPending.value = true
+  bulkActionError.value = null
+  try {
+    for (const item of items) {
+      const updated = await session.sellMerchantItem(MARCUS_MERCHANT_ID, item.id, item.quantity)
+      if (!updated) {
+        bulkActionError.value = 'Не удалось продать все выбранные предметы. Уже проданные позиции сохранены.'
+        break
+      }
+    }
+    selectedItemIds.value = new Set()
+  } finally {
+    bulkActionPending.value = false
+  }
+}
+
+async function sellSelectedItem(): Promise<void> {
+  const item = selectedItem.value
+  if (!item || item.sellPriceGold <= 0 || item.isLocked || !canSellHere.value) return
+  const confirmed = !isValuableInventoryItem(item) || window.confirm(
+    `Продать ценный предмет «${item.name}» за ${formatMoney(item.sellPriceGold * item.quantity)}?`,
+  )
+  if (!confirmed) return
+  const updated = await session.sellMerchantItem(MARCUS_MERCHANT_ID, item.id, item.quantity)
+  if (updated) selectedItem.value = null
+}
+
+function inventoryBulkError(code: string | null): string {
+  if (code === 'inventory_item_locked') return 'Один из выбранных предметов защищён.'
+  if (code === 'inventory_item_equipped') return 'Нельзя уничтожить надетый предмет.'
+  if (code === 'inventory_item_transaction_locked') return 'Один из предметов участвует в другой операции.'
+  if (code === 'inventory_invalid_quantity') return 'Количество предмета изменилось. Обновите выбор.'
+  if (code === 'character_in_combat') return 'Инвентарь нельзя очищать во время боя.'
+  return 'Не удалось выполнить массовое действие.'
 }
 
 function openItem(item: InventoryItem | null): void {
@@ -691,8 +825,42 @@ async function toggleSelectedLock(): Promise<void> {
           <strong>{{ isContextualSlotMode ? `${filteredItems.length} подходит` : typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly && !newOnly ? `${usedSlots} занято` : `${filteredItems.length} найдено` }}</strong>
         </div>
         <span v-if="isContextualSlotMode">Выбор снаряжения</span>
-        <span v-else-if="typeFilter !== 'all' || rarityFilter !== 'all' || equipableOnly || newOnly">Фильтр активен</span>
+        <div v-else class="bag-surface__header-actions">
+          <span v-if="typeFilter !== 'all' || rarityFilter !== 'all' || equipableOnly || newOnly">Фильтр активен</span>
+          <button type="button" data-inventory-selection-mode @click="toggleSelectionMode">
+            {{ selectionMode ? 'Готово' : 'Выбрать' }}
+          </button>
+        </div>
       </header>
+
+      <section v-if="selectionMode" class="inventory-bulk-bar" data-inventory-bulk-bar>
+        <div>
+          <strong>Выбрано: {{ selectedItems.length }}</strong>
+          <small v-if="canSellHere && selectedItems.length">Продажа: {{ formatMoney(selectedSellValue) }}</small>
+          <small v-else-if="!canSellHere">Продажа доступна у Маркуса в Стартовом городе</small>
+        </div>
+        <div class="inventory-bulk-bar__actions">
+          <button type="button" @click="selectAllVisibleItems">
+            {{ sortedItems.filter(item => !item.isLocked).length && sortedItems.filter(item => !item.isLocked).every(item => selectedItemIds.has(item.id)) ? 'Снять выбор' : 'Выбрать всё' }}
+          </button>
+          <UIButton
+            variant="secondary"
+            :disabled="bulkActionPending || !selectedItems.length || !canSellHere || !selectedItems.some(item => item.sellPriceGold > 0)"
+            @click="sellSelectedItems"
+          >
+            Продать
+          </UIButton>
+          <UIButton
+            :disabled="bulkActionPending || !selectedItems.length"
+            @click="discardSelectedItems"
+          >
+            Уничтожить
+          </UIButton>
+        </div>
+      </section>
+      <p v-if="bulkActionError" class="item-detail__error" role="alert" data-inventory-bulk-error>
+        {{ bulkActionError }}
+      </p>
 
       <div
         v-if="bagItems.length > 0 && visibleCells.length && (filteredItems.length || (typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly && !newOnly))"
@@ -705,6 +873,7 @@ async function toggleSelectedLock(): Promise<void> {
           :class="{
             'bag-cell--empty': !item,
             'bag-cell--generated': item?.generatedItem !== null && item?.generatedItem !== undefined,
+            'bag-cell--selected': item ? selectedItemIds.has(item.id) : false,
           }"
           :data-rarity="item?.rarity"
           :data-item-id="item?.id"
@@ -713,9 +882,12 @@ async function toggleSelectedLock(): Promise<void> {
           type="button"
           :disabled="!item"
           :aria-label="item?.name ?? 'Пустая ячейка'"
-          @click="openItem(item)"
+          @click="item && selectionMode ? toggleInventorySelection(item) : openItem(item)"
         >
           <template v-if="item">
+            <span v-if="selectionMode" class="bag-cell__selection" aria-hidden="true">
+              {{ selectedItemIds.has(item.id) ? '✓' : '' }}
+            </span>
             <span v-if="newItemIds.has(item.id)" class="bag-cell__new"><span class="sr-only">НОВОЕ</span></span>
             <span v-if="item.isLocked" class="bag-cell__lock" aria-label="Предмет защищён">
               <IconGenerator :config="{ id: `lock-${item.id}`, glyph: 'lock', category: 'utility', state: 'locked' }" />
@@ -914,6 +1086,26 @@ async function toggleSelectedLock(): Promise<void> {
           Использовать
         </UIButton>
         <UIButton
+          v-if="selectedItem && canSellHere && selectedItem.sellPriceGold > 0 && !selectedItem.isLocked"
+          variant="secondary"
+          data-item-sell-action
+          :loading="session.mutationPending"
+          :disabled="session.mutationPending || bulkActionPending"
+          @click="sellSelectedItem"
+        >
+          Продать · {{ formatMoney(selectedItem.sellPriceGold * selectedItem.quantity) }}
+        </UIButton>
+        <UIButton
+          v-if="selectedItem && !selectedItem.isLocked"
+          variant="secondary"
+          data-item-discard-action
+          :loading="bulkActionPending"
+          :disabled="session.mutationPending || bulkActionPending || spatialActionPending"
+          @click="discardSelectedItem"
+        >
+          Уничтожить
+        </UIButton>
+        <UIButton
           v-if="selectedItem"
           variant="secondary"
           data-item-lock-action
@@ -935,6 +1127,79 @@ async function toggleSelectedLock(): Promise<void> {
   margin-inline: auto;
   gap: var(--ui-space-3);
   padding: var(--ui-space-4) var(--ui-space-3) var(--ui-space-7);
+}
+
+.bag-surface__header-actions {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.bag-surface__header-actions button,
+.inventory-bulk-bar__actions > button {
+  min-height: 2rem;
+  padding: 0 .65rem;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-round);
+  background: rgb(255 255 255 / 4%);
+  color: var(--ui-color-text-primary);
+  font: inherit;
+  font-size: .65rem;
+  font-weight: 700;
+}
+
+.inventory-bulk-bar {
+  position: sticky;
+  top: .5rem;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  padding: .65rem .75rem;
+  border: 1px solid color-mix(in srgb, var(--ui-color-primary) 42%, var(--ui-color-border));
+  border-radius: var(--ui-radius-md);
+  background: color-mix(in srgb, var(--ui-color-surface-2) 94%, black);
+  box-shadow: 0 .55rem 1.4rem rgb(0 0 0 / 28%);
+}
+
+.inventory-bulk-bar > div:first-child {
+  display: grid;
+  gap: .1rem;
+}
+
+.inventory-bulk-bar small {
+  color: var(--ui-color-text-muted);
+  font-size: .58rem;
+}
+
+.inventory-bulk-bar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .4rem;
+}
+
+.bag-cell--selected {
+  outline: 2px solid color-mix(in srgb, var(--ui-color-primary) 76%, white);
+  outline-offset: -2px;
+}
+
+.bag-cell__selection {
+  position: absolute;
+  top: .2rem;
+  left: .2rem;
+  z-index: 3;
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--ui-color-primary) 65%, white);
+  border-radius: 50%;
+  background: rgb(6 8 12 / 88%);
+  color: var(--ui-color-primary);
+  font-size: .65rem;
+  font-weight: 900;
 }
 
 .inventory-header {
