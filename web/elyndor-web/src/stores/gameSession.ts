@@ -18,6 +18,7 @@ import type {
   CharacterCompanionSnapshot,
   EquipmentSlot,
   MerchantSnapshot,
+  PendingLootSnapshot,
   PremiumStoreSnapshot,
   PremiumStorePurchaseResponse,
   CharacterSkinStoreSnapshot,
@@ -548,6 +549,82 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     }
   }
 
+  async function getPendingLoot(): Promise<PendingLootSnapshot> {
+    return await apiClient.request<PendingLootSnapshot>('/api/v1/inventory/pending-loot')
+  }
+
+  async function claimPendingLoot(itemIds?: string[]): Promise<boolean> {
+    const normalized = itemIds?.slice().sort()
+    const pendingKey = 'inventory:pending-loot:claim'
+    if (!beginMutation(pendingKey)) return false
+    errorCode.value = null
+    try {
+      await runReplaySafeGameMutation<unknown>({
+        key: `inventory:pending-loot:claim:${normalized?.join(',') ?? 'all'}`,
+        path: '/api/v1/inventory/pending-loot/claim',
+        idField: 'mutationId',
+        intent: normalized ? { itemIds: normalized } : {},
+      })
+      await refreshSnapshot()
+      return true
+    } catch (error) {
+      handleError(error)
+      return false
+    } finally {
+      endMutation(pendingKey)
+    }
+  }
+
+  async function discardPendingLoot(itemIds: string[]): Promise<boolean> {
+    const normalized = itemIds.slice().sort()
+    if (!normalized.length) return false
+    const pendingKey = 'inventory:pending-loot:discard'
+    if (!beginMutation(pendingKey)) return false
+    errorCode.value = null
+    try {
+      await runReplaySafeGameMutation<unknown>({
+        key: `inventory:pending-loot:discard:${normalized.join(',')}`,
+        path: '/api/v1/inventory/pending-loot/discard',
+        idField: 'mutationId',
+        intent: { itemIds: normalized },
+      })
+      return true
+    } catch (error) {
+      handleError(error)
+      return false
+    } finally {
+      endMutation(pendingKey)
+    }
+  }
+
+  async function discardInventoryItems(
+    items: Array<{ characterItemId: string; quantity: number }>,
+  ): Promise<boolean> {
+    const normalized = [...items]
+      .filter(item => item.quantity > 0)
+      .sort((left, right) => left.characterItemId.localeCompare(right.characterItemId))
+    if (!normalized.length) return false
+
+    const pendingKey = 'inventory:discard'
+    if (!beginMutation(pendingKey)) return false
+    errorCode.value = null
+    try {
+      await runReplaySafeGameMutation<unknown>({
+        key: `inventory:discard:${normalized.map(item => `${item.characterItemId}:${item.quantity}`).join(',')}`,
+        path: '/api/v1/inventory/discard',
+        idField: 'mutationId',
+        intent: { items: normalized },
+      })
+      await refreshSnapshot()
+      return true
+    } catch (error) {
+      handleError(error)
+      return false
+    } finally {
+      endMutation(pendingKey)
+    }
+  }
+
   async function getMerchant(merchantId: string): Promise<MerchantSnapshot> {
     return await apiClient.request<MerchantSnapshot>(`/api/v1/inventory/merchant/${merchantId}`)
   }
@@ -855,6 +932,10 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     upgradeItemStars,
     decideReforge,
     getMerchant,
+    getPendingLoot,
+    claimPendingLoot,
+    discardPendingLoot,
+    discardInventoryItems,
     getPremiumStore,
     getCharacterSkins,
     buyCharacterSkin,

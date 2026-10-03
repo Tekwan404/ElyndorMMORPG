@@ -30,6 +30,8 @@ public static class InventoryEndpoints
         group.MapPost("/star-upgrade", UpgradeItemStarsAsync);
         group.MapGet("/pending-loot", GetPendingLootAsync);
         group.MapPost("/pending-loot/claim", ClaimPendingLootAsync);
+        group.MapPost("/pending-loot/discard", DiscardPendingLootAsync);
+        group.MapPost("/discard", DiscardInventoryItemsAsync);
         group.MapGet("/merchant/{merchantId}", GetMerchantAsync);
         group.MapPost("/merchant/buy", BuyMerchantItemAsync);
         group.MapPost("/merchant/sell-material", SellMerchantMaterialAsync);
@@ -284,6 +286,61 @@ public static class InventoryEndpoints
             async () => ToResult(
                 await service.ClaimPendingLootAsync(
                     accountId,
+                    request.MutationId,
+                    request.ItemIds,
+                    cancellationToken),
+                context),
+            () => InCombatProblem(context),
+            cancellationToken);
+    }
+
+    private static async Task<IResult> DiscardPendingLootAsync(
+        DiscardPendingLootRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        InventoryEquipmentService service,
+        CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () => ToResult(
+                await service.DiscardPendingLootAsync(
+                    accountId,
+                    request.ItemIds,
+                    request.MutationId,
+                    cancellationToken),
+                context),
+            () => InCombatProblem(context),
+            cancellationToken);
+    }
+
+    private static async Task<IResult> DiscardInventoryItemsAsync(
+        DiscardInventoryItemsRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        InventoryEquipmentService service,
+        CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        InventoryDiscardSelection[] selections = request.Items
+            .Select(item => new InventoryDiscardSelection(
+                item.CharacterItemId,
+                item.Quantity))
+            .ToArray();
+
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () => ToResult(
+                await service.DiscardItemsAsync(
+                    accountId,
+                    selections,
                     request.MutationId,
                     cancellationToken),
                 context),
@@ -661,6 +718,7 @@ public static class InventoryEndpoints
         PrimaryStats stats = item.RolledPrimaryStats ?? item.Definition.Stats;
         return new PendingLootItemResponse(
             item.Id,
+            item.RewardResolutionId,
             item.Definition.Id,
             item.Definition.Name,
             item.Definition.Type.ToString(),
@@ -686,7 +744,8 @@ public static class InventoryEndpoints
                 item.Definition.AttackSpeedPercent,
                 item.Definition.MaxResourceFlat),
             ToGeneratedItemResponse(item.GeneratedItem),
-            item.Definition.IconId);
+            item.Definition.IconId,
+            item.SourceType);
     }
 
     internal static InventoryItemResponse ToResponse(InventoryItemSnapshot item)

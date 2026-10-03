@@ -481,6 +481,25 @@ export interface SpatialInventorySnapshot {
   capacity: InventoryCapacitySnapshot
 }
 
+export interface PendingLootItem {
+  id: string
+  rewardResolutionId: string
+  definitionId: string
+  name: string
+  type: ItemType
+  rarity: ItemRarity
+  quantity: number
+  createdAtUtc: string
+  stats: ItemStats
+  generatedItem?: GeneratedItemSummary | null
+  iconId?: string | null
+  sourceType?: string | null
+}
+
+export interface PendingLootSnapshot {
+  items: PendingLootItem[]
+}
+
 export interface InventorySnapshot {
   items: InventoryItem[]
   equipped: {

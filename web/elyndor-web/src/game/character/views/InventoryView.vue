@@ -3,7 +3,7 @@ import { formatMoney } from '@/shared/money'
 import { computed, ref, watch } from 'vue'
 
 import { apiClient, ApiRequestError } from '@/api/apiClient'
-import type { EquipmentSlot, InventoryItem, SpatialInventorySnapshot } from '@/api/contracts'
+import type { EquipmentSlot, InventoryItem, PendingLootItem, SpatialInventorySnapshot } from '@/api/contracts'
 import { consumableSummary } from '@/game/items/consumablePresentation'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -31,6 +31,15 @@ const newOnly = ref(false)
 const sortMode = ref<'default' | 'rarity' | 'slot' | 'new' | 'level' | 'name'>('default')
 const filtersOpen = ref(false)
 const newItemIds = ref<Set<string>>(new Set())
+const selectionMode = ref(false)
+const selectedItemIds = ref<Set<string>>(new Set())
+const selectedQuantities = ref<Record<string, number>>({})
+const bulkActionError = ref<string | null>(null)
+const bulkActionPending = ref(false)
+const pendingLootItems = ref<PendingLootItem[]>([])
+const pendingLootLoading = ref(false)
+const pendingLootActionError = ref<string | null>(null)
+const MARCUS_MERCHANT_ID = 'MARCUS_SUPPLIES'
 const contextualSlot = computed(() => props.slotFilter ?? null)
 const isContextualSlotMode = computed(() => contextualSlot.value !== null)
 
@@ -93,6 +102,21 @@ const visibleCells = computed(() => {
   return Array.from({ length: slotCount }, (_, index) => sortedItems.value[index] ?? null)
 })
 const capacityWarning = computed(() => isOverflow.value || (freeSlots.value !== null && freeSlots.value <= 10))
+const selectedItems = computed(() =>
+  bagItems.value.filter(item => selectedItemIds.value.has(item.id)),
+)
+const selectedSellableItems = computed(() =>
+  selectedItems.value.filter(item => item.sellPriceGold > 0 && !item.isLocked),
+)
+const selectedSellValue = computed(() =>
+  selectedSellableItems.value.reduce(
+    (sum, item) => sum + item.sellPriceGold * selectedQuantity(item),
+    0,
+  ),
+)
+const canSellHere = computed(() =>
+  session.snapshot?.world?.currentLocation.id === 'STARTER_TOWN',
+)
 const activeFilterCount = computed(() => [
   newOnly.value,
   rarityFilter.value !== 'all',
@@ -293,6 +317,239 @@ function formatNumber(value: number): string {
   return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.00$/, '')
 }
 
+function isValuableInventoryItem(item: InventoryItem): boolean {
+  return rarityRank(item.rarity) >= rarityRank('Rare')
+    || (item.generatedItem?.stars ?? 0) > 0
+    || (item.reforgeCount ?? 0) > 0
+}
+
+function selectedQuantity(item: InventoryItem): number {
+  return Math.max(1, Math.min(item.quantity, selectedQuantities.value[item.id] ?? item.quantity))
+}
+
+function setSelectedQuantity(item: InventoryItem, raw: number | string): void {
+  const parsed = Number(raw)
+  const quantity = Number.isFinite(parsed)
+    ? Math.max(1, Math.min(item.quantity, Math.trunc(parsed)))
+    : item.quantity
+  selectedQuantities.value = {
+    ...selectedQuantities.value,
+    [item.id]: quantity,
+  }
+}
+
+function onSelectedQuantityInput(item: InventoryItem, event: Event): void {
+  const target = event.target
+  if (target instanceof HTMLInputElement) {
+    setSelectedQuantity(item, target.value)
+  }
+}
+
+function toggleSelectionMode(): void {
+  selectionMode.value = !selectionMode.value
+  selectedItemIds.value = new Set()
+  selectedQuantities.value = {}
+  bulkActionError.value = null
+}
+
+function toggleInventorySelection(item: InventoryItem): void {
+  if (item.isLocked) {
+    bulkActionError.value = 'Защищённые предметы сначала нужно разблокировать.'
+    return
+  }
+
+  const next = new Set(selectedItemIds.value)
+  const quantities = { ...selectedQuantities.value }
+  if (next.has(item.id)) {
+    next.delete(item.id)
+    delete quantities[item.id]
+  } else {
+    next.add(item.id)
+    quantities[item.id] = item.quantity
+  }
+  selectedItemIds.value = next
+  selectedQuantities.value = quantities
+  bulkActionError.value = null
+}
+
+function selectAllVisibleItems(): void {
+  const selectable = sortedItems.value.filter(item => !item.isLocked)
+  const allSelected = selectable.length > 0
+    && selectable.every(item => selectedItemIds.value.has(item.id))
+  selectedItemIds.value = allSelected
+    ? new Set()
+    : new Set(selectable.map(item => item.id))
+  selectedQuantities.value = allSelected
+    ? {}
+    : Object.fromEntries(selectable.map(item => [item.id, item.quantity]))
+  bulkActionError.value = null
+}
+
+async function discardInventoryItems(items: InventoryItem[]): Promise<boolean> {
+  if (!items.length || bulkActionPending.value) return false
+  const valuable = items.some(isValuableInventoryItem)
+  const message = valuable
+    ? `Уничтожить ${items.length} выбранных позиций? Среди них есть Rare+ или улучшенные вещи. Действие нельзя отменить.`
+    : `Уничтожить ${items.length} выбранных позиций? Действие нельзя отменить.`
+  if (!window.confirm(message)) return false
+
+  bulkActionPending.value = true
+  bulkActionError.value = null
+  try {
+    const succeeded = await session.discardInventoryItems(
+      items.map(item => ({
+        characterItemId: item.id,
+        quantity: selectedQuantity(item),
+      })),
+    )
+    if (!succeeded) {
+      bulkActionError.value = inventoryBulkError(session.errorCode)
+      return false
+    }
+    selectedItemIds.value = new Set()
+    selectedQuantities.value = {}
+    return true
+  } finally {
+    bulkActionPending.value = false
+  }
+}
+
+async function discardSelectedItems(): Promise<void> {
+  await discardInventoryItems([...selectedItems.value])
+}
+
+async function discardSelectedItem(): Promise<void> {
+  const item = selectedItem.value
+  if (!item) return
+  if (await discardInventoryItems([item])) selectedItem.value = null
+}
+
+async function sellSelectedItems(): Promise<void> {
+  if (!canSellHere.value) {
+    bulkActionError.value = 'Продать выбранные вещи можно у торговца Маркуса в Стартовом городе.'
+    return
+  }
+
+  const items = [...selectedSellableItems.value]
+  if (!items.length || bulkActionPending.value) return
+  const valuable = items.some(isValuableInventoryItem)
+  const message = valuable
+    ? `Продать ${items.length} позиций за ${formatMoney(items.reduce((sum, item) => sum + item.sellPriceGold * selectedQuantity(item), 0))}? Среди них есть Rare+ или улучшенные вещи.`
+    : `Продать ${items.length} позиций за ${formatMoney(items.reduce((sum, item) => sum + item.sellPriceGold * selectedQuantity(item), 0))}?`
+  if (!window.confirm(message)) return
+
+  bulkActionPending.value = true
+  bulkActionError.value = null
+  try {
+    const remainingIds = new Set(selectedItemIds.value)
+    let failed = false
+    for (const item of items) {
+      const updated = await session.sellMerchantItem(
+        MARCUS_MERCHANT_ID,
+        item.id,
+        selectedQuantity(item),
+      )
+      if (!updated) {
+        failed = true
+        bulkActionError.value = 'Не удалось продать все выбранные предметы. Уже проданные позиции сохранены.'
+        break
+      }
+      remainingIds.delete(item.id)
+    }
+
+    selectedItemIds.value = remainingIds
+    selectedQuantities.value = Object.fromEntries(
+      Object.entries(selectedQuantities.value)
+        .filter(([itemId]) => remainingIds.has(itemId)),
+    )
+    if (!failed && remainingIds.size > 0) {
+      bulkActionError.value = `${remainingIds.size} выбранных поз. нельзя продать — они оставлены выбранными.`
+    }
+  } finally {
+    bulkActionPending.value = false
+  }
+}
+
+async function sellSelectedItem(): Promise<void> {
+  const item = selectedItem.value
+  if (!item || item.sellPriceGold <= 0 || item.isLocked || !canSellHere.value) return
+  const confirmed = !isValuableInventoryItem(item) || window.confirm(
+    `Продать ценный предмет «${item.name}» за ${formatMoney(item.sellPriceGold * item.quantity)}?`,
+  )
+  if (!confirmed) return
+  const updated = await session.sellMerchantItem(MARCUS_MERCHANT_ID, item.id, item.quantity)
+  if (updated) selectedItem.value = null
+}
+
+function inventoryBulkError(code: string | null): string {
+  if (code === 'inventory_item_locked') return 'Один из выбранных предметов защищён.'
+  if (code === 'inventory_item_equipped') return 'Нельзя уничтожить надетый предмет.'
+  if (code === 'inventory_item_transaction_locked') return 'Один из предметов участвует в другой операции.'
+  if (code === 'inventory_invalid_quantity') return 'Количество предмета изменилось. Обновите выбор.'
+  if (code === 'character_in_combat') return 'Инвентарь нельзя очищать во время боя.'
+  return 'Не удалось выполнить массовое действие.'
+}
+
+async function refreshPendingLoot(): Promise<void> {
+  if (!character.value?.id) {
+    pendingLootItems.value = []
+    return
+  }
+
+  try {
+    const response = await session.getPendingLoot()
+    pendingLootItems.value = Array.isArray(response?.items) ? response.items : []
+  } catch {
+    // Pending loot remains durable on the server; a transient read failure must not block inventory use.
+  }
+}
+
+function isValuablePendingLoot(item: PendingLootItem): boolean {
+  return rarityRank(item.rarity) >= rarityRank('Rare')
+    || (item.generatedItem?.stars ?? 0) > 0
+}
+
+async function claimPendingLootItems(items: PendingLootItem[]): Promise<void> {
+  if (!items.length || pendingLootLoading.value) return
+  pendingLootLoading.value = true
+  pendingLootActionError.value = null
+  try {
+    const succeeded = await session.claimPendingLoot(items.map(item => item.id))
+    if (!succeeded) {
+      pendingLootActionError.value = session.errorCode === 'inventory_full'
+        ? 'Инвентарь заполнен. Освободите место и повторите попытку.'
+        : 'Не удалось забрать добычу.'
+      return
+    }
+    await refreshPendingLoot()
+    await refreshSpatialInventory()
+  } finally {
+    pendingLootLoading.value = false
+  }
+}
+
+async function discardPendingLootItems(items: PendingLootItem[]): Promise<void> {
+  if (!items.length || pendingLootLoading.value) return
+  const valuable = items.some(isValuablePendingLoot)
+  const message = valuable
+    ? `Отказаться от ${items.length} позиций добычи? Среди них есть Rare+ предметы. Вернуть их будет нельзя.`
+    : `Отказаться от ${items.length} позиций добычи? Вернуть их будет нельзя.`
+  if (!window.confirm(message)) return
+
+  pendingLootLoading.value = true
+  pendingLootActionError.value = null
+  try {
+    const succeeded = await session.discardPendingLoot(items.map(item => item.id))
+    if (!succeeded) {
+      pendingLootActionError.value = 'Не удалось отказаться от добычи.'
+      return
+    }
+    await refreshPendingLoot()
+  } finally {
+    pendingLootLoading.value = false
+  }
+}
+
 function openItem(item: InventoryItem | null): void {
   selectedItem.value = item
   equipmentActionError.value = null
@@ -386,6 +643,12 @@ watch(
   { immediate: true },
 )
 
+watch(
+  () => character.value?.id ?? '',
+  () => void refreshPendingLoot(),
+  { immediate: true },
+)
+
 function statRows(item: InventoryItem): string[] {
   return [
     item.stats.strength ? `Сила +${item.stats.strength}` : '',
@@ -408,13 +671,17 @@ function statRows(item: InventoryItem): string[] {
   ].filter(Boolean)
 }
 
-function rarityLabel(item: InventoryItem): string {
-  if (item.rarity === 'Unique') return 'Уникальный'
-  if (item.rarity === 'Legendary') return 'Легендарный'
-  if (item.rarity === 'Epic') return 'Эпический'
-  if (item.rarity === 'Rare') return 'Редкий'
-  if (item.rarity === 'Uncommon') return 'Необычный'
+function rarityName(rarity: InventoryItem['rarity']): string {
+  if (rarity === 'Unique') return 'Уникальный'
+  if (rarity === 'Legendary') return 'Легендарный'
+  if (rarity === 'Epic') return 'Эпический'
+  if (rarity === 'Rare') return 'Редкий'
+  if (rarity === 'Uncommon') return 'Необычный'
   return 'Обычный'
+}
+
+function rarityLabel(item: InventoryItem): string {
+  return rarityName(item.rarity)
 }
 
 function typeLabel(item: InventoryItem): string {
@@ -684,6 +951,63 @@ async function toggleSelectedLock(): Promise<void> {
       </template>
     </UIModal>
 
+    <section
+      v-if="!isContextualSlotMode && pendingLootItems.length"
+      class="pending-loot-panel"
+      data-pending-loot-panel
+    >
+      <header>
+        <div>
+          <small>НЕЗАБРАННАЯ ДОБЫЧА</small>
+          <strong>{{ pendingLootItems.length }} поз.</strong>
+        </div>
+        <span>Не занимает место, пока не заберёте</span>
+      </header>
+
+      <p v-if="pendingLootActionError" class="item-detail__error" role="alert">
+        {{ pendingLootActionError }}
+      </p>
+
+      <div class="pending-loot-list">
+        <article v-for="item in pendingLootItems" :key="item.id" :data-rarity="item.rarity">
+          <span class="pending-loot-list__icon">
+            <ItemIcon
+              :icon-id="item.iconId"
+              :item-id="item.definitionId"
+              :name="item.name"
+              :type="item.type"
+              :rarity="item.rarity"
+            />
+          </span>
+          <div class="pending-loot-list__copy">
+            <small>{{ rarityName(item.rarity) }}</small>
+            <strong>{{ item.name }}<span v-if="item.quantity > 1"> ×{{ item.quantity }}</span></strong>
+          </div>
+          <div class="pending-loot-list__actions">
+            <button type="button" :disabled="pendingLootLoading" @click="claimPendingLootItems([item])">
+              Забрать
+            </button>
+            <button type="button" :disabled="pendingLootLoading" @click="discardPendingLootItems([item])">
+              Отказаться
+            </button>
+          </div>
+        </article>
+      </div>
+
+      <footer>
+        <UIButton :disabled="pendingLootLoading" @click="claimPendingLootItems([...pendingLootItems])">
+          Забрать всё
+        </UIButton>
+        <UIButton
+          variant="secondary"
+          :disabled="pendingLootLoading"
+          @click="discardPendingLootItems([...pendingLootItems])"
+        >
+          Отказаться от всего
+        </UIButton>
+      </footer>
+    </section>
+
     <section v-if="inventory" class="bag-surface">
       <header v-if="bagItems.length" class="bag-surface__header">
         <div>
@@ -691,8 +1015,78 @@ async function toggleSelectedLock(): Promise<void> {
           <strong>{{ isContextualSlotMode ? `${filteredItems.length} подходит` : typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly && !newOnly ? `${usedSlots} занято` : `${filteredItems.length} найдено` }}</strong>
         </div>
         <span v-if="isContextualSlotMode">Выбор снаряжения</span>
-        <span v-else-if="typeFilter !== 'all' || rarityFilter !== 'all' || equipableOnly || newOnly">Фильтр активен</span>
+        <div v-else class="bag-surface__header-actions">
+          <span v-if="typeFilter !== 'all' || rarityFilter !== 'all' || equipableOnly || newOnly">Фильтр активен</span>
+          <button type="button" data-inventory-selection-mode @click="toggleSelectionMode">
+            {{ selectionMode ? 'Готово' : 'Выбрать' }}
+          </button>
+        </div>
       </header>
+
+      <section v-if="selectionMode" class="inventory-bulk-bar" data-inventory-bulk-bar>
+        <div>
+          <strong>Выбрано: {{ selectedItems.length }}</strong>
+          <small v-if="canSellHere && selectedItems.length">
+            Можно продать: {{ selectedSellableItems.length }} из {{ selectedItems.length }} · {{ formatMoney(selectedSellValue) }}
+          </small>
+          <small v-else-if="!canSellHere">Продажа доступна у Маркуса в Стартовом городе</small>
+        </div>
+        <div class="inventory-bulk-bar__actions">
+          <button type="button" @click="selectAllVisibleItems">
+            {{ sortedItems.filter(item => !item.isLocked).length && sortedItems.filter(item => !item.isLocked).every(item => selectedItemIds.has(item.id)) ? 'Снять выбор' : 'Выбрать всё' }}
+          </button>
+          <UIButton
+            variant="secondary"
+            :disabled="bulkActionPending || !selectedSellableItems.length || !canSellHere"
+            @click="sellSelectedItems"
+          >
+            Продать
+          </UIButton>
+          <UIButton
+            :disabled="bulkActionPending || !selectedItems.length"
+            @click="discardSelectedItems"
+          >
+            Уничтожить
+          </UIButton>
+        </div>
+        <div v-if="selectedItems.some(item => item.quantity > 1)" class="inventory-bulk-quantities">
+          <label
+            v-for="item in selectedItems.filter(item => item.quantity > 1)"
+            :key="`quantity-${item.id}`"
+          >
+            <span>{{ item.name }}</span>
+            <span class="inventory-bulk-quantity-control">
+              <button
+                type="button"
+                :disabled="bulkActionPending || selectedQuantity(item) <= 1"
+                @click="setSelectedQuantity(item, selectedQuantity(item) - 1)"
+              >−</button>
+              <input
+                type="number"
+                min="1"
+                :max="item.quantity"
+                :value="selectedQuantity(item)"
+                :disabled="bulkActionPending"
+                :aria-label="`Количество: ${item.name}`"
+                @input="onSelectedQuantityInput(item, $event)"
+              />
+              <button
+                type="button"
+                :disabled="bulkActionPending || selectedQuantity(item) >= item.quantity"
+                @click="setSelectedQuantity(item, selectedQuantity(item) + 1)"
+              >+</button>
+              <button
+                type="button"
+                :disabled="bulkActionPending || selectedQuantity(item) === item.quantity"
+                @click="setSelectedQuantity(item, item.quantity)"
+              >MAX</button>
+            </span>
+          </label>
+        </div>
+      </section>
+      <p v-if="bulkActionError" class="item-detail__error" role="alert" data-inventory-bulk-error>
+        {{ bulkActionError }}
+      </p>
 
       <div
         v-if="bagItems.length > 0 && visibleCells.length && (filteredItems.length || (typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly && !newOnly))"
@@ -705,6 +1099,7 @@ async function toggleSelectedLock(): Promise<void> {
           :class="{
             'bag-cell--empty': !item,
             'bag-cell--generated': item?.generatedItem !== null && item?.generatedItem !== undefined,
+            'bag-cell--selected': item ? selectedItemIds.has(item.id) : false,
           }"
           :data-rarity="item?.rarity"
           :data-item-id="item?.id"
@@ -713,9 +1108,12 @@ async function toggleSelectedLock(): Promise<void> {
           type="button"
           :disabled="!item"
           :aria-label="item?.name ?? 'Пустая ячейка'"
-          @click="openItem(item)"
+          @click="item && selectionMode ? toggleInventorySelection(item) : openItem(item)"
         >
           <template v-if="item">
+            <span v-if="selectionMode" class="bag-cell__selection" aria-hidden="true">
+              {{ selectedItemIds.has(item.id) ? '✓' : '' }}
+            </span>
             <span v-if="newItemIds.has(item.id)" class="bag-cell__new"><span class="sr-only">НОВОЕ</span></span>
             <span v-if="item.isLocked" class="bag-cell__lock" aria-label="Предмет защищён">
               <IconGenerator :config="{ id: `lock-${item.id}`, glyph: 'lock', category: 'utility', state: 'locked' }" />
@@ -914,6 +1312,26 @@ async function toggleSelectedLock(): Promise<void> {
           Использовать
         </UIButton>
         <UIButton
+          v-if="selectedItem && canSellHere && selectedItem.sellPriceGold > 0 && !selectedItem.isLocked"
+          variant="secondary"
+          data-item-sell-action
+          :loading="session.mutationPending"
+          :disabled="session.mutationPending || bulkActionPending"
+          @click="sellSelectedItem"
+        >
+          Продать · {{ formatMoney(selectedItem.sellPriceGold * selectedItem.quantity) }}
+        </UIButton>
+        <UIButton
+          v-if="selectedItem && !selectedItem.isLocked"
+          variant="secondary"
+          data-item-discard-action
+          :loading="bulkActionPending"
+          :disabled="session.mutationPending || bulkActionPending || spatialActionPending"
+          @click="discardSelectedItem"
+        >
+          Уничтожить
+        </UIButton>
+        <UIButton
           v-if="selectedItem"
           variant="secondary"
           data-item-lock-action
@@ -935,6 +1353,205 @@ async function toggleSelectedLock(): Promise<void> {
   margin-inline: auto;
   gap: var(--ui-space-3);
   padding: var(--ui-space-4) var(--ui-space-3) var(--ui-space-7);
+}
+
+.pending-loot-panel {
+  display: grid;
+  gap: .65rem;
+  padding: .75rem;
+  border: 1px solid color-mix(in srgb, var(--ui-color-primary) 38%, var(--ui-color-border));
+  border-radius: var(--ui-radius-md);
+  background: rgb(255 255 255 / 2%);
+}
+
+.pending-loot-panel > header,
+.pending-loot-panel > footer,
+.pending-loot-list article,
+.pending-loot-list__actions {
+  display: flex;
+  align-items: center;
+}
+
+.pending-loot-panel > header,
+.pending-loot-panel > footer {
+  justify-content: space-between;
+  gap: .6rem;
+}
+
+.pending-loot-panel > header > div,
+.pending-loot-list__copy {
+  display: grid;
+  gap: .1rem;
+}
+
+.pending-loot-panel > header small,
+.pending-loot-list small {
+  color: var(--ui-color-text-muted);
+  font-size: .58rem;
+}
+
+.pending-loot-panel > header > span {
+  color: var(--ui-color-text-muted);
+  font-size: .58rem;
+  text-align: right;
+}
+
+.pending-loot-list {
+  display: grid;
+  gap: .4rem;
+}
+
+.pending-loot-list article {
+  gap: .55rem;
+  padding: .45rem;
+  border: 1px solid rgb(255 255 255 / 6%);
+  border-radius: .6rem;
+  background: rgb(0 0 0 / 12%);
+}
+
+.pending-loot-list__icon {
+  width: 2.45rem;
+  height: 2.45rem;
+  flex: 0 0 auto;
+}
+
+.pending-loot-list__icon :deep(.item-icon) {
+  width: 100%;
+  height: 100%;
+}
+
+.pending-loot-list__copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.pending-loot-list__actions {
+  gap: .3rem;
+}
+
+.pending-loot-list__actions button {
+  min-height: 1.9rem;
+  padding: 0 .5rem;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-round);
+  background: rgb(255 255 255 / 4%);
+  color: var(--ui-color-text-primary);
+  font: inherit;
+  font-size: .6rem;
+  font-weight: 700;
+}
+
+.bag-surface__header-actions {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.bag-surface__header-actions button,
+.inventory-bulk-bar__actions > button {
+  min-height: 2rem;
+  padding: 0 .65rem;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-round);
+  background: rgb(255 255 255 / 4%);
+  color: var(--ui-color-text-primary);
+  font: inherit;
+  font-size: .65rem;
+  font-weight: 700;
+}
+
+.inventory-bulk-bar {
+  position: sticky;
+  top: .5rem;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: .75rem;
+  padding: .65rem .75rem;
+  border: 1px solid color-mix(in srgb, var(--ui-color-primary) 42%, var(--ui-color-border));
+  border-radius: var(--ui-radius-md);
+  background: color-mix(in srgb, var(--ui-color-surface-2) 94%, black);
+  box-shadow: 0 .55rem 1.4rem rgb(0 0 0 / 28%);
+}
+
+.inventory-bulk-quantities {
+  grid-column: 1 / -1;
+  display: grid;
+  width: 100%;
+  gap: .35rem;
+  padding-top: .45rem;
+  border-top: 1px solid rgb(255 255 255 / 6%);
+}
+
+.inventory-bulk-quantities label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .65rem;
+  color: var(--ui-color-text-muted);
+  font-size: .62rem;
+}
+
+.inventory-bulk-quantity-control {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+}
+
+.inventory-bulk-quantity-control button,
+.inventory-bulk-quantity-control input {
+  min-width: 2rem;
+  min-height: 1.8rem;
+  border: 1px solid var(--ui-color-border);
+  border-radius: .45rem;
+  background: rgb(255 255 255 / 4%);
+  color: var(--ui-color-text-primary);
+  font: inherit;
+  text-align: center;
+}
+
+.inventory-bulk-quantity-control input {
+  width: 3.1rem;
+}
+
+.inventory-bulk-bar > div:first-child {
+  display: grid;
+  gap: .1rem;
+}
+
+.inventory-bulk-bar small {
+  color: var(--ui-color-text-muted);
+  font-size: .58rem;
+}
+
+.inventory-bulk-bar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .4rem;
+}
+
+.bag-cell--selected {
+  outline: 2px solid color-mix(in srgb, var(--ui-color-primary) 76%, white);
+  outline-offset: -2px;
+}
+
+.bag-cell__selection {
+  position: absolute;
+  top: .2rem;
+  left: .2rem;
+  z-index: 3;
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--ui-color-primary) 65%, white);
+  border-radius: 50%;
+  background: rgb(6 8 12 / 88%);
+  color: var(--ui-color-primary);
+  font-size: .65rem;
+  font-weight: 900;
 }
 
 .inventory-header {

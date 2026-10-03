@@ -236,6 +236,7 @@ public sealed record BuybackMerchantItemRequest(
 
 public sealed record PendingLootItemResponse(
     Guid Id,
+    Guid RewardResolutionId,
     string DefinitionId,
     string Name,
     string Type,
@@ -244,12 +245,27 @@ public sealed record PendingLootItemResponse(
     DateTimeOffset CreatedAtUtc,
     ItemStatsResponse Stats,
     GeneratedItemSummaryResponse? GeneratedItem = null,
-    string? IconId = null);
+    string? IconId = null,
+    string? SourceType = null);
 
 public sealed record PendingLootResponse(
     IReadOnlyList<PendingLootItemResponse> Items);
 
-public sealed record ClaimPendingLootRequest(Guid MutationId);
+public sealed record ClaimPendingLootRequest(
+    Guid MutationId,
+    IReadOnlyList<Guid>? ItemIds = null);
+
+public sealed record DiscardPendingLootRequest(
+    Guid MutationId,
+    IReadOnlyList<Guid> ItemIds);
+
+public sealed record DiscardInventoryItemRequest(
+    Guid CharacterItemId,
+    int Quantity);
+
+public sealed record DiscardInventoryItemsRequest(
+    Guid MutationId,
+    IReadOnlyList<DiscardInventoryItemRequest> Items);
 
 public sealed record RollItemReforgeRequest(
     Guid CharacterItemId,

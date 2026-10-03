@@ -94,9 +94,17 @@ describe('InventoryView capacity', () => {
   })
 
   it('refreshes spatial state when the inventory snapshot changes', async () => {
-    const request = vi.spyOn(apiClient, 'request')
-      .mockResolvedValueOnce(spatialState({ capacity: 30, usedSlots: 1, freeSlots: 29 }))
-      .mockResolvedValueOnce(spatialState({ capacity: 40, usedSlots: 2, freeSlots: 38, artifactCapacityBonus: 10 }))
+    const spatialStates = [
+      spatialState({ capacity: 30, usedSlots: 1, freeSlots: 29 }),
+      spatialState({ capacity: 40, usedSlots: 2, freeSlots: 38, artifactCapacityBonus: 10 }),
+    ]
+    let spatialCall = 0
+    const request = vi.spyOn(apiClient, 'request').mockImplementation(async (path) => {
+      if (path === '/api/v1/inventory/pending-loot') return { items: [] } as never
+      const state = spatialStates[Math.min(spatialCall, spatialStates.length - 1)]!
+      spatialCall += 1
+      return state as never
+    })
     const session = useGameSessionStore()
     session.snapshot = snapshot([equipment('ITEM_1')])
 
@@ -107,7 +115,7 @@ describe('InventoryView capacity', () => {
     session.snapshot.character!.inventory.items.push(equipment('ITEM_2'))
     await flushPromises()
 
-    expect(request).toHaveBeenCalledTimes(2)
+    expect(request.mock.calls.filter(([path]) => path === '/api/v1/inventory/spatial-artifact/')).toHaveLength(2)
     expect(wrapper.get('[data-inventory-capacity]').text()).toContain('/ 40')
   })
 })

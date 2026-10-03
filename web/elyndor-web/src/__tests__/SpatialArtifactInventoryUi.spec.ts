@@ -17,26 +17,29 @@ describe('InventoryView spatial artifacts', () => {
 
   it('shows a purchased spatial artifact in inventory and equips it from the item menu', async () => {
     const artifact = spatialArtifact('ARTIFACT_10', 'Малое пространственное кольцо')
-    const request = vi.spyOn(apiClient, 'request')
-      .mockResolvedValueOnce(spatialState())
-      .mockResolvedValueOnce(spatialState({
-        equippedArtifact: {
-          characterItemId: artifact.id,
-          definitionId: artifact.definitionId,
-          name: artifact.name,
-          rarity: artifact.rarity,
-          capacityBonus: 10,
-          iconId: artifact.iconId,
-        },
-        capacity: {
-          baseCapacity: 30,
-          artifactCapacityBonus: 10,
-          capacity: 40,
-          usedSlots: 0,
-          freeSlots: 40,
-          isOverflow: false,
-        },
-      }))
+    const equippedState = spatialState({
+      equippedArtifact: {
+        characterItemId: artifact.id,
+        definitionId: artifact.definitionId,
+        name: artifact.name,
+        rarity: artifact.rarity,
+        capacityBonus: 10,
+        iconId: artifact.iconId,
+      },
+      capacity: {
+        baseCapacity: 30,
+        artifactCapacityBonus: 10,
+        capacity: 40,
+        usedSlots: 0,
+        freeSlots: 40,
+        isOverflow: false,
+      },
+    })
+    const request = vi.spyOn(apiClient, 'request').mockImplementation(async (path) => {
+      if (path === '/api/v1/inventory/pending-loot') return { items: [] } as never
+      if (path === '/api/v1/inventory/spatial-artifact/equip') return equippedState as never
+      return spatialState() as never
+    })
     const session = useGameSessionStore()
     session.snapshot = snapshot([artifact])
 
@@ -56,8 +59,7 @@ describe('InventoryView spatial artifacts', () => {
     equipAction!.click()
     await flushPromises()
 
-    expect(request).toHaveBeenNthCalledWith(
-      2,
+    expect(request).toHaveBeenCalledWith(
       '/api/v1/inventory/spatial-artifact/equip',
       expect.objectContaining({
         method: 'POST',
@@ -109,26 +111,29 @@ describe('InventoryView spatial artifacts', () => {
 
   it('unequips from the dedicated spatial capacity block and returns the artifact to the grid', async () => {
     const artifact = spatialArtifact('ARTIFACT_15', 'Кольцо расширенного пространства')
-    const request = vi.spyOn(apiClient, 'request')
-      .mockResolvedValueOnce(spatialState({
-        equippedArtifact: {
-          characterItemId: artifact.id,
-          definitionId: artifact.definitionId,
-          name: artifact.name,
-          rarity: artifact.rarity,
-          capacityBonus: 15,
-          iconId: artifact.iconId,
-        },
-        capacity: {
-          baseCapacity: 30,
-          artifactCapacityBonus: 15,
-          capacity: 45,
-          usedSlots: 0,
-          freeSlots: 45,
-          isOverflow: false,
-        },
-      }))
-      .mockResolvedValueOnce(spatialState())
+    const equippedState = spatialState({
+      equippedArtifact: {
+        characterItemId: artifact.id,
+        definitionId: artifact.definitionId,
+        name: artifact.name,
+        rarity: artifact.rarity,
+        capacityBonus: 15,
+        iconId: artifact.iconId,
+      },
+      capacity: {
+        baseCapacity: 30,
+        artifactCapacityBonus: 15,
+        capacity: 45,
+        usedSlots: 0,
+        freeSlots: 45,
+        isOverflow: false,
+      },
+    })
+    const request = vi.spyOn(apiClient, 'request').mockImplementation(async (path) => {
+      if (path === '/api/v1/inventory/pending-loot') return { items: [] } as never
+      if (path === '/api/v1/inventory/spatial-artifact/unequip') return spatialState() as never
+      return equippedState as never
+    })
     const session = useGameSessionStore()
     session.snapshot = snapshot([artifact])
 
@@ -141,8 +146,7 @@ describe('InventoryView spatial artifacts', () => {
     await wrapper.get('[data-unequip-spatial-artifact]').trigger('click')
     await flushPromises()
 
-    expect(request).toHaveBeenNthCalledWith(
-      2,
+    expect(request).toHaveBeenCalledWith(
       '/api/v1/inventory/spatial-artifact/unequip',
       { method: 'POST' },
     )
@@ -153,26 +157,31 @@ describe('InventoryView spatial artifacts', () => {
 
   it('keeps an equipped artifact and explains when it cannot be removed because inventory would overflow', async () => {
     const artifact = spatialArtifact('ARTIFACT_40', 'Печать Бездны')
-    vi.spyOn(apiClient, 'request')
-      .mockResolvedValueOnce(spatialState({
-        equippedArtifact: {
-          characterItemId: artifact.id,
-          definitionId: artifact.definitionId,
-          name: artifact.name,
-          rarity: artifact.rarity,
-          capacityBonus: 40,
-          iconId: artifact.iconId,
-        },
-        capacity: {
-          baseCapacity: 30,
-          artifactCapacityBonus: 40,
-          capacity: 70,
-          usedSlots: 50,
-          freeSlots: 20,
-          isOverflow: false,
-        },
-      }))
-      .mockRejectedValueOnce(new ApiRequestError(409, 'inventory_full'))
+    const equippedState = spatialState({
+      equippedArtifact: {
+        characterItemId: artifact.id,
+        definitionId: artifact.definitionId,
+        name: artifact.name,
+        rarity: artifact.rarity,
+        capacityBonus: 40,
+        iconId: artifact.iconId,
+      },
+      capacity: {
+        baseCapacity: 30,
+        artifactCapacityBonus: 40,
+        capacity: 70,
+        usedSlots: 50,
+        freeSlots: 20,
+        isOverflow: false,
+      },
+    })
+    vi.spyOn(apiClient, 'request').mockImplementation(async (path) => {
+      if (path === '/api/v1/inventory/pending-loot') return { items: [] } as never
+      if (path === '/api/v1/inventory/spatial-artifact/unequip') {
+        throw new ApiRequestError(409, 'inventory_full')
+      }
+      return equippedState as never
+    })
     const session = useGameSessionStore()
     session.snapshot = snapshot([artifact])
 
