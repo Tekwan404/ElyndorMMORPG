@@ -689,7 +689,7 @@ public sealed class CombatRewardService(
         return LootRoller.Roll(table, randomFactory.Create());
     }
 
-    private async Task AddItemAsync(
+    private Task AddItemAsync(
         Guid characterId,
         Guid rewardResolutionId,
         LootRoll roll,
@@ -697,6 +697,8 @@ public sealed class CombatRewardService(
         GameContentSnapshot contentSnapshot,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         GameContentIndexes indexes = contentSnapshot.Indexes;
         if (!indexes.ItemsById.TryGetValue(
                 roll.ItemId,
@@ -706,97 +708,41 @@ public sealed class CombatRewardService(
                 $"Item '{roll.ItemId}' is missing from game content.");
         }
 
+        // Personal combat loot is staged durably instead of being forced into the bag.
+        // XP and gold are still granted immediately; the player explicitly claims or
+        // discards item drops after combat. This also makes a full inventory a normal
+        // loot state instead of an exceptional reward path.
         if (!definition.Stackable)
         {
-            int freeSlots = await InventoryCapacity.FreeSlotsAsync(
-                dbContext,
-                characterId,
-                contentSnapshot,
-                cancellationToken);
             for (var index = 0; index < roll.Quantity; index++)
             {
-                if (freeSlots > 0)
-                {
-                    dbContext.CharacterItems.Add(
-                        ItemInstancePersistenceFactory.CreateCharacterItem(
-                            characterId,
-                            definition,
-                            rewardResolutionId,
-                            "COMBAT",
-                            roll.ItemId,
-                            index,
-                            acquiredAtUtc,
-                            contentSnapshot.Package,
-                            roll.SourceQualityProfileId));
-                    freeSlots--;
-                }
-                else
-                {
-                    dbContext.PendingLootItems.Add(
-                        ItemInstancePersistenceFactory.CreatePendingLootItem(
-                            characterId,
-                            definition,
-                            rewardResolutionId,
-                            "COMBAT",
-                            roll.ItemId,
-                            index,
-                            acquiredAtUtc,
-                            contentSnapshot.Package,
-                            roll.SourceQualityProfileId));
-                }
+                dbContext.PendingLootItems.Add(
+                    ItemInstancePersistenceFactory.CreatePendingLootItem(
+                        characterId,
+                        definition,
+                        rewardResolutionId,
+                        "COMBAT",
+                        roll.ItemId,
+                        index,
+                        acquiredAtUtc,
+                        contentSnapshot.Package,
+                        roll.SourceQualityProfileId));
             }
-            return;
+
+            return Task.CompletedTask;
         }
 
-        int remaining = roll.Quantity;
-        CharacterItem[] stacks = await dbContext.CharacterItems
-            .Where(item => item.CharacterId == characterId
-                && item.ItemDefinitionId == definition.Id
-                && item.DefinitionVersion == definition.Version
-                && item.Quantity < definition.MaxStack && item.TransactionLockId == null)
-            .OrderBy(item => item.AcquiredAtUtc)
-            .ToArrayAsync(cancellationToken);
-
-        foreach (CharacterItem stack in stacks)
-        {
-            if (remaining <= 0) break;
-            int available = definition.MaxStack - stack.Quantity;
-            int toAdd = Math.Min(available, remaining);
-            if (toAdd <= 0) continue;
-            stack.AddQuantity(toAdd, definition.MaxStack);
-            remaining -= toAdd;
-        }
-
-        int freeStackSlots = await InventoryCapacity.FreeSlotsAsync(
-            dbContext,
+        dbContext.PendingLootItems.Add(new PendingLootItem(
+            Guid.NewGuid(),
             characterId,
-            contentSnapshot,
-            cancellationToken);
-        while (remaining > 0 && freeStackSlots > 0)
-        {
-            int quantity = Math.Min(definition.MaxStack, remaining);
-            dbContext.CharacterItems.Add(new CharacterItem(
-                Guid.NewGuid(),
-                characterId,
-                definition.Id,
-                quantity,
-                acquiredAtUtc,
-                definition.Version));
-            remaining -= quantity;
-            freeStackSlots--;
-        }
+            rewardResolutionId,
+            definition.Id,
+            roll.Quantity,
+            definition.Version,
+            acquiredAtUtc,
+            sourceType: "COMBAT"));
 
-        if (remaining > 0)
-        {
-            dbContext.PendingLootItems.Add(new PendingLootItem(
-                Guid.NewGuid(),
-                characterId,
-                rewardResolutionId,
-                definition.Id,
-                remaining,
-                definition.Version,
-                acquiredAtUtc));
-        }
+        return Task.CompletedTask;
     }
 
     private sealed record ResolvedRewardSource(
