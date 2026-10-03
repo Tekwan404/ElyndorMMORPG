@@ -207,7 +207,7 @@ public sealed class LootContainerService(
     {
         if (!definition.Stackable)
         {
-            int freeSlots = await InventoryCapacity.FreeSlotsAsync(
+            int equipmentFreeSlots = await InventoryCapacity.FreeSlotsAsync(
                 db,
                 characterId,
                 content,
@@ -216,7 +216,7 @@ public sealed class LootContainerService(
             for (var index = 0; index < roll.Quantity; index++)
             {
                 int itemOrdinal = checked(ordinal + index);
-                if (freeSlots > 0)
+                if (equipmentFreeSlots > 0)
                 {
                     db.CharacterItems.Add(
                         ItemInstancePersistenceFactory.CreateCharacterItem(
@@ -229,7 +229,7 @@ public sealed class LootContainerService(
                             now,
                             content.Package,
                             roll.SourceQualityProfileId));
-                    freeSlots--;
+                    equipmentFreeSlots--;
                 }
                 else
                 {
@@ -287,7 +287,7 @@ public sealed class LootContainerService(
                 now,
                 definition.Version));
             remaining -= quantity;
-            freeSlots--;
+            stackFreeSlots--;
         }
 
         if (remaining <= 0)
@@ -307,7 +307,7 @@ public sealed class LootContainerService(
     private static int RollInclusive(
         int min,
         int max,
-        IGameRandom random)
+        SeededGameRandom random)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(min);
         ArgumentOutOfRangeException.ThrowIfLessThan(max, min);
