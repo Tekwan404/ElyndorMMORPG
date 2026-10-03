@@ -68,6 +68,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<ArenaLobbyService>();
         builder.Services.AddScoped<ArenaInvitationService>();
         builder.Services.AddScoped<WorldBossDamageService>();
+        builder.Services.AddScoped<WorldBossHealingContributionService>();
         builder.Services.AddScoped<WorldBossLifecycleService>();
         builder.Services.AddScoped<WorldBossReadService>();
         builder.Services.AddScoped<WorldBossEnterService>();
