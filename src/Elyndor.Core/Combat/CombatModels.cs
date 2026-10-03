@@ -263,4 +263,11 @@ public sealed record CombatEvent(
     bool IsUnblockable = false,
     bool IsCritical = false,
     HealingOrigin? HealingOrigin = null,
-    bool IsReflected = false);
+    bool IsReflected = false,
+    bool IsProc = false,
+    int ProcDepth = 0,
+    string? ProcOriginId = null)
+{
+    // Preserved by record copies and event adapters, not exposed in transport DTOs.
+    internal object ProcDispatchToken { get; init; } = new();
+}

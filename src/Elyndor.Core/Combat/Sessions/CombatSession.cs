@@ -54,7 +54,6 @@ public sealed partial class CombatSession
     private readonly Dictionary<Guid, CombatSessionStatisticsState> _statisticsByActorId = [];
     private readonly CombatParticipantRoster _participantRoster;
     private readonly ContributionLedger _contributionLedger;
-    private readonly Dictionary<string, DateTimeOffset> _talentInternalCooldowns = new(StringComparer.Ordinal);
     private DateTimeOffset? _nextCompanionAutoAttackAtUtc;
     private CombatParticipantDefinition _player => _activePlayerState.Definition;
     private CombatRuntimeState _playerRuntime => _activePlayerState.Runtime;
@@ -270,7 +269,7 @@ public sealed partial class CombatSession
                         .Select(item => item.Participant.Actor)
                         .Concat(companion is null ? [] : [companion.Actor])
                         .Concat(enemies.Select(item => item.Actor))));
-            state.InitializeTalentRuntime(_random);
+            state.InitializeTalentRuntime(_random, _procGuard);
             state.SelectedTargetActorId = _primaryEnemyActorId;
             Guid actorId = playerDefinition.Participant.Actor.ActorId;
             _playerStatesByActorId.Add(actorId, state);
@@ -1996,7 +1995,7 @@ public sealed partial class CombatSession
         string? weaponDefinitionId = null)
     {
         CombatEvent[] normalizedEvents = events
-            .Select(item => item with
+            .Select(item => CaptureProcOrigin(item) with
             {
                 DefinitionId = item.DefinitionId ?? definitionId,
                 SourceActorId = item.SourceActorId ?? sourceActorId,
@@ -2053,11 +2052,11 @@ public sealed partial class CombatSession
             // The set-passive runtime is event driven and ownership is resolved from the
             // event itself, so it runs for every event type its catalog subscribes to
             // rather than hanging off one class-specific hook.
-            ApplySetPassiveHooks(normalized);
+            RunProcHooks(normalized, "sets", () => ApplySetPassiveHooks(normalized));
             ApplyTalentHooks(normalized);
             if (normalized.Type == CombatEventType.DamageBlocked)
             {
-                ApplyGuardianBlockHooks(normalized);
+                RunProcHooks(normalized, "guardian-block", () => ApplyGuardianBlockHooks(normalized));
             }
             if (normalized.Type == CombatEventType.ActorDied)
             {
@@ -2155,6 +2154,11 @@ public sealed partial class CombatSession
             }
         }
 
+        RunProcHooks(combatEvent, "class-talents", () => ApplySafeTalentHooks(combatEvent));
+    }
+
+    private void ApplySafeTalentHooks(CombatEvent combatEvent)
+    {
         if (combatEvent.Type == CombatEventType.AbilityCompleted
             && combatEvent.SourceActorId == _player.Actor.ActorId)
         {
@@ -2339,7 +2343,11 @@ public sealed partial class CombatSession
             Amount: combatEvent.Amount,
             DamageType: combatEvent.DamageType,
             IsPeriodic: combatEvent.IsPeriodic,
-            Sequence: Sequence);
+            IsProc: combatEvent.IsProc || combatEvent.IsReflected,
+            ProcDepth: combatEvent.ProcDepth,
+            ProcOriginId: combatEvent.ProcOriginId,
+            Sequence: Sequence)
+        { ProcDispatchToken = combatEvent.ProcDispatchToken };
 
     private void FinishForDeath(
         CombatEvent death,
@@ -2535,6 +2543,7 @@ public sealed partial class CombatSession
     {
         decimal actual = actor.AddResource(ScaleWarlordResource(definitionId, amount));
         if (actual == 0) return;
+        bool talentProc = _playerTalents.EventHooks.Any(hook => hook.TalentId == definitionId);
         Append(new CombatEvent(
             CombatEventType.ResourceChanged,
             now,
@@ -2542,11 +2551,15 @@ public sealed partial class CombatSession
             definitionId,
             actual,
             SourceActorId: actor.ActorId,
-            TargetActorId: actor.ActorId));
+            TargetActorId: actor.ActorId,
+            IsProc: talentProc,
+            ProcDepth: talentProc ? 1 : 0,
+            ProcOriginId: talentProc ? definitionId : null));
     }
 
     private void Append(CombatEvent combatEvent)
     {
+        combatEvent = CaptureProcOrigin(combatEvent);
         if (_mechanicsEventSink is not null)
         {
             _mechanicsEventSink(combatEvent);
@@ -3055,8 +3068,8 @@ public sealed partial class CombatSession
             Runtime = runtime;
         }
 
-        public void InitializeTalentRuntime(IGameRandom random) =>
-            TalentRuntimeEngine = new(new TalentRuntimeState(Definition.Actor.ActorId, random));
+        public void InitializeTalentRuntime(IGameRandom random, ProcGuard procGuard) =>
+            TalentRuntimeEngine = new(new TalentRuntimeState(Definition.Actor.ActorId, random, procGuard));
 
         public CombatParticipantDefinition Definition { get; }
         public Guid SelectedTargetActorId { get; set; }

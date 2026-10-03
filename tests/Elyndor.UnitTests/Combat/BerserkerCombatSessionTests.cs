@@ -244,6 +244,8 @@ public sealed class BerserkerCombatSessionTests
             && item.DefinitionId == "B-4-1");
         Assert.Equal(CombatWeaponHand.OffHand, proc.WeaponHand);
         Assert.Equal("OFFHAND_TEST_SWORD", proc.WeaponDefinitionId);
+        Assert.True(proc.IsProc);
+        Assert.Equal(1, proc.ProcDepth);
     }
 
     [Fact]

@@ -9,6 +9,7 @@ public sealed record SetPassiveProcState(
 
 public sealed class SetPassiveRuntimeState
 {
+    internal ProcGuard Guard { get; } = new();
     private readonly Dictionary<(Guid ActorId, string PassiveId), SetPassiveProcState> _states = new();
 
     public int Count => _states.Count;

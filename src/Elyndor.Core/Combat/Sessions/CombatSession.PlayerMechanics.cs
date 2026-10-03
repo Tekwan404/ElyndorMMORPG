@@ -79,7 +79,7 @@ public sealed partial class CombatSession
             SelectedTargetActorId = opponent.Actor.ActorId,
             LastResourceRegenAtUtc = now
         };
-        _activePlayerState.InitializeTalentRuntime(random);
+        _activePlayerState.InitializeTalentRuntime(random, _procGuard);
         _playerStatesByActorId = new() { [owner.Participant.Actor.ActorId] = _activePlayerState };
         _participantRoster = new CombatParticipantRoster(
             [new CombatParticipantIdentity(owner.AccountId, owner.Participant.Actor.ActorId,
@@ -252,10 +252,10 @@ public sealed partial class CombatSession
     private void ApplyMechanicsHooks(CombatEvent combatEvent)
     {
         ProcessPaladinKernelEvent(combatEvent);
-        ApplySetPassiveHooks(combatEvent);
+        RunProcHooks(combatEvent, "sets", () => ApplySetPassiveHooks(combatEvent));
         ApplyTalentHooks(combatEvent);
         if (combatEvent.Type == CombatEventType.DamageBlocked)
-            ApplyGuardianBlockHooks(combatEvent);
+            RunProcHooks(combatEvent, "guardian-block", () => ApplyGuardianBlockHooks(combatEvent));
     }
 
     private void ApplyMechanicsKernelEvents(IEnumerable<CombatEvent> events)
@@ -296,6 +296,8 @@ public sealed partial class CombatSession
             IsUnblockable: death.IsUnblockable,
             IsCritical: death.IsCritical,
             IsReflected: death.IsReflected));
+        // Kill credit is a terminal lifecycle notification, not a periodic hit proc.
+        // Preserve OnKill rewards/resources even when the lethal hit was periodic or secondary.
         TriggerTalent(TalentModifierKeys.OnEnemyKilled, death.OccurredAtUtc);
         ApplyBerserkerEnemyKilledHooks(death.OccurredAtUtc);
         ApplyPyromancerEnemyKilledHooks(death);

@@ -29,8 +29,9 @@ public sealed class TalentRuntimeState
     private readonly HashSet<string> _flags = new(StringComparer.Ordinal);
     private readonly Dictionary<string, DateTimeOffset> _internalCooldowns = new(StringComparer.Ordinal);
     private long _lastSequence;
+    private readonly ProcGuard _procGuard;
 
-    public TalentRuntimeState(Guid ownerActorId, IGameRandom random)
+    public TalentRuntimeState(Guid ownerActorId, IGameRandom random, ProcGuard? procGuard = null)
     {
         if (ownerActorId == Guid.Empty)
             throw new ArgumentException("Talent runtime owner is required.", nameof(ownerActorId));
@@ -38,6 +39,7 @@ public sealed class TalentRuntimeState
         ArgumentNullException.ThrowIfNull(random);
         _ownerActorId = ownerActorId;
         _random = random;
+        _procGuard = procGuard ?? new();
     }
 
     public TalentRuntimeSnapshot Snapshot => new(
@@ -57,7 +59,13 @@ public sealed class TalentRuntimeState
     {
         ArgumentNullException.ThrowIfNull(combatEvent);
         ArgumentNullException.ThrowIfNull(modifiers);
+        if (!_procGuard.TryObserve(_ownerActorId, "generic-dispatch", combatEvent.ProcDispatchToken, 0))
+            return [];
+        if (combatEvent.Sequence > 0 && combatEvent.Sequence == _lastSequence)
+            return [];
         ValidateSequence(combatEvent.Sequence);
+        if (!ProcGuard.IsEligible(combatEvent))
+            return [];
 
         string? key = EventKey(combatEvent);
         if (key is null)
@@ -72,13 +80,15 @@ public sealed class TalentRuntimeState
         {
             if (!MatchesOwner(key, combatEvent)
                 || combatEvent.IsProc && !hook.CanTriggerFromProc
-                || IsOnCooldown(hook.TalentId, combatEvent.OccurredAtUtc)
+                || !_procGuard.TryObserve(_ownerActorId, hook.TalentId, combatEvent.ProcDispatchToken, combatEvent.Sequence)
+                || !_procGuard.IsReady(_ownerActorId, hook.TalentId, combatEvent.OccurredAtUtc)
                 || !Roll(hook.ChancePercent))
             {
                 continue;
             }
 
             _stacks[hook.TalentId] = _stacks.GetValueOrDefault(hook.TalentId) + 1;
+            _procGuard.StartCooldown(_ownerActorId, hook.TalentId, combatEvent.OccurredAtUtc, hook.InternalCooldown);
             if (hook.InternalCooldown > TimeSpan.Zero)
             {
                 _internalCooldowns[hook.TalentId] =
@@ -103,6 +113,7 @@ public sealed class TalentRuntimeState
         _flags.Clear();
         _internalCooldowns.Clear();
         _lastSequence = 0;
+        _procGuard.Reset();
     }
 
     private void ValidateSequence(long sequence)
@@ -114,10 +125,6 @@ public sealed class TalentRuntimeState
 
         _lastSequence = sequence;
     }
-
-    private bool IsOnCooldown(string talentId, DateTimeOffset occurredAtUtc) =>
-        _internalCooldowns.TryGetValue(talentId, out DateTimeOffset readyAtUtc)
-        && readyAtUtc > occurredAtUtc;
 
     private bool Roll(decimal chancePercent) =>
         chancePercent >= 100 || chancePercent > 0 && _random.NextUnit() < chancePercent / 100m;

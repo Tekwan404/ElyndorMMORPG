@@ -7,6 +7,47 @@ namespace Elyndor.UnitTests.Combat;
 public sealed class TalentRuntimeEngineTests
 {
     [Fact]
+    public void OlderReplayAfterANewerEventIsIgnored()
+    {
+        Guid owner = Guid.NewGuid();
+        var runtime = new TalentRuntimeState(owner, new SequenceGameRandom(0));
+        var hook = new ResolvedTalentEventHook("SAFE", TalentModifierKeys.OnCriticalHit,
+            1, 5, null, TimeSpan.Zero, false);
+        var input = Event(DateTimeOffset.UnixEpoch, owner, sequence: 1);
+        Assert.Single(runtime.Publish(input, Modifiers(hook)));
+        Assert.Single(runtime.Publish(Event(DateTimeOffset.UnixEpoch.AddSeconds(1), owner, sequence: 2), Modifiers(hook)));
+        Assert.Empty(runtime.Publish(input with { }, Modifiers(hook)));
+    }
+
+    [Fact]
+    public void RepeatedSequencedEventIsIgnoredWithoutThrowing()
+    {
+        Guid owner = Guid.NewGuid();
+        var runtime = new TalentRuntimeState(owner, new SequenceGameRandom(0));
+        var hook = new ResolvedTalentEventHook("SAFE", TalentModifierKeys.OnCriticalHit,
+            1, 5, null, TimeSpan.Zero, false);
+        var input = Event(DateTimeOffset.UnixEpoch, owner, sequence: 1);
+        Assert.Single(runtime.Publish(input, Modifiers(hook)));
+        Assert.Empty(runtime.Publish(input with { }, Modifiers(hook)));
+    }
+
+    [Theory]
+    [InlineData(true, 0)]
+    [InlineData(false, 1)]
+    [InlineData(false, 2)]
+    public void UnsafeSourcesCannotProduceAnotherProc(bool periodic, int depth)
+    {
+        Guid owner = Guid.NewGuid();
+        TalentRuntimeState state = new(owner, new SequenceGameRandom(0));
+        var hook = new ResolvedTalentEventHook("SAFE", TalentModifierKeys.OnCriticalHit,
+            1, 5, null, TimeSpan.Zero, true);
+        var input = new CombatRuntimeEvent(CombatRuntimeEventKind.CriticalHit,
+            DateTimeOffset.UtcNow, owner, IsPeriodic: periodic, ProcDepth: depth);
+        Assert.Empty(state.Publish(input, Modifiers(hook)));
+        Assert.Empty(state.Snapshot.Stacks);
+    }
+
+    [Fact]
     public void PublishUsesResolvedRankValueForMatchingOwnerEvent()
     {
         Guid ownerId = Guid.NewGuid();

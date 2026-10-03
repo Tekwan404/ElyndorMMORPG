@@ -39,14 +39,16 @@ target,
 ordinary * multiplier,
 _companion.AutoAttack.DamageType,
 definitionId,
-now);
+now,
+isProc: true);
 }
 private void ResolveCompanionFixedDamage(
 CombatActorState target,
 decimal amount,
 DamageType type,
 string definitionId,
-DateTimeOffset now)
+DateTimeOffset now,
+bool isProc = false)
 {
 if (_companion is null
 || _companion.Actor.IsDead
@@ -71,7 +73,9 @@ DamageMultiplier: multiplier),
 _random,
 now);
 ApplyKernelEvents(
-result.Events,
+result.Events.Select(item => isProc
+? item with { IsProc = true, ProcDepth = 1, ProcOriginId = definitionId }
+: item),
 _companion.Actor.ActorId,
 target.ActorId,
 definitionId);
@@ -110,7 +114,7 @@ MinimumDamage: 0),
 _random,
 now);
 ApplyKernelEvents(
-result.Events,
+result.Events.Select(item => item with { IsProc = true, ProcDepth = 1, ProcOriginId = definitionId }),
 _player.Actor.ActorId,
 target.ActorId,
 definitionId,

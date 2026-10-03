@@ -14,6 +14,17 @@ DamageResult damage,
 ArcherAutoAttackModifier modifier,
 DateTimeOffset now)
 {
+if (damage.Events.Count > 0)
+RunProcHooks(damage.Events[^1], "archer-auto-resolved", () => ApplySafeArcherAutoAttackResolved(target, profile, ordinaryBaseDamage, damage, modifier, now));
+}
+private void ApplySafeArcherAutoAttackResolved(
+CombatParticipantDefinition target,
+AutoAttackProfile profile,
+decimal ordinaryBaseDamage,
+DamageResult damage,
+ArcherAutoAttackModifier modifier,
+DateTimeOffset now)
+{
 if (!IsArcher)
 return;
 ConsumeArcherStackedEffect(

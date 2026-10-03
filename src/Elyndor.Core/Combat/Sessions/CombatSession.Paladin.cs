@@ -55,6 +55,9 @@ public sealed partial class CombatSession
     }
 
     private void ProcessPaladinKernelEvent(CombatEvent combatEvent)
+        => RunProcHooks(combatEvent, "paladin", () => ProcessSafePaladinKernelEvent(combatEvent));
+
+    private void ProcessSafePaladinKernelEvent(CombatEvent combatEvent)
     {
         ApplySharedPaladinIntercession(combatEvent);
         if (!IsActivePaladin)

@@ -16,6 +16,20 @@ public sealed class ArenaOtherClassProductionParityTests
     private static readonly DateTimeOffset Start = new(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
 
     [Theory]
+    [InlineData("IMMOLATION_TRAP")]
+    [InlineData("EXPLOSIVE_TRAP")]
+    public async Task PrimaryClassAbilityDamageIsNotMisclassifiedAsAProc(string abilityId)
+    {
+        var duel = await Duel("ARCHER", [abilityId], []);
+        Cast(duel, abilityId);
+        CombatEvent damage = Assert.Single(duel.Session.GetEventsAfter(0), item =>
+            item.Type == CombatEventType.DamageDealt && item.DefinitionId == abilityId);
+        Assert.True(damage.Amount > 0);
+        Assert.False(damage.IsProc);
+        Assert.Equal(0, damage.ProcDepth);
+    }
+
+    [Theory]
     [InlineData(49, true)]
     [InlineData(50, false)]
     public async Task BerserkerBloodRageChangesActualStrikeOnlyBelowThreshold(int hpPercent, bool empowered)

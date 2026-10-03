@@ -28,11 +28,15 @@ public sealed class SetPassiveEvaluator
     public IReadOnlyList<SetPassiveActionInvocation> Evaluate(
         CombatEvent combatEvent,
         IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> equippedSetPieceCounts,
-        SetPassiveRuntimeState runtimeState)
+        SetPassiveRuntimeState runtimeState,
+        ProcGuard? guard = null)
     {
         ArgumentNullException.ThrowIfNull(combatEvent);
         ArgumentNullException.ThrowIfNull(equippedSetPieceCounts);
         ArgumentNullException.ThrowIfNull(runtimeState);
+        guard ??= runtimeState.Guard;
+        if (!ProcGuard.IsEligible(combatEvent))
+            return [];
 
         List<SetPassiveActionInvocation> invocations = [];
 
@@ -50,6 +54,9 @@ public sealed class SetPassiveEvaluator
             }
 
             SetPassiveProcState state = runtimeState.Get(actorId.Value, definition.Id);
+            if (!guard.TryObserve(actorId.Value, definition.Id, combatEvent.ProcDispatchToken, combatEvent.Sequence)
+                || !guard.IsReady(actorId.Value, definition.Id, combatEvent.OccurredAtUtc))
+                continue;
             if (state.CooldownUntil is { } cooldownUntil
                 && combatEvent.OccurredAtUtc < cooldownUntil)
             {
@@ -77,6 +84,8 @@ public sealed class SetPassiveEvaluator
                 CooldownUntil = nextCooldown,
                 LastProcAt = combatEvent.OccurredAtUtc
             });
+            guard.StartCooldown(actorId.Value, definition.Id, combatEvent.OccurredAtUtc,
+                definition.Conditions.InternalCooldown ?? TimeSpan.Zero);
 
             foreach (SetPassiveActionDefinition action in definition.Actions)
             {

@@ -31,7 +31,8 @@ public sealed partial class CombatSession
 
         IReadOnlyList<SetPassiveActionInvocation> invocations = _setPassiveRuntime.Evaluate(
             combatEvent,
-            _setPassiveLoadoutSnapshot);
+            _setPassiveLoadoutSnapshot,
+            _procGuard);
 
         foreach (SetPassiveActionInvocation invocation in invocations)
         {

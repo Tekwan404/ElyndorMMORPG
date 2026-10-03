@@ -33,4 +33,7 @@ public sealed record CombatRuntimeEvent(
     bool IsProc = false,
     int ProcDepth = 0,
     string? ProcOriginId = null,
-    long Sequence = 0);
+    long Sequence = 0)
+{
+    internal object ProcDispatchToken { get; init; } = new();
+}
