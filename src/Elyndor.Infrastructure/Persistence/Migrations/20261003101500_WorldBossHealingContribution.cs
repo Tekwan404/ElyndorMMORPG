@@ -11,6 +11,14 @@ namespace Elyndor.Infrastructure.Persistence.Migrations;
 [Migration("20261003101500_WorldBossHealingContribution")]
 public partial class WorldBossHealingContribution : Migration
 {
+    private static readonly string[] ContributionColumns =
+        ["SpawnId", "Damage", "Healing"];
+    private static readonly bool[] ContributionDescending =
+        [false, true, true];
+    private static readonly string[] DamageColumns =
+        ["SpawnId", "Damage"];
+    private static readonly bool[] DamageDescending =
+        [false, true];
     protected override void Up(MigrationBuilder migrationBuilder)
     {
         migrationBuilder.AddColumn<decimal>(
@@ -38,8 +46,8 @@ public partial class WorldBossHealingContribution : Migration
             name: "ix_world_boss_contributions_leaderboard",
             schema: "game",
             table: "world_boss_contributions",
-            columns: new[] { "SpawnId", "Damage", "Healing" },
-            descending: new[] { false, true, true });
+            columns: ContributionColumns,
+            descending: ContributionDescending);
 
         migrationBuilder.DropIndex(
             name: "ix_world_boss_party_contributions_leaderboard",
@@ -50,8 +58,8 @@ public partial class WorldBossHealingContribution : Migration
             name: "ix_world_boss_party_contributions_leaderboard",
             schema: "game",
             table: "world_boss_party_contributions",
-            columns: new[] { "SpawnId", "Damage", "Healing" },
-            descending: new[] { false, true, true });
+            columns: ContributionColumns,
+            descending: ContributionDescending);
 
         migrationBuilder.AddCheckConstraint(
             name: "ck_world_boss_contributions_healing_non_negative",
@@ -153,8 +161,8 @@ public partial class WorldBossHealingContribution : Migration
             name: "ix_world_boss_contributions_leaderboard",
             schema: "game",
             table: "world_boss_contributions",
-            columns: new[] { "SpawnId", "Damage" },
-            descending: new[] { false, true });
+            columns: DamageColumns,
+            descending: DamageDescending);
 
         migrationBuilder.DropIndex(
             name: "ix_world_boss_party_contributions_leaderboard",
@@ -165,8 +173,8 @@ public partial class WorldBossHealingContribution : Migration
             name: "ix_world_boss_party_contributions_leaderboard",
             schema: "game",
             table: "world_boss_party_contributions",
-            columns: new[] { "SpawnId", "Damage" },
-            descending: new[] { false, true });
+            columns: DamageColumns,
+            descending: DamageDescending);
 
         migrationBuilder.DropColumn(
             name: "Healing",
