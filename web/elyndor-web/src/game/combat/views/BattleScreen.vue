@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onUnmounted, shallowRef } from 'vue'
+import { computed, onUnmounted, shallowRef, watch } from 'vue'
 
-import type { CombatAbility, CombatCastSnapshot, InventoryItem } from '@/api/contracts'
+import type { CombatAbility, CombatCastSnapshot, InventoryItem, PendingLootItem } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
 import { isAuraAbility } from '@/game/combat/combatAbilityGroups'
 import { orderCombatAbilities } from '@/game/combat/combatHotbarSettings'
@@ -23,6 +23,9 @@ const battle = useBattle()
 const session = useGameSessionStore()
 const now = shallowRef(Date.now())
 const fleeConfirmationOpen = shallowRef(false)
+const pendingLoot = shallowRef<PendingLootItem[]>([])
+const pendingLootLoading = shallowRef(false)
+const pendingLootError = shallowRef<string | null>(null)
 const timer = window.setInterval(() => {
   now.value = Date.now()
 }, 100)
@@ -68,6 +71,13 @@ const enemyCastUnblockable = computed(() => {
   )
 })
 const isActive = computed(() => snapshot.value?.status === 'Active')
+const currentPendingLoot = computed(() => {
+  const sessionId = snapshot.value?.sessionId
+  if (!sessionId) return []
+  return pendingLoot.value.filter(item =>
+    item.rewardResolutionId === sessionId && item.sourceType === 'COMBAT',
+  )
+})
 const combatErrorMessage = computed(() => {
   switch (battle.errorCode.value) {
     case 'combat_ability_on_cooldown':
@@ -146,7 +156,65 @@ async function useConsumable(item: InventoryItem): Promise<void> {
   await session.refreshSnapshot()
 }
 
+async function refreshPendingLoot(): Promise<void> {
+  if (snapshot.value?.status !== 'Victory') {
+    pendingLoot.value = []
+    return
+  }
+
+  pendingLootLoading.value = true
+  pendingLootError.value = null
+  try {
+    pendingLoot.value = (await session.getPendingLoot()).items
+  } catch {
+    pendingLootError.value = 'Не удалось загрузить добычу. Повторите попытку.'
+  } finally {
+    pendingLootLoading.value = false
+  }
+}
+
+async function claimLoot(items: PendingLootItem[]): Promise<void> {
+  if (!items.length || pendingLootLoading.value) return
+  pendingLootLoading.value = true
+  pendingLootError.value = null
+  try {
+    const succeeded = await session.claimPendingLoot(items.map(item => item.id))
+    if (!succeeded) {
+      pendingLootError.value = session.errorCode === 'inventory_full'
+        ? 'Инвентарь заполнен. Освободите место или оставьте эту добычу.'
+        : 'Не удалось забрать добычу.'
+      return
+    }
+    await refreshPendingLoot()
+  } finally {
+    pendingLootLoading.value = false
+  }
+}
+
+async function discardLoot(items: PendingLootItem[]): Promise<boolean> {
+  if (!items.length) return true
+  pendingLootLoading.value = true
+  pendingLootError.value = null
+  try {
+    const succeeded = await session.discardPendingLoot(items.map(item => item.id))
+    if (!succeeded) {
+      pendingLootError.value = 'Не удалось оставить добычу. Повторите попытку.'
+      return false
+    }
+    pendingLoot.value = pendingLoot.value.filter(
+      item => !items.some(discarded => discarded.id === item.id),
+    )
+    return true
+  } finally {
+    pendingLootLoading.value = false
+  }
+}
+
 async function leaveBattle(): Promise<void> {
+  if (currentPendingLoot.value.length) {
+    const discarded = await discardLoot([...currentPendingLoot.value])
+    if (!discarded) return
+  }
   if (await battle.leave()) emit('leave')
 }
 
@@ -169,6 +237,14 @@ function rarityLabel(rarity: string): string {
     )[rarity] ?? 'Ценная'
   )
 }
+
+watch(
+  () => [snapshot.value?.sessionId ?? '', snapshot.value?.status ?? ''],
+  () => {
+    if (snapshot.value?.status === 'Victory') void refreshPendingLoot()
+  },
+  { immediate: true },
+)
 
 onUnmounted(() => window.clearInterval(timer))
 </script>
@@ -323,8 +399,78 @@ onUnmounted(() => window.clearInterval(timer))
               ? 'Поражение'
               : 'Бой завершён'
         }}</strong>
-        <span v-if="battle.reward.value">Награда получена</span>
-        <UIButton @click="leaveBattle">Вернуться в мир</UIButton>
+        <span v-if="battle.reward.value">Опыт и золото начислены</span>
+
+        <section
+          v-if="snapshot.status === 'Victory' && (pendingLootLoading || currentPendingLoot.length || pendingLootError)"
+          class="battle-screen__personal-loot"
+          data-personal-loot
+          aria-label="Добыча после боя"
+        >
+          <header>
+            <div>
+              <small>ДОБЫЧА</small>
+              <strong>Выберите, что забрать</strong>
+            </div>
+            <span>{{ currentPendingLoot.length }} поз.</span>
+          </header>
+
+          <p v-if="pendingLootError" class="battle-screen__loot-error" role="alert">
+            {{ pendingLootError }}
+          </p>
+
+          <div v-if="currentPendingLoot.length" class="personal-loot-list">
+            <article v-for="item in currentPendingLoot" :key="item.id" :data-rarity="item.rarity">
+              <ItemIcon
+                :icon-id="item.iconId"
+                :item-id="item.definitionId"
+                :name="item.name"
+                :type="item.type"
+                :rarity="item.rarity"
+              />
+              <div>
+                <small>{{ rarityLabel(item.rarity) }}</small>
+                <strong>{{ item.name }}<span v-if="item.quantity > 1"> ×{{ item.quantity }}</span></strong>
+              </div>
+              <div class="personal-loot-list__actions">
+                <button
+                  type="button"
+                  :disabled="pendingLootLoading"
+                  @click="claimLoot([item])"
+                >
+                  Забрать
+                </button>
+                <button
+                  type="button"
+                  :disabled="pendingLootLoading"
+                  @click="discardLoot([item])"
+                >
+                  Оставить
+                </button>
+              </div>
+            </article>
+          </div>
+
+          <footer v-if="currentPendingLoot.length">
+            <UIButton
+              :disabled="pendingLootLoading"
+              @click="claimLoot([...currentPendingLoot])"
+            >
+              Забрать всё
+            </UIButton>
+            <UIButton
+              variant="secondary"
+              :disabled="pendingLootLoading"
+              @click="discardLoot([...currentPendingLoot])"
+            >
+              Оставить всё
+            </UIButton>
+          </footer>
+        </section>
+
+        <UIButton @click="leaveBattle">
+          {{ currentPendingLoot.length ? 'Оставить добычу и вернуться' : 'Вернуться в мир' }}
+        </UIButton>
       </section>
 
       <section
@@ -534,6 +680,87 @@ onUnmounted(() => window.clearInterval(timer))
 .battle-cast--enemy > i span {
   background: linear-gradient(90deg, #9d3148, #eb7182);
 }
+.battle-screen__personal-loot {
+  display: grid;
+  gap: .65rem;
+  width: min(100%, 32rem);
+  padding: .75rem;
+  border: 1px solid rgb(215 173 98 / 28%);
+  border-radius: .8rem;
+  background: rgb(8 10 14 / 82%);
+}
+
+.battle-screen__personal-loot > header,
+.battle-screen__personal-loot > footer,
+.personal-loot-list article,
+.personal-loot-list__actions {
+  display: flex;
+  align-items: center;
+}
+
+.battle-screen__personal-loot > header,
+.battle-screen__personal-loot > footer {
+  justify-content: space-between;
+  gap: .6rem;
+}
+
+.battle-screen__personal-loot > header > div {
+  display: grid;
+  gap: .1rem;
+}
+
+.battle-screen__personal-loot > header small,
+.personal-loot-list small {
+  color: var(--ui-color-text-muted);
+  font-size: .58rem;
+}
+
+.personal-loot-list {
+  display: grid;
+  gap: .4rem;
+}
+
+.personal-loot-list article {
+  gap: .55rem;
+  padding: .45rem;
+  border: 1px solid rgb(255 255 255 / 7%);
+  border-radius: .65rem;
+  background: rgb(255 255 255 / 2%);
+}
+
+.personal-loot-list :deep(.item-icon) {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.personal-loot-list article > div:nth-child(2) {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.personal-loot-list__actions {
+  gap: .35rem;
+}
+
+.personal-loot-list__actions button {
+  min-height: 2rem;
+  padding: 0 .55rem;
+  border: 1px solid rgb(215 173 98 / 30%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 4%);
+  color: inherit;
+  font: inherit;
+  font-size: .62rem;
+  font-weight: 700;
+}
+
+.battle-screen__loot-error {
+  margin: 0;
+  color: var(--ui-color-danger, #d77979);
+  font-size: .7rem;
+}
+
 .battle-screen__loot {
   display: grid;
   gap: 0.35rem;
