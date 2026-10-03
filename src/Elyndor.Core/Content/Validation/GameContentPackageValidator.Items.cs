@@ -223,6 +223,22 @@ public static partial class GameContentPackageValidator
                 }
             }
 
+            for (var itemIndex = 0; itemIndex < items.Count; itemIndex++)
+            {
+                ItemDefinition item = items[itemIndex];
+                if (item.Type != ItemType.LootContainer)
+                    continue;
+
+                if (string.IsNullOrWhiteSpace(item.LootContainerTableId)
+                    || !lootTableIds.Contains(item.LootContainerTableId))
+                {
+                    errors.Add(new(
+                        "MISSING_LOOT_CONTAINER_TABLE_REFERENCE",
+                        $"items[{itemIndex}].lootContainerTableId",
+                        $"Loot container '{item.Id}' references missing loot table '{item.LootContainerTableId}'."));
+                }
+            }
+
             for (var monsterIndex = 0; monsterIndex < (package.Monsters?.Count ?? 0); monsterIndex++)
             {
                 MonsterDefinition monster = package.Monsters![monsterIndex];
