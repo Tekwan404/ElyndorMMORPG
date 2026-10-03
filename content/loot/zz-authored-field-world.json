@@ -2273,6 +2273,24 @@
                                                "dropChance":  0.08,
                                                "minQuantity":  1,
                                                "maxQuantity":  1
+                                           },
+                                           {
+                                               "itemId":  "UNIQUE_WARRIOR_BLACKHEART_L25",
+                                               "dropChance":  0.003,
+                                               "minQuantity":  1,
+                                               "maxQuantity":  1
+                                           },
+                                           {
+                                               "itemId":  "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25",
+                                               "dropChance":  0.003,
+                                               "minQuantity":  1,
+                                               "maxQuantity":  1
+                                           },
+                                           {
+                                               "itemId":  "UNIQUE_ARCHER_LAST_CONSTELLATION_L25",
+                                               "dropChance":  0.003,
+                                               "minQuantity":  1,
+                                               "maxQuantity":  1
                                            }
                                        ],
                            "version":  1
