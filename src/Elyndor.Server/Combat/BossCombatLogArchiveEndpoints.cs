@@ -221,6 +221,7 @@ internal static class BossCombatLogArchive
         {
             CombatSessionSnapshot snapshot;
             CombatEvent[] events;
+            HashSet<long> filteredSequences;
             int droppedEvents;
             bool alreadySent;
             CombatRewardApplicationResult? reward;
@@ -229,6 +230,7 @@ internal static class BossCombatLogArchive
             {
                 snapshot = entry.Snapshot;
                 events = entry.Events.Values.ToArray();
+                filteredSequences = new HashSet<long>(entry.FilteredSequences);
                 droppedEvents = entry.DroppedEvents;
                 alreadySent = entry.Sent;
                 reward = entry.Reward;
@@ -276,7 +278,13 @@ internal static class BossCombatLogArchive
             CombatEvent[] ordered = events
                 .OrderBy(combatEvent => combatEvent.Sequence)
                 .ToArray();
-            string log = BuildLog(snapshot, ordered, droppedEvents, reward, target);
+            string log = BuildLog(
+                snapshot,
+                ordered,
+                filteredSequences,
+                droppedEvents,
+                reward,
+                target);
             string fileName =
                 $"elyndor-boss-{FileSegment(target.DefinitionId)}-{sessionId:N}.txt";
             string caption =
@@ -340,13 +348,31 @@ internal static class BossCombatLogArchive
                 entry.Reward = reward;
 
             foreach (CombatEvent combatEvent in events)
-                entry.Events[combatEvent.Sequence] = combatEvent;
+            {
+                if (ShouldArchiveEvent(combatEvent))
+                {
+                    entry.Events[combatEvent.Sequence] = combatEvent;
+                    entry.FilteredSequences.Remove(combatEvent.Sequence);
+                }
+                else
+                {
+                    entry.Events.Remove(combatEvent.Sequence);
+                    entry.FilteredSequences.Add(combatEvent.Sequence);
+                }
+            }
 
             while (entry.Events.Count > MaxEvents)
             {
                 long firstSequence = entry.Events.Keys.First();
                 entry.Events.Remove(firstSequence);
                 entry.DroppedEvents++;
+            }
+
+            if (entry.Events.Count > 0)
+            {
+                long earliestRetainedSequence = entry.Events.Keys.First();
+                entry.FilteredSequences.RemoveWhere(sequence =>
+                    sequence < earliestRetainedSequence);
             }
 
             entry.UpdatedAtUtc = capturedAtUtc;
@@ -389,6 +415,7 @@ internal static class BossCombatLogArchive
     private static string BuildLog(
         CombatSessionSnapshot snapshot,
         CombatEvent[] events,
+        IReadOnlySet<long> filteredSequences,
         int droppedEvents,
         CombatRewardApplicationResult? reward,
         BossCombatLogTarget target)
@@ -409,7 +436,7 @@ internal static class BossCombatLogArchive
             _ => snapshot.Status.ToString().ToUpperInvariant()
         };
 
-        long[] missingSequences = FindMissingSequences(events);
+        long[] missingSequences = FindMissingSequences(events, filteredSequences);
 
         StringBuilder builder = new();
         builder.AppendLine(target.IsTrainingDummy
@@ -532,18 +559,7 @@ internal static class BossCombatLogArchive
             .Append('/')
             .AppendLine(FormatNumber(snapshot.Player.MaxResource));
 
-        string abilities = string.Join(
-            ", ",
-            events
-                .Where(combatEvent =>
-                    combatEvent.Type == CombatEventType.AbilityUsed
-                    && combatEvent.SourceActorId == playerActorId
-                    && !string.IsNullOrWhiteSpace(combatEvent.DefinitionId))
-                .GroupBy(combatEvent => combatEvent.DefinitionId!, StringComparer.Ordinal)
-                .OrderByDescending(group => group.Count())
-                .ThenBy(group => group.Key, StringComparer.Ordinal)
-                .Take(8)
-                .Select(group => $"{group.Key}×{group.Count()}"));
+        string abilities = FormatAbilitySummary(snapshot, events);
         builder.Append("Способности: ")
             .AppendLine(string.IsNullOrWhiteSpace(abilities) ? "—" : abilities);
 
@@ -604,6 +620,41 @@ internal static class BossCombatLogArchive
         combatEvent.AmountBeforeShields > 0
             ? combatEvent.AmountBeforeShields
             : Math.Max(0, combatEvent.Amount);
+
+    internal static bool ShouldArchiveEvent(CombatEvent combatEvent) =>
+        !(string.Equals(
+                combatEvent.DefinitionId,
+                "COMBAT_REGEN",
+                StringComparison.Ordinal)
+            && combatEvent.Amount == 0);
+
+    internal static string FormatAbilitySummary(
+        CombatSessionSnapshot snapshot,
+        IReadOnlyList<CombatEvent> events)
+    {
+        IEnumerable<KeyValuePair<string, int>> counts =
+            snapshot.Statistics?.AbilityUses
+            ?? events
+                .Where(combatEvent =>
+                    combatEvent.Type == CombatEventType.AbilityUsed
+                    && combatEvent.SourceActorId == snapshot.Player.ActorId
+                    && !string.IsNullOrWhiteSpace(combatEvent.DefinitionId))
+                .GroupBy(
+                    combatEvent => combatEvent.DefinitionId!,
+                    StringComparer.Ordinal)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.Count(),
+                    StringComparer.Ordinal);
+
+        return string.Join(
+            ", ",
+            counts
+                .OrderByDescending(pair => pair.Value)
+                .ThenBy(pair => pair.Key, StringComparer.Ordinal)
+                .Take(8)
+                .Select(pair => $"{pair.Key}×{pair.Value}"));
+    }
 
     private static void WriteEvent(
         StringBuilder builder,
@@ -670,7 +721,9 @@ internal static class BossCombatLogArchive
         builder.AppendLine();
     }
 
-    private static long[] FindMissingSequences(CombatEvent[] events)
+    private static long[] FindMissingSequences(
+        CombatEvent[] events,
+        IReadOnlySet<long> filteredSequences)
     {
         if (events.Length == 0)
             return [];
@@ -683,6 +736,9 @@ internal static class BossCombatLogArchive
                  sequence < combatEvent.Sequence;
                  sequence++)
             {
+                if (filteredSequences.Contains(sequence))
+                    continue;
+
                 missing.Add(sequence);
                 if (missing.Count >= 100)
                     return missing.ToArray();
@@ -757,6 +813,7 @@ internal static class BossCombatLogArchive
         public object Gate { get; } = new();
         public SemaphoreSlim SendGate { get; } = new(1, 1);
         public SortedDictionary<long, CombatEvent> Events { get; } = [];
+        public HashSet<long> FilteredSequences { get; } = [];
         public CombatSessionSnapshot Snapshot { get; set; } = snapshot;
         public GameContentSnapshot? ContentSnapshot { get; set; } = contentSnapshot;
         public CombatRewardApplicationResult? Reward { get; set; } = reward;
