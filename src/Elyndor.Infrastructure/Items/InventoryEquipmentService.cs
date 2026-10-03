@@ -34,6 +34,10 @@ public static class InventoryErrorCodes
     public const string Conflict = "inventory_conflict";
     public const string InventoryFull = "inventory_full";
     public const string TransactionLocked = "inventory_item_transaction_locked";
+    public const string ItemLocked = "inventory_item_locked";
+    public const string ItemEquipped = "inventory_item_equipped";
+    public const string InvalidQuantity = "inventory_invalid_quantity";
+    public const string InvalidSelection = "inventory_invalid_selection";
     public const string UniqueEquippedConflict = "inventory_unique_equipped_conflict";
 }
 
@@ -60,11 +64,17 @@ public sealed record InventorySnapshot(
 
 public sealed record PendingLootItemSnapshot(
     Guid Id,
+    Guid RewardResolutionId,
     ItemDefinition Definition,
     int Quantity,
     DateTimeOffset CreatedAtUtc,
     PrimaryStats? RolledPrimaryStats,
-    GeneratedItemInstance? GeneratedItem = null);
+    GeneratedItemInstance? GeneratedItem = null,
+    string? SourceType = null);
+
+public sealed record InventoryDiscardSelection(
+    Guid CharacterItemId,
+    int Quantity);
 
 public sealed record InventoryOperationResult(
     bool IsSuccess,
@@ -88,6 +98,8 @@ public sealed class InventoryEquipmentService(
     private const string UseConsumableOperation = "INVENTORY_USE_CONSUMABLE";
     private const string SetItemLockOperation = "INVENTORY_SET_LOCK";
     private const string ClaimPendingLootOperation = "INVENTORY_CLAIM_PENDING_LOOT";
+    private const string DiscardPendingLootOperation = "INVENTORY_DISCARD_PENDING_LOOT";
+    private const string DiscardItemsOperation = "INVENTORY_DISCARD_ITEMS";
     private readonly CharacterDerivedStateService derivedStateService =
         new(dbContext, contentProvider);
 
@@ -178,11 +190,13 @@ public sealed class InventoryEquipmentService(
                     generated.DisplayName);
             return new PendingLootItemSnapshot(
                 item.Id,
+                item.RewardResolutionId,
                 effective,
                 item.Quantity,
                 item.CreatedAtUtc,
                 item.RolledPrimaryStats,
-                generated);
+                generated,
+                item.SourceType);
         }).ToArray();
     }
 
@@ -190,20 +204,154 @@ public sealed class InventoryEquipmentService(
         Guid accountId,
         Guid mutationId,
         CancellationToken cancellationToken) =>
-        ExecuteMutationAsync(
+        ClaimPendingLootAsync(accountId, mutationId, null, cancellationToken);
+
+    public Task<InventoryOperationResult> ClaimPendingLootAsync(
+        Guid accountId,
+        Guid mutationId,
+        IReadOnlyList<Guid>? itemIds,
+        CancellationToken cancellationToken)
+    {
+        Guid[]? normalizedIds = itemIds is null
+            ? null
+            : itemIds.Where(id => id != Guid.Empty).Distinct().OrderBy(id => id).ToArray();
+        if (normalizedIds is { Length: 0 })
+            return Task.FromResult(InventoryOperationResult.Failure(InventoryErrorCodes.InvalidSelection));
+
+        string[] fingerprintParts = normalizedIds is null
+            ? [ClaimPendingLootOperation, "ALL"]
+            : [ClaimPendingLootOperation, .. normalizedIds.Select(id => id.ToString("N"))];
+
+        return ExecuteMutationAsync(
             accountId,
             mutationId,
             ClaimPendingLootOperation,
-            Fingerprint(ClaimPendingLootOperation),
+            Fingerprint(fingerprintParts),
             async character =>
             {
                 await ClaimPendingLootCoreAsync(
                     character.Id,
                     contentProvider.GetCurrent(),
+                    normalizedIds,
                     cancellationToken);
                 return null;
             },
             cancellationToken);
+    }
+
+    public Task<InventoryOperationResult> DiscardPendingLootAsync(
+        Guid accountId,
+        IReadOnlyList<Guid> itemIds,
+        Guid mutationId,
+        CancellationToken cancellationToken)
+    {
+        Guid[] normalizedIds = itemIds
+            .Where(id => id != Guid.Empty)
+            .Distinct()
+            .OrderBy(id => id)
+            .ToArray();
+        if (normalizedIds.Length == 0)
+            return Task.FromResult(InventoryOperationResult.Failure(InventoryErrorCodes.InvalidSelection));
+
+        return ExecuteMutationAsync(
+            accountId,
+            mutationId,
+            DiscardPendingLootOperation,
+            Fingerprint(
+                [DiscardPendingLootOperation, .. normalizedIds.Select(id => id.ToString("N"))]),
+            async character =>
+            {
+                PendingLootItem[] pending = await dbContext.PendingLootItems
+                    .Where(item => item.CharacterId == character.Id
+                        && normalizedIds.Contains(item.Id))
+                    .ToArrayAsync(cancellationToken);
+                if (pending.Length != normalizedIds.Length)
+                    return InventoryOperationResult.Failure(InventoryErrorCodes.ItemNotFound);
+
+                dbContext.PendingLootItems.RemoveRange(pending);
+                return null;
+            },
+            cancellationToken);
+    }
+
+    public Task<InventoryOperationResult> DiscardItemsAsync(
+        Guid accountId,
+        IReadOnlyList<InventoryDiscardSelection> selections,
+        Guid mutationId,
+        CancellationToken cancellationToken)
+    {
+        InventoryDiscardSelection[] normalized = selections
+            .Where(item => item.CharacterItemId != Guid.Empty)
+            .GroupBy(item => item.CharacterItemId)
+            .Select(group => new InventoryDiscardSelection(
+                group.Key,
+                group.Sum(item => item.Quantity)))
+            .OrderBy(item => item.CharacterItemId)
+            .ToArray();
+        if (normalized.Length == 0 || normalized.Any(item => item.Quantity <= 0))
+            return Task.FromResult(InventoryOperationResult.Failure(InventoryErrorCodes.InvalidSelection));
+
+        string[] fingerprintParts =
+        [
+            DiscardItemsOperation,
+            .. normalized.Select(item =>
+                $"{item.CharacterItemId:N}:{item.Quantity.ToString(CultureInfo.InvariantCulture)}")
+        ];
+
+        return ExecuteMutationAsync(
+            accountId,
+            mutationId,
+            DiscardItemsOperation,
+            Fingerprint(fingerprintParts),
+            async character =>
+            {
+                Guid[] ids = normalized.Select(item => item.CharacterItemId).ToArray();
+                CharacterItem[] items = await dbContext.CharacterItems
+                    .Where(item => ids.Contains(item.Id))
+                    .ToArrayAsync(cancellationToken);
+                if (items.Length != ids.Length)
+                    return InventoryOperationResult.Failure(InventoryErrorCodes.ItemNotFound);
+
+                HashSet<Guid> equippedIds = (await dbContext.CharacterEquipment
+                    .Where(item => item.CharacterId == character.Id
+                        && ids.Contains(item.CharacterItemId))
+                    .Select(item => item.CharacterItemId)
+                    .ToArrayAsync(cancellationToken))
+                    .ToHashSet();
+                Guid? spatialArtifactId = await dbContext.CharacterSpatialArtifacts
+                    .Where(item => item.CharacterId == character.Id)
+                    .Select(item => (Guid?)item.CharacterItemId)
+                    .SingleOrDefaultAsync(cancellationToken);
+
+                foreach (InventoryDiscardSelection selection in normalized)
+                {
+                    CharacterItem item = items.Single(candidate =>
+                        candidate.Id == selection.CharacterItemId);
+                    if (item.CharacterId != character.Id || item.Storage != "INVENTORY")
+                        return InventoryOperationResult.Failure(InventoryErrorCodes.ItemNotOwned);
+                    if (item.TransactionLockId.HasValue)
+                        return InventoryOperationResult.Failure(InventoryErrorCodes.TransactionLocked);
+                    if (item.IsLocked)
+                        return InventoryOperationResult.Failure(InventoryErrorCodes.ItemLocked);
+                    if (equippedIds.Contains(item.Id) || spatialArtifactId == item.Id)
+                        return InventoryOperationResult.Failure(InventoryErrorCodes.ItemEquipped);
+                    if (selection.Quantity > item.Quantity)
+                        return InventoryOperationResult.Failure(InventoryErrorCodes.InvalidQuantity);
+                }
+
+                foreach (InventoryDiscardSelection selection in normalized)
+                {
+                    CharacterItem item = items.Single(candidate =>
+                        candidate.Id == selection.CharacterItemId);
+                    item.RemoveQuantity(selection.Quantity);
+                    if (item.Quantity == 0)
+                        dbContext.CharacterItems.Remove(item);
+                }
+
+                return null;
+            },
+            cancellationToken);
+    }
 
     public Task<InventoryOperationResult> EquipAsync(
         Guid accountId,
@@ -769,10 +917,18 @@ public sealed class InventoryEquipmentService(
     private async Task ClaimPendingLootCoreAsync(
         Guid characterId,
         GameContentSnapshot content,
+        IReadOnlyList<Guid>? itemIds,
         CancellationToken cancellationToken)
     {
-        PendingLootItem[] pending = await dbContext.PendingLootItems
-            .Where(item => item.CharacterId == characterId)
+        IQueryable<PendingLootItem> query = dbContext.PendingLootItems
+            .Where(item => item.CharacterId == characterId);
+        if (itemIds is not null)
+        {
+            Guid[] selectedIds = itemIds.ToArray();
+            query = query.Where(item => selectedIds.Contains(item.Id));
+        }
+
+        PendingLootItem[] pending = await query
             .OrderBy(item => item.CreatedAtUtc)
             .ThenBy(item => item.Id)
             .ToArrayAsync(cancellationToken);
