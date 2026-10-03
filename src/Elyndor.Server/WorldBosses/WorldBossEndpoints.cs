@@ -89,17 +89,25 @@ public static class WorldBossEndpoints
                 entry.Rank,
                 entry.CharacterId,
                 entry.Name,
-                entry.Damage)).ToArray(),
+                entry.Damage,
+                entry.Healing,
+                entry.Contribution)).ToArray(),
             result.Parties.Select(entry => new WorldBossPartyLeaderboardEntryResponse(
                 entry.Rank,
                 entry.PartyId,
                 entry.LeaderName,
-                entry.Damage)).ToArray(),
+                entry.Damage,
+                entry.Healing,
+                entry.Contribution)).ToArray(),
             result.PersonalRank,
             result.PersonalDamage,
+            result.PersonalHealing,
+            result.PersonalContribution,
             result.PartyId,
             result.PartyRank,
-            result.PartyDamage));
+            result.PartyDamage,
+            result.PartyHealing,
+            result.PartyContribution));
     }
 
     private static async Task<IResult> EnterAsync(
@@ -192,7 +200,11 @@ public static class WorldBossEndpoints
             active.ExpiresAtUtc,
             active.Participants,
             active.PersonalDamage,
+            active.PersonalHealing,
+            active.PersonalContribution,
             active.PartyDamage,
+            active.PartyHealing,
+            active.PartyContribution,
             active.EligibleParticipants,
             active.PersonalRewardRank,
             active.RewardPercentile,
