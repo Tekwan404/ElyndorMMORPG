@@ -21,7 +21,13 @@ public sealed class ItemIconDtoMappingTests
         InventoryItemSnapshot inventory = new(
             Guid.NewGuid(), definition, 1, DateTimeOffset.UnixEpoch, null, false);
         PendingLootItemSnapshot pending = new(
-            Guid.NewGuid(), definition, 2, DateTimeOffset.UnixEpoch, null);
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            definition,
+            2,
+            DateTimeOffset.UnixEpoch,
+            null,
+            SourceType: "COMBAT");
         MerchantSnapshot merchant = new(
             new MerchantDefinition("MERCHANT", "Merchant", "STARTER_TOWN", "", [definition.Id]),
             0,
