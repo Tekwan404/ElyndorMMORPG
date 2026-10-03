@@ -909,15 +909,7 @@ public sealed partial class CombatSession
 
         SyncBerserkerConditionalEffects(now);
         SyncArcherConditionalEffects(now);
-        AbilityDefinition ability = ResolveArcherAbility(
-            ResolveMageAbility(
-                ResolvePyromancerAbility(
-                    ResolveWarlordAbility(
-                        ResolvePlayerAbility(baseAbility, now),
-                        now),
-                    now),
-                now),
-            now);
+        AbilityDefinition ability = ComposePlayerAbility(baseAbility, now);
         Guid[] targetActorIds = ResolvePlayerAbilityTargetIds(ability, command.TargetActorId, now);
         if (targetActorIds.Length == 0)
             return Result(false, CombatErrorCodes.InvalidTarget, before);
@@ -1075,26 +1067,7 @@ public sealed partial class CombatSession
                 continue;
             }
 
-            AbilityTargetModifier modifier = new();
-            modifier = ResolveBerserkerTargetAbilityModifier(
-                ability,
-                target.Actor,
-                modifier);
-            modifier = ResolvePyromancerTargetAbilityModifier(
-                ability,
-                target.Actor,
-                modifier,
-                now);
-            modifier = ResolveMageTargetAbilityModifier(
-                ability,
-                target.Actor,
-                modifier,
-                now);
-            modifier = ResolveArcherTargetAbilityModifier(
-                ability,
-                target.Actor,
-                modifier,
-                now);
+            AbilityTargetModifier modifier = AbilityComposer.ComposeTarget(ability, target.Actor, now);
             if (modifier != new AbilityTargetModifier())
                 modifiers[targetActorId] = modifier;
         }
@@ -2739,15 +2712,7 @@ public sealed partial class CombatSession
         CombatAbilitySnapshot[] abilities = knownAbilityIds
             .Where(_abilities.ContainsKey)
             .Select(id => definition.Kind == CombatActorKind.Player
-                ? ResolveArcherAbility(
-                    ResolveMageAbility(
-                        ResolvePyromancerAbility(
-                            ResolveWarlordAbility(
-                                ResolvePlayerAbilityForSnapshot(_abilities[id], CurrentTimeUtc),
-                                CurrentTimeUtc),
-                            CurrentTimeUtc),
-                        CurrentTimeUtc),
-                    CurrentTimeUtc)
+                ? ComposePlayerAbility(_abilities[id], CurrentTimeUtc)
                 : _abilities[id])
             .OrderBy(ability => ability.Id, StringComparer.Ordinal)
             .Select(ability => new CombatAbilitySnapshot(

@@ -135,6 +135,7 @@ git diff --check was clean. No frontend or database schema changes were made.
 
 Only callback implementations and execution timing remain in CombatSession; the
 class notification graph is no longer duplicated in UseAbility, CompleteReadyCast,
-and PlayerMechanics. A next extraction should first characterize ability modifier
-composition before separating its routing; do not combine it with formulas or time
-advancement.
+and PlayerMechanics. The next responsibility pass characterizes and extracts
+ability modifier composition separately; see
+[ability-modifier-composition.md](ability-modifier-composition.md). It does not
+extend the event router or move formulas/time advancement.

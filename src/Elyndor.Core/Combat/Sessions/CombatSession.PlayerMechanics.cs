@@ -134,8 +134,7 @@ public sealed partial class CombatSession
 
     internal AbilityDefinition ResolveMechanicsAbilityForSnapshot(
         AbilityDefinition baseAbility, DateTimeOffset now) =>
-        ResolveArcherAbility(ResolveMageAbility(ResolvePyromancerAbility(
-            ResolveWarlordAbility(ResolvePlayerAbility(baseAbility, now), now), now), now), now);
+        ComposePlayerAbility(baseAbility, now);
 
     internal IReadOnlyDictionary<Guid, AbilityTargetModifier> ResolveMechanicsTargetModifiers(
         AbilityDefinition ability, IReadOnlyList<Guid> targetIds, DateTimeOffset now) =>
