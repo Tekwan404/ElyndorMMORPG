@@ -20,6 +20,7 @@ public static class InventoryEndpoints
         group.MapPost("/equip", EquipAsync);
         group.MapPost("/unequip", UnequipAsync);
         group.MapPost("/use-consumable", UseConsumableAsync);
+        group.MapPost("/open-container", OpenLootContainerAsync);
         group.MapPost("/set-lock", SetItemLockAsync);
         group.MapGet("/salvage/preview/{characterItemId:guid}", GetSalvagePreviewAsync);
         group.MapPost("/salvage", SalvageAsync);
@@ -139,6 +140,48 @@ public static class InventoryEndpoints
                         timeProvider.GetUtcNow(),
                         cancellationToken),
                     context);
+            },
+            () => InCombatProblem(context),
+            cancellationToken);
+    }
+
+    private static async Task<IResult> OpenLootContainerAsync(
+        OpenLootContainerRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        LootContainerService service,
+        CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () =>
+            {
+                LootContainerOpenResult result = await service.OpenAsync(
+                    accountId,
+                    request.CharacterItemId,
+                    request.MutationId,
+                    cancellationToken);
+                if (!result.Succeeded)
+                {
+                    return Problem(
+                        result.ErrorCode ?? LootContainerErrorCodes.InvalidItem,
+                        context);
+                }
+
+                return Results.Ok(new OpenLootContainerResponse(
+                    result.WasReplay,
+                    result.Gold,
+                    result.Items.Select(item => new LootContainerRewardItemResponse(
+                        item.DefinitionId,
+                        item.Name,
+                        item.Rarity.ToString(),
+                        item.Quantity,
+                        item.IconId,
+                        item.Pending)).ToArray()));
             },
             () => InCombatProblem(context),
             cancellationToken);
