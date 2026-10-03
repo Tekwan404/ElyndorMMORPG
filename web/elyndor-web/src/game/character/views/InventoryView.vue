@@ -497,7 +497,8 @@ async function refreshPendingLoot(): Promise<void> {
   }
 
   try {
-    pendingLootItems.value = (await session.getPendingLoot()).items
+    const response = await session.getPendingLoot()
+    pendingLootItems.value = Array.isArray(response?.items) ? response.items : []
   } catch {
     // Pending loot remains durable on the server; a transient read failure must not block inventory use.
   }
@@ -638,8 +639,13 @@ watch(
   () => {
     syncNewItems()
     void refreshSpatialInventory()
-    void refreshPendingLoot()
   },
+  { immediate: true },
+)
+
+watch(
+  () => character.value?.id ?? '',
+  () => void refreshPendingLoot(),
   { immediate: true },
 )
 
