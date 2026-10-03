@@ -688,6 +688,7 @@ public sealed class WorldBossSettlementService(
             WorldBossLeaderboardRewardPolicy.CalculatePercentile(rank, eligibleParticipants),
             1,
             0,
+            null,
             null);
     }
 
