@@ -37,11 +37,15 @@ describe('premium storefront catalog', () => {
     })
   })
 
-  it('maps exhausted one-time offer to owned state instead of offering a repurchase', () => {
-    const ring = buildPremiumStoreProducts(snapshot(false)).find((product) => product.id === 'wanderer-spatial-ring')
+  it('keeps tester store artifacts repeatable while the server offer is available', () => {
+    const ring = buildPremiumStoreProducts(snapshot()).find((product) => product.id === 'wanderer-spatial-ring')
 
-    expect(ring?.owned).toBe(true)
-    expect(ring && purchaseLabel(ring)).toBe('КУПЛЕНО')
+    expect(ring).toMatchObject({
+      repeatable: true,
+      owned: false,
+      canPurchase: true,
+    })
+    expect(ring && purchaseLabel(ring)).toBe('✦ 350 — ПРИОБРЕСТИ')
   })
 
   it('keeps demo consumables repeatable and separate from backend purchase flow', () => {
