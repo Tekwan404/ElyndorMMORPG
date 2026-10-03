@@ -490,7 +490,8 @@ public sealed record WorldBossLeaderboardRewardTierDefinition(
     int ChestCount,
     int? MaxRank = null,
     string? LootTableId = null,
-    bool Enhanced = false);
+    bool Enhanced = false,
+    string? ChestItemId = null);
 
 public sealed record WorldBossLeaderboardRewardResolution(
     WorldBossRewardTier Tier,
@@ -499,7 +500,8 @@ public sealed record WorldBossLeaderboardRewardResolution(
     decimal Percentile,
     int ChestCount,
     int EnhancedChestCount,
-    string? LootTableId);
+    string? LootTableId,
+    string? ChestItemId);
 
 public static class WorldBossLeaderboardRewardPolicy
 {
@@ -540,6 +542,7 @@ public static class WorldBossLeaderboardRewardPolicy
                 percentile,
                 0,
                 0,
+                null,
                 null);
         }
 
@@ -550,7 +553,8 @@ public static class WorldBossLeaderboardRewardPolicy
             percentile,
             resolved.Enhanced ? 0 : resolved.ChestCount,
             resolved.Enhanced ? resolved.ChestCount : 0,
-            resolved.LootTableId);
+            resolved.LootTableId,
+            resolved.ChestItemId);
     }
 
     public static decimal CalculatePercentile(int rank, int eligibleParticipants)
