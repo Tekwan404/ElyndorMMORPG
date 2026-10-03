@@ -1,4 +1,5 @@
 using Elyndor.Core.Economy;
+using Elyndor.Core.Content;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Identity;
 using Elyndor.Infrastructure.Economy;
