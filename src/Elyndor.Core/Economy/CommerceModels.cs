@@ -20,6 +20,9 @@ public sealed record AuctionListingView(Guid Id, Guid SellerId, string SellerNam
     int? ItemLevel, decimal? ItemPower, decimal? RollQuality, int? Stars, bool IsPerfect, int EnhancementLevel,
     AuctionRolledStatsView? RolledStats, AuctionAffixView[] Affixes,
     string Price, DateTimeOffset ExpiresAt);
+public sealed record AuctionSellableItemView(Guid ItemId, string ItemDefinitionId, string Name,
+    string? IconId, string Type, string Rarity, int Quantity, int? ItemLevel, decimal? ItemPower,
+    decimal? RollQuality, int? Stars, bool IsPerfect, int EnhancementLevel);
 public sealed record MailResponse(Guid Id, Guid ItemId, DateTimeOffset CreatedAt,
     string ItemDefinitionId, string Name, string? IconId, int Quantity, string Source);
 public sealed record CommerceResult<T>(bool Succeeded, string? ErrorCode, T? Snapshot);
