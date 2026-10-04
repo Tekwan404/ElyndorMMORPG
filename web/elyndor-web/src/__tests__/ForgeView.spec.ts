@@ -65,7 +65,7 @@ function text() {
 beforeEach(() => {
   Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
     configurable: true,
-    value: vi.fn(),
+    value: vi.fn<() => void>(),
   })
   setActivePinia(createPinia())
   document.body.innerHTML = ''
