@@ -5,6 +5,7 @@ using Elyndor.Core.Identity;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Economy;
+using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.IntegrationTests.Postgres;
 using Microsoft.EntityFrameworkCore;
