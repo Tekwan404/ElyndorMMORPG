@@ -17,6 +17,22 @@ export interface AuctionRolledStats {
   stamina: number | null
 }
 
+export interface AuctionSellableItem {
+  itemId: string
+  itemDefinitionId: string
+  name: string
+  iconId: string | null
+  type: string
+  rarity: string
+  quantity: number
+  itemLevel: number | null
+  itemPower: number | null
+  rollQuality: number | null
+  stars: number | null
+  isPerfect: boolean
+  enhancementLevel: number
+}
+
 export interface AuctionLot {
   id: string
   sellerId: string
@@ -132,6 +148,21 @@ export function commerceRarityLabel(rarity: string): string {
     Legendary: 'Легендарный', Unique: 'Уникальный' } as Record<string, string>)[rarity] ?? rarity
 }
 
+export function parseMoneyInput(gold: string, silver: string, bronze: string): number {
+  const parsePart = (value: string, label: string, max?: bigint): bigint => {
+    const normalized = value.trim() || '0'
+    if (!/^\d+$/.test(normalized)) throw new RangeError(`${label}: используйте только целое число`)
+    const parsed = BigInt(normalized)
+    if (max !== undefined && parsed > max) throw new RangeError(`${label}: допустимо от 0 до ${max}`)
+    return parsed
+  }
+  const total = parsePart(gold, 'Золото') * 10_000n
+    + parsePart(silver, 'Серебро', 99n) * 100n
+    + parsePart(bronze, 'Бронза', 99n)
+  if (total > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('Сумма слишком велика')
+  return Number(total)
+}
+
 export function parseGoldInput(value: string): number {
   if (!/^(0|[1-9]\d*)(?:\.\d{1,4})?$/.test(value.trim())) throw new RangeError('Введите количество золота, до 4 знаков после точки')
   const [whole, fraction = ''] = value.trim().split('.')
@@ -144,6 +175,10 @@ export function formatGoldInput(value: MoneyValue): string {
   const units = moneyUnits(value)
   const fraction = (units % 10_000n).toString().padStart(4, '0').replace(/0+$/, '')
   return `${units / 10_000n}${fraction ? `.${fraction}` : ''}`
+}
+
+export async function loadAuctionSellableItems(): Promise<AuctionSellableItem[]> {
+  return apiClient.request<AuctionSellableItem[]>('/api/v1/auction/sellable-items')
 }
 
 export async function loadAuction(mine: boolean, search = '', type = '', page = 0): Promise<AuctionLot[]> {
