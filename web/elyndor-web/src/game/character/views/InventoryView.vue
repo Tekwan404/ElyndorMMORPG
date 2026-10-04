@@ -787,8 +787,13 @@ watch(
       ) {
         sortMode.value = preferences.sort as InventorySort
       }
-      if (preferences.view === 'list' || preferences.view === 'grid')
+      if (
+        preferences.view === 'list' ||
+        preferences.view === 'grid' ||
+        preferences.view === 'mini'
+      ) {
         viewMode.value = preferences.view
+      }
     } catch {
       // Preferences are optional; blocked or malformed storage must not hide the bag.
     }
