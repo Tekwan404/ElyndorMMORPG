@@ -8,6 +8,8 @@ public sealed class PremiumStorePurchaseConfiguration : IEntityTypeConfiguration
 {
     public void Configure(EntityTypeBuilder<PremiumStorePurchase> builder)
     {
+        builder.Property(purchase => purchase.PackCount).HasDefaultValue(1);
+        builder.ToTable("premium_store_purchases", table => table.HasCheckConstraint("ck_premium_store_purchases_pack_count_positive", "\"PackCount\" > 0"));
         builder.ToTable("premium_store_purchases", table => { table.HasCheckConstraint("ck_premium_store_purchases_quantity_positive", "\"Quantity\" > 0"); table.HasCheckConstraint("ck_premium_store_purchases_price_positive", "\"CrystalPrice\" > 0"); });
         builder.HasKey(purchase => purchase.OperationId).HasName("pk_premium_store_purchases");
         builder.Property(purchase => purchase.Sku).HasMaxLength(64).IsRequired();

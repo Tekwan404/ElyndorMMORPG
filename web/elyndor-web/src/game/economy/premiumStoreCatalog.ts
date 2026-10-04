@@ -21,6 +21,7 @@ export interface PremiumStoreProduct {
   artwork: 'fire-mage' | 'spatial-ring' | 'reforge' | 'enhancement-ore' | 'forge-scrap' | 'service' | 'profile-frame' | 'battle-entry' | 'ash-border' | 'item'
   price: number
   quantity?: number
+  maxPackCount?: number
   badge?: PremiumStoreBadge
   previewable?: boolean
   repeatable: boolean
@@ -151,7 +152,7 @@ const SPATIAL_CAPACITY_BY_ITEM: Readonly<Record<string, number>> = {
 }
 
 function fromServerOffer(offer: Offer): PremiumStoreProduct {
-  const capacity = SPATIAL_CAPACITY_BY_ITEM[offer.itemDefinitionId]
+  const capacity = offer.inventoryCapacityBonus ?? SPATIAL_CAPACITY_BY_ITEM[offer.itemDefinitionId]
   return {
     id: `offer:${offer.sku}`,
     sku: offer.sku,
@@ -163,6 +164,7 @@ function fromServerOffer(offer: Offer): PremiumStoreProduct {
     artwork: capacity ? 'spatial-ring' : 'item',
     price: offer.crystalPrice,
     quantity: offer.quantity,
+    maxPackCount: offer.maxPackCount,
     repeatable: true,
     inventoryCapacity: capacity,
     owned: false,
@@ -183,7 +185,8 @@ export function buildPremiumStoreProducts(snapshot: PremiumStoreSnapshot): Premi
     return {
       ...presentation,
       price: offer?.crystalPrice ?? presentation.fallbackPrice,
-      quantity: presentation.quantity ?? offer?.quantity,
+      quantity: offer?.quantity ?? presentation.quantity,
+      maxPackCount: offer?.maxPackCount,
       owned: offer ? !offer.canPurchase && !presentation.repeatable : false,
       canPurchase: offer?.canPurchase ?? false,
       iconId: offer?.iconId ?? undefined,

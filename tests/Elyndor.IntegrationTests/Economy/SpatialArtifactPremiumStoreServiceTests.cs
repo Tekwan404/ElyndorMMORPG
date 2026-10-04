@@ -3,6 +3,7 @@ using Elyndor.Core.Economy;
 using Elyndor.Core.Identity;
 using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Economy;
+using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.IntegrationTests.Postgres;
 
@@ -20,11 +21,36 @@ public sealed class SpatialArtifactPremiumStoreServiceTests(PostgresFixture post
         "SPATIAL_SEAL",
         "SPATIAL_BOTTOMLESS_RING",
         "SPATIAL_POCKET_SHARD",
-        "SPATIAL_VOID_SEAL"
+        "SPATIAL_VOID_SEAL",
+        "SPATIAL_ASTRAL_RING",
+        "SPATIAL_DIMENSION_CORE",
+        "SPATIAL_ETERNITY_SEAL"
     ];
 
     public Task InitializeAsync() => postgres.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
+
+    [Theory]
+    [InlineData("SPATIAL_ASTRAL_RING", 100, 2250)]
+    [InlineData("SPATIAL_DIMENSION_CORE", 150, 3250)]
+    [InlineData("SPATIAL_ETERNITY_SEAL", 250, 5000)]
+    public async Task NewArtifactCanBePurchasedAndEquipped(string sku, int bonus, long price)
+    {
+        Guid accountId = await CreateAccountAsync();
+        var provider = new StaticContentSnapshotProvider(await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json")));
+        await using (var context = postgres.CreateDbContext())
+        {
+            await new CrystalWalletService(context, new FixedTimeProvider(Now)).GrantAsync(accountId,
+                Guid.NewGuid(), CrystalLedgerEntryType.AdminGrant, price, "artifact", CancellationToken.None);
+            Assert.True((await new PremiumStoreService(context, provider, new FixedTimeProvider(Now))
+                .PurchaseAsync(accountId, sku, Guid.NewGuid(), CancellationToken.None)).Succeeded);
+        }
+        await using var spatialContext = postgres.CreateDbContext();
+        Guid itemId = spatialContext.CharacterItems.Single(item => item.ItemDefinitionId == sku).Id;
+        var equipped = await new SpatialInventoryService(spatialContext, provider).EquipAsync(accountId, itemId, CancellationToken.None);
+        Assert.True(equipped.IsSuccess, equipped.ErrorCode);
+        Assert.Equal(InventoryCapacity.DefaultCapacity + bonus, equipped.Snapshot!.Capacity.Capacity);
+    }
 
     [Fact]
     public async Task CatalogListsSpatialArtifactsAndPurchaseRemainsRepeatable()

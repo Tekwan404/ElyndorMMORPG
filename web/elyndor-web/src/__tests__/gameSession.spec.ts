@@ -9,6 +9,18 @@ import { useGameSessionStore } from '@/stores/gameSession'
 vi.mock('@/telegram/telegramWebApp', () => ({ getTelegramInitData: vi.fn<() => string | null>(() => 'signed-init-data') }))
 
 describe('gameSession', () => {
+  it('sends bulk packs and mutation identity in one purchase API call', async () => {
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce({ crystalBalance: 3725 })
+      .mockResolvedValueOnce({ accountId: crypto.randomUUID(), character: null, world: null,
+        contentVersion: '0.36.2', balanceVersion: '0.29.0', serverTimeUtc: '2026-10-04T00:00:00Z' })
+    await useGameSessionStore().buyPremiumStoreOffer('REFORGE_STONES_SMALL', 51)
+    const purchases = request.mock.calls.filter(call => call[0] === '/api/v1/economy/store/purchase')
+    expect(purchases).toHaveLength(1)
+    const body = JSON.parse(purchases[0]![1]!.body as string)
+    expect(body).toEqual({ sku: 'REFORGE_STONES_SMALL', packCount: 51, mutationId: expect.any(String) })
+  })
+
   beforeEach(() => {
     setActivePinia(createPinia())
     clearPendingGameMutation()
