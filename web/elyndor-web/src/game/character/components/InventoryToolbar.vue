@@ -17,7 +17,17 @@ const category = defineModel<InventoryCategory>('category', { required: true })
 const search = defineModel<string>('search', { required: true })
 const sort = defineModel<InventorySort>('sort', { required: true })
 const newOnly = defineModel<boolean>('newOnly', { required: true })
-const view = defineModel<'list' | 'grid'>('view', { required: true })
+const view = defineModel<'list' | 'grid' | 'mini'>('view', { required: true })
+
+function cycleView(): void {
+  view.value = view.value === 'list' ? 'grid' : view.value === 'grid' ? 'mini' : 'list'
+}
+
+function viewLabel(): string {
+  if (view.value === 'list') return 'Компактные иконки'
+  if (view.value === 'grid') return 'Иконки'
+  return 'Крупные иконки'
+}
 defineEmits<{ filters: [] }>()
 const searchId = useId()
 </script>
@@ -91,12 +101,12 @@ const searchId = useId()
       <button
         type="button"
         class="inventory-browser__view"
-        :data-inventory-view="view === 'list' ? 'grid' : 'list'"
-        :aria-label="view === 'list' ? 'Компактные иконки' : 'Крупные иконки'"
-        :title="view === 'list' ? 'Компактные иконки' : 'Крупные иконки'"
-        @click="view = view === 'list' ? 'grid' : 'list'"
+        :data-inventory-view="view"
+        :aria-label="viewLabel()"
+        :title="viewLabel()"
+        @click="cycleView"
       >
-        <span aria-hidden="true">{{ view === 'list' ? '▦' : '☷' }}</span>
+        <span aria-hidden="true">{{ view === 'list' ? '▦' : view === 'grid' ? '▦▦' : '☷' }}</span>
       </button>
     </div>
   </section>
