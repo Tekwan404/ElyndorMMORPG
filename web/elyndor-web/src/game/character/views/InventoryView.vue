@@ -58,7 +58,7 @@ const selectedItem = ref<InventoryItem | null>(null)
 const equipmentActionError = ref<string | null>(null)
 const typeFilter = ref<InventoryCategory>('all')
 const searchQuery = ref('')
-const viewMode = ref<'list' | 'grid'>('grid')
+const viewMode = ref<'list' | 'grid' | 'mini'>('grid')
 const rarityFilter = ref<'all' | InventoryItem['rarity']>('all')
 const equipableOnly = ref(false)
 const newOnly = ref(false)
@@ -545,30 +545,22 @@ async function sellSelectedItems(): Promise<void> {
   bulkActionPending.value = true
   bulkActionError.value = null
   try {
-    const remainingIds = new Set(selectedItemIds.value)
-    let failed = false
-    for (const item of items) {
-      const updated = await session.sellMerchantItem(
-        MARCUS_MERCHANT_ID,
-        item.id,
-        selectedQuantity(item),
-      )
-      if (!updated) {
-        failed = true
-        bulkActionError.value =
-          'Не удалось продать все выбранные предметы. Уже проданные позиции сохранены.'
-        break
-      }
-      remainingIds.delete(item.id)
+    const updated = await session.sellMerchantItems(
+      MARCUS_MERCHANT_ID,
+      items.map((item) => ({
+        characterItemId: item.id,
+        quantity: selectedQuantity(item),
+      })),
+    )
+    if (!updated) {
+      bulkActionError.value =
+        'Не удалось продать выбранные предметы. Ничего из выбранного не продано.'
+      return
     }
 
-    selectedItemIds.value = remainingIds
-    selectedQuantities.value = Object.fromEntries(
-      Object.entries(selectedQuantities.value).filter(([itemId]) => remainingIds.has(itemId)),
-    )
-    if (!failed && remainingIds.size > 0) {
-      bulkActionError.value = `${remainingIds.size} выбранных поз. нельзя продать — они оставлены выбранными.`
-    }
+    selectedItemIds.value = new Set()
+    selectedQuantities.value = {}
+    actionNotice.value = `Продано предметов: ${items.length} · ${formatMoney(selectedSellValue.value)}`
   } finally {
     bulkActionPending.value = false
   }
@@ -1469,8 +1461,15 @@ async function toggleSelectedLock(): Promise<void> {
                     :rarity="item.rarity"
                   />
                 </span>
+                <span
+                  v-if="viewMode === 'mini' && item.generatedItem"
+                  class="bag-cell__mini-stars"
+                  aria-hidden="true"
+                >
+                  ★{{ item.generatedItem.stars }}
+                </span>
                 <ItemQualityStars
-                  v-if="item.generatedItem"
+                  v-else-if="item.generatedItem"
                   class="bag-cell__quality"
                   :id="`inventory-${item.id}`"
                   :stars="item.generatedItem.stars"
