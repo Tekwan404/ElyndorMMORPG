@@ -309,7 +309,7 @@ export function useForgeWorkbench() {
         const result = await session.decideReforge(operation, accept)
         if (!result) return false
         pending.value = null
-        selectedId.value = null
+        refreshKey.value++
         return true
       },
       accept ? 'Новая характеристика применена.' : 'Текущая характеристика сохранена.',

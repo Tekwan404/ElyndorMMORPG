@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, useTemplateRef } from 'vue'
+import type { InventoryItem } from '@/api/contracts'
 import MoneyAmount from '@/ui/components/MoneyAmount.vue'
 import { UIButton, UILoadingState, UIModal } from '@/ui/components'
 import UIConfirmation from '@/ui/components/UIConfirmation.vue'
@@ -31,6 +32,16 @@ const {
   salvageReady,
 } = work
 const confirmation = useConfirmation()
+const detail = useTemplateRef<HTMLElement>('detail')
+async function selectItem(item: InventoryItem) {
+  work.select(item)
+  if (mode.value === 'salvage' || selectedId.value !== item.id) return
+  await nextTick()
+  detail.value?.scrollIntoView({
+    behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ? 'auto' : 'smooth',
+    block: 'start',
+  })
+}
 const backpackCount = computed(
   () => equipment.value.filter((item) => item.equippedSlot === null).length,
 )
@@ -129,7 +140,7 @@ async function confirmSalvage() {
           :selected="mode === 'salvage' ? selectedIds.includes(item.id) : selectedId === item.id"
           :multiple="mode === 'salvage'"
           :disabled="busy || !!work.pending.value || (mode === 'salvage' && !canSalvage(item))"
-          @select="work.select(item)"
+          @select="selectItem(item)"
         />
       </div>
       <UILoadingState
@@ -179,7 +190,7 @@ async function confirmSalvage() {
           >Разобрать {{ selectedIds.length }} предметов</UIButton
         >
       </section>
-      <section v-else-if="selected" class="forge-work" data-forge-detail>
+      <section v-else-if="selected" ref="detail" class="forge-work" data-forge-detail>
         <ForgeItemCard :item="selected" selected :interactive="false" /><ForgeReforgePanel
           v-if="mode === 'reforge'"
           :work="work"
@@ -271,6 +282,7 @@ async function confirmSalvage() {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .forge-work {
+  scroll-margin-top: 100px;
   --ui-gradient-primary: linear-gradient(135deg, #f3d17c, #b98838);
   display: grid;
   gap: 14px;
