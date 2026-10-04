@@ -229,6 +229,15 @@ public sealed record SellMerchantItemRequest(
     Guid MutationId,
     int Quantity = 1);
 
+public sealed record SellMerchantItemSelectionRequest(
+    Guid CharacterItemId,
+    int Quantity);
+
+public sealed record SellMerchantItemsRequest(
+    string MerchantId,
+    Guid MutationId,
+    IReadOnlyList<SellMerchantItemSelectionRequest> Items);
+
 public sealed record BuybackMerchantItemRequest(
     string MerchantId,
     Guid CharacterItemId,
