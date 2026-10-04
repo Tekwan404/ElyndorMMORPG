@@ -281,6 +281,98 @@ public sealed class MerchantServiceTests(PostgresFixture postgres) : IAsyncLifet
     }
 
     [Fact]
+    public async Task BulkSaleRemovesAllSelectedItemsInOneMutation()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(0);
+        Guid firstId = Guid.CreateVersion7();
+        Guid secondId = Guid.CreateVersion7();
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.CharacterItems.AddRange(
+                new CharacterItem(firstId, characterId, "RECRUIT_IRON_SWORD", 1, Now),
+                new CharacterItem(secondId, characterId, "RECRUIT_IRON_SWORD", 1, Now));
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        MerchantService service = await CreateServiceAsync(context);
+        MerchantOperationResult result = await service.SellItemsAsync(
+            accountId,
+            MerchantId,
+            [
+                new MerchantSellSelection(firstId, 1),
+                new MerchantSellSelection(secondId, 1)
+            ],
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(result.IsSuccess);
+
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        int unitPrice = MerchantService.ResolveSellPrice(
+            content.Items!.Single(item => item.Id == "RECRUIT_IRON_SWORD"));
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Empty(await verify.CharacterItems
+            .Where(item => item.Id == firstId || item.Id == secondId)
+            .ToArrayAsync());
+        Assert.Equal(
+            unitPrice * 2,
+            await verify.Characters
+                .Where(character => character.Id == characterId)
+                .Select(character => character.Gold)
+                .SingleAsync());
+        Assert.Single(await verify.CharacterMutations.ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task BulkSaleRollsBackEverythingWhenOneSelectionIsInvalid()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(0);
+        Guid firstId = Guid.CreateVersion7();
+        Guid lockedId = Guid.CreateVersion7();
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            CharacterItem locked = new(lockedId, characterId, "RECRUIT_IRON_SWORD", 1, Now);
+            locked.SetLocked(true);
+            setup.CharacterItems.AddRange(
+                new CharacterItem(firstId, characterId, "RECRUIT_IRON_SWORD", 1, Now),
+                locked);
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        MerchantService service = await CreateServiceAsync(context);
+        MerchantOperationResult result = await service.SellItemsAsync(
+            accountId,
+            MerchantId,
+            [
+                new MerchantSellSelection(firstId, 1),
+                new MerchantSellSelection(lockedId, 1)
+            ],
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(MerchantErrorCodes.ItemLocked, result.ErrorCode);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(
+            2,
+            await verify.CharacterItems
+                .Where(item => item.Id == firstId || item.Id == lockedId)
+                .CountAsync());
+        Assert.Equal(
+            0,
+            await verify.Characters
+                .Where(character => character.Id == characterId)
+                .Select(character => character.Gold)
+                .SingleAsync());
+        Assert.Empty(await verify.CharacterMutations.ToArrayAsync());
+    }
+
+    [Fact]
     public async Task BuyingPotionStackChargesForRequestedQuantity()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(200);
