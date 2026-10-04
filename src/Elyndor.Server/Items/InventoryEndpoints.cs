@@ -696,7 +696,6 @@ public static class InventoryEndpoints
                     or ItemReforgeErrorCodes.ItemLocked
                     or ItemReforgeErrorCodes.OperationConflict
                     or ItemReforgeErrorCodes.ProposalNotPending
-                    or ItemReforgeErrorCodes.ItemEquipped
                     ? StatusCodes.Status409Conflict
                     : StatusCodes.Status422UnprocessableEntity,
             extensions: new Dictionary<string, object?>
