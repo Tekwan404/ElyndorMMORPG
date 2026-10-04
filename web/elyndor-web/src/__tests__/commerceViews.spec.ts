@@ -6,15 +6,20 @@ import AuctionView from '@/game/economy/views/AuctionView.vue'
 import MailboxView from '@/game/economy/views/MailboxView.vue'
 import TradePanel from '@/game/economy/views/TradePanel.vue'
 import { useTradeStore } from '@/game/economy/tradeStore'
-import { loadAuction, loadMailbox, claimMail } from '@/game/economy/commerce'
+import { loadAuction, loadAuctionSellableItems, loadMailbox, claimMail } from '@/game/economy/commerce'
 
 vi.mock('@/game/economy/commerce', async importOriginal => {
   const actual = await importOriginal<typeof import('@/game/economy/commerce')>()
   return { ...actual, loadAuction: vi.fn<typeof actual.loadAuction>(),
+    loadAuctionSellableItems: vi.fn<typeof actual.loadAuctionSellableItems>(),
     loadMailbox: vi.fn<typeof actual.loadMailbox>(), claimMail: vi.fn<typeof actual.claimMail>() }
 })
 
-beforeEach(() => { setActivePinia(createPinia()); vi.clearAllMocks() })
+beforeEach(() => {
+  setActivePinia(createPinia())
+  vi.clearAllMocks()
+  vi.mocked(loadAuctionSellableItems).mockResolvedValue([])
+})
 
 describe('commerce views', () => {
   it('shows buy, sell and own-auction paths without mixing seller and buyer lists', async () => {
@@ -25,8 +30,16 @@ describe('commerce views', () => {
     await wrapper.get('[aria-label="Разделы аукциона"] button:nth-child(3)').trigger('click')
     await flushPromises()
     expect(loadAuction).toHaveBeenCalledWith(true, '', '', 0)
+    vi.mocked(loadAuctionSellableItems).mockResolvedValueOnce([{
+      itemId: 'sellable-1', itemDefinitionId: 'ITEM', name: 'Клинок дозорного', iconId: null,
+      type: 'Equipment', rarity: 'Rare', quantity: 1, itemLevel: 20, itemPower: 50,
+      rollQuality: .7, stars: 2, isPerfect: false, enhancementLevel: 1,
+    }])
     await wrapper.get('[aria-label="Разделы аукциона"] button:nth-child(2)').trigger('click')
-    expect(wrapper.find('select').exists()).toBe(true)
+    await flushPromises()
+    expect(loadAuctionSellableItems).toHaveBeenCalled()
+    expect(wrapper.find('[data-auction-item-picker]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Клинок дозорного')
     wrapper.unmount()
   })
 
