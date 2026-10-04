@@ -1,5 +1,6 @@
 using Elyndor.Core.Content;
 using Elyndor.Core.Economy;
+using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
