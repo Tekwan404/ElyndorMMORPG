@@ -5,6 +5,17 @@ namespace Elyndor.IntegrationTests.Administration;
 public sealed class TelegramAdminCommandParserTests
 {
     [Theory]
+    [InlineData("/builddump 123")]
+    [InlineData("/gear 123")]
+    [InlineData("/talents@elyndor_bot 123")]
+    public void BuildDiagnosticsAcceptExactlyOnePositiveTarget(string text)
+    {
+        var result = TelegramAdminCommandParser.Parse(text);
+        Assert.True(result.IsSuccess);
+        Assert.Equal(123, result.Command!.TargetTelegramUserId);
+        Assert.False(TelegramAdminCommandParser.Parse(text + " extra").IsSuccess);
+    }
+    [Theory]
     [InlineData("/rename 123 Aldor the-Brave", AdminCommandType.Rename, "Aldor the-Brave")]
     [InlineData("rename 123 Aldor the-Brave", AdminCommandType.Rename, "Aldor the-Brave")]
     [InlineData("/msg 123 Server restart in five minutes", AdminCommandType.Message, "Server restart in five minutes")]

@@ -10,6 +10,7 @@ using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Progression;
 using Elyndor.Server.Administration;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +39,7 @@ public static class BossCombatLogArchiveEndpoints
         ITelegramMessageSender messageSender,
         ILoggerFactory loggerFactory,
         TimeProvider timeProvider,
+        CharacterBuildSnapshotService buildSnapshots,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId))
@@ -103,7 +105,8 @@ public static class BossCombatLogArchiveEndpoints
             messageSender,
             loggerFactory.CreateLogger("Elyndor.BossCombatLog"),
             timeProvider.GetUtcNow(),
-            cancellationToken);
+            cancellationToken,
+            buildSnapshots);
 
         return Results.Ok(response);
     }
@@ -184,7 +187,8 @@ internal static class BossCombatLogArchive
         ITelegramMessageSender messageSender,
         ILogger logger,
         DateTimeOffset nowUtc,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        CharacterBuildSnapshotService? buildSnapshots = null)
     {
         Purge(nowUtc);
 
@@ -286,6 +290,12 @@ internal static class BossCombatLogArchive
                 droppedEvents,
                 reward,
                 target);
+            CharacterBuildSnapshot? build = target.IsTrainingDummy && buildSnapshots is not null
+                ? await buildSnapshots.GetTrainingAsync(accountId, sessionId, cancellationToken) : null;
+            if (target.IsTrainingDummy)
+                log += build is null
+                    ? "\nBUILD SNAPSHOT: unavailable (training started before build capture was enabled).\n"
+                    : "\n" + CharacterBuildSnapshotFormatter.FormatSummary(build);
             string fileName =
                 $"elyndor-boss-{FileSegment(target.DefinitionId)}-{sessionId:N}.txt";
             string caption =
@@ -299,6 +309,11 @@ internal static class BossCombatLogArchive
                     log,
                     caption,
                     cancellationToken);
+                if (build is not null)
+                    await documentSender.SendDocumentAsync(telegramUserId.Value,
+                        $"elyndor-build-{build.BuildHash}.json",
+                        CharacterBuildSnapshotFormatter.FormatJson(build),
+                        $"BuildHash: {build.BuildHash}", cancellationToken);
             }
             catch (Exception exception) when (
                 exception is not OperationCanceledException

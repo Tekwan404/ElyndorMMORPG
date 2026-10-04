@@ -20,7 +20,10 @@ public enum AdminCommandType
     Message,
     GiveItem,
     CreatePromoCode,
-    SpawnWorldBoss
+    SpawnWorldBoss,
+    BuildDump,
+    Gear,
+    Talents
 }
 
 public sealed record AdminCommand(AdminCommandType Type, long? TargetTelegramUserId = null, string? Value = null, int? NumericValue = null);

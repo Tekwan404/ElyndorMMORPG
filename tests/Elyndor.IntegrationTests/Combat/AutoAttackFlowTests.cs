@@ -6,6 +6,7 @@ using Elyndor.Core.Characters;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Characters;
 using Elyndor.IntegrationTests.Postgres;
 using Elyndor.Server.Identity;
 using Microsoft.AspNetCore.Hosting;
@@ -68,6 +69,17 @@ public sealed class AutoAttackFlowTests(PostgresFixture postgres) : IAsyncLifeti
         Assert.True(started.Succeeded, started.ErrorCode);
         Assert.NotNull(started.Snapshot);
         Guid sessionId = started.Snapshot!.SessionId;
+        using (IServiceScope buildScope = factory.Services.CreateScope())
+        {
+            var buildService = buildScope.ServiceProvider.GetRequiredService<CharacterBuildSnapshotService>();
+            var build = await buildService.GetTrainingAsync(accountId, sessionId, CancellationToken.None);
+            Assert.NotNull(build);
+            Assert.Equal(character.Id, build.CharacterId);
+            Assert.Equal("ARCHER", build.ClassId);
+            Assert.Equal(started.Snapshot.Player.MaxHp, build.Stats["maxHp"].Effective);
+            Assert.Equal(started.Snapshot.Player.MaxResource, build.MaxResource);
+            Assert.Contains(build.Equipment, item => item.BaseDefinition.Id == "HUNTER_SHORTBOW");
+        }
 
         CombatUpdateResponse stopped = await hub.InvokeAsync<CombatUpdateResponse>(
             "StopAutoAttack",

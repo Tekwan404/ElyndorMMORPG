@@ -33,6 +33,8 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
         Set<ReleaseAdminNotification>();
 
     public DbSet<Character> Characters => Set<Character>();
+    public DbSet<CharacterBuildArchive> CharacterBuildArchives => Set<CharacterBuildArchive>();
+    public DbSet<TrainingBuildReference> TrainingBuildReferences => Set<TrainingBuildReference>();
     public DbSet<ArenaQueueEntry> ArenaQueueEntries => Set<ArenaQueueEntry>();
     public DbSet<ArenaMatch> ArenaMatches => Set<ArenaMatch>();
     public DbSet<ArenaInvitation> ArenaInvitations => Set<ArenaInvitation>();

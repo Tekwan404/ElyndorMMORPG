@@ -7,6 +7,7 @@ using Elyndor.Core.Combat.Sessions;
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Characters;
 using Elyndor.Server.Administration;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,6 +34,7 @@ public static class BossCombatLogEndpoints
         ClaimsPrincipal user,
         CombatSessionRegistry registry,
         GameDbContext dbContext,
+        CharacterBuildSnapshotService buildSnapshots,
         ITelegramMessageSender messageSender,
         CancellationToken cancellationToken)
     {
@@ -107,6 +109,10 @@ public static class BossCombatLogEndpoints
         }
 
         string log = BuildLog(snapshot, logEvents);
+        CharacterBuildSnapshot? build = await buildSnapshots.GetTrainingAsync(accountId, request.SessionId, cancellationToken);
+        log = build is null
+            ? log + "\nBUILD SNAPSHOT: unavailable (training started before build capture was enabled).\n"
+            : log + "\n" + CharacterBuildSnapshotFormatter.FormatSummary(build);
         string fileName = $"elyndor-training-dummy-{request.SessionId:N}.txt";
         string caption = $"⚔️ Elyndor · {TrainingDummyCombatLogPolicy.DisplayName} · {logEvents.Length} событий";
 
@@ -116,6 +122,12 @@ public static class BossCombatLogEndpoints
             log,
             caption,
             cancellationToken);
+
+        if (build is not null)
+            await documentSender.SendDocumentAsync(telegramUserId.Value,
+                $"elyndor-build-{build.BuildHash}.json",
+                CharacterBuildSnapshotFormatter.FormatJson(build),
+                $"BuildHash: {build.BuildHash}", cancellationToken);
 
         return Results.Ok(new BossCombatLogResponse(true, null));
     }

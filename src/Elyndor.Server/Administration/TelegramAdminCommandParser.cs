@@ -42,6 +42,9 @@ public static class TelegramAdminCommandParser
         return name switch
         {
             "char" when remainder.Length == 0 => Success(AdminCommandType.ShowCharacter, targetId),
+            "builddump" when remainder.Length == 0 => Success(AdminCommandType.BuildDump, targetId),
+            "gear" when remainder.Length == 0 => Success(AdminCommandType.Gear, targetId),
+            "talents" when remainder.Length == 0 => Success(AdminCommandType.Talents, targetId),
             "restore" when remainder.Length == 0 => Success(AdminCommandType.Restore, targetId),
             "level" => ParseLevel(targetId, remainder),
             "location" => ParseSingleValue(AdminCommandType.SetLocation, targetId, remainder),

@@ -8,14 +8,22 @@ public static class DefenseMitigationFormula
 
     public static decimal CalculateDamageMultiplier(decimal defense, int referenceLevel)
     {
+        decimal uncappedReduction = CalculateUncappedReduction(defense, referenceLevel);
+        decimal cappedReduction = Math.Min(MaximumReductionPercent / 100m, uncappedReduction);
+        return 1m - cappedReduction;
+    }
+
+    public static decimal CalculateUncappedReductionPercent(decimal defense, int referenceLevel) =>
+        CalculateUncappedReduction(defense, referenceLevel) * 100m;
+
+    private static decimal CalculateUncappedReduction(decimal defense, int referenceLevel)
+    {
         ArgumentOutOfRangeException.ThrowIfLessThan(referenceLevel, 1);
 
         decimal effectiveDefense = Math.Max(0, defense);
         decimal mitigationConstant = BaseMitigationConstant
             + (MitigationConstantPerLevel * referenceLevel);
-        decimal uncappedReduction = effectiveDefense / (mitigationConstant + effectiveDefense);
-        decimal cappedReduction = Math.Min(MaximumReductionPercent / 100m, uncappedReduction);
-        return 1m - cappedReduction;
+        return effectiveDefense / (mitigationConstant + effectiveDefense);
     }
 
     public static decimal CalculateReductionPercent(decimal defense, int referenceLevel) =>

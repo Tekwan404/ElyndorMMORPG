@@ -34,7 +34,8 @@ public sealed class CombatSessionFactory(
     IGameRandomFactory randomFactory,
     TimeProvider timeProvider,
     CharacterAbilityCooldownStore? cooldownStore = null,
-    PartyService? partyService = null)
+    PartyService? partyService = null,
+    CharacterBuildSnapshotService? buildSnapshots = null)
 {
     public CombatSessionFactory(
         BootstrapService bootstrapService,
@@ -361,6 +362,13 @@ public sealed class CombatSessionFactory(
         CombatSessionParticipant[] participants = partyMembers
             .Select(member => new CombatSessionParticipant(member.AccountId, member.CharacterId))
             .ToArray();
+        if (isTraining && buildSnapshots is not null)
+        {
+            var captured = await buildSnapshots.CaptureAsync(character.Id, character.Name,
+                character.ClassId, character.RaceId, character.GenderId, character.Level,
+                derived, contentSnapshot, cancellationToken);
+            await buildSnapshots.LinkTrainingAsync(accountId, session.SessionId, captured.BuildHash, cancellationToken);
+        }
         return new CombatSessionCreationResult(
             true,
             null,
