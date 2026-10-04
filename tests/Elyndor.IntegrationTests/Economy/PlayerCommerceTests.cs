@@ -216,6 +216,29 @@ public sealed class PlayerCommerceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
+    public async Task AuctionSellableItemsExcludeEquippedItemsAndPreviewStillRejectsThem()
+    {
+        var seller = await Player();
+        Guid equipped = await Item(seller);
+        Guid sellable = await Item(seller);
+        await using var db = postgres.CreateDbContext();
+        db.CharacterEquipment.Add(new CharacterEquipment(seller.Character, EquipmentSlot.MainHand, equipped));
+        await db.SaveChangesAsync();
+
+        var service = Auction(db);
+        var items = await service.SellableItemsAsync(seller.Account, default);
+
+        var item = Assert.Single(items);
+        Assert.Equal(sellable, item.ItemId);
+        Assert.Equal("SMALL_HEALING_POTION", item.ItemDefinitionId);
+        Assert.False(string.IsNullOrWhiteSpace(item.Name));
+
+        var preview = await service.PreviewAsync(seller.Account, new AuctionPreviewRequest(equipped, 100), default);
+        Assert.False(preview.Succeeded);
+        Assert.Equal("commerce_item_equipped", preview.ErrorCode);
+    }
+
+    [Fact]
     public async Task TwoBuyersCannotSettleSameListing()
     {
         var seller = await Player(); var a = await Player(); var b = await Player();
