@@ -21,6 +21,7 @@
       },
       "allowedWeaponCategories": [
         "STAFF",
+        "ONE_HAND_STAFF",
         "WAND"
       ],
       "allowedArmorCategories": [

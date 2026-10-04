@@ -54,9 +54,9 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Именной посох Архонта Пепла 60 уровня. Unique не является отдельным сетовым тиром.",
+      "description": "Именной одноручный посох Архонта Пепла 60 уровня. Можно использовать вместе с магическим фокусом.",
       "version": 1,
-      "weaponCategory": "STAFF",
+      "weaponCategory": "ONE_HAND_STAFF",
       "weaponDamageMin": 335,
       "weaponDamageMax": 450,
       "itemLevelMin": 60,
