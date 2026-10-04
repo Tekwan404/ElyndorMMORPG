@@ -380,10 +380,8 @@ public sealed class MerchantService(
         }
 
         string fingerprint = Fingerprint(
-            SellItemsOperation,
-            merchantId,
-            .. normalized.Select(selection =>
-                $"{selection.CharacterItemId:N}:{selection.Quantity.ToString(CultureInfo.InvariantCulture)}"));
+            [SellItemsOperation, merchantId, .. normalized.Select(selection =>
+                $"{selection.CharacterItemId:N}:{selection.Quantity.ToString(CultureInfo.InvariantCulture)}")]);
 
         return ExecuteMutationAsync(
             accountId,
