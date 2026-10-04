@@ -32,9 +32,21 @@ public sealed partial class CombatSession
     private const string FlamestrikeBurnEffectId = "MAGE_FLAMESTRIKE_BURN";
     private const string CombustionPulseEffectId = "MAGE_COMBUSTION_PULSE";
 
-    private int _fireDirectCritStreak;
-    private DateTimeOffset _lastFireDirectCritAt;
-    private int _combustionCritCount;
+    private int _fireDirectCritStreak
+    {
+        get => _activePlayerState.FireDirectCritStreak;
+        set => _activePlayerState.FireDirectCritStreak = value;
+    }
+    private DateTimeOffset _lastFireDirectCritAt
+    {
+        get => _activePlayerState.LastFireDirectCritAt;
+        set => _activePlayerState.LastFireDirectCritAt = value;
+    }
+    private int _combustionCritCount
+    {
+        get => _activePlayerState.CombustionCritCount;
+        set => _activePlayerState.CombustionCritCount = value;
+    }
 
     private static readonly HashSet<string> FireDamageDefinitionIds = new(StringComparer.Ordinal)
     {

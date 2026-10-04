@@ -1,6 +1,7 @@
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Combat.Sessions;
@@ -46,10 +47,23 @@ public sealed partial class CombatSession
     private const string EmergencyIceEffectId = "MAGE_EMERGENCY_ICE";
     private const string ColdSnapLanceEffectId = "MAGE_COLD_SNAP_LANCE";
 
-    private DateTimeOffset? _lastMageManaSpendAtUtc;
-    private DateTimeOffset? _coldBloodReadyAtUtc;
-    private int _arcanePowerManaSpendCount;
-    private readonly List<PendingMageResourceRefund> _pendingMageResourceRefunds = [];
+    private DateTimeOffset? _lastMageManaSpendAtUtc
+    {
+        get => _activePlayerState.LastMageManaSpendAtUtc;
+        set => _activePlayerState.LastMageManaSpendAtUtc = value;
+    }
+    private DateTimeOffset? _coldBloodReadyAtUtc
+    {
+        get => _activePlayerState.ColdBloodReadyAtUtc;
+        set => _activePlayerState.ColdBloodReadyAtUtc = value;
+    }
+    private int _arcanePowerManaSpendCount
+    {
+        get => _activePlayerState.ArcanePowerManaSpendCount;
+        set => _activePlayerState.ArcanePowerManaSpendCount = value;
+    }
+    private List<PendingMageResourceRefund> _pendingMageResourceRefunds =>
+        _activePlayerState.PendingMageResourceRefunds;
 
     private sealed record PendingMageResourceRefund(
         DateTimeOffset DueAtUtc,
@@ -809,6 +823,27 @@ public sealed partial class CombatSession
                 EffectStackPolicy.Replace, 0, SourceSpecific: true), now);
 
         _procGuard.StartCooldown(_player.Actor.ActorId, cooldownKey, now, deepFreeze.InternalCooldown);
+    }
+
+    // The existing PvE sync boundary belongs to the fight, not whichever
+    // participant happened to be activated last by regen/effect processing.
+    private void SyncActiveMageConditionalEffects(DateTimeOffset now)
+    {
+        CombatPlayerRuntimeState previous = _activePlayerState;
+        try
+        {
+            foreach (CombatParticipantSnapshot participant in _participantRoster.Participants.Where(participant =>
+                         participant.Status == CombatParticipantStatus.Active))
+            {
+                ActivatePlayer(participant.CharacterId);
+                if (IsMage && !_player.Actor.IsDead)
+                    SyncMageConditionalEffects(now);
+            }
+        }
+        finally
+        {
+            _activePlayerState = previous;
+        }
     }
 
     private void SyncMageConditionalEffects(DateTimeOffset now)

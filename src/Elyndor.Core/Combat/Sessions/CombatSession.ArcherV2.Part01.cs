@@ -44,7 +44,11 @@ private const string IntimidationBossEffectId = "ARCHER_INTIMIDATION_BOSS";
 private const string ShockingShotStunEffectId = "ARCHER_SHOCKING_SHOT_STUN";
 private const string ImmolationTrapDotEffectId = "ARCHER_IMMOLATION_TRAP_DOT";
 private const string ExplosiveTrapDotEffectId = "ARCHER_EXPLOSIVE_TRAP_DOT";
-private int _archerShotSequence;
+private int _archerShotSequence
+{
+get => _activePlayerState.ArcherShotSequence;
+set => _activePlayerState.ArcherShotSequence = value;
+}
 private int _markedShotSequence;
 private Guid? _lastOwnerHitTargetId;
 private DateTimeOffset? _lastOwnerHitAtUtc;
@@ -52,7 +56,11 @@ private Guid? _lastCompanionHitTargetId;
 private DateTimeOffset? _lastCompanionHitAtUtc;
 private DateTimeOffset? _nextSpiritBondAtUtc;
 private bool _bestialWrathFirstCommandAvailable;
-private bool _survivalPreparationArmed;
+private bool _survivalPreparationArmed
+{
+get => _activePlayerState.SurvivalPreparationArmed;
+set => _activePlayerState.SurvivalPreparationArmed = value;
+}
 private bool IsArcher =>
 string.Equals(_player.DefinitionId, "ARCHER", StringComparison.Ordinal);
 private bool IsPhysicalCompanion => _companion is not null;
