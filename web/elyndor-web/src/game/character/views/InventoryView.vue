@@ -536,9 +536,13 @@ async function sellSelectedItems(): Promise<void> {
   const items = [...selectedSellableItems.value]
   if (!items.length || bulkActionPending.value) return
   const valuable = items.some(isValuableInventoryItem)
+  const totalValue = items.reduce(
+    (sum, item) => sum + item.sellPriceGold * selectedQuantity(item),
+    0,
+  )
   const message = valuable
-    ? `Продать ${items.length} позиций за ${formatMoney(items.reduce((sum, item) => sum + item.sellPriceGold * selectedQuantity(item), 0))}? Среди них есть Rare+ или улучшенные вещи.`
-    : `Продать ${items.length} позиций за ${formatMoney(items.reduce((sum, item) => sum + item.sellPriceGold * selectedQuantity(item), 0))}?`
+    ? `Продать ${items.length} позиций за ${formatMoney(totalValue)}? Среди них есть Rare+ или улучшенные вещи.`
+    : `Продать ${items.length} позиций за ${formatMoney(totalValue)}?`
   if (!(await confirmation.ask({ title: 'Продать предметы?', message, confirmLabel: 'Продать' })))
     return
 
@@ -560,7 +564,7 @@ async function sellSelectedItems(): Promise<void> {
 
     selectedItemIds.value = new Set()
     selectedQuantities.value = {}
-    actionNotice.value = `Продано предметов: ${items.length} · ${formatMoney(selectedSellValue.value)}`
+    actionNotice.value = `Продано предметов: ${items.length} · ${formatMoney(totalValue)}`
   } finally {
     bulkActionPending.value = false
   }
