@@ -236,7 +236,7 @@ function selectItem(item: InventoryItem): void {
   const reforgeAvailable = forgeItemAvailability(item).available
   selectedItemId.value = item.id
   selectedSlotKey.value = item.reforgeSlotKey ?? forgeableAffixes(item)[0]?.slotKey ?? null
-  activeMode.value = isEquipped(item) || !reforgeAvailable ? 'upgrade' : 'reforge'
+  activeMode.value = !reforgeAvailable ? 'upgrade' : 'reforge'
   preview.value = null
   pending.value = null
   enhancementPreview.value = null
@@ -441,8 +441,11 @@ function enhancementErrorMessage(code: string | null): string {
 function reforgeErrorMessage(code: string | null): string {
   const messages: Record<string, string> = {
     reforge_item_locked: 'Предмет защищён. Снимите защиту в инвентаре.',
-    reforge_item_equipped: 'Для перековки характеристики предмет нужно снять.',
     reforge_item_transaction_locked: 'С этим предметом уже выполняется действие.',
+    reforge_invalid_affix_slot: 'Эту характеристику нельзя перековать. Выберите другую.',
+    reforge_guaranteed_affix_immutable: 'Эта характеристика является базовой и не перековывается.',
+    reforge_item_not_generated: 'Для этого предмета перековка недоступна.',
+    reforge_cost_profile_missing: 'Для этой редкости не настроена стоимость перековки.',
     reforge_not_enough_gold: 'Недостаточно золота.',
     reforge_not_enough_material: 'Недостаточно Камней перековки.',
     reforge_not_enough_catalyst: 'Недостаточно катализатора.',
@@ -595,7 +598,7 @@ function rarityLabel(item: InventoryItem): string {
             <small>{{ rarityLabel(selectedItem) }} · ур. {{ selectedItem.requiredLevel }}<template v-if="isEquipped(selectedItem)"> · надето</template></small>
             <h2>{{ selectedItem.name }}</h2>
             <ItemQualityStars v-if="selectedItem.generatedItem" :id="`forge-detail-stars-${selectedItem.id}`" :stars="selectedItem.generatedItem.stars" />
-            <small v-if="selectedItem.generatedItem">Качество рождения: {{ format(selectedItem.generatedItem.rollQuality * 100) }}%<template v-if="selectedItem.generatedItem.isPerfect"> · Идеально</template></small>
+            <small v-if="selectedItem.generatedItem">Качество рождения: {{ format(selectedItem.generatedItem.rollQuality) }}%<template v-if="selectedItem.generatedItem.isPerfect"> · Идеально</template></small>
             <div v-if="selectedItem.generatedItem" class="forge-power">
               <span><b>Мощь экземпляра {{ format(selectedItem.generatedItem.itemPower) }}</b><small>из {{ format(selectedItem.generatedItem.maxItemPower) }}</small></span>
               <span class="forge-power__track"><i :style="{ width: `${selectedPowerPercent}%` }" /></span>
@@ -655,7 +658,7 @@ function rarityLabel(item: InventoryItem): string {
               <div><small>СЕЙЧАС</small><strong>+{{ enhancementPreview.currentEnhancementLevel }}</strong></div><span aria-hidden="true">→</span><div><small>ПОСЛЕ</small><strong>+{{ enhancementPreview.targetEnhancementLevel }}</strong></div>
             </div>
             <div v-if="enhancementPreview" class="forge-info-box">
-              <strong>Качество: ★{{ selectedItem.generatedItem?.stars ?? 0 }} · {{ format((selectedItem.generatedItem?.rollQuality ?? 0) * 100) }}%</strong>
+              <strong>Качество: ★{{ selectedItem.generatedItem?.stars ?? 0 }} · {{ format(selectedItem.generatedItem?.rollQuality ?? 0) }}%</strong>
               <span>Мощь экземпляра: {{ format(enhancementPreview.intrinsicItemPower ?? 0) }} · итоговая мощь: {{ format(enhancementPreview.finalItemPower ?? enhancementPreview.intrinsicItemPower ?? 0) }}</span>
               <span>Бонус усиления: +{{ format(enhancementPreview.enhancementBonusPercent * 100) }}%</span>
             </div>

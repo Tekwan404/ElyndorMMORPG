@@ -46,6 +46,66 @@ public sealed class ItemReforgePreviewTests(PostgresFixture postgres) : IAsyncLi
     }
 
     [Fact]
+    public async Task PreviewAllowsEquippedItemAndDifferentSlotAfterPreviousSelection()
+    {
+        Guid accountId = Guid.CreateVersion7();
+        Guid characterId = Guid.CreateVersion7();
+        Guid itemId = Guid.CreateVersion7();
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
+        ItemDefinition definition = content.Items!.Single(item => item.Id == "RECRUIT_IRON_SWORD");
+
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.Accounts.Add(new Account(accountId, Random.Shared.NextInt64(1, long.MaxValue), Now));
+            setup.Characters.Add(new Character(
+                characterId, accountId, Guid.CreateVersion7(), "Forger", "FORGER0003", "HUMAN", "MALE", "WARRIOR", Now));
+
+            CharacterItem item = new(itemId, characterId, definition.Id, 1, Now, definition.Version);
+            item.ApplyGeneratedInstance(
+                new GeneratedItemInstance(
+                    60,
+                    [
+                        new GeneratedItemAffix(
+                            "AFFIX_1", "STRENGTH", ItemStatIds.Strength,
+                            12m, 5m, 20m, 1m, 1, false, false, 0),
+                        new GeneratedItemAffix(
+                            "AFFIX_2", "CRITICAL_CHANCE", ItemStatIds.CriticalChance,
+                            4m, 2m, 8m, 0.1m, 1, false, false, 1)
+                    ],
+                    100m,
+                    150m,
+                    220m,
+                    55.15m,
+                    3,
+                    false,
+                    null,
+                    null,
+                    null,
+                    definition.Name,
+                    1),
+                "TEST_HASH",
+                "DROP",
+                Guid.CreateVersion7(),
+                "TEST_SOURCE");
+            item.SelectReforgeSlot("AFFIX_1");
+
+            setup.CharacterItems.Add(item);
+            setup.CharacterEquipment.Add(new CharacterEquipment(characterId, EquipmentSlot.MainHand, itemId));
+            await setup.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        ItemReforgeService service = new(context, new StaticContentSnapshotProvider(content), new FixedTimeProvider(Now));
+
+        ItemReforgePreviewResult result = await service.GetPreviewAsync(
+            accountId, itemId, "AFFIX_2", CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        Assert.Null(result.ErrorCode);
+        Assert.Equal("AFFIX_2", result.Current!.Affixes.Single(affix => affix.SlotKey == "AFFIX_2").SlotKey);
+    }
+
+    [Fact]
     public async Task RollRejectsLockedItemWithoutCreatingAnOperation()
     {
         Guid accountId = Guid.CreateVersion7();

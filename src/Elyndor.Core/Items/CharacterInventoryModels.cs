@@ -177,16 +177,21 @@ public sealed class CharacterItem
     public void SelectReforgeSlot(string slotKey)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(slotKey);
-        if (ReforgeSlotKey is not null
-            && !string.Equals(ReforgeSlotKey, slotKey, StringComparison.Ordinal))
-        {
-            throw new InvalidOperationException("Only one affix slot may be selected for Reforge.");
-        }
         if (!Affixes.Any(affix => string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal)))
             throw new InvalidOperationException("Selected Reforge affix slot does not exist.");
+
+        // Selection belongs to the current pending operation, not to the lifetime of the item.
+        // A later Reforge attempt may choose any other mutable affix slot.
         ReforgeSlotKey = slotKey;
         foreach (ItemRolledAffix affix in Affixes)
             affix.SetReforgeSlot(string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal));
+    }
+
+    public void ClearReforgeSlot()
+    {
+        ReforgeSlotKey = null;
+        foreach (ItemRolledAffix affix in Affixes)
+            affix.SetReforgeSlot(false);
     }
 
     /// <summary>
