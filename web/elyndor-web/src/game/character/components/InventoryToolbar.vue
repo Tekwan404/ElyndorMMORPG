@@ -19,14 +19,21 @@ const sort = defineModel<InventorySort>('sort', { required: true })
 const newOnly = defineModel<boolean>('newOnly', { required: true })
 const view = defineModel<'list' | 'grid' | 'mini'>('view', { required: true })
 
+function nextView(): 'list' | 'grid' | 'mini' {
+  if (view.value === 'grid') return 'list'
+  if (view.value === 'list') return 'mini'
+  return 'grid'
+}
+
 function cycleView(): void {
-  view.value = view.value === 'list' ? 'grid' : view.value === 'grid' ? 'mini' : 'list'
+  view.value = nextView()
 }
 
 function viewLabel(): string {
-  if (view.value === 'list') return 'Компактные иконки'
-  if (view.value === 'grid') return 'Иконки'
-  return 'Крупные иконки'
+  const next = nextView()
+  if (next === 'list') return 'Крупные иконки'
+  if (next === 'grid') return 'Компактные иконки'
+  return 'Иконки'
 }
 defineEmits<{ filters: [] }>()
 const searchId = useId()
@@ -101,12 +108,12 @@ const searchId = useId()
       <button
         type="button"
         class="inventory-browser__view"
-        :data-inventory-view="view"
+        :data-inventory-view="nextView()"
         :aria-label="viewLabel()"
         :title="viewLabel()"
         @click="cycleView"
       >
-        <span aria-hidden="true">{{ view === 'list' ? '▦' : view === 'grid' ? '▦▦' : '☷' }}</span>
+        <span aria-hidden="true">{{ nextView() === 'list' ? '☷' : nextView() === 'grid' ? '▦' : '▦▦' }}</span>
       </button>
     </div>
   </section>
