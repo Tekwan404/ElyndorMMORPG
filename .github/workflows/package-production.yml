@@ -12,16 +12,20 @@ on:
 
 concurrency:
   group: package-production-main
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   package:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -38,30 +42,34 @@ jobs:
         with:
           ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v6
-        with:
-          global-json-file: global.json
+      - name: Select successful main CI run for exact revision
+        id: verified_ci
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRIGGER_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          set -euo pipefail
+          revision="$(git rev-parse HEAD)"
+          if [[ -n "$TRIGGER_RUN_ID" ]]; then
+            run_id="$TRIGGER_RUN_ID"
+          else
+            run_id="$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?branch=main&event=push&status=success&head_sha=$revision&per_page=1" --jq '.workflow_runs[0].id // empty')"
+          fi
+          [[ "$run_id" =~ ^[0-9]+$ ]] || { echo 'No successful main CI run for this revision; run CI first.' >&2; exit 1; }
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$run_id" > .artifacts-ci-run.json
+          jq -e --arg sha "$revision" '.conclusion == "success" and .event == "push" and .head_branch == "main" and .head_sha == $sha' .artifacts-ci-run.json > /dev/null
+          echo "run_id=$run_id" >> "$GITHUB_OUTPUT"
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: '24'
-          cache: npm
-          cache-dependency-path: |
-            web/elyndor-web/package-lock.json
-            web/elyndor-admin/package-lock.json
-
-      - name: Build production release
-        run: ./deploy/build-release.sh artifacts/elyndor-linux-x64.tar.gz
-
-      - name: Upload production release
-        uses: actions/upload-artifact@v7
+      - name: Download tested production release (no rebuild)
+        uses: actions/download-artifact@v8
         with:
           name: elyndor-linux-x64
-          path: artifacts/elyndor-linux-x64.tar.gz
-          if-no-files-found: error
-          retention-days: 7
+          path: artifacts/production
+          github-token: ${{ github.token }}
+          run-id: ${{ steps.verified_ci.outputs.run_id }}
+
+      - name: Validate downloaded revision and checksums
+        run: python3 deploy/release-manifest.py verify artifacts/production "$(git rev-parse HEAD)"
 
       - name: Detect automatic deployment configuration
         id: deploy
@@ -104,18 +112,25 @@ jobs:
         shell: bash
         env:
           PORT: ${{ steps.deploy.outputs.port }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           revision="$(git rev-parse HEAD)"
-          remote_archive="/tmp/elyndor-${revision}.tar.gz"
+          latest="$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)"
+          [[ "$latest" == "$revision" ]] || { echo 'Refusing outdated release: main has advanced.' >&2; exit 1; }
           ssh_args=(-i ~/.ssh/elyndor_deploy -p "$PORT" -o BatchMode=yes)
-          scp_args=(-i ~/.ssh/elyndor_deploy -P "$PORT" -o BatchMode=yes)
-
-          scp "${scp_args[@]}" artifacts/elyndor-linux-x64.tar.gz \
-            "$DEPLOY_USER@$DEPLOY_HOST:$remote_archive"
-
+          # The validated commit is deliberately expanded locally, not by the VPS shell.
+          # shellcheck disable=SC2029
+          remote_tree="$(ssh "${ssh_args[@]}" "$DEPLOY_USER@$DEPLOY_HOST" "mktemp -d /tmp/elyndor-${revision}.XXXXXXXX")"
+          [[ "$remote_tree" =~ ^/tmp/elyndor-${revision}\.[a-zA-Z0-9]+$ ]] || exit 1
+          trap 'ssh "${ssh_args[@]}" "$DEPLOY_USER@$DEPLOY_HOST" "rm -rf -- '\''$remote_tree'\''" || true' EXIT
+          rsync -rltz --checksum --delete --stats --no-perms --no-owner --no-group \
+            --copy-dest=/opt/elyndor/current \
+            -e "ssh -i $HOME/.ssh/elyndor_deploy -p $PORT -o BatchMode=yes" \
+            artifacts/production/ "$DEPLOY_USER@$DEPLOY_HOST:$remote_tree/"
+          # shellcheck disable=SC2029
           ssh "${ssh_args[@]}" "$DEPLOY_USER@$DEPLOY_HOST" \
-            "set +e; sudo -n /usr/local/sbin/elyndor-deploy-release '$remote_archive' '$revision'; status=\$?; if [ \$status -eq 0 ]; then test \"\$(cat /opt/elyndor/current/REVISION)\" = '$revision'; status=\$?; fi; rm -f '$remote_archive'; exit \$status"
+            "sudo -n /usr/local/sbin/elyndor-deploy-release '$remote_tree' '$revision' && test \"\$(cat /opt/elyndor/current/REVISION)\" = '$revision'"
 
           echo "Deployed Elyndor revision $revision to $DEPLOY_HOST"
 

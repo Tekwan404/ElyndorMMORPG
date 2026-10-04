@@ -384,6 +384,13 @@ curl -fsSL \
   https://raw.githubusercontent.com/Tekwan404/ElyndorMMORPG/main/deploy/install-release.sh \
   -o /usr/local/sbin/elyndor-deploy
 
+install -d -m 755 /usr/local/lib/elyndor
+curl -fsSL \
+  https://raw.githubusercontent.com/Tekwan404/ElyndorMMORPG/main/deploy/release-manifest.py \
+  -o /usr/local/lib/elyndor/release-manifest.py
+chmod 644 /usr/local/lib/elyndor/release-manifest.py
+install -m 755 /usr/local/sbin/elyndor-deploy /usr/local/sbin/elyndor-deploy-release
+
 curl -fsSL \
   https://raw.githubusercontent.com/Tekwan404/ElyndorMMORPG/main/deploy/backup-db.sh \
   -o /usr/local/sbin/elyndor-backup
@@ -518,6 +525,10 @@ production VPS
 
 ## 15. GitHub Actions package-production
 
+Автоматическая доставка теперь использует **проверенный artifact CI без повторной
+сборки** и rsync в отдельный staging-каталог. Перед включением обновить helper'ы
+по [инструкции verified artifact / rsync](verified-artifact-rsync.md).
+
 После того как нужные изменения прошли CI и слиты в `main`:
 
 ```text
@@ -530,16 +541,17 @@ GitHub
 → Run workflow
 ```
 
-Workflow создает artifact:
+CI создает artifact, а package-production скачивает его из того же зелёного run:
 
 ```text
 elyndor-linux-x64
 ```
 
-Внутри находится:
+Внутри находится готовый production-каталог:
 
 ```text
-elyndor-linux-x64.tar.gz
+Elyndor.Server.dll + frontend/ + frontend-admin/ + content/
+REVISION + RELEASE-MANIFEST.json
 ```
 
 Artifact не содержит production secrets.
@@ -643,9 +655,9 @@ squash merge -> main
    |
 package-production
    |
-elyndor-linux-x64.tar.gz
+готовый проверенный artifact из CI (без rebuild)
    |
-scp -> VPS
+rsync → staging VPS (только изменившиеся файлы)
    |
 elyndor-backup        (для серьезных обновлений)
    |
@@ -653,6 +665,8 @@ elyndor-deploy
    |
 /api/v1/status ready
 ```
+
+Ниже — ручной archive fallback из `build-release.sh`, не автоматический pipeline.
 
 Команды на Windows:
 
@@ -1397,13 +1411,14 @@ production deploy
 
 ```text
 1. merge проверенного PR в main
-2. Actions -> package-production -> Run workflow
-3. скачать elyndor-linux-x64.tar.gz
-4. scp archive на VPS
-5. elyndor-backup (если update серьезный)
-6. elyndor-deploy archive
-7. проверить /api/v1/status
-8. проверить https://game.elyndor.su
+2. CI собирает и тестирует production artifact
+3. package-production автоматически забирает тот же artifact
+4. rsync передает изменившиеся файлы в staging VPS
+5. helper проверяет checksum, переключает current и проверяет health
+6. проверить https://game.elyndor.su
+
+Backup БД делать ДО merge/deploy серьезного обновления.
+Ручной workflow только повторно доставляет artifact зелёного CI текущего main.
 ```
 
 Команды:
