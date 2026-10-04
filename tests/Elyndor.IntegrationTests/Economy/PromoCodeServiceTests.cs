@@ -41,6 +41,54 @@ public sealed class PromoCodeServiceTests(PostgresFixture postgres) : IAsyncLife
     }
 
     [Fact]
+    public async Task GoldOnlyPromoIgnoresFullInventory()
+    {
+        Guid accountId = await CreateAccountAsync();
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            Guid characterId = await setup.Characters
+                .Where(character => character.AccountId == accountId)
+                .Select(character => character.Id)
+                .SingleAsync();
+            for (var index = 0; index < InventoryCapacity.DefaultCapacity; index++)
+            {
+                setup.CharacterItems.Add(new CharacterItem(
+                    Guid.CreateVersion7(),
+                    characterId,
+                    "REFORGE_STONE",
+                    1,
+                    Now));
+            }
+            await setup.SaveChangesAsync();
+        }
+
+        GameContentPackage content = CreateContent() with
+        {
+            PromoCodes = [new PromoCodeDefinition("GOLD_ONLY", GoldAmount: 10_000_999)]
+        };
+        await using GameDbContext context = postgres.CreateDbContext();
+        PromoCodeService service = new(
+            context,
+            new StaticContentSnapshotProvider(content),
+            new FixedTimeProvider(Now));
+
+        PromoCodeRedemptionResult result = await service.RedeemAsync(
+            accountId,
+            "gold_only",
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(
+            10_000_999,
+            await verify.Characters
+                .Where(character => character.AccountId == accountId)
+                .Select(character => character.Gold)
+                .SingleAsync());
+    }
+
+    [Fact]
     public async Task PromoEquipmentRewardUsesProceduralItemGenerator()
     {
         Guid accountId = await CreateAccountAsync();
