@@ -89,6 +89,71 @@ public sealed class PromoCodeServiceTests(PostgresFixture postgres) : IAsyncLife
     }
 
     [Fact]
+    public async Task ItemPromoUsesSpatialArtifactCapacity()
+    {
+        Guid accountId = await CreateAccountAsync();
+        Guid characterId;
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            characterId = await setup.Characters
+                .Where(character => character.AccountId == accountId)
+                .Select(character => character.Id)
+                .SingleAsync();
+            Guid artifactId = Guid.CreateVersion7();
+            setup.CharacterItems.Add(new CharacterItem(
+                artifactId,
+                characterId,
+                "SPATIAL_EXPANDED_RING",
+                1,
+                Now));
+            setup.CharacterSpatialArtifacts.Add(new CharacterSpatialArtifact(characterId, artifactId));
+            for (var index = 0; index < InventoryCapacity.DefaultCapacity; index++)
+            {
+                setup.CharacterItems.Add(new CharacterItem(
+                    Guid.CreateVersion7(),
+                    characterId,
+                    "RECRUIT_IRON_SWORD",
+                    1,
+                    Now.AddSeconds(index + 1)));
+            }
+            await setup.SaveChangesAsync();
+        }
+
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        package = package with
+        {
+            PromoCodes =
+            [
+                new PromoCodeDefinition(
+                    "ARTIFACT_CAPACITY",
+                    ItemRewards: [new PromoItemRewardDefinition("REFORGE_STONE", 1)])
+            ]
+        };
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        PromoCodeService service = new(
+            context,
+            new StaticContentSnapshotProvider(package),
+            new FixedTimeProvider(Now));
+
+        PromoCodeRedemptionResult result = await service.RedeemAsync(
+            accountId,
+            "artifact_capacity",
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(result.Succeeded);
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(
+            1,
+            await verify.CharacterItems
+                .Where(item => item.CharacterId == characterId
+                    && item.ItemDefinitionId == "REFORGE_STONE")
+                .SumAsync(item => item.Quantity));
+    }
+
+    [Fact]
     public async Task PromoEquipmentRewardUsesProceduralItemGenerator()
     {
         Guid accountId = await CreateAccountAsync();
