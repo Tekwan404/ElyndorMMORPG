@@ -21,27 +21,50 @@ const session = useGameSessionStore()
 
 const isCentralPost = computed(() => props.locationId === 'STARTER_TOWN')
 const boardTitle = computed(() =>
-  isCentralPost.value
-    ? 'Городская гильдия'
-    : 'Экспедиционный пост',
+  isCentralPost.value ? 'Городская гильдия' : 'Экспедиционный пост',
 )
 const boardSubtitle = computed(() =>
   isCentralPost.value
     ? 'Официальные контракты для доступных регионов.'
     : 'Контракты и цели текущей экспедиции.',
 )
-const featuredNpc = computed(() => isCentralPost.value
-  ? { name: 'Селия', role: 'Регистратор', art: gameArt.npc.registrar }
-  : { name: 'Гаррет', role: 'Полевой охотник', art: gameArt.npc.huntMaster })
+const featuredNpc = computed(() =>
+  isCentralPost.value
+    ? { name: 'Селия', role: 'Регистратор', art: gameArt.npc.registrar }
+    : { name: 'Гаррет', role: 'Полевой охотник', art: gameArt.npc.huntMaster },
+)
 const guildNpcs = [
-  { name: 'Селия', role: 'Регистратор', detail: 'Контракты', art: gameArt.npc.registrar, active: true },
-  { name: 'Гаррет', role: 'Мастер охоты', detail: 'Цели и угрозы', art: gameArt.npc.huntMaster, active: false },
-  { name: 'Бран', role: 'Квартирмейстер', detail: 'Снабжение', art: gameArt.npc.quartermaster, active: false },
-  { name: 'Эллира', role: 'Картограф', detail: 'Новые регионы', art: gameArt.npc.cartographer, active: false },
+  {
+    name: 'Селия',
+    role: 'Регистратор',
+    detail: 'Контракты',
+    art: gameArt.npc.registrar,
+    active: true,
+  },
+  {
+    name: 'Гаррет',
+    role: 'Мастер охоты',
+    detail: 'Цели и угрозы',
+    art: gameArt.npc.huntMaster,
+    active: false,
+  },
+  {
+    name: 'Бран',
+    role: 'Квартирмейстер',
+    detail: 'Снабжение',
+    art: gameArt.npc.quartermaster,
+    active: false,
+  },
+  {
+    name: 'Эллира',
+    role: 'Картограф',
+    detail: 'Новые регионы',
+    art: gameArt.npc.cartographer,
+    active: false,
+  },
 ]
 
 type ContractFilter = 'ALL' | 'READY_TO_CLAIM' | 'ACTIVE' | 'AVAILABLE' | 'LOCKED'
-type GuildSection = 'contracts' | 'forge'
 
 const contractFilters: Array<{ id: ContractFilter; label: string }> = [
   { id: 'ALL', label: 'Все' },
@@ -52,48 +75,59 @@ const contractFilters: Array<{ id: ContractFilter; label: string }> = [
 ]
 const activeFilter = ref<ContractFilter>('ALL')
 const selectedContractId = ref<string | null>(null)
-const activeSection = ref<GuildSection>('contracts')
+const forgeOpen = ref(false)
 
 const contracts = computed(() => {
   const quests = session.questJournal?.quests ?? []
   return quests
-    .filter(quest =>
-      quest.type === 'CONTRACT'
-      && (
-        quest.offerLocationId === props.locationId
-        || quest.status === 'ACTIVE'
-        || quest.status === 'READY_TO_CLAIM'
-      ),
+    .filter(
+      (quest) =>
+        quest.type === 'CONTRACT' &&
+        (quest.offerLocationId === props.locationId ||
+          quest.status === 'ACTIVE' ||
+          quest.status === 'READY_TO_CLAIM'),
     )
-    .sort((left, right) => statusPriority(left) - statusPriority(right)
-      || left.requiredLevel - right.requiredLevel)
+    .sort(
+      (left, right) =>
+        statusPriority(left) - statusPriority(right) || left.requiredLevel - right.requiredLevel,
+    )
 })
 
-const filteredContracts = computed(() => activeFilter.value === 'ALL'
-  ? contracts.value
-  : contracts.value.filter(contract => contract.status === activeFilter.value))
-
-const selectedContract = computed(() =>
-  filteredContracts.value.find(contract => contract.id === selectedContractId.value)
-  ?? filteredContracts.value[0]
-  ?? null,
+const filteredContracts = computed(() =>
+  activeFilter.value === 'ALL'
+    ? contracts.value
+    : contracts.value.filter((contract) => contract.status === activeFilter.value),
 )
 
-watch(() => props.open, (open) => {
-  if (open) {
-    activeSection.value = 'contracts'
-    void session.refreshQuestJournal()
-  }
-})
+const selectedContract = computed(
+  () =>
+    filteredContracts.value.find((contract) => contract.id === selectedContractId.value) ??
+    filteredContracts.value[0] ??
+    null,
+)
 
-watch(contracts, availableContracts => {
-  if (!availableContracts.some(contract => contract.id === selectedContractId.value)) {
-    selectedContractId.value = availableContracts[0]?.id ?? null
-  }
-}, { immediate: true })
+watch(
+  () => props.open,
+  (open) => {
+    if (open) {
+      forgeOpen.value = false
+      void session.refreshQuestJournal()
+    }
+  },
+)
+
+watch(
+  contracts,
+  (availableContracts) => {
+    if (!availableContracts.some((contract) => contract.id === selectedContractId.value)) {
+      selectedContractId.value = availableContracts[0]?.id ?? null
+    }
+  },
+  { immediate: true },
+)
 
 watch(activeFilter, () => {
-  if (!filteredContracts.value.some(contract => contract.id === selectedContractId.value)) {
+  if (!filteredContracts.value.some((contract) => contract.id === selectedContractId.value)) {
     selectedContractId.value = filteredContracts.value[0]?.id ?? null
   }
 })
@@ -148,14 +182,17 @@ async function claim(quest: Quest): Promise<void> {
 </script>
 
 <template>
-  <UIModal :open="open" title="Гильдия авантюристов" @close="emit('close')">
+  <ForgeView v-if="open && forgeOpen" @close="forgeOpen = false" />
+  <UIModal :open="open && !forgeOpen" title="Гильдия авантюристов" @close="emit('close')">
     <section class="guild-board" data-adventurer-guild-board>
       <header class="guild-board__header">
         <div class="guild-board__portrait">
           <img :src="featuredNpc.art" :alt="featuredNpc.name" />
         </div>
         <div>
-          <small>{{ isCentralPost ? 'ГОРОДСКОЕ ПРЕДСТАВИТЕЛЬСТВО' : 'ПОЛЕВОЕ ПРЕДСТАВИТЕЛЬСТВО' }}</small>
+          <small>{{
+            isCentralPost ? 'ГОРОДСКОЕ ПРЕДСТАВИТЕЛЬСТВО' : 'ПОЛЕВОЕ ПРЕДСТАВИТЕЛЬСТВО'
+          }}</small>
           <h2>{{ boardTitle }}</h2>
           <p>{{ featuredNpc.name }} · {{ featuredNpc.role }}. {{ boardSubtitle }}</p>
         </div>
@@ -169,9 +206,8 @@ async function claim(quest: Quest): Promise<void> {
         <button
           type="button"
           data-guild-section="contracts"
-          :class="{ 'guild-board__section--active': activeSection === 'contracts' }"
-          :aria-current="activeSection === 'contracts' ? 'page' : undefined"
-          @click="activeSection = 'contracts'"
+          class="guild-board__section--active"
+          aria-current="page"
         >
           Контракты
         </button>
@@ -179,16 +215,12 @@ async function claim(quest: Quest): Promise<void> {
           v-if="isCentralPost"
           type="button"
           data-guild-section="forge"
-          :class="{ 'guild-board__section--active': activeSection === 'forge' }"
-          :aria-current="activeSection === 'forge' ? 'page' : undefined"
-          @click="activeSection = 'forge'"
+          @click="forgeOpen = true"
         >
           Кузница
         </button>
       </nav>
 
-      <ForgeView v-if="activeSection === 'forge'" />
-      <template v-else>
       <section class="guild-board__people" aria-label="Представители гильдии">
         <header class="guild-staff-heading">
           <div>
@@ -220,8 +252,13 @@ async function claim(quest: Quest): Promise<void> {
       <section class="registrar">
         <div>
           <small>РЕГИСТРАТОР</small>
-          <strong>{{ isCentralPost ? 'Стойка регистрации контрактов' : 'Полевой журнал контрактов' }}</strong>
-          <p>Контракты — официально зарегистрированная работа. Недоступные заказы открываются по мере развития героя и истории.</p>
+          <strong>{{
+            isCentralPost ? 'Стойка регистрации контрактов' : 'Полевой журнал контрактов'
+          }}</strong>
+          <p>
+            Контракты — официально зарегистрированная работа. Недоступные заказы открываются по мере
+            развития героя и истории.
+          </p>
         </div>
         <span>{{ contracts.length }} заказов</span>
       </section>
@@ -264,7 +301,13 @@ async function claim(quest: Quest): Promise<void> {
             @click="selectedContractId = contract.id"
           >
             <span class="contract-tab__seal" aria-hidden="true">
-              <IconGenerator :config="{ id: `guild-contract-${contract.id}`, glyph: contractGlyph(contract), category: 'utility' }" />
+              <IconGenerator
+                :config="{
+                  id: `guild-contract-${contract.id}`,
+                  glyph: contractGlyph(contract),
+                  category: 'utility',
+                }"
+              />
             </span>
             <span class="contract-tab__copy">
               <small>№{{ contract.contractNumber ?? contract.id }}</small>
@@ -290,8 +333,8 @@ async function claim(quest: Quest): Promise<void> {
           <header class="guild-contract__heading">
             <div>
               <small>
-                КОНТРАКТ №{{ selectedContract.contractNumber ?? selectedContract.id }}
-                · {{ statusLabel(selectedContract) }}
+                КОНТРАКТ №{{ selectedContract.contractNumber ?? selectedContract.id }} ·
+                {{ statusLabel(selectedContract) }}
               </small>
               <h3>{{ contractTitle(selectedContract) }}</h3>
             </div>
@@ -317,7 +360,11 @@ async function claim(quest: Quest): Promise<void> {
 
           <div class="guild-contract__reward">
             <small>НАГРАДА</small>
-            <strong>+{{ selectedContract.rewardXp }} опыта · +{{ formatMoney(selectedContract.rewardGold) }}</strong>
+            <strong
+              >+{{ selectedContract.rewardXp }} опыта · +{{
+                formatMoney(selectedContract.rewardGold)
+              }}</strong
+            >
             <span v-if="selectedContract.unlockLocationId">Открывает новую область</span>
           </div>
 
@@ -341,7 +388,10 @@ async function claim(quest: Quest): Promise<void> {
             <span v-else-if="selectedContract.status === 'ACTIVE'" class="guild-contract__state">
               Контракт зарегистрирован · цель в работе
             </span>
-            <span v-else-if="selectedContract.status === 'LOCKED'" class="guild-contract__state guild-contract__state--locked">
+            <span
+              v-else-if="selectedContract.status === 'LOCKED'"
+              class="guild-contract__state guild-contract__state--locked"
+            >
               {{ lockedReason(selectedContract) }}
             </span>
             <span v-else class="guild-contract__state guild-contract__state--done">
@@ -355,52 +405,275 @@ async function claim(quest: Quest): Promise<void> {
         <strong>Новых контрактов нет</strong>
         <p>В этом представительстве сейчас нет работы, доступной для регистрации.</p>
       </div>
-      </template>
     </section>
   </UIModal>
 </template>
 
 <style scoped>
-.guild-board{display:grid;gap:var(--ui-space-3)}
-.guild-board__sections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;padding:4px;border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:rgb(5 8 13 / 70%)}
-.guild-board__sections--single{grid-template-columns:1fr}
-.guild-board__sections button{min-height:var(--ui-touch-target);border:1px solid transparent;border-radius:calc(var(--ui-radius-md) - 3px);background:transparent;color:var(--ui-color-text-muted);font:700 .66rem var(--ui-font-display)}
-.guild-board__sections button.guild-board__section--active{border-color:rgb(232 200 102 / 42%);background:linear-gradient(135deg,rgb(232 200 102 / 14%),rgb(232 200 102 / 4%));color:var(--ui-color-gold)}
-.guild-board__header{display:grid;grid-template-columns:3.4rem minmax(0,1fr);gap:var(--ui-space-3);align-items:center;padding:var(--ui-space-3);border:1px solid rgb(232 200 102 / 18%);border-radius:var(--ui-radius-md);background:linear-gradient(135deg,rgb(232 200 102 / 8%),transparent 58%),var(--ui-color-surface-1)}
-.guild-board__portrait{display:grid;width:3.4rem;height:3.4rem;place-items:center;overflow:hidden;border:1px solid rgb(232 200 102 / 46%);border-radius:var(--ui-radius-md);background:rgb(5 8 13 / 88%)}
-.guild-board__portrait img{width:145%;height:145%;object-fit:cover;object-position:50% 18%;transform:translateY(8%)}
-.guild-board__header small,.registrar small,.guild-contract small{color:var(--ui-color-gold);font-size:.56rem;font-weight:800;letter-spacing:.08em}
-.guild-board__header h2{margin:.15rem 0 0;font-family:var(--ui-font-display);font-size:var(--ui-font-size-xl)}
-.guild-board__header p,.registrar p,.guild-board__empty p{margin:.3rem 0 0;color:var(--ui-color-text-muted);font-size:.68rem;line-height:1.45}
-.guild-board__people{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
-.guild-npc{display:grid;grid-template-columns:2.35rem minmax(0,1fr);align-items:center;gap:7px;min-width:0;padding:6px;border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-sm);background:rgb(8 12 18 / 90%);opacity:.68}
-.guild-npc--active{border-color:rgb(232 200 102 / 42%);background:linear-gradient(90deg,rgb(232 200 102 / 10%),rgb(8 12 18 / 92%));opacity:1}
-.guild-npc img{width:2.35rem;height:2.35rem;overflow:hidden;border:1px solid var(--ui-color-border-strong);border-radius:var(--ui-radius-sm);object-fit:cover;object-position:50% 16%}
-.guild-npc div{display:grid;min-width:0;gap:1px}
-.guild-npc strong{overflow:hidden;font-family:var(--ui-font-display);font-size:.65rem;text-overflow:ellipsis;white-space:nowrap}
-.guild-npc small,.guild-npc span{overflow:hidden;color:var(--ui-color-text-muted);font-size:.49rem;text-overflow:ellipsis;white-space:nowrap}
-.guild-npc span{color:var(--ui-color-gold-muted)}
-.registrar{display:flex;align-items:center;justify-content:space-between;gap:var(--ui-space-3);padding:var(--ui-space-3);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:var(--ui-color-surface-1)}
-.registrar>div{display:grid;gap:2px}.registrar>span{flex:0 0 auto;color:var(--ui-color-text-muted);font-size:.62rem}
-.contract-list{display:grid;gap:var(--ui-space-2)}
-.guild-contract{display:grid;gap:var(--ui-space-3);padding:var(--ui-space-3);border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-md);background:linear-gradient(160deg,rgb(18 22 32 / 100%),rgb(7 10 17 / 100%))}
-.guild-contract--ready{border-color:color-mix(in srgb,var(--ui-color-success) 42%,var(--ui-color-border))}
-.guild-contract__heading{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--ui-space-3)}
-.guild-contract__heading h3{margin:.15rem 0 0;font-family:var(--ui-font-display);font-size:var(--ui-font-size-lg)}
-.guild-contract__heading>span{padding:3px 6px;border:1px solid var(--ui-color-border);border-radius:var(--ui-radius-round);color:var(--ui-color-text-muted);font-size:.58rem;white-space:nowrap}
-.guild-contract__meta{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;margin:0;overflow:hidden;border:1px solid rgb(255 255 255 / 6%);border-radius:var(--ui-radius-sm);background:rgb(255 255 255 / 6%)}
-.guild-contract__meta>div{display:grid;gap:2px;padding:7px;background:rgb(5 8 14 / 92%)}
-.guild-contract__meta dt{color:var(--ui-color-text-muted);font-size:.52rem;text-transform:uppercase}
-.guild-contract__meta dd{margin:0;font-size:.64rem}
-.guild-contract__description{margin:0;color:var(--ui-color-text-secondary);font-size:.7rem;line-height:1.5}
-.guild-contract__reward{display:grid;gap:2px;padding-top:var(--ui-space-2);border-top:1px solid var(--ui-color-border)}
-.guild-contract__reward strong{color:#ddd3a5;font-size:.72rem}.guild-contract__reward span{color:var(--ui-color-text-muted);font-size:.6rem}
-.guild-contract footer{display:flex;justify-content:flex-end}
-.guild-contract__state{padding:6px 9px;border:1px solid rgb(146 136 255 / 22%);border-radius:var(--ui-radius-round);color:#c8c4ff;font-size:.62rem}
-.guild-contract__state--locked{border-color:rgb(232 200 102 / 18%);color:#b9aa7d}
-.guild-contract__state--done{border-color:rgb(79 185 150 / 20%);color:#84d5bb}
-.guild-board__empty{padding:var(--ui-space-5);border:1px dashed var(--ui-color-border);border-radius:var(--ui-radius-md);text-align:center}
-@media(max-width:520px){.guild-contract__meta{grid-template-columns:1fr}.registrar{align-items:flex-start;flex-direction:column}}
+.guild-board {
+  display: grid;
+  gap: var(--ui-space-3);
+}
+.guild-board__sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  padding: 4px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
+  background: rgb(5 8 13 / 70%);
+}
+.guild-board__sections--single {
+  grid-template-columns: 1fr;
+}
+.guild-board__sections button {
+  min-height: var(--ui-touch-target);
+  border: 1px solid transparent;
+  border-radius: calc(var(--ui-radius-md) - 3px);
+  background: transparent;
+  color: var(--ui-color-text-muted);
+  font: 700 0.66rem var(--ui-font-display);
+}
+.guild-board__sections button.guild-board__section--active {
+  border-color: rgb(232 200 102 / 42%);
+  background: linear-gradient(135deg, rgb(232 200 102 / 14%), rgb(232 200 102 / 4%));
+  color: var(--ui-color-gold);
+}
+.guild-board__header {
+  display: grid;
+  grid-template-columns: 3.4rem minmax(0, 1fr);
+  gap: var(--ui-space-3);
+  align-items: center;
+  padding: var(--ui-space-3);
+  border: 1px solid rgb(232 200 102 / 18%);
+  border-radius: var(--ui-radius-md);
+  background:
+    linear-gradient(135deg, rgb(232 200 102 / 8%), transparent 58%), var(--ui-color-surface-1);
+}
+.guild-board__portrait {
+  display: grid;
+  width: 3.4rem;
+  height: 3.4rem;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgb(232 200 102 / 46%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(5 8 13 / 88%);
+}
+.guild-board__portrait img {
+  width: 145%;
+  height: 145%;
+  object-fit: cover;
+  object-position: 50% 18%;
+  transform: translateY(8%);
+}
+.guild-board__header small,
+.registrar small,
+.guild-contract small {
+  color: var(--ui-color-gold);
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.guild-board__header h2 {
+  margin: 0.15rem 0 0;
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-font-size-xl);
+}
+.guild-board__header p,
+.registrar p,
+.guild-board__empty p {
+  margin: 0.3rem 0 0;
+  color: var(--ui-color-text-muted);
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+.guild-board__people {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+.guild-npc {
+  display: grid;
+  grid-template-columns: 2.35rem minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(8 12 18 / 90%);
+  opacity: 0.68;
+}
+.guild-npc--active {
+  border-color: rgb(232 200 102 / 42%);
+  background: linear-gradient(90deg, rgb(232 200 102 / 10%), rgb(8 12 18 / 92%));
+  opacity: 1;
+}
+.guild-npc img {
+  width: 2.35rem;
+  height: 2.35rem;
+  overflow: hidden;
+  border: 1px solid var(--ui-color-border-strong);
+  border-radius: var(--ui-radius-sm);
+  object-fit: cover;
+  object-position: 50% 16%;
+}
+.guild-npc div {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+.guild-npc strong {
+  overflow: hidden;
+  font-family: var(--ui-font-display);
+  font-size: 0.65rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.guild-npc small,
+.guild-npc span {
+  overflow: hidden;
+  color: var(--ui-color-text-muted);
+  font-size: 0.49rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.guild-npc span {
+  color: var(--ui-color-gold-muted);
+}
+.registrar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-3);
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
+  background: var(--ui-color-surface-1);
+}
+.registrar > div {
+  display: grid;
+  gap: 2px;
+}
+.registrar > span {
+  flex: 0 0 auto;
+  color: var(--ui-color-text-muted);
+  font-size: 0.62rem;
+}
+.contract-list {
+  display: grid;
+  gap: var(--ui-space-2);
+}
+.guild-contract {
+  display: grid;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-3);
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
+  background: linear-gradient(160deg, rgb(18 22 32 / 100%), rgb(7 10 17 / 100%));
+}
+.guild-contract--ready {
+  border-color: color-mix(in srgb, var(--ui-color-success) 42%, var(--ui-color-border));
+}
+.guild-contract__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--ui-space-3);
+}
+.guild-contract__heading h3 {
+  margin: 0.15rem 0 0;
+  font-family: var(--ui-font-display);
+  font-size: var(--ui-font-size-lg);
+}
+.guild-contract__heading > span {
+  padding: 3px 6px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-round);
+  color: var(--ui-color-text-muted);
+  font-size: 0.58rem;
+  white-space: nowrap;
+}
+.guild-contract__meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgb(255 255 255 / 6%);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(255 255 255 / 6%);
+}
+.guild-contract__meta > div {
+  display: grid;
+  gap: 2px;
+  padding: 7px;
+  background: rgb(5 8 14 / 92%);
+}
+.guild-contract__meta dt {
+  color: var(--ui-color-text-muted);
+  font-size: 0.52rem;
+  text-transform: uppercase;
+}
+.guild-contract__meta dd {
+  margin: 0;
+  font-size: 0.64rem;
+}
+.guild-contract__description {
+  margin: 0;
+  color: var(--ui-color-text-secondary);
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+.guild-contract__reward {
+  display: grid;
+  gap: 2px;
+  padding-top: var(--ui-space-2);
+  border-top: 1px solid var(--ui-color-border);
+}
+.guild-contract__reward strong {
+  color: #ddd3a5;
+  font-size: 0.72rem;
+}
+.guild-contract__reward span {
+  color: var(--ui-color-text-muted);
+  font-size: 0.6rem;
+}
+.guild-contract footer {
+  display: flex;
+  justify-content: flex-end;
+}
+.guild-contract__state {
+  padding: 6px 9px;
+  border: 1px solid rgb(146 136 255 / 22%);
+  border-radius: var(--ui-radius-round);
+  color: #c8c4ff;
+  font-size: 0.62rem;
+}
+.guild-contract__state--locked {
+  border-color: rgb(232 200 102 / 18%);
+  color: #b9aa7d;
+}
+.guild-contract__state--done {
+  border-color: rgb(79 185 150 / 20%);
+  color: #84d5bb;
+}
+.guild-board__empty {
+  padding: var(--ui-space-5);
+  border: 1px dashed var(--ui-color-border);
+  border-radius: var(--ui-radius-md);
+  text-align: center;
+}
+@media (max-width: 520px) {
+  .guild-contract__meta {
+    grid-template-columns: 1fr;
+  }
+  .registrar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
 
 .guild-board__people {
   display: grid;
@@ -426,22 +699,22 @@ async function claim(quest: Quest): Promise<void> {
 .guild-staff-heading small,
 .contract-board__heading small {
   color: var(--ui-color-gold);
-  font-size: .55rem;
+  font-size: 0.55rem;
   font-weight: 800;
-  letter-spacing: .1em;
+  letter-spacing: 0.1em;
 }
 
 .guild-staff-heading strong,
 .contract-board__heading strong {
   font-family: var(--ui-font-display);
-  font-size: .76rem;
+  font-size: 0.76rem;
 }
 
 .guild-staff-heading > span,
 .contract-board__heading > span {
   flex: 0 0 auto;
   color: var(--ui-color-text-muted);
-  font-size: .56rem;
+  font-size: 0.56rem;
 }
 
 .guild-staff-rail,
@@ -466,7 +739,7 @@ async function claim(quest: Quest): Promise<void> {
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-sm);
   background: linear-gradient(135deg, rgb(22 25 34 / 94%), rgb(7 10 16 / 94%));
-  opacity: .72;
+  opacity: 0.72;
 }
 
 .guild-npc--active {
@@ -484,7 +757,8 @@ async function claim(quest: Quest): Promise<void> {
   overflow: hidden;
   border: 1px solid var(--ui-color-border-strong);
   border-radius: var(--ui-radius-sm);
-  background: radial-gradient(circle at 50% 24%, rgb(170 163 255 / 16%), transparent 65%), rgb(4 7 12 / 92%);
+  background:
+    radial-gradient(circle at 50% 24%, rgb(170 163 255 / 16%), transparent 65%), rgb(4 7 12 / 92%);
 }
 
 .guild-npc__portrait img {
@@ -500,12 +774,12 @@ async function claim(quest: Quest): Promise<void> {
 }
 
 .guild-npc strong {
-  font-size: .68rem;
+  font-size: 0.68rem;
 }
 
 .guild-npc small,
 .guild-npc span {
-  font-size: .5rem;
+  font-size: 0.5rem;
 }
 
 .contract-board {
@@ -514,9 +788,7 @@ async function claim(quest: Quest): Promise<void> {
   padding: var(--ui-space-3);
   border: 1px solid rgb(232 200 102 / 24%);
   border-radius: var(--ui-radius-md);
-  background:
-    linear-gradient(145deg, rgb(232 200 102 / 7%), transparent 42%),
-    rgb(6 9 15 / 92%);
+  background: linear-gradient(145deg, rgb(232 200 102 / 7%), transparent 42%), rgb(6 9 15 / 92%);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%);
 }
 
@@ -585,7 +857,7 @@ async function claim(quest: Quest): Promise<void> {
   border-radius: 50%;
   background: rgb(232 200 102 / 8%);
   color: var(--ui-color-gold);
-  font-size: .95rem;
+  font-size: 0.95rem;
 }
 
 .contract-tab--ready .contract-tab__seal {
@@ -602,7 +874,7 @@ async function claim(quest: Quest): Promise<void> {
 .contract-tab__copy small {
   overflow: hidden;
   color: var(--ui-color-text-muted);
-  font-size: .48rem;
+  font-size: 0.48rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -611,23 +883,23 @@ async function claim(quest: Quest): Promise<void> {
   overflow: hidden;
   color: var(--ui-color-text-primary);
   font-family: var(--ui-font-display);
-  font-size: .68rem;
+  font-size: 0.68rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .contract-tab__copy em {
   color: var(--ui-color-gold-muted);
-  font-size: .49rem;
+  font-size: 0.49rem;
   font-style: normal;
   font-weight: 800;
-  letter-spacing: .04em;
+  letter-spacing: 0.04em;
 }
 
 .contract-tab > b {
   align-self: start;
   color: var(--ui-color-text-muted);
-  font-size: .5rem;
+  font-size: 0.5rem;
   font-weight: 700;
   white-space: nowrap;
 }
@@ -650,7 +922,7 @@ async function claim(quest: Quest): Promise<void> {
 
 .guild-board__header p {
   max-width: 29rem;
-  font-size: .64rem;
+  font-size: 0.64rem;
 }
 
 .guild-board__empty--filter {

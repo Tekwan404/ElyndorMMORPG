@@ -2,7 +2,7 @@
 import { useId, useTemplateRef } from 'vue'
 import { useModalLayer } from '@/ui/composables/useModalLayer'
 
-const props = defineProps<{ open: boolean; title: string; busy?: boolean }>()
+const props = defineProps<{ open: boolean; title: string; busy?: boolean; fullscreen?: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 const titleId = useId()
 
@@ -15,10 +15,25 @@ const { layerIndex } = useModalLayer({ open: () => props.open, root: dialog, clo
 
 <template>
   <Teleport to="body">
-    <div v-if="open" class="ui-modal" :style="{ zIndex: `calc(var(--ui-z-modal) + ${layerIndex})` }" @click.self="close">
-      <section ref="dialog" class="ui-modal__dialog" role="dialog" aria-modal="true" :aria-labelledby="titleId" :aria-busy="busy || undefined" tabindex="-1">
+    <div
+      v-if="open"
+      class="ui-modal"
+      :class="{ 'ui-modal--fullscreen': fullscreen }"
+      :style="{ zIndex: `calc(var(--ui-z-modal) + ${layerIndex})` }"
+      @click.self="close"
+    >
+      <section
+        ref="dialog"
+        class="ui-modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        :aria-labelledby="titleId"
+        :aria-busy="busy || undefined"
+        tabindex="-1"
+      >
         <header class="ui-modal__header">
           <h2 :id="titleId">{{ title }}</h2>
+          <slot name="header-extra" />
           <button
             data-modal-close
             class="ui-modal__close"
@@ -50,14 +65,16 @@ const { layerIndex } = useModalLayer({ open: () => props.open, root: dialog, clo
 }
 .ui-modal__dialog {
   width: min(100%, var(--ui-content-width));
-  max-height: calc(var(--ui-viewport-height) - var(--ui-safe-area-top) - var(--ui-safe-area-bottom) - var(--ui-space-7));
+  max-height: calc(
+    var(--ui-viewport-height) - var(--ui-safe-area-top) - var(--ui-safe-area-bottom) -
+      var(--ui-space-7)
+  );
   margin-inline: auto;
   overflow: auto;
   overscroll-behavior: contain;
   border: 1px solid rgb(205 177 113 / 42%);
   border-radius: var(--ui-radius-lg);
-  background:
-    linear-gradient(180deg, rgb(20 25 31 / 98%), rgb(6 9 14 / 99%));
+  background: linear-gradient(180deg, rgb(20 25 31 / 98%), rgb(6 9 14 / 99%));
   box-shadow: var(--ui-shadow-modal);
 }
 .ui-modal__header {
@@ -103,8 +120,29 @@ const { layerIndex } = useModalLayer({ open: () => props.open, root: dialog, clo
   padding: var(--ui-space-4);
   border-top: 1px solid var(--ui-color-border);
 }
-.ui-modal__close:focus-visible { outline: 2px solid var(--ui-color-focus); outline-offset: 2px; }
-.ui-modal__close:disabled { opacity: .5; }
+.ui-modal__close:focus-visible {
+  outline: 2px solid var(--ui-color-focus);
+  outline-offset: 2px;
+}
+.ui-modal__close:disabled {
+  opacity: 0.5;
+}
+.ui-modal--fullscreen {
+  align-items: stretch;
+  padding: var(--ui-safe-area-top) 0 var(--ui-safe-area-bottom);
+}
+.ui-modal--fullscreen .ui-modal__dialog {
+  width: min(100%, 1100px);
+  max-height: none;
+  height: 100%;
+  border-radius: 0;
+}
+.ui-modal--fullscreen .ui-modal__header {
+  flex-wrap: wrap;
+}
+.ui-modal--fullscreen .ui-modal__header h2 {
+  margin-right: auto;
+}
 @media (min-width: 540px) {
   .ui-modal {
     align-items: center;

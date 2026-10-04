@@ -2,7 +2,12 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { BootstrapSnapshot, CombatActorSnapshot, CombatSnapshot, WorldEncounter } from '@/api/contracts'
+import type {
+  BootstrapSnapshot,
+  CombatActorSnapshot,
+  CombatSnapshot,
+  WorldEncounter,
+} from '@/api/contracts'
 import WorldView from '@/game/world/views/WorldView.vue'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -65,7 +70,8 @@ describe('WorldView', () => {
       global: {
         stubs: {
           LocationOverview: {
-            template: '<section data-location-overview><div data-location-hero /><slot name="primary-actions" /><div data-location-residents /></section>',
+            template:
+              '<section data-location-overview><div data-location-hero /><slot name="primary-actions" /><div data-location-residents /></section>',
           },
           DungeonLocationCard: {
             props: ['dungeonId'],
@@ -73,7 +79,8 @@ describe('WorldView', () => {
           },
           WorldViewLegacy: {
             props: ['showDungeonLocationCard'],
-            template: '<div data-world-systems :data-show-dungeon-card="String(showDungeonLocationCard)" />',
+            template:
+              '<div data-world-systems :data-show-dungeon-card="String(showDungeonLocationCard)" />',
           },
         },
       },
@@ -84,8 +91,12 @@ describe('WorldView', () => {
     const overview = wrapper.get('[data-location-overview]').element
     const actions = wrapper.get('[data-dungeon-location-card]').element
     const residents = wrapper.get('[data-location-residents]').element
-    expect(overview.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_CONTAINED_BY).not.toBe(0)
-    expect(actions.compareDocumentPosition(residents) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(0)
+    expect(
+      overview.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_CONTAINED_BY,
+    ).not.toBe(0)
+    expect(actions.compareDocumentPosition(residents) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(
+      0,
+    )
   })
 
   it('offers automatic hunting only from the eligible current location', async () => {
@@ -106,18 +117,20 @@ describe('WorldView', () => {
   it('does not show completed contracts in the current location', () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot('WHISPERING_FOREST')
-    store.snapshot.world!.contracts = [{
-      id: 'CONTRACT_DONE',
-      displayName: 'Завершённый контракт',
-      description: 'Этот контракт уже выполнен.',
-      requiredLevel: 1,
-      targetMonsterId: 'FOREST_WOLF_L1',
-      unlockLocationId: 'DEEP_FOREST',
-      status: 'COMPLETED',
-      offerLocationId: 'WHISPERING_FOREST',
-      rewardXp: 10,
-      rewardGold: 5,
-    }]
+    store.snapshot.world!.contracts = [
+      {
+        id: 'CONTRACT_DONE',
+        displayName: 'Завершённый контракт',
+        description: 'Этот контракт уже выполнен.',
+        requiredLevel: 1,
+        targetMonsterId: 'FOREST_WOLF_L1',
+        unlockLocationId: 'DEEP_FOREST',
+        status: 'COMPLETED',
+        offerLocationId: 'WHISPERING_FOREST',
+        rewardXp: 10,
+        rewardGold: 5,
+      },
+    ]
 
     const wrapper = mount(WorldView)
 
@@ -137,7 +150,9 @@ describe('WorldView', () => {
     await flushPromises()
 
     expect(wrapper.get('[data-explore]').attributes('disabled')).toBeDefined()
-    expect(wrapper.get('[data-world-error][role="alert"]').text()).toContain('В этой области сейчас не удалось найти противника.')
+    expect(wrapper.get('[data-world-error][role="alert"]').text()).toContain(
+      'В этой области сейчас не удалось найти противника.',
+    )
   })
 
   it('surfaces available story from the current location instead of the journal', async () => {
@@ -177,7 +192,9 @@ describe('WorldView', () => {
     const board = document.body.querySelector('[data-adventurer-guild-board]')
     expect(board?.textContent).toContain('КОНТРАКТ №BF-014')
     expect(board?.textContent).toContain('Заказчик')
-    const acceptButton = document.body.querySelector('[data-guild-accept-contract]') as HTMLButtonElement
+    const acceptButton = document.body.querySelector(
+      '[data-guild-accept-contract]',
+    ) as HTMLButtonElement
     acceptButton.click()
     await flushPromises()
     expect(acceptQuest).toHaveBeenCalledWith('CONTRACT_BROODMOTHER_GATE')
@@ -199,6 +216,11 @@ describe('WorldView', () => {
     await flushPromises()
 
     expect(document.body.querySelector('[data-forge-workshop]')).not.toBeNull()
+    expect(document.body.querySelector('[data-adventurer-guild-board]')).toBeNull()
+    document.body.querySelector<HTMLButtonElement>('[data-modal-close]')?.click()
+    await flushPromises()
+    expect(document.body.querySelector('[data-forge-workshop]')).toBeNull()
+    expect(document.body.querySelector('[data-adventurer-guild-board]')).not.toBeNull()
     wrapper.unmount()
   })
 
@@ -238,16 +260,18 @@ describe('WorldView', () => {
     session.snapshot = snapshot('STARTER_TOWN')
     const combat = useCombatSessionStore()
     const pendingCombat = combatSnapshot()
-    pendingCombat.participantRoster = [{
-      accountId: session.snapshot.accountId,
-      characterId: session.snapshot.character!.id,
-      actorId: pendingCombat.player.actorId,
-      status: 'Rostered',
-      rosteredAtUtc: '2026-09-01T12:00:00Z',
-      joinedAtUtc: null,
-      fledAtUtc: null,
-      diedAtUtc: null,
-    }]
+    pendingCombat.participantRoster = [
+      {
+        accountId: session.snapshot.accountId,
+        characterId: session.snapshot.character!.id,
+        actorId: pendingCombat.player.actorId,
+        status: 'Rostered',
+        rosteredAtUtc: '2026-09-01T12:00:00Z',
+        joinedAtUtc: null,
+        fledAtUtc: null,
+        diedAtUtc: null,
+      },
+    ]
     combat.snapshot = pendingCombat
     vi.spyOn(combat, 'connect').mockResolvedValue(undefined)
     vi.spyOn(combat, 'resume').mockResolvedValue(true)
@@ -412,15 +436,17 @@ function worldQuest(
     requiredLevel: 1,
     offerLocationId,
     status,
-    objectives: [{
-      id: 'KILL',
-      type: 'KillMonster',
-      targetId: 'FOREST_WOLF_L1',
-      currentCount: 0,
-      requiredCount: 1,
-      completed: false,
-      consumeOnClaim: false,
-    }],
+    objectives: [
+      {
+        id: 'KILL',
+        type: 'KillMonster',
+        targetId: 'FOREST_WOLF_L1',
+        currentCount: 0,
+        requiredCount: 1,
+        completed: false,
+        consumeOnClaim: false,
+      },
+    ],
     rewardXp: 100,
     rewardGold: 20,
     rewardItems: [],
