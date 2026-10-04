@@ -1,5 +1,6 @@
 using Elyndor.Core.Content;
 using Elyndor.Core.Economy;
+using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
@@ -99,6 +100,62 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
                 row.EnhancementLevel, rolledStats, affixesByItem.GetValueOrDefault(row.lot.ItemId) ?? [],
                 Money(row.lot.Price), row.lot.ExpiresAt);
         }).ToArray();
+    }
+
+    public async Task<AuctionSellableItemView[]> SellableItemsAsync(Guid account, CancellationToken ct)
+    {
+        var owner = await transactions.CharacterIdAsync(account, ct);
+        if (owner is null) return [];
+        var definitions = content.GetCurrent().Package.Items?.ToDictionary(x => x.Id, StringComparer.Ordinal);
+        if (definitions is null) return [];
+
+        var rows = await db.CharacterItems.AsNoTracking()
+            .Where(item => item.CharacterId == owner
+                && item.Storage == "INVENTORY"
+                && item.TransactionLockId == null
+                && !item.IsLocked
+                && item.BindState == ItemBindStates.Unbound
+                && !db.CharacterEquipment.Any(equipment => equipment.CharacterItemId == item.Id)
+                && !db.CharacterSpatialArtifacts.Any(artifact => artifact.CharacterItemId == item.Id))
+            .OrderBy(item => item.ItemDefinitionId)
+            .ThenBy(item => item.Id)
+            .Select(item => new
+            {
+                item.Id,
+                item.ItemDefinitionId,
+                item.Quantity,
+                item.GeneratedDisplayName,
+                item.ItemLevel,
+                item.ActualItemPower,
+                item.RollQuality,
+                item.Stars,
+                item.IsPerfect,
+                item.EnhancementLevel
+            })
+            .ToArrayAsync(ct);
+
+        return rows
+            .Where(row => definitions.TryGetValue(row.ItemDefinitionId, out var definition)
+                && definition.TradePolicyId is null or "ORDINARY_TRADEABLE")
+            .Select(row =>
+            {
+                var definition = definitions[row.ItemDefinitionId];
+                return new AuctionSellableItemView(
+                    row.Id,
+                    row.ItemDefinitionId,
+                    string.IsNullOrWhiteSpace(row.GeneratedDisplayName) ? definition.Name : row.GeneratedDisplayName!,
+                    definition.IconId,
+                    definition.Type.ToString(),
+                    definition.Rarity.ToString(),
+                    row.Quantity,
+                    row.ItemLevel,
+                    row.ActualItemPower,
+                    row.RollQuality,
+                    row.Stars,
+                    row.IsPerfect,
+                    row.EnhancementLevel);
+            })
+            .ToArray();
     }
 
     public async Task<CommerceResult<AuctionFeePreviewView>> PreviewAsync(Guid account, AuctionPreviewRequest request, CancellationToken ct)
