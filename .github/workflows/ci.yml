@@ -52,7 +52,9 @@ jobs:
           }
 
       - name: Check production deploy scripts
-        run: bash -n deploy/*.sh
+        run: |
+          for script in deploy/*.sh; do bash -n "$script"; done
+          sudo python3 -m unittest discover -s tools/deployment -p 'test_*.py'
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v6
@@ -83,7 +85,7 @@ jobs:
           .artifacts/asset-tool-venv/bin/python -m unittest discover -s tools/assets -p 'test_*.py'
 
       - name: Build backend
-        run: dotnet build Elyndor.slnx --configuration Release --no-restore
+        run: dotnet build Elyndor.slnx --configuration Release --no-restore -p:DebugType=None -p:DebugSymbols=false
 
       - name: Test backend
         run: dotnet test Elyndor.slnx --configuration Release --no-build
@@ -118,6 +120,7 @@ jobs:
           rm -rf .artifacts/production
           dotnet publish src/Elyndor.Server/Elyndor.Server.csproj \
             --configuration Release \
+            --no-build \
             --no-restore \
             --self-contained false \
             -p:DebugType=None \
@@ -131,6 +134,9 @@ jobs:
           test -f .artifacts/production/frontend-admin/index.html
           test -f .artifacts/production/content/package.json
           test -f .artifacts/production/content/dungeons/eclipsed-citadel.json
+          cp deploy/release-manifest.py .artifacts/production/release-manifest.py
+          printf '%s\n' "$GITHUB_SHA" > .artifacts/production/REVISION
+          python3 deploy/release-manifest.py create .artifacts/production "$GITHUB_SHA"
 
       - name: Install Playwright Chromium
         working-directory: web/elyndor-web
@@ -156,9 +162,9 @@ jobs:
           Authentication__Development__Enabled: "true"
           Authentication__Development__TelegramUserId: "9000001"
         run: |
-          dotnet .artifacts/production/Elyndor.Server.dll > .artifacts/e2e-server.log 2>&1 &
+          (cd .artifacts/production && exec dotnet Elyndor.Server.dll) > .artifacts/e2e-server.log 2>&1 &
           echo $! > .artifacts/e2e-server.pid
-          for attempt in {1..30}; do
+          for _ in {1..30}; do
             if curl -fsS http://127.0.0.1:5080/api/v1/status > /dev/null; then
               exit 0
             fi
@@ -177,3 +183,17 @@ jobs:
       - name: Print E2E server log on failure
         if: failure()
         run: cat .artifacts/e2e-server.log || true
+
+      - name: Verify tested production tree is unchanged
+        run: python3 deploy/release-manifest.py verify .artifacts/production "$GITHUB_SHA"
+
+      - name: Save verified production release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v7
+        with:
+          name: elyndor-linux-x64
+          path: .artifacts/production/
+          include-hidden-files: true
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 7

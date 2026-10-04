@@ -33,6 +33,8 @@ cp -a "$repo_root/web/elyndor-admin/dist/." "$publish_dir/frontend-admin/"
 
 revision="$(git -C "$repo_root" rev-parse HEAD 2>/dev/null || printf 'unknown')"
 printf '%s\n' "$revision" > "$publish_dir/REVISION"
+cp "$repo_root/deploy/release-manifest.py" "$publish_dir/release-manifest.py"
+python3 "$repo_root/deploy/release-manifest.py" create "$publish_dir" "$revision"
 
 test -f "$publish_dir/Elyndor.Server.dll"
 test -f "$publish_dir/frontend/index.html"
