@@ -63,6 +63,10 @@ function text() {
   return document.body.textContent ?? ''
 }
 beforeEach(() => {
+  Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
+    configurable: true,
+    value: vi.fn(),
+  })
   setActivePinia(createPinia())
   document.body.innerHTML = ''
   const store = useGameSessionStore()
@@ -201,6 +205,14 @@ describe('Forge workbench', () => {
     await flushPromises()
     expect(decide).toHaveBeenCalledWith('op', true)
     expect(text()).toContain('Новая характеристика применена')
+    expect(document.body.querySelector('[data-forge-detail]')).not.toBeNull()
+    expect(store.getReforgePreview).toHaveBeenCalledTimes(2)
+  })
+  it('scrolls to the working panel after selecting an item', async () => {
+    mount(ForgeView)
+    await click('.forge-grid [data-forge-item="A"]')
+    const detail = document.body.querySelector<HTMLElement>('[data-forge-detail]')!
+    expect(detail.scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' })
   })
   it('selecting a card does not switch out of enhancement and uses its server preview', async () => {
     const enhance = vi.spyOn(useGameSessionStore(), 'enhanceItem').mockResolvedValue({
