@@ -3,6 +3,7 @@ using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Randomness;
+using Elyndor.Core.Combat.Resources;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Talents;
 
@@ -588,16 +589,10 @@ public sealed class ArenaCombatSession
     private void RegenerateResource(ArenaFighter fighter, decimal elapsedSeconds, DateTimeOffset now)
     {
         if (fighter.ResourceRegenPerSecond <= 0 || fighter.Actor.IsDead) return;
-        decimal actual = fighter.Actor.AddResource(fighter.ResourceRegenPerSecond * elapsedSeconds);
-        if (actual == 0) return;
-        Append(new CombatEvent(
-            CombatEventType.ResourceChanged,
-            now,
-            fighter.Actor.ActorId,
-            "COMBAT_REGEN",
-            actual,
-            SourceActorId: fighter.Actor.ActorId,
-            TargetActorId: fighter.Actor.ActorId));
+        CombatEvent result = CombatResourceRuntime.Change(
+            fighter.Actor, fighter.ResourceRegenPerSecond * elapsedSeconds, now,
+            "COMBAT_REGEN", fighter.Actor.ActorId);
+        if (result.Amount != 0) Append(result);
     }
 
     private void CompleteCast(
@@ -713,15 +708,8 @@ public sealed class ArenaCombatSession
             case ArenaTalentEffectKind.GainResource:
             {
                 CombatActorState target = RuntimeForActor(effect.TargetActorId).Actor;
-                decimal actual = target.AddResource(effect.Amount);
-                Append(new CombatEvent(
-                    CombatEventType.ResourceChanged,
-                    now,
-                    target.ActorId,
-                    effect.SourceTalentId,
-                    actual,
-                    SourceActorId: effect.SourceActorId,
-                    TargetActorId: target.ActorId));
+                Append(CombatResourceRuntime.Change(
+                    target, effect.Amount, now, effect.SourceTalentId, effect.SourceActorId));
                 break;
             }
             case ArenaTalentEffectKind.ModifyCooldown:

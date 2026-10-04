@@ -21,8 +21,8 @@ public sealed partial class CombatSession
             [CombatReaction.GenericDodge] = e => TriggerEventTalent(TalentModifierKeys.OnDodge, e, CombatRuntimeEventKind.Dodge),
             [CombatReaction.GenericDamageTaken] = e => TriggerEventTalent(TalentModifierKeys.OnDamageTaken, e, CombatRuntimeEventKind.DamageTaken),
             [CombatReaction.GenericCriticalHit] = e => TriggerEventTalent(TalentModifierKeys.OnCriticalHit, e, CombatRuntimeEventKind.CriticalHit),
-            [CombatReaction.DirectDamageTakenResource] = e => AddResource(_player.Actor,
-                BaseRageFromDirectDamageTaken * GuardianRageMultiplier, e.OccurredAtUtc, "DIRECT_DAMAGE_TAKEN"),
+            [CombatReaction.DirectDamageTakenResource] = e => ResourceRuntime.GenerateDirectDamageTaken(
+                _player.Actor, e.OccurredAtUtc),
             [CombatReaction.GenericEnemyKilled] = e => TriggerTalent(TalentModifierKeys.OnEnemyKilled, e.OccurredAtUtc),
             [CombatReaction.BerserkerEnemyKilled] = e => ApplyBerserkerEnemyKilledHooks(e.OccurredAtUtc),
             [CombatReaction.PyromancerEnemyKilled] = ApplyPyromancerEnemyKilledHooks,

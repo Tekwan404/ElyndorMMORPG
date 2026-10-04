@@ -134,6 +134,31 @@ public sealed class GuardianWarlordCombatSessionTests
                 Now));
     }
 
+    [Fact]
+    public void WarlordResourceCryUsesOwnerScalingAndCompanionResourcePercentOnce()
+    {
+        CombatActorState player = Actor(Guid.NewGuid(), 100, 100);
+        CombatActorState companion = Actor(Guid.NewGuid(), 100, 100);
+        Assert.True(player.TrySpendResource(50));
+        Assert.True(companion.TrySpendResource(50));
+        AbilityDefinition cry = new("BATTLE_CRY", AbilityType.Instant, AbilityTargetType.Self,
+            0, TimeSpan.Zero, TimeSpan.Zero, false, GlobalCooldownCategory.None, false, "PHYSICAL",
+            Actions: [new(AbilityActionType.ResourceChange, 0)]);
+        var session = CreateSession(player, companion, new Dictionary<string, AbilityDefinition> { [cry.Id] = cry },
+            ResolvedTalentModifiers.Empty with { EventHooks = [Hook("W-8-1", 1, 10, 20), Hook("W-6-4", 1, 50)] });
+        Assert.True(session.Handle(new UseAbilityCommand("cry", cry.Id, player.ActorId), Now).Succeeded);
+        Assert.Equal(65, player.CurrentResource);
+        Assert.Equal(80, companion.CurrentResource);
+        CombatEvent[] gains = session.GetEventsAfter(0).Where(e => e.DefinitionId == "W-8-1").ToArray();
+        Assert.Equal(2, gains.Length);
+        Assert.Contains(gains, e => e.ActorId == player.ActorId && e.Amount == 15);
+        Assert.Contains(gains, e => e.ActorId == companion.ActorId && e.Amount == 30);
+        Assert.All(gains, e => { Assert.True(e.IsProc); Assert.Equal(1, e.ProcDepth); });
+        Assert.False(session.Handle(new UseAbilityCommand("cry", cry.Id, player.ActorId), Now).Succeeded);
+        Assert.Equal(65, player.CurrentResource);
+        Assert.Equal(80, companion.CurrentResource);
+    }
+
     private static CombatSession CreateSession(
         CombatActorState playerActor,
         CombatActorState? companionActor,

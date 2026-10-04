@@ -2259,56 +2259,6 @@ public sealed partial class CombatSession
         }
     }
 
-    private void ApplyPlayerResourceRegen(DateTimeOffset now)
-    {
-        foreach (CombatParticipantSnapshot participant in _participantRoster.Participants
-                     .Where(item => item.Status == CombatParticipantStatus.Active))
-        {
-            ActivatePlayer(participant.CharacterId);
-            if (now <= _lastPlayerResourceRegenAtUtc) continue;
-            DateTimeOffset from = _lastPlayerResourceRegenAtUtc;
-            _lastPlayerResourceRegenAtUtc = now;
-            if (_player.Actor.IsDead) continue;
-            decimal amount = CalculatePlayerResourceRegeneration(from, now);
-            if (amount <= 0) continue;
-            AddResource(_player.Actor, amount, now, "COMBAT_REGEN");
-        }
-    }
-
-    private decimal CalculatePlayerResourceRegeneration(DateTimeOffset from, DateTimeOffset to)
-    {
-        var boundaries = new SortedSet<DateTimeOffset> { from, to };
-        if (IsMage)
-        {
-            foreach (ActiveEffect effect in _player.Actor.ActiveEffects.Where(effect =>
-                         effect.SourceId == _player.Actor.ActorId
-                         && effect.Definition.Id == ClearcastingRegenEffectId))
-            {
-                if (effect.AppliedAtUtc > from && effect.AppliedAtUtc < to)
-                    boundaries.Add(effect.AppliedAtUtc);
-                if (effect.ExpiresAtUtc > from && effect.ExpiresAtUtc < to)
-                    boundaries.Add(effect.ExpiresAtUtc);
-            }
-            if (TryGetMageHook("A-6-3", out ResolvedTalentEventHook meditation))
-            {
-                DateTimeOffset spentAt = _lastMageManaSpendAtUtc ?? _combatStartedAtUtc;
-                DateTimeOffset startsAt = spentAt + meditation.Duration;
-                if (startsAt > from && startsAt < to) boundaries.Add(startsAt);
-            }
-        }
-
-        decimal amount = 0;
-        DateTimeOffset start = from;
-        foreach (DateTimeOffset end in boundaries.Skip(1))
-        {
-            decimal rate = EffectiveArcherResourceRegenPerSecond(
-                EffectivePlayerResourceRegenPerSecond(start), start);
-            amount += rate * (end - start).Ticks / TimeSpan.TicksPerSecond;
-            start = end;
-        }
-        return amount;
-    }
-
     private void SyncAllPlayerConditionalEffects(DateTimeOffset now)
     {
         foreach (CombatParticipantSnapshot participant in _participantRoster.Participants
@@ -2318,28 +2268,6 @@ public sealed partial class CombatSession
             SyncBerserkerConditionalEffects(now);
             SyncArcherConditionalEffects(now);
         }
-    }
-
-    private void AddResource(
-        CombatActorState actor,
-        decimal amount,
-        DateTimeOffset now,
-        string definitionId)
-    {
-        decimal actual = actor.AddResource(ScaleWarlordResource(definitionId, amount));
-        if (actual == 0) return;
-        bool talentProc = _playerTalents.EventHooks.Any(hook => hook.TalentId == definitionId);
-        Append(new CombatEvent(
-            CombatEventType.ResourceChanged,
-            now,
-            actor.ActorId,
-            definitionId,
-            actual,
-            SourceActorId: actor.ActorId,
-            TargetActorId: actor.ActorId,
-            IsProc: talentProc,
-            ProcDepth: talentProc ? 1 : 0,
-            ProcOriginId: talentProc ? definitionId : null));
     }
 
     private void Append(CombatEvent combatEvent)
