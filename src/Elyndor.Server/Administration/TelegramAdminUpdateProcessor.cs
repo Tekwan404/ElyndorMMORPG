@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Characters;
 using Elyndor.Server.Monitoring;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -14,7 +15,8 @@ public sealed class TelegramAdminUpdateProcessor(
     ITelegramMessageSender messageSender,
     IServerMetricsCollector metricsCollector,
     ServerErrorMetrics errors,
-    GameDbContext dbContext)
+    GameDbContext dbContext,
+    CharacterBuildSnapshotService buildSnapshots)
 {
     internal const string HelpText = """
         Elyndor admin commands:
@@ -24,6 +26,10 @@ public sealed class TelegramAdminUpdateProcessor(
         /resources
         /errors
         /char <telegramId>
+        /builddump <telegramId>
+        /builddiff <buildHashA> <buildHashB>
+        /gear <telegramId>
+        /talents <telegramId>
         /level <telegramId> <1-60>
         /restore <telegramId>
         /location <telegramId> <locationId>
@@ -60,6 +66,9 @@ public sealed class TelegramAdminUpdateProcessor(
         AdminCommand command = parsed.Command!;
         switch (command.Type)
         {
+            case AdminCommandType.BuildDiff:
+                await SendBuildDiffAsync(message.Chat.Id, command, cancellationToken);
+                return;
             case AdminCommandType.Help:
                 await messageSender.SendAsync(message.Chat.Id, HelpText, cancellationToken);
                 return;
@@ -75,12 +84,61 @@ public sealed class TelegramAdminUpdateProcessor(
             case AdminCommandType.Errors:
                 await SendErrorsAsync(message.Chat.Id, cancellationToken);
                 return;
+            case AdminCommandType.BuildDump:
+            case AdminCommandType.Gear:
+            case AdminCommandType.Talents:
+                await SendBuildAsync(message.Chat.Id, command, cancellationToken);
+                return;
         }
 
         AdministrationOperation operation = new(Map(command.Type), command.TargetTelegramUserId, command.Value, command.NumericValue);
         AdministrationResult result = await administrationService.ExecuteAsync(update.UpdateId, message.From.Id, operation, cancellationToken);
         string prefix = result.IsSuccess ? "✅" : "⚠️";
         await messageSender.SendAsync(message.Chat.Id, $"{prefix} {result.Message}\nКод: {result.Code}", cancellationToken);
+    }
+
+    private async Task SendBuildDiffAsync(long chatId, AdminCommand command, CancellationToken cancellationToken)
+    {
+        var before = await buildSnapshots.GetAsync(command.Value!, cancellationToken);
+        var after = await buildSnapshots.GetAsync(command.ComparisonValue!, cancellationToken);
+        if (before is null || after is null)
+        {
+            await messageSender.SendAsync(chatId,
+                $"Сохранённый билд не найден: admin_build_not_found\n{(before is null ? command.Value : command.ComparisonValue)}",
+                cancellationToken);
+            return;
+        }
+        string report = CharacterBuildDiffFormatter.Format(before, after);
+        if (report.Length <= 4000)
+            await messageSender.SendAsync(chatId, report, cancellationToken);
+        else if (messageSender is ITelegramDocumentSender documents)
+            await documents.SendDocumentAsync(chatId,
+                $"elyndor-builddiff-{before.BuildHash[..12]}-{after.BuildHash[..12]}.txt",
+                report, "Elyndor · сравнение сохранённых билдов", cancellationToken);
+        else throw new InvalidOperationException("Configured Telegram sender does not support build documents.");
+    }
+
+    private async Task SendBuildAsync(long chatId, AdminCommand command, CancellationToken cancellationToken)
+    {
+        var build = await buildSnapshots.CaptureForTelegramAsync(command.TargetTelegramUserId!.Value, cancellationToken);
+        if (build is null)
+        {
+            await messageSender.SendAsync(chatId, "Персонаж не найден: admin_character_not_found", cancellationToken);
+            return;
+        }
+        string report = CharacterBuildSnapshotFormatter.Format(build,
+            gearOnly: command.Type == AdminCommandType.Gear, talentsOnly: command.Type == AdminCommandType.Talents);
+        if (messageSender is not ITelegramDocumentSender documents)
+            throw new InvalidOperationException("Configured Telegram sender does not support build documents.");
+        if (command.Type != AdminCommandType.BuildDump && report.Length <= 4000)
+            await messageSender.SendAsync(chatId, report, cancellationToken);
+        else
+            await documents.SendDocumentAsync(chatId, $"elyndor-{command.Type.ToString().ToLowerInvariant()}-{build.BuildHash[..12]}.txt",
+                report, $"{build.Name} · {build.ClassId} · Build {build.BuildHash[..12]}", cancellationToken);
+        if (command.Type == AdminCommandType.BuildDump)
+            await documents.SendDocumentAsync(chatId, $"elyndor-build-{build.BuildHash}.json",
+                CharacterBuildSnapshotFormatter.FormatJson(build),
+                $"BuildHash: {build.BuildHash}", cancellationToken);
     }
 
     private async Task SendStatusAsync(long chatId, CancellationToken cancellationToken)

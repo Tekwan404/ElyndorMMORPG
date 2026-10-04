@@ -35,6 +35,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<CharacterCreationService>();
         builder.Services.AddScoped<CharacterCompanionService>();
         builder.Services.AddScoped<CharacterDerivedStateService>();
+        builder.Services.AddScoped<CharacterBuildSnapshotService>();
         builder.Services.AddScoped<BootstrapService>();
         builder.Services.AddScoped<TravelService>();
         builder.Services.AddScoped<WorldContractService>();

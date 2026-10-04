@@ -17,6 +17,15 @@ public static class TelegramAdminCommandParser
         if (name.StartsWith('/'))
             name = name[1..];
 
+        if (name == "builddiff")
+        {
+            string[] hashes = arguments.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+            return hashes.Length == 2 && hashes.All(hash => hash.Length == 64 && hash.All(char.IsAsciiHexDigit))
+                ? AdminCommandParseResult.Success(new(AdminCommandType.BuildDiff,
+                    Value: hashes[0].ToUpperInvariant(), ComparisonValue: hashes[1].ToUpperInvariant()))
+                : AdminCommandParseResult.Failure("admin_build_hash_invalid");
+        }
+
         if (arguments.Length == 0)
         {
             return name switch
@@ -42,6 +51,9 @@ public static class TelegramAdminCommandParser
         return name switch
         {
             "char" when remainder.Length == 0 => Success(AdminCommandType.ShowCharacter, targetId),
+            "builddump" when remainder.Length == 0 => Success(AdminCommandType.BuildDump, targetId),
+            "gear" when remainder.Length == 0 => Success(AdminCommandType.Gear, targetId),
+            "talents" when remainder.Length == 0 => Success(AdminCommandType.Talents, targetId),
             "restore" when remainder.Length == 0 => Success(AdminCommandType.Restore, targetId),
             "level" => ParseLevel(targetId, remainder),
             "location" => ParseSingleValue(AdminCommandType.SetLocation, targetId, remainder),
