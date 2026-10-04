@@ -113,7 +113,68 @@ describe('InventoryView', () => {
     expect(wrapper.get('[data-inventory-layout]').attributes('data-inventory-layout')).toBe('list')
     expect(itemIds(wrapper)).toEqual(['BLADE'])
     expect(wrapper.get('[data-item-id="BLADE"]').attributes('aria-pressed')).toBe('true')
+
+    await wrapper.get('[data-inventory-view="mini"]').trigger('click')
+    expect(wrapper.get('[data-inventory-layout]').attributes('data-inventory-layout')).toBe('mini')
+    expect(itemIds(wrapper)).toEqual(['BLADE'])
+    expect(wrapper.get('[data-item-id="BLADE"]').attributes('aria-pressed')).toBe('true')
   })
+  it('sells and discards selected stacks as one bulk action using full stack quantities', async () => {
+    const store = useGameSessionStore()
+    const first = item({
+      ...equipment('FIRST', 'Первый клинок', 'Common', 1, 3),
+      quantity: 3,
+      sellPriceGold: 10,
+    })
+    const second = item({
+      ...equipment('SECOND', 'Второй клинок', 'Common', 1, 4),
+      quantity: 2,
+      sellPriceGold: 20,
+    })
+    store.snapshot = snapshot([first, second], currentWeapon())
+
+    const sell = vi.spyOn(store, 'sellMerchantItems').mockResolvedValue({} as never)
+    const discard = vi.spyOn(store, 'discardInventoryItems').mockResolvedValue(true)
+    const wrapper = mount(InventoryView)
+
+    await wrapper.get('[data-inventory-selection-mode]').trigger('click')
+    await wrapper.get('[data-item-id="FIRST"]').trigger('click')
+    await wrapper.get('[data-item-id="SECOND"]').trigger('click')
+
+    const bulkBar = wrapper.get('[data-inventory-bulk-bar]')
+    const sellButton = bulkBar
+      .findAll('button')
+      .find((button) => button.text().trim() === 'Продать')!
+    await sellButton.trigger('click')
+    await flushPromises()
+    document.querySelector<HTMLButtonElement>('[data-confirm-accept]')!.click()
+    await flushPromises()
+
+    expect(sell).toHaveBeenCalledExactlyOnceWith('MARCUS_SUPPLIES', [
+      { characterItemId: 'FIRST', quantity: 3 },
+      { characterItemId: 'SECOND', quantity: 2 },
+    ])
+
+    store.snapshot = snapshot([first, second], currentWeapon())
+    await wrapper.get('[data-inventory-selection-mode]').trigger('click')
+    await wrapper.get('[data-inventory-selection-mode]').trigger('click')
+    await wrapper.get('[data-item-id="FIRST"]').trigger('click')
+    await wrapper.get('[data-item-id="SECOND"]').trigger('click')
+    const discardButton = wrapper
+      .get('[data-inventory-bulk-bar]')
+      .findAll('button')
+      .find((button) => button.text().trim() === 'Уничтожить')!
+    await discardButton.trigger('click')
+    await flushPromises()
+    document.querySelector<HTMLButtonElement>('[data-confirm-accept]')!.click()
+    await flushPromises()
+
+    expect(discard).toHaveBeenCalledExactlyOnceWith([
+      { characterItemId: 'FIRST', quantity: 3 },
+      { characterItemId: 'SECOND', quantity: 2 },
+    ])
+  })
+
   it('finds items by name without losing the selected category and can clear the search', async () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot(
