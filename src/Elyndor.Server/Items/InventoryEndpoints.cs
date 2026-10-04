@@ -37,6 +37,7 @@ public static class InventoryEndpoints
         group.MapPost("/merchant/buy", BuyMerchantItemAsync);
         group.MapPost("/merchant/sell-material", SellMerchantMaterialAsync);
         group.MapPost("/merchant/sell-item", SellMerchantItemAsync);
+        group.MapPost("/merchant/sell-items", SellMerchantItemsAsync);
         group.MapPost("/merchant/buyback", BuybackMerchantItemAsync);
         return endpoints;
     }
@@ -516,6 +517,35 @@ public static class InventoryEndpoints
                     request.MerchantId,
                     request.CharacterItemId,
                     request.Quantity,
+                    request.MutationId,
+                    cancellationToken);
+                return ToMerchantResult(result, context);
+            },
+            () => InCombatProblem(context),
+            cancellationToken);
+    }
+
+    private static async Task<IResult> SellMerchantItemsAsync(
+        SellMerchantItemsRequest request,
+        ClaimsPrincipal user,
+        HttpContext context,
+        MerchantService service,
+        CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        return await operationGuard.ExecuteOutOfCombatAsync(
+            accountId,
+            async () =>
+            {
+                MerchantOperationResult result = await service.SellItemsAsync(
+                    accountId,
+                    request.MerchantId,
+                    request.Items.Select(item => new MerchantSellSelection(
+                        item.CharacterItemId,
+                        item.Quantity)).ToArray(),
                     request.MutationId,
                     cancellationToken);
                 return ToMerchantResult(result, context);
