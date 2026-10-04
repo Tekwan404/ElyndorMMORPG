@@ -696,7 +696,6 @@ public static class InventoryEndpoints
                     or ItemReforgeErrorCodes.ItemLocked
                     or ItemReforgeErrorCodes.OperationConflict
                     or ItemReforgeErrorCodes.ProposalNotPending
-                    or ItemReforgeErrorCodes.ItemEquipped
                     ? StatusCodes.Status409Conflict
                     : StatusCodes.Status422UnprocessableEntity,
             extensions: new Dictionary<string, object?>
@@ -708,7 +707,7 @@ public static class InventoryEndpoints
     private static IResult StarUpgradeProblem(string errorCode, HttpContext context) =>
         Results.Problem(statusCode: errorCode is ItemStarUpgradeErrorCodes.ItemNotFound or ItemStarUpgradeErrorCodes.CharacterNotFound
                 ? StatusCodes.Status404NotFound
-                : errorCode is ItemStarUpgradeErrorCodes.ItemLocked or ItemStarUpgradeErrorCodes.ItemEquipped
+                : errorCode is ItemStarUpgradeErrorCodes.ItemLocked
                     or ItemStarUpgradeErrorCodes.ItemTransactionLocked or ItemStarUpgradeErrorCodes.MaxStars
                     or ItemStarUpgradeErrorCodes.MutationConflict
                     ? StatusCodes.Status409Conflict : StatusCodes.Status422UnprocessableEntity,

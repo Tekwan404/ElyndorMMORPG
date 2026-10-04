@@ -3,7 +3,13 @@ import { formatMoney } from '@/shared/money'
 import { computed, ref, watch } from 'vue'
 
 import { apiClient, ApiRequestError } from '@/api/apiClient'
-import type { EquipmentSlot, InventoryItem, OpenLootContainerResponse, PendingLootItem, SpatialInventorySnapshot } from '@/api/contracts'
+import type {
+  EquipmentSlot,
+  InventoryItem,
+  OpenLootContainerResponse,
+  PendingLootItem,
+  SpatialInventorySnapshot,
+} from '@/api/contracts'
 import { consumableSummary } from '@/game/items/consumablePresentation'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import ItemIdentity from '@/game/items/components/ItemIdentity.vue'
@@ -13,6 +19,13 @@ import { useConfirmation } from '@/ui/composables/useConfirmation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { ItemQualityStars, UIButton, UILoadingState, UIModal, UIToast } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
+import InventoryToolbar from '../components/InventoryToolbar.vue'
+import {
+  inventoryCategory,
+  inventoryGroup,
+  type InventoryCategory,
+  type InventorySort,
+} from '../inventoryOrganization'
 
 const props = defineProps<{
   slotFilter?: EquipmentSlot | null
@@ -25,7 +38,15 @@ const equipmentPending = computed(() => session.isMutationPending('inventory:equ
 const consumablePending = computed(() => session.isMutationPending('inventory:use-consumable'))
 const consumableActionError = ref<string | null>(null)
 const lockPending = computed(() => session.isMutationPending('inventory:set-lock'))
-const itemActionPending = computed(() => equipmentPending.value || consumablePending.value || lockPending.value || bulkActionPending.value || spatialActionPending.value || containerActionPending.value)
+const itemActionPending = computed(
+  () =>
+    equipmentPending.value ||
+    consumablePending.value ||
+    lockPending.value ||
+    bulkActionPending.value ||
+    spatialActionPending.value ||
+    containerActionPending.value,
+)
 const character = computed(() => session.snapshot?.character)
 const inventory = computed(() => character.value?.inventory)
 const spatialInventory = ref<SpatialInventorySnapshot | null>(null)
@@ -35,11 +56,13 @@ const spatialActionError = ref<string | null>(null)
 let spatialInventoryRequestSequence = 0
 const selectedItem = ref<InventoryItem | null>(null)
 const equipmentActionError = ref<string | null>(null)
-const typeFilter = ref<'all' | 'equipment' | 'artifact' | 'material' | 'consumable' | 'container'>('all')
+const typeFilter = ref<InventoryCategory>('all')
+const searchQuery = ref('')
+const viewMode = ref<'list' | 'grid'>('grid')
 const rarityFilter = ref<'all' | InventoryItem['rarity']>('all')
 const equipableOnly = ref(false)
 const newOnly = ref(false)
-const sortMode = ref<'default' | 'rarity' | 'slot' | 'new' | 'level' | 'name'>('default')
+const sortMode = ref<InventorySort>('default')
 const filtersOpen = ref(false)
 const newItemIds = ref<Set<string>>(new Set())
 const selectionMode = ref(false)
@@ -64,44 +87,79 @@ function isSpatialArtifact(item: InventoryItem | null | undefined): boolean {
   return item !== null && item !== undefined && String(item.type) === 'SpatialArtifact'
 }
 
-const equippedSpatialArtifactItemId = computed(() => spatialInventory.value?.equippedArtifact?.characterItemId ?? null)
-const bagItems = computed(() => inventory.value?.items.filter((item) =>
-  !item.equippedSlot && item.id !== equippedSpatialArtifactItemId.value,
-) ?? [])
-const filteredItems = computed(() => bagItems.value.filter((item) => {
-  const contextualMatches = contextualSlot.value === null
-    || (item.type === 'Equipment'
-      && item.slot !== null
-      && slotsMatch(item, contextualSlot.value)
-      && equipmentCompatibilityReason(item) === null)
-  const typeMatches = isContextualSlotMode.value
-    || typeFilter.value === 'all'
-    || (typeFilter.value === 'equipment' && item.type === 'Equipment')
-    || (typeFilter.value === 'artifact' && isSpatialArtifact(item))
-    || (typeFilter.value === 'material' && item.type === 'Material')
-    || (typeFilter.value === 'consumable' && item.type === 'Consumable')
-    || (typeFilter.value === 'container' && item.type === 'LootContainer')
-  const rarityMatches = rarityFilter.value === 'all' || item.rarity === rarityFilter.value
-  const equipableMatches = !equipableOnly.value || canEquipNow(item)
-  const newMatches = !newOnly.value || newItemIds.value.has(item.id)
-  return contextualMatches && typeMatches && rarityMatches && equipableMatches && newMatches
-}))
+const equippedSpatialArtifactItemId = computed(
+  () => spatialInventory.value?.equippedArtifact?.characterItemId ?? null,
+)
+const bagItems = computed(
+  () =>
+    inventory.value?.items.filter(
+      (item) => !item.equippedSlot && item.id !== equippedSpatialArtifactItemId.value,
+    ) ?? [],
+)
+const filteredItems = computed(() =>
+  bagItems.value.filter((item) => {
+    const contextualMatches =
+      contextualSlot.value === null ||
+      (item.type === 'Equipment' &&
+        item.slot !== null &&
+        slotsMatch(item, contextualSlot.value) &&
+        equipmentCompatibilityReason(item) === null)
+    const typeMatches =
+      isContextualSlotMode.value ||
+      typeFilter.value === 'all' ||
+      inventoryCategory(item) === typeFilter.value
+    const rarityMatches = rarityFilter.value === 'all' || item.rarity === rarityFilter.value
+    const equipableMatches = !equipableOnly.value || canEquipNow(item)
+    const newMatches = !newOnly.value || newItemIds.value.has(item.id)
+    const searchMatches = item.name
+      .toLocaleLowerCase('ru')
+      .replace(/ё/g, 'е')
+      .includes(searchQuery.value.trim().toLocaleLowerCase('ru').replace(/ё/g, 'е'))
+    return (
+      contextualMatches &&
+      typeMatches &&
+      rarityMatches &&
+      equipableMatches &&
+      newMatches &&
+      searchMatches
+    )
+  }),
+)
 const sortedItems = computed(() => {
   const items = [...filteredItems.value]
-  if (sortMode.value === 'rarity') {
-    items.sort((left, right) => rarityRank(right.rarity) - rarityRank(left.rarity)
-      || left.name.localeCompare(right.name))
+  if (sortMode.value === 'default') {
+    items.sort(
+      (left, right) =>
+        inventoryGroup(left).order - inventoryGroup(right).order ||
+        rarityRank(right.rarity) - rarityRank(left.rarity) ||
+        left.name.localeCompare(right.name, 'ru') ||
+        left.id.localeCompare(right.id),
+    )
+  } else if (sortMode.value === 'rarity') {
+    items.sort(
+      (left, right) =>
+        rarityRank(right.rarity) - rarityRank(left.rarity) || left.name.localeCompare(right.name),
+    )
   } else if (sortMode.value === 'slot') {
-    items.sort((left, right) => typeLabel(left).localeCompare(typeLabel(right), 'ru')
-      || rarityRank(right.rarity) - rarityRank(left.rarity)
-      || left.name.localeCompare(right.name, 'ru'))
+    items.sort(
+      (left, right) =>
+        typeLabel(left).localeCompare(typeLabel(right), 'ru') ||
+        rarityRank(right.rarity) - rarityRank(left.rarity) ||
+        left.name.localeCompare(right.name, 'ru'),
+    )
   } else if (sortMode.value === 'new') {
-    items.sort((left, right) => Number(newItemIds.value.has(right.id)) - Number(newItemIds.value.has(left.id))
-      || rarityRank(right.rarity) - rarityRank(left.rarity)
-      || left.name.localeCompare(right.name, 'ru'))
+    items.sort(
+      (left, right) =>
+        Number(newItemIds.value.has(right.id)) - Number(newItemIds.value.has(left.id)) ||
+        rarityRank(right.rarity) - rarityRank(left.rarity) ||
+        left.name.localeCompare(right.name, 'ru'),
+    )
   } else if (sortMode.value === 'level') {
-    items.sort((left, right) => right.requiredLevel - left.requiredLevel
-      || rarityRank(right.rarity) - rarityRank(left.rarity))
+    items.sort(
+      (left, right) =>
+        right.requiredLevel - left.requiredLevel ||
+        rarityRank(right.rarity) - rarityRank(left.rarity),
+    )
   } else if (sortMode.value === 'name') {
     items.sort((left, right) => left.name.localeCompare(right.name, 'ru'))
   }
@@ -114,17 +172,32 @@ const capacity = computed(() => capacityState.value?.capacity ?? null)
 const usedSlots = computed(() => capacityState.value?.usedSlots ?? bagItems.value.length)
 const freeSlots = computed(() => capacityState.value?.freeSlots ?? null)
 const isOverflow = computed(() => capacityState.value?.isOverflow ?? false)
-const visibleCells = computed(() => {
-  if (isContextualSlotMode.value || typeFilter.value !== 'all' || rarityFilter.value !== 'all' || equipableOnly.value || newOnly.value) return sortedItems.value
-  const slotCount = Math.max(capacity.value ?? 0, sortedItems.value.length)
-  return Array.from({ length: slotCount }, (_, index) => sortedItems.value[index] ?? null)
+const itemGroups = computed(() => {
+  if (sortMode.value !== 'default') return [{ id: 'sorted', label: '', items: sortedItems.value }]
+  const groups = new Map<string, { id: string; label: string; items: InventoryItem[] }>()
+  for (const item of sortedItems.value) {
+    const group = inventoryGroup(item)
+    if (!groups.has(group.id)) groups.set(group.id, { ...group, items: [] })
+    groups.get(group.id)!.items.push(item)
+  }
+  return [...groups.values()]
 })
-const capacityWarning = computed(() => isOverflow.value || (freeSlots.value !== null && freeSlots.value <= 10))
+const categoryCounts = computed(() => {
+  const counts = { all: bagItems.value.length, equipment: 0, supplies: 0, material: 0 }
+  for (const item of bagItems.value) {
+    const category = inventoryCategory(item)
+    if (category !== 'other') counts[category]++
+  }
+  return counts
+})
+const capacityWarning = computed(
+  () => isOverflow.value || (freeSlots.value !== null && freeSlots.value <= 10),
+)
 const selectedItems = computed(() =>
-  bagItems.value.filter(item => selectedItemIds.value.has(item.id)),
+  bagItems.value.filter((item) => selectedItemIds.value.has(item.id)),
 )
 const selectedSellableItems = computed(() =>
-  selectedItems.value.filter(item => item.sellPriceGold > 0 && !item.isLocked),
+  selectedItems.value.filter((item) => item.sellPriceGold > 0 && !item.isLocked),
 )
 const selectedSellValue = computed(() =>
   selectedSellableItems.value.reduce(
@@ -132,19 +205,12 @@ const selectedSellValue = computed(() =>
     0,
   ),
 )
-const canSellHere = computed(() =>
-  session.snapshot?.world?.currentLocation.id === 'STARTER_TOWN',
+const canSellHere = computed(() => session.snapshot?.world?.currentLocation.id === 'STARTER_TOWN')
+const activeFilterCount = computed(
+  () => [newOnly.value, rarityFilter.value !== 'all', equipableOnly.value].filter(Boolean).length,
 )
-const activeFilterCount = computed(() => [
-  newOnly.value,
-  rarityFilter.value !== 'all',
-  equipableOnly.value,
-  sortMode.value !== 'default',
-].filter(Boolean).length)
 const comparisonItem = computed(() =>
-  selectedItem.value?.type === 'Equipment'
-    ? equippedItemForSlot(selectedItem.value)
-    : null,
+  selectedItem.value?.type === 'Equipment' ? equippedItemForSlot(selectedItem.value) : null,
 )
 const comparisonRows = computed(() => {
   const candidate = selectedItem.value
@@ -152,7 +218,7 @@ const comparisonRows = computed(() => {
   if (!candidate || !equipped) return []
 
   return comparisonStats
-    .map(stat => {
+    .map((stat) => {
       const candidateValue = stat.value(candidate)
       const equippedValue = stat.value(equipped)
       const delta = candidateValue - equippedValue
@@ -163,26 +229,30 @@ const comparisonRows = computed(() => {
         delta,
       }
     })
-    .filter(row => row.candidateValue !== 0 || row.equippedValue !== 0)
+    .filter((row) => row.candidateValue !== 0 || row.equippedValue !== 0)
 })
 
 const comparisonStats: readonly {
   label: string
   value: (item: InventoryItem) => number
 }[] = [
-  { label: 'Сила', value: item => item.stats.strength },
-  { label: 'Ловкость', value: item => item.stats.agility },
-  { label: 'Интеллект', value: item => item.stats.intellect },
-  { label: 'Выносливость', value: item => item.stats.stamina },
-  { label: 'Максимум здоровья', value: item => item.stats.maxHp },
-  { label: 'Сила атаки', value: item => item.stats.attackPower },
-  { label: 'Сила заклинаний', value: item => item.stats.spellPower },
-  { label: 'Шанс критического удара', value: item => item.stats.criticalChance },
-  { label: 'Броня', value: item => item.stats.armor },
-  { label: 'Сопротивление магии', value: item => item.stats.magicResistance },
-  { label: 'Уклонение', value: item => item.stats.dodge + item.dodgePercent },
-  { label: 'Скорость атаки', value: item => item.stats.attackSpeed + item.attackSpeedPercent },
-  { label: 'Максимум ресурса', value: item => item.stats.maxResource },
+  { label: 'Сила', value: (item) => item.stats.strength },
+  { label: 'Ловкость', value: (item) => item.stats.agility },
+  { label: 'Интеллект', value: (item) => item.stats.intellect },
+  { label: 'Выносливость', value: (item) => item.stats.stamina },
+  { label: 'Максимум здоровья', value: (item) => item.stats.maxHp },
+  { label: 'Сила атаки', value: (item) => item.stats.attackPower },
+  { label: 'Сила заклинаний', value: (item) => item.stats.spellPower },
+  { label: 'Шанс критического удара', value: (item) => item.stats.criticalChance },
+  { label: 'Критический урон', value: (item) => item.stats.criticalDamage },
+  { label: 'Точность', value: (item) => item.stats.accuracy },
+  { label: 'Пробивание брони', value: (item) => item.stats.armorPenetration },
+  { label: 'Пробивание магии', value: (item) => item.stats.magicPenetration },
+  { label: 'Броня', value: (item) => item.stats.armor },
+  { label: 'Сопротивление магии', value: (item) => item.stats.magicResistance },
+  { label: 'Уклонение', value: (item) => item.stats.dodge + item.dodgePercent },
+  { label: 'Скорость атаки', value: (item) => item.stats.attackSpeed + item.attackSpeedPercent },
+  { label: 'Максимум ресурса', value: (item) => item.stats.maxResource },
 ]
 
 function canonicalSlot(slot: EquipmentSlot): EquipmentSlot {
@@ -196,15 +266,22 @@ function equipmentCompatibilityReason(item: InventoryItem): string | null {
   const current = character.value
   if (!current || item.type !== 'Equipment') return null
   if (current.classId === 'WARRIOR') {
-    if (item.armorCategory && item.armorCategory !== 'HEAVY') return 'Воин может носить только тяжёлую броню.'
-    if (item.weaponCategory && !['ONE_HAND_SWORD', 'TWO_HAND_SWORD', 'AXE', 'MACE'].includes(item.weaponCategory)) {
+    if (item.armorCategory && item.armorCategory !== 'HEAVY')
+      return 'Воин может носить только тяжёлую броню.'
+    if (
+      item.weaponCategory &&
+      !['ONE_HAND_SWORD', 'TWO_HAND_SWORD', 'AXE', 'MACE'].includes(item.weaponCategory)
+    ) {
       return 'Воин не может использовать этот тип оружия.'
     }
   } else if (current.classId === 'ARCHER') {
-    if (item.armorCategory && item.armorCategory !== 'LEATHER') return 'Лучник может носить только кожаную броню.'
-    if (item.weaponCategory && item.weaponCategory !== 'BOW') return 'Лучник не может использовать этот тип оружия.'
+    if (item.armorCategory && item.armorCategory !== 'LEATHER')
+      return 'Лучник может носить только кожаную броню.'
+    if (item.weaponCategory && item.weaponCategory !== 'BOW')
+      return 'Лучник не может использовать этот тип оружия.'
   } else if (current.classId === 'MAGE') {
-    if (item.armorCategory && item.armorCategory !== 'CLOTH') return 'Маг может носить только тканевую броню.'
+    if (item.armorCategory && item.armorCategory !== 'CLOTH')
+      return 'Маг может носить только тканевую броню.'
     if (item.weaponCategory && !['STAFF', 'WAND'].includes(item.weaponCategory)) {
       return 'Маг не может использовать этот тип оружия.'
     }
@@ -245,9 +322,7 @@ function resolvedItemLevel(item: InventoryItem): number | null {
 }
 
 function isOneHandWeapon(item: InventoryItem): boolean {
-  return item.type === 'Equipment'
-    && item.weaponCategory !== null
-    && item.weaponHandsRequired === 1
+  return item.type === 'Equipment' && item.weaponCategory !== null && item.weaponHandsRequired === 1
 }
 
 function slotsMatch(item: InventoryItem, requestedSlot: EquipmentSlot): boolean {
@@ -255,7 +330,8 @@ function slotsMatch(item: InventoryItem, requestedSlot: EquipmentSlot): boolean 
   const itemSlot = canonicalSlot(item.slot)
   const target = canonicalSlot(requestedSlot)
   if (target === 'OffHand' && itemSlot === 'MainHand' && isOneHandWeapon(item)) return true
-  if ((itemSlot === 'Ring1' || itemSlot === 'Ring2') && (target === 'Ring1' || target === 'Ring2')) return true
+  if ((itemSlot === 'Ring1' || itemSlot === 'Ring2') && (target === 'Ring1' || target === 'Ring2'))
+    return true
   return itemSlot === target
 }
 
@@ -296,9 +372,10 @@ function rarityRank(rarity: InventoryItem['rarity']): number {
 }
 
 function equippedItemForSlot(item: InventoryItem): InventoryItem | null {
-  const targetSlot = contextualSlot.value !== null && slotsMatch(item, contextualSlot.value)
-    ? contextualSlot.value
-    : item.slot
+  const targetSlot =
+    contextualSlot.value !== null && slotsMatch(item, contextualSlot.value)
+      ? contextualSlot.value
+      : item.slot
   return targetSlot ? equippedItemAt(targetSlot) : null
 }
 
@@ -336,9 +413,11 @@ function formatNumber(value: number): string {
 }
 
 function isValuableInventoryItem(item: InventoryItem): boolean {
-  return rarityRank(item.rarity) >= rarityRank('Rare')
-    || (item.generatedItem?.stars ?? 0) > 0
-    || (item.reforgeCount ?? 0) > 0
+  return (
+    rarityRank(item.rarity) >= rarityRank('Rare') ||
+    (item.generatedItem?.stars ?? 0) > 0 ||
+    (item.reforgeCount ?? 0) > 0
+  )
 }
 
 function selectedQuantity(item: InventoryItem): number {
@@ -391,15 +470,13 @@ function toggleInventorySelection(item: InventoryItem): void {
 }
 
 function selectAllVisibleItems(): void {
-  const selectable = sortedItems.value.filter(item => !item.isLocked)
-  const allSelected = selectable.length > 0
-    && selectable.every(item => selectedItemIds.value.has(item.id))
-  selectedItemIds.value = allSelected
-    ? new Set()
-    : new Set(selectable.map(item => item.id))
+  const selectable = sortedItems.value.filter((item) => !item.isLocked)
+  const allSelected =
+    selectable.length > 0 && selectable.every((item) => selectedItemIds.value.has(item.id))
+  selectedItemIds.value = allSelected ? new Set() : new Set(selectable.map((item) => item.id))
   selectedQuantities.value = allSelected
     ? {}
-    : Object.fromEntries(selectable.map(item => [item.id, item.quantity]))
+    : Object.fromEntries(selectable.map((item) => [item.id, item.quantity]))
   bulkActionError.value = null
 }
 
@@ -409,13 +486,20 @@ async function discardInventoryItems(items: InventoryItem[]): Promise<boolean> {
   const message = valuable
     ? `Уничтожить ${items.length} выбранных позиций? Среди них есть Rare+ или улучшенные вещи. Действие нельзя отменить.`
     : `Уничтожить ${items.length} выбранных позиций? Действие нельзя отменить.`
-  if (!await confirmation.ask({ title: 'Уничтожить предметы?', message, confirmLabel: 'Уничтожить' })) return false
+  if (
+    !(await confirmation.ask({
+      title: 'Уничтожить предметы?',
+      message,
+      confirmLabel: 'Уничтожить',
+    }))
+  )
+    return false
 
   bulkActionPending.value = true
   bulkActionError.value = null
   try {
     const succeeded = await session.discardInventoryItems(
-      items.map(item => ({
+      items.map((item) => ({
         characterItemId: item.id,
         quantity: selectedQuantity(item),
       })),
@@ -455,7 +539,8 @@ async function sellSelectedItems(): Promise<void> {
   const message = valuable
     ? `Продать ${items.length} позиций за ${formatMoney(items.reduce((sum, item) => sum + item.sellPriceGold * selectedQuantity(item), 0))}? Среди них есть Rare+ или улучшенные вещи.`
     : `Продать ${items.length} позиций за ${formatMoney(items.reduce((sum, item) => sum + item.sellPriceGold * selectedQuantity(item), 0))}?`
-  if (!await confirmation.ask({ title: 'Продать предметы?', message, confirmLabel: 'Продать' })) return
+  if (!(await confirmation.ask({ title: 'Продать предметы?', message, confirmLabel: 'Продать' })))
+    return
 
   bulkActionPending.value = true
   bulkActionError.value = null
@@ -470,7 +555,8 @@ async function sellSelectedItems(): Promise<void> {
       )
       if (!updated) {
         failed = true
-        bulkActionError.value = 'Не удалось продать все выбранные предметы. Уже проданные позиции сохранены.'
+        bulkActionError.value =
+          'Не удалось продать все выбранные предметы. Уже проданные позиции сохранены.'
         break
       }
       remainingIds.delete(item.id)
@@ -478,8 +564,7 @@ async function sellSelectedItems(): Promise<void> {
 
     selectedItemIds.value = remainingIds
     selectedQuantities.value = Object.fromEntries(
-      Object.entries(selectedQuantities.value)
-        .filter(([itemId]) => remainingIds.has(itemId)),
+      Object.entries(selectedQuantities.value).filter(([itemId]) => remainingIds.has(itemId)),
     )
     if (!failed && remainingIds.size > 0) {
       bulkActionError.value = `${remainingIds.size} выбранных поз. нельзя продать — они оставлены выбранными.`
@@ -492,9 +577,13 @@ async function sellSelectedItems(): Promise<void> {
 async function sellSelectedItem(): Promise<void> {
   const item = selectedItem.value
   if (!item || item.sellPriceGold <= 0 || item.isLocked || !canSellHere.value) return
-  const confirmed = !isValuableInventoryItem(item) || await confirmation.ask({
-    title: 'Продать ценный предмет?', message: `Продать «${item.name}» за ${formatMoney(item.sellPriceGold * item.quantity)}?`, confirmLabel: 'Продать',
-  })
+  const confirmed =
+    !isValuableInventoryItem(item) ||
+    (await confirmation.ask({
+      title: 'Продать ценный предмет?',
+      message: `Продать «${item.name}» за ${formatMoney(item.sellPriceGold * item.quantity)}?`,
+      confirmLabel: 'Продать',
+    }))
   if (!confirmed) return
   const updated = await session.sellMerchantItem(MARCUS_MERCHANT_ID, item.id, item.quantity)
   if (updated) selectedItem.value = null
@@ -503,8 +592,10 @@ async function sellSelectedItem(): Promise<void> {
 function inventoryBulkError(code: string | null): string {
   if (code === 'inventory_item_locked') return 'Один из выбранных предметов защищён.'
   if (code === 'inventory_item_equipped') return 'Нельзя уничтожить надетый предмет.'
-  if (code === 'inventory_item_transaction_locked') return 'Один из предметов участвует в другой операции.'
-  if (code === 'inventory_invalid_quantity') return 'Количество предмета изменилось. Обновите выбор.'
+  if (code === 'inventory_item_transaction_locked')
+    return 'Один из предметов участвует в другой операции.'
+  if (code === 'inventory_invalid_quantity')
+    return 'Количество предмета изменилось. Обновите выбор.'
   if (code === 'character_in_combat') return 'Инвентарь нельзя очищать во время боя.'
   return 'Не удалось выполнить массовое действие.'
 }
@@ -532,8 +623,7 @@ async function refreshPendingLoot(): Promise<void> {
 }
 
 function isValuablePendingLoot(item: PendingLootItem): boolean {
-  return rarityRank(item.rarity) >= rarityRank('Rare')
-    || (item.generatedItem?.stars ?? 0) > 0
+  return rarityRank(item.rarity) >= rarityRank('Rare') || (item.generatedItem?.stars ?? 0) > 0
 }
 
 async function claimPendingLootItems(items: PendingLootItem[]): Promise<void> {
@@ -541,11 +631,12 @@ async function claimPendingLootItems(items: PendingLootItem[]): Promise<void> {
   pendingLootLoading.value = true
   pendingLootActionError.value = null
   try {
-    const succeeded = await session.claimPendingLoot(items.map(item => item.id))
+    const succeeded = await session.claimPendingLoot(items.map((item) => item.id))
     if (!succeeded) {
-      pendingLootActionError.value = session.errorCode === 'inventory_full'
-        ? 'Инвентарь заполнен. Освободите место и повторите попытку.'
-        : 'Не удалось забрать добычу.'
+      pendingLootActionError.value =
+        session.errorCode === 'inventory_full'
+          ? 'Инвентарь заполнен. Освободите место и повторите попытку.'
+          : 'Не удалось забрать добычу.'
       return
     }
     await refreshPendingLoot()
@@ -561,12 +652,19 @@ async function discardPendingLootItems(items: PendingLootItem[]): Promise<void> 
   const message = valuable
     ? `Отказаться от ${items.length} позиций добычи? Среди них есть Rare+ предметы. Вернуть их будет нельзя.`
     : `Отказаться от ${items.length} позиций добычи? Вернуть их будет нельзя.`
-  if (!await confirmation.ask({ title: 'Отказаться от добычи?', message, confirmLabel: 'Отказаться' })) return
+  if (
+    !(await confirmation.ask({
+      title: 'Отказаться от добычи?',
+      message,
+      confirmLabel: 'Отказаться',
+    }))
+  )
+    return
 
   pendingLootLoading.value = true
   pendingLootActionError.value = null
   try {
-    const succeeded = await session.discardPendingLoot(items.map(item => item.id))
+    const succeeded = await session.discardPendingLoot(items.map((item) => item.id))
     if (!succeeded) {
       pendingLootActionError.value = 'Не удалось отказаться от добычи.'
       return
@@ -596,7 +694,7 @@ function syncNewItems(): void {
     return
   }
 
-  const currentIds = bagItems.value.map(item => item.id)
+  const currentIds = bagItems.value.map((item) => item.id)
   try {
     const raw = globalThis.localStorage?.getItem(key)
     if (raw === null) {
@@ -606,10 +704,12 @@ function syncNewItems(): void {
     }
 
     const parsed = JSON.parse(raw) as unknown
-    const seen = new Set(Array.isArray(parsed)
-      ? parsed.filter((value): value is string => typeof value === 'string')
-      : [])
-    newItemIds.value = new Set(currentIds.filter(id => !seen.has(id)))
+    const seen = new Set(
+      Array.isArray(parsed)
+        ? parsed.filter((value): value is string => typeof value === 'string')
+        : [],
+    )
+    newItemIds.value = new Set(currentIds.filter((id) => !seen.has(id)))
   } catch {
     newItemIds.value = new Set()
   }
@@ -621,10 +721,12 @@ function markItemSeen(itemId: string): void {
 
   try {
     const raw = globalThis.localStorage?.getItem(key)
-    const parsed = raw ? JSON.parse(raw) as unknown : []
-    const seen = new Set(Array.isArray(parsed)
-      ? parsed.filter((value): value is string => typeof value === 'string')
-      : [])
+    const parsed = raw ? (JSON.parse(raw) as unknown) : []
+    const seen = new Set(
+      Array.isArray(parsed)
+        ? parsed.filter((value): value is string => typeof value === 'string')
+        : [],
+    )
     seen.add(itemId)
     globalThis.localStorage?.setItem(key, JSON.stringify([...seen]))
   } catch {
@@ -645,7 +747,9 @@ async function refreshSpatialInventory(): Promise<void> {
   }
 
   try {
-    const response = await apiClient.request<SpatialInventorySnapshot>('/api/v1/inventory/spatial-artifact/')
+    const response = await apiClient.request<SpatialInventorySnapshot>(
+      '/api/v1/inventory/spatial-artifact/',
+    )
     if (requestSequence !== spatialInventoryRequestSequence) return
     spatialInventory.value = response
     spatialInventoryError.value = false
@@ -655,12 +759,60 @@ async function refreshSpatialInventory(): Promise<void> {
   }
 }
 
-const inventorySnapshotKey = computed(() => [
-  character.value?.id ?? '',
-  ...(inventory.value?.items ?? []).map(item =>
-    `${item.id}:${item.quantity}:${item.equippedSlot ?? ''}:${item.isLocked ? 1 : 0}`,
-  ),
-].join('|'))
+const inventorySnapshotKey = computed(() =>
+  [
+    character.value?.id ?? '',
+    ...(inventory.value?.items ?? []).map(
+      (item) => `${item.id}:${item.quantity}:${item.equippedSlot ?? ''}:${item.isLocked ? 1 : 0}`,
+    ),
+  ].join('|'),
+)
+
+function preferencesStorageKey(): string | null {
+  return character.value?.id ? `elyndor.inventory.preferences.${character.value.id}` : null
+}
+
+watch(
+  () => character.value?.id,
+  () => {
+    if (isContextualSlotMode.value) return
+    resetFilters()
+    sortMode.value = 'default'
+    viewMode.value = 'grid'
+    const key = preferencesStorageKey()
+    if (!key) return
+    try {
+      const saved: unknown = JSON.parse(globalThis.localStorage.getItem(key) ?? 'null')
+      if (!saved || typeof saved !== 'object') return
+      const preferences = saved as Record<string, unknown>
+      if (
+        typeof preferences.sort === 'string' &&
+        ['default', 'received', 'rarity', 'slot', 'new', 'level', 'name'].includes(preferences.sort)
+      ) {
+        sortMode.value = preferences.sort as InventorySort
+      }
+      if (preferences.view === 'list' || preferences.view === 'grid')
+        viewMode.value = preferences.view
+    } catch {
+      // Preferences are optional; blocked or malformed storage must not hide the bag.
+    }
+  },
+  { immediate: true },
+)
+
+watch([sortMode, viewMode], () => {
+  if (isContextualSlotMode.value) return
+  const key = preferencesStorageKey()
+  if (!key) return
+  try {
+    globalThis.localStorage.setItem(
+      key,
+      JSON.stringify({ sort: sortMode.value, view: viewMode.value }),
+    )
+  } catch {
+    // Inventory actions remain available when browser storage is unavailable.
+  }
+})
 
 watch(
   inventorySnapshotKey,
@@ -714,40 +866,63 @@ function typeLabel(item: InventoryItem): string {
   if (item.type === 'Consumable') return 'Расходник'
   if (item.type === 'LootContainer') return 'Сундук'
   const labels: Record<string, string> = {
-    MainHand: 'Основная рука', OffHand: 'Вторая рука', Weapon: 'Оружие',
-    Head: 'Шлем', Chest: 'Нагрудник', Hands: 'Перчатки', Legs: 'Поножи',
-    Feet: 'Обувь', Boots: 'Ботинки', Cloak: 'Плащ', Amulet: 'Амулет',
-    Ring1: 'Кольцо', Ring2: 'Кольцо', Accessory: 'Аксессуар', Waist: 'Пояс', Wrist: 'Наручи',
+    MainHand: 'Основная рука',
+    OffHand: 'Вторая рука',
+    Weapon: 'Оружие',
+    Head: 'Шлем',
+    Chest: 'Нагрудник',
+    Hands: 'Перчатки',
+    Legs: 'Поножи',
+    Feet: 'Обувь',
+    Boots: 'Ботинки',
+    Cloak: 'Плащ',
+    Amulet: 'Амулет',
+    Ring1: 'Кольцо',
+    Ring2: 'Кольцо',
+    Accessory: 'Аксессуар',
+    Waist: 'Пояс',
+    Wrist: 'Наручи',
   }
-  return item.slot ? labels[item.slot] ?? 'Снаряжение' : 'Снаряжение'
+  return item.slot ? (labels[item.slot] ?? 'Снаряжение') : 'Снаряжение'
 }
 
 function resetFilters(): void {
+  searchQuery.value = ''
+  typeFilter.value = 'all'
   newOnly.value = false
   rarityFilter.value = 'all'
   equipableOnly.value = false
-  sortMode.value = 'default'
 }
 
 function inventoryActionError(code: string | null): string | null {
   if (!code) return null
-  if (code === 'inventory_armor_category_restricted') return 'Этот тип брони недоступен вашему классу.'
-  if (code === 'inventory_weapon_category_restricted') return 'Этот тип оружия недоступен вашему классу.'
-  if (code === 'inventory_off_hand_category_restricted') return 'Этот предмет нельзя взять во вторую руку вашим классом.'
+  if (code === 'inventory_armor_category_restricted')
+    return 'Этот тип брони недоступен вашему классу.'
+  if (code === 'inventory_weapon_category_restricted')
+    return 'Этот тип оружия недоступен вашему классу.'
+  if (code === 'inventory_off_hand_category_restricted')
+    return 'Этот предмет нельзя взять во вторую руку вашим классом.'
   if (code === 'inventory_class_restricted') return 'Этот предмет предназначен для другого класса.'
   if (code === 'inventory_required_level') return 'Недостаточный уровень для этого предмета.'
-  if (code === 'inventory_equipment_change_in_combat') return 'Снаряжение нельзя менять во время боя.'
-  if (code === 'inventory_two_handed_conflict') return 'Двуручное оружие конфликтует со второй рукой.'
-  if (code === 'inventory_dual_wield_permission_required') return 'Второе одноручное оружие требует таланта «Двойной удар» в активной ветке Берсерка.'
+  if (code === 'inventory_equipment_change_in_combat')
+    return 'Снаряжение нельзя менять во время боя.'
+  if (code === 'inventory_two_handed_conflict')
+    return 'Двуручное оружие конфликтует со второй рукой.'
+  if (code === 'inventory_dual_wield_permission_required')
+    return 'Второе одноручное оружие требует таланта «Двойной удар» в активной ветке Берсерка.'
   return 'Не удалось изменить снаряжение.'
 }
 
 function spatialActionErrorLabel(code: string | null): string | null {
   if (!code) return null
-  if (code === 'inventory_full') return 'Нельзя снять или заменить артефакт: сначала освободите достаточно ячеек инвентаря.'
-  if (code === 'inventory_item_transaction_locked') return 'Этот артефакт сейчас участвует в другой операции.'
-  if (code === 'inventory_item_not_spatial_artifact') return 'Этот предмет не является пространственным артефактом.'
-  if (code === 'inventory_item_not_found' || code === 'inventory_item_not_owned') return 'Артефакт больше не найден в инвентаре.'
+  if (code === 'inventory_full')
+    return 'Нельзя снять или заменить артефакт: сначала освободите достаточно ячеек инвентаря.'
+  if (code === 'inventory_item_transaction_locked')
+    return 'Этот артефакт сейчас участвует в другой операции.'
+  if (code === 'inventory_item_not_spatial_artifact')
+    return 'Этот предмет не является пространственным артефактом.'
+  if (code === 'inventory_item_not_found' || code === 'inventory_item_not_owned')
+    return 'Артефакт больше не найден в инвентаре.'
   if (code === 'inventory_conflict') return 'Инвентарь изменился. Повторите действие.'
   return 'Не удалось изменить пространственный артефакт.'
 }
@@ -808,9 +983,11 @@ async function unequipSpatialArtifact(): Promise<void> {
 
 function canUseConsumableOutOfCombat(item: InventoryItem): boolean {
   if (item.type !== 'Consumable' || !character.value) return false
-  if (item.consumableActions.some((action) =>
-    action.type === 'ApplyEffect' || action.type === 'RemoveEffect',
-  )) {
+  if (
+    item.consumableActions.some(
+      (action) => action.type === 'ApplyEffect' || action.type === 'RemoveEffect',
+    )
+  ) {
     return false
   }
 
@@ -819,18 +996,22 @@ function canUseConsumableOutOfCombat(item: InventoryItem): boolean {
       return character.value!.vitals.currentHp < character.value!.vitals.maxHp
     }
     if (action.type === 'RestoreResource') {
-      return action.resourceType === character.value!.vitals.resourceType
-        && character.value!.vitals.currentResource < character.value!.vitals.maxResource
+      return (
+        action.resourceType === character.value!.vitals.resourceType &&
+        character.value!.vitals.currentResource < character.value!.vitals.maxResource
+      )
     }
     return false
   })
 }
 
 function isCombatOnlyConsumable(item: InventoryItem): boolean {
-  return item.type === 'Consumable'
-    && item.consumableActions.some((action) =>
-      action.type === 'ApplyEffect' || action.type === 'RemoveEffect',
+  return (
+    item.type === 'Consumable' &&
+    item.consumableActions.some(
+      (action) => action.type === 'ApplyEffect' || action.type === 'RemoveEffect',
     )
+  )
 }
 
 async function useSelected(): Promise<void> {
@@ -873,11 +1054,10 @@ async function toggleSelectedLock(): Promise<void> {
   await session.setItemLock(item.id, !item.isLocked)
   if (selectedItem.value?.id !== item.id) return
   const refreshed = session.snapshot?.character?.inventory.items.find(
-    candidate => candidate.id === item.id,
+    (candidate) => candidate.id === item.id,
   )
   if (refreshed) selectedItem.value = refreshed
 }
-
 </script>
 
 <template>
@@ -887,12 +1067,21 @@ async function toggleSelectedLock(): Promise<void> {
         <p>{{ isContextualSlotMode ? 'Снаряжение' : 'Снаряжение и добыча' }}</p>
         <h1>{{ isContextualSlotMode ? `Выберите: ${slotLabel(contextualSlot)}` : 'Инвентарь' }}</h1>
       </div>
-      <div class="capacity" :class="{ 'capacity--warning': capacityWarning }" data-inventory-capacity>
-        <strong>{{ usedSlots }}</strong><span>/ {{ capacity ?? '—' }}</span>
+      <div
+        class="capacity"
+        :class="{ 'capacity--warning': capacityWarning }"
+        data-inventory-capacity
+      >
+        <strong>{{ usedSlots }}</strong
+        ><span>/ {{ capacity ?? '—' }}</span>
       </div>
     </header>
 
-    <section v-if="capacityState && !isContextualSlotMode" class="spatial-capacity" data-spatial-capacity>
+    <section
+      v-if="capacityState && !isContextualSlotMode"
+      class="spatial-capacity"
+      data-spatial-capacity
+    >
       <div>
         <small>Пространственный инвентарь</small>
         <strong>{{ baseCapacity }} + {{ artifactCapacityBonus }} = {{ capacity }}</strong>
@@ -900,7 +1089,9 @@ async function toggleSelectedLock(): Promise<void> {
       <div class="spatial-capacity__meta">
         <span>{{ freeSlots }} свободно</span>
         <span v-if="spatialInventory?.equippedArtifact" data-equipped-spatial-artifact>
-          {{ spatialInventory.equippedArtifact.name }} · +{{ spatialInventory.equippedArtifact.capacityBonus }}
+          {{ spatialInventory.equippedArtifact.name }} · +{{
+            spatialInventory.equippedArtifact.capacityBonus
+          }}
         </span>
         <button
           v-if="spatialInventory?.equippedArtifact"
@@ -917,7 +1108,11 @@ async function toggleSelectedLock(): Promise<void> {
         </span>
       </div>
     </section>
-    <p v-else-if="spatialInventoryError && !isContextualSlotMode" class="spatial-capacity__error" role="status">
+    <p
+      v-else-if="spatialInventoryError && !isContextualSlotMode"
+      class="spatial-capacity__error"
+      role="status"
+    >
       Данные вместимости временно недоступны. Предметы показаны полностью.
     </p>
     <p
@@ -929,36 +1124,30 @@ async function toggleSelectedLock(): Promise<void> {
       {{ spatialActionErrorLabel(spatialActionError) }}
     </p>
 
-    <section v-if="inventory && bagItems.length" class="inventory-tools" aria-label="Фильтры инвентаря">
-      <div v-if="!isContextualSlotMode" class="inventory-tools__primary">
-        <small>Категория</small>
-        <div class="filter-chips filter-chips--scroll">
-          <button type="button" :class="{ active: typeFilter === 'all' && !newOnly }" @click="typeFilter = 'all'; newOnly = false">Все</button>
-          <button
-            type="button"
-            data-inventory-new-filter
-            :class="{ active: newOnly }"
-            @click="newOnly = !newOnly"
-          >
-            Новые<span v-if="newItemIds.size"> · {{ newItemIds.size }}</span>
-          </button>
-          <button type="button" :class="{ active: typeFilter === 'equipment' }" @click="typeFilter = 'equipment'">Снаряжение</button>
-          <button type="button" :class="{ active: typeFilter === 'artifact' }" @click="typeFilter = 'artifact'">Артефакты</button>
-          <button type="button" :class="{ active: typeFilter === 'consumable' }" @click="typeFilter = 'consumable'">Расходники</button>
-          <button type="button" :class="{ active: typeFilter === 'container' }" @click="typeFilter = 'container'">Сундуки</button>
-          <button type="button" :class="{ active: typeFilter === 'material' }" @click="typeFilter = 'material'">Материалы</button>
-        </div>
-      </div>
-      <UIButton
-        v-if="!isContextualSlotMode"
-        variant="secondary"
-        data-open-inventory-filters
-        @click="filtersOpen = true"
-      >
-        Фильтры<span v-if="activeFilterCount"> · {{ activeFilterCount }}</span>
-      </UIButton>
-      <span v-else class="inventory-tools__context">Фильтр слота: {{ slotLabel(contextualSlot) }}</span>
-    </section>
+    <InventoryToolbar
+      v-if="inventory && bagItems.length"
+      v-model:category="typeFilter"
+      v-model:view="viewMode"
+      v-model:search="searchQuery"
+      v-model:sort="sortMode"
+      v-model:new-only="newOnly"
+      :counts="categoryCounts"
+      :contextual-label="contextualSlot ? slotLabel(contextualSlot) : null"
+      :new-count="newItemIds.size"
+      :filter-count="activeFilterCount"
+      @filters="filtersOpen = true"
+    />
+    <div
+      v-if="searchQuery || activeFilterCount"
+      class="inventory-active-filters"
+      data-inventory-active-filters
+    >
+      <span v-if="searchQuery">Поиск: «{{ searchQuery.trim() }}»</span>
+      <span v-if="newOnly">Только новые</span>
+      <span v-if="equipableOnly">Можно надеть</span>
+      <span v-if="rarityFilter !== 'all'">{{ rarityName(rarityFilter) }}</span>
+      <button type="button" @click="resetFilters">Сбросить</button>
+    </div>
 
     <UIModal :open="filtersOpen" title="Фильтры инвентаря" @close="filtersOpen = false">
       <section class="inventory-filter-sheet" aria-label="Дополнительные фильтры">
@@ -978,39 +1167,79 @@ async function toggleSelectedLock(): Promise<void> {
         <div class="filter-row filter-row--rarity">
           <small>Редкость</small>
           <div class="filter-chips filter-chips--scroll">
-            <button type="button" :class="{ active: rarityFilter === 'all' }" @click="rarityFilter = 'all'">Любая</button>
-            <button type="button" :class="{ active: rarityFilter === 'Common' }" @click="rarityFilter = 'Common'">Обычная</button>
-            <button type="button" :class="{ active: rarityFilter === 'Uncommon' }" @click="rarityFilter = 'Uncommon'">Необычная</button>
-            <button type="button" :class="{ active: rarityFilter === 'Rare' }" @click="rarityFilter = 'Rare'">Редкая</button>
-            <button type="button" :class="{ active: rarityFilter === 'Epic' }" @click="rarityFilter = 'Epic'">Эпическая</button>
-            <button type="button" :class="{ active: rarityFilter === 'Legendary' }" @click="rarityFilter = 'Legendary'">Легендарная</button>
-            <button type="button" :class="{ active: rarityFilter === 'Unique' }" @click="rarityFilter = 'Unique'">Уникальная</button>
+            <button
+              type="button"
+              :class="{ active: rarityFilter === 'all' }"
+              @click="rarityFilter = 'all'"
+            >
+              Любая
+            </button>
+            <button
+              type="button"
+              :class="{ active: rarityFilter === 'Common' }"
+              @click="rarityFilter = 'Common'"
+            >
+              Обычная
+            </button>
+            <button
+              type="button"
+              :class="{ active: rarityFilter === 'Uncommon' }"
+              @click="rarityFilter = 'Uncommon'"
+            >
+              Необычная
+            </button>
+            <button
+              type="button"
+              :class="{ active: rarityFilter === 'Rare' }"
+              @click="rarityFilter = 'Rare'"
+            >
+              Редкая
+            </button>
+            <button
+              type="button"
+              :class="{ active: rarityFilter === 'Epic' }"
+              @click="rarityFilter = 'Epic'"
+            >
+              Эпическая
+            </button>
+            <button
+              type="button"
+              :class="{ active: rarityFilter === 'Legendary' }"
+              @click="rarityFilter = 'Legendary'"
+            >
+              Легендарная
+            </button>
+            <button
+              type="button"
+              :class="{ active: rarityFilter === 'Unique' }"
+              @click="rarityFilter = 'Unique'"
+            >
+              Уникальная
+            </button>
           </div>
-        </div>
-        <div class="filter-row filter-row--sort">
-          <small>Порядок</small>
-          <label class="sort-select">
-            <span class="sr-only">Сортировка предметов</span>
-            <select v-model="sortMode" data-inventory-sort>
-              <option value="default">Как получено</option>
-              <option value="new">Новые сначала</option>
-              <option value="rarity">По редкости</option>
-              <option value="slot">По слоту</option>
-              <option value="level">По уровню</option>
-              <option value="name">По названию</option>
-            </select>
-          </label>
         </div>
       </section>
       <template #actions>
-        <UIButton variant="ghost" data-reset-inventory-filters @click="resetFilters">Сбросить</UIButton>
+        <UIButton variant="ghost" data-reset-inventory-filters @click="resetFilters"
+          >Сбросить</UIButton
+        >
         <UIButton data-apply-inventory-filters @click="filtersOpen = false">Готово</UIButton>
       </template>
     </UIModal>
 
-    <UIToast v-if="!isContextualSlotMode && pendingLootReadError" tone="danger" data-pending-loot-read-error>
+    <UIToast
+      v-if="!isContextualSlotMode && pendingLootReadError"
+      tone="danger"
+      data-pending-loot-read-error
+    >
       Не удалось загрузить незабранную добычу. Инвентарь остаётся доступен.
-      <UIButton :loading="pendingLootReadPending" loading-label="Загружаем…" variant="secondary" @click="refreshPendingLoot">Повторить</UIButton>
+      <UIButton
+        :loading="pendingLootReadPending"
+        loading-label="Загружаем…"
+        variant="secondary"
+        @click="refreshPendingLoot"
+        >Повторить</UIButton
+      >
     </UIToast>
     <section
       v-if="!isContextualSlotMode && pendingLootItems.length"
@@ -1042,13 +1271,23 @@ async function toggleSelectedLock(): Promise<void> {
           </span>
           <div class="pending-loot-list__copy">
             <small>{{ rarityName(item.rarity) }}</small>
-            <strong>{{ item.name }}<span v-if="item.quantity > 1"> ×{{ item.quantity }}</span></strong>
+            <strong
+              >{{ item.name }}<span v-if="item.quantity > 1"> ×{{ item.quantity }}</span></strong
+            >
           </div>
           <div class="pending-loot-list__actions">
-            <button type="button" :disabled="pendingLootLoading" @click="claimPendingLootItems([item])">
+            <button
+              type="button"
+              :disabled="pendingLootLoading"
+              @click="claimPendingLootItems([item])"
+            >
               Забрать
             </button>
-            <button type="button" :disabled="pendingLootLoading" @click="discardPendingLootItems([item])">
+            <button
+              type="button"
+              :disabled="pendingLootLoading"
+              @click="discardPendingLootItems([item])"
+            >
               Отказаться
             </button>
           </div>
@@ -1056,7 +1295,10 @@ async function toggleSelectedLock(): Promise<void> {
       </div>
 
       <footer>
-        <UIButton :disabled="pendingLootLoading" @click="claimPendingLootItems([...pendingLootItems])">
+        <UIButton
+          :disabled="pendingLootLoading"
+          @click="claimPendingLootItems([...pendingLootItems])"
+        >
           Забрать всё
         </UIButton>
         <UIButton
@@ -1072,12 +1314,16 @@ async function toggleSelectedLock(): Promise<void> {
     <section v-if="inventory" class="bag-surface">
       <header v-if="bagItems.length" class="bag-surface__header">
         <div>
-          <small>{{ isContextualSlotMode ? 'Подходящий слот' : typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly && !newOnly ? 'Все предметы' : 'Результат фильтра' }}</small>
-          <strong>{{ isContextualSlotMode ? `${filteredItems.length} подходит` : typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly && !newOnly ? `${usedSlots} занято` : `${filteredItems.length} найдено` }}</strong>
+          <small>{{ isContextualSlotMode ? 'Подходящий слот' : 'Рюкзак' }}</small>
+          <strong aria-live="polite"
+            >{{ filteredItems.length }} из {{ bagItems.length }} предметов</strong
+          >
         </div>
         <span v-if="isContextualSlotMode">Выбор снаряжения</span>
         <div v-else class="bag-surface__header-actions">
-          <span v-if="typeFilter !== 'all' || rarityFilter !== 'all' || equipableOnly || newOnly">Фильтр активен</span>
+          <span v-if="typeFilter !== 'all' || rarityFilter !== 'all' || equipableOnly || newOnly"
+            >Фильтр активен</span
+          >
           <button type="button" data-inventory-selection-mode @click="toggleSelectionMode">
             {{ selectionMode ? 'Готово' : 'Выбрать' }}
           </button>
@@ -1088,13 +1334,21 @@ async function toggleSelectedLock(): Promise<void> {
         <div>
           <strong>Выбрано: {{ selectedItems.length }}</strong>
           <small v-if="canSellHere && selectedItems.length">
-            Можно продать: {{ selectedSellableItems.length }} из {{ selectedItems.length }} · {{ formatMoney(selectedSellValue) }}
+            Можно продать: {{ selectedSellableItems.length }} из {{ selectedItems.length }} ·
+            {{ formatMoney(selectedSellValue) }}
           </small>
           <small v-else-if="!canSellHere">Продажа доступна у Маркуса в Стартовом городе</small>
         </div>
         <div class="inventory-bulk-bar__actions">
           <button type="button" @click="selectAllVisibleItems">
-            {{ sortedItems.filter(item => !item.isLocked).length && sortedItems.filter(item => !item.isLocked).every(item => selectedItemIds.has(item.id)) ? 'Снять выбор' : 'Выбрать всё' }}
+            {{
+              sortedItems.filter((item) => !item.isLocked).length &&
+              sortedItems
+                .filter((item) => !item.isLocked)
+                .every((item) => selectedItemIds.has(item.id))
+                ? 'Снять выбор'
+                : 'Выбрать всё'
+            }}
           </button>
           <UIButton
             variant="secondary"
@@ -1110,9 +1364,12 @@ async function toggleSelectedLock(): Promise<void> {
             Уничтожить
           </UIButton>
         </div>
-        <div v-if="selectedItems.some(item => item.quantity > 1)" class="inventory-bulk-quantities">
+        <div
+          v-if="selectedItems.some((item) => item.quantity > 1)"
+          class="inventory-bulk-quantities"
+        >
           <label
-            v-for="item in selectedItems.filter(item => item.quantity > 1)"
+            v-for="item in selectedItems.filter((item) => item.quantity > 1)"
             :key="`quantity-${item.id}`"
           >
             <span>{{ item.name }}</span>
@@ -1121,7 +1378,9 @@ async function toggleSelectedLock(): Promise<void> {
                 type="button"
                 :disabled="bulkActionPending || selectedQuantity(item) <= 1"
                 @click="setSelectedQuantity(item, selectedQuantity(item) - 1)"
-              >−</button>
+              >
+                −
+              </button>
               <input
                 type="number"
                 min="1"
@@ -1135,12 +1394,16 @@ async function toggleSelectedLock(): Promise<void> {
                 type="button"
                 :disabled="bulkActionPending || selectedQuantity(item) >= item.quantity"
                 @click="setSelectedQuantity(item, selectedQuantity(item) + 1)"
-              >+</button>
+              >
+                +
+              </button>
               <button
                 type="button"
                 :disabled="bulkActionPending || selectedQuantity(item) === item.quantity"
                 @click="setSelectedQuantity(item, item.quantity)"
-              >MAX</button>
+              >
+                MAX
+              </button>
             </span>
           </label>
         </div>
@@ -1149,49 +1412,75 @@ async function toggleSelectedLock(): Promise<void> {
         {{ bulkActionError }}
       </p>
 
-      <div
-        v-if="bagItems.length > 0 && visibleCells.length && (filteredItems.length || (typeFilter === 'all' && rarityFilter === 'all' && !equipableOnly && !newOnly))"
-        class="bag-grid"
-      >
-        <button
-          v-for="(item, index) in visibleCells"
-          :key="item?.id ?? `empty-${index}`"
-          class="bag-cell"
-          :class="{
-            'bag-cell--empty': !item,
-            'bag-cell--generated': item?.generatedItem !== null && item?.generatedItem !== undefined,
-            'bag-cell--selected': item ? selectedItemIds.has(item.id) : false,
-          }"
-          :data-rarity="item?.rarity"
-          :data-item-id="item?.id"
-          :data-new="item ? newItemIds.has(item.id) : undefined"
-          :data-locked="item?.isLocked ?? undefined"
-          type="button"
-          :disabled="!item"
-          :aria-label="item?.name ?? 'Пустая ячейка'"
-          @click="item && selectionMode ? toggleInventorySelection(item) : openItem(item)"
+      <div v-if="filteredItems.length" class="inventory-groups" :data-inventory-layout="viewMode">
+        <section
+          v-for="group in itemGroups"
+          :key="group.id"
+          class="inventory-group"
+          :data-inventory-group="group.id"
         >
-          <template v-if="item">
-            <span v-if="selectionMode" class="bag-cell__selection" aria-hidden="true">
-              {{ selectedItemIds.has(item.id) ? '✓' : '' }}
-            </span>
-            <span v-if="newItemIds.has(item.id)" class="bag-cell__new"><span class="sr-only">НОВОЕ</span></span>
-            <span v-if="item.isLocked" class="bag-cell__lock" aria-label="Предмет защищён">
-              <IconGenerator :config="{ id: `lock-${item.id}`, glyph: 'lock', category: 'utility', state: 'locked' }" />
-            </span>
-            <span class="bag-cell__icon">
-              <ItemIcon :icon-id="item.iconId" :item-id="item.id" :name="item.name" :type="item.type" :equipment-slot="item.slot" :rarity="item.rarity" />
-            </span>
-            <ItemQualityStars
-              v-if="item.generatedItem"
-              class="bag-cell__quality"
-              :id="`inventory-${item.id}`"
-              :stars="item.generatedItem.stars"
-            />
-            <b v-if="item.quantity > 1" class="bag-cell__quantity">{{ item.quantity }}</b>
-            <i class="bag-cell__rarity" aria-hidden="true" />
-          </template>
-        </button>
+          <h2 v-if="group.label" class="inventory-group__title">
+            {{ group.label }} <span>{{ group.items.length }}</span>
+          </h2>
+          <div class="bag-grid">
+            <button
+              v-for="item in group.items"
+              :key="item.id"
+              class="bag-cell"
+              :class="{
+                'bag-cell--generated':
+                  item?.generatedItem !== null && item?.generatedItem !== undefined,
+                'bag-cell--selected': item ? selectedItemIds.has(item.id) : false,
+              }"
+              :data-rarity="item?.rarity"
+              :data-item-id="item?.id"
+              :data-new="item ? newItemIds.has(item.id) : undefined"
+              :data-locked="item?.isLocked ?? undefined"
+              :aria-pressed="selectionMode ? selectedItemIds.has(item.id) : undefined"
+              type="button"
+              :disabled="!item"
+              :aria-label="item?.name ?? 'Пустая ячейка'"
+              @click="item && selectionMode ? toggleInventorySelection(item) : openItem(item)"
+            >
+              <template v-if="item">
+                <span v-if="selectionMode" class="bag-cell__selection" aria-hidden="true">
+                  {{ selectedItemIds.has(item.id) ? '✓' : '' }}
+                </span>
+                <span v-if="newItemIds.has(item.id)" class="bag-cell__new"
+                  ><span class="sr-only">НОВОЕ</span></span
+                >
+                <span v-if="item.isLocked" class="bag-cell__lock" aria-label="Предмет защищён">
+                  <IconGenerator
+                    :config="{
+                      id: `lock-${item.id}`,
+                      glyph: 'lock',
+                      category: 'utility',
+                      state: 'locked',
+                    }"
+                  />
+                </span>
+                <span class="bag-cell__icon">
+                  <ItemIcon
+                    :icon-id="item.iconId"
+                    :item-id="item.id"
+                    :name="item.name"
+                    :type="item.type"
+                    :equipment-slot="item.slot"
+                    :rarity="item.rarity"
+                  />
+                </span>
+                <ItemQualityStars
+                  v-if="item.generatedItem"
+                  class="bag-cell__quality"
+                  :id="`inventory-${item.id}`"
+                  :stars="item.generatedItem.stars"
+                />
+                <b v-if="item.quantity > 1" class="bag-cell__quantity">{{ item.quantity }}</b>
+                <i class="bag-cell__rarity" aria-hidden="true" />
+              </template>
+            </button>
+          </div>
+        </section>
       </div>
 
       <UILoadingState
@@ -1204,13 +1493,29 @@ async function toggleSelectedLock(): Promise<void> {
         v-else
         state="empty"
         title="Ничего не найдено"
-        :message="isContextualSlotMode ? 'В рюкзаке нет предметов для выбранного слота.' : 'Измените выбранные фильтры.'"
+        :message="
+          isContextualSlotMode
+            ? 'В рюкзаке нет предметов для выбранного слота.'
+            : 'Измените выбранные фильтры.'
+        "
       />
     </section>
 
     <UIToast v-if="actionNotice" tone="success" data-inventory-feedback>{{ actionNotice }}</UIToast>
     <UIConfirmation :request="confirmation.request.value" @resolve="confirmation.settle" />
-    <UIModal :open="selectedItem !== null" :title="selectedItem?.name ?? ''" :busy="equipmentPending || consumablePending || lockPending || bulkActionPending || spatialActionPending || containerActionPending" @close="openItem(null)">
+    <UIModal
+      :open="selectedItem !== null"
+      :title="selectedItem?.name ?? ''"
+      :busy="
+        equipmentPending ||
+        consumablePending ||
+        lockPending ||
+        bulkActionPending ||
+        spatialActionPending ||
+        containerActionPending
+      "
+      @close="openItem(null)"
+    >
       <article v-if="selectedItem" class="item-detail">
         <ItemIdentity :item="selectedItem" :subtitle="typeLabel(selectedItem)" />
         <section
@@ -1230,31 +1535,53 @@ async function toggleSelectedLock(): Promise<void> {
           </div>
         </section>
         <p class="item-detail__description">{{ selectedItem.description }}</p>
-        <p v-if="isSpatialArtifact(selectedItem)" class="item-detail__hint" data-spatial-artifact-hint>
-          Используется в отдельном слоте пространственного артефакта и не занимает обычный слот экипировки.
+        <p
+          v-if="isSpatialArtifact(selectedItem)"
+          class="item-detail__hint"
+          data-spatial-artifact-hint
+        >
+          Используется в отдельном слоте пространственного артефакта и не занимает обычный слот
+          экипировки.
           <template v-if="spatialInventory?.equippedArtifact">
-            Сейчас надето: {{ spatialInventory.equippedArtifact.name }} (+{{ spatialInventory.equippedArtifact.capacityBonus }}).
+            Сейчас надето: {{ spatialInventory.equippedArtifact.name }} (+{{
+              spatialInventory.equippedArtifact.capacityBonus
+            }}).
           </template>
         </p>
         <p v-if="selectedItem.hasRandomStats" class="item-detail__roll">
           Характеристики этого экземпляра определились при получении предмета.
         </p>
-        <section v-if="selectedItem.generatedItem" class="item-quality-summary" aria-label="Качество предмета">
+        <section
+          v-if="selectedItem.generatedItem"
+          class="item-quality-summary"
+          aria-label="Качество предмета"
+        >
           <div>
             <small>МОЩЬ ПРЕДМЕТА</small>
-            <strong>{{ formatNumber(selectedItem.generatedItem.itemPower) }} / {{ formatNumber(selectedItem.generatedItem.maxItemPower) }}</strong>
+            <strong
+              >{{ formatNumber(selectedItem.generatedItem.itemPower) }} /
+              {{ formatNumber(selectedItem.generatedItem.maxItemPower) }}</strong
+            >
           </div>
           <div>
             <small>КАЧЕСТВО</small>
             <strong>{{ formatNumber(selectedItem.generatedItem.rollQuality) }}%</strong>
           </div>
-          <span v-if="selectedItem.generatedItem.isPerfect" class="item-quality-summary__perfect">ИДЕАЛЬНОЕ КАЧЕСТВО</span>
+          <span v-if="selectedItem.generatedItem.isPerfect" class="item-quality-summary__perfect"
+            >ИДЕАЛЬНОЕ КАЧЕСТВО</span
+          >
         </section>
         <dl v-if="statRows(selectedItem).length">
-          <div v-for="row in statRows(selectedItem)" :key="row"><dt>{{ row }}</dt></div>
+          <div v-for="row in statRows(selectedItem)" :key="row">
+            <dt>{{ row }}</dt>
+          </div>
         </dl>
 
-        <section v-if="comparisonItem" class="item-comparison" aria-label="Сравнение с надетым предметом">
+        <section
+          v-if="comparisonItem"
+          class="item-comparison"
+          aria-label="Сравнение с надетым предметом"
+        >
           <header>
             <div>
               <small>СРАВНЕНИЕ</small>
@@ -1265,7 +1592,10 @@ async function toggleSelectedLock(): Promise<void> {
           <div v-if="comparisonRows.length" class="comparison-grid">
             <div v-for="row in comparisonRows" :key="row.label">
               <span>{{ row.label }}</span>
-              <small>{{ formatNumber(row.equippedValue) }} → {{ formatNumber(row.candidateValue) }}</small>
+              <small
+                >{{ formatNumber(row.equippedValue) }} →
+                {{ formatNumber(row.candidateValue) }}</small
+              >
               <b :data-delta="row.delta > 0 ? 'up' : row.delta < 0 ? 'down' : 'same'">
                 {{ comparisonDeltaLabel(row.delta) }}
               </b>
@@ -1273,15 +1603,44 @@ async function toggleSelectedLock(): Promise<void> {
           </div>
           <p v-else class="item-detail__hint">Характеристики предметов совпадают.</p>
         </section>
-        <p v-if="selectedItem.weaponBaseAttackIntervalSeconds" class="item-detail__hint">Базовый интервал автоатаки: {{ selectedItem.weaponBaseAttackIntervalSeconds }} сек.</p>
-        <ItemSetSummary v-if="selectedItem.setId" :set-id="selectedItem.setId" :items="inventory?.items ?? []" />
-        <p v-if="selectedItem.sellPriceGold > 0 && !selectedItem.isLocked && !selectedItem.equippedSlot" class="item-detail__hint">
-          Маркус купит {{ selectedItem.type === 'Equipment' ? 'этот предмет' : 'этот предмет за штуку' }} за {{ formatMoney(selectedItem.sellPriceGold) }}.
+        <p v-if="selectedItem.weaponBaseAttackIntervalSeconds" class="item-detail__hint">
+          Базовый интервал автоатаки: {{ selectedItem.weaponBaseAttackIntervalSeconds }} сек.
         </p>
-        <p v-if="selectedItem.isLocked" class="item-detail__hint item-detail__hint--locked">Предмет защищён от продажи торговцу. Снимите защиту, если захотите его продать.</p>
-        <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">{{ consumableSummary(selectedItem.consumableActions, selectedItem.consumableCooldownSeconds) }}</p>
-        <p v-if="selectedItem.type === 'Consumable' && isCombatOnlyConsumable(selectedItem)" class="item-detail__hint">Этот расходник используется только во время боя.</p>
-        <UIToast v-if="selectedItem.type === 'Consumable' && consumableActionError" tone="danger">Не удалось использовать предмет. Повторите попытку.</UIToast>
+        <ItemSetSummary
+          v-if="selectedItem.setId"
+          :set-id="selectedItem.setId"
+          :items="inventory?.items ?? []"
+        />
+        <p
+          v-if="
+            selectedItem.sellPriceGold > 0 && !selectedItem.isLocked && !selectedItem.equippedSlot
+          "
+          class="item-detail__hint"
+        >
+          Маркус купит
+          {{ selectedItem.type === 'Equipment' ? 'этот предмет' : 'этот предмет за штуку' }} за
+          {{ formatMoney(selectedItem.sellPriceGold) }}.
+        </p>
+        <p v-if="selectedItem.isLocked" class="item-detail__hint item-detail__hint--locked">
+          Предмет защищён от продажи торговцу. Снимите защиту, если захотите его продать.
+        </p>
+        <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">
+          {{
+            consumableSummary(
+              selectedItem.consumableActions,
+              selectedItem.consumableCooldownSeconds,
+            )
+          }}
+        </p>
+        <p
+          v-if="selectedItem.type === 'Consumable' && isCombatOnlyConsumable(selectedItem)"
+          class="item-detail__hint"
+        >
+          Этот расходник используется только во время боя.
+        </p>
+        <UIToast v-if="selectedItem.type === 'Consumable' && consumableActionError" tone="danger"
+          >Не удалось использовать предмет. Повторите попытку.</UIToast
+        >
         <p
           v-if="selectedEquipmentCompatibilityReason"
           class="item-detail__error"
@@ -1296,11 +1655,7 @@ async function toggleSelectedLock(): Promise<void> {
         >
           {{ selectedEquipmentLevelReason }}
         </p>
-        <p
-          v-if="containerActionError"
-          class="item-detail__error"
-          role="alert"
-        >
+        <p v-if="containerActionError" class="item-detail__error" role="alert">
           Не удалось открыть сундук: {{ containerActionError }}
         </p>
         <p
@@ -1320,7 +1675,9 @@ async function toggleSelectedLock(): Promise<void> {
         </p>
       </article>
       <template #actions>
-        <template v-if="selectedItem?.type === 'Equipment' && !selectedEquipmentCompatibilityReason">
+        <template
+          v-if="selectedItem?.type === 'Equipment' && !selectedEquipmentCompatibilityReason"
+        >
           <template v-if="isOneHandWeapon(selectedItem)">
             <UIButton
               v-if="!isContextualSlotMode || isContextualTarget('MainHand')"
@@ -1358,7 +1715,9 @@ async function toggleSelectedLock(): Promise<void> {
           v-if="isSpatialArtifact(selectedItem)"
           data-equip-spatial-artifact
           :loading="spatialActionPending"
-          :disabled="spatialActionPending || (character?.level ?? 0) < (selectedItem?.requiredLevel ?? 0)"
+          :disabled="
+            spatialActionPending || (character?.level ?? 0) < (selectedItem?.requiredLevel ?? 0)
+          "
           @click="equipSelectedSpatialArtifact"
         >
           {{ spatialInventory?.equippedArtifact ? 'Заменить' : 'Надеть' }}
@@ -1382,7 +1741,9 @@ async function toggleSelectedLock(): Promise<void> {
           Открыть сундук
         </UIButton>
         <UIButton
-          v-if="selectedItem && canSellHere && selectedItem.sellPriceGold > 0 && !selectedItem.isLocked"
+          v-if="
+            selectedItem && canSellHere && selectedItem.sellPriceGold > 0 && !selectedItem.isLocked
+          "
           variant="secondary"
           data-item-sell-action
           :loading="session.mutationPending"
@@ -1415,11 +1776,7 @@ async function toggleSelectedLock(): Promise<void> {
       </template>
     </UIModal>
 
-    <UIModal
-      :open="openedContainer !== null"
-      title="Сундук открыт"
-      @close="openedContainer = null"
-    >
+    <UIModal :open="openedContainer !== null" title="Сундук открыт" @close="openedContainer = null">
       <section v-if="openedContainer" class="loot-container-result">
         <p v-if="openedContainer.gold > 0">
           Золото: <strong>+{{ formatNumber(openedContainer.gold) }}</strong>
@@ -1439,7 +1796,10 @@ async function toggleSelectedLock(): Promise<void> {
           />
           <div>
             <strong>{{ item.name }}</strong>
-            <small>{{ item.rarity }}<template v-if="item.quantity > 1"> · ×{{ item.quantity }}</template></small>
+            <small
+              >{{ item.rarity
+              }}<template v-if="item.quantity > 1"> · ×{{ item.quantity }}</template></small
+            >
             <small v-if="item.pending">Нет места — предмет отправлен в незабранную добычу.</small>
           </div>
         </article>
@@ -1462,8 +1822,8 @@ async function toggleSelectedLock(): Promise<void> {
 
 .pending-loot-panel {
   display: grid;
-  gap: .65rem;
-  padding: .75rem;
+  gap: 0.65rem;
+  padding: 0.75rem;
   border: 1px solid color-mix(in srgb, var(--ui-color-primary) 38%, var(--ui-color-border));
   border-radius: var(--ui-radius-md);
   background: rgb(255 255 255 / 2%);
@@ -1480,37 +1840,37 @@ async function toggleSelectedLock(): Promise<void> {
 .pending-loot-panel > header,
 .pending-loot-panel > footer {
   justify-content: space-between;
-  gap: .6rem;
+  gap: 0.6rem;
 }
 
 .pending-loot-panel > header > div,
 .pending-loot-list__copy {
   display: grid;
-  gap: .1rem;
+  gap: 0.1rem;
 }
 
 .pending-loot-panel > header small,
 .pending-loot-list small {
   color: var(--ui-color-text-muted);
-  font-size: .58rem;
+  font-size: 0.58rem;
 }
 
 .pending-loot-panel > header > span {
   color: var(--ui-color-text-muted);
-  font-size: .58rem;
+  font-size: 0.58rem;
   text-align: right;
 }
 
 .pending-loot-list {
   display: grid;
-  gap: .4rem;
+  gap: 0.4rem;
 }
 
 .pending-loot-list article {
-  gap: .55rem;
-  padding: .45rem;
+  gap: 0.55rem;
+  padding: 0.45rem;
   border: 1px solid rgb(255 255 255 / 6%);
-  border-radius: .6rem;
+  border-radius: 0.6rem;
   background: rgb(0 0 0 / 12%);
 }
 
@@ -1531,61 +1891,61 @@ async function toggleSelectedLock(): Promise<void> {
 }
 
 .pending-loot-list__actions {
-  gap: .3rem;
+  gap: 0.3rem;
 }
 
 .pending-loot-list__actions button {
   min-height: 1.9rem;
-  padding: 0 .5rem;
+  padding: 0 0.5rem;
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-round);
   background: rgb(255 255 255 / 4%);
   color: var(--ui-color-text-primary);
   font: inherit;
-  font-size: .6rem;
+  font-size: 0.6rem;
   font-weight: 700;
 }
 
 .bag-surface__header-actions {
   display: flex;
   align-items: center;
-  gap: .5rem;
+  gap: 0.5rem;
 }
 
 .bag-surface__header-actions button,
 .inventory-bulk-bar__actions > button {
   min-height: 2rem;
-  padding: 0 .65rem;
+  padding: 0 0.65rem;
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-round);
   background: rgb(255 255 255 / 4%);
   color: var(--ui-color-text-primary);
   font: inherit;
-  font-size: .65rem;
+  font-size: 0.65rem;
   font-weight: 700;
 }
 
 .inventory-bulk-bar {
   position: sticky;
-  top: .5rem;
+  top: 0.5rem;
   z-index: 4;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: .75rem;
-  padding: .65rem .75rem;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
   border: 1px solid color-mix(in srgb, var(--ui-color-primary) 42%, var(--ui-color-border));
   border-radius: var(--ui-radius-md);
   background: color-mix(in srgb, var(--ui-color-surface-2) 94%, black);
-  box-shadow: 0 .55rem 1.4rem rgb(0 0 0 / 28%);
+  box-shadow: 0 0.55rem 1.4rem rgb(0 0 0 / 28%);
 }
 
 .inventory-bulk-quantities {
   grid-column: 1 / -1;
   display: grid;
   width: 100%;
-  gap: .35rem;
-  padding-top: .45rem;
+  gap: 0.35rem;
+  padding-top: 0.45rem;
   border-top: 1px solid rgb(255 255 255 / 6%);
 }
 
@@ -1593,15 +1953,15 @@ async function toggleSelectedLock(): Promise<void> {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: .65rem;
+  gap: 0.65rem;
   color: var(--ui-color-text-muted);
-  font-size: .62rem;
+  font-size: 0.62rem;
 }
 
 .inventory-bulk-quantity-control {
   display: flex;
   align-items: center;
-  gap: .25rem;
+  gap: 0.25rem;
 }
 
 .inventory-bulk-quantity-control button,
@@ -1609,7 +1969,7 @@ async function toggleSelectedLock(): Promise<void> {
   min-width: 2rem;
   min-height: 1.8rem;
   border: 1px solid var(--ui-color-border);
-  border-radius: .45rem;
+  border-radius: 0.45rem;
   background: rgb(255 255 255 / 4%);
   color: var(--ui-color-text-primary);
   font: inherit;
@@ -1622,19 +1982,19 @@ async function toggleSelectedLock(): Promise<void> {
 
 .inventory-bulk-bar > div:first-child {
   display: grid;
-  gap: .1rem;
+  gap: 0.1rem;
 }
 
 .inventory-bulk-bar small {
   color: var(--ui-color-text-muted);
-  font-size: .58rem;
+  font-size: 0.58rem;
 }
 
 .inventory-bulk-bar__actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: .4rem;
+  gap: 0.4rem;
 }
 
 .bag-cell--selected {
@@ -1644,8 +2004,8 @@ async function toggleSelectedLock(): Promise<void> {
 
 .bag-cell__selection {
   position: absolute;
-  top: .2rem;
-  left: .2rem;
+  top: 0.2rem;
+  left: 0.2rem;
   z-index: 3;
   display: grid;
   width: 1rem;
@@ -1655,7 +2015,7 @@ async function toggleSelectedLock(): Promise<void> {
   border-radius: 50%;
   background: rgb(6 8 12 / 88%);
   color: var(--ui-color-primary);
-  font-size: .65rem;
+  font-size: 0.65rem;
   font-weight: 900;
 }
 
@@ -1678,9 +2038,9 @@ async function toggleSelectedLock(): Promise<void> {
 
 .inventory-header p {
   color: var(--ui-color-primary);
-  font-size: .6rem;
+  font-size: 0.6rem;
   font-weight: 700;
-  letter-spacing: .1em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -1707,7 +2067,7 @@ async function toggleSelectedLock(): Promise<void> {
 }
 
 .capacity span {
-  font-size: .68rem;
+  font-size: 0.68rem;
 }
 
 .capacity--warning {
@@ -1736,12 +2096,12 @@ async function toggleSelectedLock(): Promise<void> {
 .spatial-capacity__meta,
 .spatial-capacity__error {
   color: var(--ui-color-text-muted);
-  font-size: .58rem;
+  font-size: 0.58rem;
 }
 
 .spatial-capacity strong {
   color: var(--ui-color-text-primary);
-  font-size: .72rem;
+  font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1758,12 +2118,12 @@ async function toggleSelectedLock(): Promise<void> {
   background: rgb(146 136 255 / 8%);
   color: #d5d2ff;
   font: inherit;
-  font-size: .58rem;
+  font-size: 0.58rem;
   font-weight: 700;
 }
 
 .spatial-capacity__action:disabled {
-  opacity: .55;
+  opacity: 0.55;
 }
 
 .spatial-capacity__overflow {
@@ -1778,13 +2138,6 @@ async function toggleSelectedLock(): Promise<void> {
   border-radius: var(--ui-radius-md);
 }
 
-.inventory-tools {
-  display: grid;
-  gap: var(--ui-space-2);
-  padding-block: var(--ui-space-2);
-  border-block: 1px solid rgb(255 255 255 / 6%);
-}
-
 .filter-row {
   display: grid;
   grid-template-columns: 3.2rem minmax(0, 1fr);
@@ -1794,9 +2147,9 @@ async function toggleSelectedLock(): Promise<void> {
 
 .filter-row > small {
   color: var(--ui-color-text-muted);
-  font-size: .58rem;
+  font-size: 0.58rem;
   font-weight: 700;
-  letter-spacing: .05em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
@@ -1824,7 +2177,7 @@ async function toggleSelectedLock(): Promise<void> {
   background: rgb(255 255 255 / 2%);
   color: var(--ui-color-text-muted);
   font: inherit;
-  font-size: .62rem;
+  font-size: 0.62rem;
   white-space: nowrap;
 }
 
@@ -1832,23 +2185,6 @@ async function toggleSelectedLock(): Promise<void> {
   border-color: color-mix(in srgb, var(--ui-color-primary) 58%, var(--ui-color-border));
   background: rgb(146 136 255 / 9%);
   color: #d5d2ff;
-}
-
-.sort-select {
-  display: block;
-  min-width: 0;
-}
-
-.sort-select select {
-  width: min(100%, 15rem);
-  min-height: var(--ui-touch-target);
-  padding: 0 var(--ui-space-3);
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-round);
-  background: var(--ui-color-surface-2);
-  color: var(--ui-color-text-secondary);
-  font: inherit;
-  font-size: .62rem;
 }
 
 .sr-only {
@@ -1887,7 +2223,7 @@ async function toggleSelectedLock(): Promise<void> {
 .bag-surface__header small,
 .bag-surface__header > span {
   color: var(--ui-color-text-muted);
-  font-size: .58rem;
+  font-size: 0.58rem;
 }
 
 .bag-surface__header strong {
@@ -1906,6 +2242,44 @@ async function toggleSelectedLock(): Promise<void> {
   gap: var(--ui-space-2);
 }
 
+.inventory-groups {
+  display: grid;
+  gap: 20px;
+}
+.inventory-group {
+  min-width: 0;
+}
+.inventory-group__title {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin: 0 0 10px;
+  color: var(--ui-color-text-primary);
+  font-size: 1rem;
+}
+.inventory-group__title span {
+  color: var(--ui-color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+.inventory-active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  align-items: center;
+  color: var(--ui-color-text-secondary);
+  font-size: 0.8rem;
+}
+.inventory-active-filters button {
+  min-height: 44px;
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: var(--ui-color-gold);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .bag-cell {
   position: relative;
   aspect-ratio: 1;
@@ -1919,21 +2293,27 @@ async function toggleSelectedLock(): Promise<void> {
   color: var(--ui-color-text-primary);
 }
 
-.bag-cell[data-rarity='Uncommon'] { border-color: color-mix(in srgb, var(--ui-color-success) 70%, var(--ui-color-border)); }
-.bag-cell[data-rarity='Rare'] { border-color: color-mix(in srgb, var(--ui-color-secondary) 72%, var(--ui-color-border)); }
-.bag-cell[data-rarity='Epic'] { border-color: color-mix(in srgb, var(--ui-color-primary) 82%, var(--ui-color-border)); }
+.bag-cell[data-rarity='Uncommon'] {
+  border-color: color-mix(in srgb, var(--ui-color-success) 70%, var(--ui-color-border));
+}
+.bag-cell[data-rarity='Rare'] {
+  border-color: color-mix(in srgb, var(--ui-color-secondary) 72%, var(--ui-color-border));
+}
+.bag-cell[data-rarity='Epic'] {
+  border-color: color-mix(in srgb, var(--ui-color-primary) 82%, var(--ui-color-border));
+}
 .bag-cell[data-rarity='Legendary'],
 .bag-cell[data-rarity='Unique'] {
   border-color: var(--ui-color-gold);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 3%), 0 0 12px rgb(232 200 102 / 10%);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 3%),
+    0 0 12px rgb(232 200 102 / 10%);
 }
 
 .bag-cell[data-locked='true'] {
-  box-shadow: inset 0 0 0 1px rgb(232 200 102 / 12%), 0 0 12px rgb(232 200 102 / 8%);
-}
-
-.bag-cell--empty {
-  opacity: .24;
+  box-shadow:
+    inset 0 0 0 1px rgb(232 200 102 / 12%),
+    0 0 12px rgb(232 200 102 / 8%);
 }
 
 .bag-cell__icon {
@@ -1953,9 +2333,9 @@ async function toggleSelectedLock(): Promise<void> {
   border-radius: 4px;
   background: rgb(20 17 44 / 92%);
   color: #c8c3ff;
-  font-size: .47rem;
+  font-size: 0.47rem;
   font-weight: 800;
-  letter-spacing: .04em;
+  letter-spacing: 0.04em;
 }
 
 .bag-cell__lock {
@@ -1971,7 +2351,7 @@ async function toggleSelectedLock(): Promise<void> {
   border-radius: 50%;
   background: rgb(31 27 12 / 92%);
   color: var(--ui-color-gold);
-  font-size: .45rem;
+  font-size: 0.45rem;
 }
 
 .bag-cell__quantity {
@@ -1982,7 +2362,7 @@ async function toggleSelectedLock(): Promise<void> {
   border-radius: 5px;
   background: #080b14e8;
   color: white;
-  font-size: .67rem;
+  font-size: 0.67rem;
 }
 
 .bag-cell__quality {
@@ -1994,12 +2374,12 @@ async function toggleSelectedLock(): Promise<void> {
 }
 
 .bag-cell__quality :deep(.item-quality-stars__star) {
-  width: .5rem;
-  height: .5rem;
+  width: 0.5rem;
+  height: 0.5rem;
 }
 
 .bag-cell--generated .bag-cell__quantity {
-  bottom: .85rem;
+  bottom: 0.85rem;
 }
 
 .bag-cell__icon img {
@@ -2027,7 +2407,7 @@ async function toggleSelectedLock(): Promise<void> {
   height: 2px;
   border-radius: var(--ui-radius-round);
   background: currentColor;
-  opacity: .34;
+  opacity: 0.34;
 }
 
 .item-detail {
@@ -2058,7 +2438,7 @@ async function toggleSelectedLock(): Promise<void> {
   border-radius: var(--ui-radius-sm);
   background: rgb(146 136 255 / 6%);
   color: #c9c5ff;
-  font-size: .62rem;
+  font-size: 0.62rem;
   line-height: 1.4;
 }
 
@@ -2081,9 +2461,9 @@ async function toggleSelectedLock(): Promise<void> {
 
 .item-detail__levels small {
   color: var(--ui-color-text-muted);
-  font-size: .52rem;
+  font-size: 0.52rem;
   font-weight: 800;
-  letter-spacing: .06em;
+  letter-spacing: 0.06em;
 }
 
 .item-detail__levels strong {
@@ -2094,7 +2474,7 @@ async function toggleSelectedLock(): Promise<void> {
 
 .item-detail__levels span {
   color: var(--ui-color-text-muted);
-  font-size: .56rem;
+  font-size: 0.56rem;
 }
 
 .item-quality-summary {
@@ -2115,14 +2495,14 @@ async function toggleSelectedLock(): Promise<void> {
 
 .item-quality-summary small {
   color: var(--ui-color-text-muted);
-  font-size: .54rem;
+  font-size: 0.54rem;
   font-weight: 800;
-  letter-spacing: .07em;
+  letter-spacing: 0.07em;
 }
 
 .item-quality-summary strong {
   color: var(--ui-color-text-primary);
-  font-size: .7rem;
+  font-size: 0.7rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2131,16 +2511,15 @@ async function toggleSelectedLock(): Promise<void> {
   padding: 7px var(--ui-space-3);
   border-top: 1px solid rgb(232 200 102 / 20%);
   color: var(--ui-color-gold);
-  font-size: .58rem;
+  font-size: 0.58rem;
   font-weight: 900;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   text-align: center;
 }
 
 .item-detail__description {
   color: var(--ui-color-text-muted);
 }
-
 
 .item-detail__icon {
   display: grid;
@@ -2198,13 +2577,13 @@ async function toggleSelectedLock(): Promise<void> {
 .item-comparison > header small,
 .item-comparison > header > span {
   color: var(--ui-color-text-muted);
-  font-size: .58rem;
+  font-size: 0.58rem;
 }
 
 .item-comparison > header small {
   color: #b8b1ff;
   font-weight: 700;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
 }
 
 .comparison-grid {
@@ -2219,7 +2598,7 @@ async function toggleSelectedLock(): Promise<void> {
   gap: var(--ui-space-2);
   padding-top: 5px;
   border-top: 1px solid rgb(255 255 255 / 5%);
-  font-size: .67rem;
+  font-size: 0.67rem;
 }
 
 .comparison-grid small {
@@ -2248,7 +2627,7 @@ async function toggleSelectedLock(): Promise<void> {
   border-radius: var(--ui-radius-md);
   background: rgb(216 95 114 / 6%);
   color: #ef9bab;
-  font-size: .68rem;
+  font-size: 0.68rem;
 }
 
 .item-detail__hint {
@@ -2264,22 +2643,6 @@ async function toggleSelectedLock(): Promise<void> {
   border-color: rgb(232 200 102 / 26%);
   background: linear-gradient(90deg, rgb(232 200 102 / 6%), var(--ui-color-surface-2));
   color: #d8c77e;
-}
-
-.inventory-tools__primary {
-  display: grid;
-  gap: var(--ui-space-2);
-}
-
-.inventory-tools__primary > small,
-.inventory-tools__context {
-  color: var(--ui-color-text-muted);
-  font-size: var(--ui-font-size-xs);
-  font-weight: 700;
-}
-
-.inventory-tools > :deep(.ui-button) {
-  width: 100%;
 }
 
 .inventory-filter-sheet {
@@ -2366,5 +2729,4 @@ async function toggleSelectedLock(): Promise<void> {
   color: var(--ui-color-text-muted);
   font-size: var(--ui-font-size-xs);
 }
-
 </style>

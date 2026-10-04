@@ -12,7 +12,6 @@ public static class ItemStarUpgradeErrorCodes
     public const string ItemNotFound = "star_upgrade_item_not_found";
     public const string ItemNotGenerated = "star_upgrade_item_not_generated";
     public const string ItemLocked = "star_upgrade_item_locked";
-    public const string ItemEquipped = "star_upgrade_item_equipped";
     public const string ItemTransactionLocked = "star_upgrade_item_transaction_locked";
     public const string MaxStars = "star_upgrade_max_stars";
     public const string ProfileMissing = "star_upgrade_profile_missing";

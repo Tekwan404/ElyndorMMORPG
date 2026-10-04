@@ -1131,3 +1131,54 @@ Crafting System:
 3. BindState изменяет только Item System по подтверждённой policy.
 4. Economy/Trade/Crafting не редактируют item stats.
 5. Auction escrow не является вторым владельцем ItemInstance.
+
+
+# 50. Forge: Reforge, Enhancement and Salvage
+
+## 50.1. Reforge selection scope
+
+Reforge changes exactly one mutable generated affix per operation.
+
+The player chooses an eligible affix for every new Reforge attempt. The chosen slot is operation-scoped:
+
+```text
+choose affix slot
+→ pay and roll proposal
+→ keep current OR accept proposed
+→ clear pending slot selection
+→ next Reforge may choose any eligible affix again
+```
+
+A previous Reforge must never permanently bind an ItemInstance to one affix slot.
+
+`ItemReforgeOperation.SlotKey` is the authoritative slot for a pending Reforge transaction. Persisted compatibility fields on the item may mirror the current pending selection, but they must not reject a later operation that chooses another eligible slot.
+
+`ReforgeCount` remains item-wide and continues to drive repeat-attempt cost scaling regardless of which affix is selected.
+
+Reforge never changes birth-time classification:
+
+- `RollQuality`;
+- stars;
+- perfect status/origin;
+- item level;
+- generated name.
+
+## 50.2. Equipped items in the forge
+
+Forge mutations that preserve the same ItemInstance are allowed while the item is equipped:
+
+```text
+Reforge     → allowed while equipped
+Enhancement → allowed while equipped
+Salvage     → forbidden while equipped
+```
+
+Reforge and Enhancement must not force a pointless `unequip → mutate → equip` round trip.
+
+Normal out-of-combat restrictions still apply. Transaction-locked or player-locked items remain unavailable according to the specific forge operation.
+
+## 50.3. Forge presentation
+
+`RollQuality` is stored and transported as a percentage value such as `55.15`, not as a normalized `0.5515` fraction. UI must render that value directly as `55.15%`.
+
+Server error codes must be mapped to specific player-facing forge errors where practical; the client must not hide known validation failures behind a generic retry message.

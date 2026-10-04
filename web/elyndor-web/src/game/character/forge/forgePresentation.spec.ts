@@ -34,7 +34,7 @@ function equipment(overrides: Partial<InventoryItem> = {}): InventoryItem {
       itemLevel: 5,
       itemPower: 20,
       maxItemPower: 30,
-      rollQuality: 0.5,
+      rollQuality: 50,
       stars: 3,
       isPerfect: false,
       perfectOrigin: null,

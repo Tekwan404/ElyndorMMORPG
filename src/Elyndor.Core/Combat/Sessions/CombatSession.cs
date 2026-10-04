@@ -1544,7 +1544,7 @@ public sealed partial class CombatSession
 
         aiRuntime.State = MonsterAiState.InCombat;
         SyncBerserkerConditionalEffects(now);
-        SyncMageConditionalEffects(now);
+        SyncActiveMageConditionalEffects(now);
         SyncArcherConditionalEffects(now);
         AbilityTargetCandidate[] targetCandidates = BuildMonsterAiTargetCandidates(
             enemy,
@@ -1824,7 +1824,7 @@ public sealed partial class CombatSession
         ActiveCast? cast = runtime.ActiveCast;
         if (cast is null) return;
         if (runtime != _playerRuntime)
-            SyncMageConditionalEffects(now);
+            SyncActiveMageConditionalEffects(now);
         AbilityExecutionResult completion =
             AbilityEngine.CompleteCast(runtime, now, _random);
         if (!completion.Succeeded) return;
@@ -2786,6 +2786,15 @@ public sealed partial class CombatSession
         public DateTimeOffset? NextOffHandAutoAttackAtUtc { get; set; }
         public Dictionary<string, DateTimeOffset> ConsumableCooldowns { get; } = new(StringComparer.Ordinal);
         public DateTimeOffset LastResourceRegenAtUtc { get; set; }
+        public DateTimeOffset? LastMageManaSpendAtUtc { get; set; }
+        public List<PendingMageResourceRefund> PendingMageResourceRefunds { get; } = [];
+        public int ArcanePowerManaSpendCount { get; set; }
+        public int CombustionCritCount { get; set; }
+        public int ArcherShotSequence { get; set; }
+        public DateTimeOffset? ColdBloodReadyAtUtc { get; set; }
+        public int FireDirectCritStreak { get; set; }
+        public DateTimeOffset LastFireDirectCritAt { get; set; }
+        public bool SurvivalPreparationArmed { get; set; }
         public bool AutoAttackEnabled { get; set; }
     }
 

@@ -82,6 +82,9 @@ reimplemented as a PvP-specific version.
 
 ## Next safe extraction
 
+The follow-up ownership correction is documented in
+[Participant-owned temporal resource state](participant-resource-state.md).
+
 Characterize and extract class-local timed resource bookkeeping (especially Mage
 pending refunds and last-spend state) into a per-participant resource rule adapter.
 First establish ownership across multiple Mages and the intentional scheduler
