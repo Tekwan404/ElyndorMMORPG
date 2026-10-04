@@ -15,7 +15,10 @@ public sealed class SpatialArtifactPremiumStoreContentTests
             ["SPATIAL_SEAL"] = (20, 300),
             ["SPATIAL_BOTTOMLESS_RING"] = (25, 425),
             ["SPATIAL_POCKET_SHARD"] = (30, 600),
-            ["SPATIAL_VOID_SEAL"] = (40, 900)
+            ["SPATIAL_VOID_SEAL"] = (40, 900),
+            ["SPATIAL_ASTRAL_RING"] = (100, 2250),
+            ["SPATIAL_DIMENSION_CORE"] = (150, 3250),
+            ["SPATIAL_ETERNITY_SEAL"] = (250, 5000)
         };
 
     [Fact]

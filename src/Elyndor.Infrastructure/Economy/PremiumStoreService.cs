@@ -20,64 +20,83 @@ public static class PremiumStoreErrorCodes
     public const string InvalidOperation = "premium_store_invalid_operation";
     public const string OperationConflict = "premium_store_operation_conflict";
     public const string InventoryFull = "premium_store_inventory_full";
+    public const string InvalidQuantity = "premium_store_invalid_quantity";
 }
 
 public sealed record PremiumStorePurchaseResult(bool Succeeded, string? ErrorCode, long CrystalBalance)
 {
     public static PremiumStorePurchaseResult Fail(string code, long balance = 0) => new(false, code, balance);
 }
-public sealed record PremiumStoreOfferSnapshot(PremiumStoreOfferDefinition Offer, ItemDefinition Item, bool CanPurchase);
+public sealed record PremiumStoreOfferSnapshot(PremiumStoreOfferDefinition Offer, ItemDefinition Item, bool CanPurchase, int MaxPackCount = 10000);
 public sealed record PremiumStoreSnapshot(long CrystalBalance, IReadOnlyList<PremiumStoreOfferSnapshot> Offers);
 
 public sealed class PremiumStoreService(GameDbContext dbContext, IContentSnapshotProvider contentProvider, TimeProvider timeProvider)
 {
+    public const int MaximumPackCount = 10000;
+    private const int MaximumItemQuantity = 1000000;
     public async Task<PremiumStoreSnapshot> GetAsync(Guid accountId, CancellationToken cancellationToken)
     {
         GameContentSnapshot content = contentProvider.GetCurrent();
         long balance = await dbContext.CrystalWallets.AsNoTracking().Where(wallet => wallet.AccountId == accountId)
             .Select(wallet => (long?)wallet.Balance).SingleOrDefaultAsync(cancellationToken) ?? 0;
-        PremiumStorePurchase[] purchases = await dbContext.PremiumStorePurchases.AsNoTracking()
-            .Where(purchase => purchase.AccountId == accountId).ToArrayAsync(cancellationToken);
+        var purchases = await dbContext.PremiumStorePurchases.AsNoTracking()
+            .Where(purchase => purchase.AccountId == accountId).GroupBy(purchase => purchase.Sku)
+            .Select(group => new { Sku = group.Key, Count = group.Sum(purchase => (long)purchase.PackCount) })
+            .ToDictionaryAsync(group => group.Sku, group => group.Count, cancellationToken);
         PremiumStoreOfferSnapshot[] offers = (content.Package.PremiumStoreOffers ?? [])
             .Where(offer => offer.Enabled && content.Indexes.ItemsById.TryGetValue(offer.ItemDefinitionId, out ItemDefinition? item) && item.PremiumEligible)
             .Select(offer => new PremiumStoreOfferSnapshot(offer, content.Indexes.ItemsById[offer.ItemDefinitionId],
-                offer.PerAccountLimit is not int limit || purchases.Count(purchase => purchase.Sku == offer.Sku) < limit))
+                offer.PerAccountLimit is not int limit || purchases.GetValueOrDefault(offer.Sku) < limit,
+                (int)Math.Max(0, Math.Min(Math.Min(MaximumPackCount, MaximumItemQuantity / offer.Quantity),
+                    offer.PerAccountLimit is int cap ? cap - purchases.GetValueOrDefault(offer.Sku) : MaximumPackCount))))
             .ToArray();
         return new PremiumStoreSnapshot(balance, offers);
     }
-    public Task<PremiumStorePurchaseResult> PurchaseAsync(Guid accountId, string sku, Guid operationId, CancellationToken cancellationToken) =>
+    public Task<PremiumStorePurchaseResult> PurchaseAsync(Guid accountId, string sku, Guid operationId, CancellationToken cancellationToken, int packCount = 1) =>
         operationId == Guid.Empty || string.IsNullOrWhiteSpace(sku)
             ? Task.FromResult(PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.InvalidOperation))
-            : dbContext.Database.CreateExecutionStrategy().ExecuteAsync(() => PurchaseCoreAsync(accountId, sku, operationId, cancellationToken));
+            : packCount is < 1 or > MaximumPackCount
+                ? Task.FromResult(PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.InvalidQuantity))
+                : dbContext.Database.CreateExecutionStrategy().ExecuteAsync(() => PurchaseCoreAsync(accountId, sku, operationId, packCount, cancellationToken));
 
-    private async Task<PremiumStorePurchaseResult> PurchaseCoreAsync(Guid accountId, string sku, Guid operationId, CancellationToken cancellationToken)
+    private async Task<PremiumStorePurchaseResult> PurchaseCoreAsync(Guid accountId, string sku, Guid operationId, int packCount, CancellationToken cancellationToken)
     {
         GameContentSnapshot content = contentProvider.GetCurrent();
-        PremiumStoreOfferDefinition? offer = content.Indexes.PremiumStoreOffersBySku.GetValueOrDefault(sku);
-        if (offer is null) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.OfferNotFound);
-        if (!offer.Enabled) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.OfferDisabled);
         await using IDbContextTransaction transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
         Character? character = await dbContext.Characters.FromSqlInterpolated($"SELECT * FROM game.characters WHERE \"AccountId\" = {accountId} FOR UPDATE").SingleOrDefaultAsync(cancellationToken);
         if (character is null) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.CharacterNotFound);
         PremiumStorePurchase? replay = await dbContext.PremiumStorePurchases.AsNoTracking().SingleOrDefaultAsync(item => item.OperationId == operationId, cancellationToken);
         if (replay is not null)
         {
-            if (replay.AccountId != accountId || !string.Equals(replay.Sku, sku, StringComparison.Ordinal))
+            if (replay.AccountId != accountId || replay.PackCount != packCount || !string.Equals(replay.Sku, sku, StringComparison.Ordinal))
                 return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.OperationConflict);
             await transaction.CommitAsync(cancellationToken);
             long balance = await dbContext.CrystalWallets.Where(wallet => wallet.AccountId == accountId).Select(wallet => wallet.Balance).SingleAsync(cancellationToken);
             return new(true, null, balance);
         }
-        if (offer.PerAccountLimit is int limit && await dbContext.PremiumStorePurchases.CountAsync(item => item.AccountId == accountId && item.Sku == sku, cancellationToken) >= limit) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.LimitReached);
-        CrystalWallet? wallet = await dbContext.CrystalWallets.SingleOrDefaultAsync(item => item.AccountId == accountId, cancellationToken);
-        if (wallet is null || !wallet.TryDebit(offer.CrystalPrice)) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.InsufficientCrystals, wallet?.Balance ?? 0);
+        PremiumStoreOfferDefinition? offer = content.Indexes.PremiumStoreOffersBySku.GetValueOrDefault(sku);
+        if (offer is null) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.OfferNotFound);
+        if (!offer.Enabled) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.OfferDisabled);
+        int quantity;
+        long price;
+        try { quantity = checked(offer.Quantity * packCount); price = checked(offer.CrystalPrice * packCount); }
+        catch (OverflowException) { return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.InvalidQuantity); }
+        if (quantity > MaximumItemQuantity) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.InvalidQuantity);
+        if (offer.PerAccountLimit is int limit && packCount + await dbContext.PremiumStorePurchases
+            .Where(item => item.AccountId == accountId && item.Sku == sku)
+            .SumAsync(item => (long)item.PackCount, cancellationToken) > limit)
+            return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.LimitReached);
+        CrystalWallet? wallet = await dbContext.CrystalWallets.FromSqlInterpolated(
+            $"SELECT * FROM game.crystal_wallets WHERE \"AccountId\" = {accountId} FOR UPDATE").SingleOrDefaultAsync(cancellationToken);
+        if (wallet is null || wallet.Balance < price) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.InsufficientCrystals, wallet?.Balance ?? 0);
         ItemDefinition definition = content.Indexes.ItemsById[offer.ItemDefinitionId];
         if (!definition.PremiumEligible) return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.OfferNotFound);
-        if (!await InventoryCapacity.CanAddAsync(dbContext, character.Id, definition, offer.Quantity, content, cancellationToken))
+        if (!await InventoryCapacity.CanAddAsync(dbContext, character.Id, definition, quantity, content, cancellationToken))
             return PremiumStorePurchaseResult.Fail(PremiumStoreErrorCodes.InventoryFull, wallet.Balance);
-        await AddItemAsync(character.Id, definition, offer.Quantity, cancellationToken);
-        dbContext.PremiumStorePurchases.Add(new PremiumStorePurchase(operationId, accountId, character.Id, sku, definition.Id, offer.Quantity, offer.CrystalPrice, timeProvider.GetUtcNow()));
-        dbContext.CrystalLedgerEntries.Add(new CrystalLedgerEntry(Guid.CreateVersion7(), accountId, operationId, CrystalLedgerEntryType.StorePurchase, -offer.CrystalPrice, wallet.Balance, sku, Fingerprint(sku), timeProvider.GetUtcNow()));
+        wallet.TryDebit(price);
+        await AddItemAsync(character.Id, definition, quantity, cancellationToken);
+        dbContext.PremiumStorePurchases.Add(new PremiumStorePurchase(operationId, accountId, character.Id, sku, definition.Id, quantity, price, timeProvider.GetUtcNow(), packCount));
+        dbContext.CrystalLedgerEntries.Add(new CrystalLedgerEntry(Guid.CreateVersion7(), accountId, operationId, CrystalLedgerEntryType.StorePurchase, -price, wallet.Balance, sku, Fingerprint($"{sku}:{packCount}"), timeProvider.GetUtcNow()));
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return new(true, null, wallet.Balance);

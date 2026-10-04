@@ -704,16 +704,16 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     }
   }
 
-  async function buyPremiumStoreOffer(sku: string): Promise<PremiumStorePurchaseResponse | null> {
+  async function buyPremiumStoreOffer(sku: string, packCount = 1): Promise<PremiumStorePurchaseResponse | null> {
     const pendingKey = `premium:buy:${sku}`
     if (!beginMutation(pendingKey)) return null
     errorCode.value = null
     try {
       const response = await runReplaySafeGameMutation<PremiumStorePurchaseResponse>({
-        key: `premium-store:${sku}`,
+        key: `premium-store:${sku}:${packCount}`,
         path: '/api/v1/economy/store/purchase',
         idField: 'mutationId',
-        intent: { sku },
+        intent: { sku, packCount },
       })
       await refreshSnapshot()
       return response

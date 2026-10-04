@@ -33,7 +33,7 @@ public static class EconomyEndpoints
         PremiumStoreSnapshot store = await service.GetAsync(accountId, cancellationToken);
         return Results.Ok(new PremiumStoreResponse(store.CrystalBalance, store.Offers.Select(offer => new PremiumStoreOfferResponse(
             offer.Offer.Sku, offer.Item.Id, offer.Item.Name, offer.Item.Description, offer.Item.Rarity.ToString(), offer.Item.IconId,
-            offer.Offer.Quantity, offer.Offer.CrystalPrice, offer.CanPurchase)).ToArray()));
+            offer.Offer.Quantity, offer.Offer.CrystalPrice, offer.CanPurchase, offer.MaxPackCount, offer.Item.InventoryCapacityBonus)).ToArray()));
     }
 
     private static async Task<IResult> GetSkinsAsync(ClaimsPrincipal user, CharacterSkinService service, CancellationToken cancellationToken)
@@ -86,7 +86,7 @@ public static class EconomyEndpoints
     private static async Task<IResult> PurchaseAsync(PremiumStorePurchaseRequest request, ClaimsPrincipal user, PremiumStoreService service, CancellationToken cancellationToken)
     {
         if (!Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out Guid accountId) || accountId == Guid.Empty) return Results.Unauthorized();
-        PremiumStorePurchaseResult result = await service.PurchaseAsync(accountId, request.Sku, request.MutationId, cancellationToken);
+        PremiumStorePurchaseResult result = await service.PurchaseAsync(accountId, request.Sku, request.MutationId, cancellationToken, request.PackCount);
         return result.Succeeded ? Results.Ok(new PremiumStorePurchaseResponse(result.CrystalBalance)) : Results.Problem(statusCode: StatusCodes.Status409Conflict, extensions: new Dictionary<string, object?> { ["code"] = result.ErrorCode });
     }
 

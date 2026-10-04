@@ -1,5 +1,8 @@
 {
   "premiumStoreOffers": [
+    { "sku": "SPATIAL_ASTRAL_RING", "itemDefinitionId": "SPATIAL_ASTRAL_RING", "quantity": 1, "crystalPrice": 2250, "enabled": true },
+    { "sku": "SPATIAL_DIMENSION_CORE", "itemDefinitionId": "SPATIAL_DIMENSION_CORE", "quantity": 1, "crystalPrice": 3250, "enabled": true },
+    { "sku": "SPATIAL_ETERNITY_SEAL", "itemDefinitionId": "SPATIAL_ETERNITY_SEAL", "quantity": 1, "crystalPrice": 5000, "enabled": true },
     {
       "sku": "SPATIAL_CRACKED_RING",
       "itemDefinitionId": "SPATIAL_CRACKED_RING",

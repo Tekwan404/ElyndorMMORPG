@@ -4,6 +4,30 @@
   "publishedAtUtc": "2026-09-20T11:30:00+00:00",
   "items": [
     {
+      "id": "SPATIAL_ASTRAL_RING", "iconId": "items_outside_sets/shattered_order_citadel/broken_reflection_ring",
+      "name": "Кольцо астрального хранилища", "type": "SpatialArtifact", "rarity": "Epic",
+      "requiredLevel": 1, "stackable": false, "maxStack": 1, "slot": null,
+      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "description": "Древние руны удерживают просторное хранилище среди астральных течений. При использовании увеличивает вместимость единого инвентаря на 100 ячеек. Заменяет текущий пространственный артефакт; бонусы не складываются.",
+      "inventoryCapacityBonus": 100, "premiumEligible": true
+    },
+    {
+      "id": "SPATIAL_DIMENSION_CORE", "iconId": "items_outside_sets/shattered_order_citadel/triune_seal",
+      "name": "Ядро безбрежного измерения", "type": "SpatialArtifact", "rarity": "Legendary",
+      "requiredLevel": 1, "stackable": false, "maxStack": 1, "slot": null,
+      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "description": "Кристаллическое ядро раскрывает устойчивое карманное измерение. При использовании увеличивает вместимость единого инвентаря на 150 ячеек. Заменяет текущий пространственный артефакт; бонусы не складываются.",
+      "inventoryCapacityBonus": 150, "premiumEligible": true
+    },
+    {
+      "id": "SPATIAL_ETERNITY_SEAL", "iconId": "items_outside_sets/shattered_order_citadel/triune_seal",
+      "name": "Печать вечного хранилища", "type": "SpatialArtifact", "rarity": "Legendary",
+      "requiredLevel": 1, "stackable": false, "maxStack": 1, "slot": null,
+      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "description": "Печать связывает огромный тайник с владельцем, не нарушая границ мира. При использовании увеличивает вместимость единого инвентаря на 250 ячеек. Заменяет текущий пространственный артефакт; бонусы не складываются.",
+      "inventoryCapacityBonus": 250, "premiumEligible": true
+    },
+    {
       "id": "SPATIAL_CRACKED_RING",
       "iconId": "spatial_cracked_ring",
       "name": "Треснувшее пространственное кольцо",
