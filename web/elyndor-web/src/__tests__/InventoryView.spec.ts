@@ -9,10 +9,173 @@ import { useGameSessionStore } from '@/stores/gameSession'
 enableAutoUnmount(afterEach)
 
 describe('InventoryView', () => {
+  it('keeps saved sorting separate for different characters', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot([equipment('BLADE', 'Меч', 'Rare', 1, 3)], currentWeapon())
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-inventory-sort]').setValue('rarity')
+    store.snapshot = {
+      ...store.snapshot,
+      character: { ...store.snapshot.character!, id: 'OTHER_CHARACTER' },
+    }
+    await flushPromises()
+    expect(wrapper.get<HTMLSelectElement>('[data-inventory-sort]').element.value).toBe('default')
+    store.snapshot = snapshot([equipment('BLADE', 'Меч', 'Rare', 1, 3)], currentWeapon())
+    await flushPromises()
+    expect(wrapper.get<HTMLSelectElement>('[data-inventory-sort]').element.value).toBe('rarity')
+  })
+
+  it.each(['broken json', '{"sort":"unknown","view":"unknown"}'])(
+    'keeps items usable when saved preferences are invalid: %s',
+    (saved) => {
+      const store = useGameSessionStore()
+      store.snapshot = snapshot([equipment('BLADE', 'Меч', 'Rare', 1, 3)], currentWeapon())
+      localStorage.setItem(`elyndor.inventory.preferences.${store.snapshot.character!.id}`, saved)
+      const wrapper = mount(InventoryView)
+      expect(itemIds(wrapper)).toEqual(['BLADE'])
+      expect(wrapper.get<HTMLSelectElement>('[data-inventory-sort]').element.value).toBe('default')
+    },
+  )
+  it('restores the chosen sort after reopening and resetting filters does not reset it', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot(
+      [
+        equipment('COMMON', 'Старый меч', 'Common', 1, 3),
+        equipment('EPIC', 'Новый меч', 'Epic', 1, 4),
+      ],
+      currentWeapon(),
+    )
+    const first = mount(InventoryView)
+    await first.get('[data-inventory-sort]').setValue('name')
+    first.unmount()
+    const wrapper = mount(InventoryView)
+    expect(wrapper.get<HTMLSelectElement>('[data-inventory-sort]').element.value).toBe('name')
+    await wrapper.get('[data-inventory-search]').setValue('старый')
+    await wrapper.get('[data-inventory-active-filters] button').trigger('click')
+    expect(wrapper.get<HTMLSelectElement>('[data-inventory-sort]').element.value).toBe('name')
+    expect(itemIds(wrapper)).toEqual(['EPIC', 'COMMON'])
+  })
+
+  it('inserts newly granted equipment according to the saved sort rather than server insertion order', async () => {
+    const store = useGameSessionStore()
+    const common = equipment('COMMON', 'Старый меч', 'Common', 1, 3)
+    store.snapshot = snapshot([common], currentWeapon())
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-inventory-sort]').setValue('rarity')
+    store.snapshot = snapshot(
+      [common, equipment('EPIC', 'Новый меч', 'Epic', 1, 4)],
+      currentWeapon(),
+    )
+    await flushPromises()
+    expect(itemIds(wrapper)).toEqual(['EPIC', 'COMMON'])
+    expect(wrapper.get('[data-item-id="EPIC"]').attributes('data-new')).toBe('true')
+  })
+
+  it('compares accuracy, critical damage and both penetration stats, including lost bonuses', async () => {
+    const store = useGameSessionStore()
+    const old = currentWeapon()
+    old.stats.accuracy = 4
+    old.stats.magicPenetration = 8
+    const candidate = item({
+      ...equipment('BLADE', 'Новый меч', 'Rare', 1, 3),
+      stats: { criticalDamage: 15, armorPenetration: 6 },
+    })
+    store.snapshot = snapshot([candidate], old)
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-item-id="BLADE"]').trigger('click')
+    const comparison = document.querySelector('[aria-label="Сравнение с надетым предметом"]')!
+    expect(comparison.textContent).toContain('Критический урон')
+    expect(comparison.textContent).toContain('Пробивание брони')
+    expect(comparison.textContent).toContain('Пробивание магии')
+    expect(comparison.textContent).toContain('Точность')
+    expect(
+      [...comparison.querySelectorAll('[data-delta="down"]')].map((node) =>
+        node.textContent?.trim(),
+      ),
+    ).toContain('-8')
+  })
+  it('switches icon density without losing category or selection and does not render captions', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot(
+      [
+        equipment('BLADE', 'Клинок сумеречного дозора', 'Rare', 1, 3),
+        consumable('POTION', 'Зелье'),
+      ],
+      currentWeapon(),
+    )
+    const wrapper = mount(InventoryView)
+    expect(wrapper.get('[data-inventory-layout]').attributes('data-inventory-layout')).toBe('grid')
+    expect(wrapper.get('[data-item-id="BLADE"]').text()).not.toContain('Клинок сумеречного дозора')
+    await wrapper.get('[data-inventory-category="equipment"]').trigger('click')
+    await wrapper.get('[data-inventory-selection-mode]').trigger('click')
+    await wrapper.get('[data-item-id="BLADE"]').trigger('click')
+    await wrapper.get('[data-inventory-view="list"]').trigger('click')
+    expect(wrapper.get('[data-inventory-layout]').attributes('data-inventory-layout')).toBe('list')
+    expect(itemIds(wrapper)).toEqual(['BLADE'])
+    expect(wrapper.get('[data-item-id="BLADE"]').attributes('aria-pressed')).toBe('true')
+  })
+  it('finds items by name without losing the selected category and can clear the search', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot(
+      [equipment('BLADE', 'Клинок сумерек', 'Rare', 1, 3), consumable('POTION', 'Зелье сумерек')],
+      currentWeapon(),
+    )
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-inventory-category="equipment"]').trigger('click')
+    await wrapper.get('[data-inventory-search]').setValue('  СУМЕРЕК ')
+    expect(itemIds(wrapper)).toEqual(['BLADE'])
+    await wrapper.get('[data-inventory-search]').setValue('несуществующий')
+    expect(itemIds(wrapper)).toEqual([])
+    expect(wrapper.text()).toContain('Ничего не найдено')
+    await wrapper.get('[data-clear-inventory-search]').trigger('click')
+    expect(itemIds(wrapper)).toEqual(['BLADE'])
+  })
+
+  it('groups supplies together while keeping artifacts in equipment and materials separate', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot(
+      [
+        consumable('POTION', 'Зелье'),
+        item({ id: 'CHEST', name: 'Сундук', type: 'LootContainer', rarity: 'Rare' }),
+        item({
+          id: 'ARTIFACT',
+          name: 'Артефакт',
+          type: 'SpatialArtifact' as InventoryItem['type'],
+          rarity: 'Epic',
+        }),
+        item({ id: 'ORE', name: 'Руда', type: 'Material', rarity: 'Common' }),
+      ],
+      currentWeapon(),
+    )
+    const wrapper = mount(InventoryView)
+    await wrapper.get('[data-inventory-category="supplies"]').trigger('click')
+    expect(itemIds(wrapper)).toEqual(['POTION', 'CHEST'])
+    await wrapper.get('[data-inventory-category="equipment"]').trigger('click')
+    expect(itemIds(wrapper)).toEqual(['ARTIFACT'])
+    await wrapper.get('[data-inventory-category="material"]').trigger('click')
+    expect(itemIds(wrapper)).toEqual(['ORE'])
+    expect(wrapper.get('[data-item-id="ORE"]').attributes('aria-label')).toBe('Руда')
+  })
+
+  it('organizes a mixed bag without changing server order and keeps explicit sorting available', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot(
+      [consumable('POTION', 'Зелье'), equipment('BLADE', 'Клинок', 'Rare', 1, 3)],
+      currentWeapon(),
+    )
+    const wrapper = mount(InventoryView)
+    expect(itemIds(wrapper)).toEqual(['BLADE', 'POTION'])
+    expect(store.snapshot.character!.inventory.items[0]!.id).toBe('POTION')
+    await wrapper.get('[data-inventory-sort]').setValue('received')
+    expect(itemIds(wrapper)).toEqual(['POTION', 'BLADE'])
+  })
   it('offers pending-loot read retry without disabling the inventory', async () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot([equipment('BLADE', 'Клинок', 'Rare', 1, 3)], currentWeapon())
-    const load = vi.spyOn(store, 'getPendingLoot').mockRejectedValueOnce(new Error('network')).mockResolvedValue({ items: [] })
+    const load = vi
+      .spyOn(store, 'getPendingLoot')
+      .mockRejectedValueOnce(new Error('network'))
+      .mockResolvedValue({ items: [] })
     const wrapper = mount(InventoryView)
     await flushPromises()
     expect(wrapper.get('[data-pending-loot-read-error]').text()).toContain('Повторить')
@@ -26,28 +189,36 @@ describe('InventoryView', () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot([consumable('POTION', 'Зелье')], currentWeapon())
     store.snapshot.character!.vitals.currentHp = 100
-    vi.spyOn(store, 'isMutationPending').mockImplementation(key => key === 'inventory:set-lock')
+    vi.spyOn(store, 'isMutationPending').mockImplementation((key) => key === 'inventory:set-lock')
     const wrapper = mount(InventoryView)
     await wrapper.get('[data-item-id="POTION"]').trigger('click')
-    const button = [...document.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')].find(button => button.textContent?.includes('Использовать'))!
+    const button = [...document.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')].find(
+      (button) => button.textContent?.includes('Использовать'),
+    )!
     expect(button.disabled).toBe(true)
   })
   it('blocks protection changes while the same inventory equipment operation is pending', async () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot([equipment('BLADE', 'Клинок', 'Rare', 1, 3)], currentWeapon())
-    vi.spyOn(store, 'isMutationPending').mockImplementation(key => key === 'inventory:equip')
+    vi.spyOn(store, 'isMutationPending').mockImplementation((key) => key === 'inventory:equip')
     const wrapper = mount(InventoryView)
     await wrapper.get('[data-item-id="BLADE"]').trigger('click')
-    expect(document.querySelector<HTMLButtonElement>('[data-item-lock-action]')!.disabled).toBe(true)
+    expect(document.querySelector<HTMLButtonElement>('[data-item-lock-action]')!.disabled).toBe(
+      true,
+    )
   })
   it('keeps a failed consumable action open with visible feedback', async () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot([consumable('POTION', 'Зелье')], currentWeapon())
     store.snapshot.character!.vitals.currentHp = 100
-    const use = vi.spyOn(store, 'useConsumable').mockImplementation(async () => { store.errorCode = 'inventory_consumable_failed' })
+    const use = vi.spyOn(store, 'useConsumable').mockImplementation(async () => {
+      store.errorCode = 'inventory_consumable_failed'
+    })
     const wrapper = mount(InventoryView)
     await wrapper.get('[data-item-id="POTION"]').trigger('click')
-    const button = [...document.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')].find(button => button.textContent?.includes('Использовать'))!
+    const button = [...document.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')].find(
+      (button) => button.textContent?.includes('Использовать'),
+    )!
     button.click()
     await flushPromises()
     expect(use).toHaveBeenCalledWith('POTION')
@@ -57,7 +228,10 @@ describe('InventoryView', () => {
   })
   it('reviews destructive actions in a game dialog before removing the item', async () => {
     const store = useGameSessionStore()
-    store.snapshot = snapshot([equipment('RARE_BLADE', 'Редкий клинок', 'Rare', 1, 3)], currentWeapon())
+    store.snapshot = snapshot(
+      [equipment('RARE_BLADE', 'Редкий клинок', 'Rare', 1, 3)],
+      currentWeapon(),
+    )
     const discard = vi.spyOn(store, 'discardInventoryItems').mockResolvedValue(true)
     vi.spyOn(window, 'confirm').mockReturnValue(false)
     const wrapper = mount(InventoryView)
@@ -75,7 +249,10 @@ describe('InventoryView', () => {
 
   it('does not invent ranger bonuses for an unrelated set item', async () => {
     const store = useGameSessionStore()
-    store.snapshot = snapshot([item({ ...equipment('SET_BLADE', 'Меч ордена', 'Rare', 1, 3), setId: 'ORDER_WARRIOR' })], currentWeapon())
+    store.snapshot = snapshot(
+      [item({ ...equipment('SET_BLADE', 'Меч ордена', 'Rare', 1, 3), setId: 'ORDER_WARRIOR' })],
+      currentWeapon(),
+    )
     const wrapper = mount(InventoryView)
     await wrapper.get('[data-item-id="SET_BLADE"]').trigger('click')
     await flushPromises()
@@ -100,17 +277,14 @@ describe('InventoryView', () => {
     const wrapper = mount(InventoryView)
     await flushPromises()
 
+    expect(itemIds(wrapper)).toEqual(['EPIC_BLADE', 'COMMON_BLADE'])
+    await wrapper.get('[data-inventory-sort]').setValue('received')
     expect(itemIds(wrapper)).toEqual(['COMMON_BLADE', 'EPIC_BLADE'])
 
-    await wrapper.get('[data-open-inventory-filters]').trigger('click')
-    const sort = document.querySelector<HTMLSelectElement>('[data-inventory-sort]')
-    expect(sort).not.toBeNull()
-    sort!.value = 'rarity'
-    sort!.dispatchEvent(new Event('change', { bubbles: true }))
-    document.querySelector<HTMLButtonElement>('[data-apply-inventory-filters]')?.click()
+    await wrapper.get('[data-inventory-sort]').setValue('rarity')
     await flushPromises()
     expect(itemIds(wrapper)).toEqual(['EPIC_BLADE', 'COMMON_BLADE'])
-    expect(store.snapshot.character?.inventory.items.map(item => item.id)).toEqual([
+    expect(store.snapshot.character?.inventory.items.map((item) => item.id)).toEqual([
       'COMMON_BLADE',
       'EPIC_BLADE',
       'CURRENT_WEAPON',
@@ -179,7 +353,9 @@ describe('InventoryView', () => {
     await wrapper.get('[data-item-id="ROLLED_SWORD"]').trigger('click')
     await flushPromises()
 
-    expect(document.body.textContent).toContain('Характеристики этого экземпляра определились при получении предмета.')
+    expect(document.body.textContent).toContain(
+      'Характеристики этого экземпляра определились при получении предмета.',
+    )
     expect(document.body.textContent).toContain('Сила +7')
     expect(document.body.textContent).toContain('Выносливость +4')
   })
@@ -210,7 +386,9 @@ describe('InventoryView', () => {
     store.snapshot = snapshot([generated], currentWeapon())
 
     const wrapper = mount(InventoryView)
-    expect(wrapper.find('[data-item-id="PERFECT_SWORD"] [data-item-quality-stars]').exists()).toBe(true)
+    expect(wrapper.find('[data-item-id="PERFECT_SWORD"] [data-item-quality-stars]').exists()).toBe(
+      true,
+    )
 
     await wrapper.get('[data-item-id="PERFECT_SWORD"]').trigger('click')
     await flushPromises()
@@ -277,8 +455,9 @@ describe('InventoryView', () => {
 
     expect(document.body.querySelector('[data-equip-action]')).toBeNull()
     expect(document.body.querySelector('[data-equip-target]')).toBeNull()
-    expect(document.body.querySelector('[data-equip-restriction]')?.textContent)
-      .toContain('Воин может носить только тяжёлую броню.')
+    expect(document.body.querySelector('[data-equip-restriction]')?.textContent).toContain(
+      'Воин может носить только тяжёлую броню.',
+    )
     expect(document.body.textContent).toContain('Капюшон Следопыта')
     expect(equip).not.toHaveBeenCalled()
   })
@@ -304,8 +483,9 @@ describe('InventoryView', () => {
     const equipAction = document.body.querySelector<HTMLButtonElement>('[data-equip-action]')
     expect(equipAction).not.toBeNull()
     expect(equipAction?.disabled).toBe(true)
-    expect(document.body.querySelector('[data-equip-level-requirement]')?.textContent)
-      .toContain('Требуется уровень 14. Текущий уровень: 10.')
+    expect(document.body.querySelector('[data-equip-level-requirement]')?.textContent).toContain(
+      'Требуется уровень 14. Текущий уровень: 10.',
+    )
     expect(equip).not.toHaveBeenCalled()
   })
 
@@ -432,10 +612,14 @@ describe('InventoryView', () => {
       sellPriceGold: 4,
     })
     store.snapshot = snapshot([protectedItem], currentWeapon())
-    const setItemLock = vi.spyOn(store, 'setItemLock').mockImplementation(async (itemId, isLocked) => {
-      const stored = store.snapshot?.character?.inventory.items.find(candidate => candidate.id === itemId)
-      if (stored) stored.isLocked = isLocked
-    })
+    const setItemLock = vi
+      .spyOn(store, 'setItemLock')
+      .mockImplementation(async (itemId, isLocked) => {
+        const stored = store.snapshot?.character?.inventory.items.find(
+          (candidate) => candidate.id === itemId,
+        )
+        if (stored) stored.isLocked = isLocked
+      })
 
     const wrapper = mount(InventoryView)
     await flushPromises()
@@ -470,8 +654,9 @@ describe('InventoryView', () => {
 })
 
 function itemIds(wrapper: ReturnType<typeof mount>): string[] {
-  return wrapper.findAll('[data-item-id]')
-    .map(node => node.attributes('data-item-id'))
+  return wrapper
+    .findAll('[data-item-id]')
+    .map((node) => node.attributes('data-item-id'))
     .filter((value): value is string => Boolean(value))
 }
 
@@ -522,10 +707,10 @@ function consumable(id: string, name: string): InventoryItem {
   })
 }
 
-type InventoryItemOverrides =
-  Omit<Partial<InventoryItem>, 'stats'>
-  & Pick<InventoryItem, 'id' | 'name' | 'type' | 'rarity'>
-  & { stats?: Partial<InventoryItem['stats']> }
+type InventoryItemOverrides = Omit<Partial<InventoryItem>, 'stats'> &
+  Pick<InventoryItem, 'id' | 'name' | 'type' | 'rarity'> & {
+    stats?: Partial<InventoryItem['stats']>
+  }
 
 function item(overrides: InventoryItemOverrides): InventoryItem {
   const zeroStats: InventoryItem['stats'] = {

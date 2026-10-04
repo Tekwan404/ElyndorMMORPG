@@ -8,9 +8,9 @@
 }
 
 #app .inventory-view .inventory-header p {
-  opacity: .72;
-  font-size: .54rem;
-  letter-spacing: .08em;
+  opacity: 0.72;
+  font-size: 0.54rem;
+  letter-spacing: 0.08em;
 }
 
 #app .inventory-view .inventory-header h1 {
@@ -49,21 +49,18 @@
   align-items: center;
   justify-content: flex-end;
   gap: 5px 8px;
-  opacity: .78;
+  opacity: 0.78;
   text-align: right;
 }
 
-#app .inventory-view .spatial-capacity:not(:has([data-equipped-spatial-artifact], [data-inventory-overflow])) {
+#app
+  .inventory-view
+  .spatial-capacity:not(:has([data-equipped-spatial-artifact], [data-inventory-overflow])) {
   display: none;
 }
 
 #app .inventory-view .spatial-capacity__action {
   min-height: 1.9rem;
-}
-
-#app .inventory-view .inventory-tools {
-  gap: 7px;
-  padding-block: 7px;
 }
 
 #app .inventory-view .filter-chips {
@@ -79,23 +76,44 @@
   padding: 10px;
 }
 
-/* Five useful targets on normal phones; four only when the viewport is genuinely narrow. */
+/* Four readable item identities on phones; expand only on wider screens. */
 #app .inventory-view .bag-grid {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 7px;
 }
 
 #app .inventory-view .bag-cell {
   min-width: 0;
   min-height: 56px;
+  aspect-ratio: 1;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  align-content: start;
+  padding: 5px;
   border-radius: 11px;
-  transition: border-color 120ms ease, box-shadow 120ms ease, transform 90ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 90ms ease;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 
+#app .inventory-view .bag-cell__icon {
+  height: auto;
+  aspect-ratio: 1;
+}
+#app .inventory-view .bag-cell__quantity {
+  bottom: 4px;
+  top: auto;
+}
+#app .inventory-view .bag-cell__quality {
+  bottom: 4px;
+  top: auto;
+}
+
 #app .inventory-view .bag-cell:not(:disabled):active {
-  transform: scale(.965);
+  transform: scale(0.965);
 }
 
 #app .inventory-view .bag-cell__icon img {
@@ -123,7 +141,7 @@
   background: rgb(7 10 17 / 86%);
   box-shadow: 0 1px 5px rgb(0 0 0 / 35%);
   color: rgb(224 226 235 / 72%);
-  opacity: .86;
+  opacity: 0.86;
   place-items: center;
   pointer-events: none;
 }
@@ -144,7 +162,9 @@
   border: 0;
   border-radius: 50%;
   background: #b9b2ff;
-  box-shadow: 0 0 0 2px rgb(13 12 27 / 82%), 0 0 7px rgb(146 136 255 / 36%);
+  box-shadow:
+    0 0 0 2px rgb(13 12 27 / 82%),
+    0 0 7px rgb(146 136 255 / 36%);
   color: transparent;
   font-size: 0;
   line-height: 0;
@@ -152,20 +172,28 @@
 
 /* Rarity should help scanning, not turn the whole inventory into a light show. */
 #app .inventory-view .bag-cell[data-rarity='Uncommon'] {
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 2%), 0 0 7px rgb(78 178 103 / 7%);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 2%),
+    0 0 7px rgb(78 178 103 / 7%);
 }
 
 #app .inventory-view .bag-cell[data-rarity='Rare'] {
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 2%), 0 0 8px rgb(88 142 230 / 9%);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 2%),
+    0 0 8px rgb(88 142 230 / 9%);
 }
 
 #app .inventory-view .bag-cell[data-rarity='Epic'] {
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 2%), 0 0 9px rgb(146 95 225 / 11%);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 2%),
+    0 0 9px rgb(146 95 225 / 11%);
 }
 
 #app .inventory-view .bag-cell[data-rarity='Legendary'],
 #app .inventory-view .bag-cell[data-rarity='Unique'] {
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 3%), 0 0 11px rgb(232 200 102 / 14%);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 3%),
+    0 0 11px rgb(232 200 102 / 14%);
 }
 
 #app .inventory-view .bag-cell[data-locked='true'] {
@@ -175,7 +203,7 @@
 #app .inventory-view .bag-cell__rarity {
   right: 20%;
   left: 20%;
-  opacity: .22;
+  opacity: 0.22;
 }
 
 @media (max-width: 359px) {
@@ -198,6 +226,15 @@
 @media (min-width: 960px) {
   #app .inventory-view .bag-grid {
     grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+#app .inventory-view [data-inventory-layout='list'] .bag-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 960px) {
+  #app .inventory-view [data-inventory-layout='list'] .bag-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -246,7 +283,7 @@
   body .ui-modal__dialog:has(.item-detail) .ui-modal__header h2 {
     max-width: calc(100% - 3.25rem);
     overflow: hidden;
-    font-size: .98rem;
+    font-size: 0.98rem;
     text-overflow: ellipsis;
     white-space: nowrap;
   }

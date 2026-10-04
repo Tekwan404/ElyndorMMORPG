@@ -15,14 +15,16 @@ describe('InventoryView capacity', () => {
   })
 
   it('renders capacity from the canonical spatial inventory response', async () => {
-    const request = vi.spyOn(apiClient, 'request').mockResolvedValue(spatialState({
-      baseCapacity: 30,
-      artifactCapacityBonus: 15,
-      capacity: 45,
-      usedSlots: 1,
-      freeSlots: 44,
-      isOverflow: false,
-    }))
+    const request = vi.spyOn(apiClient, 'request').mockResolvedValue(
+      spatialState({
+        baseCapacity: 30,
+        artifactCapacityBonus: 15,
+        capacity: 45,
+        usedSlots: 1,
+        freeSlots: 44,
+        isOverflow: false,
+      }),
+    )
     const session = useGameSessionStore()
     session.snapshot = snapshot([equipment('TEST_HELMET')])
 
@@ -30,7 +32,7 @@ describe('InventoryView capacity', () => {
     await flushPromises()
 
     expect(request).toHaveBeenCalledWith('/api/v1/inventory/spatial-artifact/')
-    expect(wrapper.findAll('.bag-cell')).toHaveLength(45)
+    expect(wrapper.findAll('.bag-cell')).toHaveLength(1)
     expect(wrapper.get('[data-inventory-capacity]').text()).toContain('1/ 45')
     expect(wrapper.get('[data-spatial-capacity]').text()).toContain('30 + 15 = 45')
     expect(wrapper.get('[data-spatial-capacity]').text()).toContain('44 свободно')
@@ -68,20 +70,18 @@ describe('InventoryView capacity', () => {
   })
 
   it('never hides overflow items and expands the grid to the actual item count', async () => {
-    vi.spyOn(apiClient, 'request').mockResolvedValue(spatialState({
-      baseCapacity: 2,
-      artifactCapacityBonus: 0,
-      capacity: 2,
-      usedSlots: 3,
-      freeSlots: 0,
-      isOverflow: true,
-    }))
+    vi.spyOn(apiClient, 'request').mockResolvedValue(
+      spatialState({
+        baseCapacity: 2,
+        artifactCapacityBonus: 0,
+        capacity: 2,
+        usedSlots: 3,
+        freeSlots: 0,
+        isOverflow: true,
+      }),
+    )
     const session = useGameSessionStore()
-    session.snapshot = snapshot([
-      equipment('ITEM_1'),
-      equipment('ITEM_2'),
-      equipment('ITEM_3'),
-    ])
+    session.snapshot = snapshot([equipment('ITEM_1'), equipment('ITEM_2'), equipment('ITEM_3')])
 
     const wrapper = mount(InventoryView)
     await flushPromises()
@@ -115,12 +115,16 @@ describe('InventoryView capacity', () => {
     session.snapshot.character!.inventory.items.push(equipment('ITEM_2'))
     await flushPromises()
 
-    expect(request.mock.calls.filter(([path]) => path === '/api/v1/inventory/spatial-artifact/')).toHaveLength(2)
+    expect(
+      request.mock.calls.filter(([path]) => path === '/api/v1/inventory/spatial-artifact/'),
+    ).toHaveLength(2)
     expect(wrapper.get('[data-inventory-capacity]').text()).toContain('/ 40')
   })
 })
 
-function spatialState(capacity: Partial<SpatialInventorySnapshot['capacity']>): SpatialInventorySnapshot {
+function spatialState(
+  capacity: Partial<SpatialInventorySnapshot['capacity']>,
+): SpatialInventorySnapshot {
   return {
     equippedArtifact: null,
     capacity: {
