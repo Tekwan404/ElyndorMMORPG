@@ -90,6 +90,7 @@ public static class EquipmentCategoryIds
     public const string Crossbow = "CROSSBOW";
     public const string Dagger = "DAGGER";
     public const string Staff = "STAFF";
+    public const string OneHandStaff = "ONE_HAND_STAFF";
     public const string Wand = "WAND";
 
     public const string Cloth = "CLOTH";
@@ -118,6 +119,7 @@ public static class EquipmentCategoryIds
         Crossbow,
         Dagger,
         Staff,
+        OneHandStaff,
         Wand
     };
 

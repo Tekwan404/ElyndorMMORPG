@@ -8,10 +8,19 @@ public sealed class EquipmentCategoryIdsTests
     [InlineData("TWO_HAND_AXE")]
     [InlineData("TWO_HAND_MACE")]
     [InlineData("POLEARM")]
+    [InlineData("STAFF")]
     public void AuthoredTwoHandedWeaponCategoriesAreRecognized(string category)
     {
         Assert.True(EquipmentCategoryIds.IsWeapon(category));
         Assert.True(EquipmentCategoryIds.UsesBothHands(category));
         Assert.False(EquipmentCategoryIds.IsOneHandedWeapon(category));
+    }
+
+    [Fact]
+    public void OneHandStaffIsAOneHandedWeaponCategory()
+    {
+        Assert.True(EquipmentCategoryIds.IsWeapon(EquipmentCategoryIds.OneHandStaff));
+        Assert.False(EquipmentCategoryIds.UsesBothHands(EquipmentCategoryIds.OneHandStaff));
+        Assert.True(EquipmentCategoryIds.IsOneHandedWeapon(EquipmentCategoryIds.OneHandStaff));
     }
 }

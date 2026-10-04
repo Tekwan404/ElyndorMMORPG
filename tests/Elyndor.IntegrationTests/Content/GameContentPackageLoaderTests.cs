@@ -62,7 +62,7 @@ public sealed class GameContentPackageLoaderTests
         Assert.True(equipmentCount > 0);
     }
 
-    private static readonly string[] MageWeaponCategories = ["STAFF", "WAND"];
+    private static readonly string[] MageWeaponCategories = ["STAFF", "ONE_HAND_STAFF", "WAND"];
     private static readonly string[] MageArmorCategories = ["CLOTH"];
     private static readonly string[] ForestEncounterMonsters =
     [

@@ -1133,6 +1133,45 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
     }
 
     [Fact]
+    public async Task MageCanEquipEyeOfDeadStarWithResidualManaFocus()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(
+            currentHp: 100,
+            classId: "MAGE",
+            level: 60);
+        Guid eyeId = await AddItemAsync(characterId, "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L60", 1);
+        Guid focusId = await AddItemAsync(characterId, "FOKUS_OSTATOCHNOI_MANY_L60", 1);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        InventoryOperationResult focus = await service.EquipAsync(
+            accountId,
+            focusId,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+        InventoryOperationResult eye = await service.EquipAsync(
+            accountId,
+            eyeId,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(focus.IsSuccess);
+        Assert.True(eye.IsSuccess);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterEquipment[] equipped = await verify.CharacterEquipment
+            .AsNoTracking()
+            .Where(item => item.CharacterId == characterId)
+            .ToArrayAsync();
+
+        Assert.Contains(equipped, item => item.Slot == EquipmentSlot.MainHand
+            && item.CharacterItemId == eyeId);
+        Assert.Contains(equipped, item => item.Slot == EquipmentSlot.OffHand
+            && item.CharacterItemId == focusId);
+    }
+
+    [Fact]
     public async Task MageFocusWorksWithWandAndIsDisplacedByTwoHandedStaff()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(
