@@ -15,7 +15,6 @@ public static class ItemReforgeErrorCodes
     public const string ItemNotFound = "reforge_item_not_found";
     public const string ItemNotGenerated = "reforge_item_not_generated";
     public const string ItemLocked = "reforge_item_locked";
-    public const string ItemEquipped = "reforge_item_equipped";
     public const string ItemTransactionLocked = "reforge_item_transaction_locked";
     public const string InvalidSlot = "reforge_invalid_affix_slot";
     public const string GuaranteedSlot = "reforge_guaranteed_affix_immutable";
@@ -92,7 +91,7 @@ public sealed class ItemReforgeService(
 
         GeneratedItemAffix? selected = current.Affixes.SingleOrDefault(affix =>
             string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal));
-        if (selected is null || (item.ReforgeSlotKey is not null && !string.Equals(item.ReforgeSlotKey, slotKey, StringComparison.Ordinal)))
+        if (selected is null)
             return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.InvalidSlot);
         if (selected.IsGuaranteed) return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.GuaranteedSlot);
         if (itemization.ReforgeCosts is not { } costProfile)
@@ -214,9 +213,6 @@ public sealed class ItemReforgeService(
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.InvalidSlot, cancellationToken);
         if (selected.IsGuaranteed)
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.GuaranteedSlot, cancellationToken);
-        if (item.ReforgeSlotKey is not null
-            && !string.Equals(item.ReforgeSlotKey, slotKey, StringComparison.Ordinal))
-            return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.InvalidSlot, cancellationToken);
 
         ItemReforgeCostProfileDefinition? costProfile = itemization.ReforgeCosts;
         if (costProfile is null)
@@ -340,6 +336,7 @@ public sealed class ItemReforgeService(
             item.ApplyReforge(proposedAffix);
         }
 
+        item.ClearReforgeSlot();
         item.ReleaseTransactionLock(operationId);
         operation.Decide(acceptProposed, timeProvider.GetUtcNow());
         await dbContext.SaveChangesAsync(cancellationToken);
