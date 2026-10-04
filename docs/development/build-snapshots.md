@@ -8,6 +8,7 @@ The existing Telegram admin bot supports:
 /builddump <telegramId>
 /gear <telegramId>
 /talents <telegramId>
+/builddiff <buildHashA> <buildHashB>
 ```
 
 All commands use the existing webhook secret, sender allowlist and chat authorization. They cannot be used by ordinary players. `/builddump` sends a readable TXT report and a machine-readable JSON document; shorter gear/talent reports are sent as messages when they fit Telegram's limit.
@@ -39,4 +40,10 @@ Apply the EF migration `20261004140827_CharacterBuildSnapshots` using the projec
 
 Archives intentionally survive character changes/deletion and have no character foreign key. They contain player identity and should remain accessible only to authorized operators. Automatic retention/pruning is not implemented in this slice; references must be removed before referenced archive rows can be pruned. The existing in-memory combat-event archive retains its existing lifetime; storing a build does not make the complete combat-event log durable.
 
-`/builddiff` and automated build replay are separate follow-up work.
+## Comparing builds
+
+`/builddiff` accepts exactly two complete 64-character SHA-256 hashes (case-insensitive). Copy them from the build JSON or training summary; abbreviated display hashes are not accepted, avoiding ambiguous matches. Both builds must already be archived. Missing hashes produce `admin_build_not_found`; malformed input produces `admin_build_hash_invalid`.
+
+Comparison uses stored snapshots only, without loading today's content or character state. It reports raw/effective stat deltas, resources, gear and spatial artifact changes, same-instance enhancement/affix/reforge changes, talent ranks, sets, abilities, panel order and resolved modifier/configuration changes. Content/engine differences and cross-character comparison are explicitly identified. Short reports are Telegram messages; reports exceeding 4000 characters are TXT documents. Authorization is identical to `/builddump`.
+
+Automated build replay remains separate follow-up work.

@@ -4,6 +4,29 @@ namespace Elyndor.IntegrationTests.Administration;
 
 public sealed class TelegramAdminCommandParserTests
 {
+    [Fact]
+    public void BuildDiffAcceptsTwoFullHashesWithoutTelegramTarget()
+    {
+        string first = new('a', 64), second = new('B', 64);
+        var result = TelegramAdminCommandParser.Parse($"/builddiff@elyndor_bot {first} {second}");
+        Assert.True(result.IsSuccess);
+        Assert.Equal("BuildDiff", result.Command!.Type.ToString());
+        Assert.Null(result.Command.TargetTelegramUserId);
+        Assert.Equal(first.ToUpperInvariant(), result.Command.Value);
+        Assert.Equal(second, result.Command.ComparisonValue);
+        Assert.False(TelegramAdminCommandParser.Parse($"/builddiff {first} {second} extra").IsSuccess);
+        Assert.False(TelegramAdminCommandParser.Parse($"/builddiff {new string('G', 64)} {second}").IsSuccess);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("ABCD EFGH")]
+    [InlineData("123")]
+    public void BuildDiffRejectsMissingOrAbbreviatedHashes(string arguments)
+    {
+        Assert.Equal("admin_build_hash_invalid", TelegramAdminCommandParser.Parse("/builddiff " + arguments).ErrorCode);
+    }
+
     [Theory]
     [InlineData("/builddump 123")]
     [InlineData("/gear 123")]

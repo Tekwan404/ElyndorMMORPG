@@ -35,6 +35,50 @@ public sealed class CharacterBuildSnapshotTests(PostgresFixture postgres) : IAsy
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
+    public async Task BuildDiffShowsRawAndEffectiveDeltasAndRemovedGearTalentsAndArtifact()
+    {
+        await SeedAsync();
+        await using var context = postgres.CreateDbContext();
+        var before = (await CreateService(context).CaptureForTelegramAsync(123456, CancellationToken.None))!;
+        var stats = new Dictionary<string, BuildStat>(before.Stats)
+        {
+            ["magicPenetration"] = new(68.5m, 68.5m, "%")
+        };
+        var after = before with { Stats = stats, Equipment = [], SpatialArtifact = null, Talents = [],
+            Sets = [], AbilityPanel = [], TalentAbilityIds = [], Abilities = [] };
+        string report = CharacterBuildDiffFormatter.Format(before, after);
+        Assert.Contains("118.4% → 68.5% (-49.9%)", report);
+        Assert.Contains("100% → 68.5% (-31.5%)", report);
+        Assert.Contains("HEAD", report.ToUpperInvariant());
+        Assert.Contains("TEST_HAT", report);
+        Assert.Contains("TEST_BAG", report);
+        Assert.Contains("TEST_INTELLECT: 2 → 0", report);
+        Assert.Contains("TEST_SET", report);
+        Assert.Contains("TEST_SPELL", report);
+    }
+
+    [Fact]
+    public async Task BuildDiffReportsNoChangesForJsonbRoundTripAndTracksSameItemEnhancementAndRankChanges()
+    {
+        await SeedAsync();
+        await using var context = postgres.CreateDbContext();
+        var service = CreateService(context);
+        var before = (await service.CaptureForTelegramAsync(123456, CancellationToken.None))!;
+        var restored = (await service.GetAsync(before.BuildHash, CancellationToken.None))!;
+        Assert.Contains("Изменений нет", CharacterBuildDiffFormatter.Format(before, restored));
+        var after = before with
+        {
+            Equipment = [before.Equipment[0] with { EnhancementLevel = 5 }],
+            Talents = [before.Talents[0] with { Rank = 3 }], BalanceVersion = "changed"
+        };
+        string report = CharacterBuildDiffFormatter.Format(before, after);
+        Assert.Contains("EnhancementLevel: 0 → 5 (+5)", report);
+        Assert.Contains("TEST_INTELLECT: 2 → 3", report);
+        Assert.Contains("balance", report);
+        Assert.DoesNotContain("Изменений нет", report);
+    }
+
+    [Fact]
     public async Task CaptureIncludesRawCapsRealEquipmentArtifactSetsAndSelectedTalentsWithoutMutatingCharacter()
     {
         var seeded = await SeedAsync();

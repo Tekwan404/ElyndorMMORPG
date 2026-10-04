@@ -27,6 +27,7 @@ public sealed class TelegramAdminUpdateProcessor(
         /errors
         /char <telegramId>
         /builddump <telegramId>
+        /builddiff <buildHashA> <buildHashB>
         /gear <telegramId>
         /talents <telegramId>
         /level <telegramId> <1-60>
@@ -65,6 +66,9 @@ public sealed class TelegramAdminUpdateProcessor(
         AdminCommand command = parsed.Command!;
         switch (command.Type)
         {
+            case AdminCommandType.BuildDiff:
+                await SendBuildDiffAsync(message.Chat.Id, command, cancellationToken);
+                return;
             case AdminCommandType.Help:
                 await messageSender.SendAsync(message.Chat.Id, HelpText, cancellationToken);
                 return;
@@ -91,6 +95,27 @@ public sealed class TelegramAdminUpdateProcessor(
         AdministrationResult result = await administrationService.ExecuteAsync(update.UpdateId, message.From.Id, operation, cancellationToken);
         string prefix = result.IsSuccess ? "✅" : "⚠️";
         await messageSender.SendAsync(message.Chat.Id, $"{prefix} {result.Message}\nКод: {result.Code}", cancellationToken);
+    }
+
+    private async Task SendBuildDiffAsync(long chatId, AdminCommand command, CancellationToken cancellationToken)
+    {
+        var before = await buildSnapshots.GetAsync(command.Value!, cancellationToken);
+        var after = await buildSnapshots.GetAsync(command.ComparisonValue!, cancellationToken);
+        if (before is null || after is null)
+        {
+            await messageSender.SendAsync(chatId,
+                $"Сохранённый билд не найден: admin_build_not_found\n{(before is null ? command.Value : command.ComparisonValue)}",
+                cancellationToken);
+            return;
+        }
+        string report = CharacterBuildDiffFormatter.Format(before, after);
+        if (report.Length <= 4000)
+            await messageSender.SendAsync(chatId, report, cancellationToken);
+        else if (messageSender is ITelegramDocumentSender documents)
+            await documents.SendDocumentAsync(chatId,
+                $"elyndor-builddiff-{before.BuildHash[..12]}-{after.BuildHash[..12]}.txt",
+                report, "Elyndor · сравнение сохранённых билдов", cancellationToken);
+        else throw new InvalidOperationException("Configured Telegram sender does not support build documents.");
     }
 
     private async Task SendBuildAsync(long chatId, AdminCommand command, CancellationToken cancellationToken)

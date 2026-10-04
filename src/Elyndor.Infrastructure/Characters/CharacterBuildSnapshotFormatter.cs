@@ -7,7 +7,7 @@ namespace Elyndor.Infrastructure.Characters;
 
 public static class CharacterBuildSnapshotFormatter
 {
-    private static readonly IReadOnlyDictionary<string, string> StatNames = new Dictionary<string, string>
+    internal static readonly IReadOnlyDictionary<string, string> StatNames = new Dictionary<string, string>
     {
         ["strength"] = "Сила", ["agility"] = "Ловкость", ["intellect"] = "Интеллект",
         ["stamina"] = "Выносливость", ["maxHp"] = "HP", ["attackPower"] = "Сила атаки",

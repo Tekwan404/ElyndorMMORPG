@@ -23,10 +23,11 @@ public enum AdminCommandType
     SpawnWorldBoss,
     BuildDump,
     Gear,
-    Talents
+    Talents,
+    BuildDiff
 }
 
-public sealed record AdminCommand(AdminCommandType Type, long? TargetTelegramUserId = null, string? Value = null, int? NumericValue = null);
+public sealed record AdminCommand(AdminCommandType Type, long? TargetTelegramUserId = null, string? Value = null, int? NumericValue = null, string? ComparisonValue = null);
 
 public sealed record AdminCommandParseResult(bool IsSuccess, AdminCommand? Command, string? ErrorCode)
 {

@@ -5,6 +5,7 @@ using Elyndor.Core.Characters;
 using Elyndor.Core.Identity;
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Characters;
 using Elyndor.IntegrationTests.Postgres;
 using Elyndor.Server.Administration;
 using Microsoft.AspNetCore.Hosting;
@@ -20,6 +21,75 @@ public sealed class BuildDumpWebhookTests(PostgresFixture postgres) : IAsyncLife
     private const string Secret = "builddump-webhook-test-secret-32-characters";
     public Task InitializeAsync() => postgres.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
+
+    [Theory]
+    [InlineData("WARRIOR")]
+    [InlineData("MAGE")]
+    [InlineData("ARCHER")]
+    [InlineData("PALADIN")]
+    public async Task BuildDumpSupportsEveryProductionPlayerClass(string classId)
+    {
+        await SeedAsync(classId);
+        var sender = new RecordingSender();
+        await using var factory = CreateFactory(sender);
+        using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Telegram-Bot-Api-Secret-Token", Secret);
+        var response = await client.PostAsJsonAsync("/api/v1/administration/telegram/webhook",
+            new TelegramUpdate(5, new TelegramMessage(5, new TelegramUser(777), new TelegramChat(777, "private"),
+                "/builddump 123456")));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(2, sender.Documents.Count);
+        using var json = JsonDocument.Parse(sender.Documents[1]);
+        Assert.Equal(classId, json.RootElement.GetProperty("Snapshot").GetProperty("ClassId").GetString());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task BuildDiffReadsArchivedBuildsAndDeliversShortMessageOrLongDocument(bool largeReport)
+    {
+        await SeedAsync();
+        var sender = new RecordingSender();
+        await using var factory = CreateFactory(sender);
+        using var scope = factory.Services.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<CharacterBuildSnapshotService>();
+        var before = (await service.CaptureForTelegramAsync(123456, CancellationToken.None))!;
+        var stats = new Dictionary<string, BuildStat>(before.Stats);
+        if (largeReport)
+            for (int i = 0; i < 150; i++) stats.Add($"diagnosticStat{i}", new(i, i, ""));
+        var after = before with { Level = 2, Stats = stats };
+        var context = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+        context.CharacterBuildArchives.Add(new(after.BuildHash,
+            JsonSerializer.Serialize(after, CharacterBuildSnapshot.JsonOptions), DateTimeOffset.UtcNow));
+        await context.SaveChangesAsync();
+        using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Telegram-Bot-Api-Secret-Token", Secret);
+        var response = await client.PostAsJsonAsync("/api/v1/administration/telegram/webhook",
+            new TelegramUpdate(3, new TelegramMessage(3, new TelegramUser(777), new TelegramChat(777, "private"),
+                $"/builddiff {before.BuildHash.ToLowerInvariant()} {after.BuildHash}")));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        string report = largeReport ? Assert.Single(sender.Documents) : Assert.Single(sender.Messages);
+        Assert.Contains("BUILD DIFF", report);
+        Assert.Contains("Level: 1 → 2 (+1)", report);
+        Assert.Equal(2, await context.CharacterBuildArchives.CountAsync());
+    }
+
+    [Fact]
+    public async Task UnknownBuildHashReturnsExplicitErrorWithoutCreatingSnapshots()
+    {
+        var sender = new RecordingSender();
+        await using var factory = CreateFactory(sender);
+        using var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Add("X-Telegram-Bot-Api-Secret-Token", Secret);
+        var response = await client.PostAsJsonAsync("/api/v1/administration/telegram/webhook",
+            new TelegramUpdate(3, new TelegramMessage(3, new TelegramUser(777), new TelegramChat(777, "private"),
+                $"/builddiff {new string('A', 64)} {new string('B', 64)}")));
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("admin_build_not_found", Assert.Single(sender.Messages));
+        Assert.Empty(sender.Documents);
+        await using var context = postgres.CreateDbContext();
+        Assert.Empty(await context.CharacterBuildArchives.ToArrayAsync());
+    }
 
     [Theory]
     [InlineData("/builddump 123456", 2)]
@@ -64,6 +134,12 @@ public sealed class BuildDumpWebhookTests(PostgresFixture postgres) : IAsyncLife
         Assert.Empty(sender.Messages);
         await using var context = postgres.CreateDbContext();
         Assert.Empty(await context.CharacterBuildArchives.ToArrayAsync());
+        var deniedDiff = await client.PostAsJsonAsync("/api/v1/administration/telegram/webhook",
+            new TelegramUpdate(4, new TelegramMessage(4, new TelegramUser(senderId), new TelegramChat(chatId, chatType),
+                $"/builddiff {new string('A', 64)} {new string('B', 64)}")));
+        Assert.Equal(validSecret ? HttpStatusCode.OK : HttpStatusCode.Unauthorized, deniedDiff.StatusCode);
+        Assert.Empty(sender.Documents);
+        Assert.Empty(sender.Messages);
     }
 
     private WebApplicationFactory<Program> CreateFactory(RecordingSender sender) =>
@@ -81,12 +157,12 @@ public sealed class BuildDumpWebhookTests(PostgresFixture postgres) : IAsyncLife
             builder.ConfigureServices(services => services.AddSingleton<ITelegramMessageSender>(sender));
         });
 
-    private async Task SeedAsync()
+    private async Task SeedAsync(string classId = "MAGE")
     {
         await using var context = postgres.CreateDbContext();
         Guid accountId = Guid.NewGuid(), characterId = Guid.NewGuid();
         context.Accounts.Add(new Account(accountId, 123456, DateTimeOffset.UtcNow));
-        context.Characters.Add(new Character(characterId, accountId, Guid.NewGuid(), "MageTester", "MAGETESTER", "HUMAN", "FEMALE", "MAGE", DateTimeOffset.UtcNow));
+        context.Characters.Add(new Character(characterId, accountId, Guid.NewGuid(), "MageTester", "MAGETESTER", "HUMAN", "FEMALE", classId, DateTimeOffset.UtcNow));
         await context.SaveChangesAsync();
     }
 
