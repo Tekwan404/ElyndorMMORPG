@@ -120,8 +120,9 @@ describe('authored content art', () => {
       PECHAT_TRIEDINSTVA: 'items_outside_sets/shattered_order_citadel/triune_seal',
     }
 
+    const items = getItems()
     for (const [itemId, expectedIconId] of Object.entries(expectedIconIds)) {
-      const item = getItems().find(candidate => candidate.id === itemId)
+      const item = items.find(candidate => candidate.id === itemId)
 
       expect(item?.iconId).toBe(expectedIconId)
       expect(itemArtUrl(item?.iconId)).toBeDefined()
