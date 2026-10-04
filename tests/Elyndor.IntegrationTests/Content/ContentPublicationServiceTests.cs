@@ -248,6 +248,78 @@ public sealed class ContentPublicationServiceTests(PostgresFixture postgres) : I
     }
 
     [Fact]
+    public async Task RestoreLatestReleaseKeepsBundledOneHandEyeOverOlderPublishedStaff()
+    {
+        MutableTimeProvider timeProvider = new(Start);
+        GameContentPackage bundled =
+            await GameContentPackageLoader.LoadAsync(
+                Path.GetFullPath("content/package.json"));
+
+        ItemDefinition bundledEye = bundled.Items!
+            .Single(item => item.Id == "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L60");
+        Assert.Equal(EquipmentCategoryIds.OneHandStaff, bundledEye.WeaponCategory);
+
+        ClassProfile bundledMage = bundled.ClassProfiles!
+            .Single(profile => profile.Id == "MAGE");
+        Assert.Contains(EquipmentCategoryIds.OneHandStaff, bundledMage.AllowedWeaponCategories);
+
+        ItemDefinition staleEye = bundledEye with
+        {
+            WeaponCategory = EquipmentCategoryIds.Staff,
+            Description = "Устаревшая опубликованная двуручная версия."
+        };
+        ClassProfile staleMage = bundledMage with
+        {
+            AllowedWeaponCategories = [EquipmentCategoryIds.Staff, EquipmentCategoryIds.Wand]
+        };
+        GameContentPackage olderPublished = bundled with
+        {
+            ContentVersion = "0.36.0",
+            PublishedAtUtc = bundled.PublishedAtUtc.AddMinutes(-1),
+            Items = bundled.Items!
+                .Select(item => item.Id == staleEye.Id ? staleEye : item)
+                .ToArray(),
+            ClassProfiles = bundled.ClassProfiles!
+                .Select(profile => profile.Id == staleMage.Id ? staleMage : profile)
+                .ToArray()
+        };
+
+        await using (GameDbContext seedContext = postgres.CreateDbContext())
+        {
+            ContentRevisionStore seedStore = new(seedContext, timeProvider);
+            ContentRevision staleRevision = await CreateRevisionAsync(
+                seedStore,
+                olderPublished,
+                "published before one-hand Eye fix");
+            _ = await seedStore.PublishAsync(
+                staleRevision.Id,
+                "integration-test",
+                "stale Eye release",
+                CancellationToken.None);
+        }
+
+        await using GameDbContext runtimeContext = postgres.CreateDbContext();
+        ContentRevisionStore runtimeStore = new(runtimeContext, timeProvider);
+        MutableContentSnapshotProvider provider = new(bundled);
+        ContentPublicationService service = new(
+            runtimeStore,
+            new ContentRevisionImporter(runtimeStore),
+            provider,
+            new ContentPublicationCoordinator());
+
+        _ = await service.RestoreLatestReleaseAsync(CancellationToken.None);
+
+        GameContentPackage restored = provider.GetCurrent().Package;
+        Assert.Equal("0.36.1", restored.ContentVersion);
+        Assert.Equal(
+            EquipmentCategoryIds.OneHandStaff,
+            restored.Items!.Single(item => item.Id == bundledEye.Id).WeaponCategory);
+        Assert.Contains(
+            EquipmentCategoryIds.OneHandStaff,
+            restored.ClassProfiles!.Single(profile => profile.Id == "MAGE").AllowedWeaponCategories);
+    }
+
+    [Fact]
     public async Task StartupRestoreFallsBackToFileContentForIncompatiblePublishedRevision()
     {
         MutableTimeProvider timeProvider = new(Start);
