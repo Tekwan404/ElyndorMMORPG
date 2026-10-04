@@ -11,6 +11,7 @@
 
 - Combat: [event routing](development/combat-event-routing.md),
   [ability composition](development/ability-modifier-composition.md),
+  [resource orchestration](development/combat-resource-runtime.md),
   [proc safety](development/proc-safety.md),
   [PvP player mechanics](development/pvp-player-mechanics-parity.md),
   [arena invitations](development/arena-friend-invitations.md).

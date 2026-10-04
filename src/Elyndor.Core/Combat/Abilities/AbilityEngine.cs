@@ -1,6 +1,7 @@
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Randomness;
+using Elyndor.Core.Combat.Resources;
 
 namespace Elyndor.Core.Combat.Abilities;
 
@@ -29,14 +30,14 @@ public static class AbilityEngine
         }
 
         decimal resourceCost = ResolveResourceCost(runtime, ability, now);
-        if (!runtime.Actor.TrySpendResource(resourceCost))
+        if (!CombatResourceRuntime.TrySpend(runtime.Actor, resourceCost, now, ability.Id, out CombatEvent? resourceSpent))
         {
             return AbilityExecutionResult.Failure(AbilityErrorCode.InsufficientResource);
         }
 
         List<CombatEvent> events =
         [
-            new(CombatEventType.ResourceChanged, now, runtime.Actor.ActorId, ability.Id, -resourceCost),
+            resourceSpent!,
             new(CombatEventType.AbilityStarted, now, runtime.Actor.ActorId, ability.Id)
         ];
         if (!string.IsNullOrWhiteSpace(ability.ConsumeEffectId))
@@ -406,15 +407,8 @@ public static class AbilityEngine
                         CombatActorState resourceTarget = action.ResourceTarget == AbilityResourceTarget.Target
                             ? target
                             : runtime.Actor;
-                        decimal actualChange = resourceTarget.AddResource(action.Amount);
-                        events.Add(new CombatEvent(
-                            CombatEventType.ResourceChanged,
-                            now,
-                            resourceTarget.ActorId,
-                            ability.Id,
-                            actualChange,
-                            SourceActorId: runtime.Actor.ActorId,
-                            TargetActorId: resourceTarget.ActorId));
+                        events.Add(CombatResourceRuntime.Change(resourceTarget, action.Amount,
+                            now, ability.Id, runtime.Actor.ActorId));
                         break;
                     case AbilityActionType.Dispel:
                         if (string.IsNullOrWhiteSpace(action.DispelCategory))
