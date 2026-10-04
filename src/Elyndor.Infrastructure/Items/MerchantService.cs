@@ -41,6 +41,8 @@ public sealed record MerchantBuybackItem(
     ItemDefinition Definition,
     int BuybackPriceGold);
 
+public sealed record MerchantSellSelection(Guid CharacterItemId, int Quantity);
+
 public sealed record MerchantSnapshot(
     MerchantDefinition Merchant,
     long Gold,
@@ -104,6 +106,7 @@ public sealed class MerchantService(
     private const string BuyOperation = "MERCHANT_BUY";
     private const string SellMaterialOperation = "MERCHANT_SELL_MATERIAL";
     private const string SellItemOperation = "MERCHANT_SELL_ITEM";
+    private const string SellItemsOperation = "MERCHANT_SELL_ITEMS";
     private const string BuybackOperation = "MERCHANT_BUYBACK";
     private const int BuybackCapacity = 12;
 
@@ -351,6 +354,140 @@ public sealed class MerchantService(
                 return null;
             },
             cancellationToken);
+
+    public Task<MerchantOperationResult> SellItemsAsync(
+        Guid accountId,
+        string merchantId,
+        IReadOnlyList<MerchantSellSelection> selections,
+        Guid mutationId,
+        CancellationToken cancellationToken)
+    {
+        MerchantSellSelection[] normalized = selections
+            .Where(selection => selection.CharacterItemId != Guid.Empty)
+            .GroupBy(selection => selection.CharacterItemId)
+            .Select(group => new MerchantSellSelection(
+                group.Key,
+                group.Sum(selection => selection.Quantity)))
+            .OrderBy(selection => selection.CharacterItemId)
+            .ToArray();
+
+        if (normalized.Length == 0
+            || normalized.Length > 100
+            || normalized.Any(selection => selection.Quantity is < 1 or > 99))
+        {
+            return Task.FromResult(
+                MerchantOperationResult.Failure(MerchantErrorCodes.InvalidQuantity));
+        }
+
+        string fingerprint = Fingerprint(
+            [SellItemsOperation, merchantId, .. normalized.Select(selection =>
+                $"{selection.CharacterItemId:N}:{selection.Quantity.ToString(CultureInfo.InvariantCulture)}")]);
+
+        return ExecuteMutationAsync(
+            accountId,
+            merchantId,
+            mutationId,
+            SellItemsOperation,
+            fingerprint,
+            async (character, _) =>
+            {
+                Guid[] ids = normalized.Select(selection => selection.CharacterItemId).ToArray();
+                CharacterItem[] previewItems = await dbContext.CharacterItems
+                    .AsNoTracking()
+                    .Where(item => ids.Contains(item.Id))
+                    .ToArrayAsync(cancellationToken);
+                if (previewItems.Length != ids.Length)
+                    return MerchantErrorCodes.ItemNotOwned;
+
+                HashSet<Guid> equippedIds = (await dbContext.CharacterEquipment
+                    .AsNoTracking()
+                    .Where(equipment => equipment.CharacterId == character.Id
+                        && ids.Contains(equipment.CharacterItemId))
+                    .Select(equipment => equipment.CharacterItemId)
+                    .ToArrayAsync(cancellationToken))
+                    .ToHashSet();
+                Guid? spatialArtifactId = await dbContext.CharacterSpatialArtifacts
+                    .AsNoTracking()
+                    .Where(artifact => artifact.CharacterId == character.Id)
+                    .Select(artifact => (Guid?)artifact.CharacterItemId)
+                    .SingleOrDefaultAsync(cancellationToken);
+
+                long totalPrice = 0;
+                var definitions = new Dictionary<Guid, ItemDefinition>();
+                foreach (MerchantSellSelection selection in normalized)
+                {
+                    CharacterItem item = previewItems.Single(candidate =>
+                        candidate.Id == selection.CharacterItemId);
+                    if (item.CharacterId != character.Id
+                        || !string.Equals(item.Storage, "INVENTORY", StringComparison.Ordinal))
+                    {
+                        return MerchantErrorCodes.ItemNotOwned;
+                    }
+                    if (item.IsLocked)
+                        return MerchantErrorCodes.ItemLocked;
+                    if (item.TransactionLockId.HasValue)
+                        return MerchantErrorCodes.TransactionLocked;
+                    if (equippedIds.Contains(item.Id) || spatialArtifactId == item.Id)
+                        return MerchantErrorCodes.ItemEquipped;
+
+                    ItemDefinition? definition = FindItem(item.ItemDefinitionId);
+                    if (definition is null)
+                        return MerchantErrorCodes.ItemNotSellable;
+                    if (selection.Quantity > item.Quantity
+                        || (!definition.Stackable && selection.Quantity != 1))
+                    {
+                        return MerchantErrorCodes.InvalidQuantity;
+                    }
+
+                    int unitPrice = ResolveSellPrice(definition);
+                    if (unitPrice <= 0)
+                        return MerchantErrorCodes.ItemNotSellable;
+                    totalPrice = checked(totalPrice + checked((long)unitPrice * selection.Quantity));
+                    definitions[item.Id] = definition;
+                }
+
+                int credited = await dbContext.Characters
+                    .Where(candidate => candidate.Id == character.Id)
+                    .ExecuteUpdateAsync(
+                        setters => setters.SetProperty(
+                            candidate => candidate.Gold,
+                            candidate => candidate.Gold + totalPrice),
+                        cancellationToken);
+                if (credited == 0)
+                    return MerchantErrorCodes.CharacterNotFound;
+
+                CharacterItem[] items = await dbContext.CharacterItems
+                    .Where(item => ids.Contains(item.Id))
+                    .ToArrayAsync(cancellationToken);
+                if (items.Length != ids.Length)
+                    return MerchantErrorCodes.ItemNotOwned;
+
+                foreach (MerchantSellSelection selection in normalized)
+                {
+                    CharacterItem item = items.Single(candidate =>
+                        candidate.Id == selection.CharacterItemId);
+                    ItemDefinition definition = definitions[item.Id];
+                    if (item.CharacterId != character.Id
+                        || item.IsLocked
+                        || item.TransactionLockId.HasValue
+                        || selection.Quantity > item.Quantity)
+                    {
+                        return MerchantErrorCodes.Conflict;
+                    }
+
+                    await MoveToBuybackAsync(
+                        character.Id,
+                        item,
+                        definition,
+                        selection.Quantity,
+                        cancellationToken);
+                    await dbContext.SaveChangesAsync(cancellationToken);
+                }
+
+                return null;
+            },
+            cancellationToken);
+    }
 
     public Task<MerchantOperationResult> BuybackAsync(
         Guid accountId,
