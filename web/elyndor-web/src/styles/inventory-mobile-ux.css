@@ -238,6 +238,99 @@
   }
 }
 
+/* Dense icon mode: scan as many items as possible without losing rarity, stack or selection state. */
+#app .inventory-view [data-inventory-layout='mini'] .bag-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
+}
+
+#app .inventory-view [data-inventory-layout='mini'] .bag-cell {
+  min-height: 0;
+  padding: 2px;
+  border-radius: 8px;
+}
+
+#app .inventory-view [data-inventory-layout='mini'] .bag-cell__icon img {
+  width: 88%;
+  height: 88%;
+}
+
+#app .inventory-view [data-inventory-layout='mini'] .bag-cell__icon :is(.icon-generator svg) {
+  width: 76%;
+  height: 76%;
+}
+
+#app .inventory-view [data-inventory-layout='mini'] .bag-cell .item-icon__slot-badge {
+  bottom: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-width: 0;
+  opacity: 0.72;
+}
+
+#app .inventory-view [data-inventory-layout='mini'] .bag-cell__new {
+  top: 3px;
+  left: 3px;
+  width: 5px;
+  height: 5px;
+}
+
+#app .inventory-view [data-inventory-layout='mini'] .bag-cell__lock {
+  top: 2px;
+  right: 2px;
+  width: 0.78rem;
+  height: 0.78rem;
+  border-width: 0;
+  font-size: 0.35rem;
+}
+
+#app .inventory-view [data-inventory-layout='mini'] .bag-cell__quantity {
+  right: 2px;
+  bottom: 1px;
+  padding: 0 2px;
+  border-radius: 3px;
+  font-size: 0.52rem;
+}
+
+#app .inventory-view [data-inventory-layout='mini'] .bag-cell__mini-stars {
+  position: absolute;
+  z-index: 2;
+  bottom: 1px;
+  left: 2px;
+  padding: 0 2px;
+  border-radius: 3px;
+  background: rgb(8 11 20 / 88%);
+  color: var(--ui-color-gold);
+  font-size: 0.48rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+#app .inventory-view [data-inventory-layout='mini'] .bag-cell__rarity {
+  right: 10%;
+  left: 10%;
+  height: 1px;
+}
+
+@media (max-width: 389px) {
+  #app .inventory-view [data-inventory-layout='mini'] .bag-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 720px) {
+  #app .inventory-view [data-inventory-layout='mini'] .bag-grid {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 960px) {
+  #app .inventory-view [data-inventory-layout='mini'] .bag-grid {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   #app .inventory-view .bag-cell {
     transition: none;

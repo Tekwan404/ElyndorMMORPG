@@ -73,7 +73,8 @@ public sealed class PromoCodeService(GameDbContext dbContext, IContentSnapshotPr
                 return PromoCodeRedemptionResult.Failure(PromoCodeErrorCodes.GlobalLimitReached);
             GameContentSnapshot content = contentProvider.GetCurrent();
             (ItemDefinition Definition, int Quantity)[] rewards = ResolveItemRewards(content, promo);
-            if (!await CanGrantAsync(character.Id, rewards, content, cancellationToken)) return PromoCodeRedemptionResult.Failure(PromoCodeErrorCodes.InventoryFull);
+            if (rewards.Length > 0 && !await CanGrantAsync(character.Id, rewards, content, cancellationToken))
+                return PromoCodeRedemptionResult.Failure(PromoCodeErrorCodes.InventoryFull);
             foreach ((ItemDefinition definition, int quantity) in rewards)
                 await GrantAsync(character.Id, definition, quantity, operationId, code, content, cancellationToken);
             if (promo.GoldAmount > 0) character.AddGold(promo.GoldAmount);
@@ -125,10 +126,20 @@ public sealed class PromoCodeService(GameDbContext dbContext, IContentSnapshotPr
 
     private async Task<bool> CanGrantAsync(Guid characterId, IReadOnlyList<(ItemDefinition Definition, int Quantity)> rewards, GameContentSnapshot content, CancellationToken cancellationToken)
     {
-        int used = await InventoryCapacity.CountUsedSlotsAsync(dbContext, characterId, cancellationToken);
+        InventoryCapacityState state = await InventoryCapacity.GetStateAsync(
+            dbContext,
+            characterId,
+            content,
+            cancellationToken);
         int needed = 0;
-        foreach ((ItemDefinition definition, int quantity) in rewards) needed += await InventoryCapacity.AdditionalSlotsRequiredAsync(dbContext, characterId, definition, quantity, cancellationToken);
-        return used + needed <= InventoryCapacity.Resolve(content);
+        foreach ((ItemDefinition definition, int quantity) in rewards)
+            needed += await InventoryCapacity.AdditionalSlotsRequiredAsync(
+                dbContext,
+                characterId,
+                definition,
+                quantity,
+                cancellationToken);
+        return state.UsedSlots + needed <= state.Capacity;
     }
 
     private async Task GrantAsync(

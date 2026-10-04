@@ -770,6 +770,22 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     )
   }
 
+  async function sellMerchantItems(
+    merchantId: string,
+    items: Array<{ characterItemId: string; quantity: number }>,
+  ): Promise<MerchantSnapshot | null> {
+    const normalized = [...items]
+      .filter((item) => item.quantity > 0)
+      .sort((left, right) => left.characterItemId.localeCompare(right.characterItemId))
+    if (!normalized.length) return null
+
+    return await merchantMutation(
+      'merchant:sell-items',
+      '/api/v1/inventory/merchant/sell-items',
+      { merchantId, items: normalized },
+    )
+  }
+
   async function buybackMerchantItem(
     merchantId: string,
     characterItemId: string,
@@ -970,6 +986,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     redeemPromoCode,
     buyMerchantItem,
     sellMerchantItem,
+    sellMerchantItems,
     sellMerchantMaterial,
     buybackMerchantItem,
   }
