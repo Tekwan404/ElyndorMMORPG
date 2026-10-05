@@ -131,6 +131,54 @@ public sealed class AuthoredWorldContentTests
     }
 
     [Fact]
+    public async Task EndgameWorldMapRunsFromObsidianEdgeToEliteLevelSixtyZone()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
+        GameContentIndexes indexes = GameContentIndexes.For(package);
+
+        string[] endgameLocationIds =
+        [
+            "BLACK_CRAGS",
+            "PLAGUEWOOD",
+            "GLASS_DESERT",
+            "FROZEN_EDGE",
+            "DOOMED_LANDS",
+            "DEAD_REACHES"
+        ];
+
+        Assert.Contains("BLACK_CRAGS", indexes.LocationsById["OBSIDIAN_EDGE"].Transitions);
+
+        foreach (string locationId in endgameLocationIds)
+        {
+            var location = indexes.LocationsById[locationId];
+            Assert.Equal("OUTER_REACHES", location.MapId);
+            Assert.Equal("DEADLY", location.DangerLevel);
+            Assert.False(location.AllowAfk);
+            Assert.NotEmpty(location.Encounters ?? []);
+
+            foreach (var encounter in location.Encounters ?? [])
+            {
+                MonsterDefinition monster = indexes.MonstersById[encounter.MonsterId];
+                Assert.Empty(monster.AbilityIds);
+                Assert.Equal("AUTHORED_EMPTY_AI", monster.AiProfileId);
+                Assert.Null(monster.LootTableId);
+                Assert.Equal(0, monster.GoldRewardMin);
+                Assert.Equal(0, monster.GoldRewardMax);
+                Assert.False(string.IsNullOrWhiteSpace(monster.ArtId));
+            }
+        }
+
+        Assert.Equal(41, indexes.LocationsById["BLACK_CRAGS"].MinimumLevel);
+        Assert.Equal(60, indexes.LocationsById["DEAD_REACHES"].MinimumLevel);
+        Assert.Equal(60, indexes.LocationsById["DEAD_REACHES"].MaximumLevel);
+        Assert.All(
+            indexes.LocationsById["DEAD_REACHES"].Encounters ?? [],
+            encounter => Assert.Equal(
+                MonsterRank.Elite,
+                indexes.MonstersById[encounter.MonsterId].Rank));
+    }
+
+    [Fact]
     public async Task AuthoredDungeonsKeepResolvableLootAndOnlyBlackBastionBossesHaveBehavior()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
