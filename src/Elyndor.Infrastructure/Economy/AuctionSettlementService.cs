@@ -164,8 +164,7 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
         if (character is null) return CommerceResult.Failure<AuctionFeePreviewView>("commerce_character_not_found");
         try
         {
-            if (await db.AuctionListings.CountAsync(x => x.SellerId == character && x.State == "ACTIVE", ct)
-                >= options.Value.MaxActiveListings)
+            if (await HasReachedListingLimitAsync(character.Value, ct))
                 throw new CommerceRuleException("auction_listing_limit");
             _ = await transactions.ItemAsync(request.ItemId, character.Value, null, false, ct);
             var (fee, tax) = Quote(request.Price);
@@ -190,8 +189,7 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
         return await transactions.RunAsync(account, request.RequestId, "AUCTION_CREATE", request, [character.Value], async (characters, replay) =>
         {
             if (replay) return Response(await db.AuctionListings.SingleAsync(x => x.Id == id, ct));
-            if (await db.AuctionListings.CountAsync(x => x.SellerId == character && x.State == "ACTIVE", ct)
-                >= options.Value.MaxActiveListings)
+            if (await HasReachedListingLimitAsync(character.Value, ct))
                 throw new CommerceRuleException("auction_listing_limit");
             var item = await transactions.ItemAsync(request.ItemId, character.Value, null, false, ct);
             var (fee, tax) = Quote(request.Price);
@@ -259,25 +257,53 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
 
     public async Task<CommerceResult<AuctionResponse>> ReturnAsync(Guid account, Guid id, Guid request, bool expired, CancellationToken ct)
     {
-        var seller = await transactions.CharacterIdAsync(account, ct);
+        Guid? seller = await transactions.CharacterIdAsync(account, ct);
         if (seller is null) return CommerceResult.Failure<AuctionResponse>("commerce_character_not_found");
-        return await transactions.RunAsync(account, request, expired ? "AUCTION_EXPIRE" : "AUCTION_CANCEL", new { id }, [seller.Value],
+        return await ReturnCoreAsync(account, seller.Value, id, request, expired, ct);
+    }
+
+    public Task<CommerceResult<AuctionResponse>> ReturnExpiredAsync(
+        Guid account,
+        Guid sellerId,
+        Guid id,
+        Guid request,
+        CancellationToken ct) =>
+        ReturnCoreAsync(account, sellerId, id, request, expired: true, ct);
+
+    private Task<CommerceResult<AuctionResponse>> ReturnCoreAsync(
+        Guid account,
+        Guid sellerId,
+        Guid id,
+        Guid request,
+        bool expired,
+        CancellationToken ct) =>
+        transactions.RunAsync(
+            account,
+            request,
+            expired ? "AUCTION_EXPIRE" : "AUCTION_CANCEL",
+            new { id },
+            [sellerId],
             async (_, replay) =>
             {
                 var lot = await LockAsync(id, ct);
-                if (lot.SellerId != seller) throw new CommerceRuleException("auction_not_owner");
+                if (lot.SellerId != sellerId) throw new CommerceRuleException("auction_not_owner");
                 if (replay) return Response(lot);
                 bool isExpired = time.GetUtcNow() >= lot.ExpiresAt;
                 if (expired && !isExpired) throw new CommerceRuleException("auction_not_expired");
                 var item = await transactions.ItemAsync(lot.ItemId, lot.SellerId, id, true, ct, verifyTradePolicy: false);
                 lot.Return(isExpired);
-                bool canReturnToBag = !isExpired && await InventoryCapacity.FreeSlotsAsync(db, lot.SellerId, content.GetCurrent(), ct) > 0;
+                bool canReturnToBag = !isExpired
+                    && await InventoryCapacity.FreeSlotsAsync(
+                        db,
+                        lot.SellerId,
+                        content.GetCurrent(),
+                        ct) > 0;
                 item.Transfer(id, lot.SellerId, canReturnToBag ? "INVENTORY" : "MAILBOX");
                 if (!canReturnToBag)
                     db.CommerceMails.Add(new CommerceMail(id, lot.SellerId, item.Id, time.GetUtcNow()));
                 return Response(lot);
-            }, ct);
-    }
+            },
+            ct);
 
     public async Task<CommerceResult<Guid>> ClaimAsync(Guid account, Guid id, Guid request, CancellationToken ct)
     {
@@ -318,6 +344,20 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
                 entry.ItemDefinitionId, definition?.Name ?? entry.ItemDefinitionId, definition?.IconId, entry.Quantity,
                 entry.BuyerId == owner ? "PURCHASE" : "RETURN");
         }).ToArray();
+    }
+
+    private async Task<bool> HasReachedListingLimitAsync(Guid sellerId, CancellationToken ct)
+    {
+        int limit = options.Value.MaxActiveListings;
+        if (limit <= 0) return true;
+
+        int activeAtLimit = await db.AuctionListings
+            .AsNoTracking()
+            .Where(listing => listing.SellerId == sellerId && listing.State == "ACTIVE")
+            .Select(listing => listing.Id)
+            .Take(limit)
+            .CountAsync(ct);
+        return activeAtLimit >= limit;
     }
 
     private string ResolveItemName(Elyndor.Core.Items.CharacterItem item)
