@@ -1,0 +1,734 @@
+{
+  "contentVersion": "0.37.0",
+  "balanceVersion": "0.30.0",
+  "publishedAtUtc": "2026-10-05T17:40:00+00:00",
+  "note": "Curated open-world loot pass: thematic sources, no coin-bag duplication, signature drops concentrated on appropriate enemies.",
+  "lootTables": [
+    {
+      "id": "LOOT_WHISPERING_FOREST_LESNOI_RAZBOINIK_L5",
+      "entries": [
+        {
+          "itemId": "GRUBAIA_TKAN",
+          "dropChance": 0.42,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ORUZHEINAIA_DETAL",
+          "dropChance": 0.18,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PLASHCH_LESNOI_TROPY",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_DEEP_FOREST_ALFA_VOLK_L7",
+      "entries": [
+        {
+          "itemId": "TIOMNOE_MIASO",
+          "dropChance": 0.52,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ZARAZHIONNYI_KLYK",
+          "dropChance": 0.18,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "SLED_PORCHI",
+          "dropChance": 0.1,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_DEEP_FOREST_GOBLIN_RAZVEDCHIK_L9",
+      "entries": [
+        {
+          "itemId": "GRUBAIA_TKAN",
+          "dropChance": 0.34,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ZHELEZNAIA_MELOCH",
+          "dropChance": 0.22,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PRUZHINA_KAPKANA",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "SEKIRA_CHASHCHOBY",
+          "dropChance": 0.03,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_DEEP_FOREST_GOBLIN_KAPKANSHCHIK_L10",
+      "entries": [
+        {
+          "itemId": "GRUBAIA_TKAN",
+          "dropChance": 0.34,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ZHELEZNAIA_MELOCH",
+          "dropChance": 0.22,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PRUZHINA_KAPKANA",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_OLD_ROAD_KAPITAN_PYLNOI_DOROGI_L13",
+      "entries": [
+        {
+          "itemId": "GRUBAIA_TKAN",
+          "dropChance": 0.48,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ORUZHEINAIA_DETAL",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "KLINOK_PYLNOI_DOROGI",
+          "dropChance": 0.05,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_OLD_ROAD_RAZBOINIK_LUCHNIK_L13",
+      "entries": [
+        {
+          "itemId": "GRUBAIA_TKAN",
+          "dropChance": 0.48,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ORUZHEINAIA_DETAL",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "DOZORNYI_LUK_STAROGO_TRAKTA",
+          "dropChance": 0.012,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_OLD_ROAD_DOROZHNYI_MARODIOR_L14",
+      "entries": [
+        {
+          "itemId": "GRUBAIA_TKAN",
+          "dropChance": 0.48,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ORUZHEINAIA_DETAL",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_OLD_ROAD_RAZBOINIK_PODRYVNIK_L14",
+      "entries": [
+        {
+          "itemId": "LOM",
+          "dropChance": 0.3,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "FITIL",
+          "dropChance": 0.18,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "MESHOCHEK_REAGENTOV",
+          "dropChance": 0.1,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_STONE_SPURS_NETOPYR_L12",
+      "entries": [
+        {
+          "itemId": "MINERALIZOVANNAIA_KOST",
+          "dropChance": 0.24,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PESHCHERNAIA_SLIZ",
+          "dropChance": 0.16,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_STONE_SPURS_MOLODOI_KAMNEGLOT_L16",
+      "entries": [
+        {
+          "itemId": "KAMENNOE_IADRO",
+          "dropChance": 0.42,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RUNNAIA_KROSHKA",
+          "dropChance": 0.14,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "OSKOLOK_RUDY",
+          "dropChance": 0.22,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_BLIGHTED_GROVE_SHIPASTYI_KHISHCHNIK_L18",
+      "entries": [
+        {
+          "itemId": "PORCHENOE_MIASO",
+          "dropChance": 0.48,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ZARAZHIONNYI_KLYK",
+          "dropChance": 0.2,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "SGUSTOK_PORCHI",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_BLIGHTED_GROVE_IADOVITAIA_MATRONA_CHASHCHI_L19",
+      "entries": [
+        {
+          "itemId": "TIOMNYI_SHIOLK",
+          "dropChance": 0.42,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "IADOVITAIA_ZHELEZA",
+          "dropChance": 0.18,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PORCHENYI_KHITIN",
+          "dropChance": 0.22,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_BLIGHTED_GROVE_PORCHENNYI_DREVEN_L19",
+      "entries": [
+        {
+          "itemId": "PYL_PORCHI",
+          "dropChance": 0.38,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "TIOMNAIA_ESSENTSIIA",
+          "dropChance": 0.14,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ZHIVOI_KOREN",
+          "dropChance": 0.18,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_BLIGHTED_GROVE_GLASHATAI_PORCHI_L20",
+      "entries": [
+        {
+          "itemId": "PLOTNAIA_TKAN",
+          "dropChance": 0.38,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PYL_PORCHI",
+          "dropChance": 0.22,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "TIOMNAIA_ESSENTSIIA",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_ASHEN_BORDER_PEPELNYI_NALIOTCHIK_L22",
+      "entries": [
+        {
+          "itemId": "PLOTNAIA_TKAN",
+          "dropChance": 0.42,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ZNAK_ZATMENIIA",
+          "dropChance": 0.18,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ORUZHEINAIA_DETAL",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_ASHEN_BORDER_PEPELNYI_ELEMENTAL_L21",
+      "entries": [
+        {
+          "itemId": "UGOLNOE_IADRO",
+          "dropChance": 0.42,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "TLEIUSHCHAIA_ESSENTSIIA",
+          "dropChance": 0.2,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PEPELNYI_REAGENT",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_MOON_ASH_MARSHES_LUNNOPEPELNYI_UTOPLENNIK_L25",
+      "entries": [
+        {
+          "itemId": "MOKRAIA_TKAN",
+          "dropChance": 0.34,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "LUNNAIA_PYL",
+          "dropChance": 0.16,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PROKLIATYI_OBEREG",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_MOON_ASH_MARSHES_PRIZRACHNYI_PALOMNIK_L26",
+      "entries": [
+        {
+          "itemId": "MOKRAIA_TKAN",
+          "dropChance": 0.34,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "LUNNAIA_PYL",
+          "dropChance": 0.16,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PROKLIATYI_OBEREG",
+          "dropChance": 0.07,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_MOON_ASH_MARSHES_BOLOTNAIA_MAT_L26",
+      "entries": [
+        {
+          "itemId": "BOLOTNOE_IADRO",
+          "dropChance": 0.3,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "OSKOLOK_SVETA",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "TIOMNAIA_ESSENTSIIA",
+          "dropChance": 0.14,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "KLYK_MATERI_TOPEI",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_SHATTERED_LANDS_OTRAZHIONNYI_ZVER_L32",
+      "entries": [
+        {
+          "itemId": "ZERKALNAIA_PLASTINA",
+          "dropChance": 0.32,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "OSKOLOK_RASKOLA",
+          "dropChance": 0.25,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_SHATTERED_LANDS_KHRANITEL_RAZLOMA_L32",
+      "entries": [
+        {
+          "itemId": "ZERKALNAIA_PLASTINA",
+          "dropChance": 0.32,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "OSKOLOK_RASKOLA",
+          "dropChance": 0.25,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PECHAT_KHRANITELIA_RASKOLA",
+          "dropChance": 0.03,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_BLACKSTONE_HIGHLANDS_CHERNOKAMENNYI_VOLK_L30",
+      "entries": [
+        {
+          "itemId": "TIOMNOE_MIASO",
+          "dropChance": 0.48,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "CHIORNYI_KLYK",
+          "dropChance": 0.18,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_BLACKSTONE_HIGHLANDS_PIROMANT_NAGORIA_L34",
+      "entries": [
+        {
+          "itemId": "OGNENNAIA_ESSENTSIIA",
+          "dropChance": 0.24,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PEPELNAIA_PYL",
+          "dropChance": 0.3,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "SFERA_CHIORNOGO_PLAMENI",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_CRIMSON_WASTELAND_CHUMNOI_ZHRETS_L34",
+      "entries": [
+        {
+          "itemId": "BAGROVAIA_TKAN",
+          "dropChance": 0.38,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "KROVAVYI_REAGENT",
+          "dropChance": 0.18,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "TIOMNAIA_RUNA",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "KORONA_CHUMNOGO_ZHRETSA",
+          "dropChance": 0.008,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_CRIMSON_WASTELAND_POZHIRATEL_DUSH_L35",
+      "entries": [
+        {
+          "itemId": "OSKOLOK_DUSHI",
+          "dropChance": 0.32,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PECHAT_MARSHALA",
+          "dropChance": 0.18,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "SOSUD_PLENIONNOI_DUSHI",
+          "dropChance": 0.01,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_CRIMSON_WASTELAND_SKELET_LUCHNIK_L36",
+      "entries": [
+        {
+          "itemId": "KOSTIANAIA_PYL",
+          "dropChance": 0.38,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "OBLOMOK_KOSTI",
+          "dropChance": 0.3,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "OSTATOK_DUSHI",
+          "dropChance": 0.1,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_CRIMSON_WASTELAND_POGREBALNAIA_BANSHI_L38",
+      "entries": [
+        {
+          "itemId": "OSKOLOK_DUSHI",
+          "dropChance": 0.34,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "TIOMNAIA_RUNA",
+          "dropChance": 0.16,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "OSTATOK_DUSHI",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_OBSIDIAN_EDGE_PEPELNYI_RYTSAR_L36",
+      "entries": [
+        {
+          "itemId": "BASTIONNAIA_TKAN",
+          "dropChance": 0.36,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ZNAK_BASTIONA",
+          "dropChance": 0.2,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ORUZHEINAIA_PLASTINA",
+          "dropChance": 0.16,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "KLINOK_PEPELNOGO_RYTSARIA",
+          "dropChance": 0.01,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_OBSIDIAN_EDGE_STRELOK_BASTIONA_L37",
+      "entries": [
+        {
+          "itemId": "BASTIONNAIA_TKAN",
+          "dropChance": 0.36,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ZNAK_BASTIONA",
+          "dropChance": 0.2,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ORUZHEINAIA_PLASTINA",
+          "dropChance": 0.16,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "LUK_BASTIONNOGO_DOZORA",
+          "dropChance": 0.01,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    },
+    {
+      "id": "LOOT_OBSIDIAN_EDGE_PREDVESTNIK_PERVOGO_STRAZHA_L39",
+      "entries": [
+        {
+          "itemId": "PECHAT_VRAT",
+          "dropChance": 0.35,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "OSKOLOK_PERVOGO_STRAZHA",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PECHAT_PREDVESTNIKA",
+          "dropChance": 0.005,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
+    }
+  ]
+}
