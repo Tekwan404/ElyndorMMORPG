@@ -226,6 +226,52 @@ describe('WorldMapView', () => {
     }
   })
 
+  it('opens the second map only at the Obsidian Edge gateway', async () => {
+    const obsidianEdge: WorldLocation = {
+      ...LOCATIONS[2]!,
+      id: 'OBSIDIAN_EDGE',
+      displayName: 'Обсидиановый предел',
+      dangerLevel: 'DEADLY',
+      recommendedLevel: 38,
+      minimumLevel: 36,
+      maximumLevel: 40,
+      mapId: 'BORDERLANDS',
+    }
+    const blackCrags: WorldLocation = {
+      ...LOCATIONS[2]!,
+      id: 'BLACK_CRAGS',
+      displayName: 'Чёрные Кручи',
+      dangerLevel: 'DEADLY',
+      recommendedLevel: 42,
+      minimumLevel: 41,
+      maximumLevel: 44,
+      mapId: 'OUTER_REACHES',
+    }
+    vi.spyOn(apiClient, 'request').mockResolvedValue([obsidianEdge, blackCrags])
+
+    const session = useGameSessionStore()
+    session.snapshot = snapshot()
+    session.snapshot.character!.level = 41
+    session.snapshot.world = {
+      currentLocation: obsidianEdge,
+      version: 2,
+      outgoingTransitions: [blackCrags],
+      contracts: [],
+    }
+
+    const wrapper = mount(WorldMapView)
+    await flushPromises()
+
+    expect(wrapper.get('[data-map-id="BORDERLANDS"]')).toBeTruthy()
+    expect(wrapper.get('[data-world-map-switch]')).toBeTruthy()
+    await wrapper.get('[data-map-switch-id="OUTER_REACHES"]').trigger('click')
+
+    expect(wrapper.get('[data-map-id="OUTER_REACHES"]')).toBeTruthy()
+    expect(wrapper.get('[data-location-id="BLACK_CRAGS"]').attributes('data-state')).toBe('reachable')
+    expect(wrapper.find('[data-location-id="OBSIDIAN_EDGE"]').exists()).toBe(false)
+    expect(wrapper.get('[data-map-selection]').text()).toContain('Чёрные Кручи')
+  })
+
   it('resolves any dungeon location through the shared dungeon presentation', async () => {
     const citadel: WorldLocation = {
       id: 'ECLIPSED_CITADEL',
