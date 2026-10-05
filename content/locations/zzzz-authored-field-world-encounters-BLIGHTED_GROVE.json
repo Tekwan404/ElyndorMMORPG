@@ -5,11 +5,23 @@
   "publishedAtUtc": "2026-10-05T17:40:00+00:00",
   "encounters": [
     {
+      "monsterId": "BANDIT_ARCHER_L16",
+      "weight": 1
+    },
+    {
       "monsterId": "CORRUPTED_BOAR_L17",
       "weight": 1
     },
     {
-      "monsterId": "BANDIT_ARCHER_L16",
+      "monsterId": "BLIGHTED_GROVE_PORCHENYI_VOLK_L15",
+      "weight": 1
+    },
+    {
+      "monsterId": "BLIGHTED_GROVE_ZARAZHIONNYI_OLEN_L18",
+      "weight": 1
+    },
+    {
+      "monsterId": "BLIGHTED_GROVE_SHIPASTYI_KHISHCHNIK_L18",
       "weight": 1
     },
     {
@@ -17,15 +29,27 @@
       "weight": 1
     },
     {
-      "monsterId": "ALPHA_WOLF_L20",
-      "weight": 1
-    },
-    {
       "monsterId": "BLIGHTED_GROVE_LESNAIA_VEDMA_L19",
       "weight": 0.28
     },
     {
+      "monsterId": "BLIGHTED_GROVE_BOLOTNYI_VASILISK_L19",
+      "weight": 1
+    },
+    {
       "monsterId": "BLIGHTED_GROVE_IADOVITAIA_MATRONA_CHASHCHI_L19",
+      "weight": 1
+    },
+    {
+      "monsterId": "BLIGHTED_GROVE_PORCHENNYI_DREVEN_L19",
+      "weight": 1
+    },
+    {
+      "monsterId": "ALPHA_WOLF_L20",
+      "weight": 1
+    },
+    {
+      "monsterId": "BLIGHTED_GROVE_LOZOVYI_DUSHITEL_L20",
       "weight": 1
     },
     {
