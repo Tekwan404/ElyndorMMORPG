@@ -58,8 +58,8 @@ public sealed class AuthoredWorldContentTests
             }
         }
 
-        Assert.Equal(169, authoredEncounterIds.Count);
-        Assert.Equal(35, authoredEliteCount);
+        Assert.Equal(81, authoredEncounterIds.Count);
+        Assert.Equal(17, authoredEliteCount);
         Assert.True(authoredEquipmentLootExists);
 
         Assert.Equal("DEADLY", indexes.LocationsById["OBSIDIAN_EDGE"].DangerLevel);
