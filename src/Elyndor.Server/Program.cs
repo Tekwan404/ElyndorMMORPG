@@ -234,6 +234,8 @@ if (frontendFileProvider is not null)
         {
             if (context.Context.Request.Path.StartsWithSegments("/assets"))
                 context.Context.Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+            else
+                SetFrontendShellCacheHeaders(context.Context.Response);
         }
     });
 }
@@ -249,6 +251,8 @@ if (adminFrontendFileProvider is not null)
         {
             if (context.Context.Request.Path.StartsWithSegments("/__admin/assets"))
                 context.Context.Response.Headers.CacheControl = "public,max-age=31536000,immutable";
+            else
+                SetFrontendShellCacheHeaders(context.Context.Response);
         }
     });
 }
@@ -299,15 +303,30 @@ app.Map("/hubs/{**path}", () => Results.NotFound());
 
 if (adminFrontendFileProvider is not null)
 {
-    app.MapFallbackToFile("/__admin/{*path:nonfile}", "index.html", new StaticFileOptions { FileProvider = adminFrontendFileProvider });
+    app.MapFallbackToFile("/__admin/{*path:nonfile}", "index.html", new StaticFileOptions
+    {
+        FileProvider = adminFrontendFileProvider,
+        OnPrepareResponse = context => SetFrontendShellCacheHeaders(context.Context.Response)
+    });
 }
 
 if (frontendFileProvider is not null)
 {
-    app.MapFallbackToFile("index.html", new StaticFileOptions { FileProvider = frontendFileProvider });
+    app.MapFallbackToFile("index.html", new StaticFileOptions
+    {
+        FileProvider = frontendFileProvider,
+        OnPrepareResponse = context => SetFrontendShellCacheHeaders(context.Context.Response)
+    });
 }
 
 app.Run();
+
+static void SetFrontendShellCacheHeaders(HttpResponse response)
+{
+    response.Headers.CacheControl = "no-store,no-cache,must-revalidate";
+    response.Headers.Pragma = "no-cache";
+    response.Headers.Expires = "0";
+}
 
 static bool ValidateTokenLifetime(DateTime? notBefore, DateTime? expires, TimeProvider timeProvider, TimeSpan clockSkew)
 {
