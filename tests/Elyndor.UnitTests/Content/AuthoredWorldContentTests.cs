@@ -57,7 +57,7 @@ public sealed class AuthoredWorldContentTests
             }
         }
 
-        Assert.Equal(81, authoredEncounterIds.Count);
+        Assert.Equal(89, authoredEncounterIds.Count);
         Assert.Equal(17, authoredEliteCount);
         Assert.True(authoredEquipmentLootExists);
 
