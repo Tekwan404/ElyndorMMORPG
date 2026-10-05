@@ -54,6 +54,39 @@ export function reforgeResultAffixes(
   }
 }
 
+const percentageStats = new Set([
+  'CRITICAL_CHANCE',
+  'CRITICAL_DAMAGE',
+  'ACCURACY',
+  'ATTACK_SPEED',
+  'DODGE',
+  'ARMOR_PENETRATION',
+  'MAGIC_PENETRATION',
+  'BLOCK_CHANCE',
+])
+
+export function forgeAffixQuality(affix: Pick<ItemAffix, 'value' | 'min' | 'max'>): number {
+  if (affix.max <= affix.min) return 0
+  const quality = ((affix.value - affix.min) / (affix.max - affix.min)) * 100
+  return Math.round(Math.max(0, Math.min(100, quality)) * 100) / 100
+}
+
+export function forgeStatValue(statId: string, value: number): string {
+  const formatted = Number.isInteger(value) ? String(value) : value.toFixed(1).replace(/\.0$/, '')
+  return `+${formatted}${percentageStats.has(statId) ? '%' : ''}`
+}
+
+export function forgeStatRange(statId: string, min: number, max: number): string {
+  const format = (value: number) =>
+    Number.isInteger(value) ? String(value) : value.toFixed(1).replace(/\.0$/, '')
+  const suffix = percentageStats.has(statId) ? '%' : ''
+  return `${format(min)}–${format(max)}${suffix}`
+}
+
+export function forgePercent(value: number): string {
+  return `${value.toFixed(2).replace(/\.00$/, '')}%`
+}
+
 export function forgeStatLabel(statId: string): string {
   const labels: Record<string, string> = {
     STRENGTH: 'Сила',
