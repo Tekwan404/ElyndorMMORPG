@@ -158,28 +158,7 @@ async function confirmSalvage() {
         {{ error }}
         <UIButton variant="ghost" :disabled="busy" @click="work.retry">Повторить загрузку</UIButton>
       </div>
-      <div class="forge-grid" aria-label="Предметы для кузницы">
-        <ForgeItemCard
-          v-for="item in displayed"
-          :key="item.id"
-          :item="item"
-          :selected="mode === 'salvage' ? selectedIds.includes(item.id) : selectedId === item.id"
-          :multiple="mode === 'salvage'"
-          :disabled="busy || !!work.pending.value || (mode === 'salvage' && !canSalvage(item))"
-          @select="selectItem(item)"
-        />
-      </div>
-      <UILoadingState
-        v-if="!displayed.length"
-        state="empty"
-        title="Нет подходящих предметов"
-        :message="
-          category === 'artifact'
-            ? 'Пространственные артефакты не перековываются, не усиливаются и не разбираются. Управляйте ими в инвентаре.'
-            : 'Измените тип предмета или переключитесь между рюкзаком и надетыми вещами.'
-        "
-      />
-      <section v-if="mode === 'salvage'" class="forge-work" data-forge-salvage>
+      <section v-if="mode === 'salvage'" class="forge-work forge-work--catalog-menu" data-forge-salvage>
         <header class="forge-batch-heading">
           <h3>Выбрано предметов: {{ selectedIds.length }}</h3>
           <div class="forge-batch-actions">
@@ -216,7 +195,12 @@ async function confirmSalvage() {
           >Разобрать {{ selectedIds.length }} предметов</UIButton
         >
       </section>
-      <section v-else-if="selected" ref="detail" class="forge-work" data-forge-detail>
+      <section
+        v-else-if="selected"
+        ref="detail"
+        class="forge-work forge-work--catalog-menu"
+        data-forge-detail
+      >
         <div class="forge-selected">
           <ForgeItemCard :item="selected" selected :interactive="false" />
           <UIButton
@@ -234,6 +218,27 @@ async function confirmSalvage() {
       <p v-else class="forge-hint forge-hint--choose">
         Выберите предмет — здесь появятся характеристики и стоимость действия.
       </p>
+      <div class="forge-grid forge-grid--catalog" aria-label="Предметы для кузницы">
+        <ForgeItemCard
+          v-for="item in displayed"
+          :key="item.id"
+          :item="item"
+          :selected="mode === 'salvage' ? selectedIds.includes(item.id) : selectedId === item.id"
+          :multiple="mode === 'salvage'"
+          :disabled="busy || !!work.pending.value || (mode === 'salvage' && !canSalvage(item))"
+          @select="selectItem(item)"
+        />
+      </div>
+      <UILoadingState
+        v-if="!displayed.length"
+        state="empty"
+        title="Нет подходящих предметов"
+        :message="
+          category === 'artifact'
+            ? 'Пространственные артефакты не перековываются, не усиливаются и не разбираются. Управляйте ими в инвентаре.'
+            : 'Измените тип предмета или переключитесь между рюкзаком и надетыми вещами.'
+        "
+      />
     </section>
   </UIModal>
 
@@ -393,6 +398,10 @@ async function confirmSalvage() {
   gap: 10px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+.forge-grid--catalog {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
 .forge-picker {
   display: grid;
   gap: 10px;
@@ -419,6 +428,9 @@ async function confirmSalvage() {
   border: 1px solid var(--ui-color-gold-muted);
   border-radius: var(--ui-radius-md);
   background: linear-gradient(140deg, rgb(232 200 102 / 5%), var(--ui-color-surface-1));
+}
+.forge-work--catalog-menu {
+  margin-bottom: 2px;
 }
 .forge-work :deep(.ui-button--primary) {
   border-color: var(--ui-color-gold);
@@ -482,8 +494,16 @@ async function confirmSalvage() {
   .forge-grid {
     grid-template-columns: 1fr;
   }
+  .forge-grid--catalog {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .forge-work {
     padding: 12px;
+  }
+}
+@media (max-width: 440px) {
+  .forge-grid--catalog {
+    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 400px) {
