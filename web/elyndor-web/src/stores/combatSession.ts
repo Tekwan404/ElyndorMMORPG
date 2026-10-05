@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed, onScopeDispose, ref } from 'vue'
 import { defineStore } from 'pinia'
 import {
   HubConnectionBuilder,
@@ -80,6 +80,29 @@ interface QueuedAbility {
 
 const ABILITY_QUEUE_WINDOW_MS = 250
 const COMBAT_EVENT_BUFFER_LIMIT = 1500
+const COMBAT_INVOKE_DEADLINE_MS = 30_000
+const COMBAT_STALE_AFTER_MS = 15_000
+const SESSION_BOUND_INVOCATIONS = new Set([
+  'UseAbility', 'UseConsumable', 'StartAutoAttack', 'StopAutoAttack',
+  'SelectTarget', 'FleeCombat', 'LeaveCombat', 'GetThreatSnapshot',
+])
+
+class CombatDeadlineError extends Error {}
+class ObsoleteCombatInvocationError extends Error {}
+
+async function withCombatDeadline<T>(operation: Promise<T>, name: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      operation,
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new CombatDeadlineError(`${name} timed out`)), COMBAT_INVOKE_DEADLINE_MS)
+      }),
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
+}
 const emptyTrainingStats = (): TrainingStats => ({
   startedAtUtc: null,
   totalDamage: 0,
@@ -132,16 +155,66 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const isTraining = computed(() => snapshot.value?.enemy.definitionId === TRAINING_DUMMY_ID)
   let connection: HubConnection | null = null
   let connectPromise: Promise<void> | null = null
-  let resyncPromise: Promise<void> | null = null
+  let resyncPromise: Promise<boolean> | null = null
   let lootRefreshTimer: number | null = null
   let abilityQueueTimer: number | null = null
   let telemetryBusy = false
   let abilitySending = false
   let abilitySendingId: string | null = null
-  let gapRecoveryPromise: Promise<void> | null = null
+  let staleTimer: ReturnType<typeof setTimeout> | null = null
+  let invocationEpoch = 0
+  let lootRefreshBusy = false
   const retryCommandIds = new Map<string, string>()
   const seenEventSequences = new Set<number>()
   let lastAppliedSequence = 0
+
+  onScopeDispose(() => {
+    invocationEpoch++
+    stopStalenessTimer()
+    stopLootRefresh()
+    clearAbilityQueue()
+  })
+
+  function commandsBlocked(): boolean {
+    return connectionState.value === 'syncing'
+      || connectionState.value === 'reconnecting'
+      || (connection?.state === HubConnectionState.Connected && connectionState.value !== 'connected')
+  }
+
+  async function invokeHub<T>(method: string, ...args: unknown[]): Promise<T> {
+    const epoch = invocationEpoch
+    const sessionId = snapshot.value?.sessionId
+    function assertCurrent(): void {
+      if (epoch !== invocationEpoch
+          || (SESSION_BOUND_INVOCATIONS.has(method) && sessionId !== snapshot.value?.sessionId)
+          || connection?.state !== HubConnectionState.Connected) {
+        throw new ObsoleteCombatInvocationError('Combat invocation superseded by recovery')
+      }
+    }
+    let result: T
+    try {
+      result = await withCombatDeadline(connection!.invoke<T>(method, ...args), method)
+    } catch (error) {
+      assertCurrent()
+      throw error
+    }
+    assertCurrent()
+    return result
+  }
+
+  function stopStalenessTimer(): void {
+    if (staleTimer !== null) clearTimeout(staleTimer)
+    staleTimer = null
+  }
+
+  function scheduleStalenessCheck(): void {
+    stopStalenessTimer()
+    if (snapshot.value?.status !== 'Active' || connectionState.value !== 'connected') return
+    staleTimer = setTimeout(() => {
+      staleTimer = null
+      if (snapshot.value?.status === 'Active' && connectionState.value === 'connected') void resume()
+    }, COMBAT_STALE_AFTER_MS)
+  }
 
   async function connect(): Promise<void> {
     if (connection?.state === HubConnectionState.Connected) return
@@ -158,7 +231,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     diagnostic.value = null
 
     try {
-      await apiClient.ensureFreshAccessToken()
+      await withCombatDeadline(apiClient.ensureFreshAccessToken(), 'RefreshCombatAccessToken')
     } catch (error) {
       recordFailure('auth_refresh', null, error)
       connectionState.value = 'disconnected'
@@ -168,7 +241,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     if (!connection) {
       connection = new HubConnectionBuilder()
         .withUrl('/hubs/combat', {
-          accessTokenFactory: async () => await apiClient.ensureFreshAccessToken(),
+          accessTokenFactory: async () => await withCombatDeadline(apiClient.ensureFreshAccessToken(), 'RefreshCombatAccessToken'),
         })
         .withAutomaticReconnect([0, 1_000, 3_000, 10_000])
         .configureLogging(import.meta.env.DEV ? LogLevel.Warning : LogLevel.Error)
@@ -180,15 +253,23 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         void useDungeonStore().refresh()
       })
       connection.onreconnecting((error) => {
+        invocationEpoch++
+        stopStalenessTimer()
+        clearAbilityQueue()
         reconnectCount.value += 1
         connectionState.value = 'reconnecting'
         latencyMs.value = null
         if (error) recordFailure('signalr_start', 'automatic_reconnect', error)
       })
       connection.onreconnected(() => {
-        void resynchronizeAfterReconnect()
+        void resume()
+        void Promise.allSettled([usePartyStore().refresh(), useDungeonStore().refresh()])
+        void refreshCombatTelemetry()
       })
       connection.onclose((error) => {
+        invocationEpoch++
+        stopStalenessTimer()
+        clearAbilityQueue()
         connectionState.value = 'disconnected'
         latencyMs.value = null
         threat.value = null
@@ -197,7 +278,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     }
 
     try {
-      await connection.start()
+      await withCombatDeadline(connection.start(), 'ConnectCombat')
       connectionState.value = 'connected'
       diagnostic.value = null
     } catch (error) {
@@ -205,36 +286,6 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       recordFailure('signalr_start', 'connect', error)
       throw error
     }
-  }
-
-  async function resynchronizeAfterReconnect(): Promise<void> {
-    if (resyncPromise) return await resyncPromise
-
-    resyncPromise = resynchronizeCore().finally(() => {
-      resyncPromise = null
-    })
-    return await resyncPromise
-  }
-
-  async function resynchronizeCore(): Promise<void> {
-    if (connection?.state !== HubConnectionState.Connected) return
-
-    connectionState.value = 'syncing'
-    diagnostic.value = null
-
-    const resumeSucceeded = await resume()
-    await Promise.allSettled([
-      usePartyStore().refresh(),
-      useDungeonStore().refresh(),
-    ])
-
-    if (connection?.state !== HubConnectionState.Connected) return
-
-    await refreshCombatTelemetry()
-    if (connection?.state !== HubConnectionState.Connected) return
-
-    if (resumeSucceeded) lastResyncedAtUtc.value = new Date().toISOString()
-    connectionState.value = 'connected'
   }
 
   async function startCombat(encounter: WorldEncounter): Promise<boolean> {
@@ -270,6 +321,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   }
 
   async function useAbility(abilityId: string, requestedTargetActorId?: string): Promise<void> {
+    if (commandsBlocked()) return
     const current = snapshot.value
     if (!current || current.status !== 'Active') return
     const ability = current.player.abilities.find((candidate) => candidate.id === abilityId)
@@ -298,6 +350,10 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   }
 
   async function drainAbilityQueue(): Promise<void> {
+    if (commandsBlocked()) {
+      clearAbilityQueue()
+      return
+    }
     if (abilitySending || abilityQueue.value.length === 0) {
       if (abilityQueue.value.length > 0) scheduleAbilityQueueDrain(20)
       return
@@ -411,9 +467,20 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   }
 
   async function resume(lastSeenSequence = highestAppliedSequence()): Promise<boolean> {
+    if (resyncPromise) return await resyncPromise
     if (connection?.state !== HubConnectionState.Connected) return false
+    invocationEpoch++
+    stopStalenessTimer()
+    clearAbilityQueue()
+    connectionState.value = 'syncing'
+    diagnostic.value = null
+    resyncPromise = resumeCore(lastSeenSequence).finally(() => { resyncPromise = null })
+    return await resyncPromise
+  }
+
+  async function resumeCore(lastSeenSequence: number): Promise<boolean> {
     try {
-      const update = await connection.invoke<CombatUpdate>('ResumeCombatFromSequence', lastSeenSequence)
+      const update = await invokeHub<CombatUpdate>('ResumeCombatFromSequence', lastSeenSequence)
       if (update.errorCode === 'combat_not_found') {
         snapshot.value = null
         selectedFriendlyTargetActorId.value = null
@@ -429,15 +496,35 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         clearLootRolls()
         errorCode.value = null
         diagnostic.value = null
+        completeRecovery()
         return true
       }
-      applyUpdate(update)
-      await refreshLootRolls()
-      return update.succeeded
+      if (!applyUpdate(update)) {
+        connectionState.value = 'disconnected'
+        errorCode.value ??= 'combat_resume_incomplete'
+        return false
+      }
+      completeRecovery()
+      void refreshLootRolls()
+      return true
     } catch (error) {
+      if (error instanceof ObsoleteCombatInvocationError) {
+        if (connectionState.value === 'syncing') {
+          connectionState.value = 'disconnected'
+          errorCode.value = 'combat_resume_incomplete'
+        }
+        return false
+      }
+      connectionState.value = 'disconnected'
       recordFailure('resume', 'ResumeCombat', error)
       return false
     }
+  }
+
+  function completeRecovery(): void {
+    lastResyncedAtUtc.value = new Date().toISOString()
+    connectionState.value = 'connected'
+    scheduleStalenessCheck()
   }
 
   async function leave(): Promise<boolean> {
@@ -465,11 +552,12 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
 
   async function flee(): Promise<boolean> {
     if (!snapshot.value || snapshot.value.status !== 'Active') return false
+    const sessionId = snapshot.value.sessionId
     return await invokeRetryableCommand(
-      `FleeCombat:${snapshot.value.sessionId}`,
+      `FleeCombat:${sessionId}`,
       commandId => invokeWithOutcome(
         'flee', 'FleeCombat',
-        snapshot.value!.sessionId,
+        sessionId,
         commandId,
       ),
     )
@@ -484,7 +572,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     method: string,
     ...args: unknown[]
   ): Promise<InvokeOutcome> {
-    if (pendingOperations.value.has(pendingKey)) {
+    if (commandsBlocked() || pendingOperations.value.has(pendingKey)) {
       return { succeeded: false, receivedResponse: false }
     }
     setOperationPending(pendingKey, true)
@@ -493,14 +581,17 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     let connected = false
     try {
       await connect()
+      if (commandsBlocked()) return { succeeded: false, receivedResponse: false }
       connected = true
-      const update = await connection!.invoke<CombatUpdate>(method, ...args)
+      const update = await invokeHub<CombatUpdate>(method, ...args)
       applyUpdate(update)
       return { succeeded: update.succeeded, receivedResponse: true }
     } catch (error) {
+      if (error instanceof ObsoleteCombatInvocationError) return { succeeded: false, receivedResponse: false }
       if (connected || diagnostic.value === null) {
         recordFailure('hub_invoke', method, error)
       }
+      if (error instanceof CombatDeadlineError && connected) void resume()
       return { succeeded: false, receivedResponse: false }
     } finally {
       setOperationPending(pendingKey, false)
@@ -512,28 +603,31 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     telemetryBusy = true
     const startedAt = performance.now()
     try {
-      await connection.invoke<string>('Ping')
+      await invokeHub<string>('Ping')
       latencyMs.value = Math.max(0, Math.round(performance.now() - startedAt))
       threat.value = snapshot.value?.status === 'Active'
-        ? await connection.invoke<CombatThreatSnapshot | null>('GetThreatSnapshot')
+        ? await invokeHub<CombatThreatSnapshot | null>('GetThreatSnapshot')
         : null
     } catch {
       latencyMs.value = null
-      if (connection?.state !== HubConnectionState.Connected) threat.value = null
+      threat.value = null
     } finally {
       telemetryBusy = false
     }
   }
 
   async function refreshLootRolls(): Promise<void> {
-    if (connection?.state !== HubConnectionState.Connected) return
+    if (lootRefreshBusy || connection?.state !== HubConnectionState.Connected) return
+    lootRefreshBusy = true
     try {
-      const openRolls = await connection.invoke<CombatLootRoll[]>('GetLootRolls')
+      const openRolls = await invokeHub<CombatLootRoll[]>('GetLootRolls')
       lootRolls.value = openRolls.filter(requiresLootRollDecision)
       if (lootRolls.value.length === 0) stopLootRefresh()
       else ensureLootRefresh()
     } catch (error) {
-      recordFailure('hub_invoke', 'GetLootRolls', error)
+      if (!(error instanceof ObsoleteCombatInvocationError)) recordFailure('hub_invoke', 'GetLootRolls', error)
+    } finally {
+      lootRefreshBusy = false
     }
   }
 
@@ -542,13 +636,14 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     choice: 'Need' | 'Greed' | 'Pass',
   ): Promise<boolean> {
     const pendingKey = `loot:${lootRollId}`
-    if (pendingOperations.value.has(pendingKey)) return false
+    if (commandsBlocked() || pendingOperations.value.has(pendingKey)) return false
     setOperationPending(pendingKey, true)
     errorCode.value = null
     diagnostic.value = null
     try {
       await connect()
-      const response = await connection!.invoke<{
+      if (commandsBlocked()) return false
+      const response = await invokeHub<{
         succeeded: boolean
         errorCode: string | null
         roll: CombatLootRoll | null
@@ -567,7 +662,9 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       }
       return response.succeeded
     } catch (error) {
+      if (error instanceof ObsoleteCombatInvocationError) return false
       recordFailure('hub_invoke', 'ChooseLootRoll', error)
+      if (error instanceof CombatDeadlineError) void resume()
       return false
     } finally {
       setOperationPending(pendingKey, false)
@@ -607,20 +704,25 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     return outcome.succeeded
   }
 
-  function applyUpdate(update: CombatUpdate): void {
+  function applyUpdate(update: CombatUpdate): boolean {
     if (!update.succeeded) {
       errorCode.value = update.errorCode
       diagnostic.value = null
-      return
+      return false
     }
 
     const incomingSnapshot = update.snapshot
     const currentSnapshot = snapshot.value
     const newSession = incomingSnapshot !== null
       && snapshot.value?.sessionId !== incomingSnapshot.sessionId
-    if (!update.fullResyncRequired && hasSequenceGap(update.events)) {
-      recoverSequenceGap()
-      return
+    const isStaleSameSession = incomingSnapshot !== null
+      && currentSnapshot !== null
+      && incomingSnapshot.sessionId === currentSnapshot.sessionId
+      && incomingSnapshot.sequence < currentSnapshot.sequence
+    if (update.fullResyncRequired && isStaleSameSession) return false
+    if (!update.fullResyncRequired && hasSequenceGap(update.events, newSession)) {
+      recoverSequenceGap(newSession ? 0 : highestAppliedSequence())
+      return false
     }
 
     if (update.fullResyncRequired) {
@@ -629,11 +731,6 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       trainingStats.value = emptyTrainingStats()
       lastAppliedSequence = incomingSnapshot?.sequence ?? 0
     }
-    const isStaleSameSession = incomingSnapshot !== null
-      && currentSnapshot !== null
-      && incomingSnapshot.sessionId === currentSnapshot.sessionId
-      && incomingSnapshot.sequence < currentSnapshot.sequence
-
     errorCode.value = null
     diagnostic.value = null
 
@@ -665,6 +762,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         && (!snapshot.value || incomingSnapshot.sequence >= snapshot.value.sequence)) {
       snapshot.value = incomingSnapshot
       normalizeFriendlyTarget(incomingSnapshot)
+      scheduleStalenessCheck()
     }
     if (!isStaleSameSession && incomingSnapshot && incomingSnapshot.status !== 'Active') {
       retryCommandIds.clear()
@@ -697,18 +795,19 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       if (update.reward.lootRolls?.length) mergeLootRolls(update.reward.lootRolls)
     }
     if (abilityQueue.value.length > 0) scheduleAbilityQueueDrain()
+    return !isStaleSameSession
   }
 
   function highestAppliedSequence(): number {
     return lastAppliedSequence
   }
 
-  function hasSequenceGap(incoming: CombatEvent[]): boolean {
+  function hasSequenceGap(incoming: CombatEvent[], newSession = false): boolean {
     const unseen = incoming
-      .filter(event => !seenEventSequences.has(event.sequence))
+      .filter(event => newSession || !seenEventSequences.has(event.sequence))
       .sort((left, right) => left.sequence - right.sequence)
     if (unseen.length === 0) return false
-    let expected = highestAppliedSequence() + 1
+    let expected = newSession ? 1 : highestAppliedSequence() + 1
     for (const event of unseen) {
       if (event.sequence !== expected) return true
       expected++
@@ -716,13 +815,9 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     return false
   }
 
-  function recoverSequenceGap(): void {
-    if (gapRecoveryPromise || connection?.state !== HubConnectionState.Connected) return
-    gapRecoveryPromise = resume(highestAppliedSequence())
-      .then(() => undefined)
-      .finally(() => {
-        gapRecoveryPromise = null
-      })
+  function recoverSequenceGap(lastSeenSequence: number): void {
+    if (resyncPromise || connection?.state !== HubConnectionState.Connected) return
+    void resume(lastSeenSequence)
   }
 
   function normalizeFriendlyTarget(current: CombatSnapshot): void {
@@ -864,6 +959,9 @@ function classifyFailure(
   message: string,
   error: unknown,
 ): string {
+  if (error instanceof CombatDeadlineError) {
+    return stage === 'resume' ? 'combat_resume_timeout' : 'combat_realtime_timeout'
+  }
   if (stage === 'auth_refresh') {
     return error instanceof ApiRequestError
       ? `combat_auth_refresh_${error.code}`

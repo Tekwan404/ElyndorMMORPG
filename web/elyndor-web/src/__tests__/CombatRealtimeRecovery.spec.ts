@@ -1,5 +1,5 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const realtimeMock = vi.hoisted(() => ({
   reconnecting: null as ((error?: Error) => void) | null,
@@ -54,8 +54,25 @@ vi.mock('@microsoft/signalr', () => ({
 
 import { apiClient } from '@/api/apiClient'
 import { useCombatSessionStore } from '@/stores/combatSession'
+import { TRAINING_DUMMY_ID } from '@/game/combat/trainingDummy'
+
+function recoveryUpdate(sequence = 1) {
+  return {
+    succeeded: true, errorCode: null, events: [], reward: null,
+    snapshot: {
+      sessionId: 'recovery-session', status: 'Active', sequence,
+      serverTimeUtc: '2026-10-05T10:00:00Z', contentVersion: '1', balanceVersion: '1',
+      player: { actorId: 'player', hp: 100, abilities: [], cooldowns: {}, autoAttackEnabled: false },
+      enemy: { actorId: 'enemy', definitionId: 'WOLF' },
+    },
+  }
+}
 
 describe('combat realtime recovery', () => {
+  afterEach(() => {
+    vi.clearAllTimers()
+    vi.useRealTimers()
+  })
   beforeEach(() => {
     setActivePinia(createPinia())
     realtimeMock.reconnecting = null
@@ -235,5 +252,230 @@ describe('combat realtime recovery', () => {
     })
     expect(store.snapshot?.sequence).toBe(3)
     expect(realtimeMock.invoke).toHaveBeenCalledWith('ResumeCombatFromSequence', 1)
+  })
+
+  it('bounds a hanging resume and ignores its late authoritative result', async () => {
+    vi.useFakeTimers()
+    let finish!: (value: unknown) => void
+    realtimeMock.invoke.mockImplementation(() => new Promise(resolve => { finish = resolve }))
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(recoveryUpdate())
+    const result = store.resume()
+    expect(store.connectionState).toBe('syncing')
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(store.connectionState).toBe('disconnected')
+    expect(await result).toBe(false)
+    expect(store.errorCode).toBe('combat_resume_timeout')
+    finish(recoveryUpdate(99))
+    await Promise.resolve()
+    expect(store.snapshot?.sequence).toBe(1)
+    expect(store.lastResyncedAtUtc).toBeNull()
+  })
+
+  it('keeps failed automatic resume blocked and available for explicit recovery', async () => {
+    realtimeMock.invoke.mockRejectedValue(new Error('resume failed'))
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(recoveryUpdate())
+    realtimeMock.reconnected?.()
+    await vi.waitFor(() => expect(store.connectionState).toBe('disconnected'))
+    expect(store.lastResyncedAtUtc).toBeNull()
+    const calls = realtimeMock.invoke.mock.calls.length
+    await store.toggleAutoAttack()
+    expect(realtimeMock.invoke.mock.calls).toHaveLength(calls)
+    realtimeMock.invoke.mockResolvedValue({ succeeded: false, errorCode: 'combat_not_found' })
+    expect(await store.resume()).toBe(true)
+    expect(store.connectionState).toBe('connected')
+  })
+
+  it('finishes combat recovery without waiting for loot, telemetry or party refresh', async () => {
+    vi.useFakeTimers()
+    realtimeMock.invoke.mockImplementation(method => method === 'ResumeCombatFromSequence'
+      ? Promise.resolve(recoveryUpdate()) : new Promise(() => {}))
+    partyRefresh.mockImplementation(() => new Promise(() => {}))
+    dungeonRefresh.mockImplementation(() => new Promise(() => {}))
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.reconnected?.()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(store.connectionState).toBe('connected')
+    expect(store.lastResyncedAtUtc).not.toBeNull()
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(store.latencyMs).toBeNull()
+    expect(store.threat).toBeNull()
+  })
+
+  it('shares gap recovery with manual resume and blocks commands until the tail is applied', async () => {
+    vi.useFakeTimers()
+    let finish!: (value: unknown) => void
+    realtimeMock.invoke.mockImplementation(() => new Promise(resolve => { finish = resolve }))
+    const store = useCombatSessionStore()
+    await store.connect()
+    const event = (sequence: number) => ({ sequence, type: 'DamageDealt', amount: 1 })
+    const handler = realtimeMock.handlers.get('CombatUpdated')!
+    handler({ ...recoveryUpdate(1), events: [event(1)] })
+    handler({ ...recoveryUpdate(3), events: [event(3)] })
+    expect(store.connectionState).toBe('syncing')
+    const manual = store.resume()
+    await store.selectTarget('another-enemy')
+    handler({ ...recoveryUpdate(4), events: [event(4)] })
+    expect(realtimeMock.invoke.mock.calls).toEqual([['ResumeCombatFromSequence', 1]])
+    finish({ ...recoveryUpdate(4), events: [event(2), event(3), event(4)] })
+    expect(await manual).toBe(true)
+    expect(store.events.map(event => event.sequence)).toEqual([1, 2, 3, 4])
+    expect(store.connectionState).toBe('connected')
+  })
+
+  it('does not declare recovery complete if the returned tail still has a gap', async () => {
+    realtimeMock.invoke.mockResolvedValue({
+      ...recoveryUpdate(3), events: [{ sequence: 3, type: 'DamageDealt', amount: 1 }],
+    })
+    const store = useCombatSessionStore()
+    await store.connect()
+    expect(await store.resume()).toBe(false)
+    expect(store.connectionState).toBe('disconnected')
+    expect(store.lastResyncedAtUtc).toBeNull()
+    expect(realtimeMock.invoke.mock.calls).toEqual([['ResumeCombatFromSequence', 0]])
+  })
+
+  it('recovers a silent active snapshot even when the transport remains connected', async () => {
+    vi.useFakeTimers()
+    realtimeMock.invoke.mockImplementation(method => method === 'ResumeCombatFromSequence'
+      ? Promise.resolve(recoveryUpdate(2)) : Promise.resolve([]))
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(recoveryUpdate())
+    await vi.advanceTimersByTimeAsync(15_000)
+    expect(store.snapshot?.sequence).toBe(2)
+    expect(realtimeMock.invoke).toHaveBeenCalledWith('ResumeCombatFromSequence', 0)
+    expect(store.lastResyncedAtUtc).not.toBeNull()
+  })
+
+  it('invalidates an in-flight command result when recovery starts', async () => {
+    let finish!: (value: unknown) => void
+    realtimeMock.invoke.mockImplementation(method => method === 'StartAutoAttack'
+      ? new Promise(resolve => { finish = resolve })
+      : Promise.resolve(method === 'ResumeCombatFromSequence' ? recoveryUpdate(2) : []))
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(recoveryUpdate())
+    const command = store.toggleAutoAttack()
+    await vi.waitFor(() => expect(realtimeMock.invoke).toHaveBeenCalledWith(
+      'StartAutoAttack', 'recovery-session', expect.any(String),
+    ))
+    expect(await store.resume()).toBe(true)
+    finish(recoveryUpdate(99))
+    await command
+    expect(store.snapshot?.sequence).toBe(2)
+    expect(store.autoAttackPending).toBe(false)
+    expect(store.connectionState).toBe('connected')
+  })
+
+  it('does not let a superseded command timeout restart successful recovery', async () => {
+    vi.useFakeTimers()
+    realtimeMock.invoke.mockImplementation(method => method === 'StartAutoAttack'
+      ? new Promise(() => {})
+      : Promise.resolve(method === 'ResumeCombatFromSequence' ? recoveryUpdate(2) : []))
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(recoveryUpdate())
+    const command = store.toggleAutoAttack()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(await store.resume()).toBe(true)
+    for (let elapsed = 0; elapsed < 30_000; elapsed += 10_000) {
+      realtimeMock.handlers.get('CombatUpdated')?.(recoveryUpdate(2))
+      await vi.advanceTimersByTimeAsync(10_000)
+    }
+    await command
+    expect(store.autoAttackPending).toBe(false)
+    expect(store.connectionState).toBe('connected')
+    expect(store.errorCode).toBeNull()
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'ResumeCombatFromSequence')).toHaveLength(1)
+  })
+
+  it('retains the current event history when an older full resync response arrives', async () => {
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.({
+      ...recoveryUpdate(), events: [{ sequence: 1, type: 'DamageDealt', amount: 1 }],
+    })
+    realtimeMock.invoke.mockResolvedValue({ ...recoveryUpdate(0), fullResyncRequired: true })
+    expect(await store.resume()).toBe(false)
+    expect(store.snapshot?.sequence).toBe(1)
+    expect(store.events.map(event => event.sequence)).toEqual([1])
+    expect(store.connectionState).toBe('disconnected')
+  })
+
+  it.each(['StartCombat', 'StartDungeonEncounter', 'StartTraining', 'ResetTraining', 'AttachCombat'])(
+    'accepts %s completion after its new session was already delivered by push', async method => {
+      let finish!: (value: unknown) => void
+      realtimeMock.invoke.mockImplementation(() => new Promise(resolve => { finish = resolve }))
+      const store = useCombatSessionStore()
+      await store.connect()
+      if (method === 'ResetTraining') {
+        const initial = recoveryUpdate()
+        initial.snapshot.enemy.definitionId = TRAINING_DUMMY_ID
+        realtimeMock.handlers.get('CombatUpdated')?.(initial)
+      }
+      const operations: Record<string, () => Promise<boolean>> = {
+        StartCombat: () => store.startCombat({ encounterId: 'encounter', monsterId: 'WOLF' } as never),
+        StartDungeonEncounter: () => store.startDungeonEncounter('run'),
+        StartTraining: () => store.startTraining(),
+        ResetTraining: () => store.resetTraining(),
+        AttachCombat: () => store.attachCombat('attached-session'),
+      }
+      const result = operations[method]!()
+      await vi.waitFor(() => expect(realtimeMock.invoke).toHaveBeenCalled())
+      const update = recoveryUpdate()
+      update.snapshot.sessionId = 'new-session'
+      realtimeMock.handlers.get('CombatUpdated')?.(update)
+      finish(update)
+      expect(await result).toBe(true)
+      expect(store.snapshot?.sessionId).toBe('new-session')
+      expect(store.lifecyclePending).toBe(false)
+      expect(store.errorCode).toBeNull()
+    },
+  )
+
+  it('accepts empty-to-existing resume completion after the session arrived by push', async () => {
+    let finish!: (value: unknown) => void
+    realtimeMock.invoke.mockImplementation(method => method === 'ResumeCombatFromSequence'
+      ? new Promise(resolve => { finish = resolve }) : Promise.resolve([]))
+    const store = useCombatSessionStore()
+    await store.connect()
+    const result = store.resume()
+    realtimeMock.handlers.get('CombatUpdated')?.(recoveryUpdate())
+    finish(recoveryUpdate())
+    expect(await result).toBe(true)
+    expect(store.snapshot?.sessionId).toBe('recovery-session')
+    expect(store.connectionState).toBe('connected')
+    expect(store.lastResyncedAtUtc).not.toBeNull()
+  })
+
+  it('starts a fresh event sequence after resetting a fully resynchronized training session', async () => {
+    vi.useFakeTimers()
+    let finish!: (value: unknown) => void
+    realtimeMock.invoke.mockImplementation(() => new Promise(resolve => { finish = resolve }))
+    const store = useCombatSessionStore()
+    await store.connect()
+    const initial = recoveryUpdate(10)
+    initial.snapshot.enemy.definitionId = TRAINING_DUMMY_ID
+    const handler = realtimeMock.handlers.get('CombatUpdated')!
+    handler({ ...initial, fullResyncRequired: true })
+    const reset = store.resetTraining()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(realtimeMock.invoke).toHaveBeenCalledWith('ResetTraining')
+    const update = recoveryUpdate()
+    update.snapshot.sessionId = 'reset-session'
+    update.snapshot.enemy.definitionId = TRAINING_DUMMY_ID
+    const response = { ...update, events: [{ sequence: 1, type: 'CombatStarted' }] }
+    handler(response)
+    expect(store.snapshot?.sessionId).toBe('reset-session')
+    finish(response)
+    expect(await reset).toBe(true)
+    expect(store.snapshot?.sessionId).toBe('reset-session')
+    expect(store.events.map(event => event.sequence)).toEqual([1])
+    expect(realtimeMock.invoke.mock.calls).toEqual([['ResetTraining']])
   })
 })
