@@ -6,6 +6,7 @@ export interface AuctionAffix {
   statId: string
   value: number
   affixTier: number
+  rollQuality: number
   isGuaranteed: boolean
   isReforgeSlot: boolean
 }
@@ -74,6 +75,22 @@ export interface AuctionMutation {
   tax: MoneyValue
   buyerId: string | null
   expiresAt: string
+}
+
+export interface AuctionBatchFeePreview {
+  itemIds: string[]
+  pricePerItem: MoneyValue
+  feePerItem: MoneyValue
+  taxPerItem: MoneyValue
+  sellerProceedsPerItem: MoneyValue
+  totalFee: MoneyValue
+  totalTax: MoneyValue
+  totalSellerProceeds: MoneyValue
+}
+
+export interface AuctionBatchMutation {
+  listings: AuctionMutation[]
+  totalFee: MoneyValue
 }
 
 export interface CommerceMail {
@@ -200,6 +217,35 @@ export async function createAuction(itemId: string, price: number, preview: Auct
   return apiClient.request<AuctionMutation>('/api/v1/auction', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ requestId: crypto.randomUUID(), itemId, price, expectedFee: Number(fee), expectedTax: Number(tax) }),
+  })
+}
+
+export async function previewAuctionBatch(itemIds: string[], price: number): Promise<AuctionBatchFeePreview> {
+  return apiClient.request<AuctionBatchFeePreview>('/api/v1/auction/batch/preview', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ itemIds, price }),
+  })
+}
+
+export async function createAuctionBatch(
+  itemIds: string[],
+  price: number,
+  preview: AuctionBatchFeePreview,
+): Promise<AuctionBatchMutation> {
+  const feePerItem = moneyUnits(preview.feePerItem)
+  const taxPerItem = moneyUnits(preview.taxPerItem)
+  if (feePerItem > BigInt(Number.MAX_SAFE_INTEGER) || taxPerItem > BigInt(Number.MAX_SAFE_INTEGER)) {
+    throw new RangeError('Комиссия слишком велика')
+  }
+  return apiClient.request<AuctionBatchMutation>('/api/v1/auction/batch', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      requestId: crypto.randomUUID(),
+      itemIds,
+      price,
+      expectedFeePerItem: Number(feePerItem),
+      expectedTaxPerItem: Number(taxPerItem),
+    }),
   })
 }
 
