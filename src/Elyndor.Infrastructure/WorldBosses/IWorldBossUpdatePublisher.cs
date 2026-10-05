@@ -8,6 +8,18 @@ public sealed record WorldBossRewardDelivery(
 
 public interface IWorldBossUpdatePublisher
 {
+    Task PublishActivatedAsync(
+        Guid spawnId,
+        CancellationToken cancellationToken);
+
+    Task PublishProgressAsync(
+        Guid spawnId,
+        decimal currentHealth,
+        decimal maxHealth,
+        int currentPhase,
+        bool phaseChanged,
+        CancellationToken cancellationToken);
+
     Task PublishDefeatedAsync(
         Guid spawnId,
         DateTimeOffset defeatedAtUtc,
