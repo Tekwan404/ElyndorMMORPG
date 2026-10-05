@@ -4,6 +4,9 @@ public sealed record TradeOfferRequest(Guid RequestId, int Revision, Guid[] Item
 public sealed record TradeRevisionRequest(Guid RequestId, int Revision);
 public sealed record AuctionCreateRequest(Guid RequestId, Guid ItemId, long Price, long? ExpectedFee = null, long? ExpectedTax = null);
 public sealed record AuctionPreviewRequest(Guid ItemId, long Price);
+public sealed record AuctionBatchCreateRequest(Guid RequestId, Guid[] ItemIds, long Price,
+    long? ExpectedFeePerItem = null, long? ExpectedTaxPerItem = null);
+public sealed record AuctionBatchPreviewRequest(Guid[] ItemIds, long Price);
 public sealed record CommerceRequest(Guid RequestId);
 public sealed record TradeResponse(Guid Id, string State, int Revision, Guid CharacterAId, Guid CharacterBId,
     Guid[] ItemsA, Guid[] ItemsB, string GoldA, string GoldB,
@@ -12,9 +15,13 @@ public sealed record TradeItemView(Guid Id, string Name, string? IconId, string 
 public sealed record AuctionResponse(Guid Id, string State, Guid SellerId, Guid ItemId, string Price,
     string Fee, string Tax, Guid? BuyerId, DateTimeOffset ExpiresAt);
 public sealed record AuctionFeePreviewView(Guid ItemId, string Price, string Fee, string Tax, string SellerProceeds);
+public sealed record AuctionBatchFeePreviewView(Guid[] ItemIds, string PricePerItem,
+    string FeePerItem, string TaxPerItem, string SellerProceedsPerItem,
+    string TotalFee, string TotalTax, string TotalSellerProceeds);
+public sealed record AuctionBatchCreateView(AuctionResponse[] Listings, string TotalFee);
 public sealed record AuctionRolledStatsView(decimal? Strength, decimal? Agility, decimal? Intellect, decimal? Stamina);
 public sealed record AuctionAffixView(string SlotKey, string StatId, decimal Value, int AffixTier,
-    bool IsGuaranteed, bool IsReforgeSlot);
+    decimal RollQuality, bool IsGuaranteed, bool IsReforgeSlot);
 public sealed record AuctionListingView(Guid Id, Guid SellerId, string SellerName, Guid ItemId,
     string ItemDefinitionId, string Name, string? IconId, string Type, string Rarity, int Quantity,
     int? ItemLevel, decimal? ItemPower, decimal? RollQuality, int? Stars, bool IsPerfect, int EnhancementLevel,
