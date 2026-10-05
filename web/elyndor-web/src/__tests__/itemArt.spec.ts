@@ -3,6 +3,11 @@ import { describe, expect, it } from 'vitest'
 import { itemArtUrl } from '@/assets/itemArt'
 
 describe('item art', () => {
+  it('resolves all forge materials as WebP', () => {
+    for (const id of ['forge_scrap', 'enhancement_ore', 'reforge_stone']) {
+      expect(itemArtUrl(`forge/${id}`)).toMatch(/\.webp$/)
+    }
+  })
   it('resolves a canonical nested set asset', () => {
     const nestedUrl = itemArtUrl('sets/ancient-mine/mine_tracker/mine_tracker_helmet')
 
