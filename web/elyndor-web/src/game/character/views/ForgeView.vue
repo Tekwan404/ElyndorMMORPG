@@ -158,7 +158,7 @@ async function confirmSalvage() {
         {{ error }}
         <UIButton variant="ghost" :disabled="busy" @click="work.retry">Повторить загрузку</UIButton>
       </div>
-      <div class="forge-grid" aria-label="Предметы для кузницы">
+      <div class="forge-grid forge-grid--catalog" aria-label="Предметы для кузницы">
         <ForgeItemCard
           v-for="item in displayed"
           :key="item.id"
@@ -393,6 +393,10 @@ async function confirmSalvage() {
   gap: 10px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+.forge-grid--catalog {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
 .forge-picker {
   display: grid;
   gap: 10px;
@@ -482,8 +486,16 @@ async function confirmSalvage() {
   .forge-grid {
     grid-template-columns: 1fr;
   }
+  .forge-grid--catalog {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .forge-work {
     padding: 12px;
+  }
+}
+@media (max-width: 440px) {
+  .forge-grid--catalog {
+    grid-template-columns: 1fr;
   }
 }
 @media (max-width: 400px) {
