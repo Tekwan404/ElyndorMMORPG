@@ -487,12 +487,8 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
         }).ToArray();
     }
 
-    private Task<bool> HasReachedListingLimitAsync(Guid sellerId, CancellationToken ct) =>
-        CanCreateListingsAsync(sellerId, 1, ct).ContinueWith(
-            task => !task.Result,
-            ct,
-            TaskContinuationOptions.ExecuteSynchronously,
-            TaskScheduler.Default);
+    private async Task<bool> HasReachedListingLimitAsync(Guid sellerId, CancellationToken ct) =>
+        !await CanCreateListingsAsync(sellerId, 1, ct);
 
     private async Task<bool> CanCreateListingsAsync(Guid sellerId, int requestedCount, CancellationToken ct)
     {
