@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 import { gameArt } from '@/assets/gameArt'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
+import ForgeView from '@/game/character/views/ForgeView.vue'
 import AdventurerGuildBoard from '@/game/world/components/AdventurerGuildBoard.vue'
 import DungeonLocationCard from '@/game/world/components/DungeonLocationCard.vue'
 import MerchantShop from '@/game/world/components/MerchantShop.vue'
@@ -31,6 +32,7 @@ const lastEnemyName = ref<string | null>(null)
 const lootNow = ref(Date.now())
 const merchantOpen = ref(false)
 const guildOpen = ref(false)
+const forgeOpen = ref(false)
 const afkOpen = ref(false)
 const afkDurationMinutes = ref(60)
 const afkTargetMonsterId = ref<string | null>(null)
@@ -569,7 +571,7 @@ onMounted(() => {
           <small>В ГОРОДЕ</small>
           <strong id="town-services-title">Места в городе</strong>
         </div>
-        <span data-safe>4 МЕСТА</span>
+        <span data-safe>5 МЕСТ</span>
       </header>
 
       <p class="town-services__hint">Выберите место.</p>
@@ -608,6 +610,18 @@ onMounted(() => {
           </UIButton>
         </article>
 
+        <article class="service-card service-card--forge" data-town-service="forge">
+          <img class="service-card__portrait" :src="gameArt.npc.quartermaster" alt="Кузнец" />
+          <div class="service-card__copy">
+            <small>КУЗНИЦА</small>
+            <strong>Кузница</strong>
+            <p>Перековка, усиление и разбор снаряжения.</p>
+          </div>
+          <UIButton data-open-forge :disabled="isTravelling" @click="forgeOpen = true">
+            {{ isTravelling ? 'В пути' : 'Открыть' }}
+          </UIButton>
+        </article>
+
         <article class="service-card service-card--guild" data-town-service="guild">
           <img class="service-card__portrait" :src="gameArt.npc.registrar" alt="Регистратор гильдии" />
           <div class="service-card__copy">
@@ -631,6 +645,7 @@ onMounted(() => {
     </section>
 
     <MerchantShop :open="merchantOpen" @close="merchantOpen = false" />
+    <ForgeView v-if="forgeOpen" @close="forgeOpen = false" />
     <AdventurerGuildBoard
       :open="guildOpen"
       :location-id="currentLocationId ?? ''"
