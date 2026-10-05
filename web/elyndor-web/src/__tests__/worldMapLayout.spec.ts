@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { worldMapPosition, WORLD_MAP_POSITIONS } from '@/game/world/worldMapLayout'
+import {
+  OUTER_REACHES_MAP_ID,
+  OUTER_REACHES_MAP_POSITIONS,
+  worldMapPosition,
+  WORLD_MAP_POSITIONS,
+} from '@/game/world/worldMapLayout'
 
 const LOCATION_IDS = [
   'STARTER_TOWN',
@@ -40,6 +45,19 @@ describe('world map placement', () => {
     expect(worldMapPosition('SHATTERED_ORDER_CITADEL', 0).y).toBeLessThan(30)
     expect(worldMapPosition('OBSIDIAN_EDGE', 0).y).toBeGreaterThanOrEqual(70)
     expect(worldMapPosition('BLACK_BASTION', 0).y).toBeGreaterThanOrEqual(70)
+  })
+
+  it('keeps the level 41-60 region on its own authored map', () => {
+    expect(Object.keys(OUTER_REACHES_MAP_POSITIONS).sort()).toEqual([
+      'BLACK_CRAGS',
+      'DEAD_REACHES',
+      'DOOMED_LANDS',
+      'FROZEN_EDGE',
+      'GLASS_DESERT',
+      'PLAGUEWOOD',
+    ])
+    expect(worldMapPosition('BLACK_CRAGS', 0, OUTER_REACHES_MAP_ID)).toMatchObject({ x: 20, y: 82 })
+    expect(worldMapPosition('DEAD_REACHES', 0, OUTER_REACHES_MAP_ID).y).toBeLessThan(20)
   })
 
   it('keeps authored touch targets inside the map frame', () => {
