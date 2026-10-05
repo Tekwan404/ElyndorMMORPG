@@ -240,6 +240,17 @@ describe('Forge workbench', () => {
     expect(document.body.querySelector('[data-forge-item-picker]')).toBeNull()
     expect(document.body.querySelector('[data-forge-detail]')?.textContent).toContain('Предмет B')
   })
+  it('keeps the selected item workbench above the compact main catalog', async () => {
+    mount(ForgeView)
+    await click('.forge-grid--catalog [data-forge-item="A"]')
+
+    const detail = document.body.querySelector<HTMLElement>('[data-forge-detail]')!
+    const catalog = document.body.querySelector<HTMLElement>('.forge-grid--catalog')!
+    expect(
+      detail.compareDocumentPosition(catalog) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).not.toBe(0)
+    expect(catalog.classList.contains('forge-grid--catalog')).toBe(true)
+  })
   it('selecting a card does not switch out of enhancement and uses its server preview', async () => {
     const enhance = vi.spyOn(useGameSessionStore(), 'enhanceItem').mockResolvedValue({
       itemInstanceId: 'A',
