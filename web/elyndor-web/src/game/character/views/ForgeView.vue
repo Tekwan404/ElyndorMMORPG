@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, useTemplateRef } from 'vue'
+import { computed, nextTick, ref, useTemplateRef } from 'vue'
 import type { InventoryItem } from '@/api/contracts'
 import MoneyAmount from '@/ui/components/MoneyAmount.vue'
 import { UIButton, UILoadingState, UIModal } from '@/ui/components'
@@ -17,6 +17,7 @@ const {
   mode,
   source,
   category,
+  sort,
   selectedId,
   selectedIds,
   displayed,
@@ -33,9 +34,15 @@ const {
 } = work
 const confirmation = useConfirmation()
 const detail = useTemplateRef<HTMLElement>('detail')
-async function selectItem(item: InventoryItem) {
+const pickerOpen = ref(false)
+
+async function selectItem(item: InventoryItem, scrollToDetail = true) {
   work.select(item)
   if (mode.value === 'salvage' || selectedId.value !== item.id) return
+  if (!scrollToDetail) {
+    pickerOpen.value = false
+    return
+  }
   await nextTick()
   detail.value?.scrollIntoView({
     behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ? 'auto' : 'smooth',
@@ -55,6 +62,12 @@ const categories = [
   { id: 'armor', label: 'Броня' },
   { id: 'accessory', label: 'Аксессуары' },
   { id: 'artifact', label: 'Артефакты' },
+] as const
+const sorts = [
+  { id: 'power', label: 'Мощь' },
+  { id: 'quality', label: 'Качество' },
+  { id: 'level', label: 'Уровень' },
+  { id: 'rarity', label: 'Редкость' },
 ] as const
 async function confirmSalvage() {
   if (!salvageReady.value || busy.value) return
@@ -124,6 +137,19 @@ async function confirmSalvage() {
           {{ entry.label }}
         </button>
       </nav>
+      <nav class="forge-sort" aria-label="Сортировка предметов">
+        <button
+          v-for="entry in sorts"
+          :key="entry.id"
+          type="button"
+          :data-forge-sort="entry.id"
+          :aria-pressed="sort === entry.id"
+          :disabled="busy"
+          @click="sort = entry.id"
+        >
+          {{ entry.label }}<template v-if="sort === entry.id"> ↓</template>
+        </button>
+      </nav>
       <p v-if="mode === 'salvage'" class="forge-hint">
         Надетые и защищённые предметы нельзя разобрать.
       </p>
@@ -191,16 +217,96 @@ async function confirmSalvage() {
         >
       </section>
       <section v-else-if="selected" ref="detail" class="forge-work" data-forge-detail>
-        <ForgeItemCard :item="selected" selected :interactive="false" /><ForgeReforgePanel
-          v-if="mode === 'reforge'"
-          :work="work"
-        /><ForgeEnhancementPanel v-else :work="work" />
+        <div class="forge-selected">
+          <ForgeItemCard :item="selected" selected :interactive="false" />
+          <UIButton
+            variant="secondary"
+            data-forge-change-item
+            :disabled="busy || !!work.pending.value"
+            @click="pickerOpen = true"
+          >
+            Сменить предмет
+          </UIButton>
+        </div>
+        <ForgeReforgePanel v-if="mode === 'reforge'" :work="work" />
+        <ForgeEnhancementPanel v-else :work="work" />
       </section>
       <p v-else class="forge-hint forge-hint--choose">
         Выберите предмет — здесь появятся характеристики и стоимость действия.
       </p>
     </section>
   </UIModal>
+
+  <UIModal
+    :open="pickerOpen"
+    title="Сменить предмет"
+    :busy="busy"
+    @close="pickerOpen = false"
+  >
+    <section class="forge-picker" data-forge-item-picker>
+      <nav class="forge-source" aria-label="Расположение предметов">
+        <button
+          type="button"
+          data-forge-picker-filter="backpack"
+          :aria-pressed="source === 'backpack'"
+          :disabled="busy"
+          @click="source = 'backpack'"
+        >
+          В рюкзаке ({{ backpackCount }})
+        </button>
+        <button
+          type="button"
+          data-forge-picker-filter="equipped"
+          :aria-pressed="source === 'equipped'"
+          :disabled="busy"
+          @click="source = 'equipped'"
+        >
+          Надето ({{ equipment.length - backpackCount }})
+        </button>
+      </nav>
+      <nav class="forge-categories" aria-label="Тип предмета">
+        <button
+          v-for="entry in categories"
+          :key="entry.id"
+          type="button"
+          :aria-pressed="category === entry.id"
+          :disabled="busy"
+          @click="category = category === entry.id ? null : entry.id"
+        >
+          {{ entry.label }}
+        </button>
+      </nav>
+      <nav class="forge-sort" aria-label="Сортировка предметов">
+        <button
+          v-for="entry in sorts"
+          :key="entry.id"
+          type="button"
+          :aria-pressed="sort === entry.id"
+          :disabled="busy"
+          @click="sort = entry.id"
+        >
+          {{ entry.label }}<template v-if="sort === entry.id"> ↓</template>
+        </button>
+      </nav>
+      <div class="forge-grid forge-grid--picker" aria-label="Выбор предмета">
+        <ForgeItemCard
+          v-for="item in displayed"
+          :key="item.id"
+          :item="item"
+          :selected="selectedId === item.id"
+          :disabled="busy || !!work.pending.value"
+          @select="selectItem(item, false)"
+        />
+      </div>
+      <UILoadingState
+        v-if="!displayed.length"
+        state="empty"
+        title="Нет подходящих предметов"
+        message="Измените тип предмета или переключитесь между рюкзаком и надетыми вещами."
+      />
+    </section>
+  </UIModal>
+
   <UIConfirmation :request="confirmation.request.value" @resolve="confirmation.settle" />
 </template>
 
@@ -223,7 +329,8 @@ async function confirmSalvage() {
 }
 .forge-modes,
 .forge-categories,
-.forge-source {
+.forge-source,
+.forge-sort {
   display: grid;
   gap: 8px;
   min-width: 0;
@@ -234,12 +341,14 @@ async function confirmSalvage() {
 .forge-source {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-.forge-categories {
+.forge-categories,
+.forge-sort {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 .forge-modes button,
 .forge-source button,
-.forge-categories button {
+.forge-categories button,
+.forge-sort button {
   min-width: 0;
   min-height: 44px;
   padding: 8px;
@@ -263,16 +372,19 @@ async function confirmSalvage() {
   font-size: 1.5rem;
   color: var(--ui-color-gold-muted);
 }
-.forge button[aria-pressed='true'] {
+.forge button[aria-pressed='true'],
+.forge-picker button[aria-pressed='true'] {
   border-color: var(--ui-color-gold);
   color: var(--ui-color-gold);
   background: linear-gradient(145deg, rgb(232 200 102 / 14%), var(--ui-color-surface-1));
 }
-.forge button:disabled {
+.forge button:disabled,
+.forge-picker button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-.forge button:focus-visible {
+.forge button:focus-visible,
+.forge-picker button:focus-visible {
   outline: 2px solid var(--ui-color-focus);
   outline-offset: 2px;
 }
@@ -280,6 +392,22 @@ async function confirmSalvage() {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.forge-picker {
+  display: grid;
+  gap: 10px;
+}
+.forge-grid--picker {
+  max-height: min(62vh, 720px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.forge-selected {
+  display: grid;
+  gap: 8px;
+}
+.forge-selected :deep(.ui-button) {
+  justify-self: start;
 }
 .forge-work {
   scroll-margin-top: 100px;
@@ -359,7 +487,8 @@ async function confirmSalvage() {
   }
 }
 @media (max-width: 400px) {
-  .forge-categories button {
+  .forge-categories button,
+  .forge-sort button {
     padding: 6px 2px;
     font-size: 0.72rem;
   }
