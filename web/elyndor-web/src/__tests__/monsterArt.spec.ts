@@ -26,11 +26,23 @@ describe('monster art registry', () => {
       return content.monsters
     })
 
+    const isEndgameSkeleton = (monsterId: string) => [
+      'BLACK_CRAGS_',
+      'PLAGUEWOOD_',
+      'GLASS_DESERT_',
+      'FROZEN_EDGE_',
+      'DOOMED_LANDS_',
+      'DEAD_REACHES_',
+    ].some(prefix => monsterId.startsWith(prefix))
+
     const unresolved = monsters
+      .filter(monster => !isEndgameSkeleton(monster.id))
       .filter(monster => !monsterArtUrl(monster.artId, monster.id))
       .map(monster => monster.id)
 
     expect(unresolved).toEqual([])
+    expect(monsterArtUrl('future-wolf', 'BLACK_CRAGS_FUTURE_WOLF_L41')).toBeUndefined()
+    expect(monsterArtUrl('future-spider', 'FROZEN_EDGE_FUTURE_SPIDER_L53')).toBeUndefined()
 
     const monsterById = new Map(monsters.map(monster => [monster.id, monster]))
     for (const [monsterId, expectedArtId] of [

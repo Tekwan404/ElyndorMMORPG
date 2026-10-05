@@ -115,7 +115,15 @@ function isRecord(value: unknown): value is JsonRecord {
         <select :value="stringValue(entity.dangerLevel)" @change="setString('dangerLevel', $event)">
           <option value="SAFE">SAFE</option>
           <option value="ADVENTURE">ADVENTURE</option>
+          <option value="DEADLY">DEADLY</option>
           <option value="DANGEROUS">DANGEROUS</option>
+        </select>
+      </label>
+      <label>
+        <span>Map ID</span>
+        <select :value="stringValue(entity.mapId) || 'BORDERLANDS'" @change="setString('mapId', $event)">
+          <option value="BORDERLANDS">BORDERLANDS</option>
+          <option value="OUTER_REACHES">OUTER_REACHES</option>
         </select>
       </label>
       <label><span>Recommended level</span><input type="number" min="1" :value="numberValue(entity.recommendedLevel, 1)" @input="setNumber('recommendedLevel', $event)" /></label>

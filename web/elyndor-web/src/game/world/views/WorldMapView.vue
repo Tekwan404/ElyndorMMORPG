@@ -7,7 +7,11 @@ import { gameArt } from '@/assets/gameArt'
 import { useDungeonStore } from '@/game/party/dungeonStore'
 import { socialErrorMessage } from '@/game/social/socialPresentation'
 import { locationKind, locationLabel, locationPresentation } from '@/game/world/locationPresentation'
-import { worldMapPosition } from '@/game/world/worldMapLayout'
+import {
+  BORDERLANDS_MAP_ID,
+  OUTER_REACHES_MAP_ID,
+  worldMapPosition,
+} from '@/game/world/worldMapLayout'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UICard, UILoadingState, UIToast } from '@/ui/components'
 
@@ -20,19 +24,30 @@ const dungeon = useDungeonStore()
 const locations = ref<WorldLocation[]>([])
 const selectedLocationId = ref<string | null>(null)
 const selectedLocationElement = ref<HTMLElement | null>(null)
+const selectedMapId = ref(BORDERLANDS_MAP_ID)
 const loading = ref(true)
 const catalogError = ref(false)
+
+const mapOptions = [
+  { id: BORDERLANDS_MAP_ID, label: 'Пограничные земли', eyebrow: 'ПОГРАНИЧНЫЕ ЗЕМЛИ' },
+  { id: OUTER_REACHES_MAP_ID, label: 'Дальние земли', eyebrow: 'ДАЛЬНИЕ ЗЕМЛИ' },
+] as const
+
+function locationMapId(location: WorldLocation | null | undefined): string {
+  return location?.mapId || BORDERLANDS_MAP_ID
+}
 
 const world = computed(() => session.snapshot?.world)
 const activeTravel = computed(() => world.value?.travel ?? null)
 const isTravelling = computed(() => activeTravel.value !== null)
 const currentLocationId = computed(() => world.value?.currentLocation.id ?? null)
+const currentMapId = computed(() => locationMapId(world.value?.currentLocation))
 const characterLevel = computed(() => session.snapshot?.character?.level ?? 1)
 const contracts = computed(() => world.value?.contracts ?? [])
 const reachableLocationIds = computed(
   () => new Set(world.value?.outgoingTransitions.map(location => location.id) ?? []),
 )
-const visibleLocations = computed(() => {
+const allVisibleLocations = computed(() => {
   const byId = new Map<string, WorldLocation>()
   for (const location of locations.value) byId.set(location.id, location)
   if (world.value) {
@@ -44,9 +59,25 @@ const visibleLocations = computed(() => {
       || left.displayName.localeCompare(right.displayName),
   )
 })
+const availableMaps = computed(() => {
+  const ids = new Set<string>([currentMapId.value])
+  for (const location of world.value?.outgoingTransitions ?? []) {
+    ids.add(locationMapId(location))
+  }
+  return mapOptions.filter(map => ids.has(map.id))
+})
+const activeMap = computed(() =>
+  mapOptions.find(map => map.id === selectedMapId.value) ?? mapOptions[0]!,
+)
+const visibleLocations = computed(() =>
+  allVisibleLocations.value.filter(location => locationMapId(location) === selectedMapId.value),
+)
 const selectedLocation = computed(() =>
   visibleLocations.value.find(location => location.id === selectedLocationId.value)
-  ?? world.value?.currentLocation
+  ?? (locationMapId(world.value?.currentLocation) === selectedMapId.value
+    ? world.value?.currentLocation
+    : null)
+  ?? visibleLocations.value[0]
   ?? null,
 )
 const selectedIsDungeon = computed(() =>
@@ -69,11 +100,13 @@ const selectedIsReachable = computed(
 function locationArt(locationId: string | null | undefined): string {
   return locationPresentation(
     locationId,
-    visibleLocations.value.find(location => location.id === locationId)?.displayName,
+    allVisibleLocations.value.find(location => location.id === locationId)?.displayName,
   ).art
 }
 
-const mapArt = computed(() => gameArt.world.worldMap)
+const mapArt = computed(() =>
+  selectedMapId.value === BORDERLANDS_MAP_ID ? gameArt.world.worldMap : null,
+)
 const selectedArt = computed(() => locationArt(selectedLocation.value?.id))
 const activeContract = computed(() =>
   contracts.value.find(contract => contract.status === 'ACTIVE') ?? null,
@@ -85,6 +118,7 @@ const selectedDangerLabel = computed(() => {
   }
   const danger = selectedLocation.value?.dangerLevel
   if (danger === 'SAFE') return 'Безопасная зона'
+  if (danger === 'DEADLY') return 'Смертельная зона'
   if (danger === 'DANGEROUS') return 'Высокий риск'
   return 'Приключение'
 })
@@ -121,6 +155,18 @@ async function loadLocations(): Promise<void> {
   } finally {
     loading.value = false
   }
+}
+
+function selectMap(mapId: string): void {
+  if (!availableMaps.value.some(map => map.id === mapId)) return
+  selectedMapId.value = mapId
+  const current = world.value?.currentLocation
+  const next = locationMapId(current) === mapId
+    ? current
+    : (world.value?.outgoingTransitions ?? []).find(location => locationMapId(location) === mapId)
+      ?? allVisibleLocations.value.find(location => locationMapId(location) === mapId)
+      ?? null
+  selectedLocationId.value = next?.id ?? null
 }
 
 function selectLocation(locationId: string): void {
@@ -200,7 +246,7 @@ function locationState(location: WorldLocation): 'current' | 'reachable' | 'lock
 }
 
 function nodePosition(locationId: string, fallbackIndex: number): { x: number; y: number } {
-  return worldMapPosition(locationId, fallbackIndex)
+  return worldMapPosition(locationId, fallbackIndex, selectedMapId.value)
 }
 
 function nodeStyle(locationId: string, fallbackIndex: number): Record<string, string> {
@@ -212,12 +258,22 @@ function nodeStyle(locationId: string, fallbackIndex: number): Record<string, st
 }
 
 const mapCanvasStyle = computed(() => ({
-  '--map-art': `url(${mapArt.value})`,
+  '--map-art': mapArt.value ? `url(${mapArt.value})` : 'none',
 }))
 
 watch(currentLocationId, locationId => {
-  if (locationId) selectedLocationId.value = locationId
+  const current = world.value?.currentLocation
+  if (!locationId || !current) return
+  selectedMapId.value = locationMapId(current)
+  selectedLocationId.value = locationId
 }, { immediate: true })
+
+watch(availableMaps, maps => {
+  if (!maps.some(map => map.id === selectedMapId.value)) {
+    selectedMapId.value = currentMapId.value
+    selectedLocationId.value = world.value?.currentLocation.id ?? null
+  }
+})
 
 onMounted(() => {
   void Promise.all([loadLocations(), dungeon.refresh()])
@@ -228,7 +284,7 @@ onMounted(() => {
   <section v-if="world" class="world-map">
     <header class="world-map__header">
       <div>
-        <small>МИР · ПОГРАНИЧНЫЕ ЗЕМЛИ</small>
+        <small>МИР · {{ activeMap.eyebrow }}</small>
         <h1>Карта мира</h1>
         <p>Выберите известную точку. Сервер разрешит переход только по открытому маршруту.</p>
       </div>
@@ -281,16 +337,37 @@ onMounted(() => {
     />
 
     <template v-else>
+      <nav
+        v-if="availableMaps.length > 1"
+        class="map-switch"
+        aria-label="Карты мира"
+        data-world-map-switch
+      >
+        <button
+          v-for="map in availableMaps"
+          :key="map.id"
+          type="button"
+          class="map-switch__item"
+          :class="{ 'map-switch__item--active': selectedMapId === map.id }"
+          :aria-pressed="selectedMapId === map.id"
+          :data-map-switch-id="map.id"
+          @click="selectMap(map.id)"
+        >
+          {{ map.label }}
+        </button>
+      </nav>
+
       <section
         class="map-canvas"
         :style="mapCanvasStyle"
-        aria-label="Карта доступных локаций"
+        :data-map-id="selectedMapId"
+        :aria-label="`Карта: ${activeMap.label}`"
       >
         <div class="map-canvas__fog" />
         <div class="map-canvas__grid" />
         <div class="map-canvas__caption" aria-hidden="true">
           <small>РЕГИОН</small>
-          <strong>Пограничные земли</strong>
+          <strong>{{ activeMap.label }}</strong>
         </div>
 
         <svg
@@ -338,7 +415,7 @@ onMounted(() => {
         >
           <div
             class="map-selection__art"
-            :style="{ backgroundImage: `url(${selectedArt})` }"
+            :style="{ backgroundImage: selectedArt ? `url(${selectedArt})` : 'none' }"
             aria-hidden="true"
           />
           <div class="map-selection__copy">
@@ -444,6 +521,33 @@ onMounted(() => {
   padding: var(--ui-space-3) var(--ui-space-4) var(--ui-space-7);
 }
 
+.map-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  width: min(100%, 34rem);
+  margin-inline: auto;
+}
+
+.map-switch__item {
+  min-height: var(--ui-touch-target);
+  padding: 7px 10px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(7 10 17 / 84%);
+  color: var(--ui-color-text-secondary);
+  font: inherit;
+  font-size: var(--ui-font-size-xs);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.map-switch__item--active {
+  border-color: rgb(184 177 255 / 68%);
+  background: linear-gradient(100deg, rgb(92 81 166 / 30%), rgb(7 10 17 / 92%));
+  color: #ebe9ff;
+}
+
 .world-map__header {
   display: flex;
   align-items: end;
@@ -519,7 +623,11 @@ onMounted(() => {
   border: 1px solid var(--ui-color-border-strong);
   border-radius: calc(var(--ui-radius-lg) + 3px);
   background-color: #162229;
-  background-image: linear-gradient(180deg, rgb(5 8 14 / 9%), transparent 18% 85%, rgb(5 8 14 / 8%)), var(--map-art);
+  background-image:
+    radial-gradient(circle at 72% 18%, rgb(123 104 164 / 12%), transparent 24%),
+    radial-gradient(circle at 22% 78%, rgb(116 80 46 / 12%), transparent 28%),
+    linear-gradient(180deg, rgb(5 8 14 / 9%), transparent 18% 85%, rgb(5 8 14 / 8%)),
+    var(--map-art);
   background-position: center;
   background-size: 100% 100%;
   box-shadow: var(--ui-shadow-inset), 0 18px 46px rgb(0 0 0 / 28%);

@@ -75,6 +75,12 @@ Object.assign(PRESENTATIONS, {
   HEART_OF_BLIGHTED_GROVE: { label: 'Сердце Осквернённой Чащи', art: gameArt.locations.HEART_OF_BLIGHTED_GROVE_RAID, kind: 'dungeon', dangerLabel: 'Подземелье · 20 уровень' },
   SHATTERED_ORDER_CITADEL: { label: 'Цитадель Расколотого Ордена', art: gameArt.locations.SHATTERED_ORDER_CITADEL_RAID, kind: 'dungeon', dangerLabel: 'Подземелье · 30 уровень' },
   BLACK_BASTION: { label: 'Чёрный Бастион', art: gameArt.locations.BLACK_BASTION_RAID, kind: 'dungeon', dangerLabel: 'Подземелье · 40 уровень' },
+  BLACK_CRAGS: { label: 'Чёрные Кручи', art: '', kind: 'region', dangerLabel: 'Смертельная зона' },
+  PLAGUEWOOD: { label: 'Моровой Бор', art: '', kind: 'region', dangerLabel: 'Смертельная зона' },
+  GLASS_DESERT: { label: 'Стеклянная Пустыня', art: '', kind: 'region', dangerLabel: 'Смертельная зона' },
+  FROZEN_EDGE: { label: 'Ледяной Предел', art: '', kind: 'region', dangerLabel: 'Смертельная зона' },
+  DOOMED_LANDS: { label: 'Гиблые Земли', art: '', kind: 'region', dangerLabel: 'Смертельная зона' },
+  DEAD_REACHES: { label: 'Мёртвые Пределы', art: '', kind: 'region', dangerLabel: 'Элитная зона · 60 уровень' },
 })
 
 const FALLBACK_PRESENTATION: LocationPresentation = {

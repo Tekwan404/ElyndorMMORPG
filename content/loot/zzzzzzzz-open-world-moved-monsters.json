@@ -1,0 +1,104 @@
+{
+  "contentVersion": "0.37.0",
+  "balanceVersion": "0.30.0",
+  "publishedAtUtc": "2026-10-05T17:40:00+00:00",
+  "note": "Curated loot for moved art-backed open-world monsters.",
+  "lootTables": [
+    {
+      "id": "LOOT_FIELD_CORRUPTED_BOAR_L17_CURATED",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "PORCHENOE_MIASO",
+          "dropChance": 0.48,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ZARAZHIONNYI_KLYK",
+          "dropChance": 0.2,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "SGUSTOK_PORCHI",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "id": "LOOT_FIELD_BANDIT_ARCHER_L16_CURATED",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "PLOTNAIA_TKAN",
+          "dropChance": 0.4,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ORUZHEINAIA_DETAL",
+          "dropChance": 0.16,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "KAPIUSHON_TENEVOGO_BRAKONERA",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "id": "LOOT_FIELD_BANDIT_ROGUE_L19_CURATED",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "PLOTNAIA_TKAN",
+          "dropChance": 0.42,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ORUZHEINAIA_DETAL",
+          "dropChance": 0.18,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "id": "LOOT_FIELD_ALPHA_WOLF_L20_CURATED",
+      "version": 1,
+      "entries": [
+        {
+          "itemId": "PORCHENOE_MIASO",
+          "dropChance": 0.48,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ZARAZHIONNYI_KLYK",
+          "dropChance": 0.22,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "SGUSTOK_PORCHI",
+          "dropChance": 0.14,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "KIRASA_MATIOROGO_VOZHAKA",
+          "dropChance": 0.03,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    }
+  ]
+}

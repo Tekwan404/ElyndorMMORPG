@@ -361,7 +361,8 @@ public static class WorldEndpoints
             location.ArtId,
             location.Description,
             location.TravelDurationSeconds,
-            location.AllowAfk);
+            location.AllowAfk,
+            MapId: location.MapId);
 
     private static WorldLocationResponse ToLocation(
         LocationDefinition location,
@@ -387,7 +388,8 @@ public static class WorldEndpoints
             location.TravelDurationSeconds,
             location.AllowAfk,
             residents,
-            loot);
+            loot,
+            location.MapId);
     }
 
     private static WorldLocationResidentResponse[] BuildResidents(

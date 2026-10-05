@@ -74,7 +74,8 @@ public sealed record BootstrapLocation(
     string? ArtId,
     string Description,
     decimal TravelDurationSeconds,
-    bool AllowAfk);
+    bool AllowAfk,
+    string MapId = "BORDERLANDS");
 
 public sealed record BootstrapWorldContract(
     string Id,
@@ -726,5 +727,6 @@ public sealed class BootstrapService(
             location.ArtId,
             location.Description,
             location.TravelDurationSeconds,
-            location.AllowAfk);
+            location.AllowAfk,
+            location.MapId);
 }

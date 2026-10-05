@@ -1,0 +1,342 @@
+{
+  "contentVersion": "0.37.0",
+  "balanceVersion": "0.30.0",
+  "publishedAtUtc": "2026-10-05T19:15:00+00:00",
+  "note": "Second world map and level 41-60 open-world progression. Art/backgrounds, AI abilities and loot are intentionally deferred.",
+  "locations": [
+    {
+      "id": "OBSIDIAN_EDGE",
+      "displayName": "Обсидиановый предел",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 38,
+      "transitions": [
+        "CRIMSON_WASTELAND",
+        "BLACK_BASTION",
+        "BLACK_CRAGS"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 40,
+      "requiredContractId": null,
+      "artId": "obsidianovyi-predel",
+      "description": "Преддверие Чёрного Бастиона и последний рубеж Пограничных земель. За Пределом открывается путь в Дальние земли.",
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "mapId": "BORDERLANDS"
+    },
+    {
+      "id": "BLACK_CRAGS",
+      "displayName": "Чёрные Кручи",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 42,
+      "minimumLevel": 41,
+      "maximumLevel": 44,
+      "transitions": [
+        "OBSIDIAN_EDGE",
+        "PLAGUEWOOD"
+      ],
+      "artId": "chiornye-kruchi",
+      "description": "Раскалённые горные склоны за Обсидиановым пределом: шлак, старые кузни, лавовые трещины и железные налётчики.",
+      "encounters": [
+        {
+          "monsterId": "BLACK_CRAGS_LAVA_SCORPION_L41",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACK_CRAGS_BLACKSPINE_L42",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACK_CRAGS_ASH_SERPENT_L42",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACK_CRAGS_SLAG_GOLEM_L43",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACK_CRAGS_IRON_RAIDER_L43",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACK_CRAGS_FLAME_BINDER_L44",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACK_CRAGS_BLACK_FORGE_SMITH_L44",
+          "weight": 0.25
+        }
+      ],
+      "mapId": "OUTER_REACHES",
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false
+    },
+    {
+      "id": "PLAGUEWOOD",
+      "displayName": "Моровой Бор",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 46,
+      "minimumLevel": 44,
+      "maximumLevel": 48,
+      "transitions": [
+        "BLACK_CRAGS",
+        "GLASS_DESERT"
+      ],
+      "artId": "morovoi-bor",
+      "description": "Мёртвый лес, где заражённые звери, древни и остатки дозора медленно уступают место Мору.",
+      "encounters": [
+        {
+          "monsterId": "PLAGUEWOOD_PLAGUE_STAG_L44",
+          "weight": 1
+        },
+        {
+          "monsterId": "PLAGUEWOOD_MOR_SPIDER_L45",
+          "weight": 1
+        },
+        {
+          "monsterId": "PLAGUEWOOD_CORPSE_RAVEN_L45",
+          "weight": 1
+        },
+        {
+          "monsterId": "PLAGUEWOOD_ROTTEN_TREANT_L46",
+          "weight": 1
+        },
+        {
+          "monsterId": "PLAGUEWOOD_FALLEN_WATCHMAN_L47",
+          "weight": 1
+        },
+        {
+          "monsterId": "PLAGUEWOOD_MOR_HEALER_L47",
+          "weight": 1
+        },
+        {
+          "monsterId": "PLAGUEWOOD_MOTHER_OF_BLIGHT_L48",
+          "weight": 0.25
+        }
+      ],
+      "mapId": "OUTER_REACHES",
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false
+    },
+    {
+      "id": "GLASS_DESERT",
+      "displayName": "Стеклянная Пустыня",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 50,
+      "minimumLevel": 48,
+      "maximumLevel": 52,
+      "transitions": [
+        "PLAGUEWOOD",
+        "FROZEN_EDGE"
+      ],
+      "artId": "stekliannaia-pustynia",
+      "description": "Выжженная магией пустыня, где песок спёкся в чёрное стекло, а древние осколки продолжают оживать.",
+      "encounters": [
+        {
+          "monsterId": "GLASS_DESERT_GLASS_SCORPION_L48",
+          "weight": 1
+        },
+        {
+          "monsterId": "GLASS_DESERT_ASH_WORM_L49",
+          "weight": 1
+        },
+        {
+          "monsterId": "GLASS_DESERT_FLINT_LIZARD_L49",
+          "weight": 1
+        },
+        {
+          "monsterId": "GLASS_DESERT_DUST_SCAVENGER_L50",
+          "weight": 1
+        },
+        {
+          "monsterId": "GLASS_DESERT_SHARD_GOLEM_L51",
+          "weight": 1
+        },
+        {
+          "monsterId": "GLASS_DESERT_WASTE_PROPHET_L51",
+          "weight": 1
+        },
+        {
+          "monsterId": "GLASS_DESERT_GLASS_COLOSSUS_L52",
+          "weight": 0.25
+        }
+      ],
+      "mapId": "OUTER_REACHES",
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false
+    },
+    {
+      "id": "FROZEN_EDGE",
+      "displayName": "Ледяной Предел",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 54,
+      "minimumLevel": 52,
+      "maximumLevel": 56,
+      "transitions": [
+        "GLASS_DESERT",
+        "DOOMED_LANDS"
+      ],
+      "artId": "ledianoi-predel",
+      "description": "Высокогорный северный край с вечными метелями, древними рунами и замёрзшими дорогами погибших крепостей.",
+      "encounters": [
+        {
+          "monsterId": "FROZEN_EDGE_WHITE_MANE_PREDATOR_L52",
+          "weight": 1
+        },
+        {
+          "monsterId": "FROZEN_EDGE_ICE_BEAR_L53",
+          "weight": 1
+        },
+        {
+          "monsterId": "FROZEN_EDGE_FROST_SPIDER_L53",
+          "weight": 1
+        },
+        {
+          "monsterId": "FROZEN_EDGE_RIME_GHOST_L54",
+          "weight": 1
+        },
+        {
+          "monsterId": "FROZEN_EDGE_NORTHERN_GIANT_L55",
+          "weight": 1
+        },
+        {
+          "monsterId": "FROZEN_EDGE_RUNIC_HERMIT_L55",
+          "weight": 1
+        },
+        {
+          "monsterId": "FROZEN_EDGE_WHITE_PASS_GUARD_L56",
+          "weight": 0.25
+        }
+      ],
+      "mapId": "OUTER_REACHES",
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false
+    },
+    {
+      "id": "DOOMED_LANDS",
+      "displayName": "Гиблые Земли",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 58,
+      "minimumLevel": 56,
+      "maximumLevel": 60,
+      "transitions": [
+        "FROZEN_EDGE",
+        "DEAD_REACHES"
+      ],
+      "artId": "giblye-zemli",
+      "description": "Последняя прокачочная территория 1–60: поля старой войны, чума, нежить, разрушенные некрополи и мёртвые гарнизоны.",
+      "encounters": [
+        {
+          "monsterId": "DOOMED_LANDS_PLAGUE_KNIGHT_L56",
+          "weight": 1
+        },
+        {
+          "monsterId": "DOOMED_LANDS_CARRION_EATER_L57",
+          "weight": 1
+        },
+        {
+          "monsterId": "DOOMED_LANDS_BONE_PROPHET_L57",
+          "weight": 1
+        },
+        {
+          "monsterId": "DOOMED_LANDS_LAST_BREATH_BANSHEE_L58",
+          "weight": 1
+        },
+        {
+          "monsterId": "DOOMED_LANDS_NECROTIC_COLOSSUS_L59",
+          "weight": 1
+        },
+        {
+          "monsterId": "DOOMED_LANDS_PRIEST_OF_DOOM_L59",
+          "weight": 1
+        },
+        {
+          "monsterId": "DOOMED_LANDS_GRAVE_BEAST_L60",
+          "weight": 1
+        },
+        {
+          "monsterId": "DOOMED_LANDS_VICEROY_OF_BLIGHT_L60",
+          "weight": 0.22
+        }
+      ],
+      "mapId": "OUTER_REACHES",
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false
+    },
+    {
+      "id": "DEAD_REACHES",
+      "displayName": "Мёртвые Пределы",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 60,
+      "minimumLevel": 60,
+      "maximumLevel": 60,
+      "transitions": [
+        "DOOMED_LANDS"
+      ],
+      "artId": "miortvye-predely",
+      "description": "Элитная территория 60 уровня для редких противников, охоты на именных элиток и будущих мировых событий.",
+      "encounters": [
+        {
+          "monsterId": "DEAD_REACHES_CURSED_KNIGHT_L60",
+          "weight": 1
+        },
+        {
+          "monsterId": "DEAD_REACHES_BONE_DESTROYER_L60",
+          "weight": 1
+        },
+        {
+          "monsterId": "DEAD_REACHES_GRAVE_COLOSSUS_L60",
+          "weight": 1
+        },
+        {
+          "monsterId": "DEAD_REACHES_WARLOCK_L60",
+          "weight": 1
+        },
+        {
+          "monsterId": "DEAD_REACHES_SOUL_EATER_L60",
+          "weight": 1
+        },
+        {
+          "monsterId": "DEAD_REACHES_DEAD_GATE_GUARD_L60",
+          "weight": 1
+        },
+        {
+          "monsterId": "DEAD_REACHES_BANSHEE_L60",
+          "weight": 1
+        },
+        {
+          "monsterId": "DEAD_REACHES_VARGHIM_HEADLESS_L60",
+          "weight": 0.14
+        },
+        {
+          "monsterId": "DEAD_REACHES_MORANA_PALE_L60",
+          "weight": 0.14
+        },
+        {
+          "monsterId": "DEAD_REACHES_GOR_KAR_DEVOURER_L60",
+          "weight": 0.14
+        },
+        {
+          "monsterId": "DEAD_REACHES_MORDREK_LAST_GATE_L60",
+          "weight": 0.05
+        },
+        {
+          "monsterId": "DEAD_REACHES_NAMELESS_KING_L60",
+          "weight": 0.05
+        },
+        {
+          "monsterId": "DEAD_REACHES_NERZAR_L60",
+          "weight": 0.05
+        }
+      ],
+      "mapId": "OUTER_REACHES",
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false
+    }
+  ]
+}

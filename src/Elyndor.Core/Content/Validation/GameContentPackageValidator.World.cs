@@ -58,6 +58,15 @@ public static partial class GameContentPackageValidator
                         "Location recommended level must be positive."));
                 }
 
+                if (!ValidateIdentifier(
+                        location.MapId,
+                        "INVALID_LOCATION_MAP_ID",
+                        $"{path}.mapId",
+                        errors))
+                {
+                    // The identifier validator records the concrete reason.
+                }
+
                 if (location.MinimumLevel <= 0
                     || location.MaximumLevel < location.MinimumLevel
                     || location.RecommendedLevel < location.MinimumLevel

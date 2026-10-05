@@ -66,13 +66,6 @@ public sealed class GameContentPackageLoaderTests
     private static readonly string[] MageArmorCategories = ["CLOTH"];
     private static readonly string[] ForestEncounterMonsters =
     [
-        "WHISPERING_FOREST_MOLODOI_VOLK_L1",
-        "WHISPERING_FOREST_SERYI_VOLK_L1",
-        "WHISPERING_FOREST_VOLK_OKHOTNIK_L2",
-        "WHISPERING_FOREST_MATIORYI_VOZHAK_L4",
-        "WHISPERING_FOREST_LESNOI_KABAN_L2",
-        "WHISPERING_FOREST_RAZIARIONNYI_KABAN_L3",
-        "WHISPERING_FOREST_LESNOI_PAUK_L3",
         "WHISPERING_FOREST_IADOVITYI_PAUK_L3",
         "WHISPERING_FOREST_LESNOI_VOLK_L3",
         "WHISPERING_FOREST_MATIORYI_VOLK_L4",
@@ -88,8 +81,8 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.36.3", package.ContentVersion);
-        Assert.Equal("0.29.0", package.BalanceVersion);
+        Assert.Equal("0.37.0", package.ContentVersion);
+        Assert.Equal("0.30.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");

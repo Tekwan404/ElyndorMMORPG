@@ -35,7 +35,8 @@ public sealed record WorldLocationResponse(
     decimal TravelDurationSeconds = 0,
     bool AllowAfk = false,
     IReadOnlyList<WorldLocationResidentResponse>? Residents = null,
-    IReadOnlyList<WorldLocationLootResponse>? Loot = null);
+    IReadOnlyList<WorldLocationLootResponse>? Loot = null,
+    string MapId = "BORDERLANDS");
 
 public sealed record WorldContractResponse(
     string Id,

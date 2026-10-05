@@ -43,8 +43,7 @@ public sealed class AuthoredWorldContentTests
                 authoredEncounterIds.Add(encounter.MonsterId);
                 Assert.True(indexes.MonstersById.TryGetValue(encounter.MonsterId, out MonsterDefinition? monster));
                 Assert.True(monster!.Rank is MonsterRank.Normal or MonsterRank.Elite);
-                Assert.Empty(monster.AbilityIds);
-                Assert.Equal("AUTHORED_EMPTY_AI", monster.AiProfileId);
+                Assert.False(string.IsNullOrWhiteSpace(monster.AiProfileId));
                 if (monster.Rank == MonsterRank.Elite) authoredEliteCount++;
                 Assert.False(string.IsNullOrWhiteSpace(monster.LootTableId));
                 Assert.True(indexes.LootTablesById.TryGetValue(monster.LootTableId!, out var lootTable));
@@ -58,11 +57,125 @@ public sealed class AuthoredWorldContentTests
             }
         }
 
-        Assert.Equal(169, authoredEncounterIds.Count);
-        Assert.Equal(35, authoredEliteCount);
+        Assert.Equal(89, authoredEncounterIds.Count);
+        Assert.Equal(17, authoredEliteCount);
         Assert.True(authoredEquipmentLootExists);
 
+        string[] LootItems(string monsterId)
+        {
+            MonsterDefinition monster = indexes.MonstersById[monsterId];
+            return indexes.LootTablesById[monster.LootTableId!].Entries
+                .Select(entry => entry.ItemId)
+                .ToArray();
+        }
+
+        Assert.DoesNotContain("ZHIOSTKOE_MIASO", LootItems("WHISPERING_FOREST_LESNOI_RAZBOINIK_L5"));
+        Assert.DoesNotContain("WOLF_FANG", LootItems("WHISPERING_FOREST_LESNOI_RAZBOINIK_L5"));
+        Assert.DoesNotContain("MESHOCHEK_MONET", LootItems("OLD_ROAD_DOROZHNYI_MARODIOR_L14"));
+        Assert.DoesNotContain("BOLOTNOE_MIASO", LootItems("MOON_ASH_MARSHES_LUNNOPEPELNYI_UTOPLENNIK_L25"));
+        Assert.Contains("PECHAT_KHRANITELIA_RASKOLA", LootItems("SHATTERED_LANDS_KHRANITEL_RAZLOMA_L32"));
+
         Assert.Equal("DEADLY", indexes.LocationsById["OBSIDIAN_EDGE"].DangerLevel);
+    }
+
+    [Fact]
+    public async Task CuratedFieldRosterKeepsArtFirstCoverage()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            RepositoryContentPath());
+        GameContentIndexes indexes = GameContentIndexes.For(package);
+
+        string repositoryRoot = Directory.GetParent(
+            Path.GetDirectoryName(RepositoryContentPath())!)!.FullName;
+        string monsterArtDirectory = Path.Combine(
+            repositoryRoot,
+            "web",
+            "elyndor-web",
+            "src",
+            "assets",
+            "monsters");
+        HashSet<string> directArtIds = Directory
+            .EnumerateFiles(monsterArtDirectory)
+            .Select(Path.GetFileNameWithoutExtension)
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(id => id!)
+            .ToHashSet(StringComparer.Ordinal);
+
+        MonsterDefinition[] activeFieldMonsters = ExpectedFieldLocations
+            .SelectMany(locationId => indexes.LocationsById[locationId].Encounters ?? [])
+            .Select(encounter => indexes.MonstersById[encounter.MonsterId])
+            .DistinctBy(monster => monster.Id)
+            .ToArray();
+
+        int directArtCount = activeFieldMonsters.Count(monster =>
+            monster.ArtId is not null && directArtIds.Contains(monster.ArtId));
+        Assert.True(
+            directArtCount >= 44,
+            $"Curated field roster exact-art coverage regressed to {directArtCount}/{activeFieldMonsters.Length}.");
+
+        foreach (string locationId in new[]
+        {
+            "WHISPERING_FOREST",
+            "DEEP_FOREST",
+            "BLIGHTED_GROVE"
+        })
+        {
+            Assert.All(
+                indexes.LocationsById[locationId].Encounters ?? [],
+                encounter =>
+                {
+                    MonsterDefinition monster = indexes.MonstersById[encounter.MonsterId];
+                    Assert.Contains(monster.ArtId, directArtIds);
+                });
+        }
+    }
+
+    [Fact]
+    public async Task EndgameWorldMapRunsFromObsidianEdgeToEliteLevelSixtyZone()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
+        GameContentIndexes indexes = GameContentIndexes.For(package);
+
+        string[] endgameLocationIds =
+        [
+            "BLACK_CRAGS",
+            "PLAGUEWOOD",
+            "GLASS_DESERT",
+            "FROZEN_EDGE",
+            "DOOMED_LANDS",
+            "DEAD_REACHES"
+        ];
+
+        Assert.Contains("BLACK_CRAGS", indexes.LocationsById["OBSIDIAN_EDGE"].Transitions);
+
+        foreach (string locationId in endgameLocationIds)
+        {
+            var location = indexes.LocationsById[locationId];
+            Assert.Equal("OUTER_REACHES", location.MapId);
+            Assert.Equal("DEADLY", location.DangerLevel);
+            Assert.False(location.AllowAfk);
+            Assert.NotEmpty(location.Encounters ?? []);
+
+            foreach (var encounter in location.Encounters ?? [])
+            {
+                MonsterDefinition monster = indexes.MonstersById[encounter.MonsterId];
+                Assert.Empty(monster.AbilityIds);
+                Assert.Equal("AUTHORED_EMPTY_AI", monster.AiProfileId);
+                Assert.Null(monster.LootTableId);
+                Assert.Equal(0, monster.GoldRewardMin);
+                Assert.Equal(0, monster.GoldRewardMax);
+                Assert.False(string.IsNullOrWhiteSpace(monster.ArtId));
+            }
+        }
+
+        Assert.Equal(41, indexes.LocationsById["BLACK_CRAGS"].MinimumLevel);
+        Assert.Equal(60, indexes.LocationsById["DEAD_REACHES"].MinimumLevel);
+        Assert.Equal(60, indexes.LocationsById["DEAD_REACHES"].MaximumLevel);
+        Assert.All(
+            indexes.LocationsById["DEAD_REACHES"].Encounters ?? [],
+            encounter => Assert.Equal(
+                MonsterRank.Elite,
+                indexes.MonstersById[encounter.MonsterId].Rank));
     }
 
     [Fact]

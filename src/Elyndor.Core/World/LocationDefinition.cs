@@ -17,4 +17,5 @@ public sealed record LocationDefinition(
     string? ArtId = null,
     string Description = "",
     decimal TravelDurationSeconds = 0,
-    bool AllowAfk = false);
+    bool AllowAfk = false,
+    string MapId = "BORDERLANDS");
