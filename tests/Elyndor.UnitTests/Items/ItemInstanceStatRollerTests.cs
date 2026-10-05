@@ -184,8 +184,10 @@ public sealed class ItemInstanceStatRollerTests
             new SequenceGameRandom(0.9999m, 0.50m));
 
         Assert.Equal(1, lowest.Stars);
+        Assert.Equal(1, Assert.Single(lowest.Affixes).AffixTier);
         Assert.False(lowest.IsPerfect);
         Assert.Equal(5, perfect.Stars);
+        Assert.Equal(5, Assert.Single(perfect.Affixes).AffixTier);
         Assert.True(perfect.IsPerfect);
         Assert.Equal("DROP", perfect.PerfectOrigin);
     }

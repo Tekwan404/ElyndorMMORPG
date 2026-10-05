@@ -169,7 +169,11 @@ public static class ItemizationBudgetPolicy
             {
                 MinAtGeneration = minimumValue,
                 MaxAtGeneration = maximumValue,
-                StepAtGeneration = step
+                StepAtGeneration = step,
+                AffixTier = ItemAffixQualityPolicy.Tier(
+                    affix.Value,
+                    minimumValue,
+                    maximumValue)
             };
         }).ToArray();
     }

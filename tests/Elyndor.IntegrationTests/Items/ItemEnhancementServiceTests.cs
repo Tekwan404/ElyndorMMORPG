@@ -65,7 +65,7 @@ public sealed class ItemEnhancementServiceTests(PostgresFixture postgres) : IAsy
     }
 
     [Fact]
-    public async Task EnhanceAdvancesInvestmentWithoutChangingBirthQualityOrAffixes()
+    public async Task EnhanceAdvancesInvestmentWithoutChangingBirthQualityOrAffixRolls()
     {
         GameContentPackage content = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
         ItemDefinition definition = Assert.Single(content.Items!, item =>
@@ -154,7 +154,16 @@ public sealed class ItemEnhancementServiceTests(PostgresFixture postgres) : IAsy
         Assert.Equal(generated.PerfectOrigin, result.Item.PerfectOrigin);
         Assert.Equal(generated.ActualItemPower, result.Item.ActualItemPower);
         Assert.Equal(generated.DisplayName, result.Item.DisplayName);
-        Assert.Equal(generated.Affixes, result.Item.Affixes);
+        GeneratedItemAffix[] expectedAffixes = generated.Affixes
+            .Select(affix => affix with
+            {
+                AffixTier = ItemAffixQualityPolicy.Tier(
+                    affix.Value,
+                    affix.MinAtGeneration,
+                    affix.MaxAtGeneration)
+            })
+            .ToArray();
+        Assert.Equal(expectedAffixes, result.Item.Affixes);
 
         await using GameDbContext verify = postgres.CreateDbContext();
         Character savedCharacter = await verify.Characters.SingleAsync(character => character.Id == characterId);

@@ -17,6 +17,19 @@ public sealed class ItemReforgeCostContentTests
         Assert.All(costs.CatalystQuantityByRarity.Values, quantity => Assert.Equal(0, quantity));
     }
 
+    [Fact]
+    public async Task MageWeaponAndFocusPoolsAllowCriticalDamage()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
+        var itemization = Assert.IsType<Elyndor.Core.Items.ItemizationDefinition>(package.Itemization);
+
+        foreach (string poolId in new[] { "MAGE_WEAPON", "MAGE_FOCUS", "MAGE_OFFHAND" })
+        {
+            var pool = Assert.Single(itemization.AffixPools, candidate => candidate.Id == poolId);
+            Assert.Contains(Elyndor.Core.Items.ItemStatIds.CriticalDamage, pool.StatIds);
+        }
+    }
+
     private static string RepositoryContentPath()
     {
         DirectoryInfo? directory = new(AppContext.BaseDirectory);

@@ -557,11 +557,19 @@ export interface ItemReforgeResponse {
   cost: ItemReforgeCost
 }
 
+export interface ItemReforgePossibleAffix {
+  statId: string
+  min: number
+  max: number
+  step: number
+}
+
 export interface ItemReforgePreview {
   itemInstanceId: string
   slotKey: string
   current: GeneratedItemSummary
   cost: ItemReforgeCost
+  possibleAffixes?: ItemReforgePossibleAffix[]
 }
 
 export interface ItemStarUpgradeResponse {

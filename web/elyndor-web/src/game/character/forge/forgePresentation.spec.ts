@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { GeneratedItemSummary, InventoryItem } from '@/api/contracts'
-import { availableForgeMaterialQuantity, forgeItemAvailability, forgeStatLabel, reforgeResultAffixes, shouldRestorePendingReforge } from '@/game/character/forge/forgePresentation'
+import { availableForgeMaterialQuantity, forgeAffixQuality, forgeItemAvailability, forgePercent, forgeStatLabel, forgeStatRange, forgeStatValue, reforgeResultAffixes, shouldRestorePendingReforge } from '@/game/character/forge/forgePresentation'
 
 function equipment(overrides: Partial<InventoryItem> = {}): InventoryItem {
   return {
@@ -118,5 +118,19 @@ describe('reforgeResultAffixes', () => {
     expect(result.proposed).toMatchObject({ statId: 'DODGE', value: 1.6, min: 0.8, max: 2.1 })
     expect(forgeStatLabel(result.current!.statId)).toBe('Точность')
     expect(forgeStatLabel(result.proposed!.statId)).toBe('Уклонение')
+  })
+})
+
+
+describe('forge affix quality presentation', () => {
+  it('shows realized affix quality separately from item quality', () => {
+    expect(forgeAffixQuality({ value: 17, min: 10, max: 20 })).toBe(70)
+    expect(forgePercent(95.93)).toBe('95.93%')
+  })
+
+  it('formats percentage stats and authoritative ranges', () => {
+    expect(forgeStatValue('CRITICAL_DAMAGE', 17.9)).toBe('+17.9%')
+    expect(forgeStatRange('CRITICAL_DAMAGE', 12, 24)).toBe('12–24%')
+    expect(forgeStatValue('SPELL_POWER', 176)).toBe('+176')
   })
 })

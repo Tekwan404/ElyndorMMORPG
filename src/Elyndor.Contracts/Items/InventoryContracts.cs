@@ -306,11 +306,18 @@ public sealed record ItemReforgeResponse(
     GeneratedItemSummaryResponse Proposed,
     ItemReforgeCostResponse Cost);
 
+public sealed record ItemReforgePossibleAffixResponse(
+    string StatId,
+    decimal Min,
+    decimal Max,
+    decimal Step);
+
 public sealed record ItemReforgePreviewResponse(
     Guid ItemInstanceId,
     string SlotKey,
     GeneratedItemSummaryResponse Current,
-    ItemReforgeCostResponse Cost);
+    ItemReforgeCostResponse Cost,
+    IReadOnlyList<ItemReforgePossibleAffixResponse> PossibleAffixes);
 
 public sealed record ItemSalvageRewardResponse(
     string ReforgeStoneItemId,

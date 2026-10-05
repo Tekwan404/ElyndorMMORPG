@@ -89,6 +89,13 @@ public static class ItemInstancePersistenceFactory
         GeneratedItemAffix[] affixes = item.Affixes
             .OrderBy(affix => affix.GenerationOrdinal)
             .Select(affix => affix.ToGeneratedAffix())
+            .Select(affix => affix with
+            {
+                AffixTier = ItemAffixQualityPolicy.Tier(
+                    affix.Value,
+                    affix.MinAtGeneration,
+                    affix.MaxAtGeneration)
+            })
             .ToArray();
 
         // V2 source of truth: the persisted birth classification is canonical. Historical

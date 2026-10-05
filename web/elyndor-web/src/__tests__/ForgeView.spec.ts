@@ -30,8 +30,8 @@ function item(id: string, equipped = false): InventoryItem {
       stars: 4,
       rollQuality: 80,
       affixes: [
-        { slotKey: 'A', statId: 'ATTACK_POWER', value: 15, min: 10, max: 20, isGuaranteed: false },
-        { slotKey: 'B', statId: 'STAMINA', value: 5, isGuaranteed: true },
+        { slotKey: 'A', statId: 'ATTACK_POWER', value: 15, min: 10, max: 20, step: 1, affixTier: 3, isGuaranteed: false, isReforgeSlot: false },
+        { slotKey: 'B', statId: 'STAMINA', value: 5, min: 4, max: 8, step: 1, affixTier: 2, isGuaranteed: true, isReforgeSlot: false },
       ],
     },
   } as InventoryItem
@@ -98,6 +98,10 @@ beforeEach(() => {
       catalystQuantity: 0,
       countMultiplier: 1,
     },
+    possibleAffixes: [
+      { statId: 'ATTACK_POWER', min: 10, max: 20, step: 1 },
+      { statId: 'CRITICAL_DAMAGE', min: 12, max: 24, step: 0.1 },
+    ],
   }))
   vi.spyOn(store, 'getSalvagePreview').mockImplementation(async (id) => ({
     ...reward,
@@ -147,6 +151,17 @@ describe('Forge workbench', () => {
       false,
     )
   })
+  it('shows item quality, affix quality and the real reforge pool', async () => {
+    mount(ForgeView)
+    await click('.forge-grid [data-forge-item="A"]')
+    expect(text()).toContain('Качество предмета')
+    expect(text()).toContain('80.00%')
+    expect(text()).toContain('50% · T3')
+    expect(text()).toContain('Может выпасть')
+    expect(text()).toContain('Крит. урон')
+    expect(text()).toContain('12–24%')
+  })
+
   it('restores a pending paid reforge rather than charging for a new roll', async () => {
     const store = useGameSessionStore()
     store.snapshot!.character!.inventory.items[0]!.transactionLocked = true

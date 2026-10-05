@@ -103,6 +103,13 @@ public sealed class ItemReforgePreviewTests(PostgresFixture postgres) : IAsyncLi
         Assert.True(result.Succeeded);
         Assert.Null(result.ErrorCode);
         Assert.Equal("AFFIX_2", result.Current!.Affixes.Single(affix => affix.SlotKey == "AFFIX_2").SlotKey);
+        Assert.NotNull(result.PossibleAffixes);
+        Assert.NotEmpty(result.PossibleAffixes);
+        Assert.All(result.PossibleAffixes, candidate =>
+        {
+            Assert.True(candidate.Max >= candidate.Min);
+            Assert.True(candidate.Step > 0);
+        });
     }
 
     [Fact]
