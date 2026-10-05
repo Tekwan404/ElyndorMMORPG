@@ -228,6 +228,7 @@ export interface WorldLocation {
   description: string
   travelDurationSeconds?: number
   allowAfk?: boolean
+  mapId?: string
 }
 
 export interface WorldContract {
