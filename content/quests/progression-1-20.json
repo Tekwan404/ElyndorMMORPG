@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.15.0",
-  "balanceVersion": "0.9.0",
-  "publishedAtUtc": "2026-09-08T06:02:00+00:00",
+  "contentVersion": "0.37.0",
+  "balanceVersion": "0.30.0",
+  "publishedAtUtc": "2026-10-05T17:40:00+00:00",
   "quests": [
     {
       "id": "QUEST_01_FIRST_HUNT",
@@ -137,11 +137,9 @@
         {
           "id": "KILL_ALPHA",
           "type": "KillMonster",
-          "targetId": "WHISPERING_FOREST_MATIORYI_VOZHAK_L4",
+          "targetId": "WHISPERING_FOREST_MATIORYI_VOLK_L4",
           "requiredCount": 2,
-          "alternativeTargetIds": [
-            "WHISPERING_FOREST_MATIORYI_VOLK_L4"
-          ]
+          "alternativeTargetIds": []
         }
       ],
       "rewardXp": 420,
@@ -449,11 +447,10 @@
         {
           "id": "KILL_BANDITS",
           "type": "KillMonster",
-          "targetId": "BLIGHTED_GROVE_PEPELNYI_NALIOTCHIK_L16",
+          "targetId": "BANDIT_ROGUE_L19",
           "requiredCount": 4,
           "alternativeTargetIds": [
-            "BLIGHTED_GROVE_TENEVOI_BRAKONER_L17",
-            "BLIGHTED_GROVE_BRAKONER_CHASHCHI_L17"
+            "BANDIT_ARCHER_L16"
           ]
         }
       ],
@@ -477,11 +474,9 @@
         {
           "id": "KILL_BANDIT_ARCHERS",
           "type": "KillMonster",
-          "targetId": "BLIGHTED_GROVE_TENEVOI_BRAKONER_L17",
+          "targetId": "BANDIT_ARCHER_L16",
           "requiredCount": 4,
-          "alternativeTargetIds": [
-            "BLIGHTED_GROVE_BRAKONER_CHASHCHI_L17"
-          ]
+          "alternativeTargetIds": []
         }
       ],
       "rewardXp": 13000,
@@ -504,8 +499,9 @@
         {
           "id": "KILL_BLIGHTED_BOARS",
           "type": "KillMonster",
-          "targetId": "BLIGHTED_GROVE_PORCHENYI_KABAN_L15",
-          "requiredCount": 5
+          "targetId": "CORRUPTED_BOAR_L17",
+          "requiredCount": 5,
+          "alternativeTargetIds": []
         }
       ],
       "rewardXp": 19000,
@@ -528,11 +524,9 @@
         {
           "id": "KILL_BLIGHTED_SPIDERS",
           "type": "KillMonster",
-          "targetId": "BLIGHTED_GROVE_PORCHENYI_PAUK_L16",
+          "targetId": "BLIGHTED_GROVE_IADOVITAIA_MATRONA_CHASHCHI_L19",
           "requiredCount": 5,
-          "alternativeTargetIds": [
-            "BLIGHTED_GROVE_IADOVITAIA_MATRONA_CHASHCHI_L19"
-          ]
+          "alternativeTargetIds": []
         }
       ],
       "rewardXp": 27500,
@@ -555,11 +549,10 @@
         {
           "id": "KILL_VETERAN_BANDITS",
           "type": "KillMonster",
-          "targetId": "BLIGHTED_GROVE_PEPELNYI_NALIOTCHIK_L16",
+          "targetId": "BANDIT_ROGUE_L19",
           "requiredCount": 6,
           "alternativeTargetIds": [
-            "BLIGHTED_GROVE_TENEVOI_BRAKONER_L17",
-            "BLIGHTED_GROVE_BRAKONER_CHASHCHI_L17"
+            "BANDIT_ARCHER_L16"
           ]
         }
       ],
@@ -591,8 +584,9 @@
         {
           "id": "KILL_BLIGHTED_ALPHA",
           "type": "KillMonster",
-          "targetId": "BLIGHTED_GROVE_MATIORYI_VOZHAK_L19",
-          "requiredCount": 5
+          "targetId": "ALPHA_WOLF_L20",
+          "requiredCount": 5,
+          "alternativeTargetIds": []
         }
       ],
       "rewardXp": 55000,
