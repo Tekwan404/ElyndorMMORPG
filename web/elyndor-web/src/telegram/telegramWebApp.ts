@@ -42,6 +42,13 @@ const viewportEvents: readonly TelegramViewportEvent[] = [
   'fullscreenFailed',
 ]
 
+interface StoredWebAuthenticationData {
+  value: string
+  expiresAtUtc: string
+}
+
+const webAuthenticationStorageKey = 'elyndor.telegram-web-auth.session'
+
 let webAuthenticationData: string | null = null
 let subscribedWebApp: TelegramWebApp | null = null
 
@@ -53,11 +60,72 @@ export function getTelegramInitData(): string | null {
   const initData = window.Telegram?.WebApp?.initData
   if (initData && initData.length > 0) return initData
 
+  if (webAuthenticationData) return webAuthenticationData
+
+  webAuthenticationData = readStoredWebAuthenticationData()
   return webAuthenticationData
 }
 
-export function setWebAuthenticationData(value: string | null): void {
+export function setWebAuthenticationData(
+  value: string | null,
+  expiresAtUtc: string | null = null,
+): void {
   webAuthenticationData = value && value.length > 0 ? value : null
+  if (!webAuthenticationData) {
+    removeStoredWebAuthenticationData()
+    return
+  }
+
+  if (!expiresAtUtc) return
+
+  const expiresAtMs = Date.parse(expiresAtUtc)
+  if (!Number.isFinite(expiresAtMs) || expiresAtMs <= Date.now()) {
+    return
+  }
+
+  try {
+    const stored: StoredWebAuthenticationData = {
+      value: webAuthenticationData,
+      expiresAtUtc,
+    }
+    window.sessionStorage.setItem(webAuthenticationStorageKey, JSON.stringify(stored))
+  } catch {
+    // Keep the current in-memory session even when browser storage is unavailable.
+  }
+}
+
+function readStoredWebAuthenticationData(): string | null {
+  try {
+    const raw = window.sessionStorage.getItem(webAuthenticationStorageKey)
+    if (!raw) return null
+
+    const stored = JSON.parse(raw) as Partial<StoredWebAuthenticationData>
+    const expiresAtMs = typeof stored.expiresAtUtc === 'string'
+      ? Date.parse(stored.expiresAtUtc)
+      : Number.NaN
+    if (
+      typeof stored.value !== 'string'
+      || stored.value.length === 0
+      || !Number.isFinite(expiresAtMs)
+      || expiresAtMs <= Date.now()
+    ) {
+      window.sessionStorage.removeItem(webAuthenticationStorageKey)
+      return null
+    }
+
+    return stored.value
+  } catch {
+    removeStoredWebAuthenticationData()
+    return null
+  }
+}
+
+function removeStoredWebAuthenticationData(): void {
+  try {
+    window.sessionStorage.removeItem(webAuthenticationStorageKey)
+  } catch {
+    // Storage can be unavailable in hardened/private browser contexts.
+  }
 }
 
 export function initializeTelegramWebApp(): void {
