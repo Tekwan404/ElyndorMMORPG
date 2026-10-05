@@ -265,6 +265,36 @@ public sealed class PlayerCommerceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
+    public async Task BatchAuctionAllowsMoreThanTwentyListingsWithinConfiguredLimit()
+    {
+        var seller = await Player();
+        var itemIds = new Guid[27];
+        for (var index = 0; index < itemIds.Length; index++)
+            itemIds[index] = await Item(seller);
+
+        await using var db = postgres.CreateDbContext();
+        var service = Auction(db);
+
+        var preview = await service.PreviewBatchAsync(
+            seller.Account,
+            new AuctionBatchPreviewRequest(itemIds, 100),
+            default);
+
+        Assert.True(preview.Succeeded, preview.ErrorCode);
+        Assert.Equal(27, preview.Snapshot!.ItemIds.Length);
+        Assert.Equal("27", preview.Snapshot.TotalFee);
+
+        var created = await service.CreateBatchAsync(
+            seller.Account,
+            new AuctionBatchCreateRequest(Guid.NewGuid(), itemIds, 100, 1, 5),
+            default);
+
+        Assert.True(created.Succeeded, created.ErrorCode);
+        Assert.Equal(27, created.Snapshot!.Listings.Length);
+        Assert.Equal("27", created.Snapshot.TotalFee);
+    }
+
+    [Fact]
     public async Task BatchAuctionRollsBackAllListingsWhenOneSelectedItemIsInvalid()
     {
         var seller = await Player();
