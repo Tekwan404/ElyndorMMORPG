@@ -53,6 +53,9 @@ defineEmits<{ select: [] }>()
         :stars="item.generatedItem.stars"
       />
       <small v-if="item.generatedItem" class="forge-card__quality">
+        Качество {{ item.generatedItem.rollQuality.toFixed(2) }}%
+      </small>
+      <small v-if="item.generatedItem" class="forge-card__quality">
         Качество {{ item.generatedItem.rollQuality.toFixed(2).replace(/\\.00$/, '') }}%
       </small>
       <small v-if="disabled">{{
