@@ -92,8 +92,10 @@ defineProps<{ work: ReturnType<typeof useForgeWorkbench> }>()
         >
           <span>
             {{ forgeStatLabel(affix.statId) }}
-            <small v-if="affix.isGuaranteed">Гарантированный · не меняется</small>
-            <small v-else>{{ forgePercent(forgeAffixQuality(affix)) }} · T{{ affix.affixTier }}</small>
+            <small>
+              {{ forgePercent(forgeAffixQuality(affix)) }} · T{{ affix.affixTier
+              }}<template v-if="affix.isGuaranteed"> · гарантированный</template>
+            </small>
           </span>
           <b>{{ forgeStatValue(affix.statId, affix.value) }}</b>
         </button>
