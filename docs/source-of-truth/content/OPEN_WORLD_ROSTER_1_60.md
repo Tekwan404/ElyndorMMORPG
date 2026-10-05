@@ -56,21 +56,28 @@ Blighted Grove intentionally exceeds the normal density target for now because i
 
 ## 41–60 progression structure
 
-The current runtime world ends at level 40. Levels 41–60 must be introduced as a new open-world content block instead of stretching existing 1–40 locations.
+The level 41–60 open-world skeleton now exists as a second map, `OUTER_REACHES`, connected through `OBSIDIAN_EDGE -> BLACK_CRAGS`.
 
-Use five overlapping progression bands:
+| Location | Range | Current roster | Status |
+| --- | ---: | ---: | --- |
+| Чёрные Кручи / BLACK_CRAGS | 41–44 | 7 | skeleton |
+| Моровой Бор / PLAGUEWOOD | 44–48 | 7 | skeleton |
+| Стеклянная Пустыня / GLASS_DESERT | 48–52 | 7 | skeleton |
+| Ледяной Предел / FROZEN_EDGE | 52–56 | 7 | skeleton |
+| Гиблые Земли / DOOMED_LANDS | 56–60 | 8 | skeleton |
+| Мёртвые Пределы / DEAD_REACHES | 60 | 13 elite | skeleton / future event zone |
 
-| Band | Recommended range | Target roster |
-| --- | ---: | ---: |
-| A | 41–44 | 6–7 |
-| B | 44–48 | 6–7 |
-| C | 48–52 | 6–7 |
-| D | 52–56 | 6–7 |
-| E | 56–60 | 6–8 |
+The second map intentionally has no final background art yet. Monster art IDs are placeholders for future exact assets.
 
-Final location names and visual themes are not locked until their art direction is selected.
+Current skeleton rules:
+- `AUTHORED_EMPTY_AI`;
+- no abilities;
+- `lootTableId = null` (no drops yet; empty loot-table definitions are invalid in the current validator);
+- no direct gold reward;
+- valid combat stats so encounters remain loadable/testable;
+- Mёртвые Пределы are elite-only and reserved for rare spawns, mini-bosses and future events.
 
-A 41–60 location must not be enabled in production until it has:
+Before a 41–60 location is considered content-complete it must have:
 
 - a location art direction;
 - at least 5 exact monster arts;
@@ -156,6 +163,8 @@ active monster id
 Fallback remains only for defensive rendering.
 
 ## Implementation order
+
+The runtime skeleton is already present. Content completion should proceed in this order:
 
 1. Select or create exact monster art.
 2. Create/keep the monster identity.
