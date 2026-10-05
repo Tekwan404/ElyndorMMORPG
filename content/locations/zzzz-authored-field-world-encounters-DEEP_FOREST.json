@@ -5,19 +5,19 @@
   "publishedAtUtc": "2026-10-05T17:40:00+00:00",
   "encounters": [
     {
-      "monsterId": "DEEP_FOREST_OSKVERNIONNYI_KABAN_L7",
+      "monsterId": "DEEP_WOLF_L6",
       "weight": 1
     },
     {
-      "monsterId": "DEEP_FOREST_ALFA_VOLK_L7",
+      "monsterId": "CORRUPTED_BOAR_L7",
       "weight": 1
     },
     {
-      "monsterId": "DEEP_FOREST_GLUBINNYI_PAUK_L8",
+      "monsterId": "DEEP_SPIDER_L8",
       "weight": 1
     },
     {
-      "monsterId": "DEEP_FOREST_GOBLIN_RAZVEDCHIK_L9",
+      "monsterId": "GOBLIN_SCOUT_L9",
       "weight": 1
     },
     {
@@ -25,7 +25,7 @@
       "weight": 1
     },
     {
-      "monsterId": "DEEP_FOREST_SGUSTOK_LESNOI_PORCHI_L11",
+      "monsterId": "ALPHA_WOLF_L11",
       "weight": 1
     }
   ]
