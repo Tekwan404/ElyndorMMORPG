@@ -219,7 +219,7 @@ export interface DungeonEncounter {
 export interface WorldLocation {
   id: string
   displayName: string
-  dangerLevel: 'SAFE' | 'ADVENTURE' | 'DANGEROUS'
+  dangerLevel: 'SAFE' | 'ADVENTURE' | 'DANGEROUS' | 'DEADLY'
   recommendedLevel: number
   minimumLevel: number
   maximumLevel: number
