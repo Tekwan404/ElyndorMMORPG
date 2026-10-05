@@ -5,6 +5,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Core.Progression;
 using Elyndor.Infrastructure.Combat;
+using Elyndor.Infrastructure.Content;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Progression;
 using Elyndor.Server.Combat;
