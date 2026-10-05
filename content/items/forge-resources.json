@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.19.0",
+  "contentVersion": "0.36.3",
   "balanceVersion": "0.9.1",
-  "publishedAtUtc": "2026-09-20T08:00:00+00:00",
+  "publishedAtUtc": "2026-10-05T08:52:00+00:00",
   "items": [
     {
       "id": "REFORGE_STONE",
@@ -14,7 +14,7 @@
       "slot": null,
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
       "description": "Используется только для перековки одного свойства снаряжения.",
-      "version": 2,
+      "version": 3,
       "iconId": "forge/reforge_stone"
     },
     {
@@ -28,7 +28,7 @@
       "slot": null,
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
       "description": "Материал для усиления снаряжения от +1 до +5. Не используется для перековки.",
-      "version": 1,
+      "version": 2,
       "iconId": "forge/enhancement_ore",
       "buyPriceGold": 20,
       "sellPriceGold": 5
@@ -44,7 +44,7 @@
       "slot": null,
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
       "description": "Обычный материал, полученный при разборе снаряжения.",
-      "version": 1,
+      "version": 2,
       "iconId": "forge/forge_scrap"
     },
     {
