@@ -49,7 +49,7 @@ public sealed class StaticFrontendTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
-    public async Task GetClientRouteReturnsConfiguredFrontendIndex()
+    public async Task GetFrontendShellDisablesCachingForRootAndClientRoute()
     {
         string frontendDirectory = Path.Combine(
             Path.GetTempPath(),
@@ -66,11 +66,17 @@ public sealed class StaticFrontendTests(PostgresFixture postgres) : IAsyncLifeti
 
             using HttpClient client = factory.CreateClient();
 
-            HttpResponseMessage response = await client.GetAsync("/world");
-            string html = await response.Content.ReadAsStringAsync();
+            foreach (string path in new[] { "/", "/world" })
+            {
+                using HttpResponseMessage response = await client.GetAsync(path);
+                string html = await response.Content.ReadAsStringAsync();
 
-            response.EnsureSuccessStatusCode();
-            Assert.Contains("Elyndor public test", html, StringComparison.Ordinal);
+                response.EnsureSuccessStatusCode();
+                Assert.Contains("Elyndor public test", html, StringComparison.Ordinal);
+                Assert.True(response.Headers.CacheControl?.NoStore);
+                Assert.True(response.Headers.CacheControl?.NoCache);
+                Assert.True(response.Headers.CacheControl?.MustRevalidate);
+            }
         }
         finally
         {
