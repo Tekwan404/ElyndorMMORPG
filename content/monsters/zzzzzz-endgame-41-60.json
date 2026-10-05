@@ -1,6 +1,6 @@
 {
-  "contentVersion": "0.38.0",
-  "balanceVersion": "0.31.0",
+  "contentVersion": "0.37.0",
+  "balanceVersion": "0.30.0",
   "publishedAtUtc": "2026-10-05T19:15:00+00:00",
   "note": "Level 41-60 open-world roster skeleton. AI abilities, loot, exact monster art and final balance are intentionally deferred.",
   "monsters": [
