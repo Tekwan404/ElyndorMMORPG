@@ -170,10 +170,10 @@
         {
           "id": "KILL_DEEP_WOLVES",
           "type": "KillMonster",
-          "targetId": "DEEP_FOREST_VOLK_CHASHCHOBY_L6",
+          "targetId": "DEEP_WOLF_L6",
           "requiredCount": 3,
           "alternativeTargetIds": [
-            "DEEP_FOREST_ALFA_VOLK_L7"
+            "ALPHA_WOLF_L11"
           ]
         }
       ],
@@ -197,8 +197,9 @@
         {
           "id": "KILL_CORRUPTED_BOARS",
           "type": "KillMonster",
-          "targetId": "DEEP_FOREST_OSKVERNIONNYI_KABAN_L7",
-          "requiredCount": 3
+          "targetId": "CORRUPTED_BOAR_L7",
+          "requiredCount": 3,
+          "alternativeTargetIds": []
         },
         {
           "id": "COLLECT_TUSKS",
@@ -228,8 +229,9 @@
         {
           "id": "KILL_DEEP_SPIDERS",
           "type": "KillMonster",
-          "targetId": "DEEP_FOREST_GLUBINNYI_PAUK_L8",
-          "requiredCount": 4
+          "targetId": "DEEP_SPIDER_L8",
+          "requiredCount": 4,
+          "alternativeTargetIds": []
         },
         {
           "id": "COLLECT_VENOM",
@@ -265,7 +267,7 @@
         {
           "id": "KILL_GOBLINS",
           "type": "KillMonster",
-          "targetId": "DEEP_FOREST_GOBLIN_RAZVEDCHIK_L9",
+          "targetId": "GOBLIN_SCOUT_L9",
           "requiredCount": 4,
           "alternativeTargetIds": [
             "DEEP_FOREST_GOBLIN_KAPKANSHCHIK_L10"
@@ -294,10 +296,10 @@
         {
           "id": "KILL_MATURE_WOLVES",
           "type": "KillMonster",
-          "targetId": "DEEP_FOREST_VOLK_CHASHCHOBY_L6",
+          "targetId": "DEEP_WOLF_L6",
           "requiredCount": 5,
           "alternativeTargetIds": [
-            "DEEP_FOREST_ALFA_VOLK_L7"
+            "ALPHA_WOLF_L11"
           ]
         }
       ],
@@ -321,8 +323,9 @@
         {
           "id": "KILL_OLD_ALPHA",
           "type": "KillMonster",
-          "targetId": "DEEP_FOREST_ALFA_VOLK_L7",
-          "requiredCount": 3
+          "targetId": "ALPHA_WOLF_L11",
+          "requiredCount": 3,
+          "alternativeTargetIds": []
         }
       ],
       "rewardXp": 3000,
@@ -353,8 +356,9 @@
         {
           "id": "KILL_ALPHA_GUARD",
           "type": "KillMonster",
-          "targetId": "DEEP_FOREST_ALFA_VOLK_L7",
-          "requiredCount": 4
+          "targetId": "ALPHA_WOLF_L11",
+          "requiredCount": 4,
+          "alternativeTargetIds": []
         },
         {
           "id": "COLLECT_FANGS",
@@ -384,8 +388,9 @@
         {
           "id": "KILL_WEB_GUARD",
           "type": "KillMonster",
-          "targetId": "DEEP_FOREST_GLUBINNYI_PAUK_L8",
-          "requiredCount": 6
+          "targetId": "DEEP_SPIDER_L8",
+          "requiredCount": 6,
+          "alternativeTargetIds": []
         },
         {
           "id": "COLLECT_VENOM_SAMPLES",
