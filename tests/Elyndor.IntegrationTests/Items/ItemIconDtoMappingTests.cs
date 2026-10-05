@@ -15,6 +15,24 @@ namespace Elyndor.IntegrationTests.Items;
 public sealed class ItemIconDtoMappingTests
 {
     [Fact]
+    public async Task ProductionContentPublishesDedicatedForgeMaterialIcons()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+        Assert.True(
+            Version.TryParse(package.ContentVersion, out Version? version)
+            && version >= new Version(0, 36, 3));
+
+        Dictionary<string, ItemDefinition> items = package.Items!
+            .ToDictionary(item => item.Id, StringComparer.Ordinal);
+
+        Assert.Equal("forge/reforge_stone", items["REFORGE_STONE"].IconId);
+        Assert.Equal("forge/enhancement_ore", items["ENHANCEMENT_ORE"].IconId);
+        Assert.Equal("forge/forge_scrap", items["FORGE_SCRAP"].IconId);
+    }
+
+    [Fact]
     public void InventoryMerchantAndPendingLootResponsesPreserveDefinitionIconId()
     {
         ItemDefinition definition = Definition();
