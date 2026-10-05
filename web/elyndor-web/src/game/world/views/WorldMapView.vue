@@ -283,7 +283,7 @@ onMounted(() => {
   <section v-if="world" class="world-map">
     <header class="world-map__header">
       <div>
-        <small>МИР · ПОГРАНИЧНЫЕ ЗЕМЛИ</small>
+        <small>МИР · {{ activeMap.eyebrow }}</small>
         <h1>Карта мира</h1>
         <p>Выберите известную точку. Сервер разрешит переход только по открытому маршруту.</p>
       </div>
@@ -336,16 +336,37 @@ onMounted(() => {
     />
 
     <template v-else>
+      <nav
+        v-if="availableMaps.length > 1"
+        class="map-switch"
+        aria-label="Карты мира"
+        data-world-map-switch
+      >
+        <button
+          v-for="map in availableMaps"
+          :key="map.id"
+          type="button"
+          class="map-switch__item"
+          :class="{ 'map-switch__item--active': selectedMapId === map.id }"
+          :aria-pressed="selectedMapId === map.id"
+          :data-map-switch-id="map.id"
+          @click="selectMap(map.id)"
+        >
+          {{ map.label }}
+        </button>
+      </nav>
+
       <section
         class="map-canvas"
         :style="mapCanvasStyle"
-        aria-label="Карта доступных локаций"
+        :data-map-id="selectedMapId"
+        :aria-label="`Карта: ${activeMap.label}`"
       >
         <div class="map-canvas__fog" />
         <div class="map-canvas__grid" />
         <div class="map-canvas__caption" aria-hidden="true">
           <small>РЕГИОН</small>
-          <strong>Пограничные земли</strong>
+          <strong>{{ activeMap.label }}</strong>
         </div>
 
         <svg
@@ -499,6 +520,33 @@ onMounted(() => {
   padding: var(--ui-space-3) var(--ui-space-4) var(--ui-space-7);
 }
 
+.map-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  width: min(100%, 34rem);
+  margin-inline: auto;
+}
+
+.map-switch__item {
+  min-height: var(--ui-touch-target);
+  padding: 7px 10px;
+  border: 1px solid var(--ui-color-border);
+  border-radius: var(--ui-radius-sm);
+  background: rgb(7 10 17 / 84%);
+  color: var(--ui-color-text-secondary);
+  font: inherit;
+  font-size: var(--ui-font-size-xs);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.map-switch__item--active {
+  border-color: rgb(184 177 255 / 68%);
+  background: linear-gradient(100deg, rgb(92 81 166 / 30%), rgb(7 10 17 / 92%));
+  color: #ebe9ff;
+}
+
 .world-map__header {
   display: flex;
   align-items: end;
@@ -574,7 +622,11 @@ onMounted(() => {
   border: 1px solid var(--ui-color-border-strong);
   border-radius: calc(var(--ui-radius-lg) + 3px);
   background-color: #162229;
-  background-image: linear-gradient(180deg, rgb(5 8 14 / 9%), transparent 18% 85%, rgb(5 8 14 / 8%)), var(--map-art);
+  background-image:
+    radial-gradient(circle at 72% 18%, rgb(123 104 164 / 12%), transparent 24%),
+    radial-gradient(circle at 22% 78%, rgb(116 80 46 / 12%), transparent 28%),
+    linear-gradient(180deg, rgb(5 8 14 / 9%), transparent 18% 85%, rgb(5 8 14 / 8%)),
+    var(--map-art);
   background-position: center;
   background-size: 100% 100%;
   box-shadow: var(--ui-shadow-inset), 0 18px 46px rgb(0 0 0 / 28%);
