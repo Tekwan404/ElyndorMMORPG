@@ -48,13 +48,16 @@ onMounted(async () => {
   }
 
   try {
-    const webCredential = await completeTelegramWebLogin()
-    if (!webCredential) {
+    const webAuthentication = await completeTelegramWebLogin()
+    if (!webAuthentication) {
       state.value = 'login'
       return
     }
 
-    setWebAuthenticationData(webCredential)
+    setWebAuthenticationData(
+      webAuthentication.webCredential,
+      webAuthentication.expiresAtUtc,
+    )
     ready.value = true
   } catch (error) {
     showError(error)
