@@ -47,13 +47,20 @@ public sealed record ItemReforgeOperationResult(
         new(false, code, null, null, null, null);
 }
 
+public sealed record ItemReforgePossibleAffix(
+    string StatId,
+    decimal Min,
+    decimal Max,
+    decimal Step);
+
 public sealed record ItemReforgePreviewResult(
     bool Succeeded,
     string? ErrorCode,
     GeneratedItemInstance? Current,
-    ItemReforgeCost? Cost)
+    ItemReforgeCost? Cost,
+    IReadOnlyList<ItemReforgePossibleAffix>? PossibleAffixes)
 {
-    public static ItemReforgePreviewResult Failure(string code) => new(false, code, null, null);
+    public static ItemReforgePreviewResult Failure(string code) => new(false, code, null, null, null);
 }
 
 public sealed class ItemReforgeService(
@@ -97,7 +104,25 @@ public sealed class ItemReforgeService(
         if (itemization.ReforgeCosts is not { } costProfile)
             return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.CostProfileMissing);
 
-        return new ItemReforgePreviewResult(true, null, current, ResolveCost(costProfile, definition.Rarity, item.ReforgeCount));
+        IReadOnlyList<ItemReforgePossibleAffix> possibleAffixes =
+            ItemInstanceGenerator.GetReforgeAffixCandidates(
+                    definition,
+                    itemization,
+                    current.Affixes,
+                    slotKey)
+                .Select(candidate => new ItemReforgePossibleAffix(
+                    candidate.StatId,
+                    candidate.Min,
+                    candidate.Max,
+                    candidate.Step))
+                .ToArray();
+
+        return new ItemReforgePreviewResult(
+            true,
+            null,
+            current,
+            ResolveCost(costProfile, definition.Rarity, item.ReforgeCount),
+            possibleAffixes);
     }
 
     public async Task<ItemReforgeOperationResult?> GetPendingAsync(
