@@ -21,21 +21,56 @@ public sealed partial class CommerceExpiryWorker(IServiceScopeFactory scopes, Ti
                 var auctions = scope.ServiceProvider.GetRequiredService<AuctionSettlementService>();
                 var trades = scope.ServiceProvider.GetRequiredService<PlayerTradeService>();
                 var now = time.GetUtcNow();
-                var lots = await db.AuctionListings.AsNoTracking().Where(x => x.State == "ACTIVE" && x.ExpiresAt <= now)
-                    .OrderBy(x => x.ExpiresAt).Take(100).ToArrayAsync(stoppingToken);
+                var lots = await (
+                        from lot in db.AuctionListings.AsNoTracking()
+                        join seller in db.Characters.AsNoTracking()
+                            on lot.SellerId equals seller.Id
+                        where lot.State == "ACTIVE" && lot.ExpiresAt <= now
+                        orderby lot.ExpiresAt
+                        select new
+                        {
+                            ListingId = lot.Id,
+                            lot.SellerId,
+                            seller.AccountId
+                        })
+                    .Take(100)
+                    .ToArrayAsync(stoppingToken);
                 foreach (var lot in lots)
                 {
-                    var account = await db.Characters.Where(x => x.Id == lot.SellerId).Select(x => x.AccountId).SingleAsync(stoppingToken);
-                    var result = await auctions.ReturnAsync(account, lot.Id, Guid.NewGuid(), true, stoppingToken);
+                    var result = await auctions.ReturnExpiredAsync(
+                        lot.AccountId,
+                        lot.SellerId,
+                        lot.ListingId,
+                        Guid.NewGuid(),
+                        stoppingToken);
                     if (!result.Succeeded && result.ErrorCode != "auction_unavailable")
-                        ExpirationRejected(logger, lot.Id, result.ErrorCode);
+                        ExpirationRejected(logger, lot.ListingId, result.ErrorCode);
                 }
-                var expired = await db.PlayerTrades.AsNoTracking().Where(x => x.State == "OPEN" && x.ExpiresAt <= now)
-                    .OrderBy(x => x.ExpiresAt).Take(100).ToArrayAsync(stoppingToken);
-                foreach (var trade in expired)
+                var expired = await (
+                        from trade in db.PlayerTrades.AsNoTracking()
+                        join character in db.Characters.AsNoTracking()
+                            on trade.CharacterAId equals character.Id
+                        where trade.State == "OPEN" && trade.ExpiresAt <= now
+                        orderby trade.ExpiresAt
+                        select new
+                        {
+                            Trade = trade,
+                            character.AccountId
+                        })
+                    .Take(100)
+                    .ToArrayAsync(stoppingToken);
+                foreach (var entry in expired)
                 {
-                    var account = await db.Characters.Where(x => x.Id == trade.CharacterAId).Select(x => x.AccountId).SingleAsync(stoppingToken);
-                    await trades.ActAsync(account, trade.Id, Guid.NewGuid(), "CANCEL", trade.Revision, null, 0, "", stoppingToken);
+                    await trades.ActAsync(
+                        entry.AccountId,
+                        entry.Trade.Id,
+                        Guid.NewGuid(),
+                        "CANCEL",
+                        entry.Trade.Revision,
+                        null,
+                        0,
+                        "",
+                        stoppingToken);
                 }
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { break; }
