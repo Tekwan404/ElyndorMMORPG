@@ -96,6 +96,11 @@ describe('AppShell', () => {
     expect(wrapper.find('[data-global-combat]').exists()).toBe(true)
     expect(wrapper.find('.navigation').exists()).toBe(false)
     expect(wrapper.find('.hud').exists()).toBe(false)
+    combat.recoveryRequired = true
+    combat.snapshot = { ...combat.snapshot!, status: 'Victory' }
+    await flushPromises()
+    expect(wrapper.find('[data-global-combat]').exists()).toBe(true)
+    expect(wrapper.find('.navigation').exists()).toBe(false)
     wrapper.unmount()
   })
 

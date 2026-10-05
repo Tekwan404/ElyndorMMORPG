@@ -81,6 +81,8 @@ const enemyCastUnblockable = computed(() => {
   )
 })
 const isActive = computed(() => snapshot.value?.status === 'Active')
+const resultReady = computed(() => !isActive.value && !battle.recoveryRequired.value && !connectionRecovering.value)
+const victoryReady = computed(() => snapshot.value?.status === 'Victory' && resultReady.value)
 const currentPendingLoot = computed(() => {
   const sessionId = snapshot.value?.sessionId
   if (!sessionId) return []
@@ -89,6 +91,9 @@ const currentPendingLoot = computed(() => {
   )
 })
 const combatErrorMessage = computed(() => {
+  if (battle.recoveryRequired.value || battle.errorCode.value === 'combat_recovery_required') {
+    return 'Не удалось сохранить результат боя. Награды ещё не подтверждены. Повторите синхронизацию.'
+  }
   switch (battle.errorCode.value) {
     case 'combat_ability_on_cooldown':
       return 'Способность ещё восстанавливается.'
@@ -167,7 +172,7 @@ async function useConsumable(item: InventoryItem): Promise<void> {
 }
 
 async function refreshPendingLoot(): Promise<void> {
-  if (snapshot.value?.status !== 'Victory') {
+  if (!victoryReady.value) {
     pendingLoot.value = []
     return
   }
@@ -254,9 +259,9 @@ function rarityLabel(rarity: string): string {
 }
 
 watch(
-  () => [snapshot.value?.sessionId ?? '', snapshot.value?.status ?? ''],
+  () => [snapshot.value?.sessionId ?? '', victoryReady.value],
   () => {
-    if (snapshot.value?.status === 'Victory') void refreshPendingLoot()
+    if (victoryReady.value) void refreshPendingLoot()
   },
   { immediate: true },
 )
@@ -407,7 +412,7 @@ onUnmounted(() => window.clearInterval(timer))
         />
       </section>
 
-      <section v-if="!isActive" class="battle-screen__result" :data-result="snapshot.status">
+      <section v-if="resultReady" class="battle-screen__result" :data-result="snapshot.status">
         <strong>{{
           snapshot.status === 'Victory'
             ? 'Победа'
@@ -490,7 +495,7 @@ onUnmounted(() => window.clearInterval(timer))
       </section>
 
       <section
-        v-if="battle.lootRolls.value.length"
+        v-if="battle.lootRolls.value.length && !battle.recoveryRequired.value"
         class="battle-screen__loot"
         data-loot-rolls
         aria-label="Розыгрыш добычи"
@@ -538,8 +543,9 @@ onUnmounted(() => window.clearInterval(timer))
       </section>
 
       <CombatLog :entries="battle.eventProjection.value.logEntries" />
-      <UIToast v-if="connectionRecovering && isActive" tone="info" placement="overlay" data-combat-connection>
-        <template v-if="reconnectFailed">Не удалось синхронизировать бой. Повторите подключение.</template>
+      <UIToast v-if="connectionRecovering && (isActive || battle.recoveryRequired.value || reconnectFailed || reconnectPending)" :tone="battle.recoveryRequired.value ? 'danger' : 'info'" placement="overlay" data-combat-connection>
+        <template v-if="battle.recoveryRequired.value">{{ combatErrorMessage }}</template>
+        <template v-else-if="reconnectFailed">Не удалось синхронизировать бой. Повторите подключение.</template>
         <template v-else-if="battle.connectionState.value === 'disconnected'">Соединение с боем потеряно.</template>
         <template v-else>Восстанавливаем соединение с боем. Дождитесь актуального состояния.</template>
         <UIButton v-if="battle.connectionState.value === 'disconnected' || reconnectFailed || reconnectPending" :loading="reconnectPending" loading-label="Подключаем…" @click="retryConnection">Повторить подключение</UIButton>

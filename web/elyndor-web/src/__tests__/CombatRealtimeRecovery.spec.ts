@@ -478,4 +478,88 @@ describe('combat realtime recovery', () => {
     expect(store.events.map(event => event.sequence)).toEqual([1])
     expect(realtimeMock.invoke.mock.calls).toEqual([['ResetTraining']])
   })
+
+  it('retains failed terminal state for manual recovery without completing rewards or polling forever', async () => {
+    vi.useFakeTimers()
+    const terminal = recoveryUpdate(2)
+    terminal.snapshot.status = 'Victory'
+    const terminalReward = { xpEarned: 25, goldEarned: 10, leveledUp: false, previousLevel: 1, currentLevel: 1, items: [] }
+    const failed = { ...terminal, succeeded: false, errorCode: 'combat_recovery_required', reward: terminalReward }
+    realtimeMock.invoke.mockResolvedValue(failed)
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(recoveryUpdate())
+    const command = store.toggleAutoAttack()
+    await vi.advanceTimersByTimeAsync(0)
+    await command
+    expect(store.snapshot?.status).toBe('Victory')
+    expect(store.recoveryRequired).toBe(true)
+    expect(store.isActive).toBe(true)
+    expect(store.reward).toBeNull()
+    expect(store.connectionState).toBe('disconnected')
+    expect(store.errorCode).toBe('combat_recovery_required')
+    realtimeMock.handlers.get('CombatUpdated')?.(recoveryUpdate(1))
+    expect(store.recoveryRequired).toBe(true)
+    expect(store.errorCode).toBe('combat_recovery_required')
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'ResumeCombatFromSequence')).toHaveLength(0)
+    expect(await store.resume()).toBe(false)
+    await vi.advanceTimersByTimeAsync(300_000)
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'ResumeCombatFromSequence')).toHaveLength(1)
+    expect(store.lastResyncedAtUtc).toBeNull()
+    realtimeMock.invoke.mockImplementation(method => Promise.resolve(method === 'ResumeCombatFromSequence'
+      ? { ...terminal, reward: terminalReward } : []))
+    expect(await store.resume()).toBe(true)
+    expect(store.recoveryRequired).toBe(false)
+    expect(store.isActive).toBe(false)
+    expect(store.connectionState).toBe('connected')
+    expect(store.reward?.xpEarned).toBe(25)
+  })
+
+  it.each(['domain rejection', 'transport error'])('resumes authoritative state after an ordinary command %s', async failure => {
+    vi.useFakeTimers()
+    realtimeMock.invoke.mockImplementation(method => {
+      if (method === 'StartAutoAttack') return failure === 'domain rejection'
+        ? Promise.resolve({ succeeded: false, errorCode: 'combat_invalid_state' })
+        : Promise.reject(new Error('command failed'))
+      return Promise.resolve(method === 'ResumeCombatFromSequence' ? recoveryUpdate(2) : [])
+    })
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(recoveryUpdate())
+    await store.toggleAutoAttack()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(store.snapshot?.sequence).toBe(2)
+    expect(store.connectionState).toBe('connected')
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'StartAutoAttack')).toHaveLength(1)
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'ResumeCombatFromSequence')).toEqual([
+      ['ResumeCombatFromSequence', 0],
+    ])
+  })
+
+  it('does not mark a resume without an authoritative snapshot as synchronized', async () => {
+    realtimeMock.invoke.mockResolvedValue({ succeeded: true, snapshot: null, events: [], reward: null })
+    const store = useCombatSessionStore()
+    await store.connect()
+    expect(await store.resume()).toBe(false)
+    expect(store.connectionState).toBe('disconnected')
+    expect(store.lastResyncedAtUtc).toBeNull()
+  })
+
+  it('resumes authoritative state after a loot choice rejection without replaying the choice', async () => {
+    vi.useFakeTimers()
+    realtimeMock.invoke.mockImplementation(method => Promise.resolve(method === 'ChooseLootRoll'
+      ? { succeeded: false, errorCode: 'combat_loot_choice_rejected' }
+      : method === 'ResumeCombatFromSequence' ? recoveryUpdate(2) : []))
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(recoveryUpdate())
+    expect(await store.chooseLootRoll('roll', 'Need')).toBe(false)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(store.snapshot?.sequence).toBe(2)
+    expect(store.connectionState).toBe('connected')
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'ChooseLootRoll')).toEqual([
+      ['ChooseLootRoll', 'roll', 'Need'],
+    ])
+    expect(realtimeMock.invoke).toHaveBeenCalledWith('ResumeCombatFromSequence', 0)
+  })
 })

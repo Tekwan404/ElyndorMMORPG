@@ -122,6 +122,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const lootRolls = ref<CombatLootRoll[]>([])
   const errorCode = ref<string | null>(null)
   const diagnostic = ref<CombatRealtimeDiagnostic | null>(null)
+  const recoveryRequired = ref(false)
   const pendingOperations = ref<Set<string>>(new Set())
   const pending = computed(() => pendingOperations.value.size > 0)
   const abilityPending = computed(() => hasPendingPrefix('ability:'))
@@ -150,7 +151,9 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   const isAwaitingAttachment = computed(() =>
     snapshot.value?.status === 'Active' && participantStatus.value === 'Rostered',
   )
-  const isActive = computed(() => snapshot.value?.status === 'Active' && isParticipantActive.value)
+  // Keep the combat view open until terminal persistence and rewards are confirmed.
+  const isActive = computed(() => recoveryRequired.value
+    || (snapshot.value?.status === 'Active' && isParticipantActive.value))
   const enemies = computed(() => snapshot.value?.enemies ?? (snapshot.value ? [snapshot.value.enemy] : []))
   const isTraining = computed(() => snapshot.value?.enemy.definitionId === TRAINING_DUMMY_ID)
   let connection: HubConnection | null = null
@@ -176,9 +179,21 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   })
 
   function commandsBlocked(): boolean {
-    return connectionState.value === 'syncing'
+    return recoveryRequired.value || connectionState.value === 'syncing'
       || connectionState.value === 'reconnecting'
       || (connection?.state === HubConnectionState.Connected && connectionState.value !== 'connected')
+  }
+
+  function requireCombatRecovery(): void {
+    if (!recoveryRequired.value) invocationEpoch++
+    recoveryRequired.value = true
+    connectionState.value = 'disconnected'
+    stopStalenessTimer()
+    clearAbilityQueue()
+    clearLootRolls()
+    reward.value = null
+    errorCode.value = 'combat_recovery_required'
+    diagnostic.value = null
   }
 
   async function invokeHub<T>(method: string, ...args: unknown[]): Promise<T> {
@@ -496,10 +511,11 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         clearLootRolls()
         errorCode.value = null
         diagnostic.value = null
+        recoveryRequired.value = false
         completeRecovery()
         return true
       }
-      if (!applyUpdate(update)) {
+      if ((update.succeeded && !update.snapshot) || !applyUpdate(update)) {
         connectionState.value = 'disconnected'
         errorCode.value ??= 'combat_resume_incomplete'
         return false
@@ -585,13 +601,14 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       connected = true
       const update = await invokeHub<CombatUpdate>(method, ...args)
       applyUpdate(update)
+      if (!update.succeeded && !recoveryRequired.value) void resume()
       return { succeeded: update.succeeded, receivedResponse: true }
     } catch (error) {
       if (error instanceof ObsoleteCombatInvocationError) return { succeeded: false, receivedResponse: false }
       if (connected || diagnostic.value === null) {
         recordFailure('hub_invoke', method, error)
       }
-      if (error instanceof CombatDeadlineError && connected) void resume()
+      if (connected && !recoveryRequired.value) void resume()
       return { succeeded: false, receivedResponse: false }
     } finally {
       setOperationPending(pendingKey, false)
@@ -659,12 +676,17 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         }
       } else {
         errorCode.value = response.errorCode
+        if (response.errorCode === 'combat_recovery_required') {
+          requireCombatRecovery()
+        } else if (!recoveryRequired.value) {
+          void resume()
+        }
       }
       return response.succeeded
     } catch (error) {
       if (error instanceof ObsoleteCombatInvocationError) return false
       recordFailure('hub_invoke', 'ChooseLootRoll', error)
-      if (error instanceof CombatDeadlineError) void resume()
+      if (!recoveryRequired.value) void resume()
       return false
     } finally {
       setOperationPending(pendingKey, false)
@@ -705,11 +727,18 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   }
 
   function applyUpdate(update: CombatUpdate): boolean {
-    if (!update.succeeded) {
+    const requiresRecovery = !update.succeeded && update.errorCode === 'combat_recovery_required'
+    if (!update.succeeded && !requiresRecovery) {
       errorCode.value = update.errorCode
       diagnostic.value = null
       return false
     }
+
+    if (requiresRecovery) {
+      requireCombatRecovery()
+    }
+
+    const incomingEvents = requiresRecovery ? [] : update.events
 
     const incomingSnapshot = update.snapshot
     const currentSnapshot = snapshot.value
@@ -719,11 +748,12 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       && currentSnapshot !== null
       && incomingSnapshot.sessionId === currentSnapshot.sessionId
       && incomingSnapshot.sequence < currentSnapshot.sequence
-    if (update.fullResyncRequired && isStaleSameSession) return false
-    if (!update.fullResyncRequired && hasSequenceGap(update.events, newSession)) {
+    if (isStaleSameSession && (update.fullResyncRequired || recoveryRequired.value)) return false
+    if (!update.fullResyncRequired && hasSequenceGap(incomingEvents, newSession)) {
       recoverSequenceGap(newSession ? 0 : highestAppliedSequence())
       return false
     }
+    if (!requiresRecovery && incomingSnapshot) recoveryRequired.value = false
 
     if (update.fullResyncRequired) {
       events.value = []
@@ -731,7 +761,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       trainingStats.value = emptyTrainingStats()
       lastAppliedSequence = incomingSnapshot?.sequence ?? 0
     }
-    errorCode.value = null
+    errorCode.value = requiresRecovery ? update.errorCode : null
     diagnostic.value = null
 
     if (newSession && incomingSnapshot) {
@@ -751,7 +781,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       trainingStats.value = incomingSnapshot.enemy.definitionId === TRAINING_DUMMY_ID
         ? {
             ...emptyTrainingStats(),
-            startedAtUtc: update.events.find((event) => event.type === 'CombatStarted')?.serverTimeUtc
+            startedAtUtc: incomingEvents.find((event) => event.type === 'CombatStarted')?.serverTimeUtc
               ?? incomingSnapshot.serverTimeUtc,
           }
         : emptyTrainingStats()
@@ -773,7 +803,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     const eventSequenceCeiling = currentSnapshot?.sequence
       ?? incomingSnapshot?.sequence
       ?? Number.MAX_SAFE_INTEGER
-    const fresh = update.events.filter((event) => {
+    const fresh = incomingEvents.filter((event) => {
       // A stale snapshot may legitimately carry a late event that fills a gap behind
       // the current authoritative sequence, but it must never inject future events.
       if (isStaleSameSession && event.sequence > eventSequenceCeiling) return false
@@ -790,12 +820,12 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       lastAppliedSequence = Math.max(lastAppliedSequence, ...fresh.map(event => event.sequence))
     }
     accumulateTrainingStats(fresh, snapshot.value ?? incomingSnapshot)
-    if (!isStaleSameSession && update.reward) {
+    if (!requiresRecovery && !isStaleSameSession && update.reward) {
       reward.value = update.reward
       if (update.reward.lootRolls?.length) mergeLootRolls(update.reward.lootRolls)
     }
     if (abilityQueue.value.length > 0) scheduleAbilityQueueDrain()
-    return !isStaleSameSession
+    return update.succeeded && !isStaleSameSession
   }
 
   function highestAppliedSequence(): number {
@@ -912,6 +942,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     lootRolls,
     errorCode,
     diagnostic,
+    recoveryRequired,
     pending,
     abilityPending,
     targetPending,

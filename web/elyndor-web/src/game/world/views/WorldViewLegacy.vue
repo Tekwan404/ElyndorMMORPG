@@ -302,7 +302,7 @@ watch(currentLocationId, (locationId, previousLocationId) => {
   }
 }, { immediate: true })
 
-watch(() => combat.snapshot?.status, (status) => {
+watch(() => combat.recoveryRequired ? null : combat.snapshot?.status, (status) => {
   if (status === 'Victory' || status === 'Defeat') {
     const terminalSnapshot = combat.snapshot
     if (!terminalSnapshot) return
