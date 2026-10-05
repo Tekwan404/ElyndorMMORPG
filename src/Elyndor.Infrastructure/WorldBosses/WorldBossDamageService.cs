@@ -41,6 +41,12 @@ public sealed class WorldBossDamageService(
             new EventId(4201, nameof(RealtimeDefeatDeliveryFailed)),
             "World boss {SpawnId} was defeated, but realtime defeat delivery failed.");
 
+    private static readonly Action<ILogger, Guid, Exception?> RealtimeProgressDeliveryFailed =
+        LoggerMessage.Define<Guid>(
+            LogLevel.Warning,
+            new EventId(4204, nameof(RealtimeProgressDeliveryFailed)),
+            "World boss {SpawnId} progress was committed, but realtime progress delivery failed.");
+
     private static readonly Action<ILogger, Guid, Guid, Guid, decimal, Exception?> BossDefeated =
         LoggerMessage.Define<Guid, Guid, Guid, decimal>(
             LogLevel.Information,
@@ -230,8 +236,41 @@ public sealed class WorldBossDamageService(
 
         if (result.DefeatedNow && updatePublisher is not null)
             await PublishDefeatedSafelyAsync(spawnId, cancellationToken);
+        else if (result.Succeeded
+            && !result.Replayed
+            && result.AppliedDamage > 0
+            && updatePublisher is not null)
+        {
+            await PublishProgressSafelyAsync(spawnId, result, cancellationToken);
+        }
 
         return result;
+    }
+
+    private async Task PublishProgressSafelyAsync(
+        Guid spawnId,
+        WorldBossDamageCommitResult result,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await updatePublisher!.PublishProgressAsync(
+                spawnId,
+                result.CurrentHealth,
+                result.MaxHealth,
+                result.Phase,
+                result.PhaseChanged,
+                cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Damage is durable; a reconnect/full read repairs missed realtime state.
+        }
+        catch (Exception exception)
+        {
+            if (logger is not null)
+                RealtimeProgressDeliveryFailed(logger, spawnId, exception);
+        }
     }
 
     private async Task PublishDefeatedSafelyAsync(
