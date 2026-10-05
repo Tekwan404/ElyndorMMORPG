@@ -49,16 +49,16 @@ public static class ItemReforgeQualityPolicy
         return candidate with
         {
             Value = value,
+            AffixTier = ItemAffixQualityPolicy.Tier(
+                value,
+                candidate.MinAtGeneration,
+                candidate.MaxAtGeneration),
             IsReforgeSlot = true
         };
     }
 
-    public static decimal Normalize(decimal value, decimal minimum, decimal maximum)
-    {
-        if (maximum <= minimum)
-            return 0m;
-        return decimal.Clamp((value - minimum) / (maximum - minimum), 0m, 1m);
-    }
+    public static decimal Normalize(decimal value, decimal minimum, decimal maximum) =>
+        ItemAffixQualityPolicy.Normalize(value, minimum, maximum);
 
     private static decimal RollAtQuality(
         decimal minimum,
