@@ -364,7 +364,7 @@ public static class ItemInstanceGenerator
                 minimumValue,
                 maximumValue,
                 step,
-                AffixTier(itemLevel),
+                ItemAffixQualityPolicy.Tier(value, minimumValue, maximumValue),
                 isGuaranteed,
                 false,
                 index));
@@ -482,6 +482,68 @@ public static class ItemInstanceGenerator
             template.GenerationVersion);
     }
 
+    public sealed record ReforgeAffixCandidate(
+        string StatId,
+        decimal Min,
+        decimal Max,
+        decimal Step);
+
+    public static IReadOnlyList<ReforgeAffixCandidate> GetReforgeAffixCandidates(
+        ItemDefinition template,
+        ItemizationDefinition itemization,
+        IReadOnlyList<GeneratedItemAffix> currentAffixes,
+        string slotKey)
+    {
+        ArgumentNullException.ThrowIfNull(template);
+        ArgumentNullException.ThrowIfNull(itemization);
+        ArgumentNullException.ThrowIfNull(currentAffixes);
+        ArgumentException.ThrowIfNullOrWhiteSpace(slotKey);
+
+        GeneratedItemAffix selected = currentAffixes.SingleOrDefault(affix =>
+            string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal))
+            ?? throw new InvalidOperationException("Selected Reforge affix slot does not exist.");
+        if (selected.IsGuaranteed)
+            throw new InvalidOperationException("Guaranteed affix slots are immutable in Itemization V1.");
+
+        if (!itemization.StatPowerWeights.TryGetValue(selected.StatId, out decimal previousWeight)
+            || previousWeight <= 0)
+        {
+            throw new InvalidOperationException("Reforge affix uses an invalid power weight.");
+        }
+
+        ItemAffixPoolDefinition pool = FindPool(template, itemization);
+        HashSet<string> occupied = currentAffixes
+            .Where(affix => !string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal))
+            .Select(affix => affix.StatId)
+            .ToHashSet(StringComparer.Ordinal);
+        decimal slotPowerEnvelope = selected.MaxAtGeneration * previousWeight;
+
+        return pool.StatIds
+            .Where(statId => !occupied.Contains(statId))
+            .Distinct(StringComparer.Ordinal)
+            .Select(statId =>
+            {
+                if (!itemization.StatPowerWeights.TryGetValue(statId, out decimal newWeight)
+                    || newWeight <= 0)
+                {
+                    throw new InvalidOperationException("Reforge affix uses an invalid power weight.");
+                }
+
+                decimal step = StepFor(statId);
+                decimal maximumValue = FloorToStep(slotPowerEnvelope / newWeight, step);
+                if (maximumValue <= 0)
+                    maximumValue = step;
+                decimal minimumValue = FloorToStep(maximumValue * MinimumAffixQuality, step);
+                if (minimumValue <= 0)
+                    minimumValue = step;
+                if (minimumValue > maximumValue)
+                    minimumValue = maximumValue;
+
+                return new ReforgeAffixCandidate(statId, minimumValue, maximumValue, step);
+            })
+            .ToArray();
+    }
+
     public static GeneratedItemAffix RollReforgeAffix(
         ItemDefinition template,
         ItemizationDefinition itemization,
@@ -490,54 +552,21 @@ public static class ItemInstanceGenerator
         string qualityProfileId,
         IGameRandom random)
     {
-        ArgumentNullException.ThrowIfNull(template);
-        ArgumentNullException.ThrowIfNull(itemization);
-        ArgumentNullException.ThrowIfNull(currentAffixes);
-        ArgumentException.ThrowIfNullOrWhiteSpace(slotKey);
-        ArgumentException.ThrowIfNullOrWhiteSpace(qualityProfileId);
         ArgumentNullException.ThrowIfNull(random);
+        ArgumentException.ThrowIfNullOrWhiteSpace(qualityProfileId);
 
-        GeneratedItemAffix selected = currentAffixes.SingleOrDefault(affix =>
-            string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal))
-            ?? throw new InvalidOperationException("Selected Reforge affix slot does not exist.");
-        if (selected.IsGuaranteed)
-            throw new InvalidOperationException("Guaranteed affix slots are immutable in Itemization V1.");
-
-        ItemAffixPoolDefinition pool = FindPool(template, itemization);
-        HashSet<string> occupied = currentAffixes
-            .Where(affix => !string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal))
-            .Select(affix => affix.StatId)
-            .ToHashSet(StringComparer.Ordinal);
-        string[] candidates = pool.StatIds
-            .Where(statId => !occupied.Contains(statId))
-            .Distinct(StringComparer.Ordinal)
-            .ToArray();
-        if (candidates.Length == 0)
+        GeneratedItemAffix selected = currentAffixes.Single(affix =>
+            string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal));
+        IReadOnlyList<ReforgeAffixCandidate> candidates =
+            GetReforgeAffixCandidates(template, itemization, currentAffixes, slotKey);
+        if (candidates.Count == 0)
             throw new InvalidOperationException("Reforge pool has no legal affix candidate.");
 
-        string statId = candidates[RollIndex(candidates.Length, random)];
-        if (!itemization.StatPowerWeights.TryGetValue(selected.StatId, out decimal previousWeight)
-            || previousWeight <= 0
-            || !itemization.StatPowerWeights.TryGetValue(statId, out decimal newWeight)
-            || newWeight <= 0)
-        {
-            throw new InvalidOperationException("Reforge affix uses an invalid power weight.");
-        }
+        ReforgeAffixCandidate candidate = candidates[RollIndex(candidates.Count, random)];
 
         ItemQualityProfileDefinition qualityProfile = itemization.QualityProfiles
             .SingleOrDefault(profile => string.Equals(profile.Id, qualityProfileId, StringComparison.Ordinal))
             ?? throw new InvalidOperationException($"Unknown item quality profile '{qualityProfileId}'.");
-        decimal slotPowerEnvelope = selected.MaxAtGeneration * previousWeight;
-        decimal step = StepFor(statId);
-        decimal maximumValue = FloorToStep(slotPowerEnvelope / newWeight, step);
-        if (maximumValue <= 0)
-            maximumValue = step;
-        decimal minimumValue = FloorToStep(maximumValue * MinimumAffixQuality, step);
-        if (minimumValue <= 0)
-            minimumValue = step;
-        if (minimumValue > maximumValue)
-            minimumValue = maximumValue;
-
         decimal seedQuality = RollQuality(
             random,
             qualityProfile.BiasExponent,
@@ -547,17 +576,17 @@ public static class ItemInstanceGenerator
             seedQuality + (deviationUnit * itemization.IndividualQualityDeviationPercent / 100m));
         if (individualQuality >= itemization.PerfectSnapThreshold)
             individualQuality = 1m;
-        decimal value = RollValue(minimumValue, maximumValue, step, individualQuality);
+        decimal value = RollValue(candidate.Min, candidate.Max, candidate.Step, individualQuality);
 
         return new GeneratedItemAffix(
             selected.SlotKey,
-            statId,
-            statId,
+            candidate.StatId,
+            candidate.StatId,
             value,
-            minimumValue,
-            maximumValue,
-            step,
-            selected.AffixTier,
+            candidate.Min,
+            candidate.Max,
+            candidate.Step,
+            ItemAffixQualityPolicy.Tier(value, candidate.Min, candidate.Max),
             false,
             true,
             selected.GenerationOrdinal);
@@ -836,9 +865,6 @@ public static class ItemInstanceGenerator
             _ when ItemStatIds.IsPercentage(statId) => 0.1m,
             _ => 1m
         };
-
-    private static int AffixTier(int itemLevel) =>
-        itemLevel >= 17 ? 4 : itemLevel >= 13 ? 3 : itemLevel >= 9 ? 2 : 1;
 
     private static int StarsFor(decimal realizedPotential) =>
         realizedPotential >= 0.90m ? 5
