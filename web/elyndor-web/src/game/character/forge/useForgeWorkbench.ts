@@ -18,6 +18,17 @@ import {
 } from './forgeWorkbenchPresentation'
 
 export type ForgeMode = 'reforge' | 'upgrade' | 'salvage'
+export type ForgeSort = 'power' | 'quality' | 'level' | 'rarity'
+
+const rarityRank: Record<InventoryItem['rarity'], number> = {
+  Common: 0,
+  Uncommon: 1,
+  Rare: 2,
+  Epic: 3,
+  Legendary: 4,
+  Unique: 5,
+}
+
 export interface EnhancementPreview {
   itemInstanceId: string
   currentEnhancementLevel: number
@@ -40,6 +51,7 @@ export function useForgeWorkbench() {
   const mode = shallowRef<ForgeMode>('reforge')
   const source = shallowRef<'backpack' | 'equipped'>('backpack')
   const category = shallowRef<ForgeCategory | null>(null)
+  const sort = shallowRef<ForgeSort>('power')
   const selectedId = shallowRef<string | null>(null)
   const slotKey = shallowRef<string | null>(null)
   const selectedIds = shallowRef<string[]>([])
@@ -66,11 +78,21 @@ export function useForgeWorkbench() {
           (source.value === 'equipped' ? item.equippedSlot !== null : item.equippedSlot === null) &&
           (!category.value || forgeCategory(item) === category.value),
       )
-      .sort(
-        (a, b) =>
-          (b.generatedItem?.itemPower ?? 0) - (a.generatedItem?.itemPower ?? 0) ||
-          a.id.localeCompare(b.id),
-      ),
+      .sort((a, b) => {
+        let difference = 0
+        if (sort.value === 'quality') {
+          difference = (b.generatedItem?.rollQuality ?? 0) - (a.generatedItem?.rollQuality ?? 0)
+        } else if (sort.value === 'level') {
+          difference =
+            (b.generatedItem?.itemLevel ?? b.requiredLevel) -
+            (a.generatedItem?.itemLevel ?? a.requiredLevel)
+        } else if (sort.value === 'rarity') {
+          difference = rarityRank[b.rarity] - rarityRank[a.rarity]
+        } else {
+          difference = (b.generatedItem?.itemPower ?? 0) - (a.generatedItem?.itemPower ?? 0)
+        }
+        return difference || a.id.localeCompare(b.id)
+      }),
   )
   const selected = computed(
     () => equipment.value.find((item) => item.id === selectedId.value) ?? null,
@@ -362,6 +384,7 @@ export function useForgeWorkbench() {
     mode,
     source,
     category,
+    sort,
     selectedId,
     slotKey,
     selectedIds,

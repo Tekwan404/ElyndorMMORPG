@@ -4,7 +4,6 @@ import { computed, ref, watch } from 'vue'
 
 import type { Quest } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
-import ForgeView from '@/game/character/views/ForgeView.vue'
 import { locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal } from '@/ui/components'
@@ -75,7 +74,6 @@ const contractFilters: Array<{ id: ContractFilter; label: string }> = [
 ]
 const activeFilter = ref<ContractFilter>('ALL')
 const selectedContractId = ref<string | null>(null)
-const forgeOpen = ref(false)
 
 const contracts = computed(() => {
   const quests = session.questJournal?.quests ?? []
@@ -110,7 +108,6 @@ watch(
   () => props.open,
   (open) => {
     if (open) {
-      forgeOpen.value = false
       void session.refreshQuestJournal()
     }
   },
@@ -182,8 +179,7 @@ async function claim(quest: Quest): Promise<void> {
 </script>
 
 <template>
-  <ForgeView v-if="open && forgeOpen" @close="forgeOpen = false" />
-  <UIModal :open="open && !forgeOpen" title="Гильдия авантюристов" @close="emit('close')">
+  <UIModal :open="open" title="Гильдия авантюристов" @close="emit('close')">
     <section class="guild-board" data-adventurer-guild-board>
       <header class="guild-board__header">
         <div class="guild-board__portrait">
@@ -197,29 +193,6 @@ async function claim(quest: Quest): Promise<void> {
           <p>{{ featuredNpc.name }} · {{ featuredNpc.role }}. {{ boardSubtitle }}</p>
         </div>
       </header>
-
-      <nav
-        class="guild-board__sections"
-        :class="{ 'guild-board__sections--single': !isCentralPost }"
-        aria-label="Службы представительства"
-      >
-        <button
-          type="button"
-          data-guild-section="contracts"
-          class="guild-board__section--active"
-          aria-current="page"
-        >
-          Контракты
-        </button>
-        <button
-          v-if="isCentralPost"
-          type="button"
-          data-guild-section="forge"
-          @click="forgeOpen = true"
-        >
-          Кузница
-        </button>
-      </nav>
 
       <section class="guild-board__people" aria-label="Представители гильдии">
         <header class="guild-staff-heading">
@@ -413,31 +386,6 @@ async function claim(quest: Quest): Promise<void> {
 .guild-board {
   display: grid;
   gap: var(--ui-space-3);
-}
-.guild-board__sections {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 5px;
-  padding: 4px;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-md);
-  background: rgb(5 8 13 / 70%);
-}
-.guild-board__sections--single {
-  grid-template-columns: 1fr;
-}
-.guild-board__sections button {
-  min-height: var(--ui-touch-target);
-  border: 1px solid transparent;
-  border-radius: calc(var(--ui-radius-md) - 3px);
-  background: transparent;
-  color: var(--ui-color-text-muted);
-  font: 700 0.66rem var(--ui-font-display);
-}
-.guild-board__sections button.guild-board__section--active {
-  border-color: rgb(232 200 102 / 42%);
-  background: linear-gradient(135deg, rgb(232 200 102 / 14%), rgb(232 200 102 / 4%));
-  color: var(--ui-color-gold);
 }
 .guild-board__header {
   display: grid;

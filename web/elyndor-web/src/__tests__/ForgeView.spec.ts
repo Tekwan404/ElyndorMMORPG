@@ -155,7 +155,7 @@ describe('Forge workbench', () => {
     mount(ForgeView)
     await click('.forge-grid [data-forge-item="A"]')
     expect(text()).toContain('Качество предмета')
-    expect(text()).toContain('80.00%')
+    expect(text()).toContain('80%')
     expect(text()).toContain('50% · T3')
     expect(text()).toContain('Может выпасть')
     expect(text()).toContain('Крит. урон')
@@ -186,16 +186,19 @@ describe('Forge workbench', () => {
       document.body.querySelector<HTMLButtonElement>('[data-forge-enhancement]')!.disabled,
     ).toBe(true)
   })
-  it('keeps mode navigation and cards visible after selection, with no All source', async () => {
+  it('keeps mode navigation, sorting and cards visible after selection, with no All source', async () => {
     mount(ForgeView)
     await click('.forge-grid [data-forge-item="A"]')
     expect(cards()).toHaveLength(3)
     expect(document.body.querySelectorAll('[data-forge-mode]')).toHaveLength(3)
+    expect(document.body.querySelectorAll('[data-forge-sort]')).toHaveLength(4)
     expect(document.body.querySelector('[data-forge-filter="all"]')).toBeNull()
     expect(text()).toContain('Текущие характеристики')
     expect(document.body.querySelector<HTMLButtonElement>('[data-forge-affix="B"]')!.disabled).toBe(
       true,
     )
+    expect(document.body.querySelector('[data-forge-affix="B"]')?.textContent).toContain('🔒')
+    expect(document.body.querySelector('[data-forge-roll]')?.textContent).toContain('Перековать за')
   })
   it('reforges an equipped item without unequipping and handles the paid decision', async () => {
     const store = useGameSessionStore()
@@ -223,11 +226,19 @@ describe('Forge workbench', () => {
     expect(document.body.querySelector('[data-forge-detail]')).not.toBeNull()
     expect(store.getReforgePreview).toHaveBeenCalledTimes(2)
   })
-  it('scrolls to the working panel after selecting an item', async () => {
+  it('scrolls once on the first selection and switches later items in place', async () => {
     mount(ForgeView)
     await click('.forge-grid [data-forge-item="A"]')
     const detail = document.body.querySelector<HTMLElement>('[data-forge-detail]')!
     expect(detail.scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'start' })
+
+    await click('[data-forge-change-item]')
+    expect(document.body.querySelector('[data-forge-item-picker]')).not.toBeNull()
+    await click('[data-forge-item-picker] [data-forge-item="B"]')
+
+    expect(detail.scrollIntoView).toHaveBeenCalledTimes(1)
+    expect(document.body.querySelector('[data-forge-item-picker]')).toBeNull()
+    expect(document.body.querySelector('[data-forge-detail]')?.textContent).toContain('Предмет B')
   })
   it('selecting a card does not switch out of enhancement and uses its server preview', async () => {
     const enhance = vi.spyOn(useGameSessionStore(), 'enhanceItem').mockResolvedValue({

@@ -53,10 +53,7 @@ defineEmits<{ select: [] }>()
         :stars="item.generatedItem.stars"
       />
       <small v-if="item.generatedItem" class="forge-card__quality">
-        Качество {{ item.generatedItem.rollQuality.toFixed(2) }}%
-      </small>
-      <small v-if="item.generatedItem" class="forge-card__quality">
-        Качество {{ item.generatedItem.rollQuality.toFixed(2).replace(/\\.00$/, '') }}%
+        Качество {{ item.generatedItem.rollQuality.toFixed(2).replace(/\.00$/, '') }}%
       </small>
       <small v-if="disabled">{{
         multiple && item.equippedSlot
@@ -123,10 +120,15 @@ article.forge-card {
   gap: 5px;
 }
 .forge-card__copy strong {
+  display: -webkit-box;
+  min-height: 2.4em;
+  overflow: hidden;
   overflow-wrap: anywhere;
   font-family: var(--ui-font-display);
   font-size: 1rem;
   line-height: 1.2;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 .forge-card__copy > span,
 .forge-card__copy > small {

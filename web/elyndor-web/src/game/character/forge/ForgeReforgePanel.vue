@@ -94,7 +94,14 @@ defineProps<{ work: ReturnType<typeof useForgeWorkbench> }>()
             {{ forgeStatLabel(affix.statId) }}
             <small>
               {{ forgePercent(forgeAffixQuality(affix)) }} · T{{ affix.affixTier
-              }}<template v-if="affix.isGuaranteed"> · гарантированный</template>
+              }}<span
+                v-if="affix.isGuaranteed"
+                class="reforge-lock"
+                role="img"
+                aria-label="Гарантированная характеристика"
+              >
+                · 🔒
+              </span>
             </small>
           </span>
           <b>{{ forgeStatValue(affix.statId, affix.value) }}</b>
@@ -129,25 +136,6 @@ defineProps<{ work: ReturnType<typeof useForgeWorkbench> }>()
           </div>
         </details>
 
-        <div class="reforge-cost">
-          <span>Стоимость</span>
-          <MoneyAmount :amount="work.preview.value.cost.gold" />
-          <span>
-            {{ work.materialLabel(work.preview.value.cost.materialItemId) }} ×{{
-              work.preview.value.cost.materialQuantity
-            }}
-          </span>
-          <span
-            v-if="
-              work.preview.value.cost.catalystItemId && work.preview.value.cost.catalystQuantity
-            "
-          >
-            {{ work.materialLabel(work.preview.value.cost.catalystItemId) }} ×{{
-              work.preview.value.cost.catalystQuantity
-            }}
-          </span>
-        </div>
-
         <p v-if="!work.canReforge.value" role="status">
           Не хватает монет или материалов для смены характеристики.
         </p>
@@ -158,7 +146,16 @@ defineProps<{ work: ReturnType<typeof useForgeWorkbench> }>()
           data-forge-roll
           @click="work.roll"
         >
-          Сменить характеристику
+          Перековать за&nbsp;<MoneyAmount :amount="work.preview.value.cost.gold" />
+          <span>&nbsp;· {{ work.preview.value.cost.materialQuantity }} камней</span>
+          <span
+            v-if="
+              work.preview.value.cost.catalystItemId && work.preview.value.cost.catalystQuantity
+            "
+          >
+            &nbsp;· {{ work.preview.value.cost.catalystQuantity }}
+            {{ work.materialLabel(work.preview.value.cost.catalystItemId) }}
+          </span>
         </UIButton>
       </template>
 
@@ -237,6 +234,9 @@ defineProps<{ work: ReturnType<typeof useForgeWorkbench> }>()
   color: var(--ui-color-text-muted);
   font-size: 0.7rem;
 }
+.reforge-lock {
+  color: var(--ui-color-gold-muted);
+}
 .reforge-affixes b {
   flex: 0 0 auto;
   color: var(--ui-color-gold);
@@ -292,15 +292,6 @@ defineProps<{ work: ReturnType<typeof useForgeWorkbench> }>()
 .reforge-pool__row b {
   color: var(--ui-color-text-secondary);
   font-weight: 600;
-}
-.reforge-cost {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding: 12px;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-sm);
-  font-size: 0.85rem;
 }
 .reforge-result,
 .reforge-actions {
