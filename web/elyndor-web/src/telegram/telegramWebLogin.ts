@@ -6,7 +6,7 @@ interface TelegramWebAuthenticationConfigResponse {
   redirectUri: string | null
 }
 
-interface TelegramWebAuthenticationResponse {
+export interface TelegramWebAuthenticationResponse {
   webCredential: string
   expiresAtUtc: string
 }
@@ -53,7 +53,7 @@ export async function beginTelegramWebLogin(): Promise<void> {
   window.location.assign(authorizationUrl.toString())
 }
 
-export async function completeTelegramWebLogin(): Promise<string | null> {
+export async function completeTelegramWebLogin(): Promise<TelegramWebAuthenticationResponse | null> {
   const currentUrl = new URL(window.location.href)
   const code = currentUrl.searchParams.get('code')
   const state = currentUrl.searchParams.get('state')
@@ -100,7 +100,7 @@ export async function completeTelegramWebLogin(): Promise<string | null> {
     throw new ApiRequestError(401, 'telegram_web_auth_invalid')
   }
 
-  return response.webCredential
+  return response
 }
 
 function readPendingLogin(): PendingTelegramWebLogin | null {
