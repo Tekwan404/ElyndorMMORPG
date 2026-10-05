@@ -79,6 +79,58 @@ public sealed class AuthoredWorldContentTests
     }
 
     [Fact]
+    public async Task CuratedFieldRosterKeepsArtFirstCoverage()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            RepositoryContentPath());
+        GameContentIndexes indexes = GameContentIndexes.For(package);
+
+        string repositoryRoot = Directory.GetParent(
+            Path.GetDirectoryName(RepositoryContentPath())!)!.FullName;
+        string monsterArtDirectory = Path.Combine(
+            repositoryRoot,
+            "web",
+            "elyndor-web",
+            "src",
+            "assets",
+            "monsters");
+        HashSet<string> directArtIds = Directory
+            .EnumerateFiles(monsterArtDirectory)
+            .Select(Path.GetFileNameWithoutExtension)
+            .Where(id => !string.IsNullOrWhiteSpace(id))
+            .Select(id => id!)
+            .ToHashSet(StringComparer.Ordinal);
+
+        MonsterDefinition[] activeFieldMonsters = ExpectedFieldLocations
+            .SelectMany(locationId => indexes.LocationsById[locationId].Encounters ?? [])
+            .Select(encounter => indexes.MonstersById[encounter.MonsterId])
+            .DistinctBy(monster => monster.Id)
+            .ToArray();
+
+        int directArtCount = activeFieldMonsters.Count(monster =>
+            monster.ArtId is not null && directArtIds.Contains(monster.ArtId));
+        Assert.True(
+            directArtCount >= 44,
+            $"Curated field roster exact-art coverage regressed to {directArtCount}/{activeFieldMonsters.Length}.");
+
+        foreach (string locationId in new[]
+        {
+            "WHISPERING_FOREST",
+            "DEEP_FOREST",
+            "BLIGHTED_GROVE"
+        })
+        {
+            Assert.All(
+                indexes.LocationsById[locationId].Encounters ?? [],
+                encounter =>
+                {
+                    MonsterDefinition monster = indexes.MonstersById[encounter.MonsterId];
+                    Assert.Contains(monster.ArtId, directArtIds);
+                });
+        }
+    }
+
+    [Fact]
     public async Task AuthoredDungeonsKeepResolvableLootAndOnlyBlackBastionBossesHaveBehavior()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
