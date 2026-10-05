@@ -221,7 +221,14 @@ public static class InventoryEndpoints
                 characterItemId,
                 slotKey,
                 ToGeneratedItemResponse(result.Current!)!,
-                ToReforgeCostResponse(result.Cost!)))
+                ToReforgeCostResponse(result.Cost!),
+                result.PossibleAffixes!
+                    .Select(candidate => new ItemReforgePossibleAffixResponse(
+                        candidate.StatId,
+                        candidate.Min,
+                        candidate.Max,
+                        candidate.Step))
+                    .ToArray()))
             : ReforgeProblem(result.ErrorCode!, context);
     }
 
