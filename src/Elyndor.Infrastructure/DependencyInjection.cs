@@ -57,6 +57,7 @@ public static class DependencyInjection
         builder.Services.AddHostedService<CombatLootRollExpiryWorker>();
         builder.Services.AddOptions<ArenaOptions>().BindConfiguration("Arena");
         builder.Services.AddSingleton<ArenaPresenceTracker>();
+        builder.Services.AddSingleton<ArenaMatchmakingSignal>();
         builder.Services.AddSingleton<ArenaMatchRuntime>();
         builder.Services.TryAddSingleton<IArenaUpdatePublisher, NullArenaUpdatePublisher>();
         builder.Services.AddScoped<ArenaFighterFactory>();
