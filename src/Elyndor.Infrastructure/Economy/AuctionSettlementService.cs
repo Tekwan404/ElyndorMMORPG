@@ -80,7 +80,14 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
                 affix.SlotKey,
                 affix.StatId,
                 affix.Value,
-                affix.AffixTier,
+                ItemAffixQualityPolicy.Tier(
+                    affix.Value,
+                    affix.MinAtGeneration,
+                    affix.MaxAtGeneration),
+                ItemAffixQualityPolicy.Percent(
+                    affix.Value,
+                    affix.MinAtGeneration,
+                    affix.MaxAtGeneration),
                 affix.IsGuaranteed,
                 affix.IsReforgeSlot)).ToArray());
 
@@ -203,6 +210,140 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
             db.AuctionListings.Add(listing);
             return Response(listing);
         }, ct);
+    }
+
+    public async Task<CommerceResult<AuctionBatchFeePreviewView>> PreviewBatchAsync(
+        Guid account,
+        AuctionBatchPreviewRequest request,
+        CancellationToken ct)
+    {
+        var character = await transactions.CharacterIdAsync(account, ct);
+        if (character is null)
+            return CommerceResult.Failure<AuctionBatchFeePreviewView>("commerce_character_not_found");
+
+        try
+        {
+            Guid[] itemIds = NormalizeBatchItemIds(request.ItemIds);
+            if (!await CanCreateListingsAsync(character.Value, itemIds.Length, ct))
+                throw new CommerceRuleException("auction_listing_limit");
+
+            foreach (Guid itemId in itemIds)
+                _ = await transactions.ItemAsync(itemId, character.Value, null, false, ct);
+
+            var (fee, tax) = Quote(request.Price);
+            long totalFee = checked(fee * itemIds.Length);
+            long totalTax = checked(tax * itemIds.Length);
+            long proceeds = checked(request.Price - tax);
+            long totalProceeds = checked(proceeds * itemIds.Length);
+
+            return CommerceResult.Success(new AuctionBatchFeePreviewView(
+                itemIds,
+                Money(request.Price),
+                Money(fee),
+                Money(tax),
+                Money(proceeds),
+                Money(totalFee),
+                Money(totalTax),
+                Money(totalProceeds)));
+        }
+        catch (CommerceRuleException exception)
+        {
+            return CommerceResult.Failure<AuctionBatchFeePreviewView>(exception.Code);
+        }
+        catch (OverflowException)
+        {
+            return CommerceResult.Failure<AuctionBatchFeePreviewView>("auction_invalid_listing");
+        }
+    }
+
+    public async Task<CommerceResult<AuctionBatchCreateView>> CreateBatchAsync(
+        Guid account,
+        AuctionBatchCreateRequest request,
+        CancellationToken ct)
+    {
+        Guid[] itemIds;
+        try
+        {
+            itemIds = NormalizeBatchItemIds(request.ItemIds);
+        }
+        catch (CommerceRuleException exception)
+        {
+            return CommerceResult.Failure<AuctionBatchCreateView>(exception.Code);
+        }
+
+        var character = await transactions.CharacterIdAsync(account, ct);
+        if (character is null)
+            return CommerceResult.Failure<AuctionBatchCreateView>("commerce_character_not_found");
+
+        return await transactions.RunAsync(
+            account,
+            request.RequestId,
+            "AUCTION_BATCH_CREATE",
+            request,
+            [character.Value],
+            async (characters, replay) =>
+            {
+                Guid[] listingIds = itemIds
+                    .Select(itemId => CommerceTransaction.OperationId(account, request.RequestId, itemId))
+                    .ToArray();
+
+                if (replay)
+                {
+                    AuctionListing[] replayListings = await db.AuctionListings
+                        .Where(listing => listingIds.Contains(listing.Id))
+                        .ToArrayAsync(ct);
+                    if (replayListings.Length != listingIds.Length)
+                        throw new CommerceRuleException("commerce_request_conflict");
+
+                    var replayById = replayListings.ToDictionary(listing => listing.Id);
+                    return new AuctionBatchCreateView(
+                        listingIds.Select(id => Response(replayById[id])).ToArray(),
+                        Money(replayListings.Sum(listing => listing.Fee)));
+                }
+
+                if (!await CanCreateListingsAsync(character.Value, itemIds.Length, ct))
+                    throw new CommerceRuleException("auction_listing_limit");
+
+                var items = new List<CharacterItem>(itemIds.Length);
+                foreach (Guid itemId in itemIds)
+                    items.Add(await transactions.ItemAsync(itemId, character.Value, null, false, ct));
+
+                var (fee, tax) = Quote(request.Price);
+                if ((request.ExpectedFeePerItem.HasValue || request.ExpectedTaxPerItem.HasValue)
+                    && (request.ExpectedFeePerItem != fee || request.ExpectedTaxPerItem != tax))
+                {
+                    throw new CommerceRuleException("auction_quote_changed");
+                }
+
+                long totalFee = checked(fee * itemIds.Length);
+                if (!characters[0].TrySpendGold(totalFee))
+                    throw new CommerceRuleException("commerce_insufficient_funds");
+
+                var listings = new AuctionListing[itemIds.Length];
+                for (var index = 0; index < itemIds.Length; index++)
+                {
+                    Guid listingId = listingIds[index];
+                    CharacterItem item = items[index];
+                    var listing = new AuctionListing(
+                        listingId,
+                        character.Value,
+                        item.Id,
+                        request.Price,
+                        fee,
+                        tax,
+                        time.GetUtcNow());
+
+                    item.AcquireTransactionLock(listing.Id);
+                    item.Transfer(listing.Id, character.Value, "AUCTION");
+                    db.AuctionListings.Add(listing);
+                    listings[index] = listing;
+                }
+
+                return new AuctionBatchCreateView(
+                    listings.Select(Response).ToArray(),
+                    Money(totalFee));
+            },
+            ct);
     }
 
     public async Task<CommerceResult<AuctionResponse>> BuyAsync(Guid account, Guid id, Guid request, CancellationToken ct)
@@ -346,18 +487,37 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
         }).ToArray();
     }
 
-    private async Task<bool> HasReachedListingLimitAsync(Guid sellerId, CancellationToken ct)
+    private Task<bool> HasReachedListingLimitAsync(Guid sellerId, CancellationToken ct) =>
+        CanCreateListingsAsync(sellerId, 1, ct).ContinueWith(
+            task => !task.Result,
+            ct,
+            TaskContinuationOptions.ExecuteSynchronously,
+            TaskScheduler.Default);
+
+    private async Task<bool> CanCreateListingsAsync(Guid sellerId, int requestedCount, CancellationToken ct)
     {
         int limit = options.Value.MaxActiveListings;
-        if (limit <= 0) return true;
+        if (limit <= 0 || requestedCount <= 0 || requestedCount > limit) return false;
 
-        int activeAtLimit = await db.AuctionListings
+        int active = await db.AuctionListings
             .AsNoTracking()
             .Where(listing => listing.SellerId == sellerId && listing.State == "ACTIVE")
             .Select(listing => listing.Id)
             .Take(limit)
             .CountAsync(ct);
-        return activeAtLimit >= limit;
+        return active + requestedCount <= limit;
+    }
+
+    private static Guid[] NormalizeBatchItemIds(Guid[]? itemIds)
+    {
+        if (itemIds is null || itemIds.Length is < 1 or > 20
+            || itemIds.Any(itemId => itemId == Guid.Empty)
+            || itemIds.Distinct().Count() != itemIds.Length)
+        {
+            throw new CommerceRuleException("auction_invalid_listing");
+        }
+
+        return itemIds.ToArray();
     }
 
     private string ResolveItemName(Elyndor.Core.Items.CharacterItem item)
