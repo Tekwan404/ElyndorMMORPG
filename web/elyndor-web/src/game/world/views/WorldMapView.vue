@@ -7,7 +7,11 @@ import { gameArt } from '@/assets/gameArt'
 import { useDungeonStore } from '@/game/party/dungeonStore'
 import { socialErrorMessage } from '@/game/social/socialPresentation'
 import { locationKind, locationLabel, locationPresentation } from '@/game/world/locationPresentation'
-import { worldMapPosition } from '@/game/world/worldMapLayout'
+import {
+  BORDERLANDS_MAP_ID,
+  OUTER_REACHES_MAP_ID,
+  worldMapPosition,
+} from '@/game/world/worldMapLayout'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UICard, UILoadingState, UIToast } from '@/ui/components'
 
@@ -20,19 +24,30 @@ const dungeon = useDungeonStore()
 const locations = ref<WorldLocation[]>([])
 const selectedLocationId = ref<string | null>(null)
 const selectedLocationElement = ref<HTMLElement | null>(null)
+const selectedMapId = ref(BORDERLANDS_MAP_ID)
 const loading = ref(true)
 const catalogError = ref(false)
+
+const mapOptions = [
+  { id: BORDERLANDS_MAP_ID, label: 'Пограничные земли', eyebrow: 'ПОГРАНИЧНЫЕ ЗЕМЛИ' },
+  { id: OUTER_REACHES_MAP_ID, label: 'Дальние земли', eyebrow: 'ДАЛЬНИЕ ЗЕМЛИ' },
+] as const
+
+function locationMapId(location: WorldLocation | null | undefined): string {
+  return location?.mapId || BORDERLANDS_MAP_ID
+}
 
 const world = computed(() => session.snapshot?.world)
 const activeTravel = computed(() => world.value?.travel ?? null)
 const isTravelling = computed(() => activeTravel.value !== null)
 const currentLocationId = computed(() => world.value?.currentLocation.id ?? null)
+const currentMapId = computed(() => locationMapId(world.value?.currentLocation))
 const characterLevel = computed(() => session.snapshot?.character?.level ?? 1)
 const contracts = computed(() => world.value?.contracts ?? [])
 const reachableLocationIds = computed(
   () => new Set(world.value?.outgoingTransitions.map(location => location.id) ?? []),
 )
-const visibleLocations = computed(() => {
+const allVisibleLocations = computed(() => {
   const byId = new Map<string, WorldLocation>()
   for (const location of locations.value) byId.set(location.id, location)
   if (world.value) {
@@ -44,9 +59,25 @@ const visibleLocations = computed(() => {
       || left.displayName.localeCompare(right.displayName),
   )
 })
+const availableMaps = computed(() => {
+  const ids = new Set<string>([currentMapId.value])
+  for (const location of world.value?.outgoingTransitions ?? []) {
+    ids.add(locationMapId(location))
+  }
+  return mapOptions.filter(map => ids.has(map.id))
+})
+const activeMap = computed(() =>
+  mapOptions.find(map => map.id === selectedMapId.value) ?? mapOptions[0],
+)
+const visibleLocations = computed(() =>
+  allVisibleLocations.value.filter(location => locationMapId(location) === selectedMapId.value),
+)
 const selectedLocation = computed(() =>
   visibleLocations.value.find(location => location.id === selectedLocationId.value)
-  ?? world.value?.currentLocation
+  ?? (locationMapId(world.value?.currentLocation) === selectedMapId.value
+    ? world.value?.currentLocation
+    : null)
+  ?? visibleLocations.value[0]
   ?? null,
 )
 const selectedIsDungeon = computed(() =>
@@ -69,11 +100,13 @@ const selectedIsReachable = computed(
 function locationArt(locationId: string | null | undefined): string {
   return locationPresentation(
     locationId,
-    visibleLocations.value.find(location => location.id === locationId)?.displayName,
+    allVisibleLocations.value.find(location => location.id === locationId)?.displayName,
   ).art
 }
 
-const mapArt = computed(() => gameArt.world.worldMap)
+const mapArt = computed(() =>
+  selectedMapId.value === BORDERLANDS_MAP_ID ? gameArt.world.worldMap : null,
+)
 const selectedArt = computed(() => locationArt(selectedLocation.value?.id))
 const activeContract = computed(() =>
   contracts.value.find(contract => contract.status === 'ACTIVE') ?? null,
@@ -121,6 +154,18 @@ async function loadLocations(): Promise<void> {
   } finally {
     loading.value = false
   }
+}
+
+function selectMap(mapId: string): void {
+  if (!availableMaps.value.some(map => map.id === mapId)) return
+  selectedMapId.value = mapId
+  const current = world.value?.currentLocation
+  const next = locationMapId(current) === mapId
+    ? current
+    : (world.value?.outgoingTransitions ?? []).find(location => locationMapId(location) === mapId)
+      ?? allVisibleLocations.value.find(location => locationMapId(location) === mapId)
+      ?? null
+  selectedLocationId.value = next?.id ?? null
 }
 
 function selectLocation(locationId: string): void {
@@ -200,7 +245,7 @@ function locationState(location: WorldLocation): 'current' | 'reachable' | 'lock
 }
 
 function nodePosition(locationId: string, fallbackIndex: number): { x: number; y: number } {
-  return worldMapPosition(locationId, fallbackIndex)
+  return worldMapPosition(locationId, fallbackIndex, selectedMapId.value)
 }
 
 function nodeStyle(locationId: string, fallbackIndex: number): Record<string, string> {
@@ -212,12 +257,22 @@ function nodeStyle(locationId: string, fallbackIndex: number): Record<string, st
 }
 
 const mapCanvasStyle = computed(() => ({
-  '--map-art': `url(${mapArt.value})`,
+  '--map-art': mapArt.value ? `url(${mapArt.value})` : 'none',
 }))
 
 watch(currentLocationId, locationId => {
-  if (locationId) selectedLocationId.value = locationId
+  const current = world.value?.currentLocation
+  if (!locationId || !current) return
+  selectedMapId.value = locationMapId(current)
+  selectedLocationId.value = locationId
 }, { immediate: true })
+
+watch(availableMaps, maps => {
+  if (!maps.some(map => map.id === selectedMapId.value)) {
+    selectedMapId.value = currentMapId.value
+    selectedLocationId.value = world.value?.currentLocation.id ?? null
+  }
+})
 
 onMounted(() => {
   void Promise.all([loadLocations(), dungeon.refresh()])
