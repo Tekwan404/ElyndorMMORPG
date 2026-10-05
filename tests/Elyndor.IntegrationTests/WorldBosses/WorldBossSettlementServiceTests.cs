@@ -332,6 +332,20 @@ public sealed class WorldBossSettlementServiceTests(PostgresFixture postgres) : 
         public DateTimeOffset? SettledAtUtc { get; private set; }
         public IReadOnlyCollection<WorldBossRewardDelivery> Deliveries { get; private set; } = [];
 
+        public Task PublishActivatedAsync(
+            Guid spawnId,
+            CancellationToken cancellationToken) =>
+            Task.CompletedTask;
+
+        public Task PublishProgressAsync(
+            Guid spawnId,
+            decimal currentHealth,
+            decimal maxHealth,
+            int currentPhase,
+            bool phaseChanged,
+            CancellationToken cancellationToken) =>
+            Task.CompletedTask;
+
         public Task PublishDefeatedAsync(
             Guid spawnId,
             DateTimeOffset defeatedAtUtc,
