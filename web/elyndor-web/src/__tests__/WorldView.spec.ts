@@ -39,9 +39,10 @@ describe('WorldView', () => {
     expect(wrapper.find('[data-travel]').exists()).toBe(false)
     expect(wrapper.find('.location-routes').exists()).toBe(false)
     expect(wrapper.find('[data-open-town-services]').exists()).toBe(false)
-    expect(wrapper.findAll('[data-town-service]')).toHaveLength(4)
+    expect(wrapper.findAll('[data-town-service]')).toHaveLength(5)
     expect(wrapper.get('[data-town-service="training"]').text()).toContain('Манекен')
     expect(wrapper.get('[data-town-service="merchant"]').text()).toContain('Маркус')
+    expect(wrapper.get('[data-town-service="forge"]').text()).toContain('КУЗНИЦА')
     expect(wrapper.get('[data-town-service="guild"]').text()).toContain('ГИЛЬДИЯ АВАНТЮРИСТОВ')
   })
 
@@ -201,26 +202,24 @@ describe('WorldView', () => {
     wrapper.unmount()
   })
 
-  it('opens the Forge only from the Adventurer Guild representation', async () => {
+  it('opens the Forge as a standalone city destination and keeps it out of the Adventurer Guild', async () => {
     const session = useGameSessionStore()
     session.snapshot = snapshot()
 
     const wrapper = mount(WorldView, { attachTo: document.body })
     await flushPromises()
-    await wrapper.get('[data-open-adventurer-guild]').trigger('click')
-    await flushPromises()
-
-    const forgeTab = document.body.querySelector<HTMLButtonElement>('[data-guild-section="forge"]')
-    expect(forgeTab).not.toBeNull()
-    forgeTab?.click()
+    await wrapper.get('[data-open-forge]').trigger('click')
     await flushPromises()
 
     expect(document.body.querySelector('[data-forge-workshop]')).not.toBeNull()
-    expect(document.body.querySelector('[data-adventurer-guild-board]')).toBeNull()
     document.body.querySelector<HTMLButtonElement>('[data-modal-close]')?.click()
     await flushPromises()
     expect(document.body.querySelector('[data-forge-workshop]')).toBeNull()
+
+    await wrapper.get('[data-open-adventurer-guild]').trigger('click')
+    await flushPromises()
     expect(document.body.querySelector('[data-adventurer-guild-board]')).not.toBeNull()
+    expect(document.body.querySelector('[data-guild-section="forge"]')).toBeNull()
     wrapper.unmount()
   })
 
