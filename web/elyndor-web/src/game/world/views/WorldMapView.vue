@@ -67,7 +67,7 @@ const availableMaps = computed(() => {
   return mapOptions.filter(map => ids.has(map.id))
 })
 const activeMap = computed(() =>
-  mapOptions.find(map => map.id === selectedMapId.value) ?? mapOptions[0],
+  mapOptions.find(map => map.id === selectedMapId.value) ?? mapOptions[0]!,
 )
 const visibleLocations = computed(() =>
   allVisibleLocations.value.filter(location => locationMapId(location) === selectedMapId.value),
@@ -118,6 +118,7 @@ const selectedDangerLabel = computed(() => {
   }
   const danger = selectedLocation.value?.dangerLevel
   if (danger === 'SAFE') return 'Безопасная зона'
+  if (danger === 'DEADLY') return 'Смертельная зона'
   if (danger === 'DANGEROUS') return 'Высокий риск'
   return 'Приключение'
 })
