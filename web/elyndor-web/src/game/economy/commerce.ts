@@ -150,9 +150,9 @@ const errorText: Record<string, string> = {
   trade_disconnected: 'Связь с обменом прервана.',
   trade_closed: 'Этот обмен уже завершён.',
   auction_unavailable: 'Лот больше недоступен.',
-  auction_listing_limit: 'Достигнут лимит активных лотов.',
+  auction_listing_limit: 'Нельзя создать столько лотов: превышен лимит активных лотов.',
   auction_quote_changed: 'Комиссия аукциона изменилась. Проверьте новый расчёт и подтвердите ещё раз.',
-  auction_invalid_listing: 'Проверьте цену лота.',
+  auction_invalid_listing: 'Проверьте цену и выбранные предметы.',
   mail_item_unavailable: 'Посылка больше недоступна.',
 }
 

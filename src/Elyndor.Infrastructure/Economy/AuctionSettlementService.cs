@@ -14,7 +14,7 @@ public sealed class AuctionOptions
     public decimal ListingFeeRate { get; set; } = 0.01m;
     public decimal SaleTaxRate { get; set; } = 0.05m;
     public long MinimumListingFee { get; set; } = 1;
-    public int MaxActiveListings { get; set; } = 20;
+    public int MaxActiveListings { get; set; } = 100;
 }
 
 public sealed class AuctionSettlementService(GameDbContext db, CommerceTransaction transactions,
@@ -493,7 +493,9 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
     private async Task<bool> CanCreateListingsAsync(Guid sellerId, int requestedCount, CancellationToken ct)
     {
         int limit = options.Value.MaxActiveListings;
-        if (limit <= 0 || requestedCount <= 0 || requestedCount > limit) return false;
+        if (requestedCount <= 0) return false;
+        if (limit <= 0) return true;
+        if (requestedCount > limit) return false;
 
         int active = await db.AuctionListings
             .AsNoTracking()
@@ -506,7 +508,7 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
 
     private static Guid[] NormalizeBatchItemIds(Guid[]? itemIds)
     {
-        if (itemIds is null || itemIds.Length is < 1 or > 20
+        if (itemIds is null || itemIds.Length < 1
             || itemIds.Any(itemId => itemId == Guid.Empty)
             || itemIds.Distinct().Count() != itemIds.Length)
         {
