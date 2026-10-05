@@ -30,7 +30,10 @@ public sealed record ArenaMatchCreated(
     ArenaQueueMode Mode,
     DateTimeOffset StartedAtUtc);
 
-public sealed class ArenaQueueService(GameDbContext db, TimeProvider timeProvider)
+public sealed class ArenaQueueService(
+    GameDbContext db,
+    TimeProvider timeProvider,
+    ArenaMatchmakingSignal? matchmakingSignal = null)
 {
     public async Task<ArenaQueueStatus> GetStatusAsync(Guid accountId, CancellationToken cancellationToken)
     {
@@ -97,6 +100,7 @@ public sealed class ArenaQueueService(GameDbContext db, TimeProvider timeProvide
             db.ArenaQueueEntries.Add(entry);
             await db.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
+            matchmakingSignal?.Pulse();
             return new ArenaQueueMutationResult(true, null,
                 BuildStatus(character.Id, entry, null));
         });
@@ -133,9 +137,13 @@ public sealed class ArenaQueueService(GameDbContext db, TimeProvider timeProvide
         CancellationToken cancellationToken)
     {
         DateTimeOffset now = timeProvider.GetUtcNow();
+        DateTimeOffset joinedCutoff = now - grace;
         var entries = await (from entry in db.ArenaQueueEntries
                              join character in db.Characters.AsNoTracking() on entry.CharacterId equals character.Id
+                             where entry.JoinedAtUtc <= joinedCutoff
+                             orderby entry.JoinedAtUtc
                              select new { Entry = entry, character.AccountId })
+            .Take(256)
             .ToListAsync(cancellationToken);
         var stale = entries.Where(x =>
         {
@@ -168,6 +176,7 @@ public sealed class ArenaQueueService(GameDbContext db, TimeProvider timeProvide
         db.ArenaQueueEntries.Add(new ArenaQueueEntry(characterId, mode, character.Level, rating,
             timeProvider.GetUtcNow()));
         await db.SaveChangesAsync(cancellationToken);
+        matchmakingSignal?.Pulse();
     }
 
     private Task<ArenaMatch?> FindActiveMatchAsync(Guid characterId, CancellationToken cancellationToken) =>
@@ -300,20 +309,42 @@ public sealed class ArenaMatchmakingService(GameDbContext db, TimeProvider timeP
 public sealed partial class ArenaMatchmakingWorker(
     IServiceScopeFactory scopeFactory,
     ArenaPresenceTracker presence,
+    ArenaMatchmakingSignal matchmakingSignal,
+    TimeProvider timeProvider,
     IOptions<ArenaOptions> options,
     ILogger<ArenaMatchmakingWorker> logger) : BackgroundService
 {
+    private static readonly TimeSpan ReconciliationInterval = TimeSpan.FromSeconds(15);
+    private static readonly TimeSpan OfflineCleanupInterval = TimeSpan.FromSeconds(30);
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        DateTimeOffset nextOfflineCleanup = DateTimeOffset.MinValue;
+        var firstPass = true;
+
         while (!stoppingToken.IsCancellationRequested)
         {
+            if (!firstPass)
+                await matchmakingSignal.WaitAsync(ReconciliationInterval, stoppingToken);
+            firstPass = false;
+
             try
             {
                 using IServiceScope scope = scopeFactory.CreateScope();
                 var queue = scope.ServiceProvider.GetRequiredService<ArenaQueueService>();
                 var matchmaking = scope.ServiceProvider.GetRequiredService<ArenaMatchmakingService>();
                 var starter = scope.ServiceProvider.GetRequiredService<ArenaMatchStarter>();
-                await queue.PurgeOfflineAsync(presence, options.Value.QueueOfflineGrace, stoppingToken);
+
+                DateTimeOffset now = timeProvider.GetUtcNow();
+                if (now >= nextOfflineCleanup)
+                {
+                    await queue.PurgeOfflineAsync(
+                        presence,
+                        options.Value.QueueOfflineGrace,
+                        stoppingToken);
+                    nextOfflineCleanup = now + OfflineCleanupInterval;
+                }
+
                 foreach (ArenaQueueMode mode in Enum.GetValues<ArenaQueueMode>())
                 {
                     while (await matchmaking.TryCreateMatchAsync(mode, stoppingToken) is { } created)
@@ -328,8 +359,6 @@ public sealed partial class ArenaMatchmakingWorker(
             {
                 LogMatchmakingFailed(logger, exception);
             }
-
-            await Task.Delay(TimeSpan.FromMilliseconds(500), stoppingToken);
         }
     }
 

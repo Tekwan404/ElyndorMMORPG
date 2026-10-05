@@ -370,7 +370,7 @@ public sealed class CombatRewardService(
             item.Rarity,
             quantity,
             itemInstanceSeed,
-            now.AddSeconds(25),
+            eligibleCharacterIds.Length <= 1 ? now : now.AddSeconds(25),
             JsonSerializer.Serialize(eligibleCharacterIds),
             sourceQualityProfileId,
             generated is null ? null : JsonSerializer.Serialize(generated));

@@ -352,18 +352,25 @@ public sealed class WorldBossReadService(
                 Contribution = contribution.Damage + contribution.Healing
             })
             .SingleOrDefaultAsync(cancellationToken);
-        Guid[] rankedCharacterIds = personalContribution is null
-            ? []
-            : await db.WorldBossContributions.AsNoTracking()
-                .Where(contribution => contribution.SpawnId == spawnId)
-                .OrderByDescending(contribution => contribution.Damage + contribution.Healing)
-                .ThenBy(contribution => contribution.CharacterId)
+        int? personalRank = null;
+        if (personalContribution is not null)
+        {
+            int higherScores = await db.WorldBossContributions.AsNoTracking()
+                .CountAsync(
+                    contribution => contribution.SpawnId == spawnId
+                        && contribution.Damage + contribution.Healing
+                            > personalContribution.Contribution,
+                    cancellationToken);
+            Guid[] tiedCharacterIds = await db.WorldBossContributions.AsNoTracking()
+                .Where(contribution => contribution.SpawnId == spawnId
+                    && contribution.Damage + contribution.Healing
+                        == personalContribution.Contribution)
+                .OrderBy(contribution => contribution.CharacterId)
                 .Select(contribution => contribution.CharacterId)
                 .ToArrayAsync(cancellationToken);
-        int personalIndex = personalContribution is null
-            ? -1
-            : Array.IndexOf(rankedCharacterIds, personalContribution.CharacterId);
-        int? personalRank = personalIndex < 0 ? null : personalIndex + 1;
+            int tieIndex = Array.IndexOf(tiedCharacterIds, personalContribution.CharacterId);
+            personalRank = tieIndex < 0 ? null : higherScores + tieIndex + 1;
+        }
         decimal? personalDamageValue = personalContribution?.Damage;
         decimal? personalHealingValue = personalContribution?.Healing;
         decimal? personalContributionValue = personalContribution?.Contribution;
@@ -492,18 +499,12 @@ public sealed class WorldBossReadService(
                 profile.MinimumContribution);
         }
 
-        var eligibleRows = await db.WorldBossContributions.AsNoTracking()
-            .Where(contribution => contribution.SpawnId == spawnId
-                && contribution.Damage + contribution.Healing >= profile.MinimumContribution)
-            .OrderByDescending(contribution => contribution.Damage + contribution.Healing)
-            .ThenBy(contribution => contribution.CharacterId)
-            .Select(contribution => contribution.CharacterId)
-            .ToArrayAsync(cancellationToken);
-
-        int eligibleParticipants = eligibleRows.Length;
-        int index = Array.IndexOf(eligibleRows, characterId);
+        int eligibleParticipants = await db.WorldBossContributions.AsNoTracking()
+            .CountAsync(
+                contribution => contribution.SpawnId == spawnId
+                    && contribution.Damage + contribution.Healing >= profile.MinimumContribution,
+                cancellationToken);
         if (personalContribution < profile.MinimumContribution
-            || index < 0
             || eligibleParticipants == 0)
         {
             return new(
@@ -520,10 +521,39 @@ public sealed class WorldBossReadService(
                 profile.MinimumContribution);
         }
 
+        int higherScores = await db.WorldBossContributions.AsNoTracking()
+            .CountAsync(
+                contribution => contribution.SpawnId == spawnId
+                    && contribution.Damage + contribution.Healing > personalContribution,
+                cancellationToken);
+        Guid[] tiedCharacterIds = await db.WorldBossContributions.AsNoTracking()
+            .Where(contribution => contribution.SpawnId == spawnId
+                && contribution.Damage + contribution.Healing == personalContribution)
+            .OrderBy(contribution => contribution.CharacterId)
+            .Select(contribution => contribution.CharacterId)
+            .ToArrayAsync(cancellationToken);
+        int tieIndex = Array.IndexOf(tiedCharacterIds, characterId);
+        if (tieIndex < 0)
+        {
+            return new(
+                false,
+                null,
+                "Top50",
+                null,
+                0m,
+                eligibleParticipants,
+                null,
+                0m,
+                0,
+                0,
+                profile.MinimumContribution);
+        }
+
+        int personalRank = higherScores + tieIndex + 1;
         WorldBossLeaderboardRewardResolution reward =
             WorldBossLeaderboardRewardPolicy.Resolve(
                 profile,
-                index + 1,
+                personalRank,
                 eligibleParticipants);
 
         return new(

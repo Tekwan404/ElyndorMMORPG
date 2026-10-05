@@ -159,6 +159,18 @@ export interface WorldBossReward {
   settledAtUtc: string
 }
 
+export interface WorldBossActivatedEvent {
+  spawnId: string
+}
+
+export interface WorldBossProgressEvent {
+  spawnId: string
+  currentHealth: number
+  maxHealth: number
+  currentPhase: number
+  phaseChanged: boolean
+}
+
 export interface WorldBossDefeatedEvent {
   spawnId: string
   defeatedAtUtc: string
@@ -178,7 +190,7 @@ export type WorldBossConnectionState =
   | 'reconnecting'
   | 'connected'
 
-const DISCOVERY_REFRESH_MS = 10_000
+const DISCOVERY_REFRESH_MS = 60_000
 
 export const useWorldBossStore = defineStore('worldBoss', () => {
   const active = ref<WorldBossActiveSnapshot | null>(null)
@@ -219,18 +231,11 @@ export const useWorldBossStore = defineStore('worldBoss', () => {
   async function startCore(): Promise<void> {
     await connect()
     await refreshActive(true)
-    if (discoveryTimer === null) {
-      discoveryTimer = window.setInterval(() => {
-        void refreshActive(true)
-      }, DISCOVERY_REFRESH_MS)
-    }
+    syncDiscoveryTimer()
   }
 
   async function stop(): Promise<void> {
-    if (discoveryTimer !== null) {
-      window.clearInterval(discoveryTimer)
-      discoveryTimer = null
-    }
+    stopDiscoveryTimer()
     watchedSpawnId = null
     if (connection) {
       await connection.stop()
@@ -262,11 +267,14 @@ export const useWorldBossStore = defineStore('worldBoss', () => {
         .configureLogging(import.meta.env.DEV ? LogLevel.Warning : LogLevel.Error)
         .build()
 
+      connection.on('WorldBossActivated', handleActivated)
+      connection.on('WorldBossProgressed', handleProgressed)
       connection.on('WorldBossDefeated', handleDefeated)
       connection.on('RewardsSettled', handleSettled)
       connection.onreconnecting(() => {
         watchedSpawnId = null
         connectionState.value = 'reconnecting'
+        syncDiscoveryTimer()
       })
       connection.onreconnected(() => {
         watchedSpawnId = null
@@ -276,11 +284,13 @@ export const useWorldBossStore = defineStore('worldBoss', () => {
       connection.onclose(() => {
         watchedSpawnId = null
         connectionState.value = 'disconnected'
+        syncDiscoveryTimer()
       })
     }
 
     await connection.start()
     connectionState.value = 'connected'
+    syncDiscoveryTimer()
   }
 
   async function resynchronize(): Promise<void> {
@@ -309,12 +319,14 @@ export const useWorldBossStore = defineStore('worldBoss', () => {
         active.value = incoming
         lastSpawnId.value = incoming.spawnId
         await watchSpawn(incoming.spawnId)
+        syncDiscoveryTimer()
         return incoming
       }
 
       if (!(active.value && defeatedAtUtc.value && active.value.spawnId === lastSpawnId.value)) {
         active.value = null
       }
+      syncDiscoveryTimer()
       return null
     } catch (error) {
       errorCode.value = toErrorCode(error, 'world_boss_load_failed')
@@ -403,6 +415,44 @@ export const useWorldBossStore = defineStore('worldBoss', () => {
     if (settlement.value) acknowledgedResultSpawnId.value = settlement.value.spawnId
   }
 
+  function stopDiscoveryTimer(): void {
+    if (discoveryTimer !== null) {
+      window.clearInterval(discoveryTimer)
+      discoveryTimer = null
+    }
+  }
+
+  function syncDiscoveryTimer(): void {
+    const needsFallbackPolling = connectionState.value !== 'connected' || active.value === null
+    if (!needsFallbackPolling) {
+      stopDiscoveryTimer()
+      return
+    }
+    if (discoveryTimer !== null) return
+
+    discoveryTimer = window.setInterval(() => {
+      void refreshActive(true)
+    }, DISCOVERY_REFRESH_MS)
+  }
+
+  function handleActivated(event: WorldBossActivatedEvent): void {
+    if (event.spawnId === active.value?.spawnId) return
+    void refreshActive(true)
+  }
+
+  function handleProgressed(event: WorldBossProgressEvent): void {
+    if (active.value?.spawnId !== event.spawnId) return
+
+    const phaseChanged = active.value.currentPhase !== event.currentPhase || event.phaseChanged
+    active.value = {
+      ...active.value,
+      currentHealth: event.currentHealth,
+      maxHealth: event.maxHealth,
+      currentPhase: event.currentPhase,
+    }
+    if (phaseChanged) void refreshActive(true)
+  }
+
   async function watchSpawn(spawnId: string): Promise<void> {
     if (connection?.state !== HubConnectionState.Connected) return
     if (watchedSpawnId === spawnId) return
@@ -430,6 +480,7 @@ export const useWorldBossStore = defineStore('worldBoss', () => {
         currentHealth: 0,
       }
     }
+    stopDiscoveryTimer()
     void refreshLeaderboard(true)
   }
 

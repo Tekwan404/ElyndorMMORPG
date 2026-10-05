@@ -160,6 +160,11 @@ public sealed class AfkFarmProgressService(
         IReadOnlyList<LootRoll> loot, DateTimeOffset now, GameContentSnapshot content,
         CancellationToken cancellationToken)
     {
+        var slotBudget = new InventorySlotBudget(await InventoryCapacity.FreeSlotsAsync(
+            dbContext,
+            characterId,
+            content,
+            cancellationToken));
         bool overflow = false;
         foreach (LootRoll roll in loot)
         {
@@ -168,15 +173,15 @@ public sealed class AfkFarmProgressService(
             if (definition.Stackable)
             {
                 overflow |= await AddStackableLootAsync(
-                    characterId, sessionId, intervalIndex, roll, definition, now, content, cancellationToken);
+                    characterId, sessionId, intervalIndex, roll, definition, now, content,
+                    slotBudget, cancellationToken);
                 await dbContext.SaveChangesAsync(cancellationToken);
                 continue;
             }
 
             for (var ordinal = 0; ordinal < roll.Quantity; ordinal++)
             {
-                if (await InventoryCapacity.FreeSlotsAsync(
-                    dbContext, characterId, content, cancellationToken) <= 0)
+                if (slotBudget.FreeSlots <= 0)
                 {
                     dbContext.PendingLootItems.Add(ItemInstancePersistenceFactory.CreatePendingLootItem(
                         characterId, definition, sessionId, "AFK", $"{intervalIndex}:{roll.ItemId}", ordinal,
@@ -188,6 +193,7 @@ public sealed class AfkFarmProgressService(
                 dbContext.CharacterItems.Add(ItemInstancePersistenceFactory.CreateCharacterItem(
                     characterId, definition, sessionId, "AFK", $"{intervalIndex}:{roll.ItemId}", ordinal,
                     now, content.Package));
+                slotBudget.FreeSlots--;
             }
             await dbContext.SaveChangesAsync(cancellationToken);
         }
@@ -202,6 +208,7 @@ public sealed class AfkFarmProgressService(
         ItemDefinition definition,
         DateTimeOffset now,
         GameContentSnapshot content,
+        InventorySlotBudget slotBudget,
         CancellationToken cancellationToken)
     {
         int remaining = roll.Quantity;
@@ -223,9 +230,7 @@ public sealed class AfkFarmProgressService(
             remaining -= quantity;
         }
 
-        int freeSlots = await InventoryCapacity.FreeSlotsAsync(
-            dbContext, characterId, content, cancellationToken);
-        while (remaining > 0 && freeSlots > 0)
+        while (remaining > 0 && slotBudget.FreeSlots > 0)
         {
             int quantity = Math.Min(definition.MaxStack, remaining);
             dbContext.CharacterItems.Add(new CharacterItem(
@@ -236,7 +241,7 @@ public sealed class AfkFarmProgressService(
                 now,
                 definition.Version));
             remaining -= quantity;
-            freeSlots--;
+            slotBudget.FreeSlots--;
         }
 
         if (remaining == 0)
@@ -248,6 +253,11 @@ public sealed class AfkFarmProgressService(
         pending.SetQuantity(remaining);
         dbContext.PendingLootItems.Add(pending);
         return true;
+    }
+
+    private sealed class InventorySlotBudget(int freeSlots)
+    {
+        public int FreeSlots { get; set; } = freeSlots;
     }
 
     private static LootRoll[] RollLoot(IReadOnlyList<AfkFarmLootCandidate> candidates,

@@ -23,7 +23,8 @@ public sealed class WorldBossLifecycleService(
     GameDbContext db,
     IContentSnapshotProvider contentProvider,
     TimeProvider time,
-    ILogger<WorldBossLifecycleService>? logger = null)
+    ILogger<WorldBossLifecycleService>? logger = null,
+    IWorldBossUpdatePublisher? updatePublisher = null)
 {
     private static readonly Action<ILogger, Guid, string, decimal, DateTimeOffset, Exception?>
         BossActivated = LoggerMessage.Define<Guid, string, decimal, DateTimeOffset>(
@@ -44,6 +45,12 @@ public sealed class WorldBossLifecycleService(
             new EventId(4212, nameof(BossExpired)),
             "World boss expired: spawn {SpawnId}, definition {BossDefinitionId}, "
             + "remainingHealth {RemainingHealth}.");
+
+    private static readonly Action<ILogger, Guid, Exception?> RealtimeActivationDeliveryFailed =
+        LoggerMessage.Define<Guid>(
+            LogLevel.Warning,
+            new EventId(4213, nameof(RealtimeActivationDeliveryFailed)),
+            "World boss {SpawnId} was activated, but realtime activation delivery failed.");
 
     public Task<WorldBossActivationResult> ActivateAsync(
         string bossDefinitionId,
@@ -131,6 +138,8 @@ public sealed class WorldBossLifecycleService(
                     spawn.ExpiresAtUtc,
                     null);
             }
+            if (updatePublisher is not null)
+                await PublishActivatedSafelyAsync(spawn.Id, cancellationToken);
             return new WorldBossActivationResult(true, null, spawn, true);
         });
     }
@@ -161,6 +170,25 @@ public sealed class WorldBossLifecycleService(
             }
             return expired;
         });
+
+    private async Task PublishActivatedSafelyAsync(
+        Guid spawnId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await updatePublisher!.PublishActivatedAsync(spawnId, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // Activation is durable; clients recover through the discovery fallback/reconnect read.
+        }
+        catch (Exception exception)
+        {
+            if (logger is not null)
+                RealtimeActivationDeliveryFailed(logger, spawnId, exception);
+        }
+    }
 
     private Task<int> AcquireLifecycleLockAsync(CancellationToken cancellationToken) =>
         db.Database.ExecuteSqlRawAsync(
