@@ -611,7 +611,7 @@ onMounted(() => {
         </article>
 
         <article class="service-card service-card--forge" data-town-service="forge">
-          <img class="service-card__portrait" :src="gameArt.npc.quartermaster" alt="Кузнец" />
+          <img class="service-card__portrait" :src="gameArt.npc.blacksmith" alt="Кузнец" />
           <div class="service-card__copy">
             <small>КУЗНИЦА</small>
             <strong>Кузница</strong>
