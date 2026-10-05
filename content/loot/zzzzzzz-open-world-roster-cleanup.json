@@ -729,6 +729,30 @@
         }
       ],
       "version": 2
+    },
+    {
+      "id": "LOOT_BLIGHTED_GROVE_LOZOVYI_DUSHITEL_L20",
+      "entries": [
+        {
+          "itemId": "PYL_PORCHI",
+          "dropChance": 0.34,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "ZHIVOI_KOREN",
+          "dropChance": 0.22,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "TIOMNAIA_ESSENTSIIA",
+          "dropChance": 0.12,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ],
+      "version": 2
     }
   ]
 }
