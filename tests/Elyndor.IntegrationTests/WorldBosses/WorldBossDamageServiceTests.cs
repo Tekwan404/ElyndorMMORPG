@@ -348,6 +348,20 @@ public sealed class WorldBossDamageServiceTests(PostgresFixture postgres) : IAsy
         public DateTimeOffset? DefeatedAtUtc { get; private set; }
         public IReadOnlyCollection<Guid> ParticipantAccountIds { get; private set; } = [];
 
+        public Task PublishActivatedAsync(
+            Guid spawnId,
+            CancellationToken cancellationToken) =>
+            Task.CompletedTask;
+
+        public Task PublishProgressAsync(
+            Guid spawnId,
+            decimal currentHealth,
+            decimal maxHealth,
+            int currentPhase,
+            bool phaseChanged,
+            CancellationToken cancellationToken) =>
+            Task.CompletedTask;
+
         public Task PublishDefeatedAsync(
             Guid spawnId,
             DateTimeOffset defeatedAtUtc,
