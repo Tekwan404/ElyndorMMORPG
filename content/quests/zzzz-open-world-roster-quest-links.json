@@ -177,6 +177,31 @@
       "issuerName": "Экспедиционный пост Гильдии",
       "issuerRole": "Финальный отчёт экспедиции",
       "regionName": "Осквернённая чаща"
+    },
+    {
+      "id": "QUEST_18_WEBBED_GROVE",
+      "displayName": "Паутина чащи",
+      "description": "Осквернённые пауки затянули тропы плотной паутиной. Очистите проходы силой.",
+      "type": "Story",
+      "requiredLevel": 18,
+      "offerLocationId": "BLIGHTED_GROVE",
+      "objectives": [
+        {
+          "id": "KILL_BLIGHTED_SPIDERS",
+          "type": "KillMonster",
+          "targetId": "BLIGHTED_GROVE_IADOVITAIA_MATRONA_CHASHCHI_L19",
+          "requiredCount": 5,
+          "alternativeTargetIds": []
+        }
+      ],
+      "rewardXp": 27500,
+      "rewardGold": 430,
+      "prerequisiteQuestIds": [
+        "QUEST_15_BANDIT_FOOTHOLD"
+      ],
+      "issuerName": "Экспедиционный отряд",
+      "issuerRole": "Исследование территории",
+      "regionName": "Осквернённая чаща"
     }
   ]
 }
