@@ -322,6 +322,42 @@ public sealed class CombatDurabilityServiceTests(PostgresFixture postgres) : IAs
             .ToArrayAsync());
     }
 
+    [Theory]
+    [InlineData("\"invalid-snapshot\"")]
+    [InlineData("null")]
+    [InlineData("active")]
+    [InlineData("victory")]
+    public async Task UnrecoverableTerminalEvidenceIsNeverDeletedOrReportedRecovered(string evidence)
+    {
+        (_, Guid characterId) = await CreateCharacterAsync();
+        Guid sessionId = Guid.CreateVersion7();
+        string json = evidence switch
+        {
+            "active" => JsonSerializer.Serialize(ActiveSnapshot(sessionId)),
+            "victory" => JsonSerializer.Serialize(ActiveSnapshot(sessionId) with
+            {
+                Status = CombatSessionStatus.Victory
+            }),
+            _ => evidence
+        };
+        await using GameDbContext context = postgres.CreateDbContext();
+        ActiveCombatSession journal = new(sessionId, characterId, Now, "test", "test");
+        journal.RecordTerminalSnapshot(json);
+        context.ActiveCombatSessions.Add(journal);
+        await context.SaveChangesAsync();
+        context.ChangeTracker.Clear();
+        CombatDurabilityService service = new(context, NullLogger<CombatDurabilityService>.Instance);
+
+        await Assert.ThrowsAsync<AggregateException>(() =>
+            service.RecoverInterruptedAsync(CancellationToken.None));
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        string persistedJson = (await verify.ActiveCombatSessions.SingleAsync()).TerminalSnapshotJson!;
+        using JsonDocument expected = JsonDocument.Parse(json);
+        using JsonDocument persisted = JsonDocument.Parse(persistedJson);
+        Assert.True(JsonElement.DeepEquals(expected.RootElement, persisted.RootElement));
+    }
+
     private async Task<(Guid AccountId, Guid CharacterId)> CreateCharacterAsync(
         string name = "Recovery")
     {

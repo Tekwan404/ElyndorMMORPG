@@ -1,11 +1,12 @@
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const signalRMock = vi.hoisted(() => ({
   accessTokenFactory: null as null | (() => string | Promise<string>),
   calls: [] as string[],
   transport: null as number | null,
   startError: null as Error | null,
+  startGate: null as Promise<void> | null,
   invoke: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
 }))
 
@@ -34,6 +35,7 @@ vi.mock('@microsoft/signalr', () => ({
         start: vi.fn<() => Promise<void>>(async () => {
           signalRMock.calls.push('signalr:start')
           await signalRMock.accessTokenFactory?.()
+          if (signalRMock.startGate) await signalRMock.startGate
           if (signalRMock.startError) throw signalRMock.startError
           connection.state = 'Connected'
         }),
@@ -45,15 +47,21 @@ vi.mock('@microsoft/signalr', () => ({
 }))
 
 import { apiClient } from '@/api/apiClient'
+import type { CombatSnapshot } from '@/api/contracts'
 import { useCombatSessionStore } from '@/stores/combatSession'
 
 describe('combatSession realtime authentication', () => {
+  afterEach(() => {
+    vi.clearAllTimers()
+    vi.useRealTimers()
+  })
   beforeEach(() => {
     setActivePinia(createPinia())
     signalRMock.calls.length = 0
     signalRMock.accessTokenFactory = null
     signalRMock.transport = null
     signalRMock.startError = null
+    signalRMock.startGate = null
     signalRMock.invoke.mockReset()
     vi.restoreAllMocks()
   })
@@ -78,6 +86,8 @@ describe('combatSession realtime authentication', () => {
 
   it('reuses the same command id after a lost ability response and rotates it after acknowledgement', async () => {
     vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    let abilityAttempts = 0
     signalRMock.invoke
       .mockResolvedValueOnce({
         succeeded: true,
@@ -101,14 +111,15 @@ describe('combatSession realtime authentication', () => {
         events: [],
         reward: null,
       })
-      .mockRejectedValueOnce(new Error('response lost after server accepted command'))
-      .mockResolvedValueOnce({
-        succeeded: false,
-        errorCode: 'combat_duplicate_command',
-      })
-      .mockResolvedValueOnce({
-        succeeded: false,
-        errorCode: 'combat_ability_on_cooldown',
+      .mockImplementation(async method => {
+        if (method === 'UseAbility') {
+          abilityAttempts++
+          if (abilityAttempts === 1) throw new Error('response lost after server accepted command')
+          return { succeeded: false, errorCode: abilityAttempts === 2
+            ? 'combat_duplicate_command' : 'combat_ability_on_cooldown' }
+        }
+        return method === 'ResumeCombatFromSequence'
+          ? { succeeded: true, snapshot: store.snapshot, events: [], reward: null } : []
       })
 
     const store = useCombatSessionStore()
@@ -119,6 +130,7 @@ describe('combatSession realtime authentication', () => {
       expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(1)
     })
     const firstCall = signalRMock.invoke.mock.calls.find(([method]) => method === 'UseAbility')
+    await vi.waitFor(() => expect(store.connectionState).toBe('connected'))
 
     await store.useAbility('HEROIC_STRIKE')
     await vi.waitFor(() => {
@@ -126,6 +138,7 @@ describe('combatSession realtime authentication', () => {
     })
     const abilityCallsAfterRetry = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
     expect(abilityCallsAfterRetry[1]?.[4]).toBe(firstCall?.[4])
+    await vi.waitFor(() => expect(store.connectionState).toBe('connected'))
 
     await store.useAbility('HEROIC_STRIKE')
     await vi.waitFor(() => {
@@ -475,5 +488,86 @@ describe('combatSession realtime authentication', () => {
     expect(await store.resume()).toBe(true)
     expect(store.reward).toBeNull()
     expect(store.snapshot).toBeNull()
+  })
+
+  it('releases a timed out ability without replay and retains its command id for an explicit retry', async () => {
+    vi.useFakeTimers()
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const store = useCombatSessionStore()
+    await store.connect()
+    store.snapshot = {
+      sessionId: 'timeout-session', status: 'Active', sequence: 1,
+      player: { actorId: 'player', hp: 100, cooldowns: {}, abilities: [{ id: 'HEROIC_STRIKE' }] },
+      enemy: { actorId: 'enemy', definitionId: 'WOLF' },
+    } as unknown as CombatSnapshot
+    let finish!: (value: unknown) => void
+    signalRMock.invoke.mockImplementation(method => {
+      if (method === 'UseAbility') return new Promise(resolve => { finish = resolve })
+      if (method === 'ResumeCombatFromSequence') return Promise.resolve({
+        succeeded: true, errorCode: null, snapshot: store.snapshot, events: [], reward: null,
+      })
+      return Promise.resolve([])
+    })
+    await store.useAbility('HEROIC_STRIKE')
+    await vi.advanceTimersByTimeAsync(0)
+    expect(store.abilityPending).toBe(true)
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(store.pending).toBe(false)
+    expect(store.abilityQueue).toEqual([])
+    const first = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
+    expect(first).toHaveLength(1)
+    finish({ succeeded: true, snapshot: { ...store.snapshot, sequence: 99 }, events: [], reward: null })
+    await vi.advanceTimersByTimeAsync(0)
+    expect(store.snapshot?.sequence).toBe(1)
+    signalRMock.invoke.mockImplementation(async method => method === 'UseAbility'
+      ? { succeeded: false, errorCode: 'combat_duplicate_command' }
+      : method === 'ResumeCombatFromSequence'
+        ? { succeeded: true, snapshot: store.snapshot, events: [], reward: null } : [])
+    await store.useAbility('HEROIC_STRIKE')
+    await vi.advanceTimersByTimeAsync(0)
+    const retried = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
+    expect(retried).toHaveLength(2)
+    expect(retried[1]?.[4]).toBe(first[0]?.[4])
+    await store.useAbility('HEROIC_STRIKE')
+    await vi.advanceTimersByTimeAsync(0)
+    const acknowledged = signalRMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
+    expect(acknowledged).toHaveLength(3)
+    expect(acknowledged[2]?.[4]).not.toBe(first[0]?.[4])
+  })
+
+  it('bounds lifecycle connection setup and ignores a late start completion', async () => {
+    vi.useFakeTimers()
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    let finish!: () => void
+    signalRMock.startGate = new Promise(resolve => { finish = resolve })
+    const store = useCombatSessionStore()
+    const start = store.startTraining()
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(store.lifecyclePending).toBe(false)
+    expect(await start).toBe(false)
+    expect(store.connectionState).toBe('disconnected')
+    finish()
+    await vi.advanceTimersByTimeAsync(0)
+    expect(store.connectionState).toBe('disconnected')
+    expect(signalRMock.invoke).not.toHaveBeenCalled()
+  })
+
+  it('releases an unknown loot choice without automatically sending the choice again', async () => {
+    vi.useFakeTimers()
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    signalRMock.invoke.mockImplementation(method => method === 'ChooseLootRoll'
+      ? new Promise(() => {}) : Promise.resolve({ succeeded: false, errorCode: 'combat_not_found' }))
+    const store = useCombatSessionStore()
+    await store.connect()
+    const choice = store.chooseLootRoll('roll', 'Need')
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(store.isLootPending('roll')).toBe(false)
+    expect(await choice).toBe(false)
+    expect(signalRMock.invoke.mock.calls.filter(([method]) => method === 'ChooseLootRoll')).toEqual([
+      ['ChooseLootRoll', 'roll', 'Need'],
+    ])
   })
 })

@@ -27,7 +27,7 @@ public sealed class CombatRewardGrantConfiguration : IEntityTypeConfiguration<Co
             .HasName("pk_combat_reward_grants");
         builder.Property(grant => grant.PrimaryMonsterId)
             .HasColumnName("MonsterId")
-            .HasMaxLength(64)
+            .HasMaxLength(128)
             .IsRequired();
         builder.Property(grant => grant.XpEarned).IsRequired();
         builder.Property(grant => grant.GoldEarned).HasDefaultValue(0).IsRequired();

@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Elyndor.Contracts.Characters;
 using Elyndor.Contracts.Combat;
 using Elyndor.Core.Characters;
+using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Parties;
 using Elyndor.Core.Social;
@@ -418,6 +419,8 @@ public sealed class MultiplayerCombatFlowTests(PostgresFixture postgres) : IAsyn
                 {
                     services.RemoveAll<TimeProvider>();
                     services.AddSingleton<TimeProvider>(new FixedTimeProvider(Now));
+                    services.RemoveAll<IGameRandomFactory>();
+                    services.AddSingleton<IGameRandomFactory>(new RoutingTestRandomFactory());
                 });
             });
 
@@ -458,6 +461,12 @@ public sealed class MultiplayerCombatFlowTests(PostgresFixture postgres) : IAsyn
                     options.Transports = HttpTransportType.LongPolling;
                 })
             .Build();
+
+    private sealed class RoutingTestRandomFactory : IGameRandomFactory
+    {
+        // Routing assertions require a live opponent, not a random opening crit that ends combat.
+        public IGameRandom Create() => new SequenceGameRandom(Enumerable.Repeat(0.99m, 512).ToArray());
+    }
 
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {

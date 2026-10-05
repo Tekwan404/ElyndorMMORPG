@@ -49,7 +49,7 @@ public sealed class DungeonEncounterConfiguration : IEntityTypeConfiguration<Dun
     {
         builder.ToTable("dungeon_encounters");
         builder.HasKey(encounter => encounter.Id).HasName("pk_dungeon_encounters");
-        builder.Property(encounter => encounter.MonsterId).HasMaxLength(64).IsRequired();
+        builder.Property(encounter => encounter.MonsterId).HasMaxLength(128).IsRequired();
         builder.Property(encounter => encounter.State).HasConversion<string>().HasMaxLength(16).IsRequired();
         builder.HasIndex(encounter => new { encounter.RunId, encounter.EncounterIndex })
             .IsUnique()

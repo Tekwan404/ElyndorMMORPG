@@ -23,14 +23,14 @@ public static partial class GameContentPackageValidator
             errors.Add(new ContentValidationError(
                 errorCode,
                 path,
-                $"'{value}' must use uppercase ASCII letters, digits, and underscores, starting with a letter."));
+                $"'{value}' must use at most 128 uppercase ASCII letters, digits, and underscores, starting with a letter."));
 
             return false;
         }
 
         private static bool IsCanonicalIdentifier(string value)
         {
-            if (string.IsNullOrEmpty(value) || value[0] is < 'A' or > 'Z')
+            if (string.IsNullOrEmpty(value) || value.Length > 128 || value[0] is < 'A' or > 'Z')
             {
                 return false;
             }

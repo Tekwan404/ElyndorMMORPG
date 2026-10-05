@@ -64,6 +64,37 @@ function ability(index: number): CombatAbility {
 }
 
 describe('BattleScreen', () => {
+  it('keeps a failed Victory in manual recovery instead of presenting completed rewards', async () => {
+    const store = useCombatSessionStore()
+    store.snapshot = { sessionId: 'session', sequence: 2, status: 'Victory', serverTimeUtc: '2026-10-05T12:00:00Z', contentVersion: 'test', balanceVersion: 'test', player: actor('local', 'Player'), enemy: actor('enemy', 'Monster') }
+    store.recoveryRequired = true
+    store.errorCode = 'combat_recovery_required'
+    store.connectionState = 'disconnected'
+    const getPendingLoot = vi.spyOn(useGameSessionStore(), 'getPendingLoot').mockResolvedValue({ items: [] } as never)
+    vi.spyOn(store, 'connect').mockResolvedValue(undefined)
+    const resume = vi.spyOn(store, 'resume').mockResolvedValue(false)
+    const wrapper = mount(BattleScreen)
+    await flushPromises()
+    expect(wrapper.find('[data-result]').exists()).toBe(false)
+    expect(wrapper.get('[data-combat-connection]').text()).toContain('Награды ещё не подтверждены')
+    expect(getPendingLoot).not.toHaveBeenCalled()
+    await wrapper.get('[data-combat-connection] button').trigger('click')
+    await flushPromises()
+    expect(resume).toHaveBeenCalledTimes(1)
+    expect(wrapper.emitted('leave')).toBeUndefined()
+    expect(wrapper.find('[data-result]').exists()).toBe(false)
+    store.recoveryRequired = false
+    store.errorCode = null
+    store.connectionState = 'connected'
+    await flushPromises()
+    // A successful manual resume also clears the screen's local failed-reconnect state.
+    resume.mockResolvedValue(true)
+    await wrapper.get('[data-combat-connection] button').trigger('click')
+    await flushPromises()
+    expect(wrapper.get('[data-result]').attributes('data-result')).toBe('Victory')
+    expect(getPendingLoot).toHaveBeenCalledTimes(1)
+    wrapper.unmount()
+  })
   it('retains the flee confirmation and shows the failed action in the dialog', async () => {
     const store = useCombatSessionStore()
     store.snapshot = { sessionId: 'session', sequence: 1, status: 'Active', serverTimeUtc: '2026-09-25T12:00:00Z', contentVersion: 'test', balanceVersion: 'test', player: actor('local', 'Player'), enemy: actor('enemy', 'Monster') }

@@ -65,7 +65,7 @@ async function reportTerminalCombat(sessionId: string, attempt = 0): Promise<voi
 }
 
 watch(
-  () => combat.snapshot,
+  () => combat.recoveryRequired ? null : combat.snapshot,
   (snapshot) => {
     if (
       !snapshot ||

@@ -4,12 +4,15 @@ using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Content;
+using Elyndor.Core.Dungeons;
 using Elyndor.Core.Identity;
 using Elyndor.Core.World;
 using Elyndor.Core.WorldBosses;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Infrastructure.Dungeons;
+using Elyndor.Infrastructure.Parties;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Progression;
@@ -354,6 +357,58 @@ public sealed class CombatSessionFinalizerTests(PostgresFixture postgres) : IAsy
         Assert.Empty(await verify.CombatRewardGrants.ToListAsync());
         Assert.Equal(90, (await verify.Characters.SingleAsync()).Experience);
         Assert.Equal(25, (await verify.CharacterVitals.SingleAsync()).CurrentHp);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FailedDungeonCompletionRetainsTerminalJournalAndCommittedRewards(bool eligible)
+    {
+        Guid accountId = Guid.CreateVersion7();
+        Guid characterId = Guid.CreateVersion7();
+        Guid sessionId = Guid.CreateVersion7();
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.Accounts.Add(new Account(accountId, Random.Shared.NextInt64(1, long.MaxValue), Now));
+            setup.Characters.Add(new Character(characterId, accountId, Guid.CreateVersion7(),
+                "Recovery", $"RECOVERY{characterId:N}"[..16], "HUMAN", "MALE", "WARRIOR", Now));
+            setup.ActiveCombatSessions.Add(new ActiveCombatSession(sessionId, characterId, Now, "test", "test"));
+            DungeonRun run = DungeonRun.Create(Guid.CreateVersion7(), Guid.CreateVersion7(),
+                characterId, "MISSING_DUNGEON", Now);
+            run.AddMember(characterId, Now);
+            DungeonEncounter encounter = DungeonEncounter.Create(Guid.CreateVersion7(), run.Id, 0,
+                "FOREST_WOLF_L1", Now);
+            encounter.Activate(sessionId);
+            run.Encounters.Add(encounter);
+            setup.DungeonRuns.Add(run);
+            if (eligible)
+                setup.CombatRewardGrants.Add(new Elyndor.Core.Progression.CombatRewardGrant(
+                    sessionId, characterId, "FOREST_WOLF_L1", 5, 3, Now));
+            await setup.SaveChangesAsync();
+        }
+
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
+        ServiceCollection services = new();
+        services.AddLogging();
+        services.AddScoped<GameDbContext>(_ => postgres.CreateDbContext());
+        services.AddSingleton<IContentSnapshotProvider>(new StaticContentSnapshotProvider(content));
+        services.AddSingleton<TimeProvider>(new FixedTimeProvider(Now));
+        services.AddScoped<CombatDurabilityService>();
+        services.AddScoped<CharacterAbilityCooldownStore>();
+        services.AddScoped<PartyService>();
+        services.AddScoped<DungeonService>();
+        await using ServiceProvider provider = services.BuildServiceProvider();
+        CombatSessionFinalizer finalizer = new(provider.GetRequiredService<IServiceScopeFactory>());
+        CombatSessionSnapshot terminal = VictorySnapshot(sessionId) with { PlayerContributionEligible = eligible };
+
+        await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+            finalizer.FinalizeAsync(characterId, terminal, CancellationToken.None));
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        ActiveCombatSession persisted = await verify.ActiveCombatSessions.SingleAsync();
+        Assert.False(string.IsNullOrWhiteSpace(persisted.TerminalSnapshotJson));
+        Assert.Equal(DungeonEncounterState.Active, (await verify.DungeonEncounters.SingleAsync()).State);
+        Assert.Equal(eligible ? 1 : 0, await verify.CombatRewardGrants.CountAsync());
     }
 
     private static CombatSessionSnapshot VictorySnapshot(Guid sessionId)

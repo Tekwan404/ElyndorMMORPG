@@ -10,6 +10,7 @@ using Elyndor.Core.Items;
 using Elyndor.Core.Content;
 using Elyndor.Core.Talents;
 using Elyndor.Infrastructure.Combat;
+using Elyndor.Infrastructure.Progression;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Elyndor.UnitTests.Combat;
@@ -1653,6 +1654,8 @@ public sealed class CombatSessionTests
                 new UseAbilityCommand("terminal-finalizer-retry", "STRIKE", EnemyId), now),
             CancellationToken.None));
 
+        registry.ClearFinished(accountId);
+        Assert.True(registry.Resume(accountId).Succeeded);
         time.FireLatest();
         await finalizer.Completed.Task.WaitAsync(TimeSpan.FromSeconds(2));
 
@@ -1662,6 +1665,87 @@ public sealed class CombatSessionTests
         Assert.Equal(CombatSessionStatus.Victory, registry.Resume(accountId).Snapshot!.Status);
         Assert.Single(publisher.AccountIds);
         Assert.False(time.Latest!.IsScheduled);
+    }
+
+    [Fact]
+    public async Task RegistryStopsPermanentFinalizationRetriesAndRetainsTerminalEvidence()
+    {
+        CombatSession session = CreateSession(enemyHp: 1, playerResource: 100, canAutoAttack: false);
+        ManualTimeProvider time = new(Now);
+        AlwaysFailFinalizer finalizer = new();
+        using CombatSessionRegistry registry = new(time, new NullPublisher(), finalizer,
+            NullLogger<CombatSessionRegistry>.Instance);
+        Guid accountId = Guid.NewGuid();
+        Assert.True(registry.TryAdd(accountId, PlayerId, session));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => registry.ExecuteAsync(accountId,
+            (active, now) => active.Handle(new UseAbilityCommand("permanent-finalizer", "STRIKE", EnemyId), now),
+            CancellationToken.None));
+
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            var timer = time.Latest;
+            time.FireLatest();
+            await WaitUntilAsync(() => finalizer.CallCount == attempt + 2);
+            if (attempt < 4)
+                await WaitUntilAsync(() => !ReferenceEquals(time.Latest, timer));
+        }
+
+        CombatOperationResult resumed = await registry.ResumeAsync(accountId, 0, CancellationToken.None);
+        Assert.False(resumed.Succeeded);
+        Assert.Equal("combat_recovery_required", resumed.ErrorCode);
+        Assert.Equal(CombatSessionStatus.Victory, resumed.Snapshot!.Status);
+        Assert.False(time.Latest!.IsScheduled);
+        registry.ClearFinished(accountId);
+        CombatOperationResult command = await registry.ExecuteAsync(accountId,
+            (active, now) => active.Handle(new StopAutoAttackCommand("after-failed-finalizer"), now),
+            CancellationToken.None);
+        Assert.Equal("combat_recovery_required", command.ErrorCode);
+        Assert.Equal(6, finalizer.CallCount);
+        Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.EnemyKilled);
+    }
+
+    [Fact]
+    public async Task RegistryCancelsStalledFinalizerBeforeReleasingItsWriter()
+    {
+        CombatSession session = CreateSession(enemyHp: 1, playerResource: 100, canAutoAttack: false);
+        ManualTimeProvider time = new(Now);
+        StallOnceFinalizer finalizer = new();
+        using CombatSessionRegistry registry = new(time, new NullPublisher(), finalizer,
+            NullLogger<CombatSessionRegistry>.Instance, ioTimeout: TimeSpan.FromMilliseconds(50));
+        Guid accountId = Guid.NewGuid();
+        Assert.True(registry.TryAdd(accountId, PlayerId, session));
+        await Assert.ThrowsAsync<TimeoutException>(() => registry.ExecuteAsync(accountId,
+            (active, now) => active.Handle(new UseAbilityCommand("stalled-finalizer", "STRIKE", EnemyId), now),
+            CancellationToken.None));
+        registry.ClearFinished(accountId);
+        Assert.True(registry.Resume(accountId).Succeeded);
+        time.FireLatest();
+        await WaitUntilAsync(() => finalizer.CallCount == 2);
+        Assert.Equal(1, finalizer.MaximumConcurrent);
+        Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.EnemyKilled);
+    }
+
+    [Fact]
+    public async Task RegistryBoundsStalledPublicationAndRecoversWithoutReplayingGameplay()
+    {
+        CombatSession session = CreateSession(enemyHp: 10_000);
+        ManualTimeProvider time = new(Now);
+        StallOncePublisher publisher = new();
+        using CombatSessionRegistry registry = new(
+            time, publisher, new NullFinalizer(), NullLogger<CombatSessionRegistry>.Instance,
+            ioTimeout: TimeSpan.FromMilliseconds(50));
+        Guid accountId = Guid.NewGuid();
+        Assert.True(registry.TryAdd(accountId, PlayerId, session));
+
+        await Assert.ThrowsAsync<TimeoutException>(() => registry.ExecuteAsync(
+            accountId,
+            (active, now) => active.Handle(new StopAutoAttackCommand("stalled-publish"), now),
+            CancellationToken.None));
+        time.FireLatest();
+        await WaitUntilAsync(() => publisher.CallCount == 2);
+        Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.AutoAttackStopped);
+        CombatOperationResult resumed = await registry.ResumeAsync(accountId, 0, CancellationToken.None);
+        Assert.True(resumed.Succeeded);
     }
 
     [Fact]
@@ -2315,6 +2399,47 @@ public sealed class CombatSessionTests
                 throw new InvalidOperationException("Injected publisher failure.");
             Completed.TrySetResult();
             return Task.CompletedTask;
+        }
+    }
+
+    private sealed class StallOncePublisher : ICombatUpdatePublisher
+    {
+        public int CallCount { get; private set; }
+        public Task PublishAsync(Guid accountId, CombatOperationResult update, CancellationToken cancellationToken)
+        {
+            CallCount++;
+            // A lost transport completion need not honor cancellation. It must not hold the session writer.
+            return CallCount == 1 ? new TaskCompletionSource().Task : Task.CompletedTask;
+        }
+    }
+
+    private sealed class AlwaysFailFinalizer : ICombatSessionFinalizer
+    {
+        public int CallCount { get; private set; }
+        public Task<CombatRewardApplicationResult?> FinalizeAsync(Guid characterId,
+            CombatSessionSnapshot snapshot, CancellationToken cancellationToken)
+        {
+            CallCount++;
+            throw new InvalidOperationException("Permanent persistence failure.");
+        }
+    }
+
+    private sealed class StallOnceFinalizer : ICombatSessionFinalizer
+    {
+        private int _concurrent;
+        public int CallCount { get; private set; }
+        public int MaximumConcurrent { get; private set; }
+        public async Task<Elyndor.Infrastructure.Progression.CombatRewardApplicationResult?> FinalizeAsync(
+            Guid characterId, CombatSessionSnapshot snapshot, CancellationToken cancellationToken)
+        {
+            CallCount++;
+            MaximumConcurrent = Math.Max(MaximumConcurrent, ++_concurrent);
+            try
+            {
+                if (CallCount == 1) await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                return null;
+            }
+            finally { _concurrent--; }
         }
     }
 
