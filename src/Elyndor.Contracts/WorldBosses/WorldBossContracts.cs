@@ -100,6 +100,15 @@ public sealed record WorldBossRewardResponse(
     DateTimeOffset SettledAtUtc);
 
 
+public sealed record WorldBossActivatedResponse(Guid SpawnId);
+
+public sealed record WorldBossProgressResponse(
+    Guid SpawnId,
+    decimal CurrentHealth,
+    decimal MaxHealth,
+    int CurrentPhase,
+    bool PhaseChanged);
+
 public sealed record WorldBossDefeatedResponse(
     Guid SpawnId,
     DateTimeOffset DefeatedAtUtc);
