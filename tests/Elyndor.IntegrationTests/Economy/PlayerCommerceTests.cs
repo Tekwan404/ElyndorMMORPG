@@ -216,6 +216,92 @@ public sealed class PlayerCommerceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
+    public async Task BatchAuctionCreatesSeparateListingsAtOnePriceAndReplaysExactlyOnce()
+    {
+        var seller = await Player();
+        Guid first = await Item(seller);
+        Guid second = await Item(seller);
+        Guid third = await Item(seller);
+        Guid requestId = Guid.NewGuid();
+
+        await using var db = postgres.CreateDbContext();
+        var service = Auction(db);
+        Guid[] itemIds = [first, second, third];
+
+        var preview = await service.PreviewBatchAsync(
+            seller.Account,
+            new AuctionBatchPreviewRequest(itemIds, 100),
+            default);
+        Assert.True(preview.Succeeded, preview.ErrorCode);
+        Assert.Equal("1", preview.Snapshot!.FeePerItem);
+        Assert.Equal("3", preview.Snapshot.TotalFee);
+
+        var request = new AuctionBatchCreateRequest(requestId, itemIds, 100, 1, 5);
+        var created = await service.CreateBatchAsync(seller.Account, request, default);
+        var replay = await service.CreateBatchAsync(seller.Account, request, default);
+
+        Assert.True(created.Succeeded, created.ErrorCode);
+        Assert.True(replay.Succeeded, replay.ErrorCode);
+        Assert.Equal(3, created.Snapshot!.Listings.Length);
+        Assert.Equal("3", created.Snapshot.TotalFee);
+        Assert.All(created.Snapshot.Listings, listing => Assert.Equal("100", listing.Price));
+        Assert.Equal(
+            created.Snapshot.Listings.Select(listing => listing.Id),
+            replay.Snapshot!.Listings.Select(listing => listing.Id));
+
+        await using var verify = postgres.CreateDbContext();
+        Assert.Equal(3, await verify.AuctionListings.CountAsync());
+        Assert.Equal(97, (await verify.Characters.FindAsync(seller.Character))!.Gold);
+        Assert.All(
+            await verify.CharacterItems.IgnoreQueryFilters().Where(item => itemIds.Contains(item.Id)).ToArrayAsync(),
+            item =>
+            {
+                Assert.Equal("AUCTION", item.Storage);
+                Assert.NotNull(item.TransactionLockId);
+            });
+        Assert.Single(await verify.CharacterMutations
+            .Where(mutation => mutation.CharacterId == seller.Character && mutation.MutationId == requestId)
+            .ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task BatchAuctionRollsBackAllListingsWhenOneSelectedItemIsInvalid()
+    {
+        var seller = await Player();
+        Guid first = await Item(seller);
+        Guid equipped = await Item(seller);
+
+        await using (var setup = postgres.CreateDbContext())
+        {
+            setup.CharacterEquipment.Add(new CharacterEquipment(
+                seller.Character,
+                EquipmentSlot.MainHand,
+                equipped));
+            await setup.SaveChangesAsync();
+        }
+
+        await using var db = postgres.CreateDbContext();
+        var result = await Auction(db).CreateBatchAsync(
+            seller.Account,
+            new AuctionBatchCreateRequest(Guid.NewGuid(), [first, equipped], 100, 1, 5),
+            default);
+
+        Assert.False(result.Succeeded);
+        Assert.Equal("commerce_item_equipped", result.ErrorCode);
+
+        await using var verify = postgres.CreateDbContext();
+        Assert.Empty(await verify.AuctionListings.ToArrayAsync());
+        Assert.Equal(100, (await verify.Characters.FindAsync(seller.Character))!.Gold);
+        Assert.All(
+            await verify.CharacterItems.IgnoreQueryFilters().Where(item => item.Id == first || item.Id == equipped).ToArrayAsync(),
+            item =>
+            {
+                Assert.Equal("INVENTORY", item.Storage);
+                Assert.Null(item.TransactionLockId);
+            });
+    }
+
+    [Fact]
     public async Task AuctionSellableItemsExcludeEquippedItemsAndPreviewStillRejectsThem()
     {
         var seller = await Player();
