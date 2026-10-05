@@ -11,6 +11,19 @@ const monsterArtById = new Map<string, string>(
   }),
 )
 
+const EXACT_ART_ONLY_MONSTER_PREFIXES = [
+  'BLACK_CRAGS_',
+  'PLAGUEWOOD_',
+  'GLASS_DESERT_',
+  'FROZEN_EDGE_',
+  'DOOMED_LANDS_',
+  'DEAD_REACHES_',
+] as const
+
+function requiresExactArt(monsterId?: string | null): boolean {
+  return !!monsterId && EXACT_ART_ONLY_MONSTER_PREFIXES.some(prefix => monsterId.startsWith(prefix))
+}
+
 const LOCATION_ART_FALLBACKS: ReadonlyArray<readonly [RegExp, string]> = [
   [/^WHISPERING_FOREST_/, 'lesnoi-volk'],
   [/^FLOWER_MEADOW_/, 'zarazhionnyi-olen'],
@@ -93,6 +106,8 @@ export function monsterArtUrl(
     const directArt = monsterArtById.get(artId)
     if (directArt) return directArt
   }
+
+  if (requiresExactArt(monsterId)) return undefined
 
   const fallbackArtId = artId ? semanticFallbackArtId(artId, monsterId) : null
   if (fallbackArtId) return monsterArtById.get(fallbackArtId)
