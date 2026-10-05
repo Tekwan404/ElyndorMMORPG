@@ -155,7 +155,7 @@ describe('Forge workbench', () => {
     mount(ForgeView)
     await click('.forge-grid [data-forge-item="A"]')
     expect(text()).toContain('Качество предмета')
-    expect(text()).toContain('80.00%')
+    expect(text()).toContain('80%')
     expect(text()).toContain('50% · T3')
     expect(text()).toContain('Может выпасть')
     expect(text()).toContain('Крит. урон')
