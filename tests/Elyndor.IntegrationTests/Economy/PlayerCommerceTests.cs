@@ -353,6 +353,30 @@ public sealed class PlayerCommerceTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
+    public async Task ExpiryWorkerFastPathReturnsExpiredListingWithoutResolvingSellerAgain()
+    {
+        var seller = await Player();
+        Guid item = await Item(seller);
+        var lot = await Listing(seller, item);
+        _clock.Now = _clock.Now.AddHours(48);
+
+        await using var db = postgres.CreateDbContext();
+        CommerceResult<AuctionResponse> result = await Auction(db).ReturnExpiredAsync(
+            seller.Account,
+            seller.Character,
+            lot.Id,
+            Guid.NewGuid(),
+            default);
+
+        Assert.True(result.Succeeded, result.ErrorCode);
+        Assert.Equal("EXPIRED", result.Snapshot!.State);
+        Assert.Single(await db.CommerceMails.ToArrayAsync());
+        Assert.Equal(
+            "MAILBOX",
+            (await db.CharacterItems.IgnoreQueryFilters().SingleAsync(x => x.Id == item)).Storage);
+    }
+
+    [Fact]
     public async Task StaleInventoryWriterCannotOverwriteTransactionLock()
     {
         var owner = await Player(); Guid id = await Item(owner);
