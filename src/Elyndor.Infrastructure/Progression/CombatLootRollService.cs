@@ -196,11 +196,17 @@ public sealed class CombatLootRollService(
             await dbContext.Database.BeginTransactionAsync(cancellationToken))
         {
             openRolls = await dbContext.CombatLootRolls
-                .FromSqlInterpolated($"SELECT * FROM game.combat_loot_rolls WHERE \"State\" = {openState} FOR UPDATE")
+                .FromSqlInterpolated($"""
+                    SELECT *
+                    FROM game.combat_loot_rolls
+                    WHERE "State" = {{openState}}
+                      AND "EndsAtUtc" <= {{now}}
+                    ORDER BY "EndsAtUtc"
+                    FOR UPDATE SKIP LOCKED
+                    LIMIT 100
+                    """)
                 .ToArrayAsync(cancellationToken);
-            CombatLootRoll[] automaticRolls = openRolls
-                .Where(roll => ReadEligibleCharacterIds(roll).Length <= 1 || roll.EndsAtUtc <= now)
-                .ToArray();
+            CombatLootRoll[] automaticRolls = openRolls;
             if (automaticRolls.Length == 0)
             {
                 await transaction.CommitAsync(cancellationToken);
