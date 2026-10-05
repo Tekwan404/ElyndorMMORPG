@@ -80,8 +80,15 @@ public sealed class CommerceTransaction(GameDbContext db, IContentSnapshotProvid
         }
         if (item.TransactionLockId != operation || (auction ? item.Storage != "AUCTION" : item.Storage != "INVENTORY"))
             throw new CommerceRuleException("commerce_item_locked");
-        if (await db.CharacterEquipment.AnyAsync(x => x.CharacterItemId == itemId, ct)
-            || await db.CharacterSpatialArtifacts.AnyAsync(x => x.CharacterItemId == itemId, ct))
+        bool equipped = await db.CharacterEquipment
+            .Where(x => x.CharacterItemId == itemId)
+            .Select(x => x.CharacterItemId)
+            .Concat(
+                db.CharacterSpatialArtifacts
+                    .Where(x => x.CharacterItemId == itemId)
+                    .Select(x => x.CharacterItemId))
+            .AnyAsync(ct);
+        if (equipped)
             throw new CommerceRuleException("commerce_item_equipped");
         return item;
     }
