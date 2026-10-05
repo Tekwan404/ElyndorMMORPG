@@ -14,7 +14,7 @@ public sealed class CombatBalanceBenchmarkTests
             Path.GetFullPath("content/package.json"));
 
         Assert.Equal("0.37.0", content.ContentVersion);
-        Assert.Equal("0.29.0", content.BalanceVersion);
+        Assert.Equal("0.30.0", content.BalanceVersion);
         Assert.NotNull(content.CombatBalance);
         Assert.Equal(
             ["WEAK", "NORMAL", "GOOD"],
