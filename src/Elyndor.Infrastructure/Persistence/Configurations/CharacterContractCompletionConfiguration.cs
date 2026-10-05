@@ -14,7 +14,7 @@ public sealed class CharacterContractCompletionConfiguration
         builder.HasKey(state => new { state.CharacterId, state.ContractId })
             .HasName("pk_character_contract_completions");
         builder.Property(state => state.ContractId).HasMaxLength(64).IsRequired();
-        builder.Property(state => state.TargetMonsterId).HasMaxLength(64).IsRequired();
+        builder.Property(state => state.TargetMonsterId).HasMaxLength(128).IsRequired();
         builder.Property(state => state.CombatSessionId).IsRequired();
         builder.Property(state => state.CompletedAtUtc).IsRequired();
 

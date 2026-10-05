@@ -97,18 +97,18 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
             && !isWorldBossCombat
             && snapshot.PlayerContributionEligible == false)
         {
+            if (dungeonService is not null)
+            {
+                await dungeonService.HandleCombatFinishedAsync(
+                    snapshot,
+                    cancellationToken);
+            }
+
             if (durability is not null)
             {
                 await durability.CompleteParticipantAsync(
                     snapshot.SessionId,
                     characterId,
-                    cancellationToken);
-            }
-
-            if (dungeonService is not null)
-            {
-                await dungeonService.HandleCombatFinishedAsync(
-                    snapshot,
                     cancellationToken);
             }
 
@@ -154,17 +154,17 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                     cancellationToken);
             if (existingReward is not null)
             {
+                if (dungeonService is not null)
+                {
+                    await dungeonService.HandleCombatFinishedAsync(
+                        snapshot,
+                        cancellationToken);
+                }
                 if (durability is not null)
                 {
                     await durability.CompleteParticipantAsync(
                         snapshot.SessionId,
                         characterId,
-                        cancellationToken);
-                }
-                if (dungeonService is not null)
-                {
-                    await dungeonService.HandleCombatFinishedAsync(
-                        snapshot,
                         cancellationToken);
                 }
                 return new CombatRewardApplicationResult(
@@ -264,17 +264,19 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                     cancellationToken);
         }
 
+        // Keep the terminal journal until the encounter/checkpoint transition commits.
+        // A failure here must remain replayable even after the participant reward committed.
+        if (dungeonService is not null && snapshot.Status != CombatSessionStatus.Active)
+        {
+            await dungeonService.HandleCombatFinishedAsync(
+                snapshot,
+                cancellationToken);
+        }
         if (durability is not null)
         {
             await durability.CompleteParticipantAsync(
                 snapshot.SessionId,
                 characterId,
-                cancellationToken);
-        }
-        if (dungeonService is not null && snapshot.Status != CombatSessionStatus.Active)
-        {
-            await dungeonService.HandleCombatFinishedAsync(
-                snapshot,
                 cancellationToken);
         }
         return reward;

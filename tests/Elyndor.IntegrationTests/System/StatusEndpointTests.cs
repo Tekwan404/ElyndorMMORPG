@@ -1,13 +1,19 @@
 using System.Net.Http.Json;
 using Elyndor.Contracts.System;
+using Elyndor.IntegrationTests.Postgres;
 using Elyndor.IntegrationTests.Support;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Elyndor.IntegrationTests.System;
 
-public sealed class StatusEndpointTests
+[Collection(PostgresFixtureDefinition.Name)]
+public sealed class StatusEndpointTests(PostgresFixture postgres) : IAsyncLifetime
 {
+    public Task InitializeAsync() => postgres.ResetAsync();
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
     [Fact]
     public async Task GetStatusReturnsReadyServerSnapshot()
     {
@@ -17,7 +23,7 @@ public sealed class StatusEndpointTests
                 builder.UseTestAuthentication();
                 builder.UseSetting(
                     "ConnectionStrings:game",
-                    "Host=localhost;Port=5432;Database=elyndor_tests;Username=postgres;Password=postgres");
+                    postgres.ConnectionString);
             });
 
         using HttpClient client = factory.CreateClient();

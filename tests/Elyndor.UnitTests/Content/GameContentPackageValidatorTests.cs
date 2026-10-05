@@ -15,6 +15,16 @@ public sealed class GameContentPackageValidatorTests
     private static readonly DateTimeOffset PublishedAtUtc =
         new(2026, 8, 29, 0, 0, 0, TimeSpan.Zero);
 
+    [Theory]
+    [InlineData(128, false)]
+    [InlineData(129, true)]
+    public void CanonicalIdentifiersRespectThePersistenceLengthLimit(int length, bool invalid)
+    {
+        GameContentPackage package = CreatePackage(new GameContentDefinition("MONSTER", new string('A', length), []));
+        Assert.Equal(invalid, GameContentPackageValidator.Validate(package)
+            .Any(error => error.Code == "INVALID_DEFINITION_ID"));
+    }
+
     [Fact]
     public void ValidateAcceptsTypedReferencesToExistingDefinitions()
     {

@@ -9,10 +9,12 @@ using Elyndor.Core.Dungeons;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Items;
+using Elyndor.Infrastructure.Dungeons;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 using System.Text.Json.Serialization;
 
 namespace Elyndor.Infrastructure.Combat;
@@ -22,7 +24,9 @@ public sealed record CombatDurabilityBeginResult(bool Succeeded, bool Created);
 public sealed class CombatDurabilityService(
     GameDbContext dbContext,
     ILogger<CombatDurabilityService> logger,
-    IServiceScopeFactory? scopeFactory = null)
+    IServiceScopeFactory? scopeFactory = null,
+    CombatSessionRegistry? registry = null,
+    IHostApplicationLifetime? applicationLifetime = null)
 {
     private static readonly JsonSerializerOptions TerminalSnapshotJsonOptions = new()
     {
@@ -282,6 +286,7 @@ public sealed class CombatDurabilityService(
     public async Task<int> RecoverInterruptedAsync(
         CancellationToken cancellationToken)
     {
+        CombatStartupRecovery.EnsureBeforeAdmission(applicationLifetime);
         ActiveCombatSession[] sessions = await dbContext.ActiveCombatSessions
             .AsNoTracking()
             .OrderBy(state => state.StartedAtUtc)
@@ -289,108 +294,139 @@ public sealed class CombatDurabilityService(
         if (sessions.Length == 0)
             return 0;
 
-        IServiceScope? recoveryScope = scopeFactory?.CreateScope();
-        try
+        List<Exception> failures = [];
+        int recovered = 0;
+        foreach (IGrouping<Guid, ActiveCombatSession> sessionGroup in sessions.GroupBy(
+                     session => session.SessionId))
         {
-            ICombatSessionFinalizer? finalizer = recoveryScope?.ServiceProvider
-                .GetService<ICombatSessionFinalizer>();
-
-            foreach (IGrouping<Guid, ActiveCombatSession> sessionGroup in sessions.GroupBy(
-                         session => session.SessionId))
+            ActiveCombatSession[] participantStates = sessionGroup.ToArray();
+            ActiveCombatSession session = participantStates[0];
+            Guid[] characterIds = participantStates.Select(state => state.CharacterId).ToArray();
+            if (registry is not null)
             {
-                ActiveCombatSession[] participantStates = sessionGroup.ToArray();
-                ActiveCombatSession session = participantStates[0];
+                Guid[] accountIds = await dbContext.Characters.AsNoTracking()
+                    .Where(character => characterIds.Contains(character.Id))
+                    .Select(character => character.AccountId)
+                    .ToArrayAsync(cancellationToken);
+                if (accountIds.Any(accountId => registry.Resume(accountId).Snapshot?.SessionId == session.SessionId))
+                    continue;
+            }
+
+            try
+            {
                 bool rewardCommitted = await dbContext.CombatRewardGrants
                     .AsNoTracking()
                     .AnyAsync(
                         grant => grant.CombatSessionId == session.SessionId,
                         cancellationToken);
 
-                bool finalizedTerminalCombat = false;
-                bool terminalRecoveryAttempted = false;
                 string? terminalSnapshotJson = participantStates
                     .Select(state => state.TerminalSnapshotJson)
                     .FirstOrDefault(value => !string.IsNullOrWhiteSpace(value));
-                if (finalizer is not null
-                    && !string.IsNullOrWhiteSpace(terminalSnapshotJson))
+                bool hasTerminalEvidence = participantStates.Any(state => state.TerminalSnapshotJson is not null);
+                if (hasTerminalEvidence)
                 {
-                    try
+                    if (string.IsNullOrWhiteSpace(terminalSnapshotJson))
+                        throw new InvalidOperationException($"Combat {session.SessionId} has empty terminal evidence.");
+                    CombatSessionSnapshot? terminalSnapshot =
+                        JsonSerializer.Deserialize<CombatSessionSnapshot>(
+                            terminalSnapshotJson,
+                            TerminalSnapshotJsonOptions);
+                    if (terminalSnapshot is null
+                        || terminalSnapshot.Status == CombatSessionStatus.Active
+                        || terminalSnapshot.SessionId != session.SessionId)
+                        throw new InvalidOperationException($"Combat {session.SessionId} has invalid terminal evidence.");
+
+                    using IServiceScope? recoveryScope = scopeFactory?.CreateScope();
+                    ICombatSessionFinalizer finalizer = recoveryScope?.ServiceProvider
+                        .GetService<ICombatSessionFinalizer>()
+                        ?? throw new InvalidOperationException("Terminal combat recovery requires a finalizer.");
+                    foreach (ActiveCombatSession participant in participantStates)
                     {
-                        CombatSessionSnapshot? terminalSnapshot =
-                            JsonSerializer.Deserialize<CombatSessionSnapshot>(
-                                terminalSnapshotJson,
-                                TerminalSnapshotJsonOptions);
-                        if (terminalSnapshot is not null
-                            && terminalSnapshot.Status != CombatSessionStatus.Active)
+                        CombatSessionSnapshot participantSnapshot = ProjectSnapshotForCharacter(
+                            terminalSnapshot, participant.CharacterId);
+                        await finalizer.FinalizeAsync(participant.CharacterId, participantSnapshot, cancellationToken);
+                    }
+                    if (await dbContext.ActiveCombatSessions.AsNoTracking()
+                        .AnyAsync(state => state.SessionId == session.SessionId, cancellationToken))
+                        throw new InvalidOperationException($"Combat {session.SessionId} still has pending participant journals.");
+                }
+                else
+                {
+                    if (rewardCommitted)
+                    {
+                        using IServiceScope? recoveryScope = scopeFactory?.CreateScope();
+                        DungeonService? dungeons = recoveryScope?.ServiceProvider.GetService<DungeonService>();
+                        if (await dbContext.DungeonEncounters.AsNoTracking()
+                            .AnyAsync(encounter => encounter.CombatSessionId == session.SessionId
+                                && encounter.State == DungeonEncounterState.Active, cancellationToken))
                         {
-                            terminalRecoveryAttempted = true;
-                            foreach (ActiveCombatSession participant in participantStates)
-                            {
-                                CombatSessionSnapshot participantSnapshot =
-                                    ProjectSnapshotForCharacter(
-                                        terminalSnapshot,
-                                        participant.CharacterId);
-                                await finalizer.FinalizeAsync(
-                                    participant.CharacterId,
-                                    participantSnapshot,
-                                    cancellationToken);
-                            }
-
-                            finalizedTerminalCombat = !await dbContext.ActiveCombatSessions
-                                .AsNoTracking()
-                                .AnyAsync(
-                                    state => state.SessionId == session.SessionId,
-                                    cancellationToken);
+                            if (dungeons is null)
+                                throw new InvalidOperationException("Committed dungeon victory recovery requires DungeonService.");
+                            await dungeons.ReconcileCommittedVictoryAtStartupAsync(session.SessionId, cancellationToken);
                         }
+                        Guid[] grantedCharacterIds = await dbContext.CombatRewardGrants.AsNoTracking()
+                            .Where(grant => grant.CombatSessionId == session.SessionId)
+                            .Select(grant => grant.CharacterId).ToArrayAsync(cancellationToken);
+                        await dbContext.ActiveCombatSessions
+                            .Where(state => state.SessionId == session.SessionId && grantedCharacterIds.Contains(state.CharacterId))
+                            .ExecuteDeleteAsync(cancellationToken);
+                        if (await dbContext.ActiveCombatSessions.AsNoTracking()
+                            .AnyAsync(state => state.SessionId == session.SessionId, cancellationToken))
+                            throw new InvalidOperationException($"Combat {session.SessionId} has participant journals without rewards or a terminal snapshot; their eligibility and rewards cannot be reconstructed.");
                     }
-                    catch (Exception exception)
+                    else
                     {
-                        TerminalCombatRecoveryFailed(
-                            logger,
-                            session.SessionId,
-                            exception);
+                        await dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
+                            () => RecoverUnfinishedSessionAsync(session.SessionId, cancellationToken));
                     }
                 }
-
-                if (!finalizedTerminalCombat && !terminalRecoveryAttempted)
-                {
-                    if (!rewardCommitted)
-                    {
-                        CombatConsumableUse[] uses = await dbContext.CombatConsumableUses
-                            .Where(use => use.SessionId == session.SessionId)
-                            .OrderBy(use => use.UsedAtUtc)
-                            .ToArrayAsync(cancellationToken);
-                        foreach (CombatConsumableUse use in uses)
-                            await RefundUseAsync(use, cancellationToken);
-                    }
-
-                    DungeonEncounter? interruptedEncounter = await dbContext.DungeonEncounters
-                        .SingleOrDefaultAsync(
-                            encounter => encounter.CombatSessionId == session.SessionId,
-                            cancellationToken);
-                    interruptedEncounter?.MarkWiped();
-
-                    dbContext.ActiveCombatSessions.RemoveRange(participantStates);
-                    await dbContext.SaveChangesAsync(cancellationToken);
-                }
-
-                if (!terminalRecoveryAttempted || finalizedTerminalCombat)
-                {
-                    InterruptedCombatRecovered(
-                        logger,
-                        session.SessionId,
-                        session.CharacterId,
-                        rewardCommitted || finalizedTerminalCombat,
-                        null);
-                }
+                recovered += participantStates.Length;
+                InterruptedCombatRecovered(logger, session.SessionId, session.CharacterId,
+                    rewardCommitted || hasTerminalEvidence, null);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                TerminalCombatRecoveryFailed(logger, session.SessionId, exception);
+                failures.Add(exception);
+                dbContext.ChangeTracker.Clear();
             }
         }
-        finally
-        {
-            recoveryScope?.Dispose();
-        }
+        if (failures.Count != 0)
+            throw new AggregateException("Combat recovery left durable evidence pending; startup must retry.", failures);
+        return recovered;
+    }
 
-        return sessions.Length;
+    private async Task RecoverUnfinishedSessionAsync(Guid sessionId, CancellationToken cancellationToken)
+    {
+        dbContext.ChangeTracker.Clear();
+        await using IDbContextTransaction? transaction =
+            await BeginAdvisoryLockAsync($"combat-recovery:{sessionId:N}", cancellationToken);
+        ActiveCombatSession[] remaining = await dbContext.ActiveCombatSessions
+            .Where(state => state.SessionId == sessionId).ToArrayAsync(cancellationToken);
+        if (remaining.Length == 0)
+            return;
+        if (remaining.Any(state => state.TerminalSnapshotJson is not null)
+            || await dbContext.CombatRewardGrants.AnyAsync(grant => grant.CombatSessionId == sessionId, cancellationToken))
+            throw new InvalidOperationException($"Combat {sessionId} has victory or terminal evidence; interruption cleanup is unsafe.");
+        CombatConsumableUse[] uses = await dbContext.CombatConsumableUses
+            .Where(use => use.SessionId == sessionId).OrderBy(use => use.UsedAtUtc)
+            .ToArrayAsync(cancellationToken);
+        foreach (CombatConsumableUse use in uses)
+            await RefundUseAsync(use, cancellationToken);
+        DungeonEncounter? encounter = await dbContext.DungeonEncounters
+            .SingleOrDefaultAsync(candidate => candidate.CombatSessionId == sessionId, cancellationToken);
+        bool transitioned = encounter?.State == DungeonEncounterState.Active;
+        encounter?.MarkWiped();
+        dbContext.ActiveCombatSessions.RemoveRange(remaining);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await CommitAsync(transaction, cancellationToken);
+        if (encounter is not null && transitioned)
+            DungeonService.LogCombatReconciled(logger, encounter, "interrupted_journal");
     }
 
     private static CombatSessionSnapshot ProjectSnapshotForCharacter(

@@ -1,11 +1,17 @@
+using Elyndor.IntegrationTests.Postgres;
 using Elyndor.IntegrationTests.Support;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Elyndor.IntegrationTests.System;
 
-public sealed class StaticFrontendTests
+[Collection(PostgresFixtureDefinition.Name)]
+public sealed class StaticFrontendTests(PostgresFixture postgres) : IAsyncLifetime
 {
+    public Task InitializeAsync() => postgres.ResetAsync();
+
+    public Task DisposeAsync() => Task.CompletedTask;
+
     [Fact]
     public async Task GetHashedFrontendAssetReturnsLongLivedImmutableCacheHeader()
     {
@@ -72,7 +78,7 @@ public sealed class StaticFrontendTests
         }
     }
 
-    private static WebApplicationFactory<Program> CreateFactory(string frontendDirectory) =>
+    private WebApplicationFactory<Program> CreateFactory(string frontendDirectory) =>
         new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
@@ -80,6 +86,6 @@ public sealed class StaticFrontendTests
                 builder.UseSetting("Frontend:DistPath", frontendDirectory);
                 builder.UseSetting(
                     "ConnectionStrings:game",
-                    "Host=localhost;Port=5432;Database=elyndor_tests;Username=postgres;Password=postgres");
+                    postgres.ConnectionString);
             });
 }
