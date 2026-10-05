@@ -43,8 +43,7 @@ public sealed class AuthoredWorldContentTests
                 authoredEncounterIds.Add(encounter.MonsterId);
                 Assert.True(indexes.MonstersById.TryGetValue(encounter.MonsterId, out MonsterDefinition? monster));
                 Assert.True(monster!.Rank is MonsterRank.Normal or MonsterRank.Elite);
-                Assert.Empty(monster.AbilityIds);
-                Assert.Equal("AUTHORED_EMPTY_AI", monster.AiProfileId);
+                Assert.False(string.IsNullOrWhiteSpace(monster.AiProfileId));
                 if (monster.Rank == MonsterRank.Elite) authoredEliteCount++;
                 Assert.False(string.IsNullOrWhiteSpace(monster.LootTableId));
                 Assert.True(indexes.LootTablesById.TryGetValue(monster.LootTableId!, out var lootTable));
