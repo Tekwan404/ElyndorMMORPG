@@ -14,7 +14,7 @@ public sealed class AuctionOptions
     public decimal ListingFeeRate { get; set; } = 0.01m;
     public decimal SaleTaxRate { get; set; } = 0.05m;
     public long MinimumListingFee { get; set; } = 1;
-    public int MaxActiveListings { get; set; } = 50;
+    public int MaxActiveListings { get; set; } = 100;
 }
 
 public sealed class AuctionSettlementService(GameDbContext db, CommerceTransaction transactions,
