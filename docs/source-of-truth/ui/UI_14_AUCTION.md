@@ -78,16 +78,18 @@ No bidding UI.
 # 6. Create Listing
 
 ```text
-ВЫБРАТЬ ПРЕДМЕТ
+ВЫБРАТЬ ПРЕДМЕТЫ
 → eligible Inventory mode
-→ quantity
-→ price
-→ duration
+→ один или несколько разных ItemInstance
+→ общая цена для каждого выбранного лота
 → fee preview
-→ [ВЫСТАВИТЬ]
+→ [ВЫСТАВИТЬ N ЛОТОВ]
 ```
 
-Fee/tax clearly shown.
+Каждый выбранный ItemInstance создаёт отдельный listing. Batch-create атомарный: если один
+предмет больше недоступен или не проходит auction policy, не создаётся ни одного лота.
+
+Fee/tax clearly shown как для одного лота, так и общей суммой по batch.
 
 ---
 

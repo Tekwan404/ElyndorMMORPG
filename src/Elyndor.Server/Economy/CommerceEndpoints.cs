@@ -16,6 +16,8 @@ public static class CommerceEndpoints
             Account(user) is { } account ? Results.Ok(await service.SellableItemsAsync(account, ct)) : Results.Unauthorized());
         group.MapPost("/auction/preview", async (AuctionPreviewRequest request, ClaimsPrincipal user, AuctionSettlementService service, CancellationToken ct) =>
             Account(user) is { } account ? Result(await service.PreviewAsync(account, request, ct)) : Results.Unauthorized());
+        group.MapPost("/auction/batch/preview", async (AuctionBatchPreviewRequest request, ClaimsPrincipal user, AuctionSettlementService service, CancellationToken ct) =>
+            Account(user) is { } account ? Result(await service.PreviewBatchAsync(account, request, ct)) : Results.Unauthorized());
         group.MapPost("/auction", async (AuctionCreateRequest request, ClaimsPrincipal user, AuctionSettlementService service, CancellationToken ct) =>
         {
             if (Account(user) is not { } account) return Results.Unauthorized();
@@ -23,6 +25,14 @@ public static class CommerceEndpoints
                 return Results.Problem(statusCode: StatusCodes.Status409Conflict,
                     extensions: new Dictionary<string, object?> { ["code"] = "auction_quote_required" });
             return Result(await service.CreateAsync(account, request, ct));
+        });
+        group.MapPost("/auction/batch", async (AuctionBatchCreateRequest request, ClaimsPrincipal user, AuctionSettlementService service, CancellationToken ct) =>
+        {
+            if (Account(user) is not { } account) return Results.Unauthorized();
+            if (!request.ExpectedFeePerItem.HasValue || !request.ExpectedTaxPerItem.HasValue)
+                return Results.Problem(statusCode: StatusCodes.Status409Conflict,
+                    extensions: new Dictionary<string, object?> { ["code"] = "auction_quote_required" });
+            return Result(await service.CreateBatchAsync(account, request, ct));
         });
         group.MapPost("/auction/{id:guid}/buy", async (Guid id, CommerceRequest request, ClaimsPrincipal user, AuctionSettlementService service, CancellationToken ct) =>
             Account(user) is { } account ? Result(await service.BuyAsync(account, id, request.RequestId, ct)) : Results.Unauthorized());
