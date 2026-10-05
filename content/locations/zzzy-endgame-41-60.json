@@ -1,6 +1,6 @@
 {
-  "contentVersion": "0.38.0",
-  "balanceVersion": "0.31.0",
+  "contentVersion": "0.37.0",
+  "balanceVersion": "0.30.0",
   "publishedAtUtc": "2026-10-05T19:15:00+00:00",
   "note": "Second world map and level 41-60 open-world progression. Art/backgrounds, AI abilities and loot are intentionally deferred.",
   "locations": [
