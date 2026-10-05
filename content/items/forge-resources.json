@@ -15,7 +15,7 @@
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
       "description": "Используется только для перековки одного свойства снаряжения.",
       "version": 2,
-      "iconId": "ore"
+      "iconId": "forge/reforge_stone"
     },
     {
       "id": "ENHANCEMENT_ORE",
@@ -29,7 +29,7 @@
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
       "description": "Материал для усиления снаряжения от +1 до +5. Не используется для перековки.",
       "version": 1,
-      "iconId": "ore",
+      "iconId": "forge/enhancement_ore",
       "buyPriceGold": 20,
       "sellPriceGold": 5
     },
@@ -45,7 +45,7 @@
       "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
       "description": "Обычный материал, полученный при разборе снаряжения.",
       "version": 1,
-      "iconId": "ore"
+      "iconId": "forge/forge_scrap"
     },
     {
       "id": "DUNGEON_CATALYST",
