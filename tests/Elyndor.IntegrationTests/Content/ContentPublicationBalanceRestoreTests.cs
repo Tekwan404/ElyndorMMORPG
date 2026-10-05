@@ -19,7 +19,7 @@ public sealed class ContentPublicationBalanceRestoreTests(PostgresFixture postgr
     {
         GameContentPackage bundled = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
-        Assert.Equal("0.36.2", bundled.ContentVersion);
+        Assert.Equal("0.36.3", bundled.ContentVersion);
         Assert.Equal("0.29.0", bundled.BalanceVersion);
 
         var currentPotion = bundled.Items!
