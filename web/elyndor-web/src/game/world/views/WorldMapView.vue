@@ -415,7 +415,7 @@ onMounted(() => {
         >
           <div
             class="map-selection__art"
-            :style="{ backgroundImage: `url(${selectedArt})` }"
+            :style="{ backgroundImage: selectedArt ? `url(${selectedArt})` : 'none' }"
             aria-hidden="true"
           />
           <div class="map-selection__copy">
