@@ -62,6 +62,20 @@ public sealed class AuthoredWorldContentTests
         Assert.Equal(17, authoredEliteCount);
         Assert.True(authoredEquipmentLootExists);
 
+        string[] LootItems(string monsterId)
+        {
+            MonsterDefinition monster = indexes.MonstersById[monsterId];
+            return indexes.LootTablesById[monster.LootTableId!].Entries
+                .Select(entry => entry.ItemId)
+                .ToArray();
+        }
+
+        Assert.DoesNotContain("ZHIOSTKOE_MIASO", LootItems("WHISPERING_FOREST_LESNOI_RAZBOINIK_L5"));
+        Assert.DoesNotContain("WOLF_FANG", LootItems("WHISPERING_FOREST_LESNOI_RAZBOINIK_L5"));
+        Assert.DoesNotContain("MESHOCHEK_MONET", LootItems("OLD_ROAD_DOROZHNYI_MARODIOR_L14"));
+        Assert.DoesNotContain("BOLOTNOE_MIASO", LootItems("MOON_ASH_MARSHES_LUNNOPEPELNYI_UTOPLENNIK_L25"));
+        Assert.Contains("PECHAT_KHRANITELIA_RASKOLA", LootItems("SHATTERED_LANDS_KHRANITEL_RAZLOMA_L32"));
+
         Assert.Equal("DEADLY", indexes.LocationsById["OBSIDIAN_EDGE"].DangerLevel);
     }
 
