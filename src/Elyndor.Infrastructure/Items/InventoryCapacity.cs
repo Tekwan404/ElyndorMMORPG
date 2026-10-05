@@ -48,7 +48,40 @@ public static class InventoryCapacity
         ArgumentNullException.ThrowIfNull(contentSnapshot);
 
         int baseCapacity = Resolve(contentSnapshot);
-        int usedSlots = await CountProjectedUsedSlotsAsync(
+
+        // The common read path has no pending inventory mutations. Keep it to two SQL
+        // statements instead of materializing every item/equipment id just to count slots.
+        if (!HasProjectedInventoryChanges(dbContext, characterId))
+        {
+            int usedSlots = await CountUsedSlotsAsync(
+                dbContext,
+                characterId,
+                cancellationToken);
+            string? artifactDefinitionId = await (
+                    from artifact in dbContext.CharacterSpatialArtifacts.AsNoTracking()
+                    join item in dbContext.CharacterItems.AsNoTracking()
+                        on artifact.CharacterItemId equals item.Id
+                    where artifact.CharacterId == characterId
+                    select item.ItemDefinitionId)
+                .SingleOrDefaultAsync(cancellationToken);
+            int artifactBonus = artifactDefinitionId is not null
+                && contentSnapshot.Indexes.ItemsById.TryGetValue(
+                    artifactDefinitionId,
+                    out ItemDefinition? artifactDefinition)
+                && artifactDefinition.Type == ItemType.SpatialArtifact
+                    ? Math.Max(0, artifactDefinition.InventoryCapacityBonus)
+                    : 0;
+
+            return new InventoryCapacityState(
+                baseCapacity,
+                artifactBonus,
+                checked(baseCapacity + artifactBonus),
+                usedSlots);
+        }
+
+        // Mutating workflows need projected state (tracked additions/removals that are not
+        // committed yet). Preserve the existing exact projection for that less common path.
+        int projectedUsedSlots = await CountProjectedUsedSlotsAsync(
             dbContext,
             characterId,
             cancellationToken);
@@ -56,7 +89,7 @@ public static class InventoryCapacity
             dbContext,
             characterId,
             cancellationToken);
-        int artifactBonus = artifactItemId.HasValue
+        int projectedArtifactBonus = artifactItemId.HasValue
             ? await ResolveArtifactBonusAsync(
                 dbContext,
                 artifactItemId.Value,
@@ -66,9 +99,9 @@ public static class InventoryCapacity
 
         return new InventoryCapacityState(
             baseCapacity,
-            artifactBonus,
-            checked(baseCapacity + artifactBonus),
-            usedSlots);
+            projectedArtifactBonus,
+            checked(baseCapacity + projectedArtifactBonus),
+            projectedUsedSlots);
     }
 
     public static Task<int> CountUsedSlotsAsync(
@@ -160,6 +193,19 @@ public static class InventoryCapacity
             ? 0
             : (remaining + definition.MaxStack - 1) / definition.MaxStack;
     }
+
+    private static bool HasProjectedInventoryChanges(
+        GameDbContext dbContext,
+        Guid characterId) =>
+        dbContext.ChangeTracker.Entries<CharacterItem>().Any(entry =>
+            entry.Entity.CharacterId == characterId
+            && entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+        || dbContext.ChangeTracker.Entries<CharacterEquipment>().Any(entry =>
+            entry.Entity.CharacterId == characterId
+            && entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+        || dbContext.ChangeTracker.Entries<CharacterSpatialArtifact>().Any(entry =>
+            entry.Entity.CharacterId == characterId
+            && entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted);
 
     private static async Task<int> CountProjectedUsedSlotsAsync(
         GameDbContext dbContext,
