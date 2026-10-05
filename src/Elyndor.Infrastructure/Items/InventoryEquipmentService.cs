@@ -932,6 +932,14 @@ public sealed class InventoryEquipmentService(
             .OrderBy(item => item.CreatedAtUtc)
             .ThenBy(item => item.Id)
             .ToArrayAsync(cancellationToken);
+        if (pending.Length == 0)
+            return;
+
+        int freeSlots = await InventoryCapacity.FreeSlotsAsync(
+            dbContext,
+            characterId,
+            content,
+            cancellationToken);
 
         foreach (PendingLootItem pendingItem in pending)
         {
@@ -944,11 +952,7 @@ public sealed class InventoryEquipmentService(
             }
             if (!definition.Stackable)
             {
-                if (await InventoryCapacity.FreeSlotsAsync(
-                        dbContext,
-                        characterId,
-                        content,
-                        cancellationToken) < 1)
+                if (freeSlots < 1)
                 {
                     break;
                 }
@@ -959,6 +963,7 @@ public sealed class InventoryEquipmentService(
                         definition,
                         timeProvider.GetUtcNow()));
                 dbContext.PendingLootItems.Remove(pendingItem);
+                freeSlots--;
                 await dbContext.SaveChangesAsync(cancellationToken);
                 continue;
             }
@@ -983,11 +988,6 @@ public sealed class InventoryEquipmentService(
                 remaining -= toAdd;
             }
 
-            int freeSlots = await InventoryCapacity.FreeSlotsAsync(
-                dbContext,
-                characterId,
-                content,
-                cancellationToken);
             while (remaining > 0 && freeSlots > 0)
             {
                 int quantity = Math.Min(definition.MaxStack, remaining);
