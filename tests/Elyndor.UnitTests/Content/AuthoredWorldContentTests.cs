@@ -125,7 +125,8 @@ public sealed class AuthoredWorldContentTests
                 encounter =>
                 {
                     MonsterDefinition monster = indexes.MonstersById[encounter.MonsterId];
-                    Assert.Contains(monster.ArtId, directArtIds);
+                    Assert.NotNull(monster.ArtId);
+                    Assert.Contains(monster.ArtId!, directArtIds);
                 });
         }
     }
