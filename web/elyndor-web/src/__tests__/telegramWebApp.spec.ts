@@ -6,6 +6,8 @@ import {
   setWebAuthenticationData,
 } from '@/telegram/telegramWebApp'
 
+const webAuthenticationStorageKey = 'elyndor.telegram-web-auth.session'
+
 const geometryVariables = [
   '--elyndor-tg-viewport-stable-height',
   '--elyndor-tg-safe-area-top',
@@ -21,6 +23,7 @@ const geometryVariables = [
 describe('telegramWebApp authentication data', () => {
   afterEach(() => {
     setWebAuthenticationData(null)
+    window.sessionStorage.removeItem(webAuthenticationStorageKey)
     delete window.Telegram
     delete document.documentElement.dataset.telegramFullscreen
     for (const variable of geometryVariables) {
@@ -32,6 +35,38 @@ describe('telegramWebApp authentication data', () => {
     setWebAuthenticationData('web:signed-browser-credential')
 
     expect(getTelegramInitData()).toBe('web:signed-browser-credential')
+  })
+
+  it('restores a valid browser credential from session storage after a page reload', () => {
+    const expiresAtUtc = new Date(Date.now() + 60_000).toISOString()
+    window.sessionStorage.setItem(webAuthenticationStorageKey, JSON.stringify({
+      value: 'web:persisted-browser-credential',
+      expiresAtUtc,
+    }))
+
+    expect(getTelegramInitData()).toBe('web:persisted-browser-credential')
+  })
+
+  it('does not restore an expired browser credential', () => {
+    const expiresAtUtc = new Date(Date.now() - 60_000).toISOString()
+    window.sessionStorage.setItem(webAuthenticationStorageKey, JSON.stringify({
+      value: 'web:expired-browser-credential',
+      expiresAtUtc,
+    }))
+
+    expect(getTelegramInitData()).toBeNull()
+    expect(window.sessionStorage.getItem(webAuthenticationStorageKey)).toBeNull()
+  })
+
+  it('persists the browser credential when the server supplies its expiry', () => {
+    const expiresAtUtc = new Date(Date.now() + 60_000).toISOString()
+
+    setWebAuthenticationData('web:signed-browser-credential', expiresAtUtc)
+
+    expect(window.sessionStorage.getItem(webAuthenticationStorageKey)).toBe(JSON.stringify({
+      value: 'web:signed-browser-credential',
+      expiresAtUtc,
+    }))
   })
 
   it('always prefers real Telegram Mini App initData', () => {
