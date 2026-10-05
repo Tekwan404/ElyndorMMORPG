@@ -14,6 +14,9 @@ public sealed class CommerceTransaction(GameDbContext db, IContentSnapshotProvid
 {
     public static Guid OperationId(Guid account, Guid request) =>
         new(SHA256.HashData(Encoding.UTF8.GetBytes($"{account:N}:{request:N}")).AsSpan(0, 16));
+
+    public static Guid OperationId(Guid account, Guid request, Guid subject) =>
+        new(SHA256.HashData(Encoding.UTF8.GetBytes($"{account:N}:{request:N}:{subject:N}")).AsSpan(0, 16));
     public async Task<CommerceResult<T>> RunAsync<T>(Guid accountId, Guid requestId, string operation,
         object payload, Guid[] participants, Func<Character[], bool, Task<T>> action, CancellationToken ct)
     {
