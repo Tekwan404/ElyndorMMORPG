@@ -387,7 +387,11 @@ public sealed class InventoryEquipmentService(
                     return InventoryOperationResult.Failure(InventoryErrorCodes.NotEquipment);
                 if (definition.Slot is null)
                     return InventoryOperationResult.Failure(InventoryErrorCodes.InvalidSlot);
-                if (character.Level < definition.RequiredLevel)
+                int requiredLevel = ItemRequiredLevelPolicy.Resolve(
+                    definition,
+                    item.ItemLevel,
+                    contentProvider.GetCurrent().Package.LevelProgression?.MaxLevel);
+                if (character.Level < requiredLevel)
                     return InventoryOperationResult.Failure(InventoryErrorCodes.RequiredLevel);
 
                 if (!contentProvider.GetCurrent().Indexes.ClassesById.TryGetValue(
@@ -1109,13 +1113,7 @@ public sealed class InventoryEquipmentService(
     }
 
     private static EquipmentSlot CanonicalizeEquipmentSlot(EquipmentSlot slot) =>
-        slot switch
-        {
-            EquipmentSlot.Weapon => EquipmentSlot.MainHand,
-            EquipmentSlot.Boots => EquipmentSlot.Feet,
-            EquipmentSlot.Accessory => EquipmentSlot.Amulet,
-            _ => slot
-        };
+        EquipmentSlotPolicy.Canonicalize(slot);
 
     private static EquipmentSlot[] EquivalentEquipmentSlots(EquipmentSlot canonicalSlot) =>
         canonicalSlot switch
