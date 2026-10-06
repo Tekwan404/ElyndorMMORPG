@@ -350,11 +350,22 @@ public sealed class BootstrapService(
                 state => state.CharacterId == character.Id,
                 cancellationToken);
         LocationDefinition current = worldMap.GetRequired(location!.LocationId);
+        OutOfCombatRecoveryOptions recovery = recoveryOptions?.Value ?? new();
+        bool isTown = string.Equals(
+            current.Id,
+            WorldLocationIds.StarterTown,
+            StringComparison.Ordinal);
+        decimal resourceRegenPerSecond =
+            recovery.ResolveResourceRegenPerSecond(effectiveResourceProfile, isTown);
+        ResourceProfile recoveryResourceProfile = effectiveResourceProfile with
+        {
+            OutOfCombatRegenPerSecond = resourceRegenPerSecond
+        };
 
         TimeSpan elapsed = now - vitals.CheckpointedAtUtc;
         TimeSpan contextElapsed = now - vitals.ContextStartedAtUtc;
         decimal currentResource = CharacterResourceRules.ApplyElapsed(
-            effectiveResourceProfile,
+            recoveryResourceProfile,
             vitals.CurrentResource,
             elapsed,
             isInCombat: false,
@@ -373,13 +384,9 @@ public sealed class BootstrapService(
             TimeSpan recoveryElapsed = now - recoveryFrom;
             if (recoveryElapsed > TimeSpan.Zero)
             {
-                OutOfCombatRecoveryOptions recovery = recoveryOptions?.Value ?? new();
-                decimal percentPerSecond = string.Equals(
-                    current.Id,
-                    WorldLocationIds.StarterTown,
-                    StringComparison.Ordinal)
-                        ? recovery.TownHpPercentPerSecond
-                        : recovery.FieldHpPercentPerSecond;
+                decimal percentPerSecond = isTown
+                    ? recovery.TownHpPercentPerSecond
+                    : recovery.FieldHpPercentPerSecond;
                 decimal elapsedSeconds = Math.Max(0m, (decimal)recoveryElapsed.TotalSeconds);
                 decimal hpPerSecond = stats.MaxHp * percentPerSecond / 100m;
                 currentHp = Math.Min(
