@@ -238,7 +238,8 @@ public sealed record ItemDefinition(
     string? LootContainerTableId = null,
     int LootContainerGoldMin = 0,
     int LootContainerGoldMax = 0,
-    string? ItemFamilyId = null);
+    string? ItemFamilyId = null,
+    IReadOnlyList<string>? AllowedClassIds = null);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,
