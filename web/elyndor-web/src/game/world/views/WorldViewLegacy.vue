@@ -143,8 +143,10 @@ const recoveryMessage = computed(() => {
 const needsOutOfCombatRefresh = computed(() => {
   const vitals = character.value?.vitals
   if (!vitals || combat.isActive) return false
-  return vitals.currentHp < vitals.maxHp
-    || (vitals.resourceType === 'RAGE' && vitals.currentResource > 0)
+  const resourceNeedsRefresh = vitals.resourceType === 'RAGE'
+    ? vitals.currentResource > 0
+    : vitals.maxResource > 0 && vitals.currentResource < vitals.maxResource
+  return vitals.currentHp < vitals.maxHp || resourceNeedsRefresh
 })
 
 async function acceptContract(contractId: string): Promise<void> {
