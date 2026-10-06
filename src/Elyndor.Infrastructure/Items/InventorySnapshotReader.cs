@@ -51,10 +51,17 @@ internal static class InventorySnapshotReader
             ItemDefinition enhancedDefinition = ItemEnhancementRules.ApplyStructuralEnhancement(
                 definition,
                 item.EnhancementLevel);
+            ItemDefinition leveledDefinition = enhancedDefinition with
+            {
+                RequiredLevel = ItemRequiredLevelPolicy.Resolve(
+                    definition,
+                    item.ItemLevel,
+                    content.LevelProgression?.MaxLevel)
+            };
             ItemDefinition effectiveDefinition = generated is null
-                ? enhancedDefinition
+                ? leveledDefinition
                 : ItemInstanceGenerator.ApplyGeneratedAffixes(
-                    enhancedDefinition,
+                    leveledDefinition,
                     generated.Affixes,
                     generated.DisplayName);
 
