@@ -61,8 +61,7 @@ public static class ItemFamilyScalingPolicy
     public static decimal LevelMultiplier(ItemizationDefinition itemization, int itemLevel)
     {
         ArgumentNullException.ThrowIfNull(itemization);
-        if (itemLevel < 1)
-            throw new ArgumentOutOfRangeException(nameof(itemLevel));
+        ArgumentOutOfRangeException.ThrowIfLessThan(itemLevel, 1);
 
         decimal x = itemLevel - 1;
         return 1m
