@@ -1091,7 +1091,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
             currentHp: 100,
             classId: "MAGE",
             level: 60);
-        Guid eyeId = await AddItemAsync(characterId, "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L60", 1);
+        Guid eyeId = await AddItemAsync(characterId, "UNIQUE_MAGE_EYE_OF_DEAD_STAR", 1);
         Guid focusId = await AddItemAsync(characterId, "FOKUS_OSTATOCHNOI_MANY_L60", 1);
 
         await using GameDbContext context = postgres.CreateDbContext();
