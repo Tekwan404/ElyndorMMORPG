@@ -319,8 +319,12 @@ public static class ItemInstanceGenerator
             throw new InvalidOperationException("Only equipment templates can generate equipment instances.");
 
         int itemLevel = ResolveItemLevel(template, random, overrides);
+        ItemDefinition structuralTemplate = ItemFamilyScalingPolicy.Apply(
+            template,
+            itemization,
+            itemLevel);
         decimal maxTemplatePower = CalculateTemplateMaxPower(template, itemization, itemLevel);
-        decimal structuralPower = CalculateStructuralPower(template, itemization);
+        decimal structuralPower = CalculateStructuralPower(structuralTemplate, itemization);
         if (maxTemplatePower <= structuralPower)
             maxTemplatePower = structuralPower + 1;
 
@@ -474,8 +478,12 @@ public static class ItemInstanceGenerator
         ArgumentNullException.ThrowIfNull(itemization);
         ArgumentNullException.ThrowIfNull(affixes);
 
+        ItemDefinition structuralTemplate = ItemFamilyScalingPolicy.Apply(
+            template,
+            itemization,
+            itemLevel);
         decimal maxTemplatePower = CalculateTemplateMaxPower(template, itemization, itemLevel);
-        decimal structuralPower = CalculateStructuralPower(template, itemization);
+        decimal structuralPower = CalculateStructuralPower(structuralTemplate, itemization);
         if (maxTemplatePower <= structuralPower)
             maxTemplatePower = structuralPower + 1;
 
