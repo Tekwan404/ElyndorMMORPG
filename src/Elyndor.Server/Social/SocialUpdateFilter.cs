@@ -1,7 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Social;
-using Elyndor.Core.Social;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Server.Realtime;
 using Microsoft.AspNetCore.SignalR;
