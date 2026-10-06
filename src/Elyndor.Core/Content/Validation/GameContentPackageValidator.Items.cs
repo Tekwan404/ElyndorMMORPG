@@ -392,7 +392,7 @@ public static partial class GameContentPackageValidator
         private static bool HasValidEquipmentCategoryShape(ItemDefinition item) =>
             item.Slot switch
             {
-                EquipmentSlot.Weapon or EquipmentSlot.MainHand =>
+                EquipmentSlot.MainHand =>
                     EquipmentCategoryIds.IsWeapon(item.WeaponCategory)
                     && item.ArmorCategory is null
                     && item.OffHandCategory is null,
@@ -401,12 +401,11 @@ public static partial class GameContentPackageValidator
                     && (EquipmentCategoryIds.IsOneHandedWeapon(item.WeaponCategory)
                         ^ EquipmentCategoryIds.IsOffHand(item.OffHandCategory)),
                 EquipmentSlot.Head or EquipmentSlot.Shoulders or EquipmentSlot.Chest or EquipmentSlot.Hands
-                    or EquipmentSlot.Legs or EquipmentSlot.Boots or EquipmentSlot.Feet
-                    or EquipmentSlot.Waist or EquipmentSlot.Wrist =>
+                    or EquipmentSlot.Legs or EquipmentSlot.Feet =>
                     EquipmentCategoryIds.IsArmor(item.ArmorCategory)
                     && item.WeaponCategory is null
                     && item.OffHandCategory is null,
-                EquipmentSlot.Accessory or EquipmentSlot.Cloak or EquipmentSlot.Amulet
+                EquipmentSlot.Cloak or EquipmentSlot.Amulet
                     or EquipmentSlot.Ring1 or EquipmentSlot.Ring2 =>
                     item.WeaponCategory is null
                     && item.ArmorCategory is null
@@ -493,13 +492,8 @@ public static partial class GameContentPackageValidator
             if (!hasMinimum && !hasMaximum) return false;
             if (!hasMinimum || !hasMaximum) return true;
 
-            EquipmentSlot? canonicalSlot = item.Slot switch
-            {
-                EquipmentSlot.Weapon => EquipmentSlot.MainHand,
-                _ => item.Slot
-            };
             return item.Type != ItemType.Equipment
-                || canonicalSlot != EquipmentSlot.MainHand
+                || item.Slot != EquipmentSlot.MainHand
                 || !EquipmentCategoryIds.IsWeapon(item.WeaponCategory)
                 || item.WeaponDamageMin < 0
                 || item.WeaponDamageMax < item.WeaponDamageMin;
