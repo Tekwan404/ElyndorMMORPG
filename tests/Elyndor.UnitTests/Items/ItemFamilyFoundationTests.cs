@@ -7,17 +7,13 @@ namespace Elyndor.UnitTests.Items;
 public sealed class ItemFamilyFoundationTests
 {
     [Fact]
-    public void CanonicalSlotPolicyKeepsTwelveSlotsAndMapsOnlyTransitionalAliases()
+    public void CanonicalSlotPolicyContainsExactlyTwelveSlots()
     {
-        Assert.True(EquipmentSlotPolicy.IsCanonical(EquipmentSlot.MainHand));
-        Assert.True(EquipmentSlotPolicy.IsCanonical(EquipmentSlot.Ring2));
-        Assert.False(EquipmentSlotPolicy.IsCanonical(EquipmentSlot.Weapon));
-        Assert.False(EquipmentSlotPolicy.IsCanonical(EquipmentSlot.Waist));
-        Assert.False(EquipmentSlotPolicy.IsCanonical(EquipmentSlot.Wrist));
+        EquipmentSlot[] slots = Enum.GetValues<EquipmentSlot>();
 
-        Assert.Equal(EquipmentSlot.MainHand, EquipmentSlotPolicy.Canonicalize(EquipmentSlot.Weapon));
-        Assert.Equal(EquipmentSlot.Feet, EquipmentSlotPolicy.Canonicalize(EquipmentSlot.Boots));
-        Assert.Equal(EquipmentSlot.Amulet, EquipmentSlotPolicy.Canonicalize(EquipmentSlot.Accessory));
+        Assert.Equal(12, slots.Length);
+        Assert.All(slots, slot => Assert.True(EquipmentSlotPolicy.IsCanonical(slot)));
+        Assert.All(slots, slot => Assert.Equal(slot, EquipmentSlotPolicy.Canonicalize(slot)));
     }
 
     [Fact]
