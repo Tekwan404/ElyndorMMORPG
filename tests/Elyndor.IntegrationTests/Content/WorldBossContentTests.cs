@@ -85,9 +85,9 @@ public sealed class WorldBossContentTests
 
         string[] uniqueIds =
         [
-            "UNIQUE_WARRIOR_BLACKHEART_L60",
-            "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L60",
-            "UNIQUE_ARCHER_LAST_CONSTELLATION_L60"
+            "UNIQUE_WARRIOR_BLACKHEART",
+            "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
+            "UNIQUE_ARCHER_LAST_CONSTELLATION"
         ];
         Assert.All(uniqueIds, uniqueId =>
         {
