@@ -9,7 +9,23 @@
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "bonuses": []
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 174.5959,
+          "armorFlat": 164.8961
+        },
+        {
+          "requiredPieces": 4,
+          "magicResistanceFlat": 54.3187,
+          "dodgePercent": 2
+        },
+        {
+          "requiredPieces": 6,
+          "maxHpFlat": 174.5959,
+          "armorFlat": 164.8961
+        }
+      ]
     },
     {
       "id": "SET_L60_NORMAL_WARRIOR_BERSERKER",
@@ -17,7 +33,21 @@
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "bonuses": []
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "criticalChancePercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 58.1986
+        },
+        {
+          "requiredPieces": 6,
+          "attackSpeedPercent": 5,
+          "criticalDamagePercent": 10
+        }
+      ]
     },
     {
       "id": "SET_L60_NORMAL_WARRIOR_WARLORD",
@@ -25,7 +55,21 @@
       "allowedClassIds": [
         "WARRIOR"
       ],
-      "bonuses": []
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 174.5959
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 58.1986
+        },
+        {
+          "requiredPieces": 6,
+          "accuracyPercent": 3,
+          "maxHpFlat": 174.5959
+        }
+      ]
     },
     {
       "id": "SET_L60_NORMAL_MAGE_FIRE",
@@ -33,7 +77,21 @@
       "allowedClassIds": [
         "MAGE"
       ],
-      "bonuses": []
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "criticalChancePercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "spellPowerFlat": 58.1986
+        },
+        {
+          "requiredPieces": 6,
+          "magicPenetrationPercent": 5,
+          "criticalChancePercent": 4
+        }
+      ]
     },
     {
       "id": "SET_L60_NORMAL_MAGE_ARCANE",
@@ -41,7 +99,21 @@
       "allowedClassIds": [
         "MAGE"
       ],
-      "bonuses": []
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxResourceFlat": 77.5982
+        },
+        {
+          "requiredPieces": 4,
+          "spellPowerFlat": 58.1986
+        },
+        {
+          "requiredPieces": 6,
+          "magicPenetrationPercent": 5,
+          "maxResourceFlat": 77.5982
+        }
+      ]
     },
     {
       "id": "SET_L60_NORMAL_MAGE_FROST",
@@ -49,7 +121,23 @@
       "allowedClassIds": [
         "MAGE"
       ],
-      "bonuses": []
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxResourceFlat": 58.1986,
+          "magicResistanceFlat": 27.1594
+        },
+        {
+          "requiredPieces": 4,
+          "spellPowerFlat": 46.5589,
+          "maxHpFlat": 139.6767
+        },
+        {
+          "requiredPieces": 6,
+          "magicResistanceFlat": 54.3187,
+          "criticalChancePercent": 4
+        }
+      ]
     },
     {
       "id": "SET_L60_NORMAL_ARCHER_MARKSMAN",
@@ -57,7 +145,21 @@
       "allowedClassIds": [
         "ARCHER"
       ],
-      "bonuses": []
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "accuracyPercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "criticalChancePercent": 4
+        },
+        {
+          "requiredPieces": 6,
+          "armorPenetrationPercent": 5,
+          "attackPowerFlat": 58.1986
+        }
+      ]
     },
     {
       "id": "SET_L60_NORMAL_ARCHER_BEAST_MASTERY",
@@ -65,7 +167,21 @@
       "allowedClassIds": [
         "ARCHER"
       ],
-      "bonuses": []
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 174.5959
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 58.1986
+        },
+        {
+          "requiredPieces": 6,
+          "attackSpeedPercent": 4,
+          "criticalChancePercent": 4
+        }
+      ]
     },
     {
       "id": "SET_L60_NORMAL_ARCHER_SURVIVAL",
@@ -73,7 +189,21 @@
       "allowedClassIds": [
         "ARCHER"
       ],
-      "bonuses": []
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "dodgePercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "criticalChancePercent": 4
+        },
+        {
+          "requiredPieces": 6,
+          "armorPenetrationPercent": 5,
+          "maxHpFlat": 174.5959
+        }
+      ]
     },
     {
       "id": "SET_L60_NORMAL_PALADIN_HOLY",
@@ -81,7 +211,21 @@
       "allowedClassIds": [
         "PALADIN"
       ],
-      "bonuses": []
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxResourceFlat": 77.5982
+        },
+        {
+          "requiredPieces": 4,
+          "spellPowerFlat": 58.1986
+        },
+        {
+          "requiredPieces": 6,
+          "criticalChancePercent": 4,
+          "maxResourceFlat": 58.1986
+        }
+      ]
     },
     {
       "id": "SET_L60_NORMAL_PALADIN_PROTECTION",
@@ -89,7 +233,22 @@
       "allowedClassIds": [
         "PALADIN"
       ],
-      "bonuses": []
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 174.5959,
+          "armorFlat": 164.8961
+        },
+        {
+          "requiredPieces": 4,
+          "magicResistanceFlat": 54.3187
+        },
+        {
+          "requiredPieces": 6,
+          "maxHpFlat": 174.5959,
+          "armorFlat": 164.8961
+        }
+      ]
     },
     {
       "id": "SET_L60_NORMAL_PALADIN_RETRIBUTION",
@@ -97,7 +256,21 @@
       "allowedClassIds": [
         "PALADIN"
       ],
-      "bonuses": []
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "criticalChancePercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 58.1986
+        },
+        {
+          "requiredPieces": 6,
+          "spellPowerFlat": 40.739,
+          "criticalChancePercent": 4
+        }
+      ]
     }
   ]
 }
