@@ -384,7 +384,6 @@ export interface ItemStats {
 export type EquipmentSlot =
   | 'MainHand' | 'OffHand' | 'Head' | 'Shoulders' | 'Chest' | 'Hands' | 'Legs' | 'Feet'
   | 'Cloak' | 'Amulet' | 'Ring1' | 'Ring2'
-  | 'Weapon' | 'Boots' | 'Accessory' | 'Waist' | 'Wrist'
 export type ItemType = 'Equipment' | 'Material' | 'Consumable' | 'LootContainer'
 export type ItemRarity = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary' | 'Unique'
 
@@ -437,7 +436,6 @@ export interface InventoryItem {
   setId: string | null
   weaponCategory: string | null
   armorCategory: string | null
-  /** @deprecated Item definitions no longer carry class restrictions. */
   allowedClassIds?: string[]
   weaponBaseAttackIntervalSeconds: number | null
   attackSpeedPercent: number
@@ -519,23 +517,18 @@ export interface PendingLootSnapshot {
 export interface InventorySnapshot {
   items: InventoryItem[]
   equipped: {
-    weapon: InventoryItem | null
+    mainHand: InventoryItem | null
+    offHand: InventoryItem | null
     head: InventoryItem | null
-    shoulders?: InventoryItem | null
+    shoulders: InventoryItem | null
     chest: InventoryItem | null
+    hands: InventoryItem | null
     legs: InventoryItem | null
-    boots: InventoryItem | null
-    accessory: InventoryItem | null
-    mainHand?: InventoryItem | null
-    offHand?: InventoryItem | null
-    hands?: InventoryItem | null
-    feet?: InventoryItem | null
-    cloak?: InventoryItem | null
-    amulet?: InventoryItem | null
-    ring1?: InventoryItem | null
-    ring2?: InventoryItem | null
-    waist?: InventoryItem | null
-    wrist?: InventoryItem | null
+    feet: InventoryItem | null
+    cloak: InventoryItem | null
+    amulet: InventoryItem | null
+    ring1: InventoryItem | null
+    ring2: InventoryItem | null
   }
 }
 
