@@ -151,12 +151,5 @@ public static class EquipmentStatModifierResolver
         return item.ArmorFlat * multiplier;
     }
 
-    private static EquipmentSlot? CanonicalSlot(EquipmentSlot? slot) =>
-        slot switch
-        {
-            EquipmentSlot.Weapon => EquipmentSlot.MainHand,
-            EquipmentSlot.Boots => EquipmentSlot.Feet,
-            EquipmentSlot.Accessory => EquipmentSlot.Amulet,
-            _ => slot
-        };
+    private static EquipmentSlot? CanonicalSlot(EquipmentSlot? slot) => slot;
 }
