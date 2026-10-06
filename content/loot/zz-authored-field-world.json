@@ -6455,54 +6455,6 @@
                                                                        {
                                                                            "itemId":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION_SHOULDERS",
                                                                            "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_WARRIOR_GUARDIAN_WAIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_WARRIOR_BERSERKER_WAIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_WARRIOR_WARLORD_WAIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_MAGE_FIRE_WAIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_MAGE_ARCANE_WAIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_MAGE_FROST_WAIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_WAIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WAIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_ARCHER_SURVIVAL_WAIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_PALADIN_HOLY_WAIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_PALADIN_PROTECTION_WAIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION_WAIST",
-                                                                           "weight":  1
                                                                        }
                                                                    ]
                                                    },
@@ -6559,54 +6511,18 @@
                                                                            "itemId":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION_SHOULDERS",
                                                                            "weight":  2.0833333333333335
                                                                        },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_WARRIOR_GUARDIAN_WAIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_WARRIOR_BERSERKER_WAIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_WARRIOR_WARLORD_WAIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_MAGE_FIRE_WAIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_MAGE_ARCANE_WAIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_MAGE_FROST_WAIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_WAIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WAIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_ARCHER_SURVIVAL_WAIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_PALADIN_HOLY_WAIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_PALADIN_PROTECTION_WAIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION_WAIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
                                                                        {
                                                                            "itemId":  "MOLOT_ARK_TORA",
                                                                            "weight":  25.0
@@ -6827,54 +6743,6 @@
                                                                        {
                                                                            "itemId":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION_HEAD",
                                                                            "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_WARRIOR_GUARDIAN_WRIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_WARRIOR_BERSERKER_WRIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_WARRIOR_WARLORD_WRIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_MAGE_FIRE_WRIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_MAGE_ARCANE_WRIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_MAGE_FROST_WRIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_WRIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WRIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_ARCHER_SURVIVAL_WRIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_PALADIN_HOLY_WRIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_PALADIN_PROTECTION_WRIST",
-                                                                           "weight":  1
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION_WRIST",
-                                                                           "weight":  1
                                                                        }
                                                                    ]
                                                    },
@@ -6931,54 +6799,18 @@
                                                                            "itemId":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION_HEAD",
                                                                            "weight":  2.0833333333333335
                                                                        },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_WARRIOR_GUARDIAN_WRIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_WARRIOR_BERSERKER_WRIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_WARRIOR_WARLORD_WRIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_MAGE_FIRE_WRIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_MAGE_ARCANE_WRIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_MAGE_FROST_WRIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_WRIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WRIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_ARCHER_SURVIVAL_WRIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_PALADIN_HOLY_WRIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_PALADIN_PROTECTION_WRIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
-                                                                       {
-                                                                           "itemId":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION_WRIST",
-                                                                           "weight":  2.0833333333333335
-                                                                       },
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
+                                                                       
                                                                        {
                                                                            "itemId":  "POSOKH_CHIORNOI_ZVEZDY",
                                                                            "weight":  25.0
