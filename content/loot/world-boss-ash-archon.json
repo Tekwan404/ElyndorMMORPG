@@ -20,7 +20,7 @@
               "maxQuantity": 1,
               "itemLevelMin": 60,
               "itemLevelMax": 60
-},
+            },
             {
               "itemId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
               "weight": 1,
@@ -28,7 +28,7 @@
               "maxQuantity": 1,
               "itemLevelMin": 60,
               "itemLevelMax": 60
-},
+            },
             {
               "itemId": "UNIQUE_ARCHER_LAST_CONSTELLATION",
               "weight": 1,
@@ -36,7 +36,7 @@
               "maxQuantity": 1,
               "itemLevelMin": 60,
               "itemLevelMax": 60
-},
+            },
             {
               "itemId": "FOKUS_OSTATOCHNOI_MANY_L60",
               "weight": 20,
@@ -82,7 +82,7 @@
               "maxQuantity": 1,
               "itemLevelMin": 60,
               "itemLevelMax": 60
-},
+            },
             {
               "itemId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
               "weight": 4,
@@ -90,7 +90,7 @@
               "maxQuantity": 1,
               "itemLevelMin": 60,
               "itemLevelMax": 60
-},
+            },
             {
               "itemId": "UNIQUE_ARCHER_LAST_CONSTELLATION",
               "weight": 4,
@@ -98,7 +98,7 @@
               "maxQuantity": 1,
               "itemLevelMin": 60,
               "itemLevelMax": 60
-},
+            },
             {
               "itemId": "FOKUS_OSTATOCHNOI_MANY_L60",
               "weight": 10,
