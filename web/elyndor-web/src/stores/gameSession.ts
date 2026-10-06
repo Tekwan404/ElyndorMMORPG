@@ -34,7 +34,10 @@ import type {
   QuestJournalResponse,
   WorldEncounter,
 } from '@/api/contracts'
-import { getTelegramInitData } from '@/telegram/telegramWebApp'
+import {
+  clearWebAuthenticationData,
+  getTelegramInitData,
+} from '@/telegram/telegramWebApp'
 
 export type GameSessionState =
   | 'idle'
@@ -93,6 +96,22 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       apiClient.setAccessToken(authentication.accessToken)
       roles.value = authentication.roles ?? []
       return authentication.accessToken
+    } catch (error) {
+      const browserCredential = getTelegramInitData()
+      if (
+        browserCredential?.startsWith('web:')
+        && error instanceof ApiRequestError
+        && error.status === 401
+        && error.code === 'telegram_web_credential_invalid'
+      ) {
+        clearWebAuthenticationData()
+        throw new ApiRequestError(
+          401,
+          'telegram_web_session_invalid',
+          error.correlationId,
+        )
+      }
+      throw error
     } finally {
       if (isRetry && state.value === 'reauthenticating') {
         state.value = previousState

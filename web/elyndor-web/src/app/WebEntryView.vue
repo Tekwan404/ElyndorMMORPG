@@ -4,6 +4,7 @@ import { computed, onMounted, ref } from 'vue'
 import { ApiRequestError } from '@/api/apiClient'
 import AppShell from '@/app/AppShell.vue'
 import {
+  clearWebAuthenticationData,
   getTelegramInitData,
   setWebAuthenticationData,
 } from '@/telegram/telegramWebApp'
@@ -69,6 +70,7 @@ async function login(): Promise<void> {
 
   state.value = 'redirecting'
   errorCode.value = null
+  clearWebAuthenticationData()
   try {
     await beginTelegramWebLogin()
   } catch (error) {

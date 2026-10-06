@@ -21,6 +21,8 @@ const pendingLoginKey = 'elyndor.telegram-web-login.pending'
 const pendingLoginMaxAgeMs = 10 * 60 * 1000
 
 export async function beginTelegramWebLogin(): Promise<void> {
+  resetPendingTelegramWebLogin()
+
   const config = await apiClient.request<TelegramWebAuthenticationConfigResponse>(
     '/api/v1/auth/telegram-web/config',
     {},
@@ -101,6 +103,24 @@ export async function completeTelegramWebLogin(): Promise<TelegramWebAuthenticat
   }
 
   return response
+}
+
+export function resetPendingTelegramWebLogin(): void {
+  try {
+    window.sessionStorage.removeItem(pendingLoginKey)
+  } catch {
+    // A fresh authorization can still proceed when storage cleanup is unavailable.
+  }
+
+  const currentUrl = new URL(window.location.href)
+  if (
+    currentUrl.searchParams.has('code')
+    || currentUrl.searchParams.has('state')
+    || currentUrl.searchParams.has('error')
+    || currentUrl.searchParams.has('error_description')
+  ) {
+    clearTelegramCallbackParameters(currentUrl)
+  }
 }
 
 function readPendingLogin(): PendingTelegramWebLogin | null {
