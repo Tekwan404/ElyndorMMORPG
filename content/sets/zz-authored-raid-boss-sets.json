@@ -6,6 +6,7 @@
                           {
                               "id":  "SET_HEART_OF_BLIGHTED_GROVE_WARRIOR_GUARDIAN",
                               "name":  "Доспех Хранителя Сердца",
+                              "allowedClassIds": ["WARRIOR"],
                               "bonuses":  [
 
                                           ]
@@ -13,6 +14,7 @@
                           {
                               "id":  "SET_HEART_OF_BLIGHTED_GROVE_WARRIOR_BERSERKER",
                               "name":  "Клятва Багровой Ярости",
+                              "allowedClassIds": ["WARRIOR"],
                               "bonuses":  [
 
                                           ]
@@ -20,6 +22,7 @@
                           {
                               "id":  "SET_HEART_OF_BLIGHTED_GROVE_WARRIOR_WARLORD",
                               "name":  "Регалии Багрового Полководца",
+                              "allowedClassIds": ["WARRIOR"],
                               "bonuses":  [
 
                                           ]
@@ -27,6 +30,7 @@
                           {
                               "id":  "SET_HEART_OF_BLIGHTED_GROVE_MAGE_FIRE",
                               "name":  "Венец Пылающей Чащи",
+                              "allowedClassIds": ["MAGE"],
                               "bonuses":  [
 
                                           ]
@@ -34,6 +38,7 @@
                           {
                               "id":  "SET_HEART_OF_BLIGHTED_GROVE_MAGE_ARCANE",
                               "name":  "Ризы Корневого Резонанса",
+                              "allowedClassIds": ["MAGE"],
                               "bonuses":  [
 
                                           ]
@@ -41,6 +46,7 @@
                           {
                               "id":  "SET_HEART_OF_BLIGHTED_GROVE_MAGE_FROST",
                               "name":  "Покров Белого Корня",
+                              "allowedClassIds": ["MAGE"],
                               "bonuses":  [
 
                                           ]
@@ -48,6 +54,7 @@
                           {
                               "id":  "SET_HEART_OF_BLIGHTED_GROVE_ARCHER_MARKSMANSHIP",
                               "name":  "Клятва Дикого Следа",
+                              "allowedClassIds": ["ARCHER"],
                               "bonuses":  [
 
                                           ]
@@ -55,6 +62,7 @@
                           {
                               "id":  "SET_HEART_OF_BLIGHTED_GROVE_ARCHER_BEAST_MASTERY",
                               "name":  "Шкуры Вожака Чащи",
+                              "allowedClassIds": ["ARCHER"],
                               "bonuses":  [
 
                                           ]
@@ -62,6 +70,7 @@
                           {
                               "id":  "SET_HEART_OF_BLIGHTED_GROVE_ARCHER_SURVIVAL",
                               "name":  "Шкуры Ядовитого Следа",
+                              "allowedClassIds": ["ARCHER"],
                               "bonuses":  [
 
                                           ]
@@ -69,6 +78,7 @@
                           {
                               "id":  "SET_HEART_OF_BLIGHTED_GROVE_PALADIN_HOLY",
                               "name":  "Доспех Рассвета Чащи",
+                              "allowedClassIds": ["PALADIN"],
                               "bonuses":  [
 
                                           ]
@@ -76,6 +86,7 @@
                           {
                               "id":  "SET_HEART_OF_BLIGHTED_GROVE_PALADIN_PROTECTION",
                               "name":  "Оплот Живого Сердца",
+                              "allowedClassIds": ["PALADIN"],
                               "bonuses":  [
 
                                           ]
@@ -83,6 +94,7 @@
                           {
                               "id":  "SET_HEART_OF_BLIGHTED_GROVE_PALADIN_RETRIBUTION",
                               "name":  "Латы Очищающего Пламени",
+                              "allowedClassIds": ["PALADIN"],
                               "bonuses":  [
 
                                           ]
@@ -90,6 +102,7 @@
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_GUARDIAN",
                               "name":  "Оплот Сломанного Щита",
+                              "allowedClassIds": ["WARRIOR"],
                               "bonuses":  [
 
                                           ]
@@ -97,6 +110,7 @@
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_BERSERKER",
                               "name":  "Клятва Разбитого Клинка",
+                              "allowedClassIds": ["WARRIOR"],
                               "bonuses":  [
 
                                           ]
@@ -104,6 +118,7 @@
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_WARRIOR_WARLORD",
                               "name":  "Регалии Павшего Командора",
+                              "allowedClassIds": ["WARRIOR"],
                               "bonuses":  [
 
                                           ]
@@ -111,6 +126,7 @@
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FIRE",
                               "name":  "Одеяния Запретного Пламени",
+                              "allowedClassIds": ["MAGE"],
                               "bonuses":  [
 
                                           ]
@@ -118,6 +134,7 @@
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_MAGE_ARCANE",
                               "name":  "Ризы Единой Клятвы",
+                              "allowedClassIds": ["MAGE"],
                               "bonuses":  [
 
                                           ]
@@ -125,6 +142,7 @@
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_MAGE_FROST",
                               "name":  "Покров Хладного Архива",
+                              "allowedClassIds": ["MAGE"],
                               "bonuses":  [
 
                                           ]
@@ -132,6 +150,7 @@
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_MARKSMANSHIP",
                               "name":  "Регалии Стрелка Чёрного Знамени",
+                              "allowedClassIds": ["ARCHER"],
                               "bonuses":  [
 
                                           ]
@@ -139,6 +158,7 @@
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_BEAST_MASTERY",
                               "name":  "Клятва Зверолова Ордена",
+                              "allowedClassIds": ["ARCHER"],
                               "bonuses":  [
 
                                           ]
@@ -146,6 +166,7 @@
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_ARCHER_SURVIVAL",
                               "name":  "Снаряжение Ловчего Раскола",
+                              "allowedClassIds": ["ARCHER"],
                               "bonuses":  [
 
                                           ]
@@ -153,6 +174,7 @@
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_HOLY",
                               "name":  "Клятва Расколотого Рассвета",
+                              "allowedClassIds": ["PALADIN"],
                               "bonuses":  [
 
                                           ]
@@ -160,6 +182,7 @@
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_PROTECTION",
                               "name":  "Доспех Сломанного Щита",
+                              "allowedClassIds": ["PALADIN"],
                               "bonuses":  [
 
                                           ]
@@ -167,6 +190,7 @@
                           {
                               "id":  "SET_SHATTERED_ORDER_RAID_PALADIN_RETRIBUTION",
                               "name":  "Латы Последнего Приговора",
+                              "allowedClassIds": ["PALADIN"],
                               "bonuses":  [
 
                                           ]
@@ -174,6 +198,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_WARRIOR_GUARDIAN",
                               "name":  "Доспехи Чёрного Бастиона",
+                              "allowedClassIds": ["WARRIOR"],
                               "bonuses":  [
 
                                           ]
@@ -181,6 +206,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_WARRIOR_BERSERKER",
                               "name":  "Наследие Багрового Крушителя",
+                              "allowedClassIds": ["WARRIOR"],
                               "bonuses":  [
 
                                           ]
@@ -188,6 +214,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_WARRIOR_WARLORD",
                               "name":  "Регалии Пепельного Маршала",
+                              "allowedClassIds": ["WARRIOR"],
                               "bonuses":  [
 
                                           ]
@@ -195,6 +222,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_MAGE_FIRE",
                               "name":  "Одеяния Пепельной Звезды",
+                              "allowedClassIds": ["MAGE"],
                               "bonuses":  [
 
                                           ]
@@ -202,6 +230,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_MAGE_ARCANE",
                               "name":  "Одеяния Затмённого Оракула",
+                              "allowedClassIds": ["MAGE"],
                               "bonuses":  [
 
                                           ]
@@ -209,6 +238,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_MAGE_FROST",
                               "name":  "Покров Безмолвного Инея",
+                              "allowedClassIds": ["MAGE"],
                               "bonuses":  [
 
                                           ]
@@ -216,6 +246,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP",
                               "name":  "Наследие Безмолвной Стрелы",
+                              "allowedClassIds": ["ARCHER"],
                               "bonuses":  [
 
                                           ]
@@ -223,6 +254,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY",
                               "name":  "Регалии Хозяина Чёрной Гончей",
+                              "allowedClassIds": ["ARCHER"],
                               "bonuses":  [
 
                                           ]
@@ -230,6 +262,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_ARCHER_SURVIVAL",
                               "name":  "Наследие Последнего Ловчего",
+                              "allowedClassIds": ["ARCHER"],
                               "bonuses":  [
 
                                           ]
@@ -237,6 +270,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_PALADIN_HOLY",
                               "name":  "Регалии Последнего Рассвета",
+                              "allowedClassIds": ["PALADIN"],
                               "bonuses":  [
 
                                           ]
@@ -244,6 +278,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_PALADIN_PROTECTION",
                               "name":  "Оплот Первого Стража",
+                              "allowedClassIds": ["PALADIN"],
                               "bonuses":  [
 
                                           ]
@@ -251,6 +286,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION",
                               "name":  "Латы Последнего Суда",
+                              "allowedClassIds": ["PALADIN"],
                               "bonuses":  [
 
                                           ]
