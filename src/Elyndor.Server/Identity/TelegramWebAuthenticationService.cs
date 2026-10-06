@@ -113,7 +113,7 @@ public static class TelegramWebAuthenticationService
                 return null;
             }
 
-            string? telegramId = principal.FindFirst("id")?.Value;
+            string? telegramId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
             if (!long.TryParse(
                     telegramId,
                     NumberStyles.None,
