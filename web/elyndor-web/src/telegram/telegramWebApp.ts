@@ -94,6 +94,11 @@ export function setWebAuthenticationData(
   }
 }
 
+export function clearWebAuthenticationData(): void {
+  webAuthenticationData = null
+  removeStoredWebAuthenticationData()
+}
+
 function readStoredWebAuthenticationData(): string | null {
   try {
     const raw = window.sessionStorage.getItem(webAuthenticationStorageKey)
