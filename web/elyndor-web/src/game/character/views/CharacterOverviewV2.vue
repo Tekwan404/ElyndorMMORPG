@@ -247,9 +247,6 @@ function slotLabel(slot: EquipmentSlot | null): string {
     Amulet: 'Амулет',
     Ring1: 'Кольцо',
     Ring2: 'Кольцо',
-    Weapon: 'Оружие',
-    Boots: 'Обувь',
-    Accessory: 'Аксессуар',
   }
   return labels[slot] ?? slot
 }
