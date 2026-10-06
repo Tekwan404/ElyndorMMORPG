@@ -28,6 +28,7 @@ using Elyndor.Server.Afk;
 using Elyndor.Server.Professions;
 using Elyndor.Server.Releases;
 using Elyndor.Server.Monitoring;
+using Elyndor.Server.Realtime;
 using Elyndor.Infrastructure.Combat;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
@@ -125,7 +126,8 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
                 if (!string.IsNullOrWhiteSpace(token) && (context.HttpContext.Request.Path.StartsWithSegments("/hubs/combat")
                     || context.HttpContext.Request.Path.StartsWithSegments("/hubs/trade")
                     || context.HttpContext.Request.Path.StartsWithSegments("/hubs/arena")
-                    || context.HttpContext.Request.Path.StartsWithSegments("/hubs/world-boss")))
+                    || context.HttpContext.Request.Path.StartsWithSegments("/hubs/world-boss")
+                    || context.HttpContext.Request.Path.StartsWithSegments("/hubs/state")))
                     context.Token = token;
                 return Task.CompletedTask;
             }
@@ -292,6 +294,7 @@ app.MapHub<CombatHub>("/hubs/combat").RequireAuthorization();
 app.MapHub<WorldBossHub>("/hubs/world-boss").RequireAuthorization();
 app.MapHub<TradeHub>("/hubs/trade").RequireAuthorization();
 app.MapHub<Elyndor.Server.Pvp.ArenaHub>("/hubs/arena").RequireAuthorization();
+app.MapHub<LiveStateHub>("/hubs/state").RequireAuthorization();
 
 app.MapGet("/api/v1/status", (TimeProvider timeProvider) => new ApiStatusResponse("Elyndor.Server", "ready", timeProvider.GetUtcNow()))
     .WithName("GetApiStatus")
