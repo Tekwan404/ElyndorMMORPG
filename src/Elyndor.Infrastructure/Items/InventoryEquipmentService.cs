@@ -1126,13 +1126,7 @@ public sealed class InventoryEquipmentService(
         EquipmentSlotPolicy.Canonicalize(slot);
 
     private static EquipmentSlot[] EquivalentEquipmentSlots(EquipmentSlot canonicalSlot) =>
-        canonicalSlot switch
-        {
-            EquipmentSlot.MainHand => [EquipmentSlot.MainHand, EquipmentSlot.Weapon],
-            EquipmentSlot.Feet => [EquipmentSlot.Feet, EquipmentSlot.Boots],
-            EquipmentSlot.Amulet => [EquipmentSlot.Amulet, EquipmentSlot.Accessory],
-            _ => [canonicalSlot]
-        };
+        [canonicalSlot];
 
     private void ConsumeOne(CharacterItem item)
     {
