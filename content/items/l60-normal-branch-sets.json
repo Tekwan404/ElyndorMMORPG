@@ -1,0 +1,2815 @@
+{
+  "contentVersion": "0.37.0",
+  "balanceVersion": "0.30.0",
+  "publishedAtUtc": "2026-10-06T20:55:00+00:00",
+  "items": [
+    {
+      "id": "L60_NORMAL_ARCHER_BEAST_MASTERY_CHEST",
+      "name": "Нагрудник «Регалии Хозяина Чёрной Гончей»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_BEAST_MASTERY",
+      "armorCategory": "LEATHER",
+      "armorFlat": 400.9885,
+      "iconId": "sets/set_black_bastion_archer_beast_mastery_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_BEAST_MASTERY_CHEST",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_BEAST_MASTERY_FEET",
+      "name": "Сапоги «Регалии Хозяина Чёрной Гончей»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_BEAST_MASTERY",
+      "armorCategory": "LEATHER",
+      "armorFlat": 199.0393,
+      "iconId": "sets/set_black_bastion_archer_beast_mastery_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_BEAST_MASTERY_FEET",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_BEAST_MASTERY_HANDS",
+      "name": "Рукавицы «Регалии Хозяина Чёрной Гончей»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_BEAST_MASTERY",
+      "armorCategory": "LEATHER",
+      "armorFlat": 207.3811,
+      "iconId": "sets/set_black_bastion_archer_beast_mastery_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_BEAST_MASTERY_HANDS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_BEAST_MASTERY_HEAD",
+      "name": "Шлем «Регалии Хозяина Чёрной Гончей»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_BEAST_MASTERY",
+      "armorCategory": "LEATHER",
+      "armorFlat": 276.6374,
+      "iconId": "sets/set_black_bastion_archer_beast_mastery_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_BEAST_MASTERY_HEAD",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_BEAST_MASTERY_LEGS",
+      "name": "Поножи «Регалии Хозяина Чёрной Гончей»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_BEAST_MASTERY",
+      "armorCategory": "LEATHER",
+      "armorFlat": 331.9261,
+      "iconId": "sets/set_black_bastion_archer_beast_mastery_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_BEAST_MASTERY_LEGS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_BEAST_MASTERY_SHOULDERS",
+      "name": "Наплечники «Регалии Хозяина Чёрной Гончей»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_BEAST_MASTERY",
+      "armorCategory": "LEATHER",
+      "armorFlat": 226.7806,
+      "iconId": "sets/set_black_bastion_archer_beast_mastery_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_BEAST_MASTERY_SHOULDERS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_MARKSMAN_CHEST",
+      "name": "Нагрудник «Наследие Безмолвной Стрелы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Меткая стрельба».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_MARKSMAN",
+      "armorCategory": "LEATHER",
+      "armorFlat": 400.9885,
+      "iconId": "sets/set_black_bastion_archer_marksmanship_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_MARKSMAN_CHEST",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_MARKSMAN_FEET",
+      "name": "Сапоги «Наследие Безмолвной Стрелы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Меткая стрельба».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_MARKSMAN",
+      "armorCategory": "LEATHER",
+      "armorFlat": 199.0393,
+      "iconId": "sets/set_black_bastion_archer_marksmanship_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_MARKSMAN_FEET",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_MARKSMAN_HANDS",
+      "name": "Рукавицы «Наследие Безмолвной Стрелы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Меткая стрельба».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_MARKSMAN",
+      "armorCategory": "LEATHER",
+      "armorFlat": 207.3811,
+      "iconId": "sets/set_black_bastion_archer_marksmanship_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_MARKSMAN_HANDS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_MARKSMAN_HEAD",
+      "name": "Шлем «Наследие Безмолвной Стрелы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Меткая стрельба».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_MARKSMAN",
+      "armorCategory": "LEATHER",
+      "armorFlat": 276.6374,
+      "iconId": "sets/set_black_bastion_archer_marksmanship_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_MARKSMAN_HEAD",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_MARKSMAN_LEGS",
+      "name": "Поножи «Наследие Безмолвной Стрелы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Меткая стрельба».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_MARKSMAN",
+      "armorCategory": "LEATHER",
+      "armorFlat": 331.9261,
+      "iconId": "sets/set_black_bastion_archer_marksmanship_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_MARKSMAN_LEGS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_MARKSMAN_SHOULDERS",
+      "name": "Наплечники «Наследие Безмолвной Стрелы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Меткая стрельба».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_MARKSMAN",
+      "armorCategory": "LEATHER",
+      "armorFlat": 226.7806,
+      "iconId": "sets/set_black_bastion_archer_marksmanship_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_MARKSMAN_SHOULDERS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_SURVIVAL_CHEST",
+      "name": "Нагрудник «Наследие Последнего Ловчего»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_SURVIVAL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 400.9885,
+      "iconId": "sets/set_black_bastion_archer_survival_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_SURVIVAL_CHEST",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_SURVIVAL_FEET",
+      "name": "Сапоги «Наследие Последнего Ловчего»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_SURVIVAL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 199.0393,
+      "iconId": "sets/set_black_bastion_archer_survival_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_SURVIVAL_FEET",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_SURVIVAL_HANDS",
+      "name": "Рукавицы «Наследие Последнего Ловчего»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_SURVIVAL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 207.3811,
+      "iconId": "sets/set_black_bastion_archer_survival_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_SURVIVAL_HANDS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_SURVIVAL_HEAD",
+      "name": "Шлем «Наследие Последнего Ловчего»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_SURVIVAL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 276.6374,
+      "iconId": "sets/set_black_bastion_archer_survival_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_SURVIVAL_HEAD",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_SURVIVAL_LEGS",
+      "name": "Поножи «Наследие Последнего Ловчего»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_SURVIVAL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 331.9261,
+      "iconId": "sets/set_black_bastion_archer_survival_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_SURVIVAL_LEGS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_SURVIVAL_SHOULDERS",
+      "name": "Наплечники «Наследие Последнего Ловчего»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_ARCHER_SURVIVAL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 226.7806,
+      "iconId": "sets/set_black_bastion_archer_survival_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_ARCHER_SURVIVAL_SHOULDERS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_ARCANE_CHEST",
+      "name": "Нагрудник «Одеяния Чёрного Оракула»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Тайная магия».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_ARCANE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 218.8268,
+      "iconId": "sets/set_black_bastion_mage_arcane_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_ARCANE_CHEST",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_ARCANE_FEET",
+      "name": "Сапоги «Одеяния Чёрного Оракула»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Тайная магия».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_ARCANE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 108.6374,
+      "iconId": "sets/set_black_bastion_mage_arcane_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_ARCANE_FEET",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_ARCANE_HANDS",
+      "name": "Рукавицы «Одеяния Чёрного Оракула»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Тайная магия».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_ARCANE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 113.0993,
+      "iconId": "sets/set_black_bastion_mage_arcane_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_ARCANE_HANDS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_ARCANE_HEAD",
+      "name": "Шлем «Одеяния Чёрного Оракула»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Тайная магия».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_ARCANE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 150.9284,
+      "iconId": "sets/set_black_bastion_mage_arcane_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_ARCANE_HEAD",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_ARCANE_LEGS",
+      "name": "Поножи «Одеяния Чёрного Оракула»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Тайная магия».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_ARCANE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 180.9977,
+      "iconId": "sets/set_black_bastion_mage_arcane_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_ARCANE_LEGS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_ARCANE_SHOULDERS",
+      "name": "Наплечники «Одеяния Чёрного Оракула»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Тайная магия».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_ARCANE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 123.7691,
+      "iconId": "sets/set_black_bastion_mage_arcane_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_ARCANE_SHOULDERS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FIRE_CHEST",
+      "name": "Нагрудник «Одеяния Пепельной Звезды»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Пламя».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_FIRE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 218.8268,
+      "iconId": "sets/set_black_bastion_mage_fire_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_FIRE_CHEST",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FIRE_FEET",
+      "name": "Сапоги «Одеяния Пепельной Звезды»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Пламя».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_FIRE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 108.6374,
+      "iconId": "sets/set_black_bastion_mage_fire_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_FIRE_FEET",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FIRE_HANDS",
+      "name": "Рукавицы «Одеяния Пепельной Звезды»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Пламя».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_FIRE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 113.0993,
+      "iconId": "sets/set_black_bastion_mage_fire_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_FIRE_HANDS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FIRE_HEAD",
+      "name": "Шлем «Одеяния Пепельной Звезды»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Пламя».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_FIRE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 150.9284,
+      "iconId": "sets/set_black_bastion_mage_fire_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_FIRE_HEAD",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FIRE_LEGS",
+      "name": "Поножи «Одеяния Пепельной Звезды»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Пламя».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_FIRE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 180.9977,
+      "iconId": "sets/set_black_bastion_mage_fire_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_FIRE_LEGS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FIRE_SHOULDERS",
+      "name": "Наплечники «Одеяния Пепельной Звезды»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Пламя».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_FIRE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 123.7691,
+      "iconId": "sets/set_black_bastion_mage_fire_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_FIRE_SHOULDERS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FROST_CHEST",
+      "name": "Нагрудник «Покров Безмолвного Инея»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Лёд».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_FROST",
+      "armorCategory": "CLOTH",
+      "armorFlat": 218.8268,
+      "iconId": "sets/set_black_bastion_mage_frost_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_FROST_CHEST",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FROST_FEET",
+      "name": "Сапоги «Покров Безмолвного Инея»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Лёд».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_FROST",
+      "armorCategory": "CLOTH",
+      "armorFlat": 108.6374,
+      "iconId": "sets/set_black_bastion_mage_frost_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_FROST_FEET",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FROST_HANDS",
+      "name": "Рукавицы «Покров Безмолвного Инея»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Лёд».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_FROST",
+      "armorCategory": "CLOTH",
+      "armorFlat": 113.0993,
+      "iconId": "sets/set_black_bastion_mage_frost_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_FROST_HANDS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FROST_HEAD",
+      "name": "Шлем «Покров Безмолвного Инея»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Лёд».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_FROST",
+      "armorCategory": "CLOTH",
+      "armorFlat": 150.9284,
+      "iconId": "sets/set_black_bastion_mage_frost_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_FROST_HEAD",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FROST_LEGS",
+      "name": "Поножи «Покров Безмолвного Инея»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Лёд».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_FROST",
+      "armorCategory": "CLOTH",
+      "armorFlat": 180.9977,
+      "iconId": "sets/set_black_bastion_mage_frost_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_FROST_LEGS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FROST_SHOULDERS",
+      "name": "Наплечники «Покров Безмолвного Инея»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Мага, ориентированный на ветку «Лёд».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_MAGE_FROST",
+      "armorCategory": "CLOTH",
+      "armorFlat": 123.7691,
+      "iconId": "sets/set_black_bastion_mage_frost_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_MAGE_FROST_SHOULDERS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_HOLY_CHEST",
+      "name": "Нагрудник «Регалии Последнего Рассвета»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Свет».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_HOLY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 546.873,
+      "iconId": "sets/set_black_bastion_paladin_holy_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_HOLY_CHEST",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_HOLY_FEET",
+      "name": "Сапоги «Регалии Последнего Рассвета»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Свет».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_HOLY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 271.5936,
+      "iconId": "sets/set_black_bastion_paladin_holy_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_HOLY_FEET",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_HOLY_HANDS",
+      "name": "Рукавицы «Регалии Последнего Рассвета»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Свет».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_HOLY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 282.8453,
+      "iconId": "sets/set_black_bastion_paladin_holy_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_HOLY_HANDS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_HOLY_HEAD",
+      "name": "Шлем «Регалии Последнего Рассвета»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Свет».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_HOLY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 377.127,
+      "iconId": "sets/set_black_bastion_paladin_holy_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_HOLY_HEAD",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_HOLY_LEGS",
+      "name": "Поножи «Регалии Последнего Рассвета»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Свет».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_HOLY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 452.5913,
+      "iconId": "sets/set_black_bastion_paladin_holy_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_HOLY_LEGS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_HOLY_SHOULDERS",
+      "name": "Наплечники «Регалии Последнего Рассвета»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Свет».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_HOLY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 309.2287,
+      "iconId": "sets/set_black_bastion_paladin_holy_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_HOLY_SHOULDERS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_PROTECTION_CHEST",
+      "name": "Нагрудник «Оплот Последних Врат»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Защита».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_PROTECTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 546.873,
+      "iconId": "sets/set_black_bastion_paladin_protection_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_PROTECTION_CHEST",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_PROTECTION_FEET",
+      "name": "Сапоги «Оплот Последних Врат»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Защита».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_PROTECTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 271.5936,
+      "iconId": "sets/set_black_bastion_paladin_protection_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_PROTECTION_FEET",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_PROTECTION_HANDS",
+      "name": "Рукавицы «Оплот Последних Врат»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Защита».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_PROTECTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 282.8453,
+      "iconId": "sets/set_black_bastion_paladin_protection_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_PROTECTION_HANDS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_PROTECTION_HEAD",
+      "name": "Шлем «Оплот Последних Врат»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Защита».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_PROTECTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 377.127,
+      "iconId": "sets/set_black_bastion_paladin_protection_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_PROTECTION_HEAD",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_PROTECTION_LEGS",
+      "name": "Поножи «Оплот Последних Врат»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Защита».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_PROTECTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 452.5913,
+      "iconId": "sets/set_black_bastion_paladin_protection_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_PROTECTION_LEGS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_PROTECTION_SHOULDERS",
+      "name": "Наплечники «Оплот Последних Врат»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Защита».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_PROTECTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 309.2287,
+      "iconId": "sets/set_black_bastion_paladin_protection_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_PROTECTION_SHOULDERS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_RETRIBUTION_CHEST",
+      "name": "Нагрудник «Латы Последнего Суда»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_RETRIBUTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 546.873,
+      "iconId": "sets/set_black_bastion_paladin_retribution_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_RETRIBUTION_CHEST",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_RETRIBUTION_FEET",
+      "name": "Сапоги «Латы Последнего Суда»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_RETRIBUTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 271.5936,
+      "iconId": "sets/set_black_bastion_paladin_retribution_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_RETRIBUTION_FEET",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_RETRIBUTION_HANDS",
+      "name": "Рукавицы «Латы Последнего Суда»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_RETRIBUTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 282.8453,
+      "iconId": "sets/set_black_bastion_paladin_retribution_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_RETRIBUTION_HANDS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_RETRIBUTION_HEAD",
+      "name": "Шлем «Латы Последнего Суда»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_RETRIBUTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 377.127,
+      "iconId": "sets/set_black_bastion_paladin_retribution_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_RETRIBUTION_HEAD",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_RETRIBUTION_LEGS",
+      "name": "Поножи «Латы Последнего Суда»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_RETRIBUTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 452.5913,
+      "iconId": "sets/set_black_bastion_paladin_retribution_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_RETRIBUTION_LEGS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_RETRIBUTION_SHOULDERS",
+      "name": "Наплечники «Латы Последнего Суда»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_PALADIN_RETRIBUTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 309.2287,
+      "iconId": "sets/set_black_bastion_paladin_retribution_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_PALADIN_RETRIBUTION_SHOULDERS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_BERSERKER_CHEST",
+      "name": "Нагрудник «Наследие Багрового Крушителя»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_BERSERKER",
+      "armorCategory": "HEAVY",
+      "armorFlat": 546.873,
+      "iconId": "sets/set_black_bastion_warrior_berserker_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_BERSERKER_CHEST",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_BERSERKER_FEET",
+      "name": "Сапоги «Наследие Багрового Крушителя»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_BERSERKER",
+      "armorCategory": "HEAVY",
+      "armorFlat": 271.5936,
+      "iconId": "sets/set_black_bastion_warrior_berserker_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_BERSERKER_FEET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_BERSERKER_HANDS",
+      "name": "Рукавицы «Наследие Багрового Крушителя»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_BERSERKER",
+      "armorCategory": "HEAVY",
+      "armorFlat": 282.8453,
+      "iconId": "sets/set_black_bastion_warrior_berserker_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_BERSERKER_HANDS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_BERSERKER_HEAD",
+      "name": "Шлем «Наследие Багрового Крушителя»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_BERSERKER",
+      "armorCategory": "HEAVY",
+      "armorFlat": 377.127,
+      "iconId": "sets/set_black_bastion_warrior_berserker_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_BERSERKER_HEAD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_BERSERKER_LEGS",
+      "name": "Поножи «Наследие Багрового Крушителя»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_BERSERKER",
+      "armorCategory": "HEAVY",
+      "armorFlat": 452.5913,
+      "iconId": "sets/set_black_bastion_warrior_berserker_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_BERSERKER_LEGS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_BERSERKER_SHOULDERS",
+      "name": "Наплечники «Наследие Багрового Крушителя»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_BERSERKER",
+      "armorCategory": "HEAVY",
+      "armorFlat": 309.2287,
+      "iconId": "sets/set_black_bastion_warrior_berserker_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_BERSERKER_SHOULDERS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_GUARDIAN_CHEST",
+      "name": "Нагрудник «Доспехи Несокрушимого Бастиона»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Страж».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_GUARDIAN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 546.873,
+      "iconId": "sets/set_black_bastion_warrior_guardian_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_GUARDIAN_CHEST",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_GUARDIAN_FEET",
+      "name": "Сапоги «Доспехи Несокрушимого Бастиона»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Страж».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_GUARDIAN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 271.5936,
+      "iconId": "sets/set_black_bastion_warrior_guardian_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_GUARDIAN_FEET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_GUARDIAN_HANDS",
+      "name": "Рукавицы «Доспехи Несокрушимого Бастиона»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Страж».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_GUARDIAN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 282.8453,
+      "iconId": "sets/set_black_bastion_warrior_guardian_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_GUARDIAN_HANDS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_GUARDIAN_HEAD",
+      "name": "Шлем «Доспехи Несокрушимого Бастиона»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Страж».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_GUARDIAN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 377.127,
+      "iconId": "sets/set_black_bastion_warrior_guardian_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_GUARDIAN_HEAD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_GUARDIAN_LEGS",
+      "name": "Поножи «Доспехи Несокрушимого Бастиона»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Страж».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_GUARDIAN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 452.5913,
+      "iconId": "sets/set_black_bastion_warrior_guardian_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_GUARDIAN_LEGS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_GUARDIAN_SHOULDERS",
+      "name": "Наплечники «Доспехи Несокрушимого Бастиона»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Страж».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_GUARDIAN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 309.2287,
+      "iconId": "sets/set_black_bastion_warrior_guardian_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_GUARDIAN_SHOULDERS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_WARLORD_CHEST",
+      "name": "Нагрудник «Регалии Пепельного Маршала»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Командир».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_WARLORD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 546.873,
+      "iconId": "sets/set_black_bastion_warrior_warlord_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_WARLORD_CHEST",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_WARLORD_FEET",
+      "name": "Сапоги «Регалии Пепельного Маршала»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Командир».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_WARLORD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 271.5936,
+      "iconId": "sets/set_black_bastion_warrior_warlord_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_WARLORD_FEET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_WARLORD_HANDS",
+      "name": "Рукавицы «Регалии Пепельного Маршала»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Командир».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_WARLORD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 282.8453,
+      "iconId": "sets/set_black_bastion_warrior_warlord_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_WARLORD_HANDS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_WARLORD_HEAD",
+      "name": "Шлем «Регалии Пепельного Маршала»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Командир».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_WARLORD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 377.127,
+      "iconId": "sets/set_black_bastion_warrior_warlord_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_WARLORD_HEAD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_WARLORD_LEGS",
+      "name": "Поножи «Регалии Пепельного Маршала»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Командир».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_WARLORD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 452.5913,
+      "iconId": "sets/set_black_bastion_warrior_warlord_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_WARLORD_LEGS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_WARLORD_SHOULDERS",
+      "name": "Наплечники «Регалии Пепельного Маршала»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Комплект 60-го уровня для Воина, ориентированный на ветку «Командир».",
+      "version": 1,
+      "setId": "SET_L60_NORMAL_WARRIOR_WARLORD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 309.2287,
+      "iconId": "sets/set_black_bastion_warrior_warlord_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_NORMAL_WARRIOR_WARLORD_SHOULDERS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    }
+  ]
+}
