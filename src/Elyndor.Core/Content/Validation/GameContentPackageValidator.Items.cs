@@ -49,6 +49,9 @@ public static partial class GameContentPackageValidator
                 .ToHashSet(StringComparer.Ordinal);
             Dictionary<string, ItemDefinition> itemsById = new(StringComparer.Ordinal);
             HashSet<string> itemFamilyIds = new(StringComparer.Ordinal);
+            HashSet<string> classProfileIds = (package.ClassProfiles ?? [])
+                .Select(profile => profile.Id)
+                .ToHashSet(StringComparer.Ordinal);
             HashSet<string> resourceProfileIds = (package.ResourceProfiles ?? [])
                 .Select(profile => profile.Id)
                 .ToHashSet(StringComparer.Ordinal);
@@ -89,6 +92,25 @@ public static partial class GameContentPackageValidator
                             "DUPLICATE_ITEM_FAMILY_ID",
                             $"{path}.itemFamilyId",
                             $"Item family '{item.ItemFamilyId}' is duplicated."));
+                    }
+                }
+
+                if (item.AllowedClassIds is not null)
+                {
+                    bool invalidClassRestriction =
+                        item.Type != ItemType.Equipment
+                        || item.AllowedClassIds.Count == 0
+                        || item.AllowedClassIds.Distinct(StringComparer.Ordinal).Count()
+                            != item.AllowedClassIds.Count
+                        || item.AllowedClassIds.Any(classId =>
+                            !IsCanonicalIdentifier(classId)
+                            || !classProfileIds.Contains(classId));
+                    if (invalidClassRestriction)
+                    {
+                        errors.Add(new(
+                            "INVALID_ITEM_CLASS_RESTRICTION",
+                            $"{path}.allowedClassIds",
+                            $"Item '{item.Id}' has an invalid class restriction."));
                     }
                 }
 
