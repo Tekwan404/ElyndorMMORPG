@@ -36,6 +36,11 @@ public static class DependencyInjection
         builder.Services.AddScoped<CharacterCompanionService>();
         builder.Services.AddScoped<CharacterDerivedStateService>();
         builder.Services.AddScoped<CharacterBuildSnapshotService>();
+        builder.Services.AddOptions<OutOfCombatRecoveryOptions>()
+            .BindConfiguration(OutOfCombatRecoveryOptions.SectionName)
+            .Validate(options => options.IsValid(),
+                "Gameplay recovery percentages must be between 0 and 100.")
+            .ValidateOnStart();
         builder.Services.AddScoped<BootstrapService>();
         builder.Services.AddScoped<TravelService>();
         builder.Services.AddScoped<WorldContractService>();
