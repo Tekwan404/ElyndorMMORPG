@@ -40,5 +40,5 @@ public sealed class OutOfCombatRecoveryOptions
         && IsPercent(TownManaPercentPerSecond)
         && IsPercent(FieldManaPercentPerSecond);
 
-    private static bool IsPercent(decimal value) => value is >= 0m and <= 100m;
+    private static bool IsPercent(decimal value) => value >= 0m && value <= 100m;
 }
