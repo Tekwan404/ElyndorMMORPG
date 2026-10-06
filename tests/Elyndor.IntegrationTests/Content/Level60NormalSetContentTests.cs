@@ -69,7 +69,7 @@ public sealed class Level60NormalSetContentTests
                 package.EquipmentSets!,
                 set => set.Id == setId);
             Assert.Equal(3, definition.Bonuses.Count);
-            Assert.Equal([2, 4, 6], definition.Bonuses.Select(bonus => bonus.RequiredPieces).ToArray());
+            Assert.Equal(new[] { 2, 4, 6 }, definition.Bonuses.Select(bonus => bonus.RequiredPieces).ToArray());
             Assert.Single(definition.AllowedClassIds!);
             Assert.Equal(classId, definition.AllowedClassIds![0]);
         }
