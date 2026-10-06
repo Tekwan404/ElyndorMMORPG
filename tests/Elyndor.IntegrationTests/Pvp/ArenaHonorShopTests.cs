@@ -1,4 +1,5 @@
 using Elyndor.Core.Characters;
+using Elyndor.Core.Content;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Items;
 using Elyndor.Core.Pvp;
