@@ -39,52 +39,28 @@
           "selectionMode": "WeightedExclusive",
           "entries": [
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_HANDS",
-              "weight": 5
+              "itemId": "WARRIOR_EPIC_CRIMSON_FURY_HANDS",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_BERSERKER_HANDS",
-              "weight": 5
+              "itemId": "MAGE_EPIC_SHATTERED_STAR_HANDS",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_WARLORD_HANDS",
-              "weight": 5
+              "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_HANDS",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_MAGE_FIRE_HANDS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_MAGE_ARCANE_HANDS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_MAGE_FROST_HANDS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_MARKSMANSHIP_HANDS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_BEAST_MASTERY_HANDS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_SURVIVAL_HANDS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_HOLY_HANDS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_PROTECTION_HANDS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_RETRIBUTION_HANDS",
-              "weight": 5
+              "itemId": "PALADIN_EPIC_GROVE_DAWN_HANDS",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
               "itemId": "MOLOT_KHOZIAINA_ZHIL",
@@ -124,52 +100,28 @@
           "selectionMode": "WeightedExclusive",
           "entries": [
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_FEET",
-              "weight": 5
+              "itemId": "WARRIOR_EPIC_CRIMSON_FURY_FEET",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_BERSERKER_FEET",
-              "weight": 5
+              "itemId": "MAGE_EPIC_SHATTERED_STAR_FEET",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_WARLORD_FEET",
-              "weight": 5
+              "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_FEET",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_MAGE_FIRE_FEET",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_MAGE_ARCANE_FEET",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_MAGE_FROST_FEET",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_MARKSMANSHIP_FEET",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_BEAST_MASTERY_FEET",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_SURVIVAL_FEET",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_HOLY_FEET",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_PROTECTION_FEET",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_RETRIBUTION_FEET",
-              "weight": 5
+              "itemId": "PALADIN_EPIC_GROVE_DAWN_FEET",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
               "itemId": "RUNNYI_FONAR_SHTREKA",
@@ -215,52 +167,28 @@
           "selectionMode": "WeightedExclusive",
           "entries": [
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_HEAD",
-              "weight": 5
+              "itemId": "WARRIOR_EPIC_CRIMSON_FURY_HEAD",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_BERSERKER_HEAD",
-              "weight": 5
+              "itemId": "MAGE_EPIC_SHATTERED_STAR_HEAD",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_WARLORD_HEAD",
-              "weight": 5
+              "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_HEAD",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_MAGE_FIRE_HEAD",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_MAGE_ARCANE_HEAD",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_MAGE_FROST_HEAD",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_MARKSMANSHIP_HEAD",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_BEAST_MASTERY_HEAD",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_SURVIVAL_HEAD",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_HOLY_HEAD",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_PROTECTION_HEAD",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_RETRIBUTION_HEAD",
-              "weight": 5
+              "itemId": "PALADIN_EPIC_GROVE_DAWN_HEAD",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
               "itemId": "KIRASA_KAMNEGLOTA",
@@ -312,52 +240,28 @@
           "selectionMode": "WeightedExclusive",
           "entries": [
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_LEGS",
-              "weight": 5
+              "itemId": "WARRIOR_EPIC_CRIMSON_FURY_LEGS",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_BERSERKER_LEGS",
-              "weight": 5
+              "itemId": "MAGE_EPIC_SHATTERED_STAR_LEGS",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_WARLORD_LEGS",
-              "weight": 5
+              "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_LEGS",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_MAGE_FIRE_LEGS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_MAGE_ARCANE_LEGS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_MAGE_FROST_LEGS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_MARKSMANSHIP_LEGS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_BEAST_MASTERY_LEGS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_SURVIVAL_LEGS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_HOLY_LEGS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_PROTECTION_LEGS",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_RETRIBUTION_LEGS",
-              "weight": 5
+              "itemId": "PALADIN_EPIC_GROVE_DAWN_LEGS",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
               "itemId": "BLIGHTED_GROVE_RING",
@@ -421,52 +325,28 @@
           "selectionMode": "EqualWeight",
           "entries": [
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_CHEST",
-              "weight": 1
+              "itemId": "WARRIOR_EPIC_CRIMSON_FURY_CHEST",
+              "weight": 1,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_BERSERKER_CHEST",
-              "weight": 1
+              "itemId": "MAGE_EPIC_SHATTERED_STAR_CHEST",
+              "weight": 1,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_WARLORD_CHEST",
-              "weight": 1
+              "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_CHEST",
+              "weight": 1,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_MAGE_FIRE_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_MAGE_ARCANE_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_MAGE_FROST_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_MARKSMANSHIP_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_BEAST_MASTERY_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_SURVIVAL_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_HOLY_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_PROTECTION_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_RETRIBUTION_CHEST",
-              "weight": 1
+              "itemId": "PALADIN_EPIC_GROVE_DAWN_CHEST",
+              "weight": 1,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             }
           ]
         },
@@ -476,52 +356,28 @@
           "selectionMode": "WeightedExclusive",
           "entries": [
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_GUARDIAN_CHEST",
-              "weight": 5
+              "itemId": "WARRIOR_EPIC_CRIMSON_FURY_CHEST",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_BERSERKER_CHEST",
-              "weight": 5
+              "itemId": "MAGE_EPIC_SHATTERED_STAR_CHEST",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_WARRIOR_WARLORD_CHEST",
-              "weight": 5
+              "itemId": "ARCHER_EPIC_MOONLEAF_SHADOW_CHEST",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
-              "itemId": "SET_ANCIENT_MINE_MAGE_FIRE_CHEST",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_MAGE_ARCANE_CHEST",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_MAGE_FROST_CHEST",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_MARKSMANSHIP_CHEST",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_BEAST_MASTERY_CHEST",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_ARCHER_SURVIVAL_CHEST",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_HOLY_CHEST",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_PROTECTION_CHEST",
-              "weight": 5
-            },
-            {
-              "itemId": "SET_ANCIENT_MINE_PALADIN_RETRIBUTION_CHEST",
-              "weight": 5
+              "itemId": "PALADIN_EPIC_GROVE_DAWN_CHEST",
+              "weight": 15,
+              "itemLevelMin": 16,
+              "itemLevelMax": 16
             },
             {
               "itemId": "DUNGEON_MINES_WARRIOR_LEGENDARY_SHIELD",
@@ -591,52 +447,28 @@
           "selectionMode": "WeightedExclusive",
           "entries": [
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_GUARDIAN_HANDS",
-              "weight": 5.416666666666667
+              "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_HANDS",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_BERSERKER_HANDS",
-              "weight": 5.416666666666667
+              "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_WARLORD_HANDS",
-              "weight": 5.416666666666667
+              "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HANDS",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_FIRE_HANDS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_ARCANE_HANDS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_FROST_HANDS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_MARKSMANSHIP_HANDS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_BEAST_MASTERY_HANDS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_SURVIVAL_HANDS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_HOLY_HANDS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_PROTECTION_HANDS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_RETRIBUTION_HANDS",
-              "weight": 5.416666666666667
+              "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_HANDS",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
               "itemId": "CHESHUICHATYI_PLASHCH_VASILISKA",
@@ -712,52 +544,28 @@
           "selectionMode": "WeightedExclusive",
           "entries": [
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_GUARDIAN_FEET",
-              "weight": 5.416666666666667
+              "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_FEET",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_BERSERKER_FEET",
-              "weight": 5.416666666666667
+              "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_WARLORD_FEET",
-              "weight": 5.416666666666667
+              "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_FEET",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_FIRE_FEET",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_ARCANE_FEET",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_FROST_FEET",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_MARKSMANSHIP_FEET",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_BEAST_MASTERY_FEET",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_SURVIVAL_FEET",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_HOLY_FEET",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_PROTECTION_FEET",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_RETRIBUTION_FEET",
-              "weight": 5.416666666666667
+              "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_FEET",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
               "itemId": "ACC_LEGENDARY_23_AMULET",
@@ -827,52 +635,28 @@
           "selectionMode": "WeightedExclusive",
           "entries": [
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_GUARDIAN_HEAD",
-              "weight": 5.416666666666667
+              "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_HEAD",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_BERSERKER_HEAD",
-              "weight": 5.416666666666667
+              "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_WARLORD_HEAD",
-              "weight": 5.416666666666667
+              "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HEAD",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_FIRE_HEAD",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_ARCANE_HEAD",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_FROST_HEAD",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_MARKSMANSHIP_HEAD",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_BEAST_MASTERY_HEAD",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_SURVIVAL_HEAD",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_HOLY_HEAD",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_PROTECTION_HEAD",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_RETRIBUTION_HEAD",
-              "weight": 5.416666666666667
+              "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_HEAD",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
               "itemId": "PECHAT_UMBRY",
@@ -942,52 +726,28 @@
           "selectionMode": "WeightedExclusive",
           "entries": [
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_GUARDIAN_LEGS",
-              "weight": 5.416666666666667
+              "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_LEGS",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_BERSERKER_LEGS",
-              "weight": 5.416666666666667
+              "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_WARLORD_LEGS",
-              "weight": 5.416666666666667
+              "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_LEGS",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_FIRE_LEGS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_ARCANE_LEGS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_FROST_LEGS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_MARKSMANSHIP_LEGS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_BEAST_MASTERY_LEGS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_SURVIVAL_LEGS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_HOLY_LEGS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_PROTECTION_LEGS",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_RETRIBUTION_LEGS",
-              "weight": 5.416666666666667
+              "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_LEGS",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
               "itemId": "ACC_LEGENDARY_23_RING",
@@ -1075,52 +835,28 @@
           "selectionMode": "EqualWeight",
           "entries": [
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_GUARDIAN_CHEST",
-              "weight": 1
+              "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_CHEST",
+              "weight": 1,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_BERSERKER_CHEST",
-              "weight": 1
+              "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST",
+              "weight": 1,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_WARLORD_CHEST",
-              "weight": 1
+              "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_CHEST",
+              "weight": 1,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_FIRE_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_ARCANE_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_FROST_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_MARKSMANSHIP_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_BEAST_MASTERY_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_SURVIVAL_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_HOLY_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_PROTECTION_CHEST",
-              "weight": 1
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_RETRIBUTION_CHEST",
-              "weight": 1
+              "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_CHEST",
+              "weight": 1,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             }
           ]
         },
@@ -1130,52 +866,28 @@
           "selectionMode": "WeightedExclusive",
           "entries": [
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_GUARDIAN_CHEST",
-              "weight": 5.416666666666667
+              "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_CHEST",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_BERSERKER_CHEST",
-              "weight": 5.416666666666667
+              "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_WARRIOR_WARLORD_CHEST",
-              "weight": 5.416666666666667
+              "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_CHEST",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_FIRE_CHEST",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_ARCANE_CHEST",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_MAGE_FROST_CHEST",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_MARKSMANSHIP_CHEST",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_BEAST_MASTERY_CHEST",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_ARCHER_SURVIVAL_CHEST",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_HOLY_CHEST",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_PROTECTION_CHEST",
-              "weight": 5.416666666666667
-            },
-            {
-              "itemId": "SET_ECLIPSED_CITADEL_PALADIN_RETRIBUTION_CHEST",
-              "weight": 5.416666666666667
+              "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_CHEST",
+              "weight": 16.25,
+              "itemLevelMin": 25,
+              "itemLevelMax": 25
             },
             {
               "itemId": "ACC_LEGENDARY_23_CLOAK",
