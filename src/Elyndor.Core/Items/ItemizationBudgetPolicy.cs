@@ -259,12 +259,5 @@ public static class ItemizationBudgetPolicy
         };
 
     private static EquipmentSlot CanonicalSlot(EquipmentSlot? slot) =>
-        slot switch
-        {
-            EquipmentSlot.Weapon => EquipmentSlot.MainHand,
-            EquipmentSlot.Boots => EquipmentSlot.Feet,
-            EquipmentSlot.Accessory => EquipmentSlot.Amulet,
-            null => throw new InvalidOperationException("Equipment slot is required."),
-            _ => slot.Value
-        };
+        slot ?? throw new InvalidOperationException("Equipment slot is required.");
 }
