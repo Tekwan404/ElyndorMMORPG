@@ -256,10 +256,11 @@ public static class ProceduralItemPolicy
         string perfectOrigin = "DROP",
         ItemGenerationOverrides? overrides = null)
     {
-        if (overrides?.HasItemLevelOverride == true && !IsEnabled(item))
+        if (overrides?.HasItemLevelOverride == true
+            && (!IsEnabled(item) || string.IsNullOrWhiteSpace(item.ItemFamilyId)))
         {
             throw new InvalidOperationException(
-                $"Item '{item.Id}' cannot apply a source item-level override because procedural generation is disabled.");
+                $"Item '{item.Id}' cannot apply a source item-level override outside the family item model.");
         }
 
         return IsEnabled(item)
