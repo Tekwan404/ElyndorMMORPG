@@ -227,7 +227,7 @@ function isForCurrentClass(item: MerchantItem): boolean {
 
 function equipmentGroup(item: MerchantItem): EquipmentSubcategory {
   if (item.weaponCategory || item.slot === 'MainHand' || item.slot === 'OffHand') return 'weapon'
-  if (item.slot === 'Accessory' || item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return 'accessory'
+  if (item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return 'accessory'
   return 'armor'
 }
 
@@ -242,14 +242,10 @@ function equippedForOffer(item: MerchantItem): InventoryItem | null {
     Shoulders: 'shoulders',
     Chest: 'chest',
     Legs: 'legs',
-    Boots: 'boots',
     Feet: 'feet',
     Hands: 'hands',
     Cloak: 'cloak',
     Amulet: 'amulet',
-    Accessory: 'accessory',
-    Waist: 'waist',
-    Wrist: 'wrist',
     Ring1: 'ring1',
     Ring2: 'ring2',
   }
