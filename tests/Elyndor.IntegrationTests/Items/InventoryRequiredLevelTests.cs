@@ -152,6 +152,50 @@ public sealed class InventoryRequiredLevelTests(PostgresFixture postgres) : IAsy
             .ToArrayAsync());
     }
 
+    [Fact]
+    public async Task EquipRejectsSetRestrictedToDifferentClassWithoutSpecLock()
+    {
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        IReadOnlyList<ItemDefinition> items = content.Items
+            ?? throw new InvalidOperationException("Item content is required for inventory tests.");
+        ItemDefinition source = items.Single(item =>
+            item.Id == "WARRIOR_COMMON_BORDER_STEEL_CHEST");
+        const string setId = "TEST_MAGE_ONLY_SET";
+        ItemDefinition gated = source with
+        {
+            Id = "TEST_SET_CLASS_RESTRICTED_CHEST",
+            Name = "Test Set Class Restricted Chest",
+            SetId = setId,
+            AllowedClassIds = null
+        };
+        EquipmentSetDefinition set = new(
+            setId,
+            "Test Mage Only Set",
+            [new EquipmentSetBonusDefinition(2)],
+            ["MAGE"]);
+        content = content with
+        {
+            Items = items.Concat([gated]).ToArray(),
+            EquipmentSets = (content.EquipmentSets ?? []).Concat([set]).ToArray()
+        };
+
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(level: 10);
+        Guid itemId = await AddItemAsync(characterId, gated.Id);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = new(context, content, new FixedTimeProvider(Now));
+
+        InventoryOperationResult result = await service.EquipAsync(
+            accountId,
+            itemId,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(InventoryErrorCodes.ClassRestricted, result.ErrorCode);
+    }
+
     private async Task<(Guid AccountId, Guid CharacterId)> CreateCharacterAsync(int level)
     {
         Guid accountId = Guid.CreateVersion7();
