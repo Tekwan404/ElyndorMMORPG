@@ -726,7 +726,10 @@ public sealed class CombatRewardService(
                         index,
                         acquiredAtUtc,
                         contentSnapshot.Package,
-                        roll.SourceQualityProfileId));
+                        roll.SourceQualityProfileId,
+                        new ItemGenerationOverrides(
+                            roll.ItemLevelMin,
+                            roll.ItemLevelMax)));
             }
 
             return Task.CompletedTask;
