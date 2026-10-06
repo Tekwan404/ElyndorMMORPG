@@ -267,7 +267,8 @@
       "affixCountProfileId": "LEVEL_13_16_3G",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA"
+        "STAMINA",
+        "INTELLECT"
       ],
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": null,
@@ -423,7 +424,8 @@
       "affixCountProfileId": "LEVEL_13_16_3G",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA"
+        "STAMINA",
+        "INTELLECT"
       ],
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": null,
