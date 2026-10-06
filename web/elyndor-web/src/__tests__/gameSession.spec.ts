@@ -2,11 +2,18 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { BootstrapSnapshot } from '@/api/contracts'
-import { apiClient } from '@/api/apiClient'
+import { apiClient, ApiRequestError } from '@/api/apiClient'
 import { clearPendingGameMutation } from '@/api/replaySafeMutation'
 import { useGameSessionStore } from '@/stores/gameSession'
+import {
+  clearWebAuthenticationData,
+  getTelegramInitData,
+} from '@/telegram/telegramWebApp'
 
-vi.mock('@/telegram/telegramWebApp', () => ({ getTelegramInitData: vi.fn<() => string | null>(() => 'signed-init-data') }))
+vi.mock('@/telegram/telegramWebApp', () => ({
+  clearWebAuthenticationData: vi.fn(),
+  getTelegramInitData: vi.fn<() => string | null>(() => 'signed-init-data'),
+}))
 
 describe('gameSession', () => {
   it('sends bulk packs and mutation identity in one purchase API call', async () => {
@@ -25,6 +32,9 @@ describe('gameSession', () => {
     setActivePinia(createPinia())
     clearPendingGameMutation()
     vi.restoreAllMocks()
+    vi.mocked(getTelegramInitData).mockReset()
+    vi.mocked(getTelegramInitData).mockReturnValue('signed-init-data')
+    vi.mocked(clearWebAuthenticationData).mockReset()
   })
 
   it('authenticates with Telegram and enters character creation from bootstrap', async () => {
@@ -46,6 +56,21 @@ describe('gameSession', () => {
     await store.authenticate()
     expect(store.isAdmin).toBe(true)
     expect(store.roles).toEqual(['SUPER_ADMIN'])
+  })
+
+  it('purges a rejected persisted browser credential so the same tab can log in again', async () => {
+    vi.mocked(getTelegramInitData).mockReturnValue('web:stale-browser-credential')
+    vi.spyOn(apiClient, 'request').mockRejectedValue(
+      new ApiRequestError(401, 'telegram_web_credential_invalid', 'trace-auth'),
+    )
+
+    const store = useGameSessionStore()
+    await store.start()
+
+    expect(clearWebAuthenticationData).toHaveBeenCalledOnce()
+    expect(store.state).toBe('error')
+    expect(store.errorCode).toBe('telegram_web_session_invalid')
+    expect(store.errorCorrelationId).toBe('trace-auth')
   })
 
   it('reports an offline state without inventing a snapshot', async () => {
