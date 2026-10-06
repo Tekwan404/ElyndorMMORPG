@@ -58,12 +58,38 @@ public enum EquipmentSlot
     Ring1,
     Ring2,
 
-    // Legacy slots kept during content migration.
+    // Legacy slots kept only until the authored content migration is complete.
     Weapon,
     Boots,
     Accessory,
     Waist,
     Wrist
+}
+
+public static class EquipmentSlotPolicy
+{
+    public static bool IsCanonical(EquipmentSlot slot) =>
+        slot is EquipmentSlot.MainHand
+            or EquipmentSlot.OffHand
+            or EquipmentSlot.Head
+            or EquipmentSlot.Shoulders
+            or EquipmentSlot.Chest
+            or EquipmentSlot.Hands
+            or EquipmentSlot.Legs
+            or EquipmentSlot.Feet
+            or EquipmentSlot.Cloak
+            or EquipmentSlot.Amulet
+            or EquipmentSlot.Ring1
+            or EquipmentSlot.Ring2;
+
+    public static EquipmentSlot Canonicalize(EquipmentSlot slot) =>
+        slot switch
+        {
+            EquipmentSlot.Weapon => EquipmentSlot.MainHand,
+            EquipmentSlot.Boots => EquipmentSlot.Feet,
+            EquipmentSlot.Accessory => EquipmentSlot.Amulet,
+            _ => slot
+        };
 }
 
 public sealed record ItemStatRange(
@@ -211,7 +237,8 @@ public sealed record ItemDefinition(
     ItemGenerationMode GenerationMode = ItemGenerationMode.Fixed,
     string? LootContainerTableId = null,
     int LootContainerGoldMin = 0,
-    int LootContainerGoldMax = 0);
+    int LootContainerGoldMax = 0,
+    string? ItemFamilyId = null);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,
@@ -253,13 +280,17 @@ public sealed record LootTableEntry(
     string ItemId,
     decimal DropChance,
     int MinQuantity,
-    int MaxQuantity);
+    int MaxQuantity,
+    int? ItemLevelMin = null,
+    int? ItemLevelMax = null);
 
 public sealed record LootSelectionEntry(
     string ItemId,
     decimal Weight,
     int MinQuantity = 1,
-    int MaxQuantity = 1);
+    int MaxQuantity = 1,
+    int? ItemLevelMin = null,
+    int? ItemLevelMax = null);
 
 public sealed record LootSelectionGroup(
     string Id,
