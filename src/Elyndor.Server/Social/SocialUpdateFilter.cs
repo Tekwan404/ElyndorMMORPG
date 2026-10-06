@@ -83,9 +83,11 @@ public sealed class SocialUpdateFilter : IEndpointFilter
         string key,
         out Guid value)
     {
-        return context.Request.RouteValues.TryGetValue(key, out object? raw)
-            && Guid.TryParse(Convert.ToString(raw), out value)
-            && value != Guid.Empty;
+        value = Guid.Empty;
+        if (!context.Request.RouteValues.TryGetValue(key, out object? raw) || raw is null)
+            return false;
+
+        return Guid.TryParse(raw.ToString(), out value) && value != Guid.Empty;
     }
 
     private static async Task AddAccountForCharacterAsync(
