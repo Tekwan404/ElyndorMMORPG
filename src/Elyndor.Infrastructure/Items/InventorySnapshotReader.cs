@@ -29,6 +29,9 @@ internal static class InventorySnapshotReader
         Dictionary<string, ItemDefinition> definitions =
             (content.Items ?? throw new InvalidOperationException("Item content is required."))
                 .ToDictionary(item => item.Id, StringComparer.Ordinal);
+        Dictionary<string, EquipmentSetDefinition> equipmentSets =
+            (content.EquipmentSets ?? [])
+                .ToDictionary(set => set.Id, StringComparer.Ordinal);
 
         InventoryItemSnapshot[] snapshots = items.Select(item =>
         {
@@ -37,6 +40,18 @@ internal static class InventorySnapshotReader
                     out ItemDefinition? resolved)
                 ? resolved
                 : CreateOrphanedDefinition(item);
+
+            if (!string.IsNullOrWhiteSpace(definition.SetId)
+                && equipmentSets.TryGetValue(definition.SetId, out EquipmentSetDefinition? equipmentSet)
+                && equipmentSet.AllowedClassIds is { Count: > 0 })
+            {
+                IReadOnlyList<string> effectiveClasses = definition.AllowedClassIds is { Count: > 0 }
+                    ? definition.AllowedClassIds
+                        .Intersect(equipmentSet.AllowedClassIds, StringComparer.Ordinal)
+                        .ToArray()
+                    : equipmentSet.AllowedClassIds;
+                definition = definition with { AllowedClassIds = effectiveClasses };
+            }
 
             EquipmentSlot? equippedSlot = equippedSlots.TryGetValue(item.Id, out EquipmentSlot slot)
                 ? slot
