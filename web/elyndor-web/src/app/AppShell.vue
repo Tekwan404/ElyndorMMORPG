@@ -20,6 +20,7 @@ import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
 import { useTradeStore } from '@/game/economy/tradeStore'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
+import { beginTelegramWebLogin } from '@/telegram/telegramWebLogin'
 import { UIButton, UIHealthBar, UILoadingState, UIModal } from '@/ui/components'
 
 type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu' | 'world-boss'
@@ -78,6 +79,8 @@ const sessionErrorMessage = computed(() => {
     return 'Не удалось связаться с сервером. Проверьте подключение и попробуйте снова.'
   if (code === 'authentication_failed')
     return 'Не удалось подтвердить вход через Telegram. Попробуйте войти ещё раз.'
+  if (code === 'telegram_web_session_invalid')
+    return 'Сессия Telegram в этой вкладке устарела. Войдите через Telegram ещё раз.'
   if (code === 'bootstrap_failed') return 'Не удалось загрузить состояние персонажа и мира.'
   if (code === 'internal_server_error' || code === 'http_500') {
     const trace = session.errorCorrelationId ? ` ID запроса: ${session.errorCorrelationId}` : ''
@@ -86,6 +89,19 @@ const sessionErrorMessage = computed(() => {
   const trace = session.errorCorrelationId ? ` · ID: ${session.errorCorrelationId}` : ''
   return `Не удалось продолжить игру. Код ошибки: ${code}${trace}`
 })
+
+async function retrySession(): Promise<void> {
+  if (session.errorCode === 'telegram_web_session_invalid') {
+    try {
+      await beginTelegramWebLogin()
+    } catch {
+      window.location.reload()
+    }
+    return
+  }
+
+  await session.start()
+}
 
 const navigation: readonly {
   id: ShellView
@@ -305,8 +321,8 @@ onMounted(() => {
         title="Связь с миром потеряна"
         :message="sessionErrorMessage"
       >
-        <UIButton data-retry-session variant="secondary" @click="session.start"
-          >Повторить вход</UIButton
+        <UIButton data-retry-session variant="secondary" @click="retrySession"
+          >{{ session.errorCode === 'telegram_web_session_invalid' ? 'Войти через Telegram' : 'Повторить вход' }}</UIButton
         >
       </UILoadingState>
       <CharacterCreationView v-else-if="session.state === 'needs-character'" />
