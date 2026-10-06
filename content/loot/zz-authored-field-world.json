@@ -2275,23 +2275,29 @@
                                                "maxQuantity":  1
                                            },
                                            {
-                                               "itemId":  "UNIQUE_WARRIOR_BLACKHEART_L25",
+                                               "itemId":  "UNIQUE_WARRIOR_BLACKHEART",
                                                "dropChance":  0.003,
                                                "minQuantity":  1,
-                                               "maxQuantity":  1
-                                           },
+                                               "maxQuantity":  1,
+                                               "itemLevelMin": 25,
+                                               "itemLevelMax": 25
+},
                                            {
-                                               "itemId":  "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25",
+                                               "itemId":  "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
                                                "dropChance":  0.003,
                                                "minQuantity":  1,
-                                               "maxQuantity":  1
-                                           },
+                                               "maxQuantity":  1,
+                                               "itemLevelMin": 25,
+                                               "itemLevelMax": 25
+},
                                            {
-                                               "itemId":  "UNIQUE_ARCHER_LAST_CONSTELLATION_L25",
+                                               "itemId":  "UNIQUE_ARCHER_LAST_CONSTELLATION",
                                                "dropChance":  0.003,
                                                "minQuantity":  1,
-                                               "maxQuantity":  1
-                                           }
+                                               "maxQuantity":  1,
+                                               "itemLevelMin": 25,
+                                               "itemLevelMax": 25
+}
                                        ],
                            "version":  1
                        },
