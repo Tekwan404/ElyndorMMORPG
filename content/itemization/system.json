@@ -18,9 +18,7 @@
       "FEET": 0.44,
       "AMULET": 0.4,
       "RING_1": 0.35,
-      "RING_2": 0.35,
-      "WAIST": 0.42,
-      "WRIST": 0.38
+      "RING_2": 0.35
     },
     "rarityMultipliers": {
       "COMMON": 1,
@@ -448,6 +446,12 @@
       },
       {
         "id": "LEVEL_60_UNIQUE",
+        "guaranteedCount": 3,
+        "minimumBonusCount": 2,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "UNIQUE_FAMILY",
         "guaranteedCount": 3,
         "minimumBonusCount": 2,
         "maximumBonusCount": 2

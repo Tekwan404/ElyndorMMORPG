@@ -1633,7 +1633,9 @@
       "prefixSuffixPolicyId": null
     },
     {
-      "id": "UNIQUE_WARRIOR_BLACKHEART_L25",
+      "id": "UNIQUE_WARRIOR_BLACKHEART",
+      "itemFamilyId": "UNIQUE_WARRIOR_BLACKHEART",
+      "allowedClassIds": ["WARRIOR"],
       "name": "Черносерд",
       "type": "Equipment",
       "generationMode": "Rolled",
@@ -1654,11 +1656,11 @@
       "weaponDamageMin": 96,
       "weaponDamageMax": 128,
       "itemLevelMin": 25,
-      "itemLevelMax": 25,
+      "itemLevelMax": 60,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_WEAPON",
-      "affixCountProfileId": "LEVEL_25_UNIQUE",
+      "affixCountProfileId": "UNIQUE_FAMILY",
       "guaranteedAffixStatIds": [
         "STRENGTH",
         "STAMINA",

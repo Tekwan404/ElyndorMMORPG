@@ -238,10 +238,21 @@ public sealed class GameContentPackageLoaderTests
                 Assert.Contains(package.Items!, item => item.Id == entry.ItemId && item.Type == ItemType.Equipment));
         });
 
-        Assert.Contains(package.Items!, item => item.Id == "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WAIST"
-            && item.Slot == EquipmentSlot.Waist);
-        Assert.Contains(package.Items!, item => item.Id == "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WRIST"
-            && item.Slot == EquipmentSlot.Wrist);
+        ItemDefinition[] blackBastionBeastMastery = package.Items!
+            .Where(item => item.SetId == "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY")
+            .ToArray();
+        Assert.Equal(6, blackBastionBeastMastery.Length);
+        Assert.All(blackBastionBeastMastery, item => Assert.Contains(
+            item.Slot,
+            new EquipmentSlot?[]
+            {
+                EquipmentSlot.Head,
+                EquipmentSlot.Shoulders,
+                EquipmentSlot.Chest,
+                EquipmentSlot.Hands,
+                EquipmentSlot.Legs,
+                EquipmentSlot.Feet
+            }));
         Assert.Contains(EquipmentCategoryIds.Crossbow,
             package.ClassProfiles!.Single(profile => profile.Id == "ARCHER").AllowedWeaponCategories);
 
@@ -276,9 +287,9 @@ public sealed class GameContentPackageLoaderTests
         LootTableDefinition citadelBossLoot = Assert.Single(
             package.LootTables!,
             table => table.Id == "ECLIPSED_CITADEL_BOSS_LOOT");
-        Assert.DoesNotContain(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_WARRIOR_BLACKHEART_L25");
-        Assert.DoesNotContain(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25");
-        Assert.DoesNotContain(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_ARCHER_LAST_CONSTELLATION_L25");
+        Assert.DoesNotContain(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_WARRIOR_BLACKHEART");
+        Assert.DoesNotContain(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_MAGE_EYE_OF_DEAD_STAR");
+        Assert.DoesNotContain(citadelBossLoot.Entries, entry => entry.ItemId == "UNIQUE_ARCHER_LAST_CONSTELLATION");
     }
 
     [Fact]
@@ -297,14 +308,14 @@ public sealed class GameContentPackageLoaderTests
             .Where(item => !LegendaryBlackBastionSetIds.Contains(item.SetId, StringComparer.Ordinal))
             .ToArray();
 
-        Assert.Equal(96, blackBastionSetItems.Length);
-        Assert.Equal(32, legendarySetItems.Length);
+        Assert.Equal(72, blackBastionSetItems.Length);
+        Assert.Equal(24, legendarySetItems.Length);
         Assert.All(legendarySetItems, item => Assert.Equal(ItemRarity.Legendary, item.Rarity));
-        Assert.Equal(64, epicSetItems.Length);
+        Assert.Equal(48, epicSetItems.Length);
         Assert.All(epicSetItems, item => Assert.Equal(ItemRarity.Epic, item.Rarity));
         Assert.All(
             LegendaryBlackBastionSetIds,
-            setId => Assert.Equal(8, legendarySetItems.Count(item => item.SetId == setId)));
+            setId => Assert.Equal(6, legendarySetItems.Count(item => item.SetId == setId)));
     }
 
     [Fact]

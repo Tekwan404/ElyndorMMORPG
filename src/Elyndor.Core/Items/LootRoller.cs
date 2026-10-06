@@ -5,7 +5,9 @@ namespace Elyndor.Core.Items;
 public sealed record LootRoll(
     string ItemId,
     int Quantity,
-    string SourceQualityProfileId = "NORMAL");
+    string SourceQualityProfileId = "NORMAL",
+    int? ItemLevelMin = null,
+    int? ItemLevelMax = null);
 
 public static class LootRoller
 {
@@ -30,7 +32,11 @@ public static class LootRoller
                 quantity = Math.Min(quantity, entry.MaxQuantity);
             }
 
-            result.Add(new LootRoll(entry.ItemId, quantity));
+            result.Add(new LootRoll(
+                entry.ItemId,
+                quantity,
+                ItemLevelMin: entry.ItemLevelMin,
+                ItemLevelMax: entry.ItemLevelMax));
         }
 
         foreach (LootSelectionGroup group in table.SelectionGroups ?? [])
@@ -61,7 +67,11 @@ public static class LootRoller
                     quantity = Math.Min(quantity, selected.MaxQuantity);
                 }
 
-                result.Add(new LootRoll(selected.ItemId, quantity));
+                result.Add(new LootRoll(
+                    selected.ItemId,
+                    quantity,
+                    ItemLevelMin: selected.ItemLevelMin,
+                    ItemLevelMax: selected.ItemLevelMax));
             }
         }
 

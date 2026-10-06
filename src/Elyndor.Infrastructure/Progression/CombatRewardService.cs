@@ -640,12 +640,19 @@ public sealed class CombatRewardService(
     }
 
     private static LootRoll[] AggregateLoot(IEnumerable<LootRoll> rolls) =>
-        rolls.GroupBy(roll => roll.ItemId, StringComparer.Ordinal)
+        rolls.GroupBy(roll => new
+            {
+                roll.ItemId,
+                roll.ItemLevelMin,
+                roll.ItemLevelMax
+            })
             .Select(group => new LootRoll(
-                group.Key,
+                group.Key.ItemId,
                 checked(group.Sum(roll => roll.Quantity)),
                 group.OrderByDescending(roll => QualityProfilePriority(roll.SourceQualityProfileId))
-                    .First().SourceQualityProfileId))
+                    .First().SourceQualityProfileId,
+                group.Key.ItemLevelMin,
+                group.Key.ItemLevelMax))
             .ToArray();
 
     private static int QualityProfilePriority(string profileId) =>
@@ -726,7 +733,10 @@ public sealed class CombatRewardService(
                         index,
                         acquiredAtUtc,
                         contentSnapshot.Package,
-                        roll.SourceQualityProfileId));
+                        roll.SourceQualityProfileId,
+                        new ItemGenerationOverrides(
+                            roll.ItemLevelMin,
+                            roll.ItemLevelMax)));
             }
 
             return Task.CompletedTask;

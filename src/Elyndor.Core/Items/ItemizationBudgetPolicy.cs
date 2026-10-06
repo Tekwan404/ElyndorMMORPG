@@ -54,9 +54,6 @@ public static class ItemizationBudgetPolicy
         if (minimumPowerPerAffix <= 0)
             throw new InvalidOperationException($"Template '{template.Id}' has no legal positive affix power envelope.");
 
-        decimal structuralPower = CalculateStructuralPower(template, itemization);
-        decimal minimumViableTemplatePower = structuralPower + (maxAffixCount * minimumPowerPerAffix);
-
         int minimumItemLevel = template.ItemLevelMin ?? template.RequiredLevel;
         int maximumItemLevel = template.ItemLevelMax ?? minimumItemLevel;
         if (minimumItemLevel < 1 || maximumItemLevel < minimumItemLevel)
@@ -75,6 +72,14 @@ public static class ItemizationBudgetPolicy
                 * (1m + template.ExtraAffixBudgetCap);
             if (budgetWithoutSlot <= 0)
                 throw new InvalidOperationException($"Template '{template.Id}' has a non-positive item power budget.");
+
+            ItemDefinition structuralTemplate = ItemFamilyScalingPolicy.Apply(
+                template,
+                itemization,
+                itemLevel);
+            decimal minimumViableTemplatePower =
+                CalculateStructuralPower(structuralTemplate, itemization)
+                + (maxAffixCount * minimumPowerPerAffix);
 
             requiredSlotMultiplier = decimal.Max(
                 requiredSlotMultiplier,
@@ -259,12 +264,5 @@ public static class ItemizationBudgetPolicy
         };
 
     private static EquipmentSlot CanonicalSlot(EquipmentSlot? slot) =>
-        slot switch
-        {
-            EquipmentSlot.Weapon => EquipmentSlot.MainHand,
-            EquipmentSlot.Boots => EquipmentSlot.Feet,
-            EquipmentSlot.Accessory => EquipmentSlot.Amulet,
-            null => throw new InvalidOperationException("Equipment slot is required."),
-            _ => slot.Value
-        };
+        slot ?? throw new InvalidOperationException("Equipment slot is required.");
 }

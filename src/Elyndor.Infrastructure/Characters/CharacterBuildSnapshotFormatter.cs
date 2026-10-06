@@ -46,8 +46,7 @@ public static class CharacterBuildSnapshotFormatter
             text.AppendLine("\nЭКИПИРОВКА");
             foreach (var item in build.Equipment) WriteItem(text, item);
             foreach (var slot in Enum.GetValues<EquipmentSlot>().Where(slot =>
-                slot is not (EquipmentSlot.Weapon or EquipmentSlot.Boots or EquipmentSlot.Accessory)
-                && !build.Equipment.Any(item => item.Slot == slot.ToString())))
+                !build.Equipment.Any(item => item.Slot == slot.ToString())))
                 text.AppendLine(CultureInfo.InvariantCulture, $"{slot}: пусто");
             text.AppendLine("\nПРОСТРАНСТВЕННЫЙ АРТЕФАКТ");
             if (build.SpatialArtifact is { } artifact) WriteItem(text, artifact);

@@ -1422,7 +1422,9 @@
       "prefixSuffixPolicyId": null
     },
     {
-      "id": "UNIQUE_ARCHER_LAST_CONSTELLATION_L25",
+      "id": "UNIQUE_ARCHER_LAST_CONSTELLATION",
+      "itemFamilyId": "UNIQUE_ARCHER_LAST_CONSTELLATION",
+      "allowedClassIds": ["ARCHER"],
       "name": "Лук Последнего Созвездия",
       "type": "Equipment",
       "generationMode": "Rolled",
@@ -1443,11 +1445,11 @@
       "weaponDamageMin": 92,
       "weaponDamageMax": 124,
       "itemLevelMin": 25,
-      "itemLevelMax": 25,
+      "itemLevelMax": 60,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_WEAPON",
-      "affixCountProfileId": "LEVEL_25_UNIQUE",
+      "affixCountProfileId": "UNIQUE_FAMILY",
       "guaranteedAffixStatIds": [
         "AGILITY",
         "STAMINA",

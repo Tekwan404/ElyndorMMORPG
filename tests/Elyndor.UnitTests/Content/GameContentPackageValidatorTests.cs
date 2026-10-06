@@ -884,7 +884,7 @@ public sealed class GameContentPackageValidatorTests
             [
                 new ItemDefinition(
                     "TEST_SWORD", "Test Sword", ItemType.Equipment, ItemRarity.Common,
-                    1, false, 1, EquipmentSlot.Weapon,
+                    1, false, 1, EquipmentSlot.MainHand,
                     new PrimaryStats(1, 0, 0, 0), "Test",
                     WeaponCategory: "LASER_SWORD")
             ],

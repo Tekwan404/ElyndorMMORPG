@@ -734,7 +734,7 @@ function equipment(
     type: 'Equipment',
     rarity,
     requiredLevel,
-    slot: 'Weapon',
+    slot: 'MainHand',
     stats: { attackPower },
   })
 }
@@ -742,7 +742,7 @@ function equipment(
 function currentWeapon(): InventoryItem {
   return {
     ...equipment('CURRENT_WEAPON', 'Учебный меч', 'Rare', 1, 5),
-    equippedSlot: 'Weapon',
+    equippedSlot: 'MainHand',
   }
 }
 
@@ -873,12 +873,18 @@ function snapshot(items: InventoryItem[], weapon: InventoryItem): BootstrapSnaps
       inventory: {
         items: [...items, weapon],
         equipped: {
-          weapon,
+          mainHand: weapon,
+          offHand: null,
           head: null,
+          shoulders: null,
           chest: null,
+          hands: null,
           legs: null,
-          boots: null,
-          accessory: null,
+          feet: null,
+          cloak: null,
+          amulet: null,
+          ring1: null,
+          ring2: null,
         },
       },
     },

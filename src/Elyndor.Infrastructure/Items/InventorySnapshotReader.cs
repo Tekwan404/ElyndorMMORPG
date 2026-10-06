@@ -29,6 +29,9 @@ internal static class InventorySnapshotReader
         Dictionary<string, ItemDefinition> definitions =
             (content.Items ?? throw new InvalidOperationException("Item content is required."))
                 .ToDictionary(item => item.Id, StringComparer.Ordinal);
+        Dictionary<string, EquipmentSetDefinition> equipmentSets =
+            (content.EquipmentSets ?? [])
+                .ToDictionary(set => set.Id, StringComparer.Ordinal);
 
         InventoryItemSnapshot[] snapshots = items.Select(item =>
         {
@@ -38,6 +41,18 @@ internal static class InventorySnapshotReader
                 ? resolved
                 : CreateOrphanedDefinition(item);
 
+            if (!string.IsNullOrWhiteSpace(definition.SetId)
+                && equipmentSets.TryGetValue(definition.SetId, out EquipmentSetDefinition? equipmentSet)
+                && equipmentSet.AllowedClassIds is { Count: > 0 })
+            {
+                IReadOnlyList<string> effectiveClasses = definition.AllowedClassIds is { Count: > 0 }
+                    ? definition.AllowedClassIds
+                        .Intersect(equipmentSet.AllowedClassIds, StringComparer.Ordinal)
+                        .ToArray()
+                    : equipmentSet.AllowedClassIds;
+                definition = definition with { AllowedClassIds = effectiveClasses };
+            }
+
             EquipmentSlot? equippedSlot = equippedSlots.TryGetValue(item.Id, out EquipmentSlot slot)
                 ? slot
                 : null;
@@ -46,15 +61,25 @@ internal static class InventorySnapshotReader
                 definition,
                 content.Itemization);
 
-            // Enhancement is applied to structural template stats before generated affixes are
-            // overlaid. This guarantees +N affects combat while random affixes remain unscaled.
+            // Family structural stats scale to the concrete generated item level first.
+            // Enhancement then affects those structural stats, while random affixes remain unscaled.
+            ItemDefinition familyDefinition = generated is not null && content.Itemization is { } itemization
+                ? ItemFamilyScalingPolicy.Apply(definition, itemization, generated.ItemLevel)
+                : definition;
             ItemDefinition enhancedDefinition = ItemEnhancementRules.ApplyStructuralEnhancement(
-                definition,
+                familyDefinition,
                 item.EnhancementLevel);
+            ItemDefinition leveledDefinition = enhancedDefinition with
+            {
+                RequiredLevel = ItemRequiredLevelPolicy.Resolve(
+                    definition,
+                    item.ItemLevel,
+                    content.LevelProgression?.MaxLevel)
+            };
             ItemDefinition effectiveDefinition = generated is null
-                ? enhancedDefinition
+                ? leveledDefinition
                 : ItemInstanceGenerator.ApplyGeneratedAffixes(
-                    enhancedDefinition,
+                    leveledDefinition,
                     generated.Affixes,
                     generated.DisplayName);
 

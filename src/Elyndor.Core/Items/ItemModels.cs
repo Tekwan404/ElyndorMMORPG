@@ -56,14 +56,26 @@ public enum EquipmentSlot
     Cloak,
     Amulet,
     Ring1,
-    Ring2,
+    Ring2
+}
 
-    // Legacy slots kept during content migration.
-    Weapon,
-    Boots,
-    Accessory,
-    Waist,
-    Wrist
+public static class EquipmentSlotPolicy
+{
+    public static bool IsCanonical(EquipmentSlot slot) =>
+        slot is EquipmentSlot.MainHand
+            or EquipmentSlot.OffHand
+            or EquipmentSlot.Head
+            or EquipmentSlot.Shoulders
+            or EquipmentSlot.Chest
+            or EquipmentSlot.Hands
+            or EquipmentSlot.Legs
+            or EquipmentSlot.Feet
+            or EquipmentSlot.Cloak
+            or EquipmentSlot.Amulet
+            or EquipmentSlot.Ring1
+            or EquipmentSlot.Ring2;
+
+    public static EquipmentSlot Canonicalize(EquipmentSlot slot) => slot;
 }
 
 public sealed record ItemStatRange(
@@ -211,7 +223,9 @@ public sealed record ItemDefinition(
     ItemGenerationMode GenerationMode = ItemGenerationMode.Fixed,
     string? LootContainerTableId = null,
     int LootContainerGoldMin = 0,
-    int LootContainerGoldMax = 0);
+    int LootContainerGoldMax = 0,
+    string? ItemFamilyId = null,
+    IReadOnlyList<string>? AllowedClassIds = null);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,
@@ -232,7 +246,8 @@ public sealed record EquipmentSetBonusDefinition(
 public sealed record EquipmentSetDefinition(
     string Id,
     string Name,
-    IReadOnlyList<EquipmentSetBonusDefinition> Bonuses);
+    IReadOnlyList<EquipmentSetBonusDefinition> Bonuses,
+    IReadOnlyList<string>? AllowedClassIds = null);
 
 public sealed record MerchantDefinition(
     string Id,
@@ -253,13 +268,17 @@ public sealed record LootTableEntry(
     string ItemId,
     decimal DropChance,
     int MinQuantity,
-    int MaxQuantity);
+    int MaxQuantity,
+    int? ItemLevelMin = null,
+    int? ItemLevelMax = null);
 
 public sealed record LootSelectionEntry(
     string ItemId,
     decimal Weight,
     int MinQuantity = 1,
-    int MaxQuantity = 1);
+    int MaxQuantity = 1,
+    int? ItemLevelMin = null,
+    int? ItemLevelMax = null);
 
 public sealed record LootSelectionGroup(
     string Id,

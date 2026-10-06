@@ -44,10 +44,47 @@ public static partial class GameContentPackageValidator
             }
 
             IReadOnlyList<ItemDefinition> items = package.Items ?? [];
-            HashSet<string> equipmentSetIds = (package.EquipmentSets ?? [])
+            HashSet<string> classProfileIds = (package.ClassProfiles ?? [])
+                .Select(profile => profile.Id)
+                .ToHashSet(StringComparer.Ordinal);
+            IReadOnlyList<EquipmentSetDefinition> equipmentSets = package.EquipmentSets ?? [];
+            HashSet<string> equipmentSetIds = equipmentSets
                 .Select(set => set.Id)
                 .ToHashSet(StringComparer.Ordinal);
+            for (var setIndex = 0; setIndex < equipmentSets.Count; setIndex++)
+            {
+                EquipmentSetDefinition set = equipmentSets[setIndex];
+                string setPath = $"equipmentSets[{setIndex}]";
+                if (!ValidateIdentifier(
+                        set.Id,
+                        "INVALID_EQUIPMENT_SET_ID",
+                        $"{setPath}.id",
+                        errors))
+                {
+                    continue;
+                }
+
+                if (set.AllowedClassIds is not null)
+                {
+                    bool invalidSetClassRestriction =
+                        set.AllowedClassIds.Count == 0
+                        || set.AllowedClassIds.Distinct(StringComparer.Ordinal).Count()
+                            != set.AllowedClassIds.Count
+                        || set.AllowedClassIds.Any(classId =>
+                            !IsCanonicalIdentifier(classId)
+                            || !classProfileIds.Contains(classId));
+                    if (invalidSetClassRestriction)
+                    {
+                        errors.Add(new(
+                            "INVALID_EQUIPMENT_SET_CLASS_RESTRICTION",
+                            $"{setPath}.allowedClassIds",
+                            $"Equipment set '{set.Id}' has an invalid class restriction."));
+                    }
+                }
+            }
+
             Dictionary<string, ItemDefinition> itemsById = new(StringComparer.Ordinal);
+            HashSet<string> itemFamilyIds = new(StringComparer.Ordinal);
             HashSet<string> resourceProfileIds = (package.ResourceProfiles ?? [])
                 .Select(profile => profile.Id)
                 .ToHashSet(StringComparer.Ordinal);
@@ -63,6 +100,51 @@ public static partial class GameContentPackageValidator
                 if (!itemsById.TryAdd(item.Id, item))
                 {
                     errors.Add(new("DUPLICATE_ITEM_ID", path, $"Item '{item.Id}' is duplicated."));
+                }
+
+                if (!string.IsNullOrWhiteSpace(item.ItemFamilyId))
+                {
+                    bool invalidFamily =
+                        !IsCanonicalIdentifier(item.ItemFamilyId)
+                        || item.Type != ItemType.Equipment
+                        || item.Slot is null
+                        || !EquipmentSlotPolicy.IsCanonical(item.Slot.Value)
+                        || item.GenerationMode != ItemGenerationMode.Rolled
+                        || !item.ItemLevelMin.HasValue
+                        || !item.ItemLevelMax.HasValue;
+                    if (invalidFamily)
+                    {
+                        errors.Add(new(
+                            "INVALID_ITEM_FAMILY",
+                            $"{path}.itemFamilyId",
+                            $"Item '{item.Id}' has an invalid item-family configuration."));
+                    }
+                    else if (!itemFamilyIds.Add(item.ItemFamilyId))
+                    {
+                        errors.Add(new(
+                            "DUPLICATE_ITEM_FAMILY_ID",
+                            $"{path}.itemFamilyId",
+                            $"Item family '{item.ItemFamilyId}' is duplicated."));
+                    }
+                }
+
+                if (item.AllowedClassIds is not null)
+                {
+                    bool invalidClassRestriction =
+                        item.Type != ItemType.Equipment
+                        || item.AllowedClassIds.Count == 0
+                        || item.AllowedClassIds.Distinct(StringComparer.Ordinal).Count()
+                            != item.AllowedClassIds.Count
+                        || item.AllowedClassIds.Any(classId =>
+                            !IsCanonicalIdentifier(classId)
+                            || !classProfileIds.Contains(classId));
+                    if (invalidClassRestriction)
+                    {
+                        errors.Add(new(
+                            "INVALID_ITEM_CLASS_RESTRICTION",
+                            $"{path}.allowedClassIds",
+                            $"Item '{item.Id}' has an invalid class restriction."));
+                    }
                 }
 
                 bool invalidEquipmentCategory = item.Type == ItemType.Equipment
@@ -174,7 +256,11 @@ public static partial class GameContentPackageValidator
                         || entry.DropChance is <= 0 or > 1
                         || entry.MinQuantity < 1
                         || entry.MaxQuantity < entry.MinQuantity
-                        || !item.Stackable && entry.MaxQuantity != 1)
+                        || !item.Stackable && entry.MaxQuantity != 1
+                        || HasInvalidLootItemLevelOverride(
+                            item,
+                            entry.ItemLevelMin,
+                            entry.ItemLevelMax))
                     {
                         errors.Add(new("INVALID_LOOT_ENTRY", entryPath,
                             $"Loot entry for '{entry.ItemId}' is invalid."));
@@ -214,7 +300,11 @@ public static partial class GameContentPackageValidator
                             || entry.Weight <= 0
                             || entry.MinQuantity < 1
                             || entry.MaxQuantity < entry.MinQuantity
-                            || !item.Stackable && entry.MaxQuantity != 1)
+                            || !item.Stackable && entry.MaxQuantity != 1
+                            || HasInvalidLootItemLevelOverride(
+                                item,
+                                entry.ItemLevelMin,
+                                entry.ItemLevelMax))
                         {
                             errors.Add(new("INVALID_LOOT_SELECTION_ENTRY", entryPath,
                                 $"Loot selection entry for '{entry.ItemId}' is invalid."));
@@ -250,6 +340,29 @@ public static partial class GameContentPackageValidator
                         $"Monster '{monster.Id}' references missing loot table '{monster.LootTableId}'."));
                 }
             }
+        }
+
+        private static bool HasInvalidLootItemLevelOverride(
+            ItemDefinition item,
+            int? itemLevelMin,
+            int? itemLevelMax)
+        {
+            if (!itemLevelMin.HasValue && !itemLevelMax.HasValue)
+                return false;
+            if (item.Type != ItemType.Equipment
+                || string.IsNullOrWhiteSpace(item.ItemFamilyId)
+                || item.GenerationMode != ItemGenerationMode.Rolled)
+            {
+                return true;
+            }
+
+            int templateMinimum = item.ItemLevelMin ?? item.RequiredLevel;
+            int templateMaximum = item.ItemLevelMax ?? templateMinimum;
+            int minimum = itemLevelMin ?? itemLevelMax ?? templateMinimum;
+            int maximum = itemLevelMax ?? itemLevelMin ?? templateMaximum;
+            return minimum < templateMinimum
+                || maximum > templateMaximum
+                || maximum < minimum;
         }
 
         private static bool HasInvalidConsumableShape(
@@ -316,7 +429,7 @@ public static partial class GameContentPackageValidator
         private static bool HasValidEquipmentCategoryShape(ItemDefinition item) =>
             item.Slot switch
             {
-                EquipmentSlot.Weapon or EquipmentSlot.MainHand =>
+                EquipmentSlot.MainHand =>
                     EquipmentCategoryIds.IsWeapon(item.WeaponCategory)
                     && item.ArmorCategory is null
                     && item.OffHandCategory is null,
@@ -325,12 +438,11 @@ public static partial class GameContentPackageValidator
                     && (EquipmentCategoryIds.IsOneHandedWeapon(item.WeaponCategory)
                         ^ EquipmentCategoryIds.IsOffHand(item.OffHandCategory)),
                 EquipmentSlot.Head or EquipmentSlot.Shoulders or EquipmentSlot.Chest or EquipmentSlot.Hands
-                    or EquipmentSlot.Legs or EquipmentSlot.Boots or EquipmentSlot.Feet
-                    or EquipmentSlot.Waist or EquipmentSlot.Wrist =>
+                    or EquipmentSlot.Legs or EquipmentSlot.Feet =>
                     EquipmentCategoryIds.IsArmor(item.ArmorCategory)
                     && item.WeaponCategory is null
                     && item.OffHandCategory is null,
-                EquipmentSlot.Accessory or EquipmentSlot.Cloak or EquipmentSlot.Amulet
+                EquipmentSlot.Cloak or EquipmentSlot.Amulet
                     or EquipmentSlot.Ring1 or EquipmentSlot.Ring2 =>
                     item.WeaponCategory is null
                     && item.ArmorCategory is null
@@ -417,13 +529,8 @@ public static partial class GameContentPackageValidator
             if (!hasMinimum && !hasMaximum) return false;
             if (!hasMinimum || !hasMaximum) return true;
 
-            EquipmentSlot? canonicalSlot = item.Slot switch
-            {
-                EquipmentSlot.Weapon => EquipmentSlot.MainHand,
-                _ => item.Slot
-            };
             return item.Type != ItemType.Equipment
-                || canonicalSlot != EquipmentSlot.MainHand
+                || item.Slot != EquipmentSlot.MainHand
                 || !EquipmentCategoryIds.IsWeapon(item.WeaponCategory)
                 || item.WeaponDamageMin < 0
                 || item.WeaponDamageMax < item.WeaponDamageMin;

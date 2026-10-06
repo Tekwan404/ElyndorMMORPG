@@ -24,6 +24,7 @@ public static class InventoryErrorCodes
     public const string ConsumableUnavailable = "inventory_consumable_unavailable";
     public const string InvalidSlot = "inventory_invalid_slot";
     public const string RequiredLevel = "inventory_required_level";
+    public const string ClassRestricted = "inventory_class_restricted";
     public const string WeaponCategoryRestricted = "inventory_weapon_category_restricted";
     public const string ArmorCategoryRestricted = "inventory_armor_category_restricted";
     public const string OffHandCategoryRestricted = "inventory_off_hand_category_restricted";
@@ -387,10 +388,34 @@ public sealed class InventoryEquipmentService(
                     return InventoryOperationResult.Failure(InventoryErrorCodes.NotEquipment);
                 if (definition.Slot is null)
                     return InventoryOperationResult.Failure(InventoryErrorCodes.InvalidSlot);
-                if (character.Level < definition.RequiredLevel)
+                int requiredLevel = ItemRequiredLevelPolicy.Resolve(
+                    definition,
+                    item.ItemLevel,
+                    contentProvider.GetCurrent().Package.LevelProgression?.MaxLevel);
+                if (character.Level < requiredLevel)
                     return InventoryOperationResult.Failure(InventoryErrorCodes.RequiredLevel);
 
-                if (!contentProvider.GetCurrent().Indexes.ClassesById.TryGetValue(
+                GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+                bool itemClassRestricted = definition.AllowedClassIds is { Count: > 0 }
+                    && !definition.AllowedClassIds.Contains(
+                        character.ClassId,
+                        StringComparer.Ordinal);
+                bool setClassRestricted =
+                    !string.IsNullOrWhiteSpace(definition.SetId)
+                    && contentSnapshot.Indexes.EquipmentSetsById.TryGetValue(
+                        definition.SetId,
+                        out EquipmentSetDefinition? equipmentSet)
+                    && equipmentSet.AllowedClassIds is { Count: > 0 }
+                    && !equipmentSet.AllowedClassIds.Contains(
+                        character.ClassId,
+                        StringComparer.Ordinal);
+                if (itemClassRestricted || setClassRestricted)
+                {
+                    return InventoryOperationResult.Failure(
+                        InventoryErrorCodes.ClassRestricted);
+                }
+
+                if (!contentSnapshot.Indexes.ClassesById.TryGetValue(
                         character.ClassId,
                         out ClassProfile? classProfile))
                 {
@@ -1109,22 +1134,10 @@ public sealed class InventoryEquipmentService(
     }
 
     private static EquipmentSlot CanonicalizeEquipmentSlot(EquipmentSlot slot) =>
-        slot switch
-        {
-            EquipmentSlot.Weapon => EquipmentSlot.MainHand,
-            EquipmentSlot.Boots => EquipmentSlot.Feet,
-            EquipmentSlot.Accessory => EquipmentSlot.Amulet,
-            _ => slot
-        };
+        EquipmentSlotPolicy.Canonicalize(slot);
 
     private static EquipmentSlot[] EquivalentEquipmentSlots(EquipmentSlot canonicalSlot) =>
-        canonicalSlot switch
-        {
-            EquipmentSlot.MainHand => [EquipmentSlot.MainHand, EquipmentSlot.Weapon],
-            EquipmentSlot.Feet => [EquipmentSlot.Feet, EquipmentSlot.Boots],
-            EquipmentSlot.Amulet => [EquipmentSlot.Amulet, EquipmentSlot.Accessory],
-            _ => [canonicalSlot]
-        };
+        [canonicalSlot];
 
     private void ConsumeOne(CharacterItem item)
     {

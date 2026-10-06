@@ -2,6 +2,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { createEmptyEquippedInventory } from '@/api/contracts'
 import type {
   BootstrapSnapshot,
   CombatActorSnapshot,
@@ -305,14 +306,7 @@ function snapshot(
       gold: 0,
       inventory: {
         items: [],
-        equipped: {
-          weapon: null,
-          head: null,
-          chest: null,
-          legs: null,
-          boots: null,
-          accessory: null,
-        },
+        equipped: createEmptyEquippedInventory(),
       },
       primaryAttribute: 'STRENGTH',
       classProfileVersion: '0.2.0',

@@ -48,7 +48,7 @@ public sealed class PhaseFiveProgressionTests
             1,
             false,
             1,
-            EquipmentSlot.Weapon,
+            EquipmentSlot.MainHand,
             new PrimaryStats(2, 0, 0, 0),
             "Weapon");
         PrimaryStats equipment = EquipmentStatModifierResolver.Resolve([weapon]);

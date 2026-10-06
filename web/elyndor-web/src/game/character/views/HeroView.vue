@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 
-import type { EquipmentSlot } from '@/api/contracts'
+import { EQUIPMENT_SLOT_TO_EQUIPPED_KEY, type EquipmentSlot } from '@/api/contracts'
 import CharacterOverviewView from '@/game/character/views/CharacterOverviewV2.vue'
 import CharacterStatsView from '@/game/character/views/CharacterStatsView.vue'
 import CompanionView from '@/game/character/views/CompanionView.vue'
@@ -53,24 +53,7 @@ function equippedItemId(slot: EquipmentSlot): string | null {
   const equipped = session.snapshot?.character?.inventory.equipped
   if (!equipped) return null
 
-  if (slot === 'MainHand') return (equipped.mainHand ?? equipped.weapon)?.id ?? null
-  if (slot === 'OffHand') return equipped.offHand?.id ?? null
-  if (slot === 'Weapon') return (equipped.weapon ?? equipped.mainHand)?.id ?? null
-  if (slot === 'Head') return equipped.head?.id ?? null
-  if (slot === 'Shoulders') return equipped.shoulders?.id ?? null
-  if (slot === 'Chest') return equipped.chest?.id ?? null
-  if (slot === 'Hands') return equipped.hands?.id ?? null
-  if (slot === 'Legs') return equipped.legs?.id ?? null
-  if (slot === 'Feet') return (equipped.feet ?? equipped.boots)?.id ?? null
-  if (slot === 'Boots') return (equipped.boots ?? equipped.feet)?.id ?? null
-  if (slot === 'Cloak') return equipped.cloak?.id ?? null
-  if (slot === 'Amulet') return (equipped.amulet ?? equipped.accessory)?.id ?? null
-  if (slot === 'Accessory') return (equipped.accessory ?? equipped.amulet)?.id ?? null
-  if (slot === 'Ring1') return equipped.ring1?.id ?? null
-  if (slot === 'Ring2') return equipped.ring2?.id ?? null
-  if (slot === 'Waist') return equipped.waist?.id ?? null
-  if (slot === 'Wrist') return equipped.wrist?.id ?? null
-  return null
+  return equipped[EQUIPMENT_SLOT_TO_EQUIPPED_KEY[slot]]?.id ?? null
 }
 
 const requestedSlotEquippedItemId = computed(() =>

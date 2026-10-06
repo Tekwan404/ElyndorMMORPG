@@ -4,8 +4,8 @@ import type { ItemSalvagePreviewV2 } from '@/api/itemEnhancementContracts'
 export type ForgeCategory = 'weapon' | 'armor' | 'accessory' | 'artifact'
 export function forgeCategory(item: InventoryItem): ForgeCategory {
   if (String(item.type) === 'SpatialArtifact') return 'artifact'
-  if (item.weaponCategory || item.slot === 'Weapon' || item.slot === 'MainHand') return 'weapon'
-  if (['Accessory', 'Ring1', 'Ring2', 'Amulet'].includes(item.slot ?? '')) return 'accessory'
+  if (item.weaponCategory || item.slot === 'MainHand') return 'weapon'
+  if (['Ring1', 'Ring2', 'Amulet'].includes(item.slot ?? '')) return 'accessory'
   return 'armor'
 }
 export function canSalvage(item: InventoryItem): boolean {

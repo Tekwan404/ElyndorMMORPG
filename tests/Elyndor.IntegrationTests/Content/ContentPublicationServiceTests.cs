@@ -256,7 +256,7 @@ public sealed class ContentPublicationServiceTests(PostgresFixture postgres) : I
                 Path.GetFullPath("content/package.json"));
 
         ItemDefinition bundledEye = bundled.Items!
-            .Single(item => item.Id == "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L60");
+            .Single(item => item.Id == "UNIQUE_MAGE_EYE_OF_DEAD_STAR");
         Assert.Equal(EquipmentCategoryIds.OneHandStaff, bundledEye.WeaponCategory);
 
         ClassProfile bundledMage = bundled.ClassProfiles!

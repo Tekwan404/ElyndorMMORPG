@@ -213,76 +213,8 @@
                       "randomAffixPoolId":  "ARCHER_ARMOR",
                       "setId":  "SET_BLACK_BASTION_ARCHER_SURVIVAL"
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_ARCHER_SURVIVAL_WAIST",
-                      "iconId":  "sets/black-bastion/last_hunter/last_hunter_belt",
-                      "name":  "Пояс «Снаряжение Ловчего Звёздных Троп»",
-                      "type":  "Equipment",
-                      "generationMode":  "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  25,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Снаряжение Ловчего Звёздных Троп» из Обсерватории Погасшего Неба для класса Лучник, ветка Выживание. Основа: ловкость, критический удар, яды, ловушки, выживаемость.",
-                      "version":  1,
-                      "itemLevelMin":  25,
-                      "itemLevelMax":  25,
-                      "generationVersion":  1,
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "guaranteedAffixStatIds":  [
-                                                     "AGILITY",
-                                                     "STAMINA"
-                                                 ],
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "affixCountProfileId":  "LEVEL_25_28",
-                      "armorCategory":  "LEATHER",
-                      "armorFlat":  55.2,
-                      "randomAffixPoolId":  "ARCHER_ARMOR",
-                      "setId":  "SET_BLACK_BASTION_ARCHER_SURVIVAL"
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_ARCHER_SURVIVAL_WRIST",
-                      "iconId":  "sets/black-bastion/last_hunter/last_hunter_bracers",
-                      "name":  "Наручи «Снаряжение Ловчего Звёздных Троп»",
-                      "type":  "Equipment",
-                      "generationMode":  "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  25,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Снаряжение Ловчего Звёздных Троп» из Обсерватории Погасшего Неба для класса Лучник, ветка Выживание. Основа: ловкость, критический удар, яды, ловушки, выживаемость.",
-                      "version":  1,
-                      "itemLevelMin":  25,
-                      "itemLevelMax":  25,
-                      "generationVersion":  1,
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "guaranteedAffixStatIds":  [
-                                                     "AGILITY",
-                                                     "STAMINA"
-                                                 ],
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "affixCountProfileId":  "LEVEL_25_28",
-                      "armorCategory":  "LEATHER",
-                      "armorFlat":  49.0,
-                      "randomAffixPoolId":  "ARCHER_ARMOR",
-                      "setId":  "SET_BLACK_BASTION_ARCHER_SURVIVAL"
-                  },
+                  
+                  
                   {
                       "id":  "SET_BLACK_BASTION_MAGE_FROST_CHEST",
                       "iconId":  "sets/black-bastion/silent_frost/silent_frost_chest",
@@ -493,76 +425,8 @@
                       "randomAffixPoolId":  "MAGE_ARMOR",
                       "setId":  "SET_BLACK_BASTION_MAGE_FROST"
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_MAGE_FROST_WAIST",
-                      "iconId":  "sets/black-bastion/silent_frost/silent_frost_belt",
-                      "name":  "Пояс «Покров Безмолвного Инея»",
-                      "type":  "Equipment",
-                      "generationMode":  "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  25,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Покров Безмолвного Инея» из Обсерватории Погасшего Неба для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
-                      "version":  1,
-                      "itemLevelMin":  25,
-                      "itemLevelMax":  25,
-                      "generationVersion":  1,
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "guaranteedAffixStatIds":  [
-                                                     "INTELLECT",
-                                                     "STAMINA"
-                                                 ],
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "affixCountProfileId":  "LEVEL_25_28",
-                      "armorCategory":  "CLOTH",
-                      "armorFlat":  30.1,
-                      "randomAffixPoolId":  "MAGE_ARMOR",
-                      "setId":  "SET_BLACK_BASTION_MAGE_FROST"
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_MAGE_FROST_WRIST",
-                      "iconId":  "sets/black-bastion/silent_frost/silent_frost_bracers",
-                      "name":  "Наручи «Покров Безмолвного Инея»",
-                      "type":  "Equipment",
-                      "generationMode":  "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  25,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Покров Безмолвного Инея» из Обсерватории Погасшего Неба для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
-                      "version":  1,
-                      "itemLevelMin":  25,
-                      "itemLevelMax":  25,
-                      "generationVersion":  1,
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "guaranteedAffixStatIds":  [
-                                                     "INTELLECT",
-                                                     "STAMINA"
-                                                 ],
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "affixCountProfileId":  "LEVEL_25_28",
-                      "armorCategory":  "CLOTH",
-                      "armorFlat":  26.8,
-                      "randomAffixPoolId":  "MAGE_ARMOR",
-                      "setId":  "SET_BLACK_BASTION_MAGE_FROST"
-                  },
+                  
+                  
                   {
                       "id":  "SET_BLACK_BASTION_PALADIN_HOLY_CHEST",
                       "iconId":  "sets/black-bastion/last_dawn/last_dawn_chest",
@@ -773,76 +637,8 @@
                       "randomAffixPoolId":  "MAGE_ARMOR",
                       "setId":  "SET_BLACK_BASTION_PALADIN_HOLY"
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_PALADIN_HOLY_WAIST",
-                      "iconId":  "sets/black-bastion/last_dawn/last_dawn_belt",
-                      "name":  "Пояс «Облачение Светоча Обсерватории»",
-                      "type":  "Equipment",
-                      "generationMode":  "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  25,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Облачение Светоча Обсерватории» из Обсерватории Погасшего Неба для класса Паладин, ветка Свет. Основа: интеллект, мана, исцеление, критический эффект.",
-                      "version":  1,
-                      "itemLevelMin":  25,
-                      "itemLevelMax":  25,
-                      "generationVersion":  1,
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "guaranteedAffixStatIds":  [
-                                                     "INTELLECT",
-                                                     "STAMINA"
-                                                 ],
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "affixCountProfileId":  "LEVEL_25_28",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  75.3,
-                      "randomAffixPoolId":  "MAGE_ARMOR",
-                      "setId":  "SET_BLACK_BASTION_PALADIN_HOLY"
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_PALADIN_HOLY_WRIST",
-                      "iconId":  "sets/black-bastion/last_dawn/last_dawn_bracers",
-                      "name":  "Наручи «Облачение Светоча Обсерватории»",
-                      "type":  "Equipment",
-                      "generationMode":  "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  25,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Облачение Светоча Обсерватории» из Обсерватории Погасшего Неба для класса Паладин, ветка Свет. Основа: интеллект, мана, исцеление, критический эффект.",
-                      "version":  1,
-                      "itemLevelMin":  25,
-                      "itemLevelMax":  25,
-                      "generationVersion":  1,
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "guaranteedAffixStatIds":  [
-                                                     "INTELLECT",
-                                                     "STAMINA"
-                                                 ],
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "affixCountProfileId":  "LEVEL_25_28",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  66.8,
-                      "randomAffixPoolId":  "MAGE_ARMOR",
-                      "setId":  "SET_BLACK_BASTION_PALADIN_HOLY"
-                  },
+                  
+                  
                   {
                       "id":  "SET_BLACK_BASTION_WARRIOR_BERSERKER_CHEST",
                       "iconId":  "sets/black-bastion/crimson_crusher/crimson_crusher_chest",
@@ -1050,76 +846,6 @@
                       "affixCountProfileId":  "LEVEL_25_28",
                       "armorCategory":  "HEAVY",
                       "armorFlat":  99.6,
-                      "randomAffixPoolId":  "WARRIOR_ARMOR",
-                      "setId":  "SET_BLACK_BASTION_WARRIOR_BERSERKER"
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_WARRIOR_BERSERKER_WAIST",
-                      "iconId":  "sets/black-bastion/crimson_crusher/crimson_crusher_belt",
-                      "name":  "Пояс «Регалии Астрального Берсерка»",
-                      "type":  "Equipment",
-                      "generationMode":  "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  25,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Регалии Астрального Берсерка» из Обсерватории Погасшего Неба для класса Воин, ветка Берсерк. Основа: сила, шанс критического удара, ярость.",
-                      "version":  1,
-                      "itemLevelMin":  25,
-                      "itemLevelMax":  25,
-                      "generationVersion":  1,
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "guaranteedAffixStatIds":  [
-                                                     "STRENGTH",
-                                                     "STAMINA"
-                                                 ],
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "affixCountProfileId":  "LEVEL_25_28",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  75.3,
-                      "randomAffixPoolId":  "WARRIOR_ARMOR",
-                      "setId":  "SET_BLACK_BASTION_WARRIOR_BERSERKER"
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_WARRIOR_BERSERKER_WRIST",
-                      "iconId":  "sets/black-bastion/crimson_crusher/crimson_crusher_bracers",
-                      "name":  "Наручи «Регалии Астрального Берсерка»",
-                      "type":  "Equipment",
-                      "generationMode":  "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  25,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Регалии Астрального Берсерка» из Обсерватории Погасшего Неба для класса Воин, ветка Берсерк. Основа: сила, шанс критического удара, ярость.",
-                      "version":  1,
-                      "itemLevelMin":  25,
-                      "itemLevelMax":  25,
-                      "generationVersion":  1,
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "guaranteedAffixStatIds":  [
-                                                     "STRENGTH",
-                                                     "STAMINA"
-                                                 ],
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "affixCountProfileId":  "LEVEL_25_28",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  66.8,
                       "randomAffixPoolId":  "WARRIOR_ARMOR",
                       "setId":  "SET_BLACK_BASTION_WARRIOR_BERSERKER"
                   }

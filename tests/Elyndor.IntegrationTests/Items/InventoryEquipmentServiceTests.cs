@@ -325,7 +325,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
             accountId, itemId, mutationId, CancellationToken.None)).IsSuccess);
 
         InventoryOperationResult conflict = await service.UnequipAsync(
-            accountId, EquipmentSlot.Weapon, mutationId, CancellationToken.None);
+            accountId, EquipmentSlot.MainHand, mutationId, CancellationToken.None);
 
         Assert.False(conflict.IsSuccess);
         Assert.Equal(InventoryErrorCodes.MutationConflict, conflict.ErrorCode);
@@ -431,7 +431,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
             1,
             false,
             1,
-            EquipmentSlot.Weapon,
+            EquipmentSlot.MainHand,
             new PrimaryStats(0, 0, 10, 0),
             "D2 equipment lifecycle integration test staff.",
             WeaponCategory: EquipmentCategoryIds.Staff);
@@ -467,7 +467,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
 
         InventoryOperationResult unequip = await service.UnequipAsync(
             accountId,
-            EquipmentSlot.Weapon,
+            EquipmentSlot.MainHand,
             Guid.CreateVersion7(),
             CancellationToken.None);
 
@@ -1009,54 +1009,6 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
     }
 
     [Fact]
-    public async Task EquippingCanonicalMainHandReplacesLegacyWeaponAlias()
-    {
-        (Guid accountId, Guid characterId) = await CreateCharacterAsync(100, "WARRIOR");
-        Guid legacyWeaponId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
-        Guid canonicalWeaponId = await AddItemAsync(characterId, "RANGER_FANG_BLADE", 1);
-
-        await using (GameDbContext seed = postgres.CreateDbContext())
-        {
-            seed.CharacterEquipment.Add(new CharacterEquipment(
-                characterId,
-                EquipmentSlot.Weapon,
-                legacyWeaponId));
-            await seed.SaveChangesAsync();
-        }
-
-        await using GameDbContext context = postgres.CreateDbContext();
-        GameContentPackage content =
-            await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
-        ItemDefinition source = content.Items!.Single(item => item.Id == "RANGER_FANG_BLADE");
-        content = content with
-        {
-            Items = content.Items!.Select(item =>
-                item.Id == source.Id
-                    ? item with { Slot = EquipmentSlot.MainHand }
-                    : item).ToArray()
-        };
-        InventoryEquipmentService service =
-            new(context, content, new FixedTimeProvider(Now));
-
-        InventoryOperationResult result = await service.EquipAsync(
-            accountId,
-            canonicalWeaponId,
-            Guid.CreateVersion7(),
-            CancellationToken.None);
-
-        Assert.True(result.IsSuccess);
-
-        await using GameDbContext verify = postgres.CreateDbContext();
-        CharacterEquipment[] equipped = await verify.CharacterEquipment
-            .Where(e => e.CharacterId == characterId)
-            .ToArrayAsync();
-
-        CharacterEquipment entry = Assert.Single(equipped);
-        Assert.Equal(EquipmentSlot.MainHand, entry.Slot);
-        Assert.Equal(canonicalWeaponId, entry.CharacterItemId);
-    }
-
-    [Fact]
     public async Task SameRingTemplateCanFillBothCanonicalRingSlots()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(
@@ -1139,7 +1091,7 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
             currentHp: 100,
             classId: "MAGE",
             level: 60);
-        Guid eyeId = await AddItemAsync(characterId, "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L60", 1);
+        Guid eyeId = await AddItemAsync(characterId, "UNIQUE_MAGE_EYE_OF_DEAD_STAR", 1);
         Guid focusId = await AddItemAsync(characterId, "FOKUS_OSTATOCHNOI_MANY_L60", 1);
 
         await using GameDbContext context = postgres.CreateDbContext();

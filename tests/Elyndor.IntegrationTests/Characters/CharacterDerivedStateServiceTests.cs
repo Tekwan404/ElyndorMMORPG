@@ -33,7 +33,7 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
             1,
             false,
             1,
-            EquipmentSlot.Weapon,
+            EquipmentSlot.MainHand,
             new PrimaryStats(0, 0, 10, 0),
             "Derived-state integration test staff.",
             WeaponCategory: EquipmentCategoryIds.Staff);
@@ -49,7 +49,7 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
             setup.CharacterItems.Add(new CharacterItem(
                 itemId, characterId, staff.Id, 1, Now));
             setup.CharacterEquipment.Add(new CharacterEquipment(
-                characterId, EquipmentSlot.Weapon, itemId));
+                characterId, EquipmentSlot.MainHand, itemId));
             await setup.SaveChangesAsync();
         }
 

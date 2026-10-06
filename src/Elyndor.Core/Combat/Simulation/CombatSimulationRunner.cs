@@ -643,14 +643,7 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
         return true;
     }
 
-    private static EquipmentSlot CanonicalSlot(EquipmentSlot slot) =>
-        slot switch
-        {
-            EquipmentSlot.Weapon => EquipmentSlot.MainHand,
-            EquipmentSlot.Boots => EquipmentSlot.Feet,
-            EquipmentSlot.Accessory => EquipmentSlot.Amulet,
-            _ => slot
-        };
+    private static EquipmentSlot CanonicalSlot(EquipmentSlot slot) => slot;
 
     private static CombatStats ToCombatStats(int level, CharacterStats stats) => new(
         level,

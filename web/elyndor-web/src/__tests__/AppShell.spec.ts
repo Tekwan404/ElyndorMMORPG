@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import AppShell from '@/app/AppShell.vue'
 import { apiClient } from '@/api/apiClient'
+import { createEmptyEquippedInventory } from '@/api/contracts'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { usePartyStore } from '@/game/party/partyStore'
@@ -172,7 +173,7 @@ describe('AppShell', () => {
 
     await wrapper.get('[data-nav="hero"]').trigger('click')
     expect(wrapper.get('main').text()).toContain('Боевые показатели')
-    expect(wrapper.findAll('[data-equipment-slot]')).toHaveLength(14)
+    expect(wrapper.findAll('[data-equipment-slot]')).toHaveLength(12)
   })
 
   it('shows an unseen release after bootstrap and acknowledges it once', async () => {
@@ -348,14 +349,7 @@ function worldSnapshot() {
       gold: 0,
       inventory: {
         items: [],
-        equipped: {
-          weapon: null,
-          head: null,
-          chest: null,
-          legs: null,
-          boots: null,
-          accessory: null,
-        },
+        equipped: createEmptyEquippedInventory(),
       },
       primaryAttribute: 'AGILITY' as const,
       classProfileVersion: '0.2.0',

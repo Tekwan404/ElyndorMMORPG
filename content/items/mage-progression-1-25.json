@@ -1658,7 +1658,9 @@
       "prefixSuffixPolicyId": null
     },
     {
-      "id": "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L25",
+      "id": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
+      "itemFamilyId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
+      "allowedClassIds": ["MAGE"],
       "name": "Око Погасшей Звезды",
       "type": "Equipment",
       "generationMode": "Rolled",
@@ -1679,11 +1681,11 @@
       "weaponDamageMin": 88,
       "weaponDamageMax": 118,
       "itemLevelMin": 25,
-      "itemLevelMax": 25,
+      "itemLevelMax": 60,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_WEAPON",
-      "affixCountProfileId": "LEVEL_25_UNIQUE",
+      "affixCountProfileId": "UNIQUE_FAMILY",
       "guaranteedAffixStatIds": [
         "INTELLECT",
         "STAMINA",

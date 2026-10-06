@@ -85,9 +85,9 @@ public sealed class WorldBossContentTests
 
         string[] uniqueIds =
         [
-            "UNIQUE_WARRIOR_BLACKHEART_L60",
-            "UNIQUE_MAGE_EYE_OF_DEAD_STAR_L60",
-            "UNIQUE_ARCHER_LAST_CONSTELLATION_L60"
+            "UNIQUE_WARRIOR_BLACKHEART",
+            "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
+            "UNIQUE_ARCHER_LAST_CONSTELLATION"
         ];
         Assert.All(uniqueIds, uniqueId =>
         {
@@ -104,11 +104,34 @@ public sealed class WorldBossContentTests
         Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "KOLTSO_RAZBITOGO_OTRAZHENIIA_L60");
         Assert.Contains(chest.SelectionGroups[0].Entries, entry => entry.ItemId == "PECHAT_TRIEDINSTVA_L60");
 
-        string[] rewardItemIds = chest.SelectionGroups[0].Entries
+        LootSelectionEntry[] rewardEntries = chest.SelectionGroups[0].Entries.ToArray();
+        string[] rewardItemIds = rewardEntries
             .Select(entry => entry.ItemId)
             .ToArray();
         Assert.Equal(7, rewardItemIds.Length);
-        Assert.All(rewardItemIds, rewardItemId =>
+
+        Assert.All(uniqueIds, uniqueId =>
+        {
+            LootSelectionEntry rewardEntry = Assert.Single(
+                rewardEntries,
+                entry => entry.ItemId == uniqueId);
+            Assert.Equal(60, rewardEntry.ItemLevelMin);
+            Assert.Equal(60, rewardEntry.ItemLevelMax);
+
+            ItemDefinition family = package.Items!.Single(item => item.Id == uniqueId);
+            Assert.Equal(uniqueId, family.ItemFamilyId);
+            Assert.Equal(25, family.ItemLevelMin);
+            Assert.Equal(60, family.ItemLevelMax);
+        });
+
+        string[] fixedLevel60Ids =
+        [
+            "FOKUS_OSTATOCHNOI_MANY_L60",
+            "LUK_TROINOGO_ASPEKTA_L60",
+            "KOLTSO_RAZBITOGO_OTRAZHENIIA_L60",
+            "PECHAT_TRIEDINSTVA_L60"
+        ];
+        Assert.All(fixedLevel60Ids, rewardItemId =>
         {
             ItemDefinition rewardItem = package.Items!.Single(item => item.Id == rewardItemId);
             Assert.Equal(60, rewardItem.RequiredLevel);

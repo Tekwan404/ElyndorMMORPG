@@ -36,7 +36,7 @@ public static partial class GameContentPackageValidator
         string[] requiredSlots =
         [
             "MAIN_HAND", "OFF_HAND", "HEAD", "SHOULDERS", "CHEST", "HANDS",
-            "LEGS", "FEET", "CLOAK", "AMULET", "RING_1", "RING_2", "WAIST", "WRIST"
+            "LEGS", "FEET", "CLOAK", "AMULET", "RING_1", "RING_2"
         ];
         if (requiredSlots.Any(slot =>
                 !itemization.SlotMultipliers.TryGetValue(slot, out decimal multiplier)
@@ -45,7 +45,7 @@ public static partial class GameContentPackageValidator
             errors.Add(new(
                 "INVALID_ITEMIZATION_SLOT_MULTIPLIERS",
                 "itemization.slotMultipliers",
-                "Every canonical V1 equipment slot requires a positive budget multiplier."));
+                "Every canonical equipment slot requires a positive budget multiplier."));
         }
 
         string[] requiredRarities = ["COMMON", "UNCOMMON", "RARE", "EPIC", "LEGENDARY"];

@@ -3,7 +3,13 @@ import MoneyAmount from '@/ui/components/MoneyAmount.vue'
 import { canAffordMoney } from '@/shared/money'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
-import type { InventoryItem, MerchantBuybackItem, MerchantItem, MerchantSnapshot } from '@/api/contracts'
+import {
+  EQUIPMENT_SLOT_TO_EQUIPPED_KEY,
+  type InventoryItem,
+  type MerchantBuybackItem,
+  type MerchantItem,
+  type MerchantSnapshot,
+} from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
 import { consumableActionLabel } from '@/game/items/consumablePresentation'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
@@ -227,7 +233,7 @@ function isForCurrentClass(item: MerchantItem): boolean {
 
 function equipmentGroup(item: MerchantItem): EquipmentSubcategory {
   if (item.weaponCategory || item.slot === 'MainHand' || item.slot === 'OffHand') return 'weapon'
-  if (item.slot === 'Accessory' || item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return 'accessory'
+  if (item.slot === 'Amulet' || item.slot === 'Ring1' || item.slot === 'Ring2') return 'accessory'
   return 'armor'
 }
 
@@ -235,26 +241,7 @@ function equippedForOffer(item: MerchantItem): InventoryItem | null {
   if (!item.slot) return null
   const equipped = session.snapshot?.character?.inventory.equipped
   if (!equipped) return null
-  const map: Record<string, keyof typeof equipped> = {
-    MainHand: 'mainHand',
-    OffHand: 'offHand',
-    Head: 'head',
-    Shoulders: 'shoulders',
-    Chest: 'chest',
-    Legs: 'legs',
-    Boots: 'boots',
-    Feet: 'feet',
-    Hands: 'hands',
-    Cloak: 'cloak',
-    Amulet: 'amulet',
-    Accessory: 'accessory',
-    Waist: 'waist',
-    Wrist: 'wrist',
-    Ring1: 'ring1',
-    Ring2: 'ring2',
-  }
-  const key = map[item.slot]
-  if (!key) return null
+  const key = EQUIPMENT_SLOT_TO_EQUIPPED_KEY[item.slot]
   return equipped[key] ?? null
 }
 

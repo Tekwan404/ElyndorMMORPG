@@ -256,15 +256,14 @@ const comparisonStats: readonly {
 ]
 
 function canonicalSlot(slot: EquipmentSlot): EquipmentSlot {
-  if (slot === 'Weapon') return 'MainHand'
-  if (slot === 'Boots') return 'Feet'
-  if (slot === 'Accessory') return 'Amulet'
   return slot
 }
 
 function equipmentCompatibilityReason(item: InventoryItem): string | null {
   const current = character.value
   if (!current || item.type !== 'Equipment') return null
+  if (item.allowedClassIds?.length && !item.allowedClassIds.includes(current.classId))
+    return 'Этот предмет предназначен для другого класса.'
   if (current.classId === 'WARRIOR') {
     if (item.armorCategory && item.armorCategory !== 'HEAVY')
       return 'Воин может носить только тяжёлую броню.'
@@ -353,11 +352,6 @@ function slotLabel(slot: EquipmentSlot | null): string {
     Amulet: 'амулет',
     Ring1: 'первое кольцо',
     Ring2: 'второе кольцо',
-    Waist: 'пояс',
-    Wrist: 'наручи',
-    Weapon: 'оружие',
-    Boots: 'обувь',
-    Accessory: 'амулет',
   }
   return labels[slot] ?? 'снаряжение'
 }
@@ -383,22 +377,18 @@ function equippedItemAt(slot: EquipmentSlot): InventoryItem | null {
   const equipped = inventory.value?.equipped
   if (!equipped) return null
 
-  if (slot === 'MainHand') return equipped.mainHand ?? equipped.weapon ?? null
-  if (slot === 'OffHand') return equipped.offHand ?? null
-  if (slot === 'Weapon') return equipped.weapon ?? equipped.mainHand ?? null
+  if (slot === 'MainHand') return equipped.mainHand
+  if (slot === 'OffHand') return equipped.offHand
   if (slot === 'Head') return equipped.head
+  if (slot === 'Shoulders') return equipped.shoulders
   if (slot === 'Chest') return equipped.chest
-  if (slot === 'Hands') return equipped.hands ?? null
+  if (slot === 'Hands') return equipped.hands
   if (slot === 'Legs') return equipped.legs
-  if (slot === 'Feet') return equipped.feet ?? equipped.boots ?? null
-  if (slot === 'Boots') return equipped.boots ?? equipped.feet ?? null
-  if (slot === 'Cloak') return equipped.cloak ?? null
-  if (slot === 'Amulet') return equipped.amulet ?? equipped.accessory ?? null
-  if (slot === 'Ring1') return equipped.ring1 ?? null
-  if (slot === 'Ring2') return equipped.ring2 ?? null
-  if (slot === 'Waist') return equipped.waist ?? null
-  if (slot === 'Wrist') return equipped.wrist ?? null
-  if (slot === 'Accessory') return equipped.accessory ?? equipped.amulet ?? null
+  if (slot === 'Feet') return equipped.feet
+  if (slot === 'Cloak') return equipped.cloak
+  if (slot === 'Amulet') return equipped.amulet
+  if (slot === 'Ring1') return equipped.ring1
+  if (slot === 'Ring2') return equipped.ring2
   return null
 }
 
@@ -869,20 +859,15 @@ function typeLabel(item: InventoryItem): string {
   const labels: Record<string, string> = {
     MainHand: 'Основная рука',
     OffHand: 'Вторая рука',
-    Weapon: 'Оружие',
     Head: 'Шлем',
     Chest: 'Нагрудник',
     Hands: 'Перчатки',
     Legs: 'Поножи',
     Feet: 'Обувь',
-    Boots: 'Ботинки',
     Cloak: 'Плащ',
     Amulet: 'Амулет',
     Ring1: 'Кольцо',
     Ring2: 'Кольцо',
-    Accessory: 'Аксессуар',
-    Waist: 'Пояс',
-    Wrist: 'Наручи',
   }
   return item.slot ? (labels[item.slot] ?? 'Снаряжение') : 'Снаряжение'
 }

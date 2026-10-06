@@ -611,10 +611,9 @@ public sealed class BootstrapService(
                 return false;
             }
 
-            EquipmentSlot[] mainHandSlots = [EquipmentSlot.MainHand, EquipmentSlot.Weapon];
             CharacterEquipment[] mainHandRows = await dbContext.CharacterEquipment
                 .Where(equipment => equipment.CharacterId == character.Id
-                    && mainHandSlots.Contains(equipment.Slot))
+                    && equipment.Slot == EquipmentSlot.MainHand)
                 .ToArrayAsync(cancellationToken);
             Guid[] equippedItemIds = mainHandRows
                 .Select(equipment => equipment.CharacterItemId)
@@ -643,7 +642,7 @@ public sealed class BootstrapService(
                         contentSnapshot.Indexes.ItemsById.GetValueOrDefault(itemId))
                     .FirstOrDefault(definition =>
                         definition?.Type == ItemType.Equipment
-                        && definition.Slot is EquipmentSlot.MainHand or EquipmentSlot.Weapon
+                        && definition.Slot == EquipmentSlot.MainHand
                         && definition.WeaponCategory is not null);
 
                 if (starterWeapon is not null)

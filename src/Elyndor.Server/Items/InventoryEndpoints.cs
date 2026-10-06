@@ -627,23 +627,18 @@ public static class InventoryEndpoints
         new(
             snapshot.Items.Select(ToResponse).ToArray(),
             new EquipmentSlotsResponse(
-                GetEquipped(snapshot, EquipmentSlot.Weapon),
+                GetEquipped(snapshot, EquipmentSlot.MainHand),
+                GetEquipped(snapshot, EquipmentSlot.OffHand),
                 GetEquipped(snapshot, EquipmentSlot.Head),
                 GetEquipped(snapshot, EquipmentSlot.Shoulders),
                 GetEquipped(snapshot, EquipmentSlot.Chest),
-                GetEquipped(snapshot, EquipmentSlot.Legs),
-                GetEquipped(snapshot, EquipmentSlot.Boots),
-                GetEquipped(snapshot, EquipmentSlot.Accessory),
-                GetEquipped(snapshot, EquipmentSlot.MainHand),
-                GetEquipped(snapshot, EquipmentSlot.OffHand),
                 GetEquipped(snapshot, EquipmentSlot.Hands),
+                GetEquipped(snapshot, EquipmentSlot.Legs),
                 GetEquipped(snapshot, EquipmentSlot.Feet),
                 GetEquipped(snapshot, EquipmentSlot.Cloak),
                 GetEquipped(snapshot, EquipmentSlot.Amulet),
                 GetEquipped(snapshot, EquipmentSlot.Ring1),
-                GetEquipped(snapshot, EquipmentSlot.Ring2),
-                GetEquipped(snapshot, EquipmentSlot.Waist),
-                GetEquipped(snapshot, EquipmentSlot.Wrist)));
+                GetEquipped(snapshot, EquipmentSlot.Ring2)));
 
     private static IResult ToResult(InventoryOperationResult result, HttpContext context) =>
         result.IsSuccess
@@ -869,7 +864,7 @@ public static class InventoryEndpoints
             item.Definition.SetId,
             item.Definition.WeaponCategory,
             item.Definition.ArmorCategory,
-            [],
+            item.Definition.AllowedClassIds ?? [],
             item.Definition.WeaponBaseAttackIntervalSeconds,
             item.Definition.AttackSpeedPercent,
             item.Definition.DodgePercent,

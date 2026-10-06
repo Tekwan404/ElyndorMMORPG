@@ -3,7 +3,11 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { apiClient } from '@/api/apiClient'
-import type { BootstrapSnapshot, WorldLocation } from '@/api/contracts'
+import {
+  createEmptyEquippedInventory,
+  type BootstrapSnapshot,
+  type WorldLocation,
+} from '@/api/contracts'
 import { useDungeonStore } from '@/game/party/dungeonStore'
 import WorldMapView from '@/game/world/views/WorldMapView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -399,14 +403,7 @@ function snapshot(): BootstrapSnapshot {
       },
       inventory: {
         items: [],
-        equipped: {
-          weapon: null,
-          head: null,
-          chest: null,
-          legs: null,
-          boots: null,
-          accessory: null,
-        },
+        equipped: createEmptyEquippedInventory(),
       },
     },
     world: {
