@@ -144,23 +144,18 @@ public sealed record InventoryItemResponse(
 }
 
 public sealed record EquipmentSlotsResponse(
-    InventoryItemResponse? Weapon,
+    InventoryItemResponse? MainHand,
+    InventoryItemResponse? OffHand,
     InventoryItemResponse? Head,
     InventoryItemResponse? Shoulders,
     InventoryItemResponse? Chest,
+    InventoryItemResponse? Hands,
     InventoryItemResponse? Legs,
-    InventoryItemResponse? Boots,
-    InventoryItemResponse? Accessory,
-    InventoryItemResponse? MainHand = null,
-    InventoryItemResponse? OffHand = null,
-    InventoryItemResponse? Hands = null,
-    InventoryItemResponse? Feet = null,
-    InventoryItemResponse? Cloak = null,
-    InventoryItemResponse? Amulet = null,
-    InventoryItemResponse? Ring1 = null,
-    InventoryItemResponse? Ring2 = null,
-    InventoryItemResponse? Waist = null,
-    InventoryItemResponse? Wrist = null);
+    InventoryItemResponse? Feet,
+    InventoryItemResponse? Cloak,
+    InventoryItemResponse? Amulet,
+    InventoryItemResponse? Ring1,
+    InventoryItemResponse? Ring2);
 
 public sealed record InventoryResponse(
     IReadOnlyList<InventoryItemResponse> Items,
