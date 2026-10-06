@@ -1,0 +1,103 @@
+{
+  "contentVersion": "0.37.0",
+  "balanceVersion": "0.30.0",
+  "publishedAtUtc": "2026-10-06T20:55:00+00:00",
+  "equipmentSets": [
+    {
+      "id": "SET_L60_NORMAL_WARRIOR_GUARDIAN",
+      "name": "Доспехи Несокрушимого Бастиона",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "bonuses": []
+    },
+    {
+      "id": "SET_L60_NORMAL_WARRIOR_BERSERKER",
+      "name": "Наследие Багрового Крушителя",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "bonuses": []
+    },
+    {
+      "id": "SET_L60_NORMAL_WARRIOR_WARLORD",
+      "name": "Регалии Пепельного Маршала",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "bonuses": []
+    },
+    {
+      "id": "SET_L60_NORMAL_MAGE_FIRE",
+      "name": "Одеяния Пепельной Звезды",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "bonuses": []
+    },
+    {
+      "id": "SET_L60_NORMAL_MAGE_ARCANE",
+      "name": "Одеяния Чёрного Оракула",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "bonuses": []
+    },
+    {
+      "id": "SET_L60_NORMAL_MAGE_FROST",
+      "name": "Покров Безмолвного Инея",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "bonuses": []
+    },
+    {
+      "id": "SET_L60_NORMAL_ARCHER_MARKSMAN",
+      "name": "Наследие Безмолвной Стрелы",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "bonuses": []
+    },
+    {
+      "id": "SET_L60_NORMAL_ARCHER_BEAST_MASTERY",
+      "name": "Регалии Хозяина Чёрной Гончей",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "bonuses": []
+    },
+    {
+      "id": "SET_L60_NORMAL_ARCHER_SURVIVAL",
+      "name": "Наследие Последнего Ловчего",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "bonuses": []
+    },
+    {
+      "id": "SET_L60_NORMAL_PALADIN_HOLY",
+      "name": "Регалии Последнего Рассвета",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "bonuses": []
+    },
+    {
+      "id": "SET_L60_NORMAL_PALADIN_PROTECTION",
+      "name": "Оплот Последних Врат",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "bonuses": []
+    },
+    {
+      "id": "SET_L60_NORMAL_PALADIN_RETRIBUTION",
+      "name": "Латы Последнего Суда",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "bonuses": []
+    }
+  ]
+}
