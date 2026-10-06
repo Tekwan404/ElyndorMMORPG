@@ -300,7 +300,7 @@
                       "requiredLevel":  30,
                       "stackable":  false,
                       "maxStack":  1,
-                      "slot":  "Accessory",
+                      "slot":  "Amulet",
                       "stats":  {
                                     "strength":  0,
                                     "agility":  0,
@@ -438,7 +438,7 @@
                       "requiredLevel":  40,
                       "stackable":  false,
                       "maxStack":  1,
-                      "slot":  "Accessory",
+                      "slot":  "Amulet",
                       "stats":  {
                                     "strength":  0,
                                     "agility":  0,
@@ -586,7 +586,7 @@
                       "requiredLevel":  40,
                       "stackable":  false,
                       "maxStack":  1,
-                      "slot":  "Accessory",
+                      "slot":  "Amulet",
                       "stats":  {
                                     "strength":  0,
                                     "agility":  0,
@@ -617,7 +617,7 @@
                       "requiredLevel":  20,
                       "stackable":  false,
                       "maxStack":  1,
-                      "slot":  "Accessory",
+                      "slot":  "Amulet",
                       "stats":  {
                                     "strength":  0,
                                     "agility":  0,
@@ -868,76 +868,8 @@
                       "tradePolicyId":  "ORDINARY_TRADEABLE",
                       "generationVersion":  1
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WAIST",
-                      "name":  "Пояс «Регалии Хозяина Чёрной Гончей»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Регалии Хозяина Чёрной Гончей» для класса Лучник, ветка Повелитель зверей. Основа: ловкость, выносливость, питомец.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY",
-                      "armorCategory":  "LEATHER",
-                      "armorFlat":  88.4,
-                      "iconId": "sets/set_black_bastion_archer_beast_mastery_waist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "AGILITY",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "ARCHER_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WRIST",
-                      "name":  "Наручи «Регалии Хозяина Чёрной Гончей»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Регалии Хозяина Чёрной Гончей» для класса Лучник, ветка Повелитель зверей. Основа: ловкость, выносливость, питомец.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY",
-                      "armorCategory":  "LEATHER",
-                      "armorFlat":  78.4,
-                      "iconId": "sets/set_black_bastion_archer_beast_mastery_wrist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "AGILITY",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "ARCHER_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
+                  
+                  
                   {
                       "id":  "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_CHEST",
                       "name":  "Нагрудник «Наследие Безмолвной Стрелы»",
@@ -1148,76 +1080,8 @@
                       "tradePolicyId":  "ORDINARY_TRADEABLE",
                       "generationVersion":  1
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_WAIST",
-                      "name":  "Пояс «Наследие Безмолвной Стрелы»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Legendary",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Наследие Безмолвной Стрелы» для класса Лучник, ветка Меткая стрельба. Основа: ловкость, точность, шанс критического удара.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP",
-                      "armorCategory":  "LEATHER",
-                      "armorFlat":  88.4,
-                      "iconId": "sets/set_black_bastion_archer_marksmanship_waist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "AGILITY",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "ARCHER_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP_WRIST",
-                      "name":  "Наручи «Наследие Безмолвной Стрелы»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Legendary",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Наследие Безмолвной Стрелы» для класса Лучник, ветка Меткая стрельба. Основа: ловкость, точность, шанс критического удара.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP",
-                      "armorCategory":  "LEATHER",
-                      "armorFlat":  78.4,
-                      "iconId": "sets/set_black_bastion_archer_marksmanship_wrist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "AGILITY",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "ARCHER_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
+                  
+                  
                   {
                       "id":  "SET_BLACK_BASTION_ARCHER_SURVIVAL_CHEST",
                       "name":  "Нагрудник «Наследие Последнего Ловчего»",
@@ -1428,76 +1292,8 @@
                       "tradePolicyId":  "ORDINARY_TRADEABLE",
                       "generationVersion":  1
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_ARCHER_SURVIVAL_WAIST",
-                      "name":  "Пояс «Наследие Последнего Ловчего»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Наследие Последнего Ловчего» для класса Лучник, ветка Выживание. Основа: ловкость, критический удар, яды, ловушки, выживаемость.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_ARCHER_SURVIVAL",
-                      "armorCategory":  "LEATHER",
-                      "armorFlat":  88.4,
-                      "iconId": "sets/set_black_bastion_archer_survival_waist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "AGILITY",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "ARCHER_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_ARCHER_SURVIVAL_WRIST",
-                      "name":  "Наручи «Наследие Последнего Ловчего»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Наследие Последнего Ловчего» для класса Лучник, ветка Выживание. Основа: ловкость, критический удар, яды, ловушки, выживаемость.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_ARCHER_SURVIVAL",
-                      "armorCategory":  "LEATHER",
-                      "armorFlat":  78.4,
-                      "iconId": "sets/set_black_bastion_archer_survival_wrist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "AGILITY",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "ARCHER_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
+                  
+                  
                   {
                       "id":  "SET_BLACK_BASTION_MAGE_ARCANE_CHEST",
                       "name":  "Нагрудник «Одеяния Затмённого Оракула»",
@@ -1708,76 +1504,8 @@
                       "tradePolicyId":  "ORDINARY_TRADEABLE",
                       "generationVersion":  1
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_MAGE_ARCANE_WAIST",
-                      "name":  "Пояс «Одеяния Затмённого Оракула»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Legendary",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Одеяния Затмённого Оракула» для класса Маг, ветка Тайная магия. Основа: интеллект, мана, магическое пробитие.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_MAGE_ARCANE",
-                      "armorCategory":  "CLOTH",
-                      "armorFlat":  48.2,
-                      "iconId": "sets/set_black_bastion_mage_arcane_waist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "INTELLECT",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "MAGE_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_MAGE_ARCANE_WRIST",
-                      "name":  "Наручи «Одеяния Затмённого Оракула»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Legendary",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Одеяния Затмённого Оракула» для класса Маг, ветка Тайная магия. Основа: интеллект, мана, магическое пробитие.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_MAGE_ARCANE",
-                      "armorCategory":  "CLOTH",
-                      "armorFlat":  42.8,
-                      "iconId": "sets/set_black_bastion_mage_arcane_wrist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "INTELLECT",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "MAGE_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
+                  
+                  
                   {
                       "id":  "SET_BLACK_BASTION_MAGE_FIRE_CHEST",
                       "name":  "Нагрудник «Одеяния Пепельной Звезды»",
@@ -1988,76 +1716,8 @@
                       "tradePolicyId":  "ORDINARY_TRADEABLE",
                       "generationVersion":  1
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_MAGE_FIRE_WAIST",
-                      "name":  "Пояс «Одеяния Пепельной Звезды»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Одеяния Пепельной Звезды» для класса Маг, ветка Пламя. Основа: интеллект, шанс критического удара, огненный урон.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_MAGE_FIRE",
-                      "armorCategory":  "CLOTH",
-                      "armorFlat":  48.2,
-                      "iconId": "sets/set_black_bastion_mage_fire_waist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "INTELLECT",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "MAGE_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_MAGE_FIRE_WRIST",
-                      "name":  "Наручи «Одеяния Пепельной Звезды»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Одеяния Пепельной Звезды» для класса Маг, ветка Пламя. Основа: интеллект, шанс критического удара, огненный урон.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_MAGE_FIRE",
-                      "armorCategory":  "CLOTH",
-                      "armorFlat":  42.8,
-                      "iconId": "sets/set_black_bastion_mage_fire_wrist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "INTELLECT",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "MAGE_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
+                  
+                  
                   {
                       "id":  "SET_BLACK_BASTION_MAGE_FROST_CHEST",
                       "name":  "Нагрудник «Покров Безмолвного Инея»",
@@ -2268,76 +1928,8 @@
                       "tradePolicyId":  "ORDINARY_TRADEABLE",
                       "generationVersion":  1
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_MAGE_FROST_WAIST",
-                      "name":  "Пояс «Покров Безмолвного Инея»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Покров Безмолвного Инея» для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_MAGE_FROST",
-                      "armorCategory":  "CLOTH",
-                      "armorFlat":  48.2,
-                      "iconId": "sets/set_black_bastion_mage_frost_waist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "INTELLECT",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "MAGE_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_MAGE_FROST_WRIST",
-                      "name":  "Наручи «Покров Безмолвного Инея»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Покров Безмолвного Инея» для класса Маг, ветка Лёд. Основа: интеллект, мана, контроль, щиты.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_MAGE_FROST",
-                      "armorCategory":  "CLOTH",
-                      "armorFlat":  42.8,
-                      "iconId": "sets/set_black_bastion_mage_frost_wrist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "INTELLECT",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "MAGE_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
+                  
+                  
                   {
                       "id":  "SET_BLACK_BASTION_PALADIN_HOLY_CHEST",
                       "name":  "Нагрудник «Регалии Последнего Рассвета»",
@@ -2548,76 +2140,8 @@
                       "tradePolicyId":  "ORDINARY_TRADEABLE",
                       "generationVersion":  1
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_PALADIN_HOLY_WAIST",
-                      "name":  "Пояс «Регалии Последнего Рассвета»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Регалии Последнего Рассвета» для класса Паладин, ветка Свет. Основа: интеллект, мана, исцеление.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_PALADIN_HOLY",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  120.5,
-                      "iconId": "sets/set_black_bastion_paladin_holy_waist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "INTELLECT",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "WARRIOR_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_PALADIN_HOLY_WRIST",
-                      "name":  "Наручи «Регалии Последнего Рассвета»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Регалии Последнего Рассвета» для класса Паладин, ветка Свет. Основа: интеллект, мана, исцеление.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_PALADIN_HOLY",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  106.9,
-                      "iconId": "sets/set_black_bastion_paladin_holy_wrist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "INTELLECT",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "WARRIOR_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
+                  
+                  
                   {
                       "id":  "SET_BLACK_BASTION_PALADIN_PROTECTION_CHEST",
                       "name":  "Нагрудник «Оплот Первого Стража»",
@@ -2828,76 +2352,8 @@
                       "tradePolicyId":  "ORDINARY_TRADEABLE",
                       "generationVersion":  1
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_PALADIN_PROTECTION_WAIST",
-                      "name":  "Пояс «Оплот Первого Стража»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Legendary",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Оплот Первого Стража» для класса Паладин, ветка Защита. Основа: сила, выносливость, броня, блок.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_PALADIN_PROTECTION",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  120.5,
-                      "iconId": "sets/set_black_bastion_paladin_protection_waist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "STRENGTH",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "WARRIOR_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_PALADIN_PROTECTION_WRIST",
-                      "name":  "Наручи «Оплот Первого Стража»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Legendary",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Оплот Первого Стража» для класса Паладин, ветка Защита. Основа: сила, выносливость, броня, блок.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_PALADIN_PROTECTION",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  106.9,
-                      "iconId": "sets/set_black_bastion_paladin_protection_wrist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "STRENGTH",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "WARRIOR_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
+                  
+                  
                   {
                       "id":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION_CHEST",
                       "name":  "Нагрудник «Латы Последнего Суда»",
@@ -3108,76 +2564,8 @@
                       "tradePolicyId":  "ORDINARY_TRADEABLE",
                       "generationVersion":  1
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION_WAIST",
-                      "name":  "Пояс «Латы Последнего Суда»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Латы Последнего Суда» для класса Паладин, ветка Воздаяние. Основа: сила, шанс критического удара, священный урон.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  120.5,
-                      "iconId": "sets/set_black_bastion_paladin_retribution_waist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "STRENGTH",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "WARRIOR_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION_WRIST",
-                      "name":  "Наручи «Латы Последнего Суда»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Латы Последнего Суда» для класса Паладин, ветка Воздаяние. Основа: сила, шанс критического удара, священный урон.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_PALADIN_RETRIBUTION",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  106.9,
-                      "iconId": "sets/set_black_bastion_paladin_retribution_wrist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "STRENGTH",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "WARRIOR_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
+                  
+                  
                   {
                       "id":  "SET_BLACK_BASTION_WARRIOR_BERSERKER_CHEST",
                       "name":  "Нагрудник «Наследие Багрового Крушителя»",
@@ -3388,76 +2776,8 @@
                       "tradePolicyId":  "ORDINARY_TRADEABLE",
                       "generationVersion":  1
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_WARRIOR_BERSERKER_WAIST",
-                      "name":  "Пояс «Наследие Багрового Крушителя»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Наследие Багрового Крушителя» для класса Воин, ветка Берсерк. Основа: сила, шанс критического удара, ярость.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_WARRIOR_BERSERKER",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  120.5,
-                      "iconId": "sets/set_black_bastion_warrior_berserker_waist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "STRENGTH",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "WARRIOR_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_WARRIOR_BERSERKER_WRIST",
-                      "name":  "Наручи «Наследие Багрового Крушителя»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Наследие Багрового Крушителя» для класса Воин, ветка Берсерк. Основа: сила, шанс критического удара, ярость.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_WARRIOR_BERSERKER",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  106.9,
-                      "iconId": "sets/set_black_bastion_warrior_berserker_wrist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "STRENGTH",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "WARRIOR_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
+                  
+                  
                   {
                       "id":  "SET_BLACK_BASTION_WARRIOR_GUARDIAN_CHEST",
                       "name":  "Нагрудник «Доспехи Чёрного Бастиона»",
@@ -3668,76 +2988,8 @@
                       "tradePolicyId":  "ORDINARY_TRADEABLE",
                       "generationVersion":  1
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_WARRIOR_GUARDIAN_WAIST",
-                      "name":  "Пояс «Доспехи Чёрного Бастиона»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Legendary",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Доспехи Чёрного Бастиона» для класса Воин, ветка Страж. Основа: сила, броня, блок, выносливость.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_WARRIOR_GUARDIAN",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  120.5,
-                      "iconId": "sets/set_black_bastion_warrior_guardian_waist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "STRENGTH",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "WARRIOR_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_WARRIOR_GUARDIAN_WRIST",
-                      "name":  "Наручи «Доспехи Чёрного Бастиона»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Legendary",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Доспехи Чёрного Бастиона» для класса Воин, ветка Страж. Основа: сила, броня, блок, выносливость.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_WARRIOR_GUARDIAN",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  106.9,
-                      "iconId": "sets/set_black_bastion_warrior_guardian_wrist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "STRENGTH",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "WARRIOR_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
+                  
+                  
                   {
                       "id":  "SET_BLACK_BASTION_WARRIOR_WARLORD_CHEST",
                       "name":  "Нагрудник «Регалии Пепельного Маршала»",
@@ -3948,76 +3200,8 @@
                       "tradePolicyId":  "ORDINARY_TRADEABLE",
                       "generationVersion":  1
                   },
-                  {
-                      "id":  "SET_BLACK_BASTION_WARRIOR_WARLORD_WAIST",
-                      "name":  "Пояс «Регалии Пепельного Маршала»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Waist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Регалии Пепельного Маршала» для класса Воин, ветка Командир. Основа: сила, выносливость, кличи.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_WARRIOR_WARLORD",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  120.5,
-                      "iconId": "sets/set_black_bastion_warrior_warlord_waist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "STRENGTH",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "WARRIOR_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
-                  {
-                      "id":  "SET_BLACK_BASTION_WARRIOR_WARLORD_WRIST",
-                      "name":  "Наручи «Регалии Пепельного Маршала»",
-                      "type":  "Equipment",
-                      "generationMode": "Rolled",
-                      "rarity":  "Epic",
-                      "requiredLevel":  40,
-                      "stackable":  false,
-                      "maxStack":  1,
-                      "slot":  "Wrist",
-                      "stats":  {
-                                    "strength":  0,
-                                    "agility":  0,
-                                    "intellect":  0,
-                                    "stamina":  0
-                                },
-                      "description":  "Часть комплекта «Регалии Пепельного Маршала» для класса Воин, ветка Командир. Основа: сила, выносливость, кличи.",
-                      "version":  1,
-                      "setId":  "SET_BLACK_BASTION_WARRIOR_WARLORD",
-                      "armorCategory":  "HEAVY",
-                      "armorFlat":  106.9,
-                      "iconId": "sets/set_black_bastion_warrior_warlord_wrist",
-                      "itemLevelMin":  40,
-                      "itemLevelMax":  40,
-                      "guaranteedAffixStatIds":  [
-                                                     "STRENGTH",
-                                                     "STAMINA"
-                                                 ],
-                      "randomAffixPoolId":  "WARRIOR_ARMOR",
-                      "affixCountProfileId":  "LEVEL_37_40",
-                      "extraAffixBudgetCap":  0.06,
-                      "prefixSuffixPolicyId":  "WORLD_V1",
-                      "tradePolicyId":  "ORDINARY_TRADEABLE",
-                      "generationVersion":  1
-                  },
+                  
+                  
                   {
                       "id":  "SET_HEART_OF_BLIGHTED_GROVE_ARCHER_BEAST_MASTERY_CHEST",
                       "name":  "Нагрудник «Шкуры Вожака Чащи»",
@@ -9067,7 +8251,7 @@
                       "requiredLevel":  30,
                       "stackable":  false,
                       "maxStack":  1,
-                      "slot":  "Accessory",
+                      "slot":  "Amulet",
                       "stats":  {
                                     "strength":  0,
                                     "agility":  0,
@@ -9219,7 +8403,7 @@
                       "requiredLevel":  40,
                       "stackable":  false,
                       "maxStack":  1,
-                      "slot":  "Accessory",
+                      "slot":  "Amulet",
                       "stats":  {
                                     "strength":  0,
                                     "agility":  0,
