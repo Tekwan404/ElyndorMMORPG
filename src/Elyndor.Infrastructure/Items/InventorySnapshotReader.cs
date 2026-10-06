@@ -46,10 +46,13 @@ internal static class InventorySnapshotReader
                 definition,
                 content.Itemization);
 
-            // Enhancement is applied to structural template stats before generated affixes are
-            // overlaid. This guarantees +N affects combat while random affixes remain unscaled.
+            // Family structural stats scale to the concrete generated item level first.
+            // Enhancement then affects those structural stats, while random affixes remain unscaled.
+            ItemDefinition familyDefinition = generated is not null && content.Itemization is { } itemization
+                ? ItemFamilyScalingPolicy.Apply(definition, itemization, generated.ItemLevel)
+                : definition;
             ItemDefinition enhancedDefinition = ItemEnhancementRules.ApplyStructuralEnhancement(
-                definition,
+                familyDefinition,
                 item.EnhancementLevel);
             ItemDefinition leveledDefinition = enhancedDefinition with
             {
