@@ -246,7 +246,8 @@ public sealed record EquipmentSetBonusDefinition(
 public sealed record EquipmentSetDefinition(
     string Id,
     string Name,
-    IReadOnlyList<EquipmentSetBonusDefinition> Bonuses);
+    IReadOnlyList<EquipmentSetBonusDefinition> Bonuses,
+    IReadOnlyList<string>? AllowedClassIds = null);
 
 public sealed record MerchantDefinition(
     string Id,
