@@ -228,7 +228,10 @@ public sealed class LootContainerService(
                             itemOrdinal,
                             now,
                             content.Package,
-                            roll.SourceQualityProfileId));
+                            roll.SourceQualityProfileId,
+                            generationOverrides: new ItemGenerationOverrides(
+                                roll.ItemLevelMin,
+                                roll.ItemLevelMax)));
                     equipmentFreeSlots--;
                 }
                 else
@@ -243,7 +246,10 @@ public sealed class LootContainerService(
                             itemOrdinal,
                             now,
                             content.Package,
-                            roll.SourceQualityProfileId));
+                            roll.SourceQualityProfileId,
+                            new ItemGenerationOverrides(
+                                roll.ItemLevelMin,
+                                roll.ItemLevelMax)));
                     pending = true;
                 }
             }
