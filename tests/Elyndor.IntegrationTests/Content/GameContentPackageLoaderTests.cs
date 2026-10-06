@@ -308,14 +308,14 @@ public sealed class GameContentPackageLoaderTests
             .Where(item => !LegendaryBlackBastionSetIds.Contains(item.SetId, StringComparer.Ordinal))
             .ToArray();
 
-        Assert.Equal(96, blackBastionSetItems.Length);
-        Assert.Equal(32, legendarySetItems.Length);
+        Assert.Equal(72, blackBastionSetItems.Length);
+        Assert.Equal(24, legendarySetItems.Length);
         Assert.All(legendarySetItems, item => Assert.Equal(ItemRarity.Legendary, item.Rarity));
-        Assert.Equal(64, epicSetItems.Length);
+        Assert.Equal(48, epicSetItems.Length);
         Assert.All(epicSetItems, item => Assert.Equal(ItemRarity.Epic, item.Rarity));
         Assert.All(
             LegendaryBlackBastionSetIds,
-            setId => Assert.Equal(8, legendarySetItems.Count(item => item.SetId == setId)));
+            setId => Assert.Equal(6, legendarySetItems.Count(item => item.SetId == setId)));
     }
 
     [Fact]
