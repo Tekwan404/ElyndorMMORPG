@@ -463,7 +463,10 @@ public sealed class WorldBossSettlementService(
                         generationOrdinal,
                         acquiredAtUtc,
                         content.Package,
-                        roll.SourceQualityProfileId);
+                        roll.SourceQualityProfileId,
+                        generationOverrides: new ItemGenerationOverrides(
+                            roll.ItemLevelMin,
+                            roll.ItemLevelMax));
                     db.CharacterItems.Add(item);
                     firstGranted ??= ToGrantedSnapshot(item, definition, content);
                     availableSlots--;
@@ -479,7 +482,10 @@ public sealed class WorldBossSettlementService(
                         generationOrdinal,
                         acquiredAtUtc,
                         content.Package,
-                        roll.SourceQualityProfileId);
+                        roll.SourceQualityProfileId,
+                        new ItemGenerationOverrides(
+                            roll.ItemLevelMin,
+                            roll.ItemLevelMax));
                     db.PendingLootItems.Add(pending);
                     firstGranted ??= ToGrantedSnapshot(pending, definition);
                 }
