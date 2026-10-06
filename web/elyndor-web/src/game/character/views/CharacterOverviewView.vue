@@ -136,7 +136,7 @@ function weaponTiming(item: InventoryItem | null): { interval: number; aps: numb
 
 const mainHandTiming = computed(() => {
   const equipped = character.value?.inventory.equipped
-  return weaponTiming(equipped?.mainHand ?? equipped?.weapon ?? null)
+  return weaponTiming(equipped?.mainHand ?? null)
 })
 const offHandTiming = computed(() => weaponTiming(character.value?.inventory.equipped.offHand ?? null))
 const totalAttacksPerSecond = computed(() =>
