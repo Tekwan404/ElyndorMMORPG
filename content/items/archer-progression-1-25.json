@@ -509,7 +509,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 49,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -519,7 +519,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_RARE_THORN_TRAIL_CHEST",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_FEET",
@@ -543,7 +547,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 21.5,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -553,7 +557,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_RARE_THORN_TRAIL_FEET",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_HANDS",
@@ -577,7 +585,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 23.5,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -587,7 +595,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_RARE_THORN_TRAIL_HANDS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_HEAD",
@@ -611,7 +623,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 31,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -621,7 +633,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_RARE_THORN_TRAIL_HEAD",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_LEGS",
@@ -645,7 +661,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 43,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -655,7 +671,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_RARE_THORN_TRAIL_LEGS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_SHOULDERS",
@@ -679,7 +699,7 @@
       "armorFlat": 27.5,
       "armorCategory": "LEATHER",
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -689,7 +709,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_RARE_THORN_TRAIL_SHOULDERS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_BOW",
@@ -747,7 +771,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 73.5,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -758,7 +782,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_EPIC_MOONLEAF_SHADOW_CHEST",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_FEET",
@@ -782,7 +810,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 32.5,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -792,7 +820,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_EPIC_MOONLEAF_SHADOW_FEET",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_HANDS",
@@ -816,7 +848,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 35,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -826,7 +858,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_EPIC_MOONLEAF_SHADOW_HANDS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_HEAD",
@@ -850,7 +886,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 47,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -860,7 +896,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_EPIC_MOONLEAF_SHADOW_HEAD",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_LEGS",
@@ -884,7 +924,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 64.5,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -895,7 +935,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_EPIC_MOONLEAF_SHADOW_LEGS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_SHOULDERS",
@@ -919,7 +963,7 @@
       "armorFlat": 41,
       "armorCategory": "LEATHER",
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -929,7 +973,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_EPIC_MOONLEAF_SHADOW_SHOULDERS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_BOW",
@@ -988,7 +1036,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 104,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -999,7 +1047,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_LEGENDARY_STAR_HUNTER_CHEST",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_FEET",
@@ -1023,7 +1075,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 46,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -1034,7 +1086,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_LEGENDARY_STAR_HUNTER_FEET",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_HANDS",
@@ -1058,7 +1114,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 50,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -1069,7 +1125,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_LEGENDARY_STAR_HUNTER_HANDS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_HEAD",
@@ -1093,7 +1153,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 66.5,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -1104,7 +1164,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_LEGENDARY_STAR_HUNTER_HEAD",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_LEGS",
@@ -1128,7 +1192,7 @@
       "armorCategory": "LEATHER",
       "armorFlat": 91.5,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -1139,7 +1203,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_LEGENDARY_STAR_HUNTER_LEGS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_SHOULDERS",
@@ -1163,7 +1231,7 @@
       "armorFlat": 58,
       "armorCategory": "LEATHER",
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -1174,7 +1242,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_LEGENDARY_STAR_HUNTER_SHOULDERS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_BOW",
@@ -1232,8 +1304,8 @@
       "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "armorCategory": "LEATHER",
       "armorFlat": 145,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -1244,7 +1316,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_CHEST",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_FEET",
@@ -1267,8 +1343,8 @@
       "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "armorCategory": "LEATHER",
       "armorFlat": 64,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -1279,7 +1355,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_FEET",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HANDS",
@@ -1302,8 +1382,8 @@
       "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "armorCategory": "LEATHER",
       "armorFlat": 70,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -1314,7 +1394,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HANDS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HEAD",
@@ -1337,8 +1421,8 @@
       "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "armorCategory": "LEATHER",
       "armorFlat": 93,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -1349,7 +1433,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HEAD",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_LEGS",
@@ -1372,8 +1460,8 @@
       "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "armorCategory": "LEATHER",
       "armorFlat": 127.5,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -1384,7 +1472,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_LEGS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_SHOULDERS",
@@ -1407,8 +1499,8 @@
       "setId": "SET_ARCHER_BLACK_CONSTELLATION",
       "armorCategory": "LEATHER",
       "armorFlat": 81,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_ARMOR",
@@ -1419,12 +1511,18 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_SHOULDERS",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
     },
     {
       "id": "UNIQUE_ARCHER_LAST_CONSTELLATION",
       "itemFamilyId": "UNIQUE_ARCHER_LAST_CONSTELLATION",
-      "allowedClassIds": ["ARCHER"],
+      "allowedClassIds": [
+        "ARCHER"
+      ],
       "name": "Лук Последнего Созвездия",
       "type": "Equipment",
       "generationMode": "Rolled",
