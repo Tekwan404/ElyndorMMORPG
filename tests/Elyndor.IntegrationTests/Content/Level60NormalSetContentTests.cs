@@ -6,6 +6,8 @@ namespace Elyndor.IntegrationTests.Content;
 
 public sealed class Level60NormalSetContentTests
 {
+    private static readonly int[] ExpectedBonusThresholds = [2, 4, 6];
+
     private static readonly Dictionary<string, string> ExpectedSets = new(StringComparer.Ordinal)
     {
         ["SET_L60_NORMAL_WARRIOR_GUARDIAN"] = "WARRIOR",
@@ -69,7 +71,7 @@ public sealed class Level60NormalSetContentTests
                 package.EquipmentSets!,
                 set => set.Id == setId);
             Assert.Equal(3, definition.Bonuses.Count);
-            Assert.Equal(new[] { 2, 4, 6 }, definition.Bonuses.Select(bonus => bonus.RequiredPieces).ToArray());
+            Assert.Equal(ExpectedBonusThresholds, definition.Bonuses.Select(bonus => bonus.RequiredPieces).ToArray());
             Assert.Single(definition.AllowedClassIds!);
             Assert.Equal(classId, definition.AllowedClassIds![0]);
         }
