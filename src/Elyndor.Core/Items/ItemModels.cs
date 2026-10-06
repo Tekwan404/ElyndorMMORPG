@@ -56,14 +56,7 @@ public enum EquipmentSlot
     Cloak,
     Amulet,
     Ring1,
-    Ring2,
-
-    // Legacy slots kept only until the authored content migration is complete.
-    Weapon,
-    Boots,
-    Accessory,
-    Waist,
-    Wrist
+    Ring2
 }
 
 public static class EquipmentSlotPolicy
@@ -82,14 +75,7 @@ public static class EquipmentSlotPolicy
             or EquipmentSlot.Ring1
             or EquipmentSlot.Ring2;
 
-    public static EquipmentSlot Canonicalize(EquipmentSlot slot) =>
-        slot switch
-        {
-            EquipmentSlot.Weapon => EquipmentSlot.MainHand,
-            EquipmentSlot.Boots => EquipmentSlot.Feet,
-            EquipmentSlot.Accessory => EquipmentSlot.Amulet,
-            _ => slot
-        };
+    public static EquipmentSlot Canonicalize(EquipmentSlot slot) => slot;
 }
 
 public sealed record ItemStatRange(
