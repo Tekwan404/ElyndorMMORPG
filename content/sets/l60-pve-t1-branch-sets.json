@@ -1,0 +1,276 @@
+{
+  "contentVersion": "0.38.0",
+  "balanceVersion": "0.31.0",
+  "publishedAtUtc": "2026-10-06T21:36:00+00:00",
+  "equipmentSets": [
+    {
+      "id": "SET_L60_PVE_T1_WARRIOR_GUARDIAN",
+      "name": "Оплот Сломанного Щита",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 211.3529,
+          "armorFlat": 199.6111
+        },
+        {
+          "requiredPieces": 4,
+          "magicResistanceFlat": 65.7542,
+          "dodgePercent": 2
+        },
+        {
+          "requiredPieces": 6,
+          "maxHpFlat": 211.3529,
+          "armorFlat": 199.6111
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVE_T1_WARRIOR_BERSERKER",
+      "name": "Клятва Разбитого Клинка",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "criticalChancePercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 70.4509
+        },
+        {
+          "requiredPieces": 6,
+          "attackSpeedPercent": 5,
+          "criticalDamagePercent": 10
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVE_T1_WARRIOR_WARLORD",
+      "name": "Регалии Павшего Командора",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 211.3529
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 70.4509
+        },
+        {
+          "requiredPieces": 6,
+          "accuracyPercent": 3,
+          "maxHpFlat": 211.3529
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVE_T1_MAGE_FIRE",
+      "name": "Одеяния Запретного Пламени",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "criticalChancePercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "spellPowerFlat": 70.4509
+        },
+        {
+          "requiredPieces": 6,
+          "magicPenetrationPercent": 5,
+          "criticalChancePercent": 4
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVE_T1_MAGE_ARCANE",
+      "name": "Ризы Единой Клятвы",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxResourceFlat": 93.9347
+        },
+        {
+          "requiredPieces": 4,
+          "spellPowerFlat": 70.4509
+        },
+        {
+          "requiredPieces": 6,
+          "magicPenetrationPercent": 5,
+          "maxResourceFlat": 93.9347
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVE_T1_MAGE_FROST",
+      "name": "Покров Хладного Архива",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxResourceFlat": 70.4509,
+          "magicResistanceFlat": 32.8772
+        },
+        {
+          "requiredPieces": 4,
+          "spellPowerFlat": 56.3608,
+          "maxHpFlat": 169.0823
+        },
+        {
+          "requiredPieces": 6,
+          "magicResistanceFlat": 65.7542,
+          "criticalChancePercent": 4
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVE_T1_ARCHER_MARKSMAN",
+      "name": "Регалии Стрелка Чёрного Знамени",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "accuracyPercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "criticalChancePercent": 4
+        },
+        {
+          "requiredPieces": 6,
+          "armorPenetrationPercent": 5,
+          "attackPowerFlat": 70.4509
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVE_T1_ARCHER_BEAST_MASTERY",
+      "name": "Клятва Зверолова Ордена",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 211.3529
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 70.4509
+        },
+        {
+          "requiredPieces": 6,
+          "attackSpeedPercent": 4,
+          "criticalChancePercent": 4
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVE_T1_ARCHER_SURVIVAL",
+      "name": "Снаряжение Ловчего Раскола",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "dodgePercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "criticalChancePercent": 4
+        },
+        {
+          "requiredPieces": 6,
+          "armorPenetrationPercent": 5,
+          "maxHpFlat": 211.3529
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVE_T1_PALADIN_HOLY",
+      "name": "Клятва Расколотого Рассвета",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxResourceFlat": 93.9347
+        },
+        {
+          "requiredPieces": 4,
+          "spellPowerFlat": 70.4509
+        },
+        {
+          "requiredPieces": 6,
+          "criticalChancePercent": 4,
+          "maxResourceFlat": 70.4509
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVE_T1_PALADIN_PROTECTION",
+      "name": "Доспех Сломанного Щита",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 211.3529,
+          "armorFlat": 199.6111
+        },
+        {
+          "requiredPieces": 4,
+          "magicResistanceFlat": 65.7542
+        },
+        {
+          "requiredPieces": 6,
+          "maxHpFlat": 211.3529,
+          "armorFlat": 199.6111
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVE_T1_PALADIN_RETRIBUTION",
+      "name": "Латы Последнего Приговора",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "criticalChancePercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 70.4509
+        },
+        {
+          "requiredPieces": 6,
+          "spellPowerFlat": 49.3156,
+          "criticalChancePercent": 4
+        }
+      ]
+    }
+  ]
+}
