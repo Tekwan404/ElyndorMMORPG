@@ -20,6 +20,10 @@ public sealed class LevelingItemFamilyContentTests
             ["SET_ARCHER_MOONLEAF_SHADOW"] = "ARCHER",
             ["SET_ARCHER_STAR_HUNTER"] = "ARCHER",
             ["SET_ARCHER_BLACK_CONSTELLATION"] = "ARCHER",
+            ["SET_PALADIN_LIVING_HEART"] = "PALADIN",
+            ["SET_PALADIN_GROVE_DAWN"] = "PALADIN",
+            ["SET_PALADIN_SHATTERED_DAWN"] = "PALADIN",
+            ["SET_PALADIN_FIRST_GUARD"] = "PALADIN",
         };
 
     [Fact]
@@ -72,7 +76,7 @@ public sealed class LevelingItemFamilyContentTests
                 && item.RequiredLevel == requiredLevel)
             .ToArray();
 
-        Assert.Equal(18, pieces.Length);
+        Assert.Equal(24, pieces.Length);
         Assert.All(pieces, item =>
         {
             Assert.Equal(requiredLevel, item.ItemLevelMin);

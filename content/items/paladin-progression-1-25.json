@@ -1,0 +1,943 @@
+{
+  "contentVersion": "0.37.0",
+  "balanceVersion": "0.30.0",
+  "publishedAtUtc": "2026-10-06T19:20:00+00:00",
+  "items": [
+    {
+      "id": "PALADIN_RARE_LIVING_HEART_CHEST",
+      "iconId": "sets/heart-of-blighted-grove/living_heart/living_heart_chest",
+      "name": "Нагрудник «Оплот Живого Сердца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Живого Сердца» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_LIVING_HEART",
+      "armorCategory": "HEAVY",
+      "armorFlat": 73,
+      "itemLevelMin": 10,
+      "itemLevelMax": 13,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_RARE_LIVING_HEART_CHEST",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_RARE_LIVING_HEART_FEET",
+      "iconId": "sets/heart-of-blighted-grove/living_heart/living_heart_boots",
+      "name": "Сапоги «Оплот Живого Сердца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Живого Сердца» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_LIVING_HEART",
+      "armorCategory": "HEAVY",
+      "armorFlat": 32.5,
+      "itemLevelMin": 10,
+      "itemLevelMax": 13,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_RARE_LIVING_HEART_FEET",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_RARE_LIVING_HEART_HANDS",
+      "iconId": "sets/heart-of-blighted-grove/living_heart/living_heart_gloves",
+      "name": "Рукавицы «Оплот Живого Сердца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Живого Сердца» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_LIVING_HEART",
+      "armorCategory": "HEAVY",
+      "armorFlat": 35,
+      "itemLevelMin": 10,
+      "itemLevelMax": 13,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_RARE_LIVING_HEART_HANDS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_RARE_LIVING_HEART_HEAD",
+      "iconId": "sets/heart-of-blighted-grove/living_heart/living_heart_helmet",
+      "name": "Шлем «Оплот Живого Сердца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Живого Сердца» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_LIVING_HEART",
+      "armorCategory": "HEAVY",
+      "armorFlat": 46.5,
+      "itemLevelMin": 10,
+      "itemLevelMax": 13,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_RARE_LIVING_HEART_HEAD",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_RARE_LIVING_HEART_LEGS",
+      "iconId": "sets/heart-of-blighted-grove/living_heart/living_heart_legs",
+      "name": "Поножи «Оплот Живого Сердца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Живого Сердца» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_LIVING_HEART",
+      "armorCategory": "HEAVY",
+      "armorFlat": 64,
+      "itemLevelMin": 10,
+      "itemLevelMax": 13,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_RARE_LIVING_HEART_LEGS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_RARE_LIVING_HEART_SHOULDERS",
+      "iconId": "sets/heart-of-blighted-grove/living_heart/living_heart_shoulders",
+      "name": "Наплечники «Оплот Живого Сердца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 10,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Живого Сердца» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_LIVING_HEART",
+      "armorFlat": 40.5,
+      "armorCategory": "HEAVY",
+      "itemLevelMin": 10,
+      "itemLevelMax": 13,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_RARE_LIVING_HEART_SHOULDERS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_EPIC_GROVE_DAWN_CHEST",
+      "iconId": "sets/heart-of-blighted-grove/grove_dawn/grove_dawn_chest",
+      "name": "Нагрудник «Доспех Рассвета Чащи»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспех Рассвета Чащи» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_GROVE_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 109,
+      "itemLevelMin": 14,
+      "itemLevelMax": 17,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_EPIC_GROVE_DAWN_CHEST",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_EPIC_GROVE_DAWN_FEET",
+      "iconId": "sets/heart-of-blighted-grove/grove_dawn/grove_dawn_boots",
+      "name": "Сапоги «Доспех Рассвета Чащи»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспех Рассвета Чащи» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_GROVE_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 48,
+      "itemLevelMin": 14,
+      "itemLevelMax": 17,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_EPIC_GROVE_DAWN_FEET",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_EPIC_GROVE_DAWN_HANDS",
+      "iconId": "sets/heart-of-blighted-grove/grove_dawn/grove_dawn_gloves",
+      "name": "Рукавицы «Доспех Рассвета Чащи»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспех Рассвета Чащи» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_GROVE_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 52,
+      "itemLevelMin": 14,
+      "itemLevelMax": 17,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_EPIC_GROVE_DAWN_HANDS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_EPIC_GROVE_DAWN_HEAD",
+      "iconId": "sets/heart-of-blighted-grove/grove_dawn/grove_dawn_helmet",
+      "name": "Шлем «Доспех Рассвета Чащи»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспех Рассвета Чащи» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_GROVE_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 69.5,
+      "itemLevelMin": 14,
+      "itemLevelMax": 17,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_EPIC_GROVE_DAWN_HEAD",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_EPIC_GROVE_DAWN_LEGS",
+      "iconId": "sets/heart-of-blighted-grove/grove_dawn/grove_dawn_legs",
+      "name": "Поножи «Доспех Рассвета Чащи»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспех Рассвета Чащи» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_GROVE_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 96,
+      "itemLevelMin": 14,
+      "itemLevelMax": 17,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_EPIC_GROVE_DAWN_LEGS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_EPIC_GROVE_DAWN_SHOULDERS",
+      "iconId": "sets/heart-of-blighted-grove/grove_dawn/grove_dawn_shoulders",
+      "name": "Наплечники «Доспех Рассвета Чащи»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 14,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспех Рассвета Чащи» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_GROVE_DAWN",
+      "armorFlat": 61,
+      "armorCategory": "HEAVY",
+      "itemLevelMin": 14,
+      "itemLevelMax": 17,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_13_16",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_EPIC_GROVE_DAWN_SHOULDERS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_LEGENDARY_SHATTERED_DAWN_CHEST",
+      "iconId": "sets/shattered-order/shattered_dawn/shattered_dawn_chest",
+      "name": "Нагрудник «Клятва Расколотого Рассвета»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Расколотого Рассвета» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_SHATTERED_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 157,
+      "itemLevelMin": 18,
+      "itemLevelMax": 22,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_LEGENDARY_SHATTERED_DAWN_CHEST",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_LEGENDARY_SHATTERED_DAWN_FEET",
+      "iconId": "sets/shattered-order/shattered_dawn/shattered_dawn_boots",
+      "name": "Сапоги «Клятва Расколотого Рассвета»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Расколотого Рассвета» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_SHATTERED_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 69,
+      "itemLevelMin": 18,
+      "itemLevelMax": 22,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_LEGENDARY_SHATTERED_DAWN_FEET",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_LEGENDARY_SHATTERED_DAWN_HANDS",
+      "iconId": "sets/shattered-order/shattered_dawn/shattered_dawn_gloves",
+      "name": "Рукавицы «Клятва Расколотого Рассвета»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Расколотого Рассвета» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_SHATTERED_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 75,
+      "itemLevelMin": 18,
+      "itemLevelMax": 22,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_LEGENDARY_SHATTERED_DAWN_HANDS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_LEGENDARY_SHATTERED_DAWN_HEAD",
+      "iconId": "sets/shattered-order/shattered_dawn/shattered_dawn_helmet",
+      "name": "Шлем «Клятва Расколотого Рассвета»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Расколотого Рассвета» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_SHATTERED_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 100.5,
+      "itemLevelMin": 18,
+      "itemLevelMax": 22,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_LEGENDARY_SHATTERED_DAWN_HEAD",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_LEGENDARY_SHATTERED_DAWN_LEGS",
+      "iconId": "sets/shattered-order/shattered_dawn/shattered_dawn_legs",
+      "name": "Поножи «Клятва Расколотого Рассвета»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Расколотого Рассвета» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_SHATTERED_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 138,
+      "itemLevelMin": 18,
+      "itemLevelMax": 22,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_LEGENDARY_SHATTERED_DAWN_LEGS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_LEGENDARY_SHATTERED_DAWN_SHOULDERS",
+      "iconId": "sets/shattered-order/shattered_dawn/shattered_dawn_shoulders",
+      "name": "Наплечники «Клятва Расколотого Рассвета»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 18,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Расколотого Рассвета» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_SHATTERED_DAWN",
+      "armorFlat": 88,
+      "armorCategory": "HEAVY",
+      "itemLevelMin": 18,
+      "itemLevelMax": 22,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_17_20",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_LEGENDARY_SHATTERED_DAWN_SHOULDERS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_LEGENDARY_FIRST_GUARD_CHEST",
+      "iconId": "sets/black-bastion/first_guardian/first_guardian_chest",
+      "name": "Нагрудник «Оплот Первого Стража»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Первого Стража» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 217,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_LEGENDARY_FIRST_GUARD_CHEST",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_LEGENDARY_FIRST_GUARD_FEET",
+      "iconId": "sets/black-bastion/first_guardian/first_guardian_boots",
+      "name": "Сапоги «Оплот Первого Стража»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Первого Стража» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 95.5,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_LEGENDARY_FIRST_GUARD_FEET",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_LEGENDARY_FIRST_GUARD_HANDS",
+      "iconId": "sets/black-bastion/first_guardian/first_guardian_gloves",
+      "name": "Рукавицы «Оплот Первого Стража»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Первого Стража» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 104,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_LEGENDARY_FIRST_GUARD_HANDS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_LEGENDARY_FIRST_GUARD_HEAD",
+      "iconId": "sets/black-bastion/first_guardian/first_guardian_helmet",
+      "name": "Шлем «Оплот Первого Стража»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Первого Стража» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 139,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_LEGENDARY_FIRST_GUARD_HEAD",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_LEGENDARY_FIRST_GUARD_LEGS",
+      "iconId": "sets/black-bastion/first_guardian/first_guardian_legs",
+      "name": "Поножи «Оплот Первого Стража»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Первого Стража» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 191,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_LEGENDARY_FIRST_GUARD_LEGS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "PALADIN_LEGENDARY_FIRST_GUARD_SHOULDERS",
+      "iconId": "sets/black-bastion/first_guardian/first_guardian_shoulders",
+      "name": "Наплечники «Оплот Первого Стража»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 23,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Первого Стража» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 121.5,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVEL_21_25",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "PALADIN_LEGENDARY_FIRST_GUARD_SHOULDERS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    }
+  ]
+}

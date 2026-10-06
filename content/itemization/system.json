@@ -137,6 +137,21 @@
         ]
       },
       {
+        "id": "PALADIN_ARMOR",
+        "statIds": [
+          "STRENGTH",
+          "INTELLECT",
+          "STAMINA",
+          "ATTACK_POWER",
+          "SPELL_POWER",
+          "CRITICAL_CHANCE",
+          "ACCURACY",
+          "MAX_HP",
+          "MAX_RESOURCE",
+          "MAGIC_RESISTANCE"
+        ]
+      },
+      {
         "id": "ACCESSORY_GENERAL",
         "statIds": [
           "STRENGTH",
@@ -577,8 +592,22 @@
       "id": "SALVAGE_V1",
       "reforgeStoneItemId": "REFORGE_STONE",
       "materialItemId": "FORGE_SCRAP",
-      "reforgeStoneQuantityByRarity": { "COMMON": 1, "UNCOMMON": 2, "RARE": 3, "EPIC": 5, "LEGENDARY": 8, "UNIQUE": 10 },
-      "materialQuantityByRarity": { "COMMON": 2, "UNCOMMON": 3, "RARE": 5, "EPIC": 8, "LEGENDARY": 12, "UNIQUE": 16 },
+      "reforgeStoneQuantityByRarity": {
+        "COMMON": 1,
+        "UNCOMMON": 2,
+        "RARE": 3,
+        "EPIC": 5,
+        "LEGENDARY": 8,
+        "UNIQUE": 10
+      },
+      "materialQuantityByRarity": {
+        "COMMON": 2,
+        "UNCOMMON": 3,
+        "RARE": 5,
+        "EPIC": 8,
+        "LEGENDARY": 12,
+        "UNIQUE": 16
+      },
       "itemLevelStep": 5,
       "reforgeStonesPerLevelStep": 1,
       "materialsPerLevelStep": 2,
@@ -626,8 +655,18 @@
     "starUpgrades": {
       "id": "STAR_UPGRADE_V1",
       "reforgeStoneItemId": "REFORGE_STONE",
-      "goldByTargetStars": { "2": 50, "3": 100, "4": 180, "5": 300 },
-      "reforgeStoneQuantityByTargetStars": { "2": 2, "3": 4, "4": 7, "5": 12 },
+      "goldByTargetStars": {
+        "2": 50,
+        "3": 100,
+        "4": 180,
+        "5": 300
+      },
+      "reforgeStoneQuantityByTargetStars": {
+        "2": 2,
+        "3": 4,
+        "4": 7,
+        "5": 12
+      },
       "highEndCatalystItemId": "DUNGEON_CATALYST",
       "highEndCatalystQuantity": 1
     }

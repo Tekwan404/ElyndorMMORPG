@@ -1,0 +1,104 @@
+{
+  "contentVersion": "0.37.0",
+  "balanceVersion": "0.30.0",
+  "publishedAtUtc": "2026-10-06T19:20:00+00:00",
+  "equipmentSets": [
+    {
+      "id": "SET_PALADIN_LIVING_HEART",
+      "name": "Оплот Живого Сердца",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 60
+        },
+        {
+          "requiredPieces": 4,
+          "maxResourceFlat": 15,
+          "magicResistanceFlat": 8
+        },
+        {
+          "requiredPieces": 6,
+          "attackPowerFlat": 8,
+          "spellPowerFlat": 8,
+          "criticalChancePercent": 2
+        }
+      ]
+    },
+    {
+      "id": "SET_PALADIN_GROVE_DAWN",
+      "name": "Доспех Рассвета Чащи",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 90
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 12,
+          "spellPowerFlat": 12
+        },
+        {
+          "requiredPieces": 6,
+          "criticalChancePercent": 3,
+          "maxResourceFlat": 20
+        }
+      ]
+    },
+    {
+      "id": "SET_PALADIN_SHATTERED_DAWN",
+      "name": "Клятва Расколотого Рассвета",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 120,
+          "armorFlat": 40
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 18,
+          "spellPowerFlat": 18
+        },
+        {
+          "requiredPieces": 6,
+          "criticalChancePercent": 3,
+          "maxResourceFlat": 25
+        }
+      ]
+    },
+    {
+      "id": "SET_PALADIN_FIRST_GUARD",
+      "name": "Оплот Первого Стража",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 180,
+          "armorFlat": 60
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 24,
+          "spellPowerFlat": 24,
+          "maxResourceFlat": 35
+        },
+        {
+          "requiredPieces": 6,
+          "criticalChancePercent": 4,
+          "armorPenetrationPercent": 3,
+          "magicPenetrationPercent": 3
+        }
+      ]
+    }
+  ]
+}
