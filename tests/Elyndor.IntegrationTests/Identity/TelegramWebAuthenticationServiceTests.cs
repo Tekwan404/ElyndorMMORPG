@@ -28,7 +28,7 @@ public sealed class TelegramWebAuthenticationServiceTests
             audience: ClientId,
             claims:
             [
-                new Claim("id", "424242"),
+                new Claim(JwtRegisteredClaimNames.Sub, "424242"),
                 new Claim("preferred_username", "elyndor_player")
             ],
             notBefore: utcNow.AddMinutes(-1),
