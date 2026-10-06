@@ -11,7 +11,7 @@ import {
 } from '@/telegram/telegramWebApp'
 
 vi.mock('@/telegram/telegramWebApp', () => ({
-  clearWebAuthenticationData: vi.fn(),
+  clearWebAuthenticationData: vi.fn<() => void>(),
   getTelegramInitData: vi.fn<() => string | null>(() => 'signed-init-data'),
 }))
 
