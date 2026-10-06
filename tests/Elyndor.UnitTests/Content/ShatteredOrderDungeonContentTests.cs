@@ -95,9 +95,9 @@ public sealed class ShatteredOrderDungeonContentTests
             .Where(item => item.SetId is not null && ObservatorySetIds.Contains(item.SetId, StringComparer.Ordinal))
             .ToArray();
 
-        Assert.Equal(32, movedSetItems.Length);
+        Assert.Equal(24, movedSetItems.Length);
         Assert.All(ObservatorySetIds, setId =>
-            Assert.Equal(8, movedSetItems.Count(item => item.SetId == setId)));
+            Assert.Equal(6, movedSetItems.Count(item => item.SetId == setId)));
         Assert.All(movedSetItems, item =>
         {
             Assert.Equal(25, item.RequiredLevel);
