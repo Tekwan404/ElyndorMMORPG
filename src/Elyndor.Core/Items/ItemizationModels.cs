@@ -263,6 +263,15 @@ public static class ProceduralItemPolicy
                 $"Item '{item.Id}' cannot apply a source item-level override outside the family item model.");
         }
 
+        ItemGenerationOverrides? effectiveOverrides = overrides;
+        if (effectiveOverrides is null && !string.IsNullOrWhiteSpace(item.ItemFamilyId))
+        {
+            int minimumItemLevel = item.ItemLevelMin ?? item.RequiredLevel;
+            effectiveOverrides = new ItemGenerationOverrides(
+                minimumItemLevel,
+                minimumItemLevel);
+        }
+
         return IsEnabled(item)
             ? ItemInstanceGenerator.Generate(
                 item,
@@ -270,7 +279,7 @@ public static class ProceduralItemPolicy
                 qualityProfileId,
                 new SeededGameRandom(key.Seed),
                 perfectOrigin,
-                overrides)
+                effectiveOverrides)
             : null;
     }
 }
