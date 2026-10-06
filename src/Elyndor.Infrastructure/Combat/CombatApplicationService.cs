@@ -124,11 +124,8 @@ public sealed class CombatApplicationService(
         if (dungeonService is null)
             return CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);
 
-        if (bootstrapService is not null)
-        {
-            await bootstrapService.GetAsync(accountId, contentProvider.GetCurrent(), cancellationToken, checkpoint: true);
-        }
-
+        // CombatSessionFactory.CreateAsync performs the authoritative checkpointed bootstrap.
+        // Doing it here as well doubles the full character/world load before every dungeon fight.
         (DungeonPreparation? preparation, string? errorCode) =
             await dungeonService.PrepareEncounterAsync(accountId, runId, cancellationToken);
         if (preparation is null)
