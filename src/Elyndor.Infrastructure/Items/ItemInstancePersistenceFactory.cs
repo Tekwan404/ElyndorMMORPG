@@ -17,7 +17,8 @@ public static class ItemInstancePersistenceFactory
         GameContentPackage content,
         string qualityProfileId = "NORMAL",
         Guid? itemId = null,
-        Elyndor.Core.Combat.Randomness.IGameRandom? legacyRandom = null)
+        Elyndor.Core.Combat.Randomness.IGameRandom? legacyRandom = null,
+        ItemGenerationOverrides? generationOverrides = null)
     {
         ItemGenerationKey key = ItemGenerationKey.Create(sourceOperationId, $"{sourceEntryId}|{definition.Id}", ordinal);
         ItemizationDefinition? effectiveItemization = content.Itemization is { } itemization
@@ -28,7 +29,8 @@ public static class ItemInstancePersistenceFactory
             effectiveItemization,
             qualityProfileId,
             key,
-            ResolvePerfectOrigin(sourceType));
+            ResolvePerfectOrigin(sourceType),
+            generationOverrides);
         PrimaryStats? legacyRoll = generated is null && definition.Type == ItemType.Equipment
             ? ItemInstanceStatRoller.Resolve(definition, legacyRandom ?? new Elyndor.Core.Combat.Randomness.SeededGameRandom(key.Seed))
             : null;
@@ -48,7 +50,8 @@ public static class ItemInstancePersistenceFactory
         int ordinal,
         DateTimeOffset acquiredAtUtc,
         GameContentPackage content,
-        string qualityProfileId = "NORMAL")
+        string qualityProfileId = "NORMAL",
+        ItemGenerationOverrides? generationOverrides = null)
     {
         ItemGenerationKey key = ItemGenerationKey.Create(sourceOperationId, $"{sourceEntryId}|{definition.Id}", ordinal);
         ItemizationDefinition? effectiveItemization = content.Itemization is { } itemization
@@ -59,7 +62,8 @@ public static class ItemInstancePersistenceFactory
             effectiveItemization,
             qualityProfileId,
             key,
-            ResolvePerfectOrigin(sourceType));
+            ResolvePerfectOrigin(sourceType),
+            generationOverrides);
         PrimaryStats? legacyRoll = generated is null && definition.Type == ItemType.Equipment
             ? ItemInstanceStatRoller.Resolve(definition, new Elyndor.Core.Combat.Randomness.SeededGameRandom(key.Seed))
             : null;
