@@ -61,6 +61,12 @@ public sealed class LevelingItemFamilyContentTests
                 Assert.Equal([classId], item.AllowedClassIds);
                 Assert.Equal(item.RequiredLevel, item.ItemLevelMin);
                 Assert.True(item.ItemLevelMax >= item.ItemLevelMin, item.Id);
+
+                ItemAffixCountProfileDefinition profile = package.Itemization!.AffixCountProfiles
+                    .Single(candidate => candidate.Id == item.AffixCountProfileId);
+                Assert.Equal(
+                    profile.GuaranteedCount,
+                    item.GuaranteedAffixStatIds?.Count ?? 0);
             });
         }
     }

@@ -16,26 +16,26 @@
             {
               "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_FEET",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_FEET",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_FEET",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             }
           ]
         },
@@ -47,26 +47,26 @@
             {
               "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_FEET",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_FEET",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_FEET",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "KADILO_INKVIZITORA",
@@ -93,26 +93,26 @@
             {
               "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_HANDS",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HANDS",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_HANDS",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             }
           ]
         },
@@ -124,26 +124,26 @@
             {
               "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_HANDS",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HANDS",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_HANDS",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "KLIUCH_KOMENDANTA",
@@ -170,26 +170,26 @@
             {
               "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_HEAD",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HEAD",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_HEAD",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             }
           ]
         },
@@ -201,26 +201,26 @@
             {
               "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_HEAD",
               "weight": 4.166666666666667,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD",
               "weight": 4.166666666666667,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HEAD",
               "weight": 4.166666666666667,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_HEAD",
               "weight": 4.166666666666667,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "POSOKH_CHIORNOI_ZVEZDY",
@@ -247,26 +247,26 @@
             {
               "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_LEGS",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_LEGS",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_LEGS",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             }
           ]
         },
@@ -278,26 +278,26 @@
             {
               "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_LEGS",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_LEGS",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_LEGS",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "ZNAMIA_PEPELNOGO_MARSHALA",
@@ -331,26 +331,26 @@
             {
               "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_CHEST",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_CHEST",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_CHEST",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             }
           ]
         },
@@ -362,26 +362,26 @@
             {
               "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_CHEST",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_CHEST",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_CHEST",
               "weight": 8.333333333333334,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "KLINOK_PERVOGO_STRAZHA",
@@ -408,26 +408,26 @@
             {
               "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_SHOULDERS",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_SHOULDERS",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_SHOULDERS",
               "weight": 1,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             }
           ]
         },
@@ -439,26 +439,26 @@
             {
               "itemId": "WARRIOR_LEGENDARY_BLACK_BASTION_SHOULDERS",
               "weight": 4.166666666666667,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS",
               "weight": 4.166666666666667,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_SHOULDERS",
               "weight": 4.166666666666667,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "PALADIN_LEGENDARY_FIRST_GUARD_SHOULDERS",
               "weight": 4.166666666666667,
-              "itemLevelMin": 25,
-              "itemLevelMax": 25
+              "itemLevelMin": 40,
+              "itemLevelMax": 40
             },
             {
               "itemId": "MOLOT_ARK_TORA",

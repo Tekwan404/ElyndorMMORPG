@@ -501,7 +501,8 @@
       "affixCountProfileId": "LEVEL_17_20",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA"
+        "STAMINA",
+        "INTELLECT"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
@@ -540,7 +541,8 @@
       "affixCountProfileId": "LEVEL_17_20",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA"
+        "STAMINA",
+        "INTELLECT"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
@@ -579,7 +581,8 @@
       "affixCountProfileId": "LEVEL_17_20",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA"
+        "STAMINA",
+        "INTELLECT"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
@@ -618,7 +621,8 @@
       "affixCountProfileId": "LEVEL_17_20",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA"
+        "STAMINA",
+        "INTELLECT"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
@@ -657,7 +661,8 @@
       "affixCountProfileId": "LEVEL_17_20",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA"
+        "STAMINA",
+        "INTELLECT"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
@@ -696,7 +701,8 @@
       "affixCountProfileId": "LEVEL_17_20",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA"
+        "STAMINA",
+        "INTELLECT"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
@@ -735,7 +741,8 @@
       "affixCountProfileId": "LEVEL_21_25",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA"
+        "STAMINA",
+        "INTELLECT"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
@@ -774,7 +781,8 @@
       "affixCountProfileId": "LEVEL_21_25",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA"
+        "STAMINA",
+        "INTELLECT"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
@@ -813,7 +821,8 @@
       "affixCountProfileId": "LEVEL_21_25",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA"
+        "STAMINA",
+        "INTELLECT"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
@@ -852,7 +861,8 @@
       "affixCountProfileId": "LEVEL_21_25",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA"
+        "STAMINA",
+        "INTELLECT"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
@@ -891,7 +901,8 @@
       "affixCountProfileId": "LEVEL_21_25",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA"
+        "STAMINA",
+        "INTELLECT"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
@@ -930,7 +941,8 @@
       "affixCountProfileId": "LEVEL_21_25",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA"
+        "STAMINA",
+        "INTELLECT"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
