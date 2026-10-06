@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 
 import {
+  clearWebAuthenticationData,
   getTelegramInitData,
   initializeTelegramWebApp,
   setWebAuthenticationData,
@@ -67,6 +68,16 @@ describe('telegramWebApp authentication data', () => {
       value: 'web:signed-browser-credential',
       expiresAtUtc,
     }))
+  })
+
+  it('clears both the in-memory and persisted browser credential', () => {
+    const expiresAtUtc = new Date(Date.now() + 60_000).toISOString()
+    setWebAuthenticationData('web:stale-browser-credential', expiresAtUtc)
+
+    clearWebAuthenticationData()
+
+    expect(getTelegramInitData()).toBeNull()
+    expect(window.sessionStorage.getItem(webAuthenticationStorageKey)).toBeNull()
   })
 
   it('always prefers real Telegram Mini App initData', () => {
