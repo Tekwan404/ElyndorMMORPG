@@ -451,6 +451,12 @@
         "maximumBonusCount": 2
       },
       {
+        "id": "UNIQUE_FAMILY",
+        "guaranteedCount": 3,
+        "minimumBonusCount": 2,
+        "maximumBonusCount": 2
+      },
+      {
         "id": "ACCESSORY_LEVEL_57_60",
         "guaranteedCount": 0,
         "minimumBonusCount": 4,
