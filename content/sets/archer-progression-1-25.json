@@ -6,6 +6,7 @@
     {
       "id": "SET_ARCHER_THORN_TRAIL",
       "name": "Клятва Тернового Следа",
+      "allowedClassIds": ["ARCHER"],
       "bonuses": [
         {
           "requiredPieces": 2,
@@ -24,6 +25,7 @@
     {
       "id": "SET_ARCHER_MOONLEAF_SHADOW",
       "name": "Тень Лунного Листа",
+      "allowedClassIds": ["ARCHER"],
       "bonuses": [
         {
           "requiredPieces": 2,
@@ -43,6 +45,7 @@
     {
       "id": "SET_ARCHER_STAR_HUNTER",
       "name": "Наследие Звёздного Зверобоя",
+      "allowedClassIds": ["ARCHER"],
       "bonuses": [
         {
           "requiredPieces": 2,
@@ -62,6 +65,7 @@
     {
       "id": "SET_ARCHER_BLACK_CONSTELLATION",
       "name": "Охота Чёрного Созвездия",
+      "allowedClassIds": ["ARCHER"],
       "bonuses": [
         {
           "requiredPieces": 2,
