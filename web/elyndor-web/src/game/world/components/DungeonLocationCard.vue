@@ -153,6 +153,9 @@ async function refreshCard(): Promise<void> {
 
 onMounted(() => {
   void refreshCard()
+  // Establish realtime while the player reads the dungeon card so "Начать бой"
+  // does not pay the initial SignalR negotiation cost.
+  void combat.connect().catch(() => undefined)
 })
 
 async function createRun(): Promise<void> {
