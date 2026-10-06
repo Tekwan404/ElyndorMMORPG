@@ -65,10 +65,9 @@ public sealed class ItemFamilyFoundationTests
             family,
             TestItemization(),
             "TEST",
-            new ItemGenerationKey(
+            ItemGenerationKey.Create(
                 Guid.Parse("0199a000-0000-7000-8000-000000000001"),
-                "TEST",
-                "DIRECT_GRANT",
+                family.Id,
                 0))!;
 
         Assert.Equal(25, generated.ItemLevel);
