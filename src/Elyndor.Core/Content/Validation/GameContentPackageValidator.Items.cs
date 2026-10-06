@@ -44,14 +44,47 @@ public static partial class GameContentPackageValidator
             }
 
             IReadOnlyList<ItemDefinition> items = package.Items ?? [];
-            HashSet<string> equipmentSetIds = (package.EquipmentSets ?? [])
-                .Select(set => set.Id)
-                .ToHashSet(StringComparer.Ordinal);
-            Dictionary<string, ItemDefinition> itemsById = new(StringComparer.Ordinal);
-            HashSet<string> itemFamilyIds = new(StringComparer.Ordinal);
             HashSet<string> classProfileIds = (package.ClassProfiles ?? [])
                 .Select(profile => profile.Id)
                 .ToHashSet(StringComparer.Ordinal);
+            IReadOnlyList<EquipmentSetDefinition> equipmentSets = package.EquipmentSets ?? [];
+            HashSet<string> equipmentSetIds = equipmentSets
+                .Select(set => set.Id)
+                .ToHashSet(StringComparer.Ordinal);
+            for (var setIndex = 0; setIndex < equipmentSets.Count; setIndex++)
+            {
+                EquipmentSetDefinition set = equipmentSets[setIndex];
+                string setPath = $"equipmentSets[{setIndex}]";
+                if (!ValidateIdentifier(
+                        set.Id,
+                        "INVALID_EQUIPMENT_SET_ID",
+                        $"{setPath}.id",
+                        errors))
+                {
+                    continue;
+                }
+
+                if (set.AllowedClassIds is not null)
+                {
+                    bool invalidSetClassRestriction =
+                        set.AllowedClassIds.Count == 0
+                        || set.AllowedClassIds.Distinct(StringComparer.Ordinal).Count()
+                            != set.AllowedClassIds.Count
+                        || set.AllowedClassIds.Any(classId =>
+                            !IsCanonicalIdentifier(classId)
+                            || !classProfileIds.Contains(classId));
+                    if (invalidSetClassRestriction)
+                    {
+                        errors.Add(new(
+                            "INVALID_EQUIPMENT_SET_CLASS_RESTRICTION",
+                            $"{setPath}.allowedClassIds",
+                            $"Equipment set '{set.Id}' has an invalid class restriction."));
+                    }
+                }
+            }
+
+            Dictionary<string, ItemDefinition> itemsById = new(StringComparer.Ordinal);
+            HashSet<string> itemFamilyIds = new(StringComparer.Ordinal);
             HashSet<string> resourceProfileIds = (package.ResourceProfiles ?? [])
                 .Select(profile => profile.Id)
                 .ToHashSet(StringComparer.Ordinal);
