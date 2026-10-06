@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import AppShell from '@/app/AppShell.vue'
 import { apiClient } from '@/api/apiClient'
+import { createEmptyEquippedInventory } from '@/api/contracts'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { usePartyStore } from '@/game/party/partyStore'
@@ -348,20 +349,7 @@ function worldSnapshot() {
       gold: 0,
       inventory: {
         items: [],
-        equipped: {
-          mainHand: null,
-          offHand: null,
-          head: null,
-          shoulders: null,
-          chest: null,
-          hands: null,
-          legs: null,
-          feet: null,
-          cloak: null,
-          amulet: null,
-          ring1: null,
-          ring2: null,
-        },
+        equipped: createEmptyEquippedInventory(),
       },
       primaryAttribute: 'AGILITY' as const,
       classProfileVersion: '0.2.0',
