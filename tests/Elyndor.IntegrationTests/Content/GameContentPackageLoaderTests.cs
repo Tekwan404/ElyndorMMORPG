@@ -238,10 +238,21 @@ public sealed class GameContentPackageLoaderTests
                 Assert.Contains(package.Items!, item => item.Id == entry.ItemId && item.Type == ItemType.Equipment));
         });
 
-        Assert.Contains(package.Items!, item => item.Id == "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WAIST"
-            && item.Slot == EquipmentSlot.Waist);
-        Assert.Contains(package.Items!, item => item.Id == "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY_WRIST"
-            && item.Slot == EquipmentSlot.Wrist);
+        ItemDefinition[] blackBastionBeastMastery = package.Items!
+            .Where(item => item.SetId == "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY")
+            .ToArray();
+        Assert.Equal(6, blackBastionBeastMastery.Length);
+        Assert.All(blackBastionBeastMastery, item => Assert.Contains(
+            item.Slot,
+            new EquipmentSlot?[]
+            {
+                EquipmentSlot.Head,
+                EquipmentSlot.Shoulders,
+                EquipmentSlot.Chest,
+                EquipmentSlot.Hands,
+                EquipmentSlot.Legs,
+                EquipmentSlot.Feet
+            }));
         Assert.Contains(EquipmentCategoryIds.Crossbow,
             package.ClassProfiles!.Single(profile => profile.Id == "ARCHER").AllowedWeaponCategories);
 
