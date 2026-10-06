@@ -16,6 +16,8 @@ public static class ArenaEndpoints
             .WithTags("Arena");
 
         group.MapGet("/status", GetStatusAsync);
+        group.MapGet("/shop", GetShopAsync);
+        group.MapPost("/shop/purchases", PurchaseFromShopAsync);
         group.MapPost("/queue", JoinAsync);
         group.MapDelete("/queue", LeaveAsync);
         group.MapGet("/leaderboard", GetLeaderboardAsync);
@@ -75,6 +77,70 @@ public static class ArenaEndpoints
         return status is null
             ? Problem("character_not_found", StatusCodes.Status404NotFound, http)
             : Results.Ok(ArenaContractMapper.ToResponse(status, enabled: true));
+    }
+
+    private static async Task<IResult> GetShopAsync(
+        ClaimsPrincipal user,
+        ArenaHonorShopService shop,
+        HttpContext http,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        ArenaHonorShopOperationResult result = await shop.GetAsync(accountId, cancellationToken);
+        return result.Succeeded && result.Snapshot is { } snapshot
+            ? Results.Ok(ToShopResponse(snapshot))
+            : ShopProblem(result.ErrorCode ?? "arena_shop_unavailable", http);
+    }
+
+    private static async Task<IResult> PurchaseFromShopAsync(
+        ArenaHonorShopPurchaseRequest request,
+        ClaimsPrincipal user,
+        ArenaHonorShopService shop,
+        HttpContext http,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        ArenaHonorShopOperationResult result = await shop.BuyAsync(
+            accountId,
+            request.ItemId,
+            request.MutationId,
+            cancellationToken);
+
+        return result.Succeeded && result.Snapshot is { } snapshot
+            ? Results.Ok(new ArenaHonorShopPurchaseResponse(
+                true,
+                null,
+                ToShopResponse(snapshot)))
+            : ShopProblem(result.ErrorCode ?? "arena_shop_unavailable", http);
+    }
+
+    private static ArenaHonorShopResponse ToShopResponse(ArenaHonorShopSnapshot snapshot) =>
+        new(
+            snapshot.Honor,
+            snapshot.Items.Select(item => new ArenaHonorShopItemResponse(
+                item.Id,
+                item.Name,
+                item.Rarity.ToString(),
+                item.Slot?.ToString(),
+                item.IconId,
+                item.RequiredLevel,
+                item.HonorPrice)).ToArray());
+
+    private static IResult ShopProblem(string code, HttpContext context)
+    {
+        int statusCode = code switch
+        {
+            ArenaHonorShopErrorCodes.CharacterNotFound or ArenaHonorShopErrorCodes.ItemNotFound =>
+                StatusCodes.Status404NotFound,
+            ArenaHonorShopErrorCodes.InvalidMutationId or ArenaHonorShopErrorCodes.ItemNotForSale =>
+                StatusCodes.Status400BadRequest,
+            _ => StatusCodes.Status409Conflict
+        };
+        return Problem(code, statusCode, context);
     }
 
     private static async Task<IResult> JoinAsync(ArenaQueueRequest? request, ClaimsPrincipal user,
