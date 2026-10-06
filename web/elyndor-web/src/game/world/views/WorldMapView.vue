@@ -86,6 +86,9 @@ const selectedIsDungeon = computed(() =>
 const selectedDungeonPreview = computed(() => selectedIsDungeon.value
   ? dungeon.previews.find(item => item.id === selectedLocation.value?.id) ?? null
   : null)
+const selectedDungeonId = computed(() =>
+  selectedIsDungeon.value ? selectedLocation.value?.id ?? null : null,
+)
 const selectedDungeonMinimumLevel = computed(() =>
   selectedDungeonPreview.value?.minimumLevel ?? selectedLocation.value?.minimumLevel ?? 1,
 )
@@ -193,7 +196,7 @@ async function travel(): Promise<void> {
 }
 
 async function enterSelectedDungeon(): Promise<void> {
-  const dungeonId = selectedDungeonPreview.value?.id
+  const dungeonId = selectedDungeonId.value
   if (!dungeonId || characterLevel.value < selectedDungeonMinimumLevel.value || isTravelling.value) return
   if (await dungeon.teleport(dungeonId)) {
     await session.refreshSnapshot()
@@ -444,7 +447,7 @@ onMounted(() => {
             <UIButton
               v-else-if="selectedIsDungeon"
               data-dungeon-map-entry
-              :disabled="characterLevel < selectedDungeonMinimumLevel || isTravelling || !selectedDungeonPreview"
+              :disabled="characterLevel < selectedDungeonMinimumLevel || isTravelling"
               :loading="dungeon.teleporting"
               @click="enterSelectedDungeon"
             >
