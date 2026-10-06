@@ -2,7 +2,12 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { BootstrapSnapshot, InventoryItem, MerchantSnapshot } from '@/api/contracts'
+import {
+  createEmptyEquippedInventory,
+  type BootstrapSnapshot,
+  type InventoryItem,
+  type MerchantSnapshot,
+} from '@/api/contracts'
 import MerchantShop from '@/game/world/components/MerchantShop.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 
@@ -343,20 +348,7 @@ function snapshot(items: InventoryItem[]): BootstrapSnapshot {
       },
       inventory: {
         items,
-        equipped: {
-          mainHand: null,
-          offHand: null,
-          head: null,
-          shoulders: null,
-          chest: null,
-          hands: null,
-          legs: null,
-          feet: null,
-          cloak: null,
-          amulet: null,
-          ring1: null,
-          ring2: null,
-        },
+        equipped: createEmptyEquippedInventory(),
       },
     },
     world: {
