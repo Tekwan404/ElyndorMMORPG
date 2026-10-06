@@ -16,6 +16,22 @@ public sealed record IssuedTelegramWebCredential(
     string Value,
     DateTimeOffset ExpiresAtUtc);
 
+public sealed class TelegramWebTokenExchangeException : Exception
+{
+    public TelegramWebTokenExchangeException(
+        int statusCode,
+        string? providerErrorCode)
+        : base($"Telegram token exchange failed with HTTP {statusCode}.")
+    {
+        StatusCode = statusCode;
+        ProviderErrorCode = providerErrorCode;
+    }
+
+    public int StatusCode { get; }
+
+    public string? ProviderErrorCode { get; }
+}
+
 public static class TelegramWebAuthenticationService
 {
     private const string TelegramIssuer = "https://oauth.telegram.org";
@@ -60,7 +76,15 @@ public static class TelegramWebAuthenticationService
         using HttpResponseMessage tokenResponse =
             await httpClient.SendAsync(tokenRequest, cancellationToken);
         if (!tokenResponse.IsSuccessStatusCode)
-            return null;
+        {
+            string? providerErrorCode =
+                await ReadProviderErrorCodeAsync(
+                    tokenResponse,
+                    cancellationToken);
+            throw new TelegramWebTokenExchangeException(
+                (int)tokenResponse.StatusCode,
+                providerErrorCode);
+        }
 
         await using Stream tokenStream =
             await tokenResponse.Content.ReadAsStreamAsync(cancellationToken);
@@ -255,6 +279,28 @@ public static class TelegramWebAuthenticationService
             return null;
         }
         catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+
+    private static async Task<string?> ReadProviderErrorCodeAsync(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            string body =
+                await response.Content.ReadAsStringAsync(cancellationToken);
+            using JsonDocument document = JsonDocument.Parse(body);
+            return document.RootElement.TryGetProperty(
+                    "error",
+                    out JsonElement errorElement)
+                && errorElement.ValueKind == JsonValueKind.String
+                    ? errorElement.GetString()
+                    : null;
+        }
+        catch (JsonException)
         {
             return null;
         }
