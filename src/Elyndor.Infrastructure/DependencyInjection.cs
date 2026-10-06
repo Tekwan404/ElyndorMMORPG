@@ -72,6 +72,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<ArenaSettlementService>();
         builder.Services.AddScoped<ArenaMatchStarter>();
         builder.Services.AddScoped<ArenaReadService>();
+        builder.Services.AddScoped<ArenaHonorShopService>();
         builder.Services.AddScoped<ArenaLobbyService>();
         builder.Services.AddScoped<ArenaInvitationService>();
         builder.Services.AddScoped<WorldBossDamageService>();
