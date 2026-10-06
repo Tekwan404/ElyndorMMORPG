@@ -61,6 +61,37 @@ public sealed class LevelingItemFamilyContentTests
         }
     }
 
+    [Fact]
+    public async Task LevelingCatalogHasTheTargetFamilyShapeAndNoCompatibilityItems()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+        ItemDefinition[] levelingEquipment = package.Items!
+            .Where(item => item.Type == ItemType.Equipment && item.RequiredLevel <= 59)
+            .ToArray();
+
+        string[] families = levelingEquipment
+            .Select(item => item.ItemFamilyId ?? item.Id)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        Assert.Equal(286, families.Length);
+        Assert.Equal(96, levelingEquipment.Count(item => CanonicalSets.ContainsKey(item.SetId ?? string.Empty)));
+        Assert.Equal(190, levelingEquipment.Count(item => !CanonicalSets.ContainsKey(item.SetId ?? string.Empty)));
+
+        string[] removedCompatibilityIds =
+        [
+            "WOLF_FANG_BLADE",
+            "BOAR_HIDE_VEST",
+            "SPIDER_SILK_HOOD",
+        ];
+        Assert.DoesNotContain(levelingEquipment, item => removedCompatibilityIds.Contains(item.Id));
+        Assert.DoesNotContain(
+            levelingEquipment,
+            item => (item.Description ?? string.Empty).Contains("совместим", StringComparison.OrdinalIgnoreCase));
+    }
+
     [Theory]
     [InlineData(10, 13)]
     [InlineData(14, 17)]
