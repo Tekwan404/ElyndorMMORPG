@@ -39,16 +39,23 @@ public sealed class SocialUpdateFilter : IEndpointFilter
 
         if (TryRouteGuid(context.HttpContext, "requestId", out Guid requestId))
         {
-            Guid[] characterIds = await db.FriendRequests
+            var requestParticipants = await db.FriendRequests
                 .AsNoTracking()
                 .Where(request => request.Id == requestId)
-                .SelectMany(request => new[]
+                .Select(request => new
                 {
                     request.RequesterCharacterId,
                     request.TargetCharacterId
                 })
-                .ToArrayAsync(token);
-            await AddAccountsForCharactersAsync(db, characterIds, recipients, token);
+                .SingleOrDefaultAsync(token);
+            if (requestParticipants is not null)
+            {
+                await AddAccountsForCharactersAsync(
+                    db,
+                    [requestParticipants.RequesterCharacterId, requestParticipants.TargetCharacterId],
+                    recipients,
+                    token);
+            }
         }
 
         if (TryRouteGuid(context.HttpContext, "friendCharacterId", out Guid friendCharacterId))
