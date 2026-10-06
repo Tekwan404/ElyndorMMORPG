@@ -139,7 +139,7 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
             setup.CharacterItems.Add(new CharacterItem(
                 itemId, characterId, "RANGER_FANG_BLADE", 1, Now));
             setup.CharacterEquipment.Add(new CharacterEquipment(
-                characterId, EquipmentSlot.Weapon, itemId));
+                characterId, EquipmentSlot.MainHand, itemId));
 
             CharacterTalentState talents = new(
                 characterId,
