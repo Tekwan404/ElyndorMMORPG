@@ -205,6 +205,10 @@ public sealed class GameContentPackageLoaderTests
                 .Concat((table.SelectionGroups ?? []).SelectMany(group => group.Entries)
                     .Select(entry => entry.ItemId)))
             .ToHashSet(StringComparer.Ordinal);
+        obtainableItemIds.UnionWith(
+            package.Items!
+                .Where(item => item.HonorPrice > 0)
+                .Select(item => item.Id));
         ItemDefinition[] proceduralEquipment = package.Items!
             .Where(item => item.Type == ItemType.Equipment)
             .ToArray();
