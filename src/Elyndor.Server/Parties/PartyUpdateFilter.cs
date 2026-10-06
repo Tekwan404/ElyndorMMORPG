@@ -4,6 +4,7 @@ using Elyndor.Contracts.Parties;
 using Elyndor.Infrastructure.Parties;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Server.Combat;
+using Elyndor.Server.Realtime;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,8 +35,13 @@ public sealed class PartyUpdateFilter : IEndpointFilter
         object? result = await next(context);
         if (result is IStatusCodeHttpResult { StatusCode: >= 400 }) return result;
         recipients.UnionWith((await parties.GetCombatMembersAsync(accountId, token)).Select(member => member.AccountId));
-        IHubContext<CombatHub> hub = services.GetRequiredService<IHubContext<CombatHub>>();
-        await hub.Clients.Groups(recipients.Select(CombatHub.GroupName).ToArray())
+        IHubContext<CombatHub> combatHub = services.GetRequiredService<IHubContext<CombatHub>>();
+        await combatHub.Clients.Groups(recipients.Select(CombatHub.GroupName).ToArray())
+            .SendAsync("PartyUpdated", cancellationToken: token);
+
+        IHubContext<LiveStateHub> liveStateHub =
+            services.GetRequiredService<IHubContext<LiveStateHub>>();
+        await liveStateHub.Clients.Groups(recipients.Select(LiveStateHub.GroupName).ToArray())
             .SendAsync("PartyUpdated", cancellationToken: token);
         return result;
     }
