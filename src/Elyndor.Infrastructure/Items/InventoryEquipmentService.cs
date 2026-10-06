@@ -395,16 +395,27 @@ public sealed class InventoryEquipmentService(
                 if (character.Level < requiredLevel)
                     return InventoryOperationResult.Failure(InventoryErrorCodes.RequiredLevel);
 
-                if (definition.AllowedClassIds is { Count: > 0 }
+                GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
+                bool itemClassRestricted = definition.AllowedClassIds is { Count: > 0 }
                     && !definition.AllowedClassIds.Contains(
                         character.ClassId,
-                        StringComparer.Ordinal))
+                        StringComparer.Ordinal);
+                bool setClassRestricted =
+                    !string.IsNullOrWhiteSpace(definition.SetId)
+                    && contentSnapshot.Indexes.EquipmentSetsById.TryGetValue(
+                        definition.SetId,
+                        out EquipmentSetDefinition? equipmentSet)
+                    && equipmentSet.AllowedClassIds is { Count: > 0 }
+                    && !equipmentSet.AllowedClassIds.Contains(
+                        character.ClassId,
+                        StringComparer.Ordinal);
+                if (itemClassRestricted || setClassRestricted)
                 {
                     return InventoryOperationResult.Failure(
                         InventoryErrorCodes.ClassRestricted);
                 }
 
-                if (!contentProvider.GetCurrent().Indexes.ClassesById.TryGetValue(
+                if (!contentSnapshot.Indexes.ClassesById.TryGetValue(
                         character.ClassId,
                         out ClassProfile? classProfile))
                 {
