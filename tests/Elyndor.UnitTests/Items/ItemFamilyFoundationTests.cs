@@ -72,7 +72,7 @@ public sealed class ItemFamilyFoundationTests
                 new SeededGameRandom(42),
                 overrides: new ItemGenerationOverrides(61, 61)));
 
-        Assert.Contains("outside template range", error.Message, StringComparison.Ordinal);
+        Assert.Contains("outside template range", error.Message);
     }
 
     private static ItemDefinition FamilySword() => new(
