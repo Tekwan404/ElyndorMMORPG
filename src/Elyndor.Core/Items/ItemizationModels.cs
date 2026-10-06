@@ -254,8 +254,15 @@ public static class ProceduralItemPolicy
         string qualityProfileId,
         ItemGenerationKey key,
         string perfectOrigin = "DROP",
-        ItemGenerationOverrides? overrides = null) =>
-        IsEnabled(item)
+        ItemGenerationOverrides? overrides = null)
+    {
+        if (overrides?.HasItemLevelOverride == true && !IsEnabled(item))
+        {
+            throw new InvalidOperationException(
+                $"Item '{item.Id}' cannot apply a source item-level override because procedural generation is disabled.");
+        }
+
+        return IsEnabled(item)
             ? ItemInstanceGenerator.Generate(
                 item,
                 itemization ?? throw new InvalidOperationException("Procedural itemization content is missing."),
@@ -264,6 +271,7 @@ public static class ProceduralItemPolicy
                 perfectOrigin,
                 overrides)
             : null;
+    }
 }
 
 public static class ItemGenerationSemantics
