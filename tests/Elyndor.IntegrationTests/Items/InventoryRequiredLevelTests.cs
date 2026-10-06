@@ -61,6 +61,59 @@ public sealed class InventoryRequiredLevelTests(PostgresFixture postgres) : IAsy
     }
 
     [Fact]
+    public async Task EquipUsesGeneratedItemLevelForFamilyRequiredLevel()
+    {
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        IReadOnlyList<ItemDefinition> items = content.Items
+            ?? throw new InvalidOperationException("Item content is required for inventory tests.");
+        ItemDefinition source = items.Single(item =>
+            item.Id == "WARRIOR_COMMON_BORDER_STEEL_CHEST");
+        ItemDefinition family = source with
+        {
+            Id = "TEST_FAMILY_LEVEL_CHEST",
+            Name = "Test Family Level Chest",
+            RequiredLevel = 2,
+            ItemLevelMin = 2,
+            ItemLevelMax = 60,
+            ItemFamilyId = "TEST_FAMILY_LEVEL_CHEST",
+            AllowedClassIds = ["WARRIOR"]
+        };
+        content = content with { Items = items.Concat([family]).ToArray() };
+
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(level: 10);
+        Guid itemId = Guid.CreateVersion7();
+        await using (GameDbContext seed = postgres.CreateDbContext())
+        {
+            CharacterItem item = ItemInstancePersistenceFactory.CreateCharacterItem(
+                characterId,
+                family,
+                Guid.CreateVersion7(),
+                "TEST",
+                family.Id,
+                0,
+                Now,
+                content,
+                itemId: itemId,
+                generationOverrides: new ItemGenerationOverrides(20, 20));
+            seed.CharacterItems.Add(item);
+            await seed.SaveChangesAsync();
+        }
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = new(context, content, new FixedTimeProvider(Now));
+
+        InventoryOperationResult result = await service.EquipAsync(
+            accountId,
+            itemId,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.False(result.IsSuccess);
+        Assert.Equal(InventoryErrorCodes.RequiredLevel, result.ErrorCode);
+    }
+
+    [Fact]
     public async Task EquipRejectsEquipmentRestrictedToDifferentClass()
     {
         GameContentPackage content = await GameContentPackageLoader.LoadAsync(
