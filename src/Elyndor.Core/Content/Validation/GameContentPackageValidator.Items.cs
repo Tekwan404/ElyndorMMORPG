@@ -256,7 +256,11 @@ public static partial class GameContentPackageValidator
                         || entry.DropChance is <= 0 or > 1
                         || entry.MinQuantity < 1
                         || entry.MaxQuantity < entry.MinQuantity
-                        || !item.Stackable && entry.MaxQuantity != 1)
+                        || !item.Stackable && entry.MaxQuantity != 1
+                        || HasInvalidLootItemLevelOverride(
+                            item,
+                            entry.ItemLevelMin,
+                            entry.ItemLevelMax))
                     {
                         errors.Add(new("INVALID_LOOT_ENTRY", entryPath,
                             $"Loot entry for '{entry.ItemId}' is invalid."));
