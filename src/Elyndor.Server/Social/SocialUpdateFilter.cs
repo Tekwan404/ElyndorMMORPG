@@ -84,8 +84,9 @@ public sealed class SocialUpdateFilter : IEndpointFilter
         string key,
         out Guid value)
     {
-        object? raw = context.Request.RouteValues.GetValueOrDefault(key);
-        return Guid.TryParse(Convert.ToString(raw), out value) && value != Guid.Empty;
+        return context.Request.RouteValues.TryGetValue(key, out object? raw)
+            && Guid.TryParse(Convert.ToString(raw), out value)
+            && value != Guid.Empty;
     }
 
     private static async Task AddAccountForCharacterAsync(
@@ -112,9 +113,10 @@ public sealed class SocialUpdateFilter : IEndpointFilter
         if (characterIds.Count == 0)
             return;
 
+        Guid[] ids = characterIds.ToArray();
         Guid[] accountIds = await db.Characters
             .AsNoTracking()
-            .Where(character => characterIds.Contains(character.Id))
+            .Where(character => ids.Contains(character.Id))
             .Select(character => character.AccountId)
             .ToArrayAsync(token);
         recipients.UnionWith(accountIds);
