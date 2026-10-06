@@ -13,6 +13,7 @@ public static class SocialEndpoints
         RouteGroupBuilder group = endpoints.MapGroup("/api/v1")
             .RequireAuthorization()
             .WithTags("Social");
+        group.AddEndpointFilter<SocialUpdateFilter>();
 
         group.MapGet("/social/search", SearchAsync);
         group.MapGet("/friends", GetSnapshotAsync);

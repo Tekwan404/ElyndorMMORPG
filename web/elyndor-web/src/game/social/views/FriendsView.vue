@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 import { usePartyStore } from '@/game/party/partyStore'
 import { classLabel } from '@/game/character/characterPresentation'
@@ -7,6 +7,7 @@ import { socialErrorMessage } from '@/game/social/socialPresentation'
 import { useSocialStore } from '@/game/social/socialStore'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { useTradeStore } from '@/game/economy/tradeStore'
+import { connectLiveState, subscribeLiveState } from '@/realtime/liveState'
 import { UIButton, UIPanel } from '@/ui/components'
 
 const social = useSocialStore()
@@ -23,6 +24,9 @@ const currentCharacterId = computed(() => session.snapshot?.character?.id ?? '')
 const isPartyLeader = computed(() => party.snapshot?.leaderCharacterId === currentCharacterId.value)
 const friendIds = computed(() => new Set(social.friends.map(friend => friend.characterId)))
 const inviting = ref<string | null>(null)
+let unsubscribeSocial: (() => void) | null = null
+let unsubscribeParty: (() => void) | null = null
+let realtimeRefreshPending = false
 function canInvite(characterId: string): boolean {
   return isPartyLeader.value && (party.snapshot?.members.length ?? 5) < 5
     && !party.snapshot?.members.some(member => member.characterId === characterId)
@@ -59,8 +63,31 @@ async function inviteToParty(characterId: string): Promise<void> {
   }
 }
 
+async function refreshSocialFromRealtime(): Promise<void> {
+  if (realtimeRefreshPending) return
+  realtimeRefreshPending = true
+  try {
+    await social.refresh()
+    if (query.value.trim().length >= 2) await social.search(query.value)
+  } finally {
+    realtimeRefreshPending = false
+  }
+}
+
 onMounted(() => {
+  unsubscribeSocial = subscribeLiveState('social', () => {
+    void refreshSocialFromRealtime()
+  })
+  unsubscribeParty = subscribeLiveState('party', () => {
+    void party.refresh(true)
+  })
+  void connectLiveState().catch(() => {})
   void Promise.all([social.refresh(), party.refresh()])
+})
+
+onUnmounted(() => {
+  unsubscribeSocial?.()
+  unsubscribeParty?.()
 })
 </script>
 
