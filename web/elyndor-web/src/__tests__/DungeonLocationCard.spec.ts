@@ -6,12 +6,24 @@ import type { BootstrapSnapshot, DungeonPreview, DungeonRun } from '@/api/contra
 import DungeonLocationCard from '@/game/world/components/DungeonLocationCard.vue'
 import { useDungeonStore } from '@/game/party/dungeonStore'
 import { usePartyStore } from '@/game/party/partyStore'
+import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
 
 const CHARACTER_ID = 'character-1'
 
 describe('DungeonLocationCard', () => {
   beforeEach(() => setActivePinia(createPinia()))
+
+  it('prewarms combat realtime when the dungeon card opens', async () => {
+    const { combat } = prepareCard('ECLIPSED_CITADEL')
+    const wrapper = mount(DungeonLocationCard, {
+      props: { dungeonId: 'ECLIPSED_CITADEL' },
+    })
+    await flushPromises()
+
+    expect(combat.connect).toHaveBeenCalledOnce()
+    wrapper.unmount()
+  })
 
   it('shows the dungeon that matches the actual current location instead of Ancient Mine', async () => {
     const { dungeon } = prepareCard('ECLIPSED_CITADEL')
@@ -206,7 +218,10 @@ function prepareCard(locationId: string) {
   dungeon.previews = [ancientMine(), eclipsedCitadel()]
   vi.spyOn(dungeon, 'refresh').mockResolvedValue(undefined)
 
-  return { session, party, dungeon }
+  const combat = useCombatSessionStore()
+  vi.spyOn(combat, 'connect').mockResolvedValue(undefined)
+
+  return { session, party, dungeon, combat }
 }
 
 function ancientMine(): DungeonPreview {
