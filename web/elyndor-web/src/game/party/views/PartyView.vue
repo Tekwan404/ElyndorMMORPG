@@ -5,6 +5,7 @@ import { useDungeonStore } from '@/game/party/dungeonStore'
 import { usePartyStore } from '@/game/party/partyStore'
 import { socialErrorMessage } from '@/game/social/socialPresentation'
 import { locationPresentation } from '@/game/world/locationPresentation'
+import { connectLiveState, subscribeLiveState } from '@/realtime/liveState'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UILoadingState, UIModal, UIPanel, UIToast } from '@/ui/components'
 
@@ -85,6 +86,7 @@ const feedback = ref<string | null>(null)
 const actionError = ref<string | null>(null)
 const hasLoaded = ref(false)
 let refreshTimer: ReturnType<typeof setInterval> | null = null
+let unsubscribeParty: (() => void) | null = null
 
 const confirmationTitle = computed(() => {
   if (pendingAction.value?.type === 'disband') return 'Распустить группу?'
@@ -98,10 +100,16 @@ const confirmationMessage = computed(() => {
 })
 
 onMounted(() => {
+  unsubscribeParty = subscribeLiveState('party', () => {
+    if (!pending.value && !pendingAction.value) {
+      void Promise.all([party.refresh(true), dungeon.refresh()])
+    }
+  })
+  void connectLiveState().catch(() => {})
   void refresh()
   refreshTimer = setInterval(() => {
     if (!pending.value && !pendingAction.value) void party.refresh(true)
-  }, 5_000)
+  }, 30_000)
 })
 
 async function refresh(): Promise<void> {
@@ -133,6 +141,7 @@ async function act(key: string, action: () => Promise<void>, message: string): P
 }
 
 onUnmounted(() => {
+  unsubscribeParty?.()
   if (refreshTimer !== null) clearInterval(refreshTimer)
 })
 
