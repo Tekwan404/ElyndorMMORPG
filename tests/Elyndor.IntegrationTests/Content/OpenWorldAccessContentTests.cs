@@ -24,7 +24,7 @@ public sealed class OpenWorldAccessContentTests
     }
 
     [Fact]
-    public async Task WorldLocationsAreReachableFromLevelOneWithoutQuestGates()
+    public async Task BorderlandsRemainOpenWhileOuterReachesUseAuthoredLevelProgression()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
@@ -40,11 +40,34 @@ public sealed class OpenWorldAccessContentTests
             GetLocation("BLIGHTED_GROVE")
         ];
 
-        Assert.All(package.Locations, location => Assert.Equal(1, location.MinimumLevel));
+        Assert.All(
+            package.Locations.Where(location => location.MapId == "BORDERLANDS"),
+            location => Assert.Equal(1, location.MinimumLevel));
         Assert.All(ordinaryZones, zone => Assert.Null(zone.RequiredContractId));
 
         Assert.Equal(8, GetLocation("DEEP_FOREST").RecommendedLevel);
         Assert.Equal(14, GetLocation("BROODMOTHER_LAIR").RecommendedLevel);
         Assert.Equal(18, GetLocation("BLIGHTED_GROVE").RecommendedLevel);
+
+        (string Id, int MinimumLevel, int MaximumLevel)[] outerReaches =
+        [
+            ("BLACK_CRAGS", 41, 44),
+            ("PLAGUEWOOD", 44, 48),
+            ("GLASS_DESERT", 48, 52),
+            ("FROZEN_EDGE", 52, 56),
+            ("DOOMED_LANDS", 56, 60),
+            ("DEAD_REACHES", 60, 60)
+        ];
+
+        Assert.All(
+            outerReaches,
+            expected =>
+            {
+                LocationDefinition location = GetLocation(expected.Id);
+                Assert.Equal("OUTER_REACHES", location.MapId);
+                Assert.Equal(expected.MinimumLevel, location.MinimumLevel);
+                Assert.Equal(expected.MaximumLevel, location.MaximumLevel);
+                Assert.Null(location.RequiredContractId);
+            });
     }
 }

@@ -79,9 +79,14 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
         WorldLocationResponse[]? locations =
             await client.GetFromJsonAsync<WorldLocationResponse[]>("/api/v1/world/locations");
         Assert.NotNull(locations);
-        Assert.Equal(21, locations.Length);
+        var content = await Elyndor.Infrastructure.Content.GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        Assert.Equal(content.Locations.Count, locations.Length);
         Assert.Contains(locations, location =>
             string.Equals(location.Id, "SHATTERED_ORDER_CITADEL_TEST", StringComparison.Ordinal));
+        Assert.Contains(locations, location =>
+            string.Equals(location.Id, "BLACK_CRAGS", StringComparison.Ordinal)
+            && string.Equals(location.MapId, "OUTER_REACHES", StringComparison.Ordinal));
         WorldLocationResponse forest = Assert.Single(locations, location =>
             string.Equals(location.Id, "WHISPERING_FOREST", StringComparison.Ordinal));
         Assert.NotEmpty(forest.Residents ?? []);
