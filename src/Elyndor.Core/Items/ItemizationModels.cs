@@ -171,6 +171,35 @@ public sealed record GeneratedItemAffix(
     bool IsReforgeSlot,
     int GenerationOrdinal);
 
+public sealed record ItemGenerationOverrides(
+    int? ItemLevelMin = null,
+    int? ItemLevelMax = null)
+{
+    public bool HasItemLevelOverride => ItemLevelMin.HasValue || ItemLevelMax.HasValue;
+}
+
+public static class ItemRequiredLevelPolicy
+{
+    public static int Resolve(
+        ItemDefinition definition,
+        int? itemLevel,
+        int? maxCharacterLevel)
+    {
+        ArgumentNullException.ThrowIfNull(definition);
+
+        // Legacy templates keep their authored requirement until they are explicitly
+        // migrated to the family model.
+        if (string.IsNullOrWhiteSpace(definition.ItemFamilyId) || !itemLevel.HasValue)
+            return definition.RequiredLevel;
+
+        int cap = maxCharacterLevel.GetValueOrDefault(itemLevel.Value);
+        if (cap < 1)
+            throw new InvalidOperationException("Maximum character level must be positive.");
+
+        return Math.Clamp(itemLevel.Value, 1, cap);
+    }
+}
+
 public sealed record GeneratedItemInstance(
     int ItemLevel,
     IReadOnlyList<GeneratedItemAffix> Affixes,
@@ -224,14 +253,16 @@ public static class ProceduralItemPolicy
         ItemizationDefinition? itemization,
         string qualityProfileId,
         ItemGenerationKey key,
-        string perfectOrigin = "DROP") =>
+        string perfectOrigin = "DROP",
+        ItemGenerationOverrides? overrides = null) =>
         IsEnabled(item)
             ? ItemInstanceGenerator.Generate(
                 item,
                 itemization ?? throw new InvalidOperationException("Procedural itemization content is missing."),
                 qualityProfileId,
                 new SeededGameRandom(key.Seed),
-                perfectOrigin)
+                perfectOrigin,
+                overrides)
             : null;
 }
 
@@ -265,7 +296,8 @@ public static class ItemInstanceGenerator
         ItemizationDefinition itemization,
         string sourceQualityProfileId,
         IGameRandom random,
-        string perfectOrigin = "DROP")
+        string perfectOrigin = "DROP",
+        ItemGenerationOverrides? overrides = null)
     {
         ArgumentNullException.ThrowIfNull(template);
         ArgumentNullException.ThrowIfNull(itemization);
@@ -277,7 +309,7 @@ public static class ItemInstanceGenerator
         if (template.Type != ItemType.Equipment || template.Slot is null)
             throw new InvalidOperationException("Only equipment templates can generate equipment instances.");
 
-        int itemLevel = ResolveItemLevel(template, random);
+        int itemLevel = ResolveItemLevel(template, random, overrides);
         decimal maxTemplatePower = CalculateTemplateMaxPower(template, itemization, itemLevel);
         decimal structuralPower = CalculateStructuralPower(template, itemization);
         if (maxTemplatePower <= structuralPower)
@@ -678,12 +710,27 @@ public static class ItemInstanceGenerator
         };
     }
 
-    private static int ResolveItemLevel(ItemDefinition template, IGameRandom random)
+    private static int ResolveItemLevel(
+        ItemDefinition template,
+        IGameRandom random,
+        ItemGenerationOverrides? overrides)
     {
-        int minimum = template.ItemLevelMin ?? template.RequiredLevel;
-        int maximum = template.ItemLevelMax ?? minimum;
-        if (minimum < 1 || maximum < minimum)
+        int templateMinimum = template.ItemLevelMin ?? template.RequiredLevel;
+        int templateMaximum = template.ItemLevelMax ?? templateMinimum;
+        if (templateMinimum < 1 || templateMaximum < templateMinimum)
             throw new InvalidOperationException($"Template '{template.Id}' item-level range is invalid.");
+
+        int minimum = overrides?.ItemLevelMin ?? overrides?.ItemLevelMax ?? templateMinimum;
+        int maximum = overrides?.ItemLevelMax ?? overrides?.ItemLevelMin ?? templateMaximum;
+        if (minimum < templateMinimum
+            || maximum > templateMaximum
+            || maximum < minimum)
+        {
+            throw new InvalidOperationException(
+                $"Template '{template.Id}' source item-level range {minimum}-{maximum} "
+                + $"is outside template range {templateMinimum}-{templateMaximum}.");
+        }
+
         return minimum == maximum
             ? minimum
             : minimum + RollIndex(maximum - minimum + 1, random);
