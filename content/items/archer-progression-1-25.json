@@ -523,7 +523,8 @@
       "itemFamilyId": "ARCHER_RARE_THORN_TRAIL_CHEST",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_chest"
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_FEET",
@@ -561,7 +562,8 @@
       "itemFamilyId": "ARCHER_RARE_THORN_TRAIL_FEET",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_feet"
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_HANDS",
@@ -599,7 +601,8 @@
       "itemFamilyId": "ARCHER_RARE_THORN_TRAIL_HANDS",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_hands"
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_HEAD",
@@ -637,7 +640,8 @@
       "itemFamilyId": "ARCHER_RARE_THORN_TRAIL_HEAD",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_head"
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_LEGS",
@@ -675,7 +679,8 @@
       "itemFamilyId": "ARCHER_RARE_THORN_TRAIL_LEGS",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_legs"
     },
     {
       "id": "ARCHER_RARE_THORN_TRAIL_SHOULDERS",
@@ -713,7 +718,8 @@
       "itemFamilyId": "ARCHER_RARE_THORN_TRAIL_SHOULDERS",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_shoulders"
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_BOW",
@@ -786,7 +792,8 @@
       "itemFamilyId": "ARCHER_EPIC_MOONLEAF_SHADOW_CHEST",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_chest"
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_FEET",
@@ -824,7 +831,8 @@
       "itemFamilyId": "ARCHER_EPIC_MOONLEAF_SHADOW_FEET",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_feet"
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_HANDS",
@@ -862,7 +870,8 @@
       "itemFamilyId": "ARCHER_EPIC_MOONLEAF_SHADOW_HANDS",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_hands"
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_HEAD",
@@ -900,7 +909,8 @@
       "itemFamilyId": "ARCHER_EPIC_MOONLEAF_SHADOW_HEAD",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_head"
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_LEGS",
@@ -939,7 +949,8 @@
       "itemFamilyId": "ARCHER_EPIC_MOONLEAF_SHADOW_LEGS",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_legs"
     },
     {
       "id": "ARCHER_EPIC_MOONLEAF_SHADOW_SHOULDERS",
@@ -977,7 +988,8 @@
       "itemFamilyId": "ARCHER_EPIC_MOONLEAF_SHADOW_SHOULDERS",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_shoulders"
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_BOW",
@@ -1051,7 +1063,8 @@
       "itemFamilyId": "ARCHER_LEGENDARY_STAR_HUNTER_CHEST",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_shattered_order_raid_archer_marksmanship_chest"
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_FEET",
@@ -1090,7 +1103,8 @@
       "itemFamilyId": "ARCHER_LEGENDARY_STAR_HUNTER_FEET",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_shattered_order_raid_archer_marksmanship_feet"
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_HANDS",
@@ -1129,7 +1143,8 @@
       "itemFamilyId": "ARCHER_LEGENDARY_STAR_HUNTER_HANDS",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_shattered_order_raid_archer_marksmanship_hands"
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_HEAD",
@@ -1168,7 +1183,8 @@
       "itemFamilyId": "ARCHER_LEGENDARY_STAR_HUNTER_HEAD",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_shattered_order_raid_archer_marksmanship_head"
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_LEGS",
@@ -1207,7 +1223,8 @@
       "itemFamilyId": "ARCHER_LEGENDARY_STAR_HUNTER_LEGS",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_shattered_order_raid_archer_marksmanship_legs"
     },
     {
       "id": "ARCHER_LEGENDARY_STAR_HUNTER_SHOULDERS",
@@ -1246,7 +1263,8 @@
       "itemFamilyId": "ARCHER_LEGENDARY_STAR_HUNTER_SHOULDERS",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_shattered_order_raid_archer_marksmanship_shoulders"
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_BOW",
@@ -1320,7 +1338,8 @@
       "itemFamilyId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_CHEST",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_black_bastion_archer_marksmanship_chest"
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_FEET",
@@ -1359,7 +1378,8 @@
       "itemFamilyId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_FEET",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_black_bastion_archer_marksmanship_feet"
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HANDS",
@@ -1398,7 +1418,8 @@
       "itemFamilyId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HANDS",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_black_bastion_archer_marksmanship_hands"
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HEAD",
@@ -1437,7 +1458,8 @@
       "itemFamilyId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_HEAD",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_black_bastion_archer_marksmanship_head"
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_LEGS",
@@ -1476,7 +1498,8 @@
       "itemFamilyId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_LEGS",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_black_bastion_archer_marksmanship_legs"
     },
     {
       "id": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_SHOULDERS",
@@ -1515,7 +1538,8 @@
       "itemFamilyId": "ARCHER_LEGENDARY_BLACK_CONSTELLATION_SHOULDERS",
       "allowedClassIds": [
         "ARCHER"
-      ]
+      ],
+      "iconId": "sets/set_black_bastion_archer_marksmanship_shoulders"
     },
     {
       "id": "UNIQUE_ARCHER_LAST_CONSTELLATION",

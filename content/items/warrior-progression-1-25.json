@@ -1102,7 +1102,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_CHEST",
-      "iconId": "sets/warrior_legendary_first_guard_chest",
+      "iconId": "sets/heart-of-blighted-grove/heart_guardian/heart_guardian_chest",
       "name": "Нагрудник Первого Стража",
       "type": "Equipment",
       "generationMode": "Rolled",
@@ -1142,7 +1142,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_FEET",
-      "iconId": "sets/warrior_legendary_first_guard_feet",
+      "iconId": "sets/heart-of-blighted-grove/heart_guardian/heart_guardian_boots",
       "name": "Сапоги Первого Стража",
       "type": "Equipment",
       "generationMode": "Rolled",
@@ -1182,7 +1182,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_HANDS",
-      "iconId": "sets/warrior_legendary_first_guard_hands",
+      "iconId": "sets/heart-of-blighted-grove/heart_guardian/heart_guardian_gloves",
       "name": "Рукавицы Первого Стража",
       "type": "Equipment",
       "generationMode": "Rolled",
@@ -1222,7 +1222,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_HEAD",
-      "iconId": "sets/warrior_legendary_first_guard_head",
+      "iconId": "sets/heart-of-blighted-grove/heart_guardian/heart_guardian_helmet",
       "name": "Шлем Первого Стража",
       "type": "Equipment",
       "generationMode": "Rolled",
@@ -1262,7 +1262,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_LEGS",
-      "iconId": "sets/warrior_legendary_first_guard_legs",
+      "iconId": "sets/heart-of-blighted-grove/heart_guardian/heart_guardian_legs",
       "name": "Поножи Первого Стража",
       "type": "Equipment",
       "generationMode": "Rolled",
@@ -1340,7 +1340,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_SHOULDERS",
-      "iconId": "sets/warrior_legendary_first_guard_shoulders",
+      "iconId": "sets/heart-of-blighted-grove/heart_guardian/heart_guardian_shoulders",
       "name": "Наплечники Первого Стража",
       "type": "Equipment",
       "generationMode": "Rolled",
