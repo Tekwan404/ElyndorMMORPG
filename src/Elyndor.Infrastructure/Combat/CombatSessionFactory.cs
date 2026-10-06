@@ -474,15 +474,9 @@ public sealed class CombatSessionFactory(
         InventorySnapshot inventory,
         EquipmentSlot slot)
     {
-        if (inventory.Equipped.TryGetValue(slot, out InventoryItemSnapshot? item))
-            return item;
-        if (slot == EquipmentSlot.MainHand
-            && inventory.Equipped.TryGetValue(EquipmentSlot.Weapon, out item))
-        {
-            return item;
-        }
-
-        return null;
+        return inventory.Equipped.TryGetValue(slot, out InventoryItemSnapshot? item)
+            ? item
+            : null;
     }
 
     private static AutoAttackProfile BuildPlayerAutoAttackProfile(
