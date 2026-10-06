@@ -166,6 +166,44 @@ public static class AuthenticationEndpoints
                 request.CodeVerifier,
                 cancellationToken);
         }
+        catch (TelegramWebTokenExchangeException exception)
+        {
+            if (exception.StatusCode == StatusCodes.Status429TooManyRequests
+                || exception.StatusCode >= StatusCodes.Status500InternalServerError)
+            {
+                return CreateProblem(
+                    httpContext,
+                    StatusCodes.Status503ServiceUnavailable,
+                    "telegram_web_auth_unavailable");
+            }
+
+            if (string.Equals(
+                    exception.ProviderErrorCode,
+                    "invalid_client",
+                    StringComparison.Ordinal))
+            {
+                return CreateProblem(
+                    httpContext,
+                    StatusCodes.Status503ServiceUnavailable,
+                    "telegram_web_provider_configuration_invalid");
+            }
+
+            if (string.Equals(
+                    exception.ProviderErrorCode,
+                    "invalid_grant",
+                    StringComparison.Ordinal))
+            {
+                return CreateProblem(
+                    httpContext,
+                    StatusCodes.Status401Unauthorized,
+                    "telegram_web_code_rejected");
+            }
+
+            return CreateProblem(
+                httpContext,
+                StatusCodes.Status401Unauthorized,
+                "telegram_web_token_exchange_rejected");
+        }
         catch (HttpRequestException)
         {
             return CreateProblem(
@@ -193,7 +231,7 @@ public static class AuthenticationEndpoints
             return CreateProblem(
                 httpContext,
                 StatusCodes.Status401Unauthorized,
-                "telegram_web_auth_invalid");
+                "telegram_web_id_token_invalid");
         }
 
         IssuedTelegramWebCredential credential =

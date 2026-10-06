@@ -19,6 +19,7 @@ type EntryState = 'checking' | 'login' | 'redirecting' | 'error'
 const ready = ref(false)
 const state = ref<EntryState>('checking')
 const errorCode = ref<string | null>(null)
+const errorCorrelationId = ref<string | null>(null)
 
 const isDevelopmentRuntime =
   import.meta.env.DEV
@@ -34,12 +35,30 @@ const errorMessage = computed(() => {
       return 'Сессия входа устарела. Начните вход заново.'
     case 'telegram_web_auth_unavailable':
       return 'Telegram временно недоступен. Попробуйте войти ещё раз.'
+    case 'telegram_web_provider_configuration_invalid':
+      return 'Сервер не смог подтвердить настройки входа Telegram.'
+    case 'telegram_web_code_rejected':
+      return 'Telegram подтвердил вход, но код авторизации был отклонён при обмене. Начните вход заново.'
+    case 'telegram_web_token_exchange_rejected':
+      return 'Telegram подтвердил вход, но сервер не смог обменять код авторизации.'
+    case 'telegram_web_id_token_invalid':
+      return 'Telegram подтвердил вход, но сервер не смог проверить полученный токен.'
+    case 'rate_limited':
+      return 'Слишком много попыток входа. Повторите попытку немного позже.'
     case 'telegram_web_auth_invalid':
     case 'telegram_web_login_failed':
       return 'Не удалось подтвердить аккаунт Telegram. Попробуйте войти ещё раз.'
     default:
       return 'Не удалось выполнить вход через Telegram.'
   }
+})
+
+const errorTechnicalDetails = computed(() => {
+  if (!errorCode.value) return null
+  const correlation = errorCorrelationId.value
+    ? ` · ID запроса: ${errorCorrelationId.value}`
+    : ''
+  return `Код: ${errorCode.value}${correlation}`
 })
 
 onMounted(async () => {
@@ -70,6 +89,7 @@ async function login(): Promise<void> {
 
   state.value = 'redirecting'
   errorCode.value = null
+  errorCorrelationId.value = null
   clearWebAuthenticationData()
   try {
     await beginTelegramWebLogin()
@@ -82,6 +102,9 @@ function showError(error: unknown): void {
   errorCode.value = error instanceof ApiRequestError
     ? error.code
     : 'telegram_web_login_failed'
+  errorCorrelationId.value = error instanceof ApiRequestError
+    ? error.correlationId ?? null
+    : null
   state.value = 'error'
 }
 </script>
@@ -114,6 +137,9 @@ function showError(error: unknown): void {
       title="Не удалось войти"
       :message="errorMessage"
     >
+      <p v-if="errorTechnicalDetails" class="web-entry__error-details">
+        {{ errorTechnicalDetails }}
+      </p>
       <UIButton data-telegram-web-retry variant="secondary" @click="login">Попробовать снова</UIButton>
     </UILoadingState>
   </main>
@@ -142,5 +168,12 @@ function showError(error: unknown): void {
   border-style: solid;
   background: rgb(12 16 23 / 92%);
   box-shadow: 0 18px 60px rgb(0 0 0 / 34%);
+}
+
+.web-entry__error-details {
+  margin: 0;
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+  opacity: 0.72;
 }
 </style>
