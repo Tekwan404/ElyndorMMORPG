@@ -166,7 +166,7 @@ public sealed class PromoCodeServiceTests(PostgresFixture postgres) : IAsyncLife
             [
                 new PromoCodeDefinition(
                     "BLACKHEART_PROMO",
-                    ItemRewards: [new PromoItemRewardDefinition("UNIQUE_WARRIOR_BLACKHEART_L25", 1)])
+                    ItemRewards: [new PromoItemRewardDefinition("UNIQUE_WARRIOR_BLACKHEART", 1)])
             ]
         };
 
@@ -188,7 +188,7 @@ public sealed class PromoCodeServiceTests(PostgresFixture postgres) : IAsyncLife
         CharacterItem item = await verify.CharacterItems
             .Include(candidate => candidate.Affixes)
             .SingleAsync(candidate => candidate.CharacterId == result.CharacterId
-                && candidate.ItemDefinitionId == "UNIQUE_WARRIOR_BLACKHEART_L25");
+                && candidate.ItemDefinitionId == "UNIQUE_WARRIOR_BLACKHEART");
         Assert.Equal(25, item.ItemLevel);
         Assert.Equal(1, item.GenerationVersion);
         Assert.Equal("PROMO_CODE", item.SourceType);
