@@ -1,3 +1,4 @@
+using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Content;
 
@@ -5,8 +6,8 @@ namespace Elyndor.IntegrationTests.Content;
 
 public sealed class LevelingItemFamilyContentTests
 {
-    private static readonly IReadOnlyDictionary<string, string> CanonicalSets =
-        new Dictionary<string, string>(StringComparer.Ordinal)
+    private static readonly Dictionary<string, string> CanonicalSets =
+        new(StringComparer.Ordinal)
         {
             ["SET_WARRIOR_GREY_FANG"] = "WARRIOR",
             ["SET_WARRIOR_CRIMSON_FURY"] = "WARRIOR",
@@ -40,15 +41,18 @@ public sealed class LevelingItemFamilyContentTests
                 .ToArray();
 
             Assert.Equal(6, pieces.Length);
+            EquipmentSlot[] expectedSlots =
+            [
+                EquipmentSlot.Head,
+                EquipmentSlot.Shoulders,
+                EquipmentSlot.Chest,
+                EquipmentSlot.Hands,
+                EquipmentSlot.Legs,
+                EquipmentSlot.Feet,
+            ];
+
             Assert.Equal(
-                [
-                    EquipmentSlot.Head,
-                    EquipmentSlot.Shoulders,
-                    EquipmentSlot.Chest,
-                    EquipmentSlot.Hands,
-                    EquipmentSlot.Legs,
-                    EquipmentSlot.Feet,
-                ].OrderBy(slot => slot),
+                expectedSlots.OrderBy(slot => slot),
                 pieces.Select(item => item.Slot!.Value).OrderBy(slot => slot));
 
             Assert.All(pieces, item =>
