@@ -92,6 +92,35 @@ public sealed class TelegramWebAuthenticationServiceTests
     }
 
     [Fact]
+    public async Task ExchangeCodeSurfacesProviderInvalidGrant()
+    {
+        RejectingTelegramOidcHandler handler = new(
+            HttpStatusCode.BadRequest,
+            "invalid_grant");
+        using HttpClient httpClient = new(handler);
+        TelegramWebAuthenticationOptions options = new()
+        {
+            Enabled = true,
+            ClientId = ClientId,
+            ClientSecret = ClientSecret,
+            RedirectUri = RedirectUri,
+            SessionLifetimeHours = 12
+        };
+
+        TelegramWebTokenExchangeException exception =
+            await Assert.ThrowsAsync<TelegramWebTokenExchangeException>(
+                () => TelegramWebAuthenticationService.ExchangeCodeAsync(
+                    httpClient,
+                    options,
+                    "authorization-code",
+                    new string('v', 64),
+                    CancellationToken.None));
+
+        Assert.Equal((int)HttpStatusCode.BadRequest, exception.StatusCode);
+        Assert.Equal("invalid_grant", exception.ProviderErrorCode);
+    }
+
+    [Fact]
     public async Task ExchangeCodeRejectsIdTokenForAnotherAudience()
     {
         using RSA rsa = RSA.Create(2048);
@@ -145,6 +174,22 @@ public sealed class TelegramWebAuthenticationServiceTests
                 CancellationToken.None);
 
         Assert.Null(identity);
+    }
+
+    private sealed class RejectingTelegramOidcHandler(
+        HttpStatusCode statusCode,
+        string errorCode) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken) =>
+            Task.FromResult(new HttpResponseMessage(statusCode)
+            {
+                Content = new StringContent(
+                    JsonSerializer.Serialize(new { error = errorCode }),
+                    Encoding.UTF8,
+                    "application/json")
+            });
     }
 
     private sealed class FakeTelegramOidcHandler(
