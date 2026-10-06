@@ -58,6 +58,23 @@ public sealed class ItemFamilyFoundationTests
     }
 
     [Fact]
+    public void DirectFamilyGrantDefaultsToTemplateMinimumItemLevel()
+    {
+        ItemDefinition family = FamilySword();
+        GeneratedItemInstance generated = ProceduralItemPolicy.Generate(
+            family,
+            TestItemization(),
+            "TEST",
+            new ItemGenerationKey(
+                Guid.Parse("0199a000-0000-7000-8000-000000000001"),
+                "TEST",
+                "DIRECT_GRANT",
+                0))!;
+
+        Assert.Equal(25, generated.ItemLevel);
+    }
+
+    [Fact]
     public void SourceOverridePinsGeneratedFamilyItemLevel()
     {
         ItemDefinition family = FamilySword();
