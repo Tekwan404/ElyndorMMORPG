@@ -48,6 +48,7 @@ public static partial class GameContentPackageValidator
                 .Select(set => set.Id)
                 .ToHashSet(StringComparer.Ordinal);
             Dictionary<string, ItemDefinition> itemsById = new(StringComparer.Ordinal);
+            HashSet<string> itemFamilyIds = new(StringComparer.Ordinal);
             HashSet<string> resourceProfileIds = (package.ResourceProfiles ?? [])
                 .Select(profile => profile.Id)
                 .ToHashSet(StringComparer.Ordinal);
@@ -63,6 +64,32 @@ public static partial class GameContentPackageValidator
                 if (!itemsById.TryAdd(item.Id, item))
                 {
                     errors.Add(new("DUPLICATE_ITEM_ID", path, $"Item '{item.Id}' is duplicated."));
+                }
+
+                if (!string.IsNullOrWhiteSpace(item.ItemFamilyId))
+                {
+                    bool invalidFamily =
+                        !IsCanonicalIdentifier(item.ItemFamilyId)
+                        || item.Type != ItemType.Equipment
+                        || item.Slot is null
+                        || !EquipmentSlotPolicy.IsCanonical(item.Slot.Value)
+                        || item.GenerationMode != ItemGenerationMode.Rolled
+                        || !item.ItemLevelMin.HasValue
+                        || !item.ItemLevelMax.HasValue;
+                    if (invalidFamily)
+                    {
+                        errors.Add(new(
+                            "INVALID_ITEM_FAMILY",
+                            $"{path}.itemFamilyId",
+                            $"Item '{item.Id}' has an invalid item-family configuration."));
+                    }
+                    else if (!itemFamilyIds.Add(item.ItemFamilyId))
+                    {
+                        errors.Add(new(
+                            "DUPLICATE_ITEM_FAMILY_ID",
+                            $"{path}.itemFamilyId",
+                            $"Item family '{item.ItemFamilyId}' is duplicated."));
+                    }
                 }
 
                 bool invalidEquipmentCategory = item.Type == ItemType.Equipment
@@ -214,7 +241,11 @@ public static partial class GameContentPackageValidator
                             || entry.Weight <= 0
                             || entry.MinQuantity < 1
                             || entry.MaxQuantity < entry.MinQuantity
-                            || !item.Stackable && entry.MaxQuantity != 1)
+                            || !item.Stackable && entry.MaxQuantity != 1
+                            || HasInvalidLootItemLevelOverride(
+                                item,
+                                entry.ItemLevelMin,
+                                entry.ItemLevelMax))
                         {
                             errors.Add(new("INVALID_LOOT_SELECTION_ENTRY", entryPath,
                                 $"Loot selection entry for '{entry.ItemId}' is invalid."));
@@ -250,6 +281,29 @@ public static partial class GameContentPackageValidator
                         $"Monster '{monster.Id}' references missing loot table '{monster.LootTableId}'."));
                 }
             }
+        }
+
+        private static bool HasInvalidLootItemLevelOverride(
+            ItemDefinition item,
+            int? itemLevelMin,
+            int? itemLevelMax)
+        {
+            if (!itemLevelMin.HasValue && !itemLevelMax.HasValue)
+                return false;
+            if (item.Type != ItemType.Equipment
+                || string.IsNullOrWhiteSpace(item.ItemFamilyId)
+                || item.GenerationMode != ItemGenerationMode.Rolled)
+            {
+                return true;
+            }
+
+            int templateMinimum = item.ItemLevelMin ?? item.RequiredLevel;
+            int templateMaximum = item.ItemLevelMax ?? templateMinimum;
+            int minimum = itemLevelMin ?? itemLevelMax ?? templateMinimum;
+            int maximum = itemLevelMax ?? itemLevelMin ?? templateMaximum;
+            return minimum < templateMinimum
+                || maximum > templateMaximum
+                || maximum < minimum;
         }
 
         private static bool HasInvalidConsumableShape(
