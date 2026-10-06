@@ -3,7 +3,13 @@ import MoneyAmount from '@/ui/components/MoneyAmount.vue'
 import { canAffordMoney } from '@/shared/money'
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 
-import type { InventoryItem, MerchantBuybackItem, MerchantItem, MerchantSnapshot } from '@/api/contracts'
+import {
+  EQUIPMENT_SLOT_TO_EQUIPPED_KEY,
+  type InventoryItem,
+  type MerchantBuybackItem,
+  type MerchantItem,
+  type MerchantSnapshot,
+} from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
 import { consumableActionLabel } from '@/game/items/consumablePresentation'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
@@ -235,22 +241,7 @@ function equippedForOffer(item: MerchantItem): InventoryItem | null {
   if (!item.slot) return null
   const equipped = session.snapshot?.character?.inventory.equipped
   if (!equipped) return null
-  const map: Record<string, keyof typeof equipped> = {
-    MainHand: 'mainHand',
-    OffHand: 'offHand',
-    Head: 'head',
-    Shoulders: 'shoulders',
-    Chest: 'chest',
-    Legs: 'legs',
-    Feet: 'feet',
-    Hands: 'hands',
-    Cloak: 'cloak',
-    Amulet: 'amulet',
-    Ring1: 'ring1',
-    Ring2: 'ring2',
-  }
-  const key = map[item.slot]
-  if (!key) return null
+  const key = EQUIPMENT_SLOT_TO_EQUIPPED_KEY[item.slot]
   return equipped[key] ?? null
 }
 
