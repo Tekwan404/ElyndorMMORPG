@@ -28,6 +28,20 @@ public sealed class ItemFamilyFoundationTests
     }
 
     [Fact]
+    public void FamilyStructuralStatsScaleWithTheExistingItemizationLevelCurve()
+    {
+        ItemDefinition family = FamilySword();
+        ItemDefinition scaled = ItemFamilyScalingPolicy.Apply(
+            family,
+            TestItemization(),
+            60);
+
+        Assert.Equal(363.7306m, scaled.WeaponDamageMin);
+        Assert.Equal(484.9742m, scaled.WeaponDamageMax);
+        Assert.Equal(family.CriticalChancePercent, scaled.CriticalChancePercent);
+    }
+
+    [Fact]
     public void LootRollCarriesSourceItemLevelRange()
     {
         LootTableDefinition table = new(
@@ -76,14 +90,16 @@ public sealed class ItemFamilyFoundationTests
         "Family sword",
         ItemType.Equipment,
         ItemRarity.Rare,
-        1,
+        25,
         false,
         1,
         EquipmentSlot.MainHand,
         new PrimaryStats(0, 0, 0, 0),
         "Family item foundation test.",
         WeaponCategory: EquipmentCategoryIds.OneHandSword,
-        ItemLevelMin: 1,
+        WeaponDamageMin: 96m,
+        WeaponDamageMax: 128m,
+        ItemLevelMin: 25,
         ItemLevelMax: 60,
         GuaranteedAffixStatIds: [ItemStatIds.Strength],
         RandomAffixPoolId: "TEST_POOL",
