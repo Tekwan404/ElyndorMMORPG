@@ -99,7 +99,7 @@ public sealed class CombatRewardServiceTests(PostgresFixture postgres) : IAsyncL
         Assert.DoesNotContain(result.Items, item => item.ItemId == "WOLF_HIDE");
         Assert.DoesNotContain(result.Items, item => item.ItemId == "BOAR_HIDE");
         Assert.Contains(result.Items, item => item.ItemId == "WOLF_FANG");
-        Assert.Contains(result.Items, item => item.ItemId == "BOAR_TUSK");
+        Assert.Contains(result.Items, item => item.ItemId == "MIASO_ZVERIA");
         Assert.Equal(2, sources.Length);
         Assert.Equal(["FOREST_WOLF_L1", "FOREST_BOAR_L2"], sources.Select(source => source.MonsterId));
         Assert.Equal([0, 1], sources.Select(source => source.EncounterOrder));
