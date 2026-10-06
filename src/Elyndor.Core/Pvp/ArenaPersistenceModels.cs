@@ -125,8 +125,7 @@ public sealed class ArenaHonorWallet
 
     public bool TrySpend(long amount)
     {
-        if (amount <= 0)
-            throw new ArgumentOutOfRangeException(nameof(amount));
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(amount);
         if (Balance < amount)
             return false;
 
