@@ -272,6 +272,45 @@ describe('WorldMapView', () => {
     expect(wrapper.get('[data-map-selection]').text()).toContain('Чёрные Кручи')
   })
 
+  it('keeps dungeon entry enabled when the preview cache is missing', async () => {
+    const citadel: WorldLocation = {
+      id: 'ECLIPSED_CITADEL',
+      displayName: 'Eclipsed Citadel',
+      dangerLevel: 'DANGEROUS',
+      recommendedLevel: 20,
+      minimumLevel: 15,
+      maximumLevel: 30,
+      requiredContractId: null,
+      artId: null,
+      description: 'Citadel dungeon',
+    }
+    vi.spyOn(apiClient, 'request').mockImplementation(async (url) => {
+      if (url === '/api/v1/world/locations') return [...LOCATIONS, citadel]
+      if (url === '/api/v1/dungeons') return []
+      if (url === '/api/v1/dungeons/current') return null
+      throw new Error(`Unexpected request: ${url}`)
+    })
+
+    const session = useGameSessionStore()
+    session.snapshot = snapshot()
+    session.snapshot.character!.level = 20
+    session.snapshot.world!.outgoingTransitions = [LOCATIONS[1]!, citadel]
+
+    const dungeon = useDungeonStore()
+    const teleport = vi.spyOn(dungeon, 'teleport').mockResolvedValue(true)
+    vi.spyOn(session, 'refreshSnapshot').mockResolvedValue(undefined)
+
+    const wrapper = mount(WorldMapView)
+    await flushPromises()
+
+    await wrapper.get('[data-location-id="ECLIPSED_CITADEL"]').trigger('click')
+
+    const entry = wrapper.get('[data-dungeon-map-entry]')
+    expect(entry.attributes('disabled')).toBeUndefined()
+    await entry.trigger('click')
+    expect(teleport).toHaveBeenCalledWith('ECLIPSED_CITADEL')
+  })
+
   it('resolves any dungeon location through the shared dungeon presentation', async () => {
     const citadel: WorldLocation = {
       id: 'ECLIPSED_CITADEL',
