@@ -546,7 +546,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 73,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -556,7 +556,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_RARE_GREY_FANG_CHEST",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_FEET",
@@ -581,7 +585,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 32.5,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -591,7 +595,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_RARE_GREY_FANG_FEET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_HANDS",
@@ -616,7 +624,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 35,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -626,7 +634,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_RARE_GREY_FANG_HANDS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_HEAD",
@@ -651,7 +663,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 46.5,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -661,7 +673,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_RARE_GREY_FANG_HEAD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_LEGS",
@@ -686,7 +702,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 64,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -696,7 +712,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_RARE_GREY_FANG_LEGS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_SHIELD",
@@ -758,7 +778,7 @@
       "armorFlat": 40.5,
       "armorCategory": "HEAVY",
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -768,7 +788,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_RARE_GREY_FANG_SHOULDERS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_RARE_GREY_FANG_WEAPON",
@@ -828,7 +852,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 109,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -839,7 +863,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_EPIC_CRIMSON_FURY_CHEST",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_FEET",
@@ -864,7 +892,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 48,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -874,7 +902,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_EPIC_CRIMSON_FURY_FEET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_HANDS",
@@ -899,7 +931,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 52,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -909,7 +941,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_EPIC_CRIMSON_FURY_HANDS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_HEAD",
@@ -934,7 +970,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 69.5,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -944,7 +980,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_EPIC_CRIMSON_FURY_HEAD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_LEGS",
@@ -969,7 +1009,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 96,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -980,7 +1020,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_EPIC_CRIMSON_FURY_LEGS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_SHOULDERS",
@@ -1005,7 +1049,7 @@
       "armorFlat": 61,
       "armorCategory": "HEAVY",
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -1015,7 +1059,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_EPIC_CRIMSON_FURY_SHOULDERS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_EPIC_CRIMSON_FURY_WEAPON",
@@ -1054,7 +1102,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_CHEST",
-      "iconId": "sets/warrior_legendary_first_guard_chest",
+      "iconId": "sets/heart-of-blighted-grove/heart_guardian/heart_guardian_chest",
       "name": "Нагрудник Первого Стража",
       "type": "Equipment",
       "generationMode": "Rolled",
@@ -1075,7 +1123,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 157,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -1086,11 +1134,15 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_LEGENDARY_FIRST_GUARD_CHEST",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_FEET",
-      "iconId": "sets/warrior_legendary_first_guard_feet",
+      "iconId": "sets/heart-of-blighted-grove/heart_guardian/heart_guardian_boots",
       "name": "Сапоги Первого Стража",
       "type": "Equipment",
       "generationMode": "Rolled",
@@ -1111,7 +1163,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 69,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -1122,11 +1174,15 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_LEGENDARY_FIRST_GUARD_FEET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_HANDS",
-      "iconId": "sets/warrior_legendary_first_guard_hands",
+      "iconId": "sets/heart-of-blighted-grove/heart_guardian/heart_guardian_gloves",
       "name": "Рукавицы Первого Стража",
       "type": "Equipment",
       "generationMode": "Rolled",
@@ -1147,7 +1203,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 75,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -1158,11 +1214,15 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_LEGENDARY_FIRST_GUARD_HANDS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_HEAD",
-      "iconId": "sets/warrior_legendary_first_guard_head",
+      "iconId": "sets/heart-of-blighted-grove/heart_guardian/heart_guardian_helmet",
       "name": "Шлем Первого Стража",
       "type": "Equipment",
       "generationMode": "Rolled",
@@ -1183,7 +1243,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 100.5,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -1194,11 +1254,15 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_LEGENDARY_FIRST_GUARD_HEAD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_LEGS",
-      "iconId": "sets/warrior_legendary_first_guard_legs",
+      "iconId": "sets/heart-of-blighted-grove/heart_guardian/heart_guardian_legs",
       "name": "Поножи Первого Стража",
       "type": "Equipment",
       "generationMode": "Rolled",
@@ -1219,7 +1283,7 @@
       "armorCategory": "HEAVY",
       "armorFlat": 138,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -1230,7 +1294,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_LEGENDARY_FIRST_GUARD_LEGS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_SHIELD",
@@ -1272,7 +1340,7 @@
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_SHOULDERS",
-      "iconId": "sets/warrior_legendary_first_guard_shoulders",
+      "iconId": "sets/heart-of-blighted-grove/heart_guardian/heart_guardian_shoulders",
       "name": "Наплечники Первого Стража",
       "type": "Equipment",
       "generationMode": "Rolled",
@@ -1293,7 +1361,7 @@
       "armorFlat": 88,
       "armorCategory": "HEAVY",
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -1304,7 +1372,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_LEGENDARY_FIRST_GUARD_SHOULDERS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_LEGENDARY_FIRST_GUARD_WEAPON",
@@ -1364,8 +1436,8 @@
       "setId": "SET_WARRIOR_BLACK_BASTION",
       "armorCategory": "HEAVY",
       "armorFlat": 217,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -1376,7 +1448,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_LEGENDARY_BLACK_BASTION_CHEST",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_FEET",
@@ -1400,8 +1476,8 @@
       "setId": "SET_WARRIOR_BLACK_BASTION",
       "armorCategory": "HEAVY",
       "armorFlat": 95.5,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -1412,7 +1488,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_LEGENDARY_BLACK_BASTION_FEET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_HANDS",
@@ -1436,8 +1516,8 @@
       "setId": "SET_WARRIOR_BLACK_BASTION",
       "armorCategory": "HEAVY",
       "armorFlat": 104,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -1448,7 +1528,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_LEGENDARY_BLACK_BASTION_HANDS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_HEAD",
@@ -1472,8 +1556,8 @@
       "setId": "SET_WARRIOR_BLACK_BASTION",
       "armorCategory": "HEAVY",
       "armorFlat": 139,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -1484,7 +1568,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_LEGENDARY_BLACK_BASTION_HEAD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_LEGS",
@@ -1508,8 +1596,8 @@
       "setId": "SET_WARRIOR_BLACK_BASTION",
       "armorCategory": "HEAVY",
       "armorFlat": 191,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -1520,7 +1608,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_LEGENDARY_BLACK_BASTION_LEGS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_SHIELD",
@@ -1582,8 +1674,8 @@
       "setId": "SET_WARRIOR_BLACK_BASTION",
       "armorCategory": "HEAVY",
       "armorFlat": 121.5,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_ARMOR",
@@ -1594,7 +1686,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "WARRIOR_LEGENDARY_BLACK_BASTION_SHOULDERS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
     },
     {
       "id": "WARRIOR_LEGENDARY_BLACK_BASTION_WEAPON",
@@ -1635,7 +1731,9 @@
     {
       "id": "UNIQUE_WARRIOR_BLACKHEART",
       "itemFamilyId": "UNIQUE_WARRIOR_BLACKHEART",
-      "allowedClassIds": ["WARRIOR"],
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
       "name": "Черносерд",
       "type": "Equipment",
       "generationMode": "Rolled",

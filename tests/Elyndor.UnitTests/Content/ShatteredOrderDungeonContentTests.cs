@@ -11,12 +11,12 @@ namespace Elyndor.UnitTests.Content;
 
 public sealed class ShatteredOrderDungeonContentTests
 {
-    private static readonly string[] ObservatorySetIds =
+    private static readonly string[] CanonicalSignatureSetIds =
     [
-        "SET_BLACK_BASTION_WARRIOR_BERSERKER",
-        "SET_BLACK_BASTION_MAGE_FROST",
-        "SET_BLACK_BASTION_ARCHER_SURVIVAL",
-        "SET_BLACK_BASTION_PALADIN_HOLY"
+        "SET_WARRIOR_BLACK_BASTION",
+        "SET_MAGE_ECLIPSED_ORACLE",
+        "SET_ARCHER_BLACK_CONSTELLATION",
+        "SET_PALADIN_FIRST_GUARD"
     ];
 
     private static readonly string[] BossIds =
@@ -91,22 +91,52 @@ public sealed class ShatteredOrderDungeonContentTests
 
         HashSet<string> observatoryLoot = LootItemIds(observatory, indexes);
         HashSet<string> blackBastionLoot = LootItemIds(blackBastion, indexes);
-        ItemDefinition[] movedSetItems = package.Items!
-            .Where(item => item.SetId is not null && ObservatorySetIds.Contains(item.SetId, StringComparer.Ordinal))
+        ItemDefinition[] canonicalSetItems = package.Items!
+            .Where(item => item.SetId is not null
+                && CanonicalSignatureSetIds.Contains(item.SetId, StringComparer.Ordinal))
             .ToArray();
 
-        Assert.Equal(24, movedSetItems.Length);
-        Assert.All(ObservatorySetIds, setId =>
-            Assert.Equal(6, movedSetItems.Count(item => item.SetId == setId)));
-        Assert.All(movedSetItems, item =>
+        Assert.Equal(24, canonicalSetItems.Length);
+        Assert.All(CanonicalSignatureSetIds, setId =>
+            Assert.Equal(6, canonicalSetItems.Count(item => item.SetId == setId)));
+        Assert.All(canonicalSetItems, item =>
         {
-            Assert.Equal(25, item.RequiredLevel);
-            Assert.Equal(25, item.ItemLevelMin);
-            Assert.Equal(25, item.ItemLevelMax);
-            Assert.Equal("LEVEL_25_28", item.AffixCountProfileId);
+            Assert.Equal(23, item.RequiredLevel);
+            Assert.Equal(23, item.ItemLevelMin);
+            Assert.Equal(59, item.ItemLevelMax);
+            Assert.Equal(item.Id, item.ItemFamilyId);
             Assert.Contains(item.Id, observatoryLoot);
-            Assert.DoesNotContain(item.Id, blackBastionLoot);
-            Assert.Contains("Обсерватор", item.Description, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains(item.Id, blackBastionLoot);
+        });
+
+        LootSelectionEntry[] observatoryEntries = observatory.Encounters
+            .Select(encounter => indexes.MonstersById[encounter.MonsterId].LootTableId)
+            .Where(lootTableId => lootTableId is not null)
+            .Select(lootTableId => indexes.LootTablesById[lootTableId!])
+            .SelectMany(table => table.SelectionGroups ?? [])
+            .SelectMany(group => group.Entries)
+            .Where(entry => canonicalSetItems.Any(item => item.Id == entry.ItemId))
+            .ToArray();
+        LootSelectionEntry[] blackBastionEntries = blackBastion.Encounters
+            .Select(encounter => indexes.MonstersById[encounter.MonsterId].LootTableId)
+            .Where(lootTableId => lootTableId is not null)
+            .Select(lootTableId => indexes.LootTablesById[lootTableId!])
+            .SelectMany(table => table.SelectionGroups ?? [])
+            .SelectMany(group => group.Entries)
+            .Where(entry => canonicalSetItems.Any(item => item.Id == entry.ItemId))
+            .ToArray();
+
+        Assert.NotEmpty(observatoryEntries);
+        Assert.All(observatoryEntries, entry =>
+        {
+            Assert.Equal(25, entry.ItemLevelMin);
+            Assert.Equal(25, entry.ItemLevelMax);
+        });
+        Assert.NotEmpty(blackBastionEntries);
+        Assert.All(blackBastionEntries, entry =>
+        {
+            Assert.Equal(40, entry.ItemLevelMin);
+            Assert.Equal(40, entry.ItemLevelMax);
         });
     }
 

@@ -55,19 +55,19 @@ describe('authored content art', () => {
       .toEqual(Array(3).fill(expect.stringMatching(/enemy-lesnoy-volk\.webp$/)))
   })
 
-  it('resolves the Heart of the Blighted Grove guardian helmet artwork', () => {
-    const item = getItems().find(candidate => candidate.id === 'SET_HEART_OF_BLIGHTED_GROVE_WARRIOR_GUARDIAN_HEAD')
+  it('resolves the canonical First Guard helmet through the imported guardian artwork', () => {
+    const item = getItems().find(candidate => candidate.id === 'WARRIOR_LEGENDARY_FIRST_GUARD_HEAD')
     const art = itemArtUrl(item?.iconId)
 
     expect(item?.iconId).toBe('sets/heart-of-blighted-grove/heart_guardian/heart_guardian_helmet')
     expect(art).toMatch(/sets\/heart-of-blighted-grove\/heart_guardian\/heart_guardian_helmet\.webp$/)
   })
 
-  it('resolves the Ancient Mine marksman helmet artwork from its canonical IconId', () => {
-    const item = getItems().find(candidate => candidate.id === 'SET_ANCIENT_MINE_ARCHER_MARKSMANSHIP_HEAD')
+  it('resolves the canonical Moonleaf Shadow helmet artwork', () => {
+    const item = getItems().find(candidate => candidate.id === 'ARCHER_EPIC_MOONLEAF_SHADOW_HEAD')
 
-    expect(item?.iconId).toBe('sets/ancient-mine/mine_tracker/mine_tracker_helmet')
-    expect(itemArtUrl(item?.iconId)).toMatch(/sets\/ancient-mine\/mine_tracker\/mine_tracker_helmet\.webp$/)
+    expect(item?.iconId).toBe('sets/set_heart_of_blighted_grove_archer_marksmanship_head')
+    expect(itemArtUrl(item?.iconId)).toMatch(/set_heart_of_blighted_grove_archer_marksmanship_head\.webp$/)
   })
 
   it('resolves the Eclipsed Oracle boots from their canonical set artwork', () => {
@@ -129,16 +129,29 @@ describe('authored content art', () => {
     }
   })
 
-  it('resolves artwork for every authored set piece', () => {
-    const importedSetIds = [
-      'SET_HEART_OF_BLIGHTED_GROVE_',
-      'SET_SHATTERED_ORDER_RAID_',
-      'SET_BLACK_BASTION_',
-    ]
-    const setItems = getItems().filter(item => importedSetIds.some(prefix => item.setId?.startsWith(prefix)))
+  it('resolves artwork for all 96 canonical leveling set pieces', () => {
+    const canonicalSetIds = new Set([
+      'SET_WARRIOR_GREY_FANG',
+      'SET_WARRIOR_CRIMSON_FURY',
+      'SET_WARRIOR_FIRST_GUARD',
+      'SET_WARRIOR_BLACK_BASTION',
+      'SET_MAGE_THREE_ELEMENTS',
+      'SET_MAGE_SHATTERED_STAR',
+      'SET_MAGE_SILENT_ARCHON',
+      'SET_MAGE_ECLIPSED_ORACLE',
+      'SET_ARCHER_THORN_TRAIL',
+      'SET_ARCHER_MOONLEAF_SHADOW',
+      'SET_ARCHER_STAR_HUNTER',
+      'SET_ARCHER_BLACK_CONSTELLATION',
+      'SET_PALADIN_LIVING_HEART',
+      'SET_PALADIN_GROVE_DAWN',
+      'SET_PALADIN_SHATTERED_DAWN',
+      'SET_PALADIN_FIRST_GUARD',
+    ])
+    const setItems = getItems().filter(item => item.setId && canonicalSetIds.has(item.setId))
     const missingArt = setItems.filter(item => !itemArtUrl(item.iconId)).map(item => item.id)
 
-    expect(setItems.length).toBeGreaterThan(0)
+    expect(setItems).toHaveLength(96)
     expect(missingArt).toEqual([])
   })
 })

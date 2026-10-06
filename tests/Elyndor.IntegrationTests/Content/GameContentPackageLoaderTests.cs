@@ -12,12 +12,12 @@ namespace Elyndor.IntegrationTests.Content;
 
 public sealed class GameContentPackageLoaderTests
 {
-    private static readonly string[] LegendaryBlackBastionSetIds =
+    private static readonly string[] CanonicalSignatureSetIds =
     [
-        "SET_BLACK_BASTION_WARRIOR_GUARDIAN",
-        "SET_BLACK_BASTION_MAGE_ARCANE",
-        "SET_BLACK_BASTION_ARCHER_MARKSMANSHIP",
-        "SET_BLACK_BASTION_PALADIN_PROTECTION"
+        "SET_WARRIOR_BLACK_BASTION",
+        "SET_MAGE_ECLIPSED_ORACLE",
+        "SET_ARCHER_BLACK_CONSTELLATION",
+        "SET_PALADIN_FIRST_GUARD"
     ];
 
     [Fact]
@@ -238,21 +238,9 @@ public sealed class GameContentPackageLoaderTests
                 Assert.Contains(package.Items!, item => item.Id == entry.ItemId && item.Type == ItemType.Equipment));
         });
 
-        ItemDefinition[] blackBastionBeastMastery = package.Items!
-            .Where(item => item.SetId == "SET_BLACK_BASTION_ARCHER_BEAST_MASTERY")
-            .ToArray();
-        Assert.Equal(6, blackBastionBeastMastery.Length);
-        Assert.All(blackBastionBeastMastery, item => Assert.Contains(
-            item.Slot,
-            new EquipmentSlot?[]
-            {
-                EquipmentSlot.Head,
-                EquipmentSlot.Shoulders,
-                EquipmentSlot.Chest,
-                EquipmentSlot.Hands,
-                EquipmentSlot.Legs,
-                EquipmentSlot.Feet
-            }));
+        Assert.DoesNotContain(
+            package.Items!,
+            item => item.SetId?.StartsWith("SET_BLACK_BASTION_", StringComparison.Ordinal) == true);
         Assert.Contains(EquipmentCategoryIds.Crossbow,
             package.ClassProfiles!.Single(profile => profile.Id == "ARCHER").AllowedWeaponCategories);
 
@@ -293,29 +281,52 @@ public sealed class GameContentPackageLoaderTests
     }
 
     [Fact]
-    public async Task BlackBastionHasOneCompleteLegendarySignatureSetPerClass()
+    public async Task BlackBastionDropsCanonicalSignatureFamiliesAtLevel40()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
+        GameContentIndexes indexes = GameContentIndexes.For(package);
+        DungeonDefinition blackBastion = package.Dungeons!
+            .Single(dungeon => dungeon.Id == "BLACK_BASTION");
 
-        ItemDefinition[] blackBastionSetItems = package.Items!
-            .Where(item => item.SetId?.StartsWith("SET_BLACK_BASTION_", StringComparison.Ordinal) == true)
-            .ToArray();
-        ItemDefinition[] legendarySetItems = blackBastionSetItems
-            .Where(item => LegendaryBlackBastionSetIds.Contains(item.SetId, StringComparer.Ordinal))
-            .ToArray();
-        ItemDefinition[] epicSetItems = blackBastionSetItems
-            .Where(item => !LegendaryBlackBastionSetIds.Contains(item.SetId, StringComparer.Ordinal))
+        ItemDefinition[] canonicalSetItems = package.Items!
+            .Where(item => item.SetId is not null
+                && CanonicalSignatureSetIds.Contains(item.SetId, StringComparer.Ordinal))
             .ToArray();
 
-        Assert.Equal(72, blackBastionSetItems.Length);
-        Assert.Equal(24, legendarySetItems.Length);
-        Assert.All(legendarySetItems, item => Assert.Equal(ItemRarity.Legendary, item.Rarity));
-        Assert.Equal(48, epicSetItems.Length);
-        Assert.All(epicSetItems, item => Assert.Equal(ItemRarity.Epic, item.Rarity));
+        Assert.Equal(24, canonicalSetItems.Length);
         Assert.All(
-            LegendaryBlackBastionSetIds,
-            setId => Assert.Equal(6, legendarySetItems.Count(item => item.SetId == setId)));
+            CanonicalSignatureSetIds,
+            setId => Assert.Equal(6, canonicalSetItems.Count(item => item.SetId == setId)));
+        Assert.All(canonicalSetItems, item =>
+        {
+            Assert.Equal(ItemRarity.Legendary, item.Rarity);
+            Assert.Equal(item.Id, item.ItemFamilyId);
+            Assert.Equal(23, item.ItemLevelMin);
+            Assert.Equal(59, item.ItemLevelMax);
+        });
+        Assert.DoesNotContain(
+            package.Items!,
+            item => item.SetId?.StartsWith("SET_BLACK_BASTION_", StringComparison.Ordinal) == true);
+
+        LootSelectionEntry[] blackBastionEntries = blackBastion.Encounters
+            .Select(encounter => indexes.MonstersById[encounter.MonsterId].LootTableId)
+            .Where(lootTableId => lootTableId is not null)
+            .Select(lootTableId => indexes.LootTablesById[lootTableId!])
+            .SelectMany(table => table.SelectionGroups ?? [])
+            .SelectMany(group => group.Entries)
+            .Where(entry => canonicalSetItems.Any(item => item.Id == entry.ItemId))
+            .ToArray();
+
+        Assert.NotEmpty(blackBastionEntries);
+        Assert.All(blackBastionEntries, entry =>
+        {
+            Assert.Equal(40, entry.ItemLevelMin);
+            Assert.Equal(40, entry.ItemLevelMax);
+        });
+        Assert.All(
+            canonicalSetItems,
+            item => Assert.Contains(blackBastionEntries, entry => entry.ItemId == item.Id));
     }
 
     [Fact]
@@ -402,12 +413,11 @@ public sealed class GameContentPackageLoaderTests
 
         string[] dungeonSetItemIds = package.Items!
             .Where(item => item.SetId is not null
-                && (item.SetId.StartsWith("SET_ANCIENT_MINE_", StringComparison.Ordinal)
-                    || item.SetId.StartsWith("SET_ECLIPSED_CITADEL_", StringComparison.Ordinal)))
+                && CanonicalSignatureSetIds.Contains(item.SetId, StringComparer.Ordinal))
             .Select(item => item.Id)
             .ToArray();
 
-        Assert.NotEmpty(dungeonSetItemIds);
+        Assert.Equal(24, dungeonSetItemIds.Length);
         Assert.All(dungeonSetItemIds, id => Assert.Contains(id, reachableItemIds));
     }
 

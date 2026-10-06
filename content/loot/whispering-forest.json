@@ -630,6 +630,42 @@
           "dropChance": 0.003,
           "minQuantity": 1,
           "maxQuantity": 1
+        },
+        {
+          "itemId": "PALADIN_RARE_LIVING_HEART_CHEST",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PALADIN_RARE_LIVING_HEART_FEET",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PALADIN_RARE_LIVING_HEART_HANDS",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PALADIN_RARE_LIVING_HEART_HEAD",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PALADIN_RARE_LIVING_HEART_LEGS",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PALADIN_RARE_LIVING_HEART_SHOULDERS",
+          "dropChance": 0.003,
+          "minQuantity": 1,
+          "maxQuantity": 1
         }
       ]
     },
@@ -819,6 +855,12 @@
         },
         {
           "itemId": "ACC_EPIC_14_RING",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "PALADIN_EPIC_GROVE_DAWN_SHOULDERS",
           "dropChance": 0.025,
           "minQuantity": 1,
           "maxQuantity": 1

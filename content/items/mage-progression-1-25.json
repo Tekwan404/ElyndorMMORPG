@@ -542,7 +542,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 34,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -552,7 +552,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_RARE_THREE_ELEMENTS_CHEST",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_FEET",
@@ -577,7 +581,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 14.5,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -587,7 +591,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_RARE_THREE_ELEMENTS_FEET",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_HANDS",
@@ -612,7 +620,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 16,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -622,7 +630,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_RARE_THREE_ELEMENTS_HANDS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_HEAD",
@@ -647,7 +659,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 22,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -657,7 +669,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_RARE_THREE_ELEMENTS_HEAD",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_LEGS",
@@ -682,7 +698,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 30,
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -692,7 +708,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_RARE_THREE_ELEMENTS_LEGS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_SHOULDERS",
@@ -717,7 +737,7 @@
       "armorFlat": 19.5,
       "armorCategory": "CLOTH",
       "itemLevelMin": 10,
-      "itemLevelMax": 10,
+      "itemLevelMax": 13,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -727,7 +747,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.04,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_RARE_THREE_ELEMENTS_SHOULDERS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_RARE_THREE_ELEMENTS_STAFF",
@@ -822,7 +846,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 51.5,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -833,7 +857,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_EPIC_SHATTERED_STAR_CHEST",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_FEET",
@@ -858,7 +886,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 22.5,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -868,7 +896,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_EPIC_SHATTERED_STAR_FEET",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_HANDS",
@@ -893,7 +925,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 25,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -903,7 +935,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_EPIC_SHATTERED_STAR_HANDS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_HEAD",
@@ -928,7 +964,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 33,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -938,7 +974,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_EPIC_SHATTERED_STAR_HEAD",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_LEGS",
@@ -963,7 +1003,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 45,
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -974,7 +1014,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_EPIC_SHATTERED_STAR_LEGS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_SHOULDERS",
@@ -999,7 +1043,7 @@
       "armorFlat": 29,
       "armorCategory": "CLOTH",
       "itemLevelMin": 14,
-      "itemLevelMax": 14,
+      "itemLevelMax": 17,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -1009,7 +1053,11 @@
         "STAMINA"
       ],
       "extraAffixBudgetCap": 0.06,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_EPIC_SHATTERED_STAR_SHOULDERS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_EPIC_SHATTERED_STAR_STAFF",
@@ -1104,7 +1152,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 73,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -1115,7 +1163,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_LEGENDARY_SILENT_ARCHON_CHEST",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_FEET",
@@ -1140,7 +1192,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 32.5,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -1151,7 +1203,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_LEGENDARY_SILENT_ARCHON_FEET",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_HANDS",
@@ -1176,7 +1232,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 35,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -1187,7 +1243,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_LEGENDARY_SILENT_ARCHON_HANDS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_HEAD",
@@ -1212,7 +1272,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 46.5,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -1223,7 +1283,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_LEGENDARY_SILENT_ARCHON_HEAD",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_LEGS",
@@ -1248,7 +1312,7 @@
       "armorCategory": "CLOTH",
       "armorFlat": 64,
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -1259,7 +1323,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_LEGENDARY_SILENT_ARCHON_LEGS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_SHOULDERS",
@@ -1284,7 +1352,7 @@
       "armorFlat": 40.5,
       "armorCategory": "CLOTH",
       "itemLevelMin": 18,
-      "itemLevelMax": 18,
+      "itemLevelMax": 22,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -1295,7 +1363,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_LEGENDARY_SILENT_ARCHON_SHOULDERS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_LEGENDARY_SILENT_ARCHON_STAFF",
@@ -1391,8 +1463,8 @@
       "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "armorCategory": "CLOTH",
       "armorFlat": 102,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -1403,7 +1475,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET",
@@ -1427,8 +1503,8 @@
       "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "armorCategory": "CLOTH",
       "armorFlat": 45,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -1439,7 +1515,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS",
@@ -1463,8 +1543,8 @@
       "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "armorCategory": "CLOTH",
       "armorFlat": 49,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -1475,7 +1555,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD",
@@ -1499,8 +1583,8 @@
       "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "armorCategory": "CLOTH",
       "armorFlat": 65,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -1511,7 +1595,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS",
@@ -1535,8 +1623,8 @@
       "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "armorCategory": "CLOTH",
       "armorFlat": 89.5,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -1547,7 +1635,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS",
@@ -1571,8 +1663,8 @@
       "setId": "SET_MAGE_ECLIPSED_ORACLE",
       "armorCategory": "CLOTH",
       "armorFlat": 57,
-      "itemLevelMin": 22,
-      "itemLevelMax": 25,
+      "itemLevelMin": 23,
+      "itemLevelMax": 59,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_ARMOR",
@@ -1583,7 +1675,11 @@
         "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
     },
     {
       "id": "MAGE_LEGENDARY_ECLIPSED_ORACLE_STAFF",
@@ -1660,7 +1756,9 @@
     {
       "id": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
       "itemFamilyId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
-      "allowedClassIds": ["MAGE"],
+      "allowedClassIds": [
+        "MAGE"
+      ],
       "name": "Око Погасшей Звезды",
       "type": "Equipment",
       "generationMode": "Rolled",
