@@ -205,5 +205,5 @@ public sealed class ArenaHonorShopService(
 
     private static string Fingerprint(params string[] parts) =>
         Convert.ToHexString(SHA256.HashData(
-            Encoding.UTF8.GetBytes(string.Join('|', parts))));
+            Encoding.UTF8.GetBytes(string.Join("|", parts))));
 }
