@@ -13,31 +13,30 @@ describe('CharacterOverviewView equipment paperdoll', () => {
     vi.restoreAllMocks()
   })
 
-  it('renders canonical MMORPG slots while preserving legacy equipment fallbacks', () => {
+  it('renders the twelve canonical MMORPG equipment slots', () => {
     const session = useGameSessionStore()
-    const legacyWeapon = equipment('LEGACY_WEAPON', 'Старый меч', 'Weapon')
-    const legacyBoots = equipment('LEGACY_BOOTS', 'Старые сапоги', 'Boots')
-    const legacyAccessory = equipment('LEGACY_AMULET', 'Старый талисман', 'Accessory')
+    const mainHand = equipment('MAIN_HAND', 'Клинок героя', 'MainHand')
+    const feet = equipment('FEET', 'Сапоги героя', 'Feet')
+    const amulet = equipment('AMULET', 'Амулет героя', 'Amulet')
     const shield = equipment('SHIELD', 'Щит стража', 'OffHand')
 
     session.snapshot = snapshot({
-      weapon: legacyWeapon,
-      boots: legacyBoots,
-      accessory: legacyAccessory,
+      mainHand,
+      feet,
+      amulet,
       offHand: shield,
     })
 
     const wrapper = mount(CharacterOverviewView)
 
-    expect(wrapper.findAll('[data-equipment-slot]')).toHaveLength(14)
-    expect(wrapper.get('[data-equipment-slot="mainHand"]').attributes('aria-label')).toContain('Старый меч')
-    expect(wrapper.get('[data-equipment-slot="feet"]').attributes('aria-label')).toContain('Старые сапоги')
-    expect(wrapper.get('[data-equipment-slot="amulet"]').attributes('aria-label')).toContain('Старый талисман')
+    expect(wrapper.findAll('[data-equipment-slot]')).toHaveLength(12)
+    expect(wrapper.get('[data-equipment-slot="mainHand"]').attributes('aria-label')).toContain('Клинок героя')
+    expect(wrapper.get('[data-equipment-slot="feet"]').attributes('aria-label')).toContain('Сапоги героя')
+    expect(wrapper.get('[data-equipment-slot="amulet"]').attributes('aria-label')).toContain('Амулет героя')
     expect(wrapper.get('[data-equipment-slot="offHand"]').attributes('aria-label')).toContain('Щит стража')
     expect(wrapper.get('[data-equipment-slot="hands"]').attributes('data-filled')).toBe('false')
     expect(wrapper.get('[data-equipment-slot="shoulders"]').attributes('data-filled')).toBe('false')
-    expect(wrapper.text()).toContain('4 / 14 слотов')
-    expect(wrapper.get('[data-equipment-slot="mainHand"]').text()).not.toContain('Старый меч')
+    expect(wrapper.text()).toContain('4 / 12 слотов')
     expect(wrapper.find('.paperdoll__vitals').exists()).toBe(false)
   })
 
@@ -72,10 +71,10 @@ describe('CharacterOverviewView equipment paperdoll', () => {
     expect(wrapper.text()).toContain('Итого: 1.13 уд/с')
   })
 
-  it('unequips an equipped legacy accessory through its canonical amulet slot', async () => {
+  it('unequips an equipped amulet through its canonical slot', async () => {
     const session = useGameSessionStore()
-    const legacyAccessory = equipment('LEGACY_AMULET', 'Амулет Следопыта', 'Accessory')
-    session.snapshot = snapshot({ accessory: legacyAccessory })
+    const amulet = equipment('AMULET', 'Амулет Следопыта', 'Amulet')
+    session.snapshot = snapshot({ amulet })
     const unequip = vi.spyOn(session, 'unequip').mockResolvedValue(undefined)
 
     const wrapper = mount(CharacterOverviewView)
@@ -87,28 +86,6 @@ describe('CharacterOverviewView equipment paperdoll', () => {
     await Promise.resolve()
 
     expect(unequip).toHaveBeenCalledWith('Amulet')
-  })
-
-  it('prefers canonical slots over legacy aliases when both are present', () => {
-    const session = useGameSessionStore()
-    const legacyWeapon = equipment('LEGACY_WEAPON', 'Старый меч', 'Weapon')
-    const mainHand = equipment('MAIN_HAND', 'Клинок героя', 'MainHand')
-    const legacyBoots = equipment('LEGACY_BOOTS', 'Старые сапоги', 'Boots')
-    const feet = equipment('FEET', 'Сапоги героя', 'Feet')
-
-    session.snapshot = snapshot({
-      weapon: legacyWeapon,
-      mainHand,
-      boots: legacyBoots,
-      feet,
-    })
-
-    const wrapper = mount(CharacterOverviewView)
-
-    expect(wrapper.get('[data-equipment-slot="mainHand"]').attributes('aria-label')).toContain('Клинок героя')
-    expect(wrapper.get('[data-equipment-slot="mainHand"]').attributes('aria-label')).not.toContain('Старый меч')
-    expect(wrapper.get('[data-equipment-slot="feet"]').attributes('aria-label')).toContain('Сапоги героя')
-    expect(wrapper.get('[data-equipment-slot="feet"]').attributes('aria-label')).not.toContain('Старые сапоги')
   })
 })
 
@@ -217,12 +194,18 @@ function snapshot(
       inventory: {
         items: equippedItems,
         equipped: {
-          weapon: null,
+          mainHand: null,
+          offHand: null,
           head: null,
+          shoulders: null,
           chest: null,
+          hands: null,
           legs: null,
-          boots: null,
-          accessory: null,
+          feet: null,
+          cloak: null,
+          amulet: null,
+          ring1: null,
+          ring2: null,
           ...equipped,
         },
       },
