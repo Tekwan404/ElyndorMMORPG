@@ -6,6 +6,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_ARCHER_SURVIVAL",
                               "name":  "Снаряжение Ловчего Звёздных Троп",
+                              "allowedClassIds": ["ARCHER"],
                               "bonuses":  [
                                               {
                                                   "requiredPieces":  2,
@@ -30,6 +31,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_MAGE_FROST",
                               "name":  "Покров Безмолвного Инея",
+                              "allowedClassIds": ["MAGE"],
                               "bonuses":  [
                                               {
                                                   "requiredPieces":  2,
@@ -56,6 +58,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_PALADIN_HOLY",
                               "name":  "Облачение Светоча Обсерватории",
+                              "allowedClassIds": ["PALADIN"],
                               "bonuses":  [
                                               {
                                                   "requiredPieces":  2,
@@ -80,6 +83,7 @@
                           {
                               "id":  "SET_BLACK_BASTION_WARRIOR_BERSERKER",
                               "name":  "Регалии Астрального Берсерка",
+                              "allowedClassIds": ["WARRIOR"],
                               "bonuses":  [
                                               {
                                                   "requiredPieces":  2,
