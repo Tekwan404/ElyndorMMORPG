@@ -95,7 +95,11 @@ public sealed class ItemEnhancementService(
         bool isMaximum = currentLevel >= ItemEnhancementRules.MaximumLevel;
         int targetLevel = isMaximum ? currentLevel : currentLevel + 1;
         decimal finalPower = content.Package.Itemization is { } itemization
-            ? ItemEnhancementRules.CalculateEnhancedItemPower(definition, itemization, current.ActualItemPower, targetLevel)
+            ? ItemEnhancementRules.CalculateEnhancedItemPower(
+                ItemFamilyScalingPolicy.Apply(definition, itemization, current.ItemLevel),
+                itemization,
+                current.ActualItemPower,
+                targetLevel)
             : current.ActualItemPower;
 
         if (isMaximum)
@@ -219,7 +223,11 @@ public sealed class ItemEnhancementService(
     {
         decimal finalPower = itemization is null
             ? generated.ActualItemPower
-            : ItemEnhancementRules.CalculateEnhancedItemPower(definition, itemization, generated.ActualItemPower, item.EnhancementLevel);
+            : ItemEnhancementRules.CalculateEnhancedItemPower(
+                ItemFamilyScalingPolicy.Apply(definition, itemization, generated.ItemLevel),
+                itemization,
+                generated.ActualItemPower,
+                item.EnhancementLevel);
         return new ItemEnhancementResult(true, null, generated, item.EnhancementLevel,
             ItemEnhancementRules.ResolveBonusPercent(item.EnhancementLevel), finalPower);
     }
