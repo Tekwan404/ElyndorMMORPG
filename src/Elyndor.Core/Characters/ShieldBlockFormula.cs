@@ -9,7 +9,7 @@ namespace Elyndor.Core.Characters;
 /// </summary>
 public static class ShieldBlockFormula
 {
-    public const decimal BlockValuePerStrength = 0.75m;
+    public const decimal BlockValuePerStrength = 0.35m;
 
     public static ShieldBlockResult Resolve(
         decimal baseBlockChancePercent,

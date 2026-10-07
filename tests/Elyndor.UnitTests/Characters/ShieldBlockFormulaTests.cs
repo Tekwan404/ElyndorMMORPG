@@ -18,9 +18,9 @@ public sealed class ShieldBlockFormulaTests
 
         Assert.True(result.HasShieldProfile);
         Assert.Equal(14, result.BlockChancePercent);
-        Assert.Equal(75, result.StrengthContribution);
-        Assert.Equal(130, result.BlockValueMin);
-        Assert.Equal(150, result.BlockValueMax);
+        Assert.Equal(35, result.StrengthContribution);
+        Assert.Equal(90, result.BlockValueMin);
+        Assert.Equal(110, result.BlockValueMax);
     }
 
     [Fact]

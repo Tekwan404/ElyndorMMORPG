@@ -48,6 +48,7 @@ public static class DamagePipeline
 {
     public const decimal MaximumBlockChancePercent = 60m;
     private const decimal BaseMissChance = 0.05m;
+    private const decimal BaselineAccuracyPercent = 95m;
     private const decimal LevelPenaltyPerLevel = 0.01m;
     private const decimal MaxLevelPenalty = 0.10m;
     private const decimal MaxMissChance = 0.30m;
@@ -76,9 +77,11 @@ public static class DamagePipeline
                 EffectStat.Accuracy,
                 request.Source.Stats.Accuracy,
                 occurredAtUtc) + request.AccuracyBonus;
+            decimal accuracyDelta =
+                (BaselineAccuracyPercent - effectiveAccuracy) / 100m;
             decimal missChance = request.CanMiss
                 ? Math.Clamp(
-                    BaseMissChance + levelPenalty - effectiveAccuracy / 100m,
+                    BaseMissChance + levelPenalty + accuracyDelta,
                     0,
                     MaxMissChance)
                 : 0;

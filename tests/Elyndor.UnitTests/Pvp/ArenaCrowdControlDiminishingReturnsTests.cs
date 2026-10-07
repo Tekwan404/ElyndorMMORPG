@@ -317,8 +317,9 @@ public sealed class ArenaCrowdControlDiminishingReturnsTests
             ["MAGE_FIREBALL"] = FireballAbility()
         };
         AutoAttackProfile auto = new(autoAttackInterval ?? TimeSpan.FromHours(1), 10, 0, 0);
-        CombatActorState firstActor = new(ActorA, 100, 100, 100, 100, CombatStats.Default);
-        CombatActorState secondActor = new(ActorB, 100, 100, 100, 100, CombatStats.Default);
+        CombatStats guaranteedHitStats = CombatStats.Default with { Accuracy = 100 };
+        CombatActorState firstActor = new(ActorA, 100, 100, 100, 100, guaranteedHitStats);
+        CombatActorState secondActor = new(ActorB, 100, 100, 100, 100, guaranteedHitStats);
         return new ArenaCombatSession(
             Guid.NewGuid(),
             new ArenaFighter(AccountA, ActorA, firstActor, abilities, auto),

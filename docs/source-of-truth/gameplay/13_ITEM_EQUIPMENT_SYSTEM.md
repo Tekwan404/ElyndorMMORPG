@@ -368,6 +368,8 @@ other approved item stats.
 
 BlockChance определяет server-authoritative шанс блока входящего Physical Damage.
 При успешном блоке сервер роллит BlockValue в диапазоне BlockValueMin–BlockValueMax.
+Если экипирован валидный shield profile, Strength дополнительно увеличивает BlockValue по текущему коэффициенту 0.35 BlockValue за 1 Strength. Strength не создаёт BlockChance и не даёт блок без щита.
+BlockValue может полностью поглотить физический удар, если итогового значения достаточно; отдельного процентного cap на величину одного блока нет.
 Damage System определяет точный порядок применения блока.
 
 Shield нельзя экипировать вместе с two-handed MAIN_HAND weapon.

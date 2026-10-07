@@ -222,11 +222,12 @@ Miss Chance определяет вероятность промаха.
 ```text
 LevelGap = max(0, TargetLevel - SourceLevel)
 LevelPenalty = min(LevelGap × 1 percentage point, 10%)
+AccuracyDelta = AccuracyReference - SourceAccuracy
 
 EffectiveMissChance = clamp(
     BaseMissChance
     + LevelPenalty
-    - SourceAccuracy,
+    + AccuracyDelta,
     MinMissChance,
     MaxMissChance
 )
@@ -236,19 +237,20 @@ EffectiveMissChance = clamp(
 
 ```text
 BaseMissChance = 5%
+AccuracyReference = 95%
 LevelPenaltyPerLevel = 1 percentage point
 MaxLevelPenalty = 10%
 MinMissChance = 0%
 MaxMissChance = 30%
 ```
 
-Accuracy уменьшает вероятность промаха.
+Accuracy — итоговая меткость атакующего, а не бонус, который напрямую вычитается из Miss Chance. Значение 95% является текущей базовой точкой: против цели того же уровня оно оставляет 5% шанс промаха. Каждый пункт Accuracy выше 95 уменьшает Miss Chance на 1 п.п. до минимума 0%; каждый пункт ниже 95 повышает его до общего cap.
 
-Пример:
+Примеры:
 
-BaseMissChance = 5%
-Source Accuracy = 3%
-EffectiveMissChance = 2%
+Source Accuracy = 95%, равный уровень → EffectiveMissChance = 5%
+Source Accuracy = 98%, равный уровень → EffectiveMissChance = 2%
+Source Accuracy = 95%, цель на 5 уровней выше → EffectiveMissChance = 10%
 
 10. Dodge Check
 
@@ -1572,6 +1574,7 @@ DoT tick применяет Target Armor и MagicResistance по текущим 
 
 MinimumDamage = 1
 BaseMissChance = 5%
+AccuracyReference = 95%
 LevelPenaltyPerLevel = 1 percentage point
 MaxLevelPenalty = 10%
 CriticalDamageMultiplier = 2.0

@@ -173,11 +173,11 @@ public sealed class CharacterStatCalculatorTests
             });
 
         Assert.Equal(60, shielded.Stats.BlockChance);
-        Assert.Equal(38.5m, shielded.Stats.BlockValueMin);
-        Assert.Equal(58.5m, shielded.Stats.BlockValueMax);
+        Assert.Equal(31.3m, shielded.Stats.BlockValueMin);
+        Assert.Equal(51.3m, shielded.Stats.BlockValueMax);
         Assert.Contains(
             shielded.Breakdown["blockValueMin"].Contributions,
-            contribution => contribution.Source == "STRENGTH" && contribution.Value == 13.5m);
+            contribution => contribution.Source == "STRENGTH" && contribution.Value == 6.3m);
         Assert.Equal(0, withoutShield.BlockChance);
         Assert.Equal(0, withoutShield.BlockValueMin);
         Assert.Equal(0, withoutShield.BlockValueMax);
@@ -205,8 +205,8 @@ public sealed class CharacterStatCalculatorTests
 
         Assert.Equal(baseline.Armor, stronger.Armor);
         Assert.Equal(baseline.BlockChance, stronger.BlockChance);
-        Assert.Equal(75, stronger.BlockValueMin - baseline.BlockValueMin);
-        Assert.Equal(75, stronger.BlockValueMax - baseline.BlockValueMax);
+        Assert.Equal(35, stronger.BlockValueMin - baseline.BlockValueMin);
+        Assert.Equal(35, stronger.BlockValueMax - baseline.BlockValueMax);
     }
 
     [Fact]
