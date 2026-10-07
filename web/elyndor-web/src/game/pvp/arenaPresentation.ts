@@ -23,6 +23,14 @@ const ERRORS: Record<string, string> = {
   arena_invite_player_offline: 'Оба игрока должны открыть раздел «Арена». Друг сейчас не в сети арены.',
   arena_invite_failed: 'Не удалось обновить приглашение. Попробуйте ещё раз.',
   arena_start_failed: 'Не удалось начать бой. Отправьте новое приглашение.',
+  arena_shop_not_enough_honor: 'Недостаточно чести для этой покупки.',
+  arena_shop_inventory_full: 'В инвентаре нет свободного места.',
+  arena_shop_required_level: 'Для этого предмета нужен 60-й уровень.',
+  arena_shop_class_restricted: 'Этот предмет предназначен для другого класса.',
+  arena_shop_item_not_for_sale: 'Этот предмет больше не продаётся за честь.',
+  arena_shop_item_not_found: 'Предмет магазина не найден.',
+  arena_shop_mutation_conflict: 'Покупка уже была обработана с другими параметрами.',
+  arena_shop_unavailable: 'Магазин чести временно недоступен.',
 }
 
 export function arenaErrorMessage(code: string | null | undefined): string {
