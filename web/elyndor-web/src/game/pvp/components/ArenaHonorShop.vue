@@ -128,7 +128,6 @@ function unavailableReason(item: ArenaHonorShopItem): string | null {
           </div>
 
           <UIButton
-            size="sm"
             :disabled="Boolean(pendingItemId) || Boolean(unavailableReason(item))"
             :aria-label="`Купить ${item.name} за ${item.honorPrice} чести`"
             @click="emit('buy', item.itemId)"
@@ -141,7 +140,7 @@ function unavailableReason(item: ArenaHonorShopItem): string | null {
 
     <div v-else class="honor-shop__empty">
       <span>Для вашего класса пока нет наград.</span>
-      <UIButton variant="ghost" size="sm" :disabled="loading" @click="emit('refresh')">Обновить</UIButton>
+      <UIButton variant="ghost" :disabled="loading" @click="emit('refresh')">Обновить</UIButton>
     </div>
   </section>
 </template>
