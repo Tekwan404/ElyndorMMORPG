@@ -240,6 +240,7 @@ public sealed class CombatSessionFactory(
                 || mainHandItem?.Definition.WeaponCategory is not null,
             OffHandAutoAttack: offHandAutoAttack,
             EquippedSetPieces: EquippedSetPieceCounter.Count(derived.Inventory),
+            EquippedSpecialEffectIds: EquippedSpecialEffectIds(derived.Inventory),
             GenderId: character.GenderId,
             SkinId: character.ActiveSkinId,
             EquipmentArmor: derived.Equipment.ArmorFlat,
@@ -352,7 +353,8 @@ public sealed class CombatSessionFactory(
             summonProfile,
             companion,
             accountId,
-            additionalPlayers);
+            additionalPlayers,
+            content.ItemSpecialEffects);
         if (!isTraining)
         {
             DungeonEncounterCombatConfigurator.Configure(session, monster.Id, contentSnapshot);
@@ -451,6 +453,7 @@ public sealed class CombatSessionFactory(
                 || mainHandItem?.Definition.WeaponCategory is not null,
             OffHandAutoAttack: offHandAutoAttack,
             EquippedSetPieces: EquippedSetPieceCounter.Count(derived.Inventory),
+            EquippedSpecialEffectIds: EquippedSpecialEffectIds(derived.Inventory),
             GenderId: character.GenderId,
             SkinId: character.ActiveSkinId,
             EquipmentArmor: derived.Equipment.ArmorFlat,
@@ -469,6 +472,12 @@ public sealed class CombatSessionFactory(
             cooldowns,
             initiallyAttached);
     }
+
+    private static IReadOnlySet<string> EquippedSpecialEffectIds(
+        InventorySnapshot inventory) =>
+        inventory.Equipped.Values
+            .SelectMany(item => item.Definition.SpecialEffectIds ?? [])
+            .ToHashSet(StringComparer.Ordinal);
 
     private static InventoryItemSnapshot? GetEquippedItem(
         InventorySnapshot inventory,
