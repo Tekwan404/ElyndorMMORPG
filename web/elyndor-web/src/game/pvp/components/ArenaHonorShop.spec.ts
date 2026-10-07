@@ -50,7 +50,8 @@ describe('ArenaHonorShop', () => {
     expect(wrapper.text()).toContain('Магазин чести')
     expect(wrapper.text()).toContain('140')
     expect(wrapper.text()).toContain('Оплот Железного Круга')
-    expect(wrapper.text()).not.toContain('Клятва Багрового Претендента')
+    expect(wrapper.text()).toContain('Шлем')
+    expect(wrapper.text()).not.toContain('Рукавицы')
 
     const buy = wrapper.findAll('button').find(button => button.text() === 'Купить')
     expect(buy).toBeDefined()
