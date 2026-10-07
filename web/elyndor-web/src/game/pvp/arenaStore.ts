@@ -9,6 +9,7 @@ import {
 
 import { apiClient } from '@/api/apiClient'
 import type { CombatEvent } from '@/api/contracts'
+import { useGameSessionStore } from '@/stores/gameSession'
 import type {
   ArenaCommandResponse,
   ArenaHonorShop,
@@ -29,6 +30,7 @@ function newCommandId(): string {
 }
 
 export const useArenaStore = defineStore('arena', () => {
+  const session = useGameSessionStore()
   const status = ref<ArenaStatus | null>(null)
   const leaderboard = ref<ArenaLeaderboardEntry[]>([])
   const shop = ref<ArenaHonorShop | null>(null)
@@ -138,6 +140,7 @@ export const useArenaStore = defineStore('arena', () => {
       shop.value = response.shop
       shopPurchaseDrafts.delete(itemId)
       if (status.value) status.value = { ...status.value, honor: response.shop.honor }
+      try { await session.refreshSnapshot() } catch { /* purchase already committed; keep shop state authoritative */ }
     } catch (error) {
       shopErrorCode.value = error instanceof Error ? error.message : 'arena_shop_unavailable'
     } finally {
