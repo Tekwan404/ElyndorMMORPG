@@ -73,7 +73,25 @@ public static class AuthenticationEndpoints
         long telegramUserId;
         string? telegramUsername;
 
-        if (TelegramWebAuthenticationService.IsWebCredential(request.InitData))
+        if (TelegramSessionCredentialService.IsSessionCredential(request.InitData))
+        {
+            TelegramSessionIdentity? sessionIdentity =
+                TelegramSessionCredentialService.ValidateCredential(
+                    options,
+                    timeProvider,
+                    request.InitData);
+            if (sessionIdentity is null)
+            {
+                return CreateProblem(
+                    httpContext,
+                    StatusCodes.Status401Unauthorized,
+                    "telegram_session_credential_invalid");
+            }
+
+            telegramUserId = sessionIdentity.TelegramUserId;
+            telegramUsername = sessionIdentity.TelegramUsername;
+        }
+        else if (TelegramWebAuthenticationService.IsWebCredential(request.InitData))
         {
             if (!options.Telegram.Web.Enabled)
             {
@@ -123,11 +141,17 @@ public static class AuthenticationEndpoints
             telegramUserId,
             telegramUsername,
             cancellationToken);
+        IssuedTelegramSessionCredential sessionCredential =
+            TelegramSessionCredentialService.IssueCredential(
+                options,
+                timeProvider,
+                new TelegramSessionIdentity(telegramUserId, telegramUsername));
         return Results.Ok(CreateAuthenticationResponse(
             account,
             telegramUserId,
             adminOptions.Value,
-            tokenIssuer));
+            tokenIssuer,
+            sessionCredential));
     }
 
     private static async Task<IResult> AuthenticateTelegramWebAsync(
@@ -267,7 +291,8 @@ public static class AuthenticationEndpoints
         Account account,
         long telegramUserId,
         TelegramAdminOptions adminOptions,
-        JwtTokenIssuer tokenIssuer)
+        JwtTokenIssuer tokenIssuer,
+        IssuedTelegramSessionCredential? sessionCredential = null)
     {
         string[] roles = adminOptions.IsAllowedUser(telegramUserId)
             ? [AdminAuthorization.SuperAdminRole]
@@ -277,7 +302,9 @@ public static class AuthenticationEndpoints
         return new AuthenticationResponse(
             token.AccessToken,
             token.ExpiresAtUtc,
-            roles);
+            roles,
+            sessionCredential?.Value,
+            sessionCredential?.ExpiresAtUtc);
     }
 
     private static bool IsValidTelegramWebRequest(
