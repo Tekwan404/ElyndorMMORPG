@@ -1259,6 +1259,126 @@
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
       "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_WARRIOR_BLACKHEART",
+      "itemFamilyId": "UNIQUE_WARRIOR_BLACKHEART",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "name": "Черносерд",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 25,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Именное семейство оружия 25–60 уровня. Архонт Пепла выдаёт его как уникальный трофей 60 уровня для ветки «Берсерк».",
+      "version": 1,
+      "weaponCategory": "TWO_HAND_SWORD",
+      "weaponDamageMin": 96,
+      "weaponDamageMax": 128,
+      "iconId": "items_outside_sets/shattered_order_citadel/mirror_bastard_sword",
+      "itemLevelMin": 25,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_WEAPON",
+      "affixCountProfileId": "UNIQUE_FAMILY",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
+    },
+    {
+      "id": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
+      "itemFamilyId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "name": "Око Погасшей Звезды",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 25,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Именное семейство одноручных посохов 25–60 уровня. Архонт Пепла выдаёт его как уникальный трофей 60 уровня для ветки «Аркана».",
+      "version": 1,
+      "weaponCategory": "ONE_HAND_STAFF",
+      "weaponDamageMin": 88,
+      "weaponDamageMax": 118,
+      "iconId": "items_outside_sets/open_world_mid/shard_wand",
+      "itemLevelMin": 25,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "UNIQUE_FAMILY",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
+    },
+    {
+      "id": "UNIQUE_ARCHER_LAST_CONSTELLATION",
+      "itemFamilyId": "UNIQUE_ARCHER_LAST_CONSTELLATION",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "name": "Лук Последнего Созвездия",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 25,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Именное семейство луков 25–60 уровня. Архонт Пепла выдаёт его как уникальный трофей 60 уровня для ветки «Меткость».",
+      "version": 1,
+      "weaponCategory": "BOW",
+      "weaponDamageMin": 92,
+      "weaponDamageMax": 124,
+      "iconId": "items_outside_sets/shattered_order_citadel/triple_aspect_bow",
+      "itemLevelMin": 25,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "affixCountProfileId": "UNIQUE_FAMILY",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null
     }
   ]
 }
