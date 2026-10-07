@@ -23,6 +23,15 @@ Damage and healing use the combat kernel; resource changes clamp to capacity.
 `ScaleWithMaxHp` uses a fraction (0.05 means five percent), while
 `EventAmountPercent` uses percentage points (5 means five percent).
 
-This is execution infrastructure. The current bundled catalog does not yet assign
-36 branch-specific Unique weapon/ring/cloak mechanics. Those require authored
-content and balance verification; the infrastructure alone does not change them.
+The bundled L60 catalog assigns one authored combat mechanic to every branch-specific
+Unique weapon, ring and cloak (36 total). These effects use the shared runtime only:
+no item ID is hardcoded in CombatSession. Weapons primarily create offensive branch
+moments, rings reinforce resource/proc loops, and cloaks provide reactive defense or
+counter-pressure. The catalog lives in `content/items/zz-l60-branch-uniques.json`
+and is regression-tested so every L60 Unique resolves exactly one distinct effect.
+
+Current authoring limits still apply: item effects cannot inspect arbitrary health
+thresholds, consume custom charges, test target/owner status effects, coordinate a
+pet-owner alternating sequence, create resource overflow above capacity, or prevent
+a lethal hit. Those mechanics require extending the shared item runtime rather than
+adding item-specific CombatSession branches.
