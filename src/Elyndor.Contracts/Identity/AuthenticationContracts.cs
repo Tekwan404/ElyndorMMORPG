@@ -18,7 +18,9 @@ public sealed record TelegramWebAuthenticationResponse(
 public sealed record AuthenticationResponse(
     string AccessToken,
     DateTimeOffset ExpiresAtUtc,
-    IReadOnlyList<string> Roles);
+    IReadOnlyList<string> Roles,
+    string? SessionCredential = null,
+    DateTimeOffset? SessionCredentialExpiresAtUtc = null);
 
 public sealed record ApiErrorResponse(
     string Code,
