@@ -189,7 +189,7 @@ public sealed class PromoCodeServiceTests(PostgresFixture postgres) : IAsyncLife
             .Include(candidate => candidate.Affixes)
             .SingleAsync(candidate => candidate.CharacterId == result.CharacterId
                 && candidate.ItemDefinitionId == "UNIQUE_WARRIOR_BLACKHEART");
-        Assert.Equal(25, item.ItemLevel);
+        Assert.Equal(60, item.ItemLevel);
         Assert.Equal(1, item.GenerationVersion);
         Assert.Equal("PROMO_CODE", item.SourceType);
         Assert.Equal(operationId, item.SourceOperationId);
