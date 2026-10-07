@@ -219,7 +219,6 @@ public sealed record ItemDefinition(
     decimal ExtraAffixBudgetCap = 0,
     string? PrefixSuffixPolicyId = null,
     string? UniqueEquippedGroup = null,
-    IReadOnlyList<string>? SpecialEffectIds = null,
     string? TradePolicyId = null,
     int GenerationVersion = 1,
     bool PremiumEligible = true,
@@ -230,7 +229,8 @@ public sealed record ItemDefinition(
     int LootContainerGoldMax = 0,
     string? ItemFamilyId = null,
     IReadOnlyList<string>? AllowedClassIds = null,
-    long HonorPrice = 0);
+    long HonorPrice = 0,
+    IReadOnlyList<string>? SpecialEffectIds = null);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,
