@@ -151,12 +151,14 @@ function readStoredWebAuthenticationData(): RuntimeAuthenticationData | null {
     if (!raw) return null
 
     const stored = JSON.parse(raw) as Partial<StoredWebAuthenticationData>
-    const expiresAtMs = typeof stored.expiresAtUtc === 'string'
-      ? Date.parse(stored.expiresAtUtc)
+    const expiresAtUtc = stored.expiresAtUtc
+    const expiresAtMs = typeof expiresAtUtc === 'string'
+      ? Date.parse(expiresAtUtc)
       : Number.NaN
     if (
       typeof stored.value !== 'string'
       || stored.value.length === 0
+      || typeof expiresAtUtc !== 'string'
       || !Number.isFinite(expiresAtMs)
       || expiresAtMs <= Date.now()
     ) {
@@ -166,7 +168,7 @@ function readStoredWebAuthenticationData(): RuntimeAuthenticationData | null {
 
     return {
       value: stored.value,
-      expiresAtUtc: stored.expiresAtUtc,
+      expiresAtUtc,
       telegramUserId: typeof stored.telegramUserId === 'string'
         ? stored.telegramUserId
         : null,
