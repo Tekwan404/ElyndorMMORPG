@@ -141,9 +141,13 @@ public sealed class ArenaHonorShopTests(PostgresFixture postgres) : IAsyncLifeti
 
         Assert.True(result.Succeeded);
         Assert.Equal(200, result.Snapshot!.Honor);
-        ItemDefinition offer = Assert.Single(result.Snapshot.Items);
-        Assert.Equal("TEST_ARENA_HONOR_CHEST", offer.Id);
+        ItemDefinition offer = Assert.Single(
+            result.Snapshot.Items,
+            item => item.Id == "TEST_ARENA_HONOR_CHEST");
         Assert.Equal(100, offer.HonorPrice);
+        Assert.DoesNotContain(
+            result.Snapshot.Items,
+            item => item.Id == "TEST_ARENA_MAGE_HONOR_CHEST");
     }
 
     [Fact]
