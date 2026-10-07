@@ -72,6 +72,7 @@ public static class AuthenticationEndpoints
         AuthenticationOptions options = authenticationOptions.Value;
         long telegramUserId;
         string? telegramUsername;
+        bool issueSessionCredential;
 
         if (TelegramSessionCredentialService.IsSessionCredential(request.InitData))
         {
@@ -90,6 +91,7 @@ public static class AuthenticationEndpoints
 
             telegramUserId = sessionIdentity.TelegramUserId;
             telegramUsername = sessionIdentity.TelegramUsername;
+            issueSessionCredential = true;
         }
         else if (TelegramWebAuthenticationService.IsWebCredential(request.InitData))
         {
@@ -116,6 +118,7 @@ public static class AuthenticationEndpoints
 
             telegramUserId = webIdentity.TelegramUserId;
             telegramUsername = webIdentity.TelegramUsername;
+            issueSessionCredential = false;
         }
         else
         {
@@ -135,17 +138,22 @@ public static class AuthenticationEndpoints
 
             telegramUserId = validation.Data!.TelegramUserId;
             telegramUsername = validation.Data.TelegramUsername;
+            issueSessionCredential = true;
         }
 
         Account account = await accountResolver.ResolveAsync(
             telegramUserId,
             telegramUsername,
             cancellationToken);
-        IssuedTelegramSessionCredential sessionCredential =
-            TelegramSessionCredentialService.IssueCredential(
-                options,
-                timeProvider,
-                new TelegramSessionIdentity(telegramUserId, telegramUsername));
+        IssuedTelegramSessionCredential? sessionCredential =
+            issueSessionCredential
+                ? TelegramSessionCredentialService.IssueCredential(
+                    options,
+                    timeProvider,
+                    new TelegramSessionIdentity(
+                        telegramUserId,
+                        telegramUsername))
+                : null;
         return Results.Ok(CreateAuthenticationResponse(
             account,
             telegramUserId,
