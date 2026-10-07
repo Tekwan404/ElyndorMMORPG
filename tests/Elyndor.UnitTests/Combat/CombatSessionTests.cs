@@ -984,15 +984,10 @@ public sealed class CombatSessionTests
         Assert.Equal(
             [Now, Now.AddSeconds(2), Now.AddSeconds(4), Now.AddSeconds(6), Now.AddSeconds(8), Now.AddSeconds(10)],
             mainSwings.Select(item => item.OccurredAtUtc));
+        TimeSpan offHandInitialDelay = TimeSpan.FromTicks(offHand.Interval.Ticks / 2);
         Assert.Equal(
-            [
-                Now.AddSeconds(0.8),
-                Now.AddSeconds(2.4),
-                Now.AddSeconds(4.0),
-                Now.AddSeconds(5.6),
-                Now.AddSeconds(7.2),
-                Now.AddSeconds(8.8)
-            ],
+            Enumerable.Range(0, 6)
+                .Select(index => Now + offHandInitialDelay + TimeSpan.FromTicks(offHand.Interval.Ticks * index)),
             offSwings.Select(item => item.OccurredAtUtc));
     }
 
