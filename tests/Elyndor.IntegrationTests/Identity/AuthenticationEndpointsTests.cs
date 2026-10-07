@@ -52,6 +52,11 @@ public sealed class AuthenticationEndpointsTests(PostgresFixture postgres) : IAs
         Assert.NotNull(authentication);
         Assert.Empty(authentication.Roles);
         Assert.Equal(Now.AddMinutes(15), authentication.ExpiresAtUtc);
+        Assert.NotNull(authentication.SessionCredential);
+        Assert.StartsWith("session:", authentication.SessionCredential);
+        Assert.Equal(
+            Now.AddHours(168),
+            authentication.SessionCredentialExpiresAtUtc);
         Guid accountId = Guid.Parse(ReadSubject(authentication.AccessToken));
         Assert.Equal(
             authentication.ExpiresAtUtc,
@@ -61,6 +66,51 @@ public sealed class AuthenticationEndpointsTests(PostgresFixture postgres) : IAs
         Account account = await context.Accounts.SingleAsync();
         Assert.Equal(account.Id, accountId);
         Assert.Equal(42, account.TelegramUserId);
+    }
+
+    [Fact]
+    public async Task RenewableTelegramSessionSurvivesExpiredMiniAppInitData()
+    {
+        AuthenticationResponse initialAuthentication;
+        await using (WebApplicationFactory<Program> initialFactory =
+            CreateFactory("PublicTest"))
+        using (HttpClient initialClient = initialFactory.CreateClient())
+        {
+            HttpResponseMessage initialResponse =
+                await initialClient.PostAsJsonAsync(
+                    "/api/v1/auth/telegram",
+                    new TelegramAuthenticationRequest(ValidInitData));
+            initialResponse.EnsureSuccessStatusCode();
+            initialAuthentication =
+                (await initialResponse.Content
+                    .ReadFromJsonAsync<AuthenticationResponse>())!;
+        }
+
+        Assert.NotNull(initialAuthentication.SessionCredential);
+
+        DateTimeOffset refreshedAt = Now.AddMinutes(6);
+        await using WebApplicationFactory<Program> refreshedFactory =
+            CreateFactory("PublicTest", refreshedAt);
+        using HttpClient refreshedClient = refreshedFactory.CreateClient();
+
+        HttpResponseMessage refreshedResponse =
+            await refreshedClient.PostAsJsonAsync(
+                "/api/v1/auth/telegram",
+                new TelegramAuthenticationRequest(
+                    initialAuthentication.SessionCredential!));
+        refreshedResponse.EnsureSuccessStatusCode();
+        AuthenticationResponse? refreshedAuthentication =
+            await refreshedResponse.Content
+                .ReadFromJsonAsync<AuthenticationResponse>();
+
+        Assert.NotNull(refreshedAuthentication);
+        Assert.NotNull(refreshedAuthentication.SessionCredential);
+        Assert.NotEqual(
+            initialAuthentication.SessionCredential,
+            refreshedAuthentication.SessionCredential);
+        Assert.Equal(
+            refreshedAt.AddHours(168),
+            refreshedAuthentication.SessionCredentialExpiresAtUtc);
     }
 
     [Fact]
@@ -235,6 +285,7 @@ public sealed class AuthenticationEndpointsTests(PostgresFixture postgres) : IAs
                 builder.UseSetting("Authentication:Telegram:BotToken", botToken);
                 builder.UseSetting("Authentication:Telegram:InitDataMaxAgeSeconds", "300");
                 builder.UseSetting("Authentication:Telegram:MaxFutureSkewSeconds", "30");
+                builder.UseSetting("Authentication:Telegram:SessionLifetimeHours", "168");
                 builder.UseSetting(
                     "Authentication:Development:Enabled",
                     developmentEnabled.ToString());
