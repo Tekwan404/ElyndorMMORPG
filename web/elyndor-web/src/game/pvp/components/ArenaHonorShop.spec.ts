@@ -2,10 +2,10 @@ import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it } from 'vitest'
 
-import type { ArenaHonorShop } from '../arenaContracts'
+import type { ArenaHonorShop as ArenaHonorShopSnapshot } from '../arenaContracts'
 import ArenaHonorShop from './ArenaHonorShop.vue'
 
-function shop(): ArenaHonorShop {
+function shop(): ArenaHonorShopSnapshot {
   return {
     honor: 140,
     items: [
