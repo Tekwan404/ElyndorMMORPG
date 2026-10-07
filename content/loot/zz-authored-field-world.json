@@ -1,6 +1,6 @@
 {
-  "contentVersion": "0.23.0",
-  "balanceVersion": "0.19.0",
+  "contentVersion": "0.40.0",
+  "balanceVersion": "0.31.0",
   "publishedAtUtc": "2026-09-17T00:00:00+00:00",
   "lootTables": [
     {
@@ -2273,30 +2273,6 @@
           "dropChance": 0.08,
           "minQuantity": 1,
           "maxQuantity": 1
-        },
-        {
-          "itemId": "UNIQUE_WARRIOR_BLACKHEART",
-          "dropChance": 0.003,
-          "minQuantity": 1,
-          "maxQuantity": 1,
-          "itemLevelMin": 25,
-          "itemLevelMax": 25
-        },
-        {
-          "itemId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
-          "dropChance": 0.003,
-          "minQuantity": 1,
-          "maxQuantity": 1,
-          "itemLevelMin": 25,
-          "itemLevelMax": 25
-        },
-        {
-          "itemId": "UNIQUE_ARCHER_LAST_CONSTELLATION",
-          "dropChance": 0.003,
-          "minQuantity": 1,
-          "maxQuantity": 1,
-          "itemLevelMin": 25,
-          "itemLevelMax": 25
         }
       ],
       "version": 1
