@@ -69,6 +69,7 @@
           "STRENGTH",
           "STAMINA",
           "CRITICAL_CHANCE",
+          "CRITICAL_DAMAGE",
           "ATTACK_SPEED",
           "ARMOR_PENETRATION",
           "ACCURACY",
