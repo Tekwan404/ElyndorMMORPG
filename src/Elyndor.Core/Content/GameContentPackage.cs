@@ -34,7 +34,6 @@ public sealed record GameContentPackage(
     IReadOnlyList<EncounterDefinition>? Encounters = null,
     LevelProgressionDefinition? LevelProgression = null,
     IReadOnlyList<ItemDefinition>? Items = null,
-    IReadOnlyList<ItemSpecialEffectDefinition>? ItemSpecialEffects = null,
     IReadOnlyList<LootTableDefinition>? LootTables = null,
     IReadOnlyList<EquipmentSetDefinition>? EquipmentSets = null,
     IReadOnlyList<MerchantDefinition>? Merchants = null,
@@ -54,7 +53,8 @@ public sealed record GameContentPackage(
     IReadOnlyList<WorldBossDefinition>? WorldBosses = null,
     IReadOnlyList<WorldBossRewardProfileDefinition>? WorldBossRewardProfiles = null,
     CombatBalanceProfile? CombatBalance = null,
-    ProgressionBalanceProfile? ProgressionBalance = null);
+    ProgressionBalanceProfile? ProgressionBalance = null,
+    IReadOnlyList<ItemSpecialEffectDefinition>? ItemSpecialEffects = null);
 
 public sealed record AfkFarmRewardProfile(
     int ProcessingIntervalSeconds,
