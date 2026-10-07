@@ -6,6 +6,8 @@ namespace Elyndor.IntegrationTests.Content;
 
 public sealed class LevelingItemFamilyContentTests
 {
+    private static readonly EquipmentSlot[] AdditionalSlots = [EquipmentSlot.Shoulders, EquipmentSlot.Feet];
+
     private static readonly Dictionary<string, string> CanonicalSets =
         new(StringComparer.Ordinal)
         {
@@ -28,7 +30,7 @@ public sealed class LevelingItemFamilyContentTests
         };
 
     [Fact]
-    public async Task CanonicalLevelingSetsAreSixPieceItemFamilies()
+    public async Task CanonicalLevelingSetsUseProgressiveFourAndSixPieceTiers()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
@@ -40,19 +42,21 @@ public sealed class LevelingItemFamilyContentTests
                 .OrderBy(item => item.Slot)
                 .ToArray();
 
-            Assert.Equal(6, pieces.Length);
+            int level = pieces.First().RequiredLevel;
+            Assert.True(level is 18 or 35 or 45 or 55);
+            Assert.Equal(level == 18 ? 4 : 6, pieces.Length);
             EquipmentSlot[] expectedSlots =
             [
                 EquipmentSlot.Head,
-                EquipmentSlot.Shoulders,
+
                 EquipmentSlot.Chest,
                 EquipmentSlot.Hands,
                 EquipmentSlot.Legs,
-                EquipmentSlot.Feet,
+
             ];
 
             Assert.Equal(
-                expectedSlots.OrderBy(slot => slot),
+                (level == 18 ? expectedSlots : expectedSlots.Concat(AdditionalSlots)).OrderBy(slot => slot),
                 pieces.Select(item => item.Slot!.Value).OrderBy(slot => slot));
 
             Assert.All(pieces, item =>
@@ -86,9 +90,9 @@ public sealed class LevelingItemFamilyContentTests
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(283, families.Length);
-        Assert.Equal(96, levelingEquipment.Count(item => CanonicalSets.ContainsKey(item.SetId ?? string.Empty)));
-        Assert.Equal(187, levelingEquipment.Count(item => !CanonicalSets.ContainsKey(item.SetId ?? string.Empty)));
+        Assert.Equal(355, families.Length);
+        Assert.Equal(88, levelingEquipment.Count(item => CanonicalSets.ContainsKey(item.SetId ?? string.Empty)));
+        Assert.Equal(267, levelingEquipment.Count(item => !CanonicalSets.ContainsKey(item.SetId ?? string.Empty)));
 
         string[] removedCompatibilityIds =
         [
@@ -99,14 +103,14 @@ public sealed class LevelingItemFamilyContentTests
         Assert.DoesNotContain(levelingEquipment, item => removedCompatibilityIds.Contains(item.Id));
         Assert.DoesNotContain(
             levelingEquipment,
-            item => (item.Description ?? string.Empty).Contains("совместим", StringComparison.OrdinalIgnoreCase));
+            item => (item.Description ?? string.Empty).Contains("СЃРѕРІРјРµСЃС‚РёРј", StringComparison.OrdinalIgnoreCase));
     }
 
     [Theory]
-    [InlineData(10, 13)]
-    [InlineData(14, 17)]
-    [InlineData(18, 22)]
-    [InlineData(23, 59)]
+    [InlineData(18, 29)]
+    [InlineData(35, 44)]
+    [InlineData(45, 54)]
+    [InlineData(55, 59)]
     public async Task LevelingFamilyTierOwnsItsItemLevelWindow(int requiredLevel, int maximumItemLevel)
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
@@ -117,7 +121,7 @@ public sealed class LevelingItemFamilyContentTests
                 && item.RequiredLevel == requiredLevel)
             .ToArray();
 
-        Assert.Equal(24, pieces.Length);
+        Assert.Equal(requiredLevel == 18 ? 16 : 24, pieces.Length);
         Assert.All(pieces, item =>
         {
             Assert.Equal(requiredLevel, item.ItemLevelMin);

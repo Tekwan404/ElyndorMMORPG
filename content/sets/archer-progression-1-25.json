@@ -1,12 +1,14 @@
 {
-  "contentVersion": "0.14.0",
-  "balanceVersion": "0.12.0",
-  "publishedAtUtc": "2026-09-08T20:58:00+00:00",
+  "contentVersion": "0.42.0",
+  "balanceVersion": "0.32.0",
+  "publishedAtUtc": "2026-10-07T12:00:00+00:00",
   "equipmentSets": [
     {
       "id": "SET_ARCHER_THORN_TRAIL",
       "name": "Клятва Тернового Следа",
-      "allowedClassIds": ["ARCHER"],
+      "allowedClassIds": [
+        "ARCHER"
+      ],
       "bonuses": [
         {
           "requiredPieces": 2,
@@ -15,17 +17,15 @@
         {
           "requiredPieces": 4,
           "accuracyPercent": 3
-        },
-        {
-          "requiredPieces": 6,
-          "attackSpeedPercent": 4
         }
       ]
     },
     {
       "id": "SET_ARCHER_MOONLEAF_SHADOW",
       "name": "Тень Лунного Листа",
-      "allowedClassIds": ["ARCHER"],
+      "allowedClassIds": [
+        "ARCHER"
+      ],
       "bonuses": [
         {
           "requiredPieces": 2,
@@ -33,52 +33,74 @@
         },
         {
           "requiredPieces": 4,
-          "attackSpeedPercent": 5
-        },
-        {
-          "requiredPieces": 6,
-          "accuracyPercent": 4,
-          "armorPenetrationPercent": 3
+          "attackSpeedPercent": 4,
+          "accuracyPercent": 3
         }
       ]
     },
     {
       "id": "SET_ARCHER_STAR_HUNTER",
       "name": "Наследие Звёздного Зверобоя",
-      "allowedClassIds": ["ARCHER"],
+      "allowedClassIds": [
+        "ARCHER"
+      ],
       "bonuses": [
         {
           "requiredPieces": 2,
-          "criticalChancePercent": 4
+          "criticalChancePercent": 2
         },
         {
           "requiredPieces": 4,
-          "dodgePercent": 3
-        },
-        {
-          "requiredPieces": 6,
-          "accuracyPercent": 5,
-          "armorPenetrationPercent": 4
+          "accuracyPercent": 2,
+          "dodgePercent": 2
         }
       ]
     },
     {
       "id": "SET_ARCHER_BLACK_CONSTELLATION",
       "name": "Охота Чёрного Созвездия",
-      "allowedClassIds": ["ARCHER"],
+      "allowedClassIds": [
+        "ARCHER"
+      ],
       "bonuses": [
         {
           "requiredPieces": 2,
-          "criticalChancePercent": 5
+          "criticalChancePercent": 3,
+          "accuracyPercent": 3
         },
         {
           "requiredPieces": 4,
-          "dodgePercent": 4
+          "dodgePercent": 3,
+          "armorPenetrationPercent": 3
         },
         {
           "requiredPieces": 6,
-          "accuracyPercent": 6,
-          "armorPenetrationPercent": 6
+          "specialEffectIds": [
+            "SET_ARCHER_BLACK_CONSTELLATION_6PC"
+          ],
+          "description": "Каждая третья Focus ability возвращает 8 Focus."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_ARCHER_BLACK_CONSTELLATION_6PC",
+          "setId": "SET_ARCHER_BLACK_CONSTELLATION",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "AbilityCompleted",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "classAbilityOnly": true,
+            "everyNth": 3,
+            "resourceAbilityOnly": true
+          },
+          "actions": [
+            {
+              "kind": "RestoreResource",
+              "magnitude": 8
+            }
+          ]
         }
       ]
     }

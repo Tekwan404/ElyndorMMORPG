@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.41.0",
-  "balanceVersion": "0.31.0",
-  "publishedAtUtc": "2026-10-07T11:40:27+00:00",
+  "contentVersion": "0.42.0",
+  "balanceVersion": "0.32.0",
+  "publishedAtUtc": "2026-10-07T12:00:00+00:00",
   "equipmentSets": [
     {
       "id": "SET_L60_PVE_T1_WARRIOR_GUARDIAN",
@@ -12,18 +12,88 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxHpFlat": 211.3529,
-          "armorFlat": 199.6111
+          "maxHpFlat": 285.5549,
+          "armorFlat": 269.6908
         },
         {
           "requiredPieces": 4,
-          "magicResistanceFlat": 65.7542,
-          "accuracyPercent": 3
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_WARRIOR_GUARDIAN_4PC"
+          ],
+          "description": "Блок усиливает следующий Revenge на 15% в течение 8 с."
         },
         {
           "requiredPieces": 6,
-          "armorFlat": 199.6111,
-          "attackPowerFlat": 56.3608
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_WARRIOR_GUARDIAN_6PC"
+          ],
+          "description": "Shield Block: +15% Block Value на 6 с.; следующий Revenge +25% на 8 с."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_L60_PVE_T1_WARRIOR_GUARDIAN_4PC",
+          "setId": "SET_L60_PVE_T1_WARRIOR_GUARDIAN",
+          "requiredPieces": 4,
+          "trigger": {
+            "eventType": "DamageBlocked",
+            "actorRole": "Target"
+          },
+          "conditions": {},
+          "actions": [
+            {
+              "kind": "EmpowerNextDirect",
+              "referenceId": "T1_GUARDIAN_REVENGE",
+              "magnitude": 0.15,
+              "duration": "00:00:08",
+              "abilityIds": [
+                "REVENGE"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "SET_L60_PVE_T1_WARRIOR_GUARDIAN_6PC",
+          "setId": "SET_L60_PVE_T1_WARRIOR_GUARDIAN",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "AbilityCompleted",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "abilityIds": [
+              "SHIELD_BLOCK"
+            ]
+          },
+          "actions": [
+            {
+              "kind": "ApplyEffect",
+              "referenceId": "T1_GUARDIAN_BLOCK_MIN",
+              "modifiedStat": "BlockValueMin",
+              "magnitude": 0.15,
+              "duration": "00:00:06",
+              "modifierMode": "Percent",
+              "displayName": "Сетовый эффект"
+            },
+            {
+              "kind": "ApplyEffect",
+              "referenceId": "T1_GUARDIAN_BLOCK_MAX",
+              "modifiedStat": "BlockValueMax",
+              "magnitude": 0.15,
+              "duration": "00:00:06",
+              "modifierMode": "Percent",
+              "displayName": "Сетовый эффект"
+            },
+            {
+              "kind": "EmpowerNextDirect",
+              "referenceId": "T1_GUARDIAN_REVENGE",
+              "magnitude": 0.25,
+              "duration": "00:00:08",
+              "abilityIds": [
+                "REVENGE"
+              ]
+            }
+          ]
         }
       ]
     },
@@ -40,13 +110,71 @@
         },
         {
           "requiredPieces": 4,
-          "attackPowerFlat": 70.4509,
-          "armorPenetrationPercent": 3
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_WARRIOR_BERSERKER_4PC"
+          ],
+          "description": "Расход 30 Rage за 8 с.: +5% Attack Speed на 4 с.; ICD 4 с."
         },
         {
           "requiredPieces": 6,
-          "criticalDamagePercent": 10,
-          "armorPenetrationPercent": 5
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_WARRIOR_BERSERKER_6PC"
+          ],
+          "description": "Критический Wild Strike/Heavy Blow усиливает следующий прямой удар на 20% на 8 с."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_L60_PVE_T1_WARRIOR_BERSERKER_4PC",
+          "setId": "SET_L60_PVE_T1_WARRIOR_BERSERKER",
+          "requiredPieces": 4,
+          "trigger": {
+            "eventType": "ResourceChanged",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "resourceSpent": 30,
+            "spendingWindow": "00:00:08",
+            "classAbilityOnly": true,
+            "internalCooldown": "00:00:04"
+          },
+          "actions": [
+            {
+              "kind": "ApplyEffect",
+              "referenceId": "T1_BERSERKER_HASTE",
+              "modifiedStat": "AttackSpeed",
+              "magnitude": 0.05,
+              "duration": "00:00:04",
+              "modifierMode": "Percent",
+              "displayName": "Сетовый эффект"
+            }
+          ]
+        },
+        {
+          "id": "SET_L60_PVE_T1_WARRIOR_BERSERKER_6PC",
+          "setId": "SET_L60_PVE_T1_WARRIOR_BERSERKER",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "DamageDealt",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "criticalOnly": true,
+            "positiveAmountOnly": true,
+            "abilityIds": [
+              "WILD_STRIKE",
+              "HEAVY_BLOW"
+            ],
+            "oncePerAction": true
+          },
+          "actions": [
+            {
+              "kind": "EmpowerNextDirect",
+              "referenceId": "T1_BERSERKER_NEXT_HIT",
+              "magnitude": 0.2,
+              "duration": "00:00:08"
+            }
+          ]
         }
       ]
     },
@@ -59,17 +187,80 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxHpFlat": 211.3529
+          "maxHpFlat": 593.7729
         },
         {
           "requiredPieces": 4,
-          "attackPowerFlat": 70.4509,
-          "accuracyPercent": 3
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_WARRIOR_WARLORD_4PC"
+          ],
+          "description": "Cry усиливает следующую прямую способность на 10% на 8 с."
         },
         {
           "requiredPieces": 6,
-          "attackSpeedPercent": 5,
-          "maxHpFlat": 169.0823
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_WARRIOR_WARLORD_6PC"
+          ],
+          "description": "Каждая третья command ability усиливает величину эффектов следующего Cry на 15% на 8 с."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_L60_PVE_T1_WARRIOR_WARLORD_4PC",
+          "setId": "SET_L60_PVE_T1_WARRIOR_WARLORD",
+          "requiredPieces": 4,
+          "trigger": {
+            "eventType": "AbilityCompleted",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "abilityIds": [
+              "BATTLE_CRY",
+              "CRY_OF_VENGEANCE",
+              "ENDURANCE_CRY",
+              "RALLY_CRY"
+            ]
+          },
+          "actions": [
+            {
+              "kind": "EmpowerNextDirect",
+              "referenceId": "T1_WARLORD_CRY_DAMAGE",
+              "magnitude": 0.1,
+              "duration": "00:00:08",
+              "classAbilityOnly": true
+            }
+          ]
+        },
+        {
+          "id": "SET_L60_PVE_T1_WARRIOR_WARLORD_6PC",
+          "setId": "SET_L60_PVE_T1_WARRIOR_WARLORD",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "AbilityCompleted",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "abilityIds": [
+              "BATTLE_STANDARD",
+              "VICTORY_FLAG",
+              "WAR_BANNER"
+            ],
+            "everyNth": 3
+          },
+          "actions": [
+            {
+              "kind": "EmpowerNextEffect",
+              "referenceId": "T1_WARLORD_COMMAND",
+              "magnitude": 0.15,
+              "duration": "00:00:08",
+              "abilityIds": [
+                "BATTLE_CRY",
+                "CRY_OF_VENGEANCE",
+                "ENDURANCE_CRY",
+                "RALLY_CRY"
+              ]
+            }
+          ]
         }
       ]
     },
@@ -87,12 +278,71 @@
         },
         {
           "requiredPieces": 4,
-          "spellPowerFlat": 70.4509
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_MAGE_FIRE_4PC"
+          ],
+          "description": "Критический прямой Fire hit продлевает собственные Burn на 1 с., максимум +4 с.; ICD 1 с."
         },
         {
           "requiredPieces": 6,
-          "criticalDamagePercent": 10,
-          "magicPenetrationPercent": 5
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_MAGE_FIRE_6PC"
+          ],
+          "description": "Pyroblast/Fire Blast по цели с собственным Burn наносят +20% прямого урона."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_L60_PVE_T1_MAGE_FIRE_4PC",
+          "setId": "SET_L60_PVE_T1_MAGE_FIRE",
+          "requiredPieces": 4,
+          "trigger": {
+            "eventType": "DamageDealt",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "school": "FIRE",
+            "criticalOnly": true,
+            "positiveAmountOnly": true,
+            "internalCooldown": "00:00:01"
+          },
+          "actions": [
+            {
+              "kind": "ExtendTargetEffect",
+              "abilityIds": [
+                "MAGE_FIRE_IGNITE",
+                "MAGE_PYROBLAST_BURN",
+                "MAGE_FLAMESTRIKE_BURN"
+              ],
+              "magnitude": 1,
+              "duration": "00:00:04"
+            }
+          ]
+        },
+        {
+          "id": "SET_L60_PVE_T1_MAGE_FIRE_6PC",
+          "setId": "SET_L60_PVE_T1_MAGE_FIRE",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "DamageDealt",
+            "actorRole": "Source"
+          },
+          "conditions": {},
+          "actions": [
+            {
+              "kind": "ModifyDirectDamage",
+              "magnitude": 0.2,
+              "abilityIds": [
+                "MAGE_PYROBLAST",
+                "MAGE_FIRE_BLAST"
+              ],
+              "targetEffectIds": [
+                "MAGE_FIRE_IGNITE",
+                "MAGE_PYROBLAST_BURN",
+                "MAGE_FLAMESTRIKE_BURN"
+              ]
+            }
+          ]
         }
       ]
     },
@@ -105,18 +355,75 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxResourceFlat": 93.9347,
+          "maxResourceFlat": 831.2821,
           "accuracyPercent": 3
         },
         {
           "requiredPieces": 4,
-          "spellPowerFlat": 70.4509,
-          "maxResourceFlat": 56.3608
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_MAGE_ARCANE_4PC"
+          ],
+          "description": "Расход 60 Mana за 8 с.: +5% Spell Power на 4 с.; ICD 6 с."
         },
         {
           "requiredPieces": 6,
-          "magicPenetrationPercent": 5,
-          "criticalDamagePercent": 10
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_MAGE_ARCANE_6PC"
+          ],
+          "description": "Прямой Arcane Missiles/Spark hit сокращает CD Arcane Power на 1 с.; ICD 1 с."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_L60_PVE_T1_MAGE_ARCANE_4PC",
+          "setId": "SET_L60_PVE_T1_MAGE_ARCANE",
+          "requiredPieces": 4,
+          "trigger": {
+            "eventType": "ResourceChanged",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "resourceSpent": 60,
+            "spendingWindow": "00:00:08",
+            "classAbilityOnly": true,
+            "internalCooldown": "00:00:06"
+          },
+          "actions": [
+            {
+              "kind": "ApplyEffect",
+              "referenceId": "T1_ARCANE_SP",
+              "modifiedStat": "SpellPower",
+              "magnitude": 0.05,
+              "duration": "00:00:04",
+              "modifierMode": "Percent",
+              "displayName": "Сетовый эффект"
+            }
+          ]
+        },
+        {
+          "id": "SET_L60_PVE_T1_MAGE_ARCANE_6PC",
+          "setId": "SET_L60_PVE_T1_MAGE_ARCANE",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "DamageDealt",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "abilityIds": [
+              "MAGE_ARCANE_MISSILES",
+              "MAGE_ARCANE_SPARK"
+            ],
+            "positiveAmountOnly": true,
+            "oncePerAction": true,
+            "internalCooldown": "00:00:01"
+          },
+          "actions": [
+            {
+              "kind": "ReduceCooldown",
+              "referenceId": "MAGE_ARCANE_POWER",
+              "magnitude": 1
+            }
+          ]
         }
       ]
     },
@@ -129,18 +436,72 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxResourceFlat": 70.4509,
-          "magicResistanceFlat": 32.8772
+          "maxResourceFlat": 392.1133,
+          "magicResistanceFlat": 182.987
         },
         {
           "requiredPieces": 4,
-          "spellPowerFlat": 56.3608,
-          "maxHpFlat": 169.0823
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_MAGE_FROST_4PC"
+          ],
+          "description": "Прямые Frost hits сокращают CD Ice Lance на 0.5 с.; ICD 0.5 с."
         },
         {
           "requiredPieces": 6,
-          "magicPenetrationPercent": 5,
-          "magicResistanceFlat": 65.7542
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_MAGE_FROST_6PC"
+          ],
+          "description": "Прямой Frost hit по controlled target усиливает следующий Ice Lance на 25% на 8 с."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_L60_PVE_T1_MAGE_FROST_4PC",
+          "setId": "SET_L60_PVE_T1_MAGE_FROST",
+          "requiredPieces": 4,
+          "trigger": {
+            "eventType": "DamageDealt",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "school": "FROST",
+            "positiveAmountOnly": true,
+            "oncePerAction": true,
+            "internalCooldown": "00:00:00.500"
+          },
+          "actions": [
+            {
+              "kind": "ReduceCooldown",
+              "referenceId": "MAGE_ICE_LANCE",
+              "magnitude": 0.5
+            }
+          ]
+        },
+        {
+          "id": "SET_L60_PVE_T1_MAGE_FROST_6PC",
+          "setId": "SET_L60_PVE_T1_MAGE_FROST",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "DamageDealt",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "school": "FROST",
+            "positiveAmountOnly": true,
+            "controlledTargetOnly": true,
+            "oncePerAction": true
+          },
+          "actions": [
+            {
+              "kind": "EmpowerNextDirect",
+              "referenceId": "T1_FROST_ICE_LANCE",
+              "magnitude": 0.25,
+              "duration": "00:00:08",
+              "abilityIds": [
+                "MAGE_ICE_LANCE"
+              ]
+            }
+          ]
         }
       ]
     },
@@ -157,13 +518,65 @@
         },
         {
           "requiredPieces": 4,
-          "criticalChancePercent": 4,
-          "attackPowerFlat": 56.3608
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_ARCHER_MARKSMAN_4PC"
+          ],
+          "description": "Прямые выстрелы сокращают CD Aimed Shot на 0.5 с.; ICD 0.5 с."
         },
         {
           "requiredPieces": 6,
-          "armorPenetrationPercent": 5,
-          "criticalDamagePercent": 10
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_ARCHER_MARKSMAN_6PC"
+          ],
+          "description": "Каждый третий прямой выстрел усиливает следующий Aimed Shot на 20% на 8 с."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_L60_PVE_T1_ARCHER_MARKSMAN_4PC",
+          "setId": "SET_L60_PVE_T1_ARCHER_MARKSMAN",
+          "requiredPieces": 4,
+          "trigger": {
+            "eventType": "DamageDealt",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "positiveAmountOnly": true,
+            "oncePerAction": true,
+            "internalCooldown": "00:00:00.500"
+          },
+          "actions": [
+            {
+              "kind": "ReduceCooldown",
+              "referenceId": "AIMED_SHOT",
+              "magnitude": 0.5
+            }
+          ]
+        },
+        {
+          "id": "SET_L60_PVE_T1_ARCHER_MARKSMAN_6PC",
+          "setId": "SET_L60_PVE_T1_ARCHER_MARKSMAN",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "DamageDealt",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "positiveAmountOnly": true,
+            "oncePerAction": true,
+            "everyNth": 3
+          },
+          "actions": [
+            {
+              "kind": "EmpowerNextDirect",
+              "referenceId": "T1_MARKSMAN_AIMED",
+              "magnitude": 0.2,
+              "duration": "00:00:08",
+              "abilityIds": [
+                "AIMED_SHOT"
+              ]
+            }
+          ]
         }
       ]
     },
@@ -176,17 +589,72 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxHpFlat": 211.3529,
+          "maxHpFlat": 593.7729,
           "attackSpeedPercent": 2
         },
         {
           "requiredPieces": 4,
-          "attackPowerFlat": 70.4509
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_ARCHER_BEAST_MASTERY_4PC"
+          ],
+          "description": "Критический прямой pet hit усиливает следующий owner shot на 10% на 8 с.; ICD 1 с."
         },
         {
           "requiredPieces": 6,
-          "attackSpeedPercent": 4,
-          "armorPenetrationPercent": 5
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_ARCHER_BEAST_MASTERY_6PC"
+          ],
+          "description": "Четыре чередующихся owner/pet hit дают владельцу Pack Momentum: +5% Attack Speed на 6 с."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_L60_PVE_T1_ARCHER_BEAST_MASTERY_4PC",
+          "setId": "SET_L60_PVE_T1_ARCHER_BEAST_MASTERY",
+          "requiredPieces": 4,
+          "trigger": {
+            "eventType": "DamageDealt",
+            "actorRole": "CompanionOwner"
+          },
+          "conditions": {
+            "criticalOnly": true,
+            "positiveAmountOnly": true,
+            "internalCooldown": "00:00:01"
+          },
+          "actions": [
+            {
+              "kind": "EmpowerNextDirect",
+              "referenceId": "T1_BEAST_OWNER_SHOT",
+              "magnitude": 0.1,
+              "duration": "00:00:08"
+            }
+          ]
+        },
+        {
+          "id": "SET_L60_PVE_T1_ARCHER_BEAST_MASTERY_6PC",
+          "setId": "SET_L60_PVE_T1_ARCHER_BEAST_MASTERY",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "DamageDealt",
+            "actorRole": "OwnerOrCompanion"
+          },
+          "conditions": {
+            "positiveAmountOnly": true,
+            "alternatingSources": true,
+            "everyNth": 4,
+            "oncePerAction": true
+          },
+          "actions": [
+            {
+              "kind": "ApplyEffect",
+              "referenceId": "T1_PACK_MOMENTUM",
+              "modifiedStat": "AttackSpeed",
+              "magnitude": 0.05,
+              "duration": "00:00:06",
+              "modifierMode": "Percent",
+              "displayName": "Сетовый эффект"
+            }
+          ]
         }
       ]
     },
@@ -200,40 +668,179 @@
         {
           "requiredPieces": 2,
           "dodgePercent": 4,
-          "maxHpFlat": 169.0823
+          "maxHpFlat": 593.7729
         },
         {
           "requiredPieces": 4,
-          "criticalChancePercent": 4,
-          "accuracyPercent": 3
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_ARCHER_SURVIVAL_4PC"
+          ],
+          "description": "Прямые hits по собственной Sting/Trap target сокращают CD ловушек на 0.5 с.; ICD 1 с."
         },
         {
           "requiredPieces": 6,
-          "armorPenetrationPercent": 5,
-          "attackPowerFlat": 56.3608
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_ARCHER_SURVIVAL_6PC"
+          ],
+          "description": "Sting/Trap усиливает следующий прямой выстрел по собственной Sting/Trap target на 20% на 8 с."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_L60_PVE_T1_ARCHER_SURVIVAL_4PC",
+          "setId": "SET_L60_PVE_T1_ARCHER_SURVIVAL",
+          "requiredPieces": 4,
+          "trigger": {
+            "eventType": "DamageDealt",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "positiveAmountOnly": true,
+            "targetEffectIds": [
+              "ARCHER_SERPENT_STING",
+              "ARCHER_WYVERN_STING",
+              "ARCHER_FREEZING_TRAP_STUN",
+              "ARCHER_FREEZING_TRAP_BOSS",
+              "ARCHER_IMMOLATION_TRAP_DOT",
+              "ARCHER_EXPLOSIVE_TRAP_DOT"
+            ],
+            "oncePerAction": true,
+            "internalCooldown": "00:00:01"
+          },
+          "actions": [
+            {
+              "kind": "ReduceCooldown",
+              "referenceId": "FREEZING_TRAP",
+              "magnitude": 0.5
+            },
+            {
+              "kind": "ReduceCooldown",
+              "referenceId": "IMMOLATION_TRAP",
+              "magnitude": 0.5
+            },
+            {
+              "kind": "ReduceCooldown",
+              "referenceId": "EXPLOSIVE_TRAP",
+              "magnitude": 0.5
+            }
+          ]
+        },
+        {
+          "id": "SET_L60_PVE_T1_ARCHER_SURVIVAL_6PC",
+          "setId": "SET_L60_PVE_T1_ARCHER_SURVIVAL",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "AbilityCompleted",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "abilityIds": [
+              "SERPENT_STING",
+              "WYVERN_STING",
+              "FREEZING_TRAP",
+              "IMMOLATION_TRAP",
+              "EXPLOSIVE_TRAP"
+            ]
+          },
+          "actions": [
+            {
+              "kind": "EmpowerNextDirect",
+              "referenceId": "T1_SURVIVAL_NEXT_SHOT",
+              "duration": "00:00:08",
+              "magnitude": 0.2,
+              "targetEffectIds": [
+                "ARCHER_SERPENT_STING",
+                "ARCHER_WYVERN_STING",
+                "ARCHER_FREEZING_TRAP_STUN",
+                "ARCHER_FREEZING_TRAP_BOSS",
+                "ARCHER_IMMOLATION_TRAP_DOT",
+                "ARCHER_EXPLOSIVE_TRAP_DOT"
+              ]
+            }
+          ]
         }
       ]
     },
     {
       "id": "SET_L60_PVE_T1_PALADIN_HOLY",
-      "name": "Клятва Расколотого Рассвета",
+      "name": "Регалии Непогасшего Рассвета",
       "allowedClassIds": [
         "PALADIN"
       ],
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxResourceFlat": 93.9347,
-          "magicResistanceFlat": 32.8772
+          "maxResourceFlat": 451.7835,
+          "magicResistanceFlat": 158.1244
         },
         {
           "requiredPieces": 4,
-          "spellPowerFlat": 70.4509
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_PALADIN_HOLY_4PC"
+          ],
+          "description": "Критическое effective direct heal сокращает CD Holy Shock на 1 с.; ICD 1 с."
         },
         {
           "requiredPieces": 6,
-          "spellPowerFlat": 49.3156,
-          "magicPenetrationPercent": 3
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_PALADIN_HOLY_6PC"
+          ],
+          "description": "Каждые три effective direct heals усиливают следующий Holy Shock на 20% на 8 с."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_L60_PVE_T1_PALADIN_HOLY_4PC",
+          "setId": "SET_L60_PVE_T1_PALADIN_HOLY",
+          "requiredPieces": 4,
+          "trigger": {
+            "eventType": "HealingApplied",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "criticalOnly": true,
+            "positiveAmountOnly": true,
+            "internalCooldown": "00:00:01"
+          },
+          "actions": [
+            {
+              "kind": "ReduceCooldown",
+              "referenceId": "HOLY_SHOCK",
+              "magnitude": 1
+            },
+            {
+              "kind": "ReduceCooldown",
+              "referenceId": "HOLY_SHOCK_OFFENSIVE",
+              "magnitude": 1
+            }
+          ]
+        },
+        {
+          "id": "SET_L60_PVE_T1_PALADIN_HOLY_6PC",
+          "setId": "SET_L60_PVE_T1_PALADIN_HOLY",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "HealingApplied",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "positiveAmountOnly": true,
+            "everyNth": 3,
+            "oncePerAction": true
+          },
+          "actions": [
+            {
+              "kind": "EmpowerNextDirect",
+              "referenceId": "T1_HOLY_SHOCK",
+              "magnitude": 0.2,
+              "duration": "00:00:08",
+              "abilityIds": [
+                "HOLY_SHOCK",
+                "HOLY_SHOCK_OFFENSIVE"
+              ],
+              "healingOrDamage": true
+            }
+          ]
         }
       ]
     },
@@ -246,18 +853,68 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxHpFlat": 211.3529,
-          "armorFlat": 199.6111
+          "maxHpFlat": 285.5549,
+          "armorFlat": 269.6908
         },
         {
           "requiredPieces": 4,
-          "magicResistanceFlat": 65.7542,
-          "accuracyPercent": 3
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_PALADIN_PROTECTION_4PC"
+          ],
+          "description": "Блок усиливает следующий Hammer of the Righteous на 15% на 8 с."
         },
         {
           "requiredPieces": 6,
-          "maxHpFlat": 211.3529,
-          "spellPowerFlat": 49.3156
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_PALADIN_PROTECTION_6PC"
+          ],
+          "description": "Каждый третий блок при активном Holy Shield усиливает следующий прямой offensive hit на 20% на 8 с."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_L60_PVE_T1_PALADIN_PROTECTION_4PC",
+          "setId": "SET_L60_PVE_T1_PALADIN_PROTECTION",
+          "requiredPieces": 4,
+          "trigger": {
+            "eventType": "DamageBlocked",
+            "actorRole": "Target"
+          },
+          "conditions": {},
+          "actions": [
+            {
+              "kind": "EmpowerNextDirect",
+              "referenceId": "T1_PROTECTION_HAMMER",
+              "magnitude": 0.15,
+              "duration": "00:00:08",
+              "abilityIds": [
+                "HAMMER_OF_THE_RIGHTEOUS"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "SET_L60_PVE_T1_PALADIN_PROTECTION_6PC",
+          "setId": "SET_L60_PVE_T1_PALADIN_PROTECTION",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "DamageBlocked",
+            "actorRole": "Target"
+          },
+          "conditions": {
+            "everyNth": 3,
+            "ownerEffectIds": [
+              "PALADIN_HOLY_SHIELD_BLOCK"
+            ]
+          },
+          "actions": [
+            {
+              "kind": "EmpowerNextDirect",
+              "referenceId": "T1_PROTECTION_SHIELD_HIT",
+              "magnitude": 0.2,
+              "duration": "00:00:08"
+            }
+          ]
         }
       ]
     },
@@ -275,13 +932,70 @@
         },
         {
           "requiredPieces": 4,
-          "attackPowerFlat": 70.4509,
-          "spellPowerFlat": 49.3156
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_PALADIN_RETRIBUTION_4PC"
+          ],
+          "description": "Критический Crusader Strike сокращает CD Judgement на 1 с."
         },
         {
           "requiredPieces": 6,
-          "criticalDamagePercent": 10,
-          "armorPenetrationPercent": 5
+          "specialEffectIds": [
+            "SET_L60_PVE_T1_PALADIN_RETRIBUTION_6PC"
+          ],
+          "description": "Попадание Judgement усиливает следующий Templar’s Verdict на 20% на 8 с."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_L60_PVE_T1_PALADIN_RETRIBUTION_4PC",
+          "setId": "SET_L60_PVE_T1_PALADIN_RETRIBUTION",
+          "requiredPieces": 4,
+          "trigger": {
+            "eventType": "DamageDealt",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "criticalOnly": true,
+            "positiveAmountOnly": true,
+            "abilityIds": [
+              "CRUSADER_STRIKE"
+            ],
+            "oncePerAction": true
+          },
+          "actions": [
+            {
+              "kind": "ReduceCooldown",
+              "referenceId": "JUDGEMENT",
+              "magnitude": 1
+            }
+          ]
+        },
+        {
+          "id": "SET_L60_PVE_T1_PALADIN_RETRIBUTION_6PC",
+          "setId": "SET_L60_PVE_T1_PALADIN_RETRIBUTION",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "DamageDealt",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "positiveAmountOnly": true,
+            "abilityIds": [
+              "JUDGEMENT"
+            ],
+            "oncePerAction": true
+          },
+          "actions": [
+            {
+              "kind": "EmpowerNextDirect",
+              "referenceId": "T1_RETRIBUTION_VERDICT",
+              "magnitude": 0.2,
+              "duration": "00:00:08",
+              "abilityIds": [
+                "TEMPLARS_VERDICT"
+              ]
+            }
+          ]
         }
       ]
     }

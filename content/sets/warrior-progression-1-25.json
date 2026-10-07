@@ -1,12 +1,14 @@
 {
-  "contentVersion": "0.14.0",
-  "balanceVersion": "0.15.0",
-  "publishedAtUtc": "2026-09-13T14:19:08+00:00",
+  "contentVersion": "0.42.0",
+  "balanceVersion": "0.32.0",
+  "publishedAtUtc": "2026-10-07T12:00:00+00:00",
   "equipmentSets": [
     {
       "id": "SET_WARRIOR_GREY_FANG",
       "name": "Клык Серого Волка",
-      "allowedClassIds": ["WARRIOR"],
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
       "bonuses": [
         {
           "requiredPieces": 2,
@@ -14,18 +16,16 @@
         },
         {
           "requiredPieces": 4,
-          "attackSpeedPercent": 4
-        },
-        {
-          "requiredPieces": 6,
-          "armorPenetrationPercent": 4
+          "attackSpeedPercent": 3
         }
       ]
     },
     {
       "id": "SET_WARRIOR_CRIMSON_FURY",
       "name": "Клятва Багровой Ярости",
-      "allowedClassIds": ["WARRIOR"],
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
       "bonuses": [
         {
           "requiredPieces": 2,
@@ -33,51 +33,77 @@
         },
         {
           "requiredPieces": 4,
-          "attackSpeedPercent": 5
-        },
-        {
-          "requiredPieces": 6,
-          "attackPowerFlat": 18
+          "attackPowerFlat": 42.6193,
+          "attackSpeedPercent": 4
         }
       ]
     },
     {
       "id": "SET_WARRIOR_FIRST_GUARD",
       "name": "Наследие Первого Стража",
-      "allowedClassIds": ["WARRIOR"],
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxHpFlat": 120
+          "maxHpFlat": 63.897
         },
         {
           "requiredPieces": 4,
-          "maxHpFlat": 65
-        },
-        {
-          "requiredPieces": 6,
-          "criticalChancePercent": 3,
-          "armorPenetrationPercent": 3
+          "criticalChancePercent": 2,
+          "armorPenetrationPercent": 2
         }
       ]
     },
     {
       "id": "SET_WARRIOR_BLACK_BASTION",
       "name": "Доспехи Чёрного Бастиона",
-      "allowedClassIds": ["WARRIOR"],
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxHpFlat": 180
+          "maxHpFlat": 222.2087,
+          "armorFlat": 138.8806
         },
         {
           "requiredPieces": 4,
-          "maxHpFlat": 100
+          "criticalChancePercent": 3,
+          "armorPenetrationPercent": 3
         },
         {
           "requiredPieces": 6,
-          "criticalChancePercent": 4,
-          "armorPenetrationPercent": 5
+          "specialEffectIds": [
+            "SET_WARRIOR_BLACK_BASTION_6PC"
+          ],
+          "description": "Расход 40 Rage за 8 с.: следующий прямой удар +8% на 8 с.; ICD 6 с."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_WARRIOR_BLACK_BASTION_6PC",
+          "setId": "SET_WARRIOR_BLACK_BASTION",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "ResourceChanged",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "classAbilityOnly": true,
+            "resourceSpent": 40,
+            "spendingWindow": "00:00:08",
+            "internalCooldown": "00:00:06"
+          },
+          "actions": [
+            {
+              "kind": "EmpowerNextDirect",
+              "referenceId": "SET_WARRIOR_BLACK_BASTION_6PC_NEXT",
+              "magnitude": 0.08,
+              "duration": "00:00:08"
+            }
+          ]
         }
       ]
     }

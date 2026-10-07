@@ -454,7 +454,14 @@ export interface GeneratedItemSummary {
   affixes: ItemAffix[]
 }
 
+export interface EquipmentSetSummary {
+  name: string
+  totalPieces: number
+  bonuses: { requiredPieces: number; description: string }[]
+}
+
 export interface InventoryItem {
+  setSummary?: EquipmentSetSummary | null
   id: string
   definitionId: string
   name: string

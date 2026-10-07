@@ -1,12 +1,14 @@
 {
-  "contentVersion": "0.14.0",
-  "balanceVersion": "0.12.0",
-  "publishedAtUtc": "2026-09-08T21:12:00+00:00",
+  "contentVersion": "0.42.0",
+  "balanceVersion": "0.32.0",
+  "publishedAtUtc": "2026-10-07T12:00:00+00:00",
   "equipmentSets": [
     {
       "id": "SET_MAGE_THREE_ELEMENTS",
       "name": "Сердце Трёх Стихий",
-      "allowedClassIds": ["MAGE"],
+      "allowedClassIds": [
+        "MAGE"
+      ],
       "bonuses": [
         {
           "requiredPieces": 2,
@@ -14,70 +16,96 @@
         },
         {
           "requiredPieces": 4,
-          "maxResourceFlat": 15
-        },
-        {
-          "requiredPieces": 6,
-          "magicPenetrationPercent": 4
+          "maxResourceFlat": 165.0849,
+          "magicPenetrationPercent": 3
         }
       ]
     },
     {
       "id": "SET_MAGE_SHATTERED_STAR",
       "name": "Одеяния Расколотой Звезды",
-      "allowedClassIds": ["MAGE"],
+      "allowedClassIds": [
+        "MAGE"
+      ],
       "bonuses": [
         {
           "requiredPieces": 2,
-          "attackSpeedPercent": 4
-        },
-        {
-          "requiredPieces": 4,
           "criticalChancePercent": 3
         },
         {
-          "requiredPieces": 6,
-          "spellPowerFlat": 18
+          "requiredPieces": 4,
+          "spellPowerFlat": 42.6193,
+          "magicPenetrationPercent": 4
         }
       ]
     },
     {
       "id": "SET_MAGE_SILENT_ARCHON",
       "name": "Регалии Безмолвного Архонта",
-      "allowedClassIds": ["MAGE"],
+      "allowedClassIds": [
+        "MAGE"
+      ],
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxResourceFlat": 25
+          "maxResourceFlat": 89.4557
         },
         {
           "requiredPieces": 4,
-          "magicPenetrationPercent": 4
-        },
-        {
-          "requiredPieces": 6,
-          "criticalChancePercent": 4,
-          "spellPowerFlat": 20
+          "criticalChancePercent": 2,
+          "magicPenetrationPercent": 3
         }
       ]
     },
     {
       "id": "SET_MAGE_ECLIPSED_ORACLE",
       "name": "Одеяния Затмённого Оракула",
-      "allowedClassIds": ["MAGE"],
+      "allowedClassIds": [
+        "MAGE"
+      ],
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxResourceFlat": 35
+          "maxResourceFlat": 311.0921,
+          "spellPowerFlat": 27.7761
         },
         {
           "requiredPieces": 4,
-          "magicPenetrationPercent": 6
+          "criticalChancePercent": 4,
+          "magicPenetrationPercent": 4
         },
         {
           "requiredPieces": 6,
-          "criticalChancePercent": 5,
-          "spellPowerFlat": 28
+          "specialEffectIds": [
+            "SET_MAGE_ECLIPSED_ORACLE_6PC"
+          ],
+          "description": "Расход 60 Mana за 8 с.: следующее прямое заклинание +8% на 8 с.; ICD 6 с."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_MAGE_ECLIPSED_ORACLE_6PC",
+          "setId": "SET_MAGE_ECLIPSED_ORACLE",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "ResourceChanged",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "classAbilityOnly": true,
+            "resourceSpent": 60,
+            "spendingWindow": "00:00:08",
+            "internalCooldown": "00:00:06"
+          },
+          "actions": [
+            {
+              "kind": "EmpowerNextDirect",
+              "referenceId": "SET_MAGE_ECLIPSED_ORACLE_6PC_NEXT",
+              "magnitude": 0.08,
+              "duration": "00:00:08",
+              "spellOnly": true
+            }
+          ]
         }
       ]
     }

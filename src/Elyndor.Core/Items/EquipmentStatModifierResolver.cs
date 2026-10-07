@@ -88,7 +88,8 @@ public static class EquipmentStatModifierResolver
         List<EquipmentSetBonusDefinition> activeBonuses = [];
         foreach (EquipmentSetDefinition set in equipmentSets)
         {
-            int pieces = items.Count(item => string.Equals(item.SetId, set.Id, StringComparison.Ordinal));
+            int pieces = items.Where(item => string.Equals(item.SetId, set.Id, StringComparison.Ordinal))
+                .Select(item => item.Id).Distinct(StringComparer.Ordinal).Count();
             foreach (EquipmentSetBonusDefinition bonus in set.Bonuses
                          .Where(bonus => pieces >= bonus.RequiredPieces)
                          .OrderBy(bonus => bonus.RequiredPieces))

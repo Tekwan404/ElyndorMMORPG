@@ -33,6 +33,10 @@ internal static class InventorySnapshotReader
             (content.EquipmentSets ?? [])
                 .ToDictionary(set => set.Id, StringComparer.Ordinal);
 
+        var setSizes = definitions.Values.Where(item => item.SetId is not null)
+            .GroupBy(item => item.SetId!, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
+
         InventoryItemSnapshot[] snapshots = items.Select(item =>
         {
             ItemDefinition definition = definitions.TryGetValue(
@@ -95,7 +99,9 @@ internal static class InventorySnapshotReader
                 item.ReforgeCount,
                 item.ReforgeSlotKey,
                 item.TransactionLockId.HasValue,
-                item.BindState);
+                item.BindState,
+                definition.SetId is { } setId ? equipmentSets.GetValueOrDefault(setId) : null,
+                definition.SetId is { } sizeSetId ? setSizes.GetValueOrDefault(sizeSetId) : 0);
         }).ToArray();
 
         Dictionary<EquipmentSlot, InventoryItemSnapshot> equipped = snapshots

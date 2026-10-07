@@ -103,7 +103,7 @@ public sealed class CharacterBuildSnapshotService(
             .Select(set => new BuildSet(set, setPieces.GetValueOrDefault(set.Id),
                 set.Bonuses.Where(bonus => setPieces.GetValueOrDefault(set.Id) >= bonus.RequiredPieces)
                     .OrderBy(bonus => bonus.RequiredPieces).ToArray(),
-                SetPassiveCatalog.Definitions.Where(passive => passive.SetId == set.Id
+                SetPassiveCatalog.Definitions.Concat(EquipmentSetEffectResolver.Resolve([set])).Where(passive => passive.SetId == set.Id
                     && setPieces.GetValueOrDefault(set.Id) >= passive.RequiredPieces)
                     .OrderBy(passive => passive.Id, StringComparer.Ordinal).ToArray()))
             .Where(set => set.EquippedPieces > 0).ToArray();

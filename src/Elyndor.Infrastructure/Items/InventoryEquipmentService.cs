@@ -54,7 +54,9 @@ public sealed record InventoryItemSnapshot(
     int ReforgeCount = 0,
     string? ReforgeSlotKey = null,
     bool TransactionLocked = false,
-    string BindState = ItemBindStates.Unbound)
+    string BindState = ItemBindStates.Unbound,
+    EquipmentSetDefinition? SetDefinition = null,
+    int SetTotalPieces = 0)
 {
     public PrimaryStats EffectiveStats => RolledPrimaryStats ?? Definition.Stats;
 }

@@ -51,10 +51,13 @@ public static partial class GameContentPackageValidator
             HashSet<string> equipmentSetIds = equipmentSets
                 .Select(set => set.Id)
                 .ToHashSet(StringComparer.Ordinal);
+            HashSet<string> setEffectIds = new(StringComparer.Ordinal);
+            HashSet<string> setAbilityIds = (package.Abilities ?? []).Select(a => a.Id).ToHashSet(StringComparer.Ordinal);
             for (var setIndex = 0; setIndex < equipmentSets.Count; setIndex++)
             {
                 EquipmentSetDefinition set = equipmentSets[setIndex];
                 string setPath = $"equipmentSets[{setIndex}]";
+                ValidateSetEffects(set, setPath, setEffectIds, setAbilityIds, errors);
                 if (!ValidateIdentifier(
                         set.Id,
                         "INVALID_EQUIPMENT_SET_ID",

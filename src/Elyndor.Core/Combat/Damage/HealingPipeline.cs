@@ -60,6 +60,11 @@ public static class HealingPipeline
                 Origin: request.Origin);
         }
 
+        if (request.Origin == HealingOrigin.Direct && request.DefinitionId is { } definitionId
+            && request.Source?.SetPassiveMultiplier is { } multiplier)
+            request = request with { HealingMultiplier = request.HealingMultiplier
+                * multiplier(definitionId, true, request.Target, request.OccurredAtUtc, true) };
+
         DateTimeOffset calculationTimeUtc = request.OccurredAtUtc == default
             ? DateTimeOffset.MaxValue
             : request.OccurredAtUtc;

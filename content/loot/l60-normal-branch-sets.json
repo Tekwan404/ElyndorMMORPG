@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.41.0",
-  "balanceVersion": "0.31.0",
-  "publishedAtUtc": "2026-10-07T11:40:27+00:00",
+  "contentVersion": "0.42.0",
+  "balanceVersion": "0.32.0",
+  "publishedAtUtc": "2026-10-07T12:00:00+00:00",
   "lootTables": [
     {
       "id": "DEAD_REACHES_L60_NORMAL_SET_LOOT",
@@ -812,6 +812,198 @@
               "maxQuantity": 1,
               "itemLevelMin": 60,
               "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_ARCHER_BEAST_MASTERY_AMULET",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_ARCHER_BEAST_MASTERY_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_ARCHER_MARKSMAN_AMULET",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_ARCHER_MARKSMAN_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_ARCHER_SURVIVAL_AMULET",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_ARCHER_SURVIVAL_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_MAGE_ARCANE_AMULET",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_MAGE_ARCANE_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_MAGE_FIRE_AMULET",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_MAGE_FIRE_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_MAGE_FROST_AMULET",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_MAGE_FROST_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_PALADIN_HOLY_AMULET",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_PALADIN_HOLY_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_PALADIN_PROTECTION_AMULET",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_PALADIN_PROTECTION_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_PALADIN_RETRIBUTION_AMULET",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_PALADIN_RETRIBUTION_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_WARRIOR_BERSERKER_AMULET",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_WARRIOR_BERSERKER_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_WARRIOR_GUARDIAN_AMULET",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_WARRIOR_GUARDIAN_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_WARRIOR_WARLORD_AMULET",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "L60_NORMAL_WARRIOR_WARLORD_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
             }
           ]
         }
@@ -823,7 +1015,7 @@
       "entries": [
         {
           "itemId": "L60_PVE_T1_WARRIOR_GUARDIAN_CHEST",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -831,7 +1023,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_GUARDIAN_FEET",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -839,7 +1031,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_GUARDIAN_HANDS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -847,7 +1039,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_GUARDIAN_HEAD",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -855,7 +1047,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_GUARDIAN_LEGS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -863,7 +1055,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_GUARDIAN_SHOULDERS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -871,7 +1063,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_BERSERKER_CHEST",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -879,7 +1071,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_BERSERKER_FEET",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -887,7 +1079,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_BERSERKER_HANDS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -895,7 +1087,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_BERSERKER_HEAD",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -903,7 +1095,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_BERSERKER_LEGS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -911,7 +1103,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_BERSERKER_SHOULDERS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -919,7 +1111,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_WARLORD_CHEST",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -927,7 +1119,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_WARLORD_FEET",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -935,7 +1127,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_WARLORD_HANDS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -943,7 +1135,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_WARLORD_HEAD",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -951,7 +1143,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_WARLORD_LEGS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -959,7 +1151,7 @@
         },
         {
           "itemId": "L60_PVE_T1_WARRIOR_WARLORD_SHOULDERS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -967,7 +1159,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_FIRE_CHEST",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -975,7 +1167,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_FIRE_FEET",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -983,7 +1175,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_FIRE_HANDS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -991,7 +1183,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_FIRE_HEAD",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -999,7 +1191,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_FIRE_LEGS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1007,7 +1199,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_FIRE_SHOULDERS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1015,7 +1207,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_ARCANE_CHEST",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1023,7 +1215,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_ARCANE_FEET",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1031,7 +1223,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_ARCANE_HANDS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1039,7 +1231,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_ARCANE_HEAD",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1047,7 +1239,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_ARCANE_LEGS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1055,7 +1247,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_ARCANE_SHOULDERS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1063,7 +1255,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_FROST_CHEST",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1071,7 +1263,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_FROST_FEET",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1079,7 +1271,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_FROST_HANDS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1087,7 +1279,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_FROST_HEAD",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1095,7 +1287,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_FROST_LEGS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1103,7 +1295,7 @@
         },
         {
           "itemId": "L60_PVE_T1_MAGE_FROST_SHOULDERS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1111,7 +1303,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_MARKSMAN_CHEST",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1119,7 +1311,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_MARKSMAN_FEET",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1127,7 +1319,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_MARKSMAN_HANDS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1135,7 +1327,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_MARKSMAN_HEAD",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1143,7 +1335,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_MARKSMAN_LEGS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1151,7 +1343,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_MARKSMAN_SHOULDERS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1159,7 +1351,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_CHEST",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1167,7 +1359,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_FEET",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1175,7 +1367,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_HANDS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1183,7 +1375,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_HEAD",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1191,7 +1383,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_LEGS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1199,7 +1391,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_SHOULDERS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1207,7 +1399,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_SURVIVAL_CHEST",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1215,7 +1407,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_SURVIVAL_FEET",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1223,7 +1415,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_SURVIVAL_HANDS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1231,7 +1423,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_SURVIVAL_HEAD",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1239,7 +1431,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_SURVIVAL_LEGS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1247,7 +1439,7 @@
         },
         {
           "itemId": "L60_PVE_T1_ARCHER_SURVIVAL_SHOULDERS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1255,7 +1447,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_HOLY_CHEST",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1263,7 +1455,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_HOLY_FEET",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1271,7 +1463,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_HOLY_HANDS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1279,7 +1471,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_HOLY_HEAD",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1287,7 +1479,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_HOLY_LEGS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1295,7 +1487,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_HOLY_SHOULDERS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1303,7 +1495,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_PROTECTION_CHEST",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1311,7 +1503,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_PROTECTION_FEET",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1319,7 +1511,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_PROTECTION_HANDS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1327,7 +1519,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_PROTECTION_HEAD",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1335,7 +1527,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_PROTECTION_LEGS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1343,7 +1535,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_PROTECTION_SHOULDERS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1351,7 +1543,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_RETRIBUTION_CHEST",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1359,7 +1551,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_RETRIBUTION_FEET",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1367,7 +1559,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_RETRIBUTION_HANDS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1375,7 +1567,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_RETRIBUTION_HEAD",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1383,7 +1575,7 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_RETRIBUTION_LEGS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,
@@ -1391,7 +1583,199 @@
         },
         {
           "itemId": "L60_PVE_T1_PALADIN_RETRIBUTION_SHOULDERS",
-          "dropChance": 0.002,
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_WARRIOR_GUARDIAN_AMULET",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_WARRIOR_GUARDIAN_RING",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_WARRIOR_BERSERKER_AMULET",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_WARRIOR_BERSERKER_RING",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_WARRIOR_WARLORD_AMULET",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_WARRIOR_WARLORD_RING",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_MAGE_FIRE_AMULET",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_MAGE_FIRE_RING",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_MAGE_ARCANE_AMULET",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_MAGE_ARCANE_RING",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_MAGE_FROST_AMULET",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_MAGE_FROST_RING",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_ARCHER_MARKSMAN_AMULET",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_ARCHER_MARKSMAN_RING",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_AMULET",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_RING",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_ARCHER_SURVIVAL_AMULET",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_ARCHER_SURVIVAL_RING",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_PALADIN_HOLY_AMULET",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_PALADIN_HOLY_RING",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_PALADIN_PROTECTION_AMULET",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_PALADIN_PROTECTION_RING",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_PALADIN_RETRIBUTION_AMULET",
+          "dropChance": 0.0015,
+          "minQuantity": 1,
+          "maxQuantity": 1,
+          "itemLevelMin": 60,
+          "itemLevelMax": 60
+        },
+        {
+          "itemId": "L60_PVE_T1_PALADIN_RETRIBUTION_RING",
+          "dropChance": 0.0015,
           "minQuantity": 1,
           "maxQuantity": 1,
           "itemLevelMin": 60,

@@ -21,6 +21,7 @@ public static class EquippedSetPieceCounter
 
         return equippedItems
             .DistinctBy(item => item.Id)
+            .DistinctBy(item => item.Definition.Id)
             .Select(item => item.Definition.SetId)
             .Where(setId => !string.IsNullOrWhiteSpace(setId))
             .GroupBy(setId => setId!, StringComparer.Ordinal)

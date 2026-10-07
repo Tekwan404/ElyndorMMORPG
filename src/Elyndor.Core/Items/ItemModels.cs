@@ -246,13 +246,16 @@ public sealed record EquipmentSetBonusDefinition(
     decimal MagicResistanceFlat = 0,
     decimal ArmorPenetrationPercent = 0,
     decimal MagicPenetrationPercent = 0,
-    decimal MaxResourceFlat = 0);
+    decimal MaxResourceFlat = 0,
+    IReadOnlyList<string>? SpecialEffectIds = null,
+    string? Description = null);
 
 public sealed record EquipmentSetDefinition(
     string Id,
     string Name,
     IReadOnlyList<EquipmentSetBonusDefinition> Bonuses,
-    IReadOnlyList<string>? AllowedClassIds = null);
+    IReadOnlyList<string>? AllowedClassIds = null,
+    IReadOnlyList<Elyndor.Core.Combat.SetPassives.SetPassiveDefinition>? SpecialEffects = null);
 
 public sealed record MerchantDefinition(
     string Id,

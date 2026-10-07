@@ -18,6 +18,17 @@ public sealed class SetPassiveCombatSessionTests
         Guid.Parse("82000000-0000-0000-0000-000000000001");
 
     [Fact]
+    public void CapturedContentPassiveUsesTheSameSessionEventPath()
+    {
+        SetPassiveDefinition effect = new("CONTENT_BLOCK", SetPassiveCatalog.AncientMineGuardianSetId, 2,
+            new(CombatEventType.DamageBlocked, SetPassiveActorRole.Target), new(),
+            [new(SetPassiveActionKind.AddShield, "CONTENT_SHIELD", 25, TimeSpan.FromSeconds(3))]);
+        var session = CreateSession(2, [effect]);
+        Assert.Contains(session.AdvanceTo(Now.AddSeconds(1)).Events,
+            e => e.Type == CombatEventType.EffectApplied && e.DefinitionId == "CONTENT_SHIELD");
+    }
+
+    [Fact]
     public void EquippedSetPiecesDriveTheBlockPassiveThroughTheSession()
     {
         CombatSession session = CreateSession(equippedGuardianPieces: 2);
@@ -48,7 +59,7 @@ public sealed class SetPassiveCombatSessionTests
             item => item.DefinitionId == "EFFECT_GUARDIAN_BLOCK_ARMOR");
     }
 
-    private static CombatSession CreateSession(int equippedGuardianPieces)
+    private static CombatSession CreateSession(int equippedGuardianPieces, IReadOnlyList<SetPassiveDefinition>? effects = null)
     {
         CombatStats playerStats = new(
             Level: 20,
@@ -76,6 +87,7 @@ public sealed class SetPassiveCombatSessionTests
             new AutoAttackProfile(TimeSpan.FromHours(1), 0, 0, 0),
             new HashSet<string>(StringComparer.Ordinal),
             CanAutoAttack: false,
+            SetPassives: effects,
             EquippedSetPieces: new Dictionary<string, int>(StringComparer.Ordinal)
             {
                 [SetPassiveCatalog.AncientMineGuardianSetId] = equippedGuardianPieces

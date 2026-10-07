@@ -25,7 +25,7 @@ public sealed class Level60NormalSetContentTests
     };
 
     [Fact]
-    public async Task NormalTierHasTwelveCompleteSixPieceBranchSets()
+    public async Task NormalTierHasTwelveCompleteEightPieceBranchSets()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
@@ -34,7 +34,7 @@ public sealed class Level60NormalSetContentTests
             .Where(item => item.SetId is not null && ExpectedSets.ContainsKey(item.SetId))
             .ToArray();
 
-        Assert.Equal(72, items.Length);
+        Assert.Equal(96, items.Length);
 
         EquipmentSlot[] expectedSlots =
         [
@@ -44,12 +44,14 @@ public sealed class Level60NormalSetContentTests
             EquipmentSlot.Hands,
             EquipmentSlot.Legs,
             EquipmentSlot.Feet,
+            EquipmentSlot.Amulet,
+            EquipmentSlot.Ring1,
         ];
 
         foreach ((string setId, string classId) in ExpectedSets)
         {
             ItemDefinition[] pieces = items.Where(item => item.SetId == setId).ToArray();
-            Assert.Equal(6, pieces.Length);
+            Assert.Equal(8, pieces.Length);
             Assert.Equal(
                 expectedSlots.OrderBy(slot => slot),
                 pieces.Select(item => item.Slot!.Value).OrderBy(slot => slot));
@@ -91,7 +93,7 @@ public sealed class Level60NormalSetContentTests
 
         Assert.Equal("WeightedExclusive", group.SelectionMode);
         Assert.Equal(1, group.Rolls);
-        Assert.Equal(100, group.Entries.Count);
+        Assert.Equal(124, group.Entries.Count);
         Assert.All(group.Entries, entry =>
         {
             Assert.Equal(60, entry.ItemLevelMin);
@@ -103,7 +105,7 @@ public sealed class Level60NormalSetContentTests
             .Select(item => item.Id)
             .OrderBy(id => id, StringComparer.Ordinal)
             .ToArray();
-        Assert.Equal(100, familyIds.Length);
+        Assert.Equal(124, familyIds.Length);
         Assert.Equal(
             familyIds,
             group.Entries.Select(entry => entry.ItemId).OrderBy(id => id, StringComparer.Ordinal).ToArray());

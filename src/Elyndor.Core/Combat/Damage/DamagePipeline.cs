@@ -25,7 +25,9 @@ public sealed record DamageRequest(
     decimal CriticalDamageBonus = 0,
     decimal MagicPenetrationBonus = 0,
     bool CanBlock = true,
-    bool IsUnblockable = false);
+    bool IsUnblockable = false,
+    string? DefinitionId = null,
+    bool IsSpell = false);
 
 public sealed record DamageResult(
     decimal AttemptedAmount,
@@ -107,6 +109,10 @@ public static class DamagePipeline
                 return Empty(request, DamageAvoidance.Dodge, occurredAtUtc);
             }
         }
+
+        if (request.DefinitionId is { } definitionId && request.Source.SetPassiveMultiplier is { } multiplier)
+            request = request with { DamageMultiplier = request.DamageMultiplier
+                * multiplier(definitionId, request.IsSpell, request.Target, occurredAtUtc, false) };
 
         decimal criticalChance = EffectEngine.CalculateStat(
             request.Source,
