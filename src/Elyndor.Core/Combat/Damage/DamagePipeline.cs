@@ -47,7 +47,6 @@ public sealed record DamageResult(
 public static class DamagePipeline
 {
     public const decimal MaximumBlockChancePercent = 60m;
-    public const decimal MaximumBlockDamageReductionPercent = 70m;
     private const decimal BaseMissChance = 0.05m;
     private const decimal BaselineAccuracyPercent = 95m;
     private const decimal LevelPenaltyPerLevel = 0.01m;
@@ -417,13 +416,9 @@ public static class DamagePipeline
             blockValue += (blockValueMax - blockValueMin) * random.NextUnit();
         }
 
-        decimal rolledBlock = decimal.Round(
-            blockValue,
-            0,
-            MidpointRounding.AwayFromZero);
-        decimal maximumBlock = decimal.Floor(
-            incoming * MaximumBlockDamageReductionPercent / 100m);
-        return Math.Min(rolledBlock, maximumBlock);
+        return Math.Min(
+            incoming,
+            decimal.Round(blockValue, 0, MidpointRounding.AwayFromZero));
     }
 
     private static decimal Mitigate(
