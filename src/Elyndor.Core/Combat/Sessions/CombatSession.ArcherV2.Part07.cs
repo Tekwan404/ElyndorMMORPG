@@ -22,7 +22,7 @@ DateTimeOffset now = combatEvent.OccurredAtUtc;
 if (HasArcherEffect(_player.Actor, DeterrenceEffectId, now)
 && TryGetArcherHook(
 "S-4-4",
-"DETERRENCE_COUNTER",
+"DETERRENCE_COUNTERSHOT",
 out ResolvedTalentEventHook counter))
 {
 ApplyOneShotBuff(
@@ -94,7 +94,7 @@ _lastCompanionHitTargetId = targetId;
 _lastCompanionHitAtUtc = now;
 if (TryGetArcherHook(
 "B-1-4",
-"PET_FOCUS",
+"PET_FOCUS_PROC",
 out ResolvedTalentEventHook focus)
 && ArcherTalentCooldownReady(focus.TalentId, now)
 && _random.NextUnit() < focus.SecondaryValue / 100m)
