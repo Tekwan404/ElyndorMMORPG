@@ -1,6 +1,7 @@
 using Elyndor.Core.World;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Combat.ItemEffects;
 using Elyndor.Core.Combat.Encounters;
 using Elyndor.Core.Talents;
 using Elyndor.Core.Monsters;
@@ -33,6 +34,7 @@ public sealed record GameContentPackage(
     IReadOnlyList<EncounterDefinition>? Encounters = null,
     LevelProgressionDefinition? LevelProgression = null,
     IReadOnlyList<ItemDefinition>? Items = null,
+    IReadOnlyList<ItemSpecialEffectDefinition>? ItemSpecialEffects = null,
     IReadOnlyList<LootTableDefinition>? LootTables = null,
     IReadOnlyList<EquipmentSetDefinition>? EquipmentSets = null,
     IReadOnlyList<MerchantDefinition>? Merchants = null,
