@@ -121,5 +121,5 @@ public sealed class Level60NormalSetContentTests
                 "DEAD_REACHES_L60_NORMAL_SET_LOOT",
                 package.Monsters!.Single(monster => monster.Id == eliteId).LootTableId);
         }
-    }}
+    }
 }
