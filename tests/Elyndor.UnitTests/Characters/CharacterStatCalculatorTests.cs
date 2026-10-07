@@ -149,6 +149,31 @@ public sealed class CharacterStatCalculatorTests
     }
 
     [Fact]
+    public void PersistentAttackSpeedBonusIsCappedAtFiftyPercent()
+    {
+        CharacterStatCalculator calculator = new(Formula(), Profiles());
+        CharacterStatInputs inputs = CharacterStatInputs.Empty with
+        {
+            EquipmentDerived = new CharacterEquipmentDerivedModifiers(
+                AttackSpeedPercent: 35),
+            TalentDerived = new TalentStatModifiers(
+                AttackSpeedPercent: 30)
+        };
+
+        CharacterStatCalculation result = calculator.CalculateDetailed(
+            "WARRIOR",
+            level: 3,
+            inputs);
+
+        Assert.Equal(1.50m, result.Stats.AttackSpeed);
+        Assert.Equal(
+            -0.15m,
+            Assert.Single(
+                result.Breakdown["attackSpeed"].Contributions,
+                contribution => contribution.Source == "CAP_ADJUSTMENT").Value);
+    }
+
+    [Fact]
     public void ShieldBlockProfileUsesStrengthAndTalentBonusesButNeverCreatesGlobalBlock()
     {
         CharacterStatCalculator calculator = new(Formula(), Profiles());

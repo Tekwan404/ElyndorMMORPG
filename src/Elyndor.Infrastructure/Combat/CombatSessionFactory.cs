@@ -485,8 +485,10 @@ public sealed class CombatSessionFactory(
         decimal attackSpeedMultiplier,
         CombatWeaponHand hand)
     {
-        decimal baseIntervalSeconds = weapon?.Definition.WeaponBaseAttackIntervalSeconds
-            ?? (decimal)classProfile.Interval.TotalSeconds;
+        decimal baseIntervalSeconds = WeaponAttackIntervalPolicy.ResolveSeconds(
+            weapon?.Definition.WeaponCategory,
+            weapon?.Definition.WeaponBaseAttackIntervalSeconds,
+            (decimal)classProfile.Interval.TotalSeconds);
         return classProfile with
         {
             Interval = TimeSpan.FromSeconds(
