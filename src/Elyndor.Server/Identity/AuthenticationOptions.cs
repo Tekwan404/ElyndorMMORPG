@@ -43,7 +43,7 @@ public sealed class TelegramAuthenticationOptions
 
     public int MaxFutureSkewSeconds { get; init; } = 30;
 
-    public int SessionLifetimeHours { get; init; } = 12;
+    public int SessionLifetimeHours { get; init; } = 168;
 
     public TelegramWebAuthenticationOptions Web { get; init; } = new();
 }
