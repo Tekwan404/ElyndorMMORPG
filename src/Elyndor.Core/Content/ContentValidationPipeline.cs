@@ -1,5 +1,6 @@
 using Elyndor.Core.World;
 using Elyndor.Core.Items;
+using Elyndor.Core.Combat.ItemEffects;
 
 namespace Elyndor.Core.Content;
 
@@ -167,6 +168,7 @@ public sealed class ItemValidator : IContentValidationStage
             context.Errors);
 
         ValidateIconIds(original, context.Errors);
+        ValidateItemSpecialEffects(original, context.Errors);
 
         ValidateSpatialArtifacts(original, context.Errors);
     }
@@ -189,6 +191,118 @@ public sealed class ItemValidator : IContentValidationStage
                     $"items[{index}].iconId",
                     $"Item '{item.Id}' has invalid icon id '{item.IconId}'. "
                     + "Item icon ids must be lowercase, extensionless paths relative to the item asset root."));
+            }
+        }
+    }
+
+    private static void ValidateItemSpecialEffects(
+        GameContentPackage package,
+        List<ContentValidationError> errors)
+    {
+        IReadOnlyList<ItemSpecialEffectDefinition> definitions =
+            package.ItemSpecialEffects ?? [];
+        Dictionary<string, ItemSpecialEffectDefinition> byId =
+            new(StringComparer.Ordinal);
+
+        for (var index = 0; index < definitions.Count; index++)
+        {
+            ItemSpecialEffectDefinition definition = definitions[index];
+            string path = $"itemSpecialEffects[{index}]";
+
+            if (string.IsNullOrWhiteSpace(definition.Id)
+                || !byId.TryAdd(definition.Id, definition))
+            {
+                errors.Add(new(
+                    "INVALID_ITEM_SPECIAL_EFFECT_ID",
+                    $"{path}.id",
+                    "Item special effect id is empty or duplicated."));
+                continue;
+            }
+
+            try
+            {
+                _ = new ItemSpecialEffectEvaluator([definition]);
+            }
+            catch (ArgumentException exception)
+            {
+                errors.Add(new(
+                    "INVALID_ITEM_SPECIAL_EFFECT",
+                    path,
+                    $"Item special effect '{definition.Id}' is invalid: {exception.Message}"));
+            }
+
+            foreach (ItemSpecialEffectActionDefinition action in definition.Actions)
+            {
+                if (action.Kind == ItemSpecialEffectActionKind.ModifyCooldown)
+                {
+                    if (string.IsNullOrWhiteSpace(action.AbilityId)
+                        || !(package.Abilities ?? []).Any(ability =>
+                            string.Equals(
+                                ability.Id,
+                                action.AbilityId,
+                                StringComparison.Ordinal)))
+                    {
+                        errors.Add(new(
+                            "MISSING_ITEM_SPECIAL_EFFECT_ABILITY",
+                            path,
+                            $"Item special effect '{definition.Id}' references missing ability '{action.AbilityId}'."));
+                    }
+                }
+                else if (!string.IsNullOrWhiteSpace(action.AbilityId))
+                {
+                    errors.Add(new(
+                        "INVALID_ITEM_SPECIAL_EFFECT_ABILITY",
+                        path,
+                        $"Item special effect '{definition.Id}' sets abilityId for a non-cooldown action."));
+                }
+            }
+        }
+
+        HashSet<string> referenced = new(StringComparer.Ordinal);
+        IReadOnlyList<ItemDefinition> items = package.Items ?? [];
+        for (var index = 0; index < items.Count; index++)
+        {
+            ItemDefinition item = items[index];
+            if (item.SpecialEffectIds is null)
+                continue;
+
+            string path = $"items[{index}].specialEffectIds";
+            bool invalidShape = item.Type != ItemType.Equipment
+                || item.SpecialEffectIds.Count == 0
+                || item.SpecialEffectIds.Any(string.IsNullOrWhiteSpace)
+                || item.SpecialEffectIds.Distinct(StringComparer.Ordinal).Count()
+                    != item.SpecialEffectIds.Count;
+            if (invalidShape)
+            {
+                errors.Add(new(
+                    "INVALID_ITEM_SPECIAL_EFFECT_REFERENCE",
+                    path,
+                    $"Item '{item.Id}' has invalid special-effect references."));
+                continue;
+            }
+
+            foreach (string effectId in item.SpecialEffectIds)
+            {
+                referenced.Add(effectId);
+                if (!byId.ContainsKey(effectId))
+                {
+                    errors.Add(new(
+                        "MISSING_ITEM_SPECIAL_EFFECT_REFERENCE",
+                        path,
+                        $"Item '{item.Id}' references missing special effect '{effectId}'."));
+                }
+            }
+        }
+
+        for (var index = 0; index < definitions.Count; index++)
+        {
+            ItemSpecialEffectDefinition definition = definitions[index];
+            if (!referenced.Contains(definition.Id))
+            {
+                errors.Add(new(
+                    "UNREFERENCED_ITEM_SPECIAL_EFFECT",
+                    $"itemSpecialEffects[{index}]",
+                    $"Item special effect '{definition.Id}' is not referenced by equipment."));
             }
         }
     }
@@ -234,7 +348,8 @@ public sealed class ItemValidator : IContentValidationStage
                 || item.BlockValueMax != 0
                 || item.PrimaryStatRanges is not null
                 || item.WeaponDamageMin is not null
-                || item.WeaponDamageMax is not null;
+                || item.WeaponDamageMax is not null
+                || item.SpecialEffectIds is { Count: > 0 };
 
             if (item.Stackable
                 || item.MaxStack != 1
