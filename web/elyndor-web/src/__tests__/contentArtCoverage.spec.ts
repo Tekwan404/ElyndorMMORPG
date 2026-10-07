@@ -129,11 +129,19 @@ describe('authored content art', () => {
     }
   })
 
-  it('resolves artwork for all 36 level-60 branch uniques', () => {
-    const uniqueItems = getItems().filter(item => item.rarity === 'Unique' && item.requiredLevel === 60)
+  it('resolves artwork for all 36 level-60 branch unique rewards', () => {
+    const legacyWeaponIds = new Set([
+      'UNIQUE_WARRIOR_BLACKHEART',
+      'UNIQUE_MAGE_EYE_OF_DEAD_STAR',
+      'UNIQUE_ARCHER_LAST_CONSTELLATION',
+    ])
+    const uniqueItems = getItems().filter(item =>
+      item.id.startsWith('UNIQUE_L60_') || legacyWeaponIds.has(item.id),
+    )
     const missingArt = uniqueItems.filter(item => !itemArtUrl(item.iconId)).map(item => item.id)
 
     expect(uniqueItems).toHaveLength(36)
+    expect(uniqueItems.every(item => item.rarity === 'Unique')).toBe(true)
     expect(missingArt).toEqual([])
   })
 
