@@ -5,7 +5,12 @@ public sealed record SetPassiveProcState(
     string PassiveId,
     int EventCounter,
     DateTimeOffset? CooldownUntil,
-    DateTimeOffset? LastProcAt = null);
+    DateTimeOffset? LastProcAt = null,
+    decimal ResourceTotal = 0,
+    DateTimeOffset? WindowStartedAt = null,
+    Guid? LastSourceActorId = null,
+    DateTimeOffset? LastActionAt = null,
+    string? LastActionId = null);
 
 public sealed class SetPassiveRuntimeState
 {

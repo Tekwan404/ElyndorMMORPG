@@ -32,6 +32,8 @@ public sealed class Level60PvpT1SetContentTests
         [EquipmentSlot.Shoulders] = 70,
         [EquipmentSlot.Hands] = 60,
         [EquipmentSlot.Feet] = 60,
+        [EquipmentSlot.Amulet] = 50,
+        [EquipmentSlot.Ring1] = 45,
     };
 
     [Fact]
@@ -44,7 +46,7 @@ public sealed class Level60PvpT1SetContentTests
             .Where(item => item.SetId is not null && ExpectedSets.ContainsKey(item.SetId))
             .ToArray();
 
-        Assert.Equal(72, items.Length);
+        Assert.Equal(96, items.Length);
 
         EquipmentSlot[] expectedSlots =
         [
@@ -54,16 +56,18 @@ public sealed class Level60PvpT1SetContentTests
             EquipmentSlot.Hands,
             EquipmentSlot.Legs,
             EquipmentSlot.Feet,
+            EquipmentSlot.Amulet,
+            EquipmentSlot.Ring1,
         ];
 
         foreach ((string setId, string classId) in ExpectedSets)
         {
             ItemDefinition[] pieces = items.Where(item => item.SetId == setId).ToArray();
-            Assert.Equal(6, pieces.Length);
+            Assert.Equal(8, pieces.Length);
             Assert.Equal(
                 expectedSlots.OrderBy(slot => slot),
                 pieces.Select(item => item.Slot!.Value).OrderBy(slot => slot));
-            Assert.Equal(460, pieces.Sum(item => item.HonorPrice));
+            Assert.Equal(555, pieces.Sum(item => item.HonorPrice));
 
             Assert.All(pieces, item =>
             {
@@ -101,7 +105,7 @@ public sealed class Level60PvpT1SetContentTests
             .Where(item => item.Id.StartsWith("L60_PVP_T1_", StringComparison.Ordinal))
             .ToArray();
 
-        Assert.Equal(72, pvpItems.Length);
+        Assert.Equal(96, pvpItems.Length);
 
         foreach (ItemDefinition pvp in pvpItems)
         {
@@ -183,7 +187,7 @@ public sealed class Level60PvpT1SetContentTests
                     && item.AllowedClassIds[0] == classId)
                 .ToArray();
 
-            Assert.Equal(18, classItems.Length);
+            Assert.Equal(24, classItems.Length);
             Assert.Equal(3, classItems.Select(item => item.SetId).Distinct(StringComparer.Ordinal).Count());
         }
     }

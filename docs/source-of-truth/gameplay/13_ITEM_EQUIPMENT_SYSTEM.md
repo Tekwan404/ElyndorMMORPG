@@ -647,6 +647,15 @@ Legendary и Unique используют те же Item/Effect механики,
 
 38. Item Power
 
+Current set progression is specified in
+[`equipment-set-progression.md`](../../development/equipment-set-progression.md).
+L18 has 4 armor members with 2/4 bonuses; L35/L45 have 6 armor members with 2/4;
+L55 has 6 armor members with 2/4/6. Normal, PvE T1 and PvP T1 at L60 each have
+8 distinct members (six armor, amulet, ring) with bonuses capped at 6 pieces.
+Normal and PvP are stat-only; PvE T1 uses stats/rotation/branch mechanics.
+The maximum bonus never requires all eight members. Duplicate instances of the
+same template count once. Branch orientation does not add a specialization lock.
+
 Не требуется универсальный ItemPower score как источник механики.
 
 Если UI позже покажет Gear Score, он является derived display value.

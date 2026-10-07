@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.37.0",
-  "balanceVersion": "0.30.0",
-  "publishedAtUtc": "2026-10-06T19:20:00+00:00",
+  "contentVersion": "0.42.0",
+  "balanceVersion": "0.32.0",
+  "publishedAtUtc": "2026-10-07T12:00:00+00:00",
   "equipmentSets": [
     {
       "id": "SET_PALADIN_LIVING_HEART",
@@ -12,18 +12,12 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxHpFlat": 60
+          "maxHpFlat": 117.9178
         },
         {
           "requiredPieces": 4,
-          "maxResourceFlat": 15,
-          "magicResistanceFlat": 8
-        },
-        {
-          "requiredPieces": 6,
-          "attackPowerFlat": 8,
-          "spellPowerFlat": 8,
-          "criticalChancePercent": 2
+          "maxResourceFlat": 91.7139,
+          "magicResistanceFlat": 30.5713
         }
       ]
     },
@@ -36,17 +30,13 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxHpFlat": 90
+          "maxHpFlat": 243.5387
         },
         {
           "requiredPieces": 4,
-          "attackPowerFlat": 12,
-          "spellPowerFlat": 12
-        },
-        {
-          "requiredPieces": 6,
-          "criticalChancePercent": 3,
-          "maxResourceFlat": 20
+          "attackPowerFlat": 21.3096,
+          "spellPowerFlat": 21.3096,
+          "criticalChancePercent": 2
         }
       ]
     },
@@ -59,18 +49,13 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxHpFlat": 120,
-          "armorFlat": 40
+          "maxHpFlat": 39.9356,
+          "armorFlat": 20.9662
         },
         {
           "requiredPieces": 4,
-          "attackPowerFlat": 18,
-          "spellPowerFlat": 18
-        },
-        {
-          "requiredPieces": 6,
-          "criticalChancePercent": 3,
-          "maxResourceFlat": 25
+          "attackPowerFlat": 5.591,
+          "spellPowerFlat": 5.591
         }
       ]
     },
@@ -83,20 +68,55 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxHpFlat": 180,
-          "armorFlat": 60
+          "maxHpFlat": 222.2087,
+          "armorFlat": 138.8806
         },
         {
           "requiredPieces": 4,
-          "attackPowerFlat": 24,
-          "spellPowerFlat": 24,
-          "maxResourceFlat": 35
+          "attackPowerFlat": 33.3313,
+          "spellPowerFlat": 33.3313
         },
         {
           "requiredPieces": 6,
-          "criticalChancePercent": 4,
-          "armorPenetrationPercent": 3,
-          "magicPenetrationPercent": 3
+          "specialEffectIds": [
+            "SET_PALADIN_FIRST_GUARD_6PC"
+          ],
+          "description": "Каждая третья class ability даёт +5% Attack Power и Spell Power на 4 с."
+        }
+      ],
+      "specialEffects": [
+        {
+          "id": "SET_PALADIN_FIRST_GUARD_6PC",
+          "setId": "SET_PALADIN_FIRST_GUARD",
+          "requiredPieces": 6,
+          "trigger": {
+            "eventType": "AbilityCompleted",
+            "actorRole": "Source"
+          },
+          "conditions": {
+            "classAbilityOnly": true,
+            "everyNth": 3
+          },
+          "actions": [
+            {
+              "kind": "ApplyEffect",
+              "referenceId": "SET_PALADIN_FIRST_GUARD_6PC_AP",
+              "modifiedStat": "AttackPower",
+              "magnitude": 0.05,
+              "duration": "00:00:04",
+              "modifierMode": "Percent",
+              "displayName": "Сетовый эффект"
+            },
+            {
+              "kind": "ApplyEffect",
+              "referenceId": "SET_PALADIN_FIRST_GUARD_6PC_SP",
+              "modifiedStat": "SpellPower",
+              "magnitude": 0.05,
+              "duration": "00:00:04",
+              "modifierMode": "Percent",
+              "displayName": "Сетовый эффект"
+            }
+          ]
         }
       ]
     }

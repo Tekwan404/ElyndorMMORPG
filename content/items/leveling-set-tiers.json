@@ -1,0 +1,2847 @@
+{
+  "contentVersion": "0.42.0",
+  "balanceVersion": "0.32.0",
+  "publishedAtUtc": "2026-10-07T12:00:00+00:00",
+  "items": [
+    {
+      "id": "L35_ARCHER_RARE_THORN_TRAIL_CHEST",
+      "name": "Куртка Тернового Следа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Тернового Следа».",
+      "version": 1,
+      "setId": "SET_ARCHER_THORN_TRAIL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 190.5448,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_ARCHER_RARE_THORN_TRAIL_CHEST",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_chest"
+    },
+    {
+      "id": "L35_ARCHER_RARE_THORN_TRAIL_FEET",
+      "name": "Сапоги Тернового Следа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Тернового Следа».",
+      "version": 1,
+      "setId": "SET_ARCHER_THORN_TRAIL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 83.6064,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_ARCHER_RARE_THORN_TRAIL_FEET",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_feet"
+    },
+    {
+      "id": "L35_ARCHER_RARE_THORN_TRAIL_HANDS",
+      "name": "Перчатки Тернового Следа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Тернового Следа».",
+      "version": 1,
+      "setId": "SET_ARCHER_THORN_TRAIL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 91.3838,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_ARCHER_RARE_THORN_TRAIL_HANDS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_hands"
+    },
+    {
+      "id": "L35_ARCHER_RARE_THORN_TRAIL_HEAD",
+      "name": "Капюшон Тернового Следа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Тернового Следа».",
+      "version": 1,
+      "setId": "SET_ARCHER_THORN_TRAIL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 120.5488,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_ARCHER_RARE_THORN_TRAIL_HEAD",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_head"
+    },
+    {
+      "id": "L35_ARCHER_RARE_THORN_TRAIL_LEGS",
+      "name": "Поножи Тернового Следа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Тернового Следа».",
+      "version": 1,
+      "setId": "SET_ARCHER_THORN_TRAIL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 167.2128,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_ARCHER_RARE_THORN_TRAIL_LEGS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_legs"
+    },
+    {
+      "id": "L35_ARCHER_RARE_THORN_TRAIL_SHOULDERS",
+      "name": "Наплечники Тернового Следа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Тернового Следа».",
+      "version": 1,
+      "setId": "SET_ARCHER_THORN_TRAIL",
+      "armorFlat": 106.9384,
+      "armorCategory": "LEATHER",
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_ARCHER_RARE_THORN_TRAIL_SHOULDERS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_shoulders"
+    },
+    {
+      "id": "L45_ARCHER_EPIC_MOONLEAF_SHADOW_CHEST",
+      "name": "Куртка Лунного Листа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Тень Лунного Листа».",
+      "version": 1,
+      "setId": "SET_ARCHER_MOONLEAF_SHADOW",
+      "armorCategory": "LEATHER",
+      "armorFlat": 324.9105,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_3G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_ARCHER_EPIC_MOONLEAF_SHADOW_CHEST",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_chest"
+    },
+    {
+      "id": "L45_ARCHER_EPIC_MOONLEAF_SHADOW_FEET",
+      "name": "Сапоги Лунного Листа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Тень Лунного Листа».",
+      "version": 1,
+      "setId": "SET_ARCHER_MOONLEAF_SHADOW",
+      "armorCategory": "LEATHER",
+      "armorFlat": 143.6679,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_ARCHER_EPIC_MOONLEAF_SHADOW_FEET",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_feet"
+    },
+    {
+      "id": "L45_ARCHER_EPIC_MOONLEAF_SHADOW_HANDS",
+      "name": "Перчатки Лунного Листа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Тень Лунного Листа».",
+      "version": 1,
+      "setId": "SET_ARCHER_MOONLEAF_SHADOW",
+      "armorCategory": "LEATHER",
+      "armorFlat": 154.7193,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_ARCHER_EPIC_MOONLEAF_SHADOW_HANDS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_hands"
+    },
+    {
+      "id": "L45_ARCHER_EPIC_MOONLEAF_SHADOW_HEAD",
+      "name": "Капюшон Лунного Листа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Тень Лунного Листа».",
+      "version": 1,
+      "setId": "SET_ARCHER_MOONLEAF_SHADOW",
+      "armorCategory": "LEATHER",
+      "armorFlat": 207.7659,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_ARCHER_EPIC_MOONLEAF_SHADOW_HEAD",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_head"
+    },
+    {
+      "id": "L45_ARCHER_EPIC_MOONLEAF_SHADOW_LEGS",
+      "name": "Поножи Лунного Листа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Тень Лунного Листа».",
+      "version": 1,
+      "setId": "SET_ARCHER_MOONLEAF_SHADOW",
+      "armorCategory": "LEATHER",
+      "armorFlat": 285.1255,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_3G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_ARCHER_EPIC_MOONLEAF_SHADOW_LEGS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_legs"
+    },
+    {
+      "id": "L45_ARCHER_EPIC_MOONLEAF_SHADOW_SHOULDERS",
+      "name": "Наплечники Лунного Листа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Тень Лунного Листа».",
+      "version": 1,
+      "setId": "SET_ARCHER_MOONLEAF_SHADOW",
+      "armorFlat": 181.2426,
+      "armorCategory": "LEATHER",
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_ARCHER_EPIC_MOONLEAF_SHADOW_SHOULDERS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_shoulders"
+    },
+    {
+      "id": "L55_ARCHER_LEGENDARY_BLACK_CONSTELLATION_CHEST",
+      "name": "Куртка Чёрного Созвездия",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Охота Чёрного Созвездия».",
+      "version": 1,
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
+      "armorCategory": "LEATHER",
+      "armorFlat": 526.5164,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_ARCHER_LEGENDARY_BLACK_CONSTELLATION_CHEST",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_black_bastion_archer_marksmanship_chest"
+    },
+    {
+      "id": "L55_ARCHER_LEGENDARY_BLACK_CONSTELLATION_FEET",
+      "name": "Сапоги Чёрного Созвездия",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Охота Чёрного Созвездия».",
+      "version": 1,
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
+      "armorCategory": "LEATHER",
+      "armorFlat": 232.3934,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_ARCHER_LEGENDARY_BLACK_CONSTELLATION_FEET",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_black_bastion_archer_marksmanship_feet"
+    },
+    {
+      "id": "L55_ARCHER_LEGENDARY_BLACK_CONSTELLATION_HANDS",
+      "name": "Перчатки Чёрного Созвездия",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Охота Чёрного Созвездия».",
+      "version": 1,
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
+      "armorCategory": "LEATHER",
+      "armorFlat": 254.1803,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_ARCHER_LEGENDARY_BLACK_CONSTELLATION_HANDS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_black_bastion_archer_marksmanship_hands"
+    },
+    {
+      "id": "L55_ARCHER_LEGENDARY_BLACK_CONSTELLATION_HEAD",
+      "name": "Капюшон Чёрного Созвездия",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Охота Чёрного Созвездия».",
+      "version": 1,
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
+      "armorCategory": "LEATHER",
+      "armorFlat": 337.6967,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_ARCHER_LEGENDARY_BLACK_CONSTELLATION_HEAD",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_black_bastion_archer_marksmanship_head"
+    },
+    {
+      "id": "L55_ARCHER_LEGENDARY_BLACK_CONSTELLATION_LEGS",
+      "name": "Поножи Чёрного Созвездия",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Охота Чёрного Созвездия».",
+      "version": 1,
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
+      "armorCategory": "LEATHER",
+      "armorFlat": 462.9713,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_ARCHER_LEGENDARY_BLACK_CONSTELLATION_LEGS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_black_bastion_archer_marksmanship_legs"
+    },
+    {
+      "id": "L55_ARCHER_LEGENDARY_BLACK_CONSTELLATION_SHOULDERS",
+      "name": "Наплечники Чёрного Созвездия",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Охота Чёрного Созвездия».",
+      "version": 1,
+      "setId": "SET_ARCHER_BLACK_CONSTELLATION",
+      "armorCategory": "LEATHER",
+      "armorFlat": 294.123,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_ARCHER_LEGENDARY_BLACK_CONSTELLATION_SHOULDERS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "iconId": "sets/set_black_bastion_archer_marksmanship_shoulders"
+    },
+    {
+      "id": "L35_MAGE_RARE_THREE_ELEMENTS_CHEST",
+      "iconId": "sets/mage_rare_three_elements_chest",
+      "name": "Мантия Трёх Стихий",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Сердце Трёх Стихий».",
+      "version": 1,
+      "setId": "SET_MAGE_THREE_ELEMENTS",
+      "armorCategory": "CLOTH",
+      "armorFlat": 132.2148,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_MAGE_RARE_THREE_ELEMENTS_CHEST",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L35_MAGE_RARE_THREE_ELEMENTS_FEET",
+      "iconId": "sets/mage_rare_three_elements_feet",
+      "name": "Сапоги Трёх Стихий",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Сердце Трёх Стихий».",
+      "version": 1,
+      "setId": "SET_MAGE_THREE_ELEMENTS",
+      "armorCategory": "CLOTH",
+      "armorFlat": 56.3857,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_MAGE_RARE_THREE_ELEMENTS_FEET",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L35_MAGE_RARE_THREE_ELEMENTS_HANDS",
+      "iconId": "sets/mage_rare_three_elements_hands",
+      "name": "Перчатки Трёх Стихий",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Сердце Трёх Стихий».",
+      "version": 1,
+      "setId": "SET_MAGE_THREE_ELEMENTS",
+      "armorCategory": "CLOTH",
+      "armorFlat": 62.2187,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_MAGE_RARE_THREE_ELEMENTS_HANDS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L35_MAGE_RARE_THREE_ELEMENTS_HEAD",
+      "iconId": "sets/mage_rare_three_elements_head",
+      "name": "Капюшон Трёх Стихий",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Сердце Трёх Стихий».",
+      "version": 1,
+      "setId": "SET_MAGE_THREE_ELEMENTS",
+      "armorCategory": "CLOTH",
+      "armorFlat": 85.5507,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_MAGE_RARE_THREE_ELEMENTS_HEAD",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L35_MAGE_RARE_THREE_ELEMENTS_LEGS",
+      "iconId": "sets/mage_rare_three_elements_legs",
+      "name": "Поножи Трёх Стихий",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Сердце Трёх Стихий».",
+      "version": 1,
+      "setId": "SET_MAGE_THREE_ELEMENTS",
+      "armorCategory": "CLOTH",
+      "armorFlat": 116.6601,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_MAGE_RARE_THREE_ELEMENTS_LEGS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L35_MAGE_RARE_THREE_ELEMENTS_SHOULDERS",
+      "iconId": "sets/mage_rare_three_elements_shoulders",
+      "name": "Наплечники Трёх Стихий",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Сердце Трёх Стихий».",
+      "version": 1,
+      "setId": "SET_MAGE_THREE_ELEMENTS",
+      "armorFlat": 75.8291,
+      "armorCategory": "CLOTH",
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_MAGE_RARE_THREE_ELEMENTS_SHOULDERS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L45_MAGE_EPIC_SHATTERED_STAR_CHEST",
+      "iconId": "sets/mage_epic_shattered_star_chest",
+      "name": "Мантия Расколотой Звезды",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Одеяния Расколотой Звезды».",
+      "version": 1,
+      "setId": "SET_MAGE_SHATTERED_STAR",
+      "armorCategory": "CLOTH",
+      "armorFlat": 227.6584,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_3G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_MAGE_EPIC_SHATTERED_STAR_CHEST",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L45_MAGE_EPIC_SHATTERED_STAR_FEET",
+      "iconId": "sets/mage_epic_shattered_star_feet",
+      "name": "Сапоги Расколотой Звезды",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Одеяния Расколотой Звезды».",
+      "version": 1,
+      "setId": "SET_MAGE_SHATTERED_STAR",
+      "armorCategory": "CLOTH",
+      "armorFlat": 99.4624,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_MAGE_EPIC_SHATTERED_STAR_FEET",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L45_MAGE_EPIC_SHATTERED_STAR_HANDS",
+      "iconId": "sets/mage_epic_shattered_star_hands",
+      "name": "Перчатки Расколотой Звезды",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Одеяния Расколотой Звезды».",
+      "version": 1,
+      "setId": "SET_MAGE_SHATTERED_STAR",
+      "armorCategory": "CLOTH",
+      "armorFlat": 110.5138,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_MAGE_EPIC_SHATTERED_STAR_HANDS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L45_MAGE_EPIC_SHATTERED_STAR_HEAD",
+      "iconId": "sets/mage_epic_shattered_star_head",
+      "name": "Капюшон Расколотой Звезды",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Одеяния Расколотой Звезды».",
+      "version": 1,
+      "setId": "SET_MAGE_SHATTERED_STAR",
+      "armorCategory": "CLOTH",
+      "armorFlat": 145.8782,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_MAGE_EPIC_SHATTERED_STAR_HEAD",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L45_MAGE_EPIC_SHATTERED_STAR_LEGS",
+      "iconId": "sets/mage_epic_shattered_star_legs",
+      "name": "Поножи Расколотой Звезды",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Одеяния Расколотой Звезды».",
+      "version": 1,
+      "setId": "SET_MAGE_SHATTERED_STAR",
+      "armorCategory": "CLOTH",
+      "armorFlat": 198.9248,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_3G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_MAGE_EPIC_SHATTERED_STAR_LEGS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L45_MAGE_EPIC_SHATTERED_STAR_SHOULDERS",
+      "iconId": "sets/mage_epic_shattered_star_shoulders",
+      "name": "Наплечники Расколотой Звезды",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Одеяния Расколотой Звезды».",
+      "version": 1,
+      "setId": "SET_MAGE_SHATTERED_STAR",
+      "armorFlat": 128.196,
+      "armorCategory": "CLOTH",
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_MAGE_EPIC_SHATTERED_STAR_SHOULDERS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L55_MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST",
+      "iconId": "sets/mage_legendary_eclipsed_oracle_chest",
+      "name": "Мантия Затмённого Оракула",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Одеяния Затмённого Оракула».",
+      "version": 1,
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 370.377,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_MAGE_LEGENDARY_ECLIPSED_ORACLE_CHEST",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L55_MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET",
+      "iconId": "sets/black-bastion/eclipsed_oracle/eclipsed_oracle_boots",
+      "name": "Сапоги Затмённого Оракула",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Одеяния Затмённого Оракула».",
+      "version": 1,
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 163.4016,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_MAGE_LEGENDARY_ECLIPSED_ORACLE_FEET",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L55_MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS",
+      "iconId": "sets/mage_legendary_eclipsed_oracle_hands",
+      "name": "Перчатки Затмённого Оракула",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Одеяния Затмённого Оракула».",
+      "version": 1,
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 177.9262,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_MAGE_LEGENDARY_ECLIPSED_ORACLE_HANDS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L55_MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD",
+      "iconId": "sets/mage_legendary_eclipsed_oracle_head",
+      "name": "Капюшон Затмённого Оракула",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Одеяния Затмённого Оракула».",
+      "version": 1,
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 236.0246,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_MAGE_LEGENDARY_ECLIPSED_ORACLE_HEAD",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L55_MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS",
+      "iconId": "sets/mage_legendary_eclipsed_oracle_legs",
+      "name": "Поножи Затмённого Оракула",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Одеяния Затмённого Оракула».",
+      "version": 1,
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 324.9877,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_MAGE_LEGENDARY_ECLIPSED_ORACLE_LEGS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L55_MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS",
+      "iconId": "sets/mage_legendary_eclipsed_oracle_shoulders",
+      "name": "Наплечники Затмённого Оракула",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Одеяния Затмённого Оракула».",
+      "version": 1,
+      "setId": "SET_MAGE_ECLIPSED_ORACLE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 206.9754,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_MAGE_LEGENDARY_ECLIPSED_ORACLE_SHOULDERS",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L35_PALADIN_RARE_LIVING_HEART_CHEST",
+      "iconId": "sets/heart-of-blighted-grove/living_heart/living_heart_chest",
+      "name": "Нагрудник «Оплот Живого Сердца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Живого Сердца» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_LIVING_HEART",
+      "armorCategory": "HEAVY",
+      "armorFlat": 283.8729,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_PALADIN_RARE_LIVING_HEART_CHEST",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L35_PALADIN_RARE_LIVING_HEART_FEET",
+      "iconId": "sets/heart-of-blighted-grove/living_heart/living_heart_boots",
+      "name": "Сапоги «Оплот Живого Сердца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Живого Сердца» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_LIVING_HEART",
+      "armorCategory": "HEAVY",
+      "armorFlat": 126.3818,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_PALADIN_RARE_LIVING_HEART_FEET",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L35_PALADIN_RARE_LIVING_HEART_HANDS",
+      "iconId": "sets/heart-of-blighted-grove/living_heart/living_heart_gloves",
+      "name": "Рукавицы «Оплот Живого Сердца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Живого Сердца» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_LIVING_HEART",
+      "armorCategory": "HEAVY",
+      "armorFlat": 136.1035,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_PALADIN_RARE_LIVING_HEART_HANDS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L35_PALADIN_RARE_LIVING_HEART_HEAD",
+      "iconId": "sets/heart-of-blighted-grove/living_heart/living_heart_helmet",
+      "name": "Шлем «Оплот Живого Сердца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Живого Сердца» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_LIVING_HEART",
+      "armorCategory": "HEAVY",
+      "armorFlat": 180.8232,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_PALADIN_RARE_LIVING_HEART_HEAD",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L35_PALADIN_RARE_LIVING_HEART_LEGS",
+      "iconId": "sets/heart-of-blighted-grove/living_heart/living_heart_legs",
+      "name": "Поножи «Оплот Живого Сердца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Живого Сердца» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_LIVING_HEART",
+      "armorCategory": "HEAVY",
+      "armorFlat": 248.8749,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_PALADIN_RARE_LIVING_HEART_LEGS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L35_PALADIN_RARE_LIVING_HEART_SHOULDERS",
+      "iconId": "sets/heart-of-blighted-grove/living_heart/living_heart_shoulders",
+      "name": "Наплечники «Оплот Живого Сердца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Живого Сердца» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_LIVING_HEART",
+      "armorFlat": 157.4911,
+      "armorCategory": "HEAVY",
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_PALADIN_RARE_LIVING_HEART_SHOULDERS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L45_PALADIN_EPIC_GROVE_DAWN_CHEST",
+      "iconId": "sets/heart-of-blighted-grove/grove_dawn/grove_dawn_chest",
+      "name": "Нагрудник «Доспех Рассвета Чащи»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспех Рассвета Чащи» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_GROVE_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 481.84,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_PALADIN_EPIC_GROVE_DAWN_CHEST",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L45_PALADIN_EPIC_GROVE_DAWN_FEET",
+      "iconId": "sets/heart-of-blighted-grove/grove_dawn/grove_dawn_boots",
+      "name": "Сапоги «Доспех Рассвета Чащи»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспех Рассвета Чащи» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_GROVE_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 212.1864,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_PALADIN_EPIC_GROVE_DAWN_FEET",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L45_PALADIN_EPIC_GROVE_DAWN_HANDS",
+      "iconId": "sets/heart-of-blighted-grove/grove_dawn/grove_dawn_gloves",
+      "name": "Рукавицы «Доспех Рассвета Чащи»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспех Рассвета Чащи» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_GROVE_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 229.8686,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_PALADIN_EPIC_GROVE_DAWN_HANDS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L45_PALADIN_EPIC_GROVE_DAWN_HEAD",
+      "iconId": "sets/heart-of-blighted-grove/grove_dawn/grove_dawn_helmet",
+      "name": "Шлем «Доспех Рассвета Чащи»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспех Рассвета Чащи» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_GROVE_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 307.2283,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_PALADIN_EPIC_GROVE_DAWN_HEAD",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L45_PALADIN_EPIC_GROVE_DAWN_LEGS",
+      "iconId": "sets/heart-of-blighted-grove/grove_dawn/grove_dawn_legs",
+      "name": "Поножи «Доспех Рассвета Чащи»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспех Рассвета Чащи» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_GROVE_DAWN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 424.3729,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_PALADIN_EPIC_GROVE_DAWN_LEGS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L45_PALADIN_EPIC_GROVE_DAWN_SHOULDERS",
+      "iconId": "sets/heart-of-blighted-grove/grove_dawn/grove_dawn_shoulders",
+      "name": "Наплечники «Доспех Рассвета Чащи»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспех Рассвета Чащи» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_GROVE_DAWN",
+      "armorFlat": 269.6536,
+      "armorCategory": "HEAVY",
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_PALADIN_EPIC_GROVE_DAWN_SHOULDERS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L55_PALADIN_LEGENDARY_FIRST_GUARD_CHEST",
+      "iconId": "sets/black-bastion/first_guardian/first_guardian_chest",
+      "name": "Нагрудник «Оплот Первого Стража»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Первого Стража» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 787.959,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_PALADIN_LEGENDARY_FIRST_GUARD_CHEST",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L55_PALADIN_LEGENDARY_FIRST_GUARD_FEET",
+      "iconId": "sets/black-bastion/first_guardian/first_guardian_boots",
+      "name": "Сапоги «Оплот Первого Стража»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Первого Стража» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 346.7746,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_PALADIN_LEGENDARY_FIRST_GUARD_FEET",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L55_PALADIN_LEGENDARY_FIRST_GUARD_HANDS",
+      "iconId": "sets/black-bastion/first_guardian/first_guardian_gloves",
+      "name": "Рукавицы «Оплот Первого Стража»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Первого Стража» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 377.6393,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_PALADIN_LEGENDARY_FIRST_GUARD_HANDS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L55_PALADIN_LEGENDARY_FIRST_GUARD_HEAD",
+      "iconId": "sets/black-bastion/first_guardian/first_guardian_helmet",
+      "name": "Шлем «Оплот Первого Стража»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Первого Стража» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 504.7295,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_PALADIN_LEGENDARY_FIRST_GUARD_HEAD",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L55_PALADIN_LEGENDARY_FIRST_GUARD_LEGS",
+      "iconId": "sets/black-bastion/first_guardian/first_guardian_legs",
+      "name": "Поножи «Оплот Первого Стража»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Первого Стража» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 693.5492,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_PALADIN_LEGENDARY_FIRST_GUARD_LEGS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L55_PALADIN_LEGENDARY_FIRST_GUARD_SHOULDERS",
+      "iconId": "sets/black-bastion/first_guardian/first_guardian_shoulders",
+      "name": "Наплечники «Оплот Первого Стража»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Оплот Первого Стража» для Паладина. Универсальная тяжёлая броня без ограничения по ветке талантов.",
+      "version": 1,
+      "setId": "SET_PALADIN_FIRST_GUARD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 441.1844,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_PALADIN_LEGENDARY_FIRST_GUARD_SHOULDERS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L35_WARRIOR_RARE_GREY_FANG_CHEST",
+      "iconId": "sets/warrior_rare_grey_fang_chest",
+      "name": "Нагрудник Серого Волка",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клык Серого Волка».",
+      "version": 1,
+      "setId": "SET_WARRIOR_GREY_FANG",
+      "armorCategory": "HEAVY",
+      "armorFlat": 283.8729,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_WARRIOR_RARE_GREY_FANG_CHEST",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L35_WARRIOR_RARE_GREY_FANG_FEET",
+      "iconId": "sets/warrior_rare_grey_fang_feet",
+      "name": "Сапоги Серого Волка",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клык Серого Волка».",
+      "version": 1,
+      "setId": "SET_WARRIOR_GREY_FANG",
+      "armorCategory": "HEAVY",
+      "armorFlat": 126.3818,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_WARRIOR_RARE_GREY_FANG_FEET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L35_WARRIOR_RARE_GREY_FANG_HANDS",
+      "iconId": "sets/warrior_rare_grey_fang_hands",
+      "name": "Рукавицы Серого Волка",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клык Серого Волка».",
+      "version": 1,
+      "setId": "SET_WARRIOR_GREY_FANG",
+      "armorCategory": "HEAVY",
+      "armorFlat": 136.1035,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_WARRIOR_RARE_GREY_FANG_HANDS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L35_WARRIOR_RARE_GREY_FANG_HEAD",
+      "iconId": "sets/warrior_rare_grey_fang_head",
+      "name": "Шлем Серого Волка",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клык Серого Волка».",
+      "version": 1,
+      "setId": "SET_WARRIOR_GREY_FANG",
+      "armorCategory": "HEAVY",
+      "armorFlat": 180.8232,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_WARRIOR_RARE_GREY_FANG_HEAD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L35_WARRIOR_RARE_GREY_FANG_LEGS",
+      "iconId": "sets/warrior_rare_grey_fang_legs",
+      "name": "Поножи Серого Волка",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клык Серого Волка».",
+      "version": 1,
+      "setId": "SET_WARRIOR_GREY_FANG",
+      "armorCategory": "HEAVY",
+      "armorFlat": 248.8749,
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_WARRIOR_RARE_GREY_FANG_LEGS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L35_WARRIOR_RARE_GREY_FANG_SHOULDERS",
+      "iconId": "sets/warrior_rare_grey_fang_shoulders",
+      "name": "Наплечники Серого Волка",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Rare",
+      "requiredLevel": 35,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клык Серого Волка».",
+      "version": 1,
+      "setId": "SET_WARRIOR_GREY_FANG",
+      "armorFlat": 157.4911,
+      "armorCategory": "HEAVY",
+      "itemLevelMin": 35,
+      "itemLevelMax": 44,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_35_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.04,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L35_WARRIOR_RARE_GREY_FANG_SHOULDERS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L45_WARRIOR_EPIC_CRIMSON_FURY_CHEST",
+      "iconId": "sets/warrior_epic_crimson_fury_chest",
+      "name": "Нагрудник Багровой Ярости",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Багровой Ярости».",
+      "version": 1,
+      "setId": "SET_WARRIOR_CRIMSON_FURY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 481.84,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_WARRIOR_EPIC_CRIMSON_FURY_CHEST",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L45_WARRIOR_EPIC_CRIMSON_FURY_FEET",
+      "iconId": "sets/warrior_epic_crimson_fury_feet",
+      "name": "Сапоги Багровой Ярости",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Багровой Ярости».",
+      "version": 1,
+      "setId": "SET_WARRIOR_CRIMSON_FURY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 212.1864,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_WARRIOR_EPIC_CRIMSON_FURY_FEET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L45_WARRIOR_EPIC_CRIMSON_FURY_HANDS",
+      "iconId": "sets/warrior_epic_crimson_fury_hands",
+      "name": "Рукавицы Багровой Ярости",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Багровой Ярости».",
+      "version": 1,
+      "setId": "SET_WARRIOR_CRIMSON_FURY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 229.8686,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_WARRIOR_EPIC_CRIMSON_FURY_HANDS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L45_WARRIOR_EPIC_CRIMSON_FURY_HEAD",
+      "iconId": "sets/warrior_epic_crimson_fury_head",
+      "name": "Шлем Багровой Ярости",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Багровой Ярости».",
+      "version": 1,
+      "setId": "SET_WARRIOR_CRIMSON_FURY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 307.2283,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_WARRIOR_EPIC_CRIMSON_FURY_HEAD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L45_WARRIOR_EPIC_CRIMSON_FURY_LEGS",
+      "iconId": "sets/warrior_epic_crimson_fury_legs",
+      "name": "Поножи Багровой Ярости",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Багровой Ярости».",
+      "version": 1,
+      "setId": "SET_WARRIOR_CRIMSON_FURY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 424.3729,
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_WARRIOR_EPIC_CRIMSON_FURY_LEGS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L45_WARRIOR_EPIC_CRIMSON_FURY_SHOULDERS",
+      "iconId": "sets/warrior_epic_crimson_fury_shoulders",
+      "name": "Наплечники Багровой Ярости",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 45,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Клятва Багровой Ярости».",
+      "version": 1,
+      "setId": "SET_WARRIOR_CRIMSON_FURY",
+      "armorFlat": 269.6536,
+      "armorCategory": "HEAVY",
+      "itemLevelMin": 45,
+      "itemLevelMax": 54,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_45_2G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L45_WARRIOR_EPIC_CRIMSON_FURY_SHOULDERS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_CHEST",
+      "iconId": "sets/warrior_legendary_black_bastion_chest",
+      "name": "Нагрудник Чёрного Бастиона",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
+      "version": 1,
+      "setId": "SET_WARRIOR_BLACK_BASTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 787.959,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_CHEST",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_FEET",
+      "iconId": "sets/warrior_legendary_black_bastion_feet",
+      "name": "Сапоги Чёрного Бастиона",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
+      "version": 1,
+      "setId": "SET_WARRIOR_BLACK_BASTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 346.7746,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_FEET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_HANDS",
+      "iconId": "sets/warrior_legendary_black_bastion_hands",
+      "name": "Рукавицы Чёрного Бастиона",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
+      "version": 1,
+      "setId": "SET_WARRIOR_BLACK_BASTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 377.6393,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_HANDS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_HEAD",
+      "iconId": "sets/warrior_legendary_black_bastion_head",
+      "name": "Шлем Чёрного Бастиона",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
+      "version": 1,
+      "setId": "SET_WARRIOR_BLACK_BASTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 504.7295,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_HEAD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_LEGS",
+      "iconId": "sets/warrior_legendary_black_bastion_legs",
+      "name": "Поножи Чёрного Бастиона",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
+      "version": 1,
+      "setId": "SET_WARRIOR_BLACK_BASTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 693.5492,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_LEGS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_SHOULDERS",
+      "iconId": "sets/warrior_legendary_black_bastion_shoulders",
+      "name": "Наплечники Чёрного Бастиона",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 55,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Часть комплекта «Доспехи Чёрного Бастиона».",
+      "version": 1,
+      "setId": "SET_WARRIOR_BLACK_BASTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 441.1844,
+      "itemLevelMin": 55,
+      "itemLevelMax": 59,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVELING_SET_55_3G",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "itemFamilyId": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_SHOULDERS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    }
+  ]
+}

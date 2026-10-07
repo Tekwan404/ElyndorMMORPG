@@ -18,6 +18,8 @@ public sealed class SetPassiveRuntime
     public IReadOnlyList<SetPassiveActionInvocation> Evaluate(
         CombatEvent combatEvent,
         IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> equippedSetPieceCounts,
-        ProcGuard? guard = null) =>
-        _evaluator.Evaluate(combatEvent, equippedSetPieceCounts, _state, guard);
+        ProcGuard? guard = null,
+        Func<SetPassiveDefinition, CombatEvent, Guid?>? actorResolver = null,
+        Func<SetPassiveDefinition, Guid, CombatEvent, bool>? filter = null) =>
+        _evaluator.Evaluate(combatEvent, equippedSetPieceCounts, _state, guard, actorResolver, filter);
 }

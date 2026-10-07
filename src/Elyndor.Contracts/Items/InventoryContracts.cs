@@ -90,7 +90,8 @@ public sealed record InventoryItemResponse(
     decimal BlockValueMin = 0,
     decimal BlockValueMax = 0,
     decimal? WeaponDamageMin = null,
-    decimal? WeaponDamageMax = null)
+    decimal? WeaponDamageMax = null,
+    EquipmentSetSummaryResponse? SetSummary = null)
 {
     // RequiredLevel is an equip gate. ItemLevel is a separate power/progression value.
     // Generated instances already own their authoritative resolved ItemLevel, so expose it
@@ -340,3 +341,6 @@ public sealed record SalvageItemRequest(
 public sealed record ItemSalvageResponse(
     ItemSalvageRewardResponse Reward,
     ItemEnhancementSalvageRefundResponse EnhancementRefund);
+
+public sealed record EquipmentSetBonusResponse(int RequiredPieces, string Description);
+public sealed record EquipmentSetSummaryResponse(string Name, int TotalPieces, IReadOnlyList<EquipmentSetBonusResponse> Bonuses);

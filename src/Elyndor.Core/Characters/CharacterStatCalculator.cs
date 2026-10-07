@@ -38,6 +38,7 @@ public sealed class CharacterStatCalculator(
     public const decimal AgilityDiminishingReturnsRating = 200m;
     public const decimal CriticalChanceCap = 60m;
     public const decimal DodgeCap = 35m;
+    public const decimal AttackSpeedPercentCap = 50m;
 
     public CharacterStats Calculate(
         string classId,
@@ -112,8 +113,14 @@ public sealed class CharacterStatCalculator(
                 + talent.AccuracyPercent,
             0,
             100);
-        decimal attackSpeedPercent = talent.AttackSpeedPercent + equipmentDerived.AttackSpeedPercent;
+        decimal rawAttackSpeedPercent =
+            talent.AttackSpeedPercent + equipmentDerived.AttackSpeedPercent;
+        decimal attackSpeedPercent = decimal.Min(
+            AttackSpeedPercentCap,
+            rawAttackSpeedPercent);
         decimal attackSpeed = ApplyPercent(formula.AttackSpeedBase, attackSpeedPercent);
+        decimal attackSpeedCapAdjustment =
+            formula.AttackSpeedBase * (attackSpeedPercent - rawAttackSpeedPercent) / 100m;
         decimal armor = ApplyPercent(armorBeforeTalent, talent.ArmorPercent);
         decimal magicResistance = ApplyPercent(magicResistanceBeforeTalent, talent.MagicResistancePercent);
         decimal armorPenetration = equipmentDerived.ArmorPenetrationPercent
@@ -215,7 +222,8 @@ public sealed class CharacterStatCalculator(
             ["attackSpeed"] = Breakdown(stats.AttackSpeed,
                 ("FORMULA_BASE", formula.AttackSpeedBase),
                 ("EQUIPMENT_BONUS", formula.AttackSpeedBase * equipmentDerived.AttackSpeedPercent / 100m),
-                ("TALENT_BONUS", formula.AttackSpeedBase * talent.AttackSpeedPercent / 100m)),
+                ("TALENT_BONUS", formula.AttackSpeedBase * talent.AttackSpeedPercent / 100m),
+                ("CAP_ADJUSTMENT", attackSpeedCapAdjustment)),
             ["armor"] = Breakdown(stats.Armor,
                 ("EQUIPMENT_BONUS", equipmentDerived.ArmorFlat),
                 ("TALENT_BONUS", stats.Armor - armorBeforeTalent)),

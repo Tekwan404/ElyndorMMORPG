@@ -243,7 +243,8 @@ public sealed class CombatSessionFactory(
             GenderId: character.GenderId,
             SkinId: character.ActiveSkinId,
             EquipmentArmor: derived.Equipment.ArmorFlat,
-            MainHandWeaponCategory: derived.Equipment.MainHandWeaponCategory);
+            MainHandWeaponCategory: derived.Equipment.MainHandWeaponCategory,
+            SetPassives: EquipmentSetEffectResolver.Resolve(contentSnapshot.Package.EquipmentSets ?? []));
         CombatParticipantDefinition? companion =
             derived.ActiveCompanionProfile is null
                 ? null
@@ -454,7 +455,8 @@ public sealed class CombatSessionFactory(
             GenderId: character.GenderId,
             SkinId: character.ActiveSkinId,
             EquipmentArmor: derived.Equipment.ArmorFlat,
-            MainHandWeaponCategory: derived.Equipment.MainHandWeaponCategory);
+            MainHandWeaponCategory: derived.Equipment.MainHandWeaponCategory,
+            SetPassives: EquipmentSetEffectResolver.Resolve(contentSnapshot.Package.EquipmentSets ?? []));
         IReadOnlyDictionary<string, DateTimeOffset> cooldowns =
             isTraining || cooldownStore is null
                 ? new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal)
@@ -485,8 +487,10 @@ public sealed class CombatSessionFactory(
         decimal attackSpeedMultiplier,
         CombatWeaponHand hand)
     {
-        decimal baseIntervalSeconds = weapon?.Definition.WeaponBaseAttackIntervalSeconds
-            ?? (decimal)classProfile.Interval.TotalSeconds;
+        decimal baseIntervalSeconds = WeaponAttackIntervalPolicy.ResolveSeconds(
+            weapon?.Definition.WeaponCategory,
+            weapon?.Definition.WeaponBaseAttackIntervalSeconds,
+            (decimal)classProfile.Interval.TotalSeconds);
         return classProfile with
         {
             Interval = TimeSpan.FromSeconds(

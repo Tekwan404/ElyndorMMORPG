@@ -34,7 +34,7 @@ public sealed class Level60PveT1SetContentTests
             .Where(item => item.SetId is not null && ExpectedSets.ContainsKey(item.SetId))
             .ToArray();
 
-        Assert.Equal(72, items.Length);
+        Assert.Equal(96, items.Length);
 
         EquipmentSlot[] expectedSlots =
         [
@@ -44,12 +44,14 @@ public sealed class Level60PveT1SetContentTests
             EquipmentSlot.Hands,
             EquipmentSlot.Legs,
             EquipmentSlot.Feet,
+            EquipmentSlot.Amulet,
+            EquipmentSlot.Ring1,
         ];
 
         foreach ((string setId, string classId) in ExpectedSets)
         {
             ItemDefinition[] pieces = items.Where(item => item.SetId == setId).ToArray();
-            Assert.Equal(6, pieces.Length);
+            Assert.Equal(8, pieces.Length);
             Assert.Equal(
                 expectedSlots.OrderBy(slot => slot),
                 pieces.Select(item => item.Slot!.Value).OrderBy(slot => slot));
@@ -116,14 +118,15 @@ public sealed class Level60PveT1SetContentTests
             .Where(item => item.Id.StartsWith("L60_PVE_T1_", StringComparison.Ordinal))
             .ToArray();
 
-        Assert.Equal(72, t1Items.Length);
+        Assert.Equal(96, t1Items.Length);
 
         foreach (ItemDefinition t1 in t1Items)
         {
             string normalId = t1.Id.Replace("L60_PVE_T1_", "L60_NORMAL_", StringComparison.Ordinal);
             ItemDefinition normal = Assert.Single(package.Items!, item => item.Id == normalId);
 
-            Assert.True(t1.ArmorFlat > normal.ArmorFlat, t1.Id);
+            Assert.True(ItemInstanceGenerator.CalculateTemplateMaxPower(t1, package.Itemization!, 60)
+                > ItemInstanceGenerator.CalculateTemplateMaxPower(normal, package.Itemization!, 60), t1.Id);
             Assert.Equal(ItemRarity.Epic, normal.Rarity);
             Assert.Equal(ItemRarity.Legendary, t1.Rarity);
         }
@@ -154,10 +157,10 @@ public sealed class Level60PveT1SetContentTests
             .Where(entry => entry.ItemId.StartsWith("L60_PVE_T1_", StringComparison.Ordinal))
             .ToArray();
 
-        Assert.Equal(72, t1Entries.Length);
+        Assert.Equal(96, t1Entries.Length);
         Assert.All(t1Entries, entry =>
         {
-            Assert.Equal(0.002m, entry.DropChance);
+            Assert.Equal(0.0015m, entry.DropChance);
             Assert.Equal(1, entry.MinQuantity);
             Assert.Equal(1, entry.MaxQuantity);
             Assert.Equal(60, entry.ItemLevelMin);
