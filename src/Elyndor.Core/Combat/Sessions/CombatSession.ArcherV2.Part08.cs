@@ -69,7 +69,7 @@ private void SyncTrueshotAura(DateTimeOffset now)
 {
 if (!TryGetArcherHook(
 "M-6-1",
-"TRUESHOT_AURA_GROUP",
+"TRUESHOT_AURA",
 out ResolvedTalentEventHook aura))
 {
 return;
