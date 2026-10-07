@@ -69,7 +69,6 @@
           "STRENGTH",
           "STAMINA",
           "CRITICAL_CHANCE",
-          "CRITICAL_DAMAGE",
           "ATTACK_SPEED",
           "ARMOR_PENETRATION",
           "ACCURACY",
@@ -344,6 +343,19 @@
           "MAGIC_PENETRATION",
           "MAX_RESOURCE",
           "MAGIC_RESISTANCE"
+        ]
+      },
+      {
+        "id": "WARRIOR_UNIQUE_WEAPON",
+        "statIds": [
+          "STRENGTH",
+          "STAMINA",
+          "CRITICAL_CHANCE",
+          "CRITICAL_DAMAGE",
+          "ATTACK_SPEED",
+          "ARMOR_PENETRATION",
+          "ACCURACY",
+          "ATTACK_POWER"
         ]
       }
     ],
