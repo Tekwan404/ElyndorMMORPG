@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Combat.ItemEffects;
 using Elyndor.Core.Combat.Encounters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
@@ -217,6 +218,10 @@ internal static class CategoryContentComposer
                 package.Items,
                 fragment.Items,
                 item => item.Id),
+            ItemSpecialEffects = ContentCompositionRules.MergeOptionalByKey(
+                package.ItemSpecialEffects,
+                fragment.ItemSpecialEffects,
+                item => item.Id),
             LootTables = ContentCompositionRules.MergeOptionalByKey(
                 package.LootTables,
                 fragment.LootTables,
@@ -410,6 +415,7 @@ internal static class CategoryContentComposer
         IReadOnlyList<EncounterDefinition>? Encounters = null,
         LevelProgressionDefinition? LevelProgression = null,
         IReadOnlyList<ItemDefinition>? Items = null,
+        IReadOnlyList<ItemSpecialEffectDefinition>? ItemSpecialEffects = null,
         IReadOnlyList<LootTableDefinition>? LootTables = null,
         IReadOnlyList<EquipmentSetDefinition>? EquipmentSets = null,
         IReadOnlyList<MerchantDefinition>? Merchants = null,

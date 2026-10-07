@@ -1,6 +1,7 @@
 using Elyndor.Core.World;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Combat.ItemEffects;
 using Elyndor.Core.Combat.Encounters;
 using Elyndor.Core.Talents;
 using Elyndor.Core.Monsters;
@@ -52,7 +53,8 @@ public sealed record GameContentPackage(
     IReadOnlyList<WorldBossDefinition>? WorldBosses = null,
     IReadOnlyList<WorldBossRewardProfileDefinition>? WorldBossRewardProfiles = null,
     CombatBalanceProfile? CombatBalance = null,
-    ProgressionBalanceProfile? ProgressionBalance = null);
+    ProgressionBalanceProfile? ProgressionBalance = null,
+    IReadOnlyList<ItemSpecialEffectDefinition>? ItemSpecialEffects = null);
 
 public sealed record AfkFarmRewardProfile(
     int ProcessingIntervalSeconds,

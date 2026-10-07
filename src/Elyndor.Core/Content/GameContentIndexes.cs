@@ -1,6 +1,7 @@
 using System.Runtime.CompilerServices;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Combat.ItemEffects;
 using Elyndor.Core.Combat.Encounters;
 using Elyndor.Core.Items;
 using Elyndor.Core.Monsters;
@@ -30,6 +31,7 @@ public sealed class GameContentIndexes
         TalentTreesById = ToDictionary(package.TalentTrees, item => item.Id);
         TalentTreesByClassId = ToDictionary(package.TalentTrees, item => item.ClassId);
         ItemsById = ToDictionary(package.Items, item => item.Id);
+        ItemSpecialEffectsById = ToDictionary(package.ItemSpecialEffects, item => item.Id);
         EquipmentSetsById = ToDictionary(package.EquipmentSets, item => item.Id);
         MerchantsById = ToDictionary(package.Merchants, item => item.Id);
         LootTablesById = ToDictionary(package.LootTables, item => item.Id);
@@ -56,6 +58,7 @@ public sealed class GameContentIndexes
     public IReadOnlyDictionary<string, TalentTreeDefinition> TalentTreesById { get; }
     public IReadOnlyDictionary<string, TalentTreeDefinition> TalentTreesByClassId { get; }
     public IReadOnlyDictionary<string, ItemDefinition> ItemsById { get; }
+    public IReadOnlyDictionary<string, ItemSpecialEffectDefinition> ItemSpecialEffectsById { get; }
     public IReadOnlyDictionary<string, EquipmentSetDefinition> EquipmentSetsById { get; }
     public IReadOnlyDictionary<string, MerchantDefinition> MerchantsById { get; }
     public IReadOnlyDictionary<string, LootTableDefinition> LootTablesById { get; }

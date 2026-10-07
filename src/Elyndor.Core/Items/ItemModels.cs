@@ -229,7 +229,8 @@ public sealed record ItemDefinition(
     int LootContainerGoldMax = 0,
     string? ItemFamilyId = null,
     IReadOnlyList<string>? AllowedClassIds = null,
-    long HonorPrice = 0);
+    long HonorPrice = 0,
+    IReadOnlyList<string>? SpecialEffectIds = null);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,

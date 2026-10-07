@@ -1,6 +1,7 @@
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Effects;
+using Elyndor.Core.Combat.ItemEffects;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Monsters;
 using Elyndor.Core.Items;
@@ -97,7 +98,8 @@ public sealed partial class CombatSession
         CombatSummonProfile? summonProfile = null,
         CombatParticipantDefinition? companion = null,
         Guid? playerAccountId = null,
-        IReadOnlyList<CombatPlayerDefinition>? additionalPlayers = null)
+        IReadOnlyList<CombatPlayerDefinition>? additionalPlayers = null,
+        IReadOnlyList<ItemSpecialEffectDefinition>? itemSpecialEffects = null)
         : this(
             sessionId,
             player,
@@ -113,7 +115,8 @@ public sealed partial class CombatSession
             summonProfile,
             companion,
             playerAccountId,
-            additionalPlayers)
+            additionalPlayers,
+            itemSpecialEffects)
     {
     }
 
@@ -132,7 +135,8 @@ public sealed partial class CombatSession
         CombatSummonProfile? summonProfile = null,
         CombatParticipantDefinition? companion = null,
         Guid? playerAccountId = null,
-        IReadOnlyList<CombatPlayerDefinition>? additionalPlayers = null)
+        IReadOnlyList<CombatPlayerDefinition>? additionalPlayers = null,
+        IReadOnlyList<ItemSpecialEffectDefinition>? itemSpecialEffects = null)
         : this(
             sessionId,
             player,
@@ -148,7 +152,8 @@ public sealed partial class CombatSession
             summonProfile,
             companion,
             playerAccountId,
-            additionalPlayers)
+            additionalPlayers,
+            itemSpecialEffects)
     {
     }
 
@@ -167,7 +172,8 @@ public sealed partial class CombatSession
         CombatSummonProfile? summonProfile = null,
         CombatParticipantDefinition? companion = null,
         Guid? playerAccountId = null,
-        IReadOnlyList<CombatPlayerDefinition>? additionalPlayers = null)
+        IReadOnlyList<CombatPlayerDefinition>? additionalPlayers = null,
+        IReadOnlyList<ItemSpecialEffectDefinition>? itemSpecialEffects = null)
     {
         if (sessionId == Guid.Empty)
             throw new ArgumentException("Session id is required.", nameof(sessionId));
@@ -279,6 +285,7 @@ public sealed partial class CombatSession
         }
         _activePlayerState = _playerStatesByActorId[player.Actor.ActorId];
         InitializeSetPassiveLoadoutSnapshot();
+        InitializeItemSpecialEffectLoadoutSnapshot(itemSpecialEffects ?? []);
         InitializeThreatTables();
         _participantRoster = new CombatParticipantRoster(
             playerDefinitions
