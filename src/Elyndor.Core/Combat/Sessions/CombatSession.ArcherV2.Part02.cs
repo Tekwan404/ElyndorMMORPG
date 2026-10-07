@@ -163,6 +163,13 @@ if (target is null || target.IsDead)
 return;
 decimal specialMultiplier = 1;
 if (TryGetArcherHook(
+"B-2-1",
+"COMMAND_ATTACK_DAMAGE",
+out ResolvedTalentEventHook improvedCommand))
+{
+specialMultiplier *= 1 + improvedCommand.Value / 100m;
+}
+if (TryGetArcherHook(
 "B-3-3",
 "PET_SPECIAL_DAMAGE",
 out ResolvedTalentEventHook training))
