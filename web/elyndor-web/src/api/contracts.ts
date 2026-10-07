@@ -2,6 +2,8 @@ export interface AuthenticationResponse {
   accessToken: string
   expiresAtUtc: string
   roles: string[]
+  sessionCredential?: string | null
+  sessionCredentialExpiresAtUtc?: string | null
 }
 
 export interface PremiumStoreOffer { sku: string; itemDefinitionId: string; name: string; description: string; rarity: string; iconId: string | null; quantity: number; crystalPrice: number; canPurchase: boolean; maxPackCount?: number; inventoryCapacityBonus?: number }
