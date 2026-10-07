@@ -58,7 +58,7 @@ if (physicalShot
 && HasArcherEffect(target, HunterMarkEffectId, now)
 && TryGetArcherHook(
 "M-6-4",
-"PRECISE_TEMPO",
+"MARKED_AIMED_COOLDOWN",
 out ResolvedTalentEventHook tempo)
 && ArcherTalentCooldownReady(tempo.TalentId, now))
 {
@@ -74,7 +74,7 @@ now);
 if (physicalShot
 && TryGetArcherHook(
 "M-9-1",
-"MASTER_ARROW_FOCUS",
+"MASTER_ARROW_FOCUS_CD",
 out ResolvedTalentEventHook masterFocus)
 && ArcherTalentCooldownReady(
 masterFocus.TalentId + ":FOCUS",
@@ -105,7 +105,7 @@ now);
 }
 if (TryGetArcherHook(
 "B-7-3",
-"OWNER_CRIT_PET_NEXT",
+"BLOOD_AND_FANG",
 out ResolvedTalentEventHook petNext))
 {
 ApplyCompanionMultiplier(
@@ -140,7 +140,7 @@ if (_companion is not null
 {
 if (TryGetArcherHook(
 "B-5-1",
-"FRENZY",
+"PET_FRENZY",
 out ResolvedTalentEventHook frenzy)
 && _random.NextUnit() < frenzy.Value / 100m)
 {
@@ -173,7 +173,7 @@ ownerShotDuration = packHunter.Duration;
 }
 if (TryGetArcherHook(
 "B-7-3",
-"PET_CRIT_OWNER_NEXT",
+"BLOOD_AND_FANG",
 out ResolvedTalentEventHook bloodAndFang))
 {
 ownerShotBonus += bloodAndFang.Value;
