@@ -59,11 +59,11 @@ public sealed record CombatParticipantDefinition(
     bool IsCombatObject = false,
     bool RewardEligible = true,
     IReadOnlyDictionary<string, int>? EquippedSetPieces = null,
-    IReadOnlySet<string>? EquippedSpecialEffectIds = null,
     string? GenderId = null,
     string? SkinId = null,
     decimal EquipmentArmor = 0,
-    string? MainHandWeaponCategory = null);
+    string? MainHandWeaponCategory = null,
+    IReadOnlySet<string>? EquippedSpecialEffectIds = null);
 
 public sealed record CombatPlayerDefinition(
     Guid AccountId,
