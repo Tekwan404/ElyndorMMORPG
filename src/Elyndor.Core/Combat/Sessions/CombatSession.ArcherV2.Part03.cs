@@ -37,7 +37,7 @@ decimal durationSeconds =
 ArcherRuntimeParameter("FREEZING_TRAP", "normalStunSeconds");
 if (TryGetArcherHook(
 "S-2-4",
-"TRAP_CONTROL_DURATION",
+"CLEVER_TRAPS",
 out ResolvedTalentEventHook clever))
 {
 durationSeconds *= 1 + clever.Value / 100m;
