@@ -20,6 +20,14 @@ if (!IsArcher || Status != CombatSessionStatus.Active)
 return;
 switch (ability.Id)
 {
+case "HUNTER_MARK":
+if (SelectedEnemyActor() is { } markedTarget
+&& FindArcherEffect(markedTarget, HunterMarkEffectId, now) is { } mark
+&& TryGetArcherHook("M-8-2", "PERFECT_MARK_BURST", out ResolvedTalentEventHook burst))
+ApplyArcherEffect(markedTarget, new EffectDefinition(
+PerfectMarkBurstEffectId, EffectKind.Debuff, mark.ExpiresAtUtc - now,
+1, EffectStackPolicy.Replace, burst.Value, SourceSpecific: true), now);
+return;
 case "SNIPER_FOCUS":
 ActivateSniperFocus(now);
 return;
@@ -415,7 +423,7 @@ decimal carriedDamage = 0;
 if (TryGetArcherHook(
 "S-3-3",
 "TOXICOLOGY",
-out _))
+out ResolvedTalentEventHook toxicology))
 {
 ActiveEffect? old = FindArcherEffect(target, SerpentStingEffectId, now);
 if (old is not null && old.Definition.TickInterval is { } oldTick)
@@ -426,7 +434,7 @@ decimal remainingTicks = Math.Ceiling(
 seconds / (decimal)oldTick.TotalSeconds);
 carriedDamage = old.Definition.Magnitude
 * old.Stacks
-* remainingTicks;
+* remainingTicks * toxicology.SecondaryValue / 100m;
 }
 }
 ApplyAttackPowerDot(
