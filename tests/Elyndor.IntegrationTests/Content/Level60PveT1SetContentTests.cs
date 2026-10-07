@@ -102,19 +102,27 @@ public sealed class Level60PveT1SetContentTests
     }
 
     [Fact]
-    public async Task DeadReachesEliteLootKeepsNormalDropAndAddsRarePveT1Drops()
+    public async Task DeadReachesCapstoneElitesOwnThePveT1LootSource()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        LootTableDefinition table = Assert.Single(
+        LootTableDefinition normalTable = Assert.Single(
             package.LootTables!,
             candidate => candidate.Id == "DEAD_REACHES_L60_NORMAL_SET_LOOT");
+        LootTableDefinition t1Table = Assert.Single(
+            package.LootTables!,
+            candidate => candidate.Id == "DEAD_REACHES_L60_PVE_T1_LOOT");
 
-        Assert.Single(table.SelectionGroups!);
-        Assert.Equal(72, table.SelectionGroups![0].Entries.Count);
+        Assert.DoesNotContain(
+            normalTable.Entries,
+            entry => entry.ItemId.StartsWith("L60_PVE_T1_", StringComparison.Ordinal));
+        Assert.DoesNotContain(
+            normalTable.SelectionGroups!.SelectMany(group => group.Entries),
+            entry => entry.ItemId.StartsWith("L60_PVE_T1_", StringComparison.Ordinal));
 
-        LootTableEntry[] t1Entries = table.Entries
+        Assert.Empty(t1Table.SelectionGroups ?? []);
+        LootTableEntry[] t1Entries = t1Table.Entries
             .Where(entry => entry.ItemId.StartsWith("L60_PVE_T1_", StringComparison.Ordinal))
             .ToArray();
 
@@ -136,5 +144,19 @@ public sealed class Level60PveT1SetContentTests
         Assert.Equal(
             expectedIds,
             t1Entries.Select(entry => entry.ItemId).OrderBy(id => id, StringComparer.Ordinal).ToArray());
-    }
+
+        string[] capstoneEliteIds =
+        [
+            "DEAD_REACHES_MORDREK_LAST_GATE_L60",
+            "DEAD_REACHES_NAMELESS_KING_L60",
+            "DEAD_REACHES_NERZAR_L60",
+        ];
+
+        foreach (string eliteId in capstoneEliteIds)
+        {
+            Assert.Equal(
+                "DEAD_REACHES_L60_PVE_T1_LOOT",
+                package.Monsters!.Single(monster => monster.Id == eliteId).LootTableId);
+        }
+    }}
 }
