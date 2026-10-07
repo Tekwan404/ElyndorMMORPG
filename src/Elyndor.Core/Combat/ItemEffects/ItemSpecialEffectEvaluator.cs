@@ -141,6 +141,8 @@ public sealed class ItemSpecialEffectEvaluator
         ArgumentNullException.ThrowIfNull(definition.Actions);
 
         if (!Enum.IsDefined(definition.Trigger.EventType)
+            || !Enum.IsDefined(definition.Trigger.ActorRole)
+            || definition.Trigger.DamageType is { } triggerDamage && !Enum.IsDefined(triggerDamage)
             || definition.Conditions.EveryNth <= 0
             || definition.Conditions.InternalCooldown is { } cooldown
                 && cooldown < TimeSpan.Zero
@@ -164,6 +166,10 @@ public sealed class ItemSpecialEffectEvaluator
         {
             if (!Enum.IsDefined(action.Kind)
                 || !Enum.IsDefined(action.TargetRole)
+                || !Enum.IsDefined(action.DamageType)
+                || !Enum.IsDefined(action.ModifierMode)
+                || !Enum.IsDefined(action.StackPolicy)
+                || action.ModifiedStat is { } stat && !Enum.IsDefined(stat)
                 || action.MaxStacks <= 0
                 || action.Duration is { } duration && duration < TimeSpan.Zero
                 || action.EventAmountPercent < 0)

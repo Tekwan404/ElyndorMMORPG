@@ -13,7 +13,9 @@ public sealed partial class CombatSession
     private void InitializeItemSpecialEffectLoadoutSnapshot(
         IReadOnlyList<ItemSpecialEffectDefinition> definitions)
     {
-        _itemSpecialEffectRuntime = new ItemSpecialEffectRuntime(definitions);
+        _itemSpecialEffectRuntime = new ItemSpecialEffectRuntime(definitions
+            .Concat(_playerStatesByActorId.Values.SelectMany(state => state.Definition.ItemSpecialEffects ?? []))
+            .DistinctBy(effect => effect.Id));
         _itemSpecialEffectLoadoutSnapshot = _playerStatesByActorId.ToDictionary(
             pair => pair.Key,
             pair => pair.Value.Definition.EquippedSpecialEffectIds is { } effectIds
@@ -131,7 +133,8 @@ public sealed partial class CombatSession
                 ModifierMode: action.ModifierMode,
                 DisplayName: action.DisplayName,
                 Description: action.Description,
-                IconId: action.IconId),
+                IconId: action.IconId,
+                SourceSpecific: true),
             invocation.OccurredAtUtc);
     }
 
@@ -161,7 +164,8 @@ public sealed partial class CombatSession
                 magnitude,
                 DisplayName: action.DisplayName,
                 Description: action.Description,
-                IconId: action.IconId),
+                IconId: action.IconId,
+                SourceSpecific: true),
             invocation.OccurredAtUtc);
     }
 

@@ -99,6 +99,7 @@ public sealed partial class CombatSession
         _player.Actor.IncomingCriticalDamageReductionPercent = 0;
         _player.Actor.OwnShieldMagnitudeMultiplier = 1;
         InitializeSetPassiveLoadoutSnapshot();
+        InitializeItemSpecialEffectLoadoutSnapshot([]);
         if (IsActivePaladin)
             _ = ActivePaladinState();
         ApplyGuardianStartingEffects(now);

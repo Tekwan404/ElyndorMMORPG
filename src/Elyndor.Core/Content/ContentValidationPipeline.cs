@@ -229,6 +229,7 @@ public sealed class ItemValidator : IContentValidationStage
                     "INVALID_ITEM_SPECIAL_EFFECT",
                     path,
                     $"Item special effect '{definition.Id}' is invalid: {exception.Message}"));
+                continue;
             }
 
             foreach (ItemSpecialEffectActionDefinition action in definition.Actions)

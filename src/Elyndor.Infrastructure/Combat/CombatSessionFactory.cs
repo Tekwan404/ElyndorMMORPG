@@ -245,7 +245,8 @@ public sealed class CombatSessionFactory(
             SkinId: character.ActiveSkinId,
             EquipmentArmor: derived.Equipment.ArmorFlat,
             MainHandWeaponCategory: derived.Equipment.MainHandWeaponCategory,
-            SetPassives: EquipmentSetEffectResolver.Resolve(contentSnapshot.Package.EquipmentSets ?? []));
+            SetPassives: EquipmentSetEffectResolver.Resolve(contentSnapshot.Package.EquipmentSets ?? []),
+            ItemSpecialEffects: contentSnapshot.Package.ItemSpecialEffects);
         CombatParticipantDefinition? companion =
             derived.ActiveCompanionProfile is null
                 ? null
@@ -459,7 +460,8 @@ public sealed class CombatSessionFactory(
             SkinId: character.ActiveSkinId,
             EquipmentArmor: derived.Equipment.ArmorFlat,
             MainHandWeaponCategory: derived.Equipment.MainHandWeaponCategory,
-            SetPassives: EquipmentSetEffectResolver.Resolve(contentSnapshot.Package.EquipmentSets ?? []));
+            SetPassives: EquipmentSetEffectResolver.Resolve(contentSnapshot.Package.EquipmentSets ?? []),
+            ItemSpecialEffects: contentSnapshot.Package.ItemSpecialEffects);
         IReadOnlyDictionary<string, DateTimeOffset> cooldowns =
             isTraining || cooldownStore is null
                 ? new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal)
@@ -475,7 +477,7 @@ public sealed class CombatSessionFactory(
             initiallyAttached);
     }
 
-    private static IReadOnlySet<string> EquippedSpecialEffectIds(
+    private static HashSet<string> EquippedSpecialEffectIds(
         InventorySnapshot inventory) =>
         inventory.Equipped.Values
             .SelectMany(item => item.Definition.SpecialEffectIds ?? [])
