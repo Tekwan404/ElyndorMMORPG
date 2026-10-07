@@ -48,6 +48,80 @@ public sealed class DamageAndHealingPipelineTests
     }
 
     [Fact]
+    public void BaselineAccuracyLeavesFivePercentMissChance()
+    {
+        CombatActorState source = CombatActorState.CreateDummy(
+            100,
+            stats: CombatStats.Default with
+            {
+                Level = 20,
+                Accuracy = 95
+            });
+        CombatActorState target = CombatActorState.CreateDummy(
+            200,
+            stats: CombatStats.Default with
+            {
+                Level = 20,
+                Dodge = 0
+            });
+
+        DamageRequest request = new(
+            source,
+            target,
+            50,
+            DamageType.Physical,
+            CanDodge: false,
+            CanCrit: false);
+
+        DamageResult miss = DamagePipeline.Resolve(
+            request,
+            new SequenceGameRandom(0.049m));
+        DamageResult hit = DamagePipeline.Resolve(
+            request,
+            new SequenceGameRandom(0.05m));
+
+        Assert.Equal(DamageAvoidance.Miss, miss.Avoidance);
+        Assert.Equal(DamageAvoidance.None, hit.Avoidance);
+    }
+
+    [Fact]
+    public void LevelGapAddsMissChanceOnTopOfBaselineAccuracy()
+    {
+        CombatActorState source = CombatActorState.CreateDummy(
+            100,
+            stats: CombatStats.Default with
+            {
+                Level = 20,
+                Accuracy = 95
+            });
+        CombatActorState target = CombatActorState.CreateDummy(
+            200,
+            stats: CombatStats.Default with
+            {
+                Level = 25,
+                Dodge = 0
+            });
+
+        DamageRequest request = new(
+            source,
+            target,
+            50,
+            DamageType.Physical,
+            CanDodge: false,
+            CanCrit: false);
+
+        DamageResult miss = DamagePipeline.Resolve(
+            request,
+            new SequenceGameRandom(0.099m));
+        DamageResult hit = DamagePipeline.Resolve(
+            request,
+            new SequenceGameRandom(0.10m));
+
+        Assert.Equal(DamageAvoidance.Miss, miss.Avoidance);
+        Assert.Equal(DamageAvoidance.None, hit.Avoidance);
+    }
+
+    [Fact]
     public void DodgeProducesACombatEventForReactiveTalents()
     {
         DateTimeOffset now = new(2026, 9, 8, 12, 0, 0, TimeSpan.Zero);
@@ -130,6 +204,36 @@ public sealed class DamageAndHealingPipelineTests
         Assert.Equal(100, damageEvent.DamageAfterMitigation);
         Assert.Equal(100, damageEvent.DamageBeforeBlock);
         Assert.Equal(80, damageEvent.AmountBeforeShields);
+    }
+
+    [Fact]
+    public void BlockCannotPreventMoreThanSeventyPercentOfIncomingDamage()
+    {
+        CombatActorState source = CombatActorState.CreateDummy(100);
+        CombatActorState target = CombatActorState.CreateDummy(
+            200,
+            stats: CombatStats.Default with
+            {
+                BlockChance = 100,
+                BlockValueMin = 500,
+                BlockValueMax = 500
+            });
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(
+                source,
+                target,
+                100,
+                DamageType.Physical,
+                CanMiss: false,
+                CanDodge: false,
+                CanCrit: false),
+            new SequenceGameRandom(0m));
+
+        Assert.True(result.WasBlocked);
+        Assert.Equal(70, result.BlockedAmount);
+        Assert.Equal(30, result.HpDamage);
+        Assert.Equal(170, target.CurrentHp);
     }
 
     [Fact]
