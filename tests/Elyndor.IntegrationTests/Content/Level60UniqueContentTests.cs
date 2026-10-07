@@ -28,17 +28,30 @@ public sealed class Level60UniqueContentTests
         ["ARCHER_MARKSMAN"] = "UNIQUE_ARCHER_LAST_CONSTELLATION",
     };
 
+    private static string[] MatrixItemIds()
+    {
+        List<string> ids = [];
+
+        foreach (string branchId in ExpectedBranches.Keys)
+        {
+            string prefix = $"UNIQUE_L60_{branchId}";
+            ids.Add(LegacyWeaponIds.GetValueOrDefault(branchId) ?? $"{prefix}_WEAPON");
+            ids.Add($"{prefix}_RING");
+            ids.Add($"{prefix}_CLOAK");
+        }
+
+        return ids.ToArray();
+    }
+
     [Fact]
     public async Task Level60UniqueMatrixHasWeaponRingAndCloakForEveryBranch()
     {
         var package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        ItemDefinition[] uniques = package.Items!
-            .Where(item => item.Rarity == ItemRarity.Unique && item.RequiredLevel == 60)
-            .ToArray();
-
-        Assert.Equal(36, uniques.Length);
+        string[] matrixIds = MatrixItemIds();
+        Assert.Equal(36, matrixIds.Length);
+        Assert.Equal(36, matrixIds.Distinct(StringComparer.Ordinal).Count());
 
         foreach ((string branchId, string classId) in ExpectedBranches)
         {
@@ -47,10 +60,13 @@ public sealed class Level60UniqueContentTests
             string ringId = $"{prefix}_RING";
             string cloakId = $"{prefix}_CLOAK";
 
-            ItemDefinition weapon = Assert.Single(uniques, item => item.Id == weaponId);
-            ItemDefinition ring = Assert.Single(uniques, item => item.Id == ringId);
-            ItemDefinition cloak = Assert.Single(uniques, item => item.Id == cloakId);
+            ItemDefinition weapon = Assert.Single(package.Items!, item => item.Id == weaponId);
+            ItemDefinition ring = Assert.Single(package.Items!, item => item.Id == ringId);
+            ItemDefinition cloak = Assert.Single(package.Items!, item => item.Id == cloakId);
 
+            Assert.Equal(ItemRarity.Unique, weapon.Rarity);
+            Assert.Equal(ItemRarity.Unique, ring.Rarity);
+            Assert.Equal(ItemRarity.Unique, cloak.Rarity);
             Assert.Equal(EquipmentSlot.MainHand, weapon.Slot);
             Assert.Equal(EquipmentSlot.Ring1, ring.Slot);
             Assert.Equal(EquipmentSlot.Cloak, cloak.Slot);
@@ -58,15 +74,33 @@ public sealed class Level60UniqueContentTests
             Assert.All(new[] { weapon, ring, cloak }, item =>
             {
                 Assert.Equal(item.Id, item.ItemFamilyId);
-                Assert.Equal(60, item.ItemLevelMin);
                 Assert.Equal(60, item.ItemLevelMax);
-                Assert.Equal("LEVEL_60_UNIQUE", item.AffixCountProfileId);
                 Assert.Equal(3, item.GuaranteedAffixStatIds?.Count ?? 0);
                 Assert.Equal(0.08m, item.ExtraAffixBudgetCap);
                 Assert.Null(item.PrefixSuffixPolicyId);
                 Assert.False(string.IsNullOrWhiteSpace(item.IconId));
                 Assert.Single(item.AllowedClassIds!);
                 Assert.Equal(classId, item.AllowedClassIds![0]);
+            });
+
+            if (LegacyWeaponIds.ContainsKey(branchId))
+            {
+                Assert.Equal(25, weapon.RequiredLevel);
+                Assert.Equal(25, weapon.ItemLevelMin);
+                Assert.Equal("UNIQUE_FAMILY", weapon.AffixCountProfileId);
+            }
+            else
+            {
+                Assert.Equal(60, weapon.RequiredLevel);
+                Assert.Equal(60, weapon.ItemLevelMin);
+                Assert.Equal("LEVEL_60_UNIQUE", weapon.AffixCountProfileId);
+            }
+
+            Assert.All(new[] { ring, cloak }, item =>
+            {
+                Assert.Equal(60, item.RequiredLevel);
+                Assert.Equal(60, item.ItemLevelMin);
+                Assert.Equal("LEVEL_60_UNIQUE", item.AffixCountProfileId);
             });
 
             Assert.False(string.IsNullOrWhiteSpace(weapon.WeaponCategory));
@@ -76,39 +110,40 @@ public sealed class Level60UniqueContentTests
     }
 
     [Fact]
-    public async Task Level60UniquesHaveReachableAshArchonAcquisitionAndNoDeadIds()
+    public async Task Level60UniqueMatrixHasReachableAshArchonAcquisitionAndNoDeadIds()
     {
         var package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        ItemDefinition[] uniques = package.Items!
-            .Where(item => item.Rarity == ItemRarity.Unique && item.RequiredLevel == 60)
-            .ToArray();
-        Assert.Equal(36, uniques.Length);
-        Assert.Equal(36, uniques.Select(item => item.Id).Distinct(StringComparer.Ordinal).Count());
-
+        string[] matrixIds = MatrixItemIds();
         var normal = package.LootTables!.Single(
             table => table.Id == "WORLD_BOSS_ASH_ARCHON_LOOT");
         var topFive = package.LootTables!.Single(
             table => table.Id == "WORLD_BOSS_ASH_ARCHON_TOP5_LOOT");
 
-        string[] normalIds = normal.SelectionGroups!
+        LootSelectionEntry[] normalEntries = normal.SelectionGroups!
             .SelectMany(group => group.Entries)
-            .Select(entry => entry.ItemId)
             .ToArray();
-        string[] topFiveIds = topFive.SelectionGroups!
+        LootSelectionEntry[] topFiveEntries = topFive.SelectionGroups!
             .SelectMany(group => group.Entries)
-            .Select(entry => entry.ItemId)
             .ToArray();
 
-        Assert.All(uniques, item =>
+        Assert.All(matrixIds, itemId =>
         {
-            Assert.Equal(1, normalIds.Count(id => id == item.Id));
-            Assert.Equal(1, topFiveIds.Count(id => id == item.Id));
-        });
+            ItemDefinition item = Assert.Single(package.Items!, candidate => candidate.Id == itemId);
+            Assert.Equal(ItemRarity.Unique, item.Rarity);
 
-        Assert.Contains(uniques, item => item.Id == "UNIQUE_WARRIOR_BLACKHEART");
-        Assert.Contains(uniques, item => item.Id == "UNIQUE_MAGE_EYE_OF_DEAD_STAR");
-        Assert.Contains(uniques, item => item.Id == "UNIQUE_ARCHER_LAST_CONSTELLATION");
+            LootSelectionEntry normalEntry = Assert.Single(
+                normalEntries,
+                entry => entry.ItemId == itemId);
+            LootSelectionEntry topFiveEntry = Assert.Single(
+                topFiveEntries,
+                entry => entry.ItemId == itemId);
+
+            Assert.Equal(60, normalEntry.ItemLevelMin);
+            Assert.Equal(60, normalEntry.ItemLevelMax);
+            Assert.Equal(60, topFiveEntry.ItemLevelMin);
+            Assert.Equal(60, topFiveEntry.ItemLevelMax);
+        });
     }
 }
