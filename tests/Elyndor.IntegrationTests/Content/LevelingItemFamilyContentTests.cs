@@ -88,7 +88,7 @@ public sealed class LevelingItemFamilyContentTests
 
         Assert.Equal(283, families.Length);
         Assert.Equal(96, levelingEquipment.Count(item => CanonicalSets.ContainsKey(item.SetId ?? string.Empty)));
-        Assert.Equal(190, levelingEquipment.Count(item => !CanonicalSets.ContainsKey(item.SetId ?? string.Empty)));
+        Assert.Equal(187, levelingEquipment.Count(item => !CanonicalSets.ContainsKey(item.SetId ?? string.Empty)));
 
         string[] removedCompatibilityIds =
         [
