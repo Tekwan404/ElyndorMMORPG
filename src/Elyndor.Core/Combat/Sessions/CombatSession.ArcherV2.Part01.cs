@@ -111,7 +111,7 @@ if (physicalShot
 {
 if (TryGetArcherHook(
 "M-4-2",
-"AIMED_SHOT_AIM",
+"AIMED_ACCURACY_CRIT",
 out ResolvedTalentEventHook flawless))
 {
 accuracyBonus += flawless.Value;
@@ -120,7 +120,7 @@ criticalChanceBonus += flawless.SecondaryValue;
 if (SelectedTargetHasHunterMark(now)
 && TryGetArcherHook(
 "M-7-1",
-"PERFECT_SHOT",
+"PERFECT_AIMED_SHOT",
 out ResolvedTalentEventHook perfect))
 {
 damageMultiplier *= 1 + perfect.Value / 100m;
@@ -211,7 +211,7 @@ ArcherRuntimeParameter("SNIPER_FOCUS", "armorPenetrationBonus");
 }
 if (TryGetArcherHook(
 "M-5-2",
-"BOW_DAMAGE",
+"BOW_PHYSICAL_DAMAGE",
 out ResolvedTalentEventHook bowDamage))
 {
 damageMultiplier *= 1 + bowDamage.Value / 100m;
@@ -278,7 +278,7 @@ criticalChanceBonus += masterCrit.Value;
 if (IsSharedTarget(target.ActorId, now)
 && TryGetArcherHook(
 "B-3-2",
-"JOINT_HUNT",
+"SHARED_TARGET_DAMAGE",
 out ResolvedTalentEventHook joint))
 {
 damageMultiplier *= 1 + joint.Value / 100m;
