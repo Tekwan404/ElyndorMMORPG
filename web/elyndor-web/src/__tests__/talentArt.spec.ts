@@ -66,17 +66,22 @@ describe('talent art registry', () => {
       }
     }
 
-    for (const ability of abilities.abilities) {
-      const unlockingTalentIcon = iconByAbility.get(ability.id)
-      if (unlockingTalentIcon) {
-        expect(resolveAbilityArt(ability.id)).toBe(resolveTalentArt(unlockingTalentIcon))
-        continue
-      }
+    const talentUnlockedAbilities = abilities.abilities.filter(ability =>
+      iconByAbility.has(ability.id),
+    )
+    const nonTalentAbilities = abilities.abilities.filter(ability =>
+      !iconByAbility.has(ability.id),
+    )
 
-      expect(startingAbilityIds.has(ability.id)).toBe(true)
-      expect(resolveAbilityArt(ability.id)).toBeTruthy()
-    }
-
+    expect(
+      talentUnlockedAbilities.every(ability =>
+        resolveAbilityArt(ability.id) === resolveTalentArt(iconByAbility.get(ability.id)),
+      ),
+    ).toBe(true)
+    expect(nonTalentAbilities.map(ability => ability.id).sort()).toEqual(
+      [...startingAbilityIds].sort(),
+    )
+    expect(nonTalentAbilities.every(ability => Boolean(resolveAbilityArt(ability.id)))).toBe(true)
     expect([...startingAbilityIds].sort()).toEqual(['COMMAND_ATTACK', 'QUICK_SHOT'])
 
     const archerNodes = talentTree.talentTrees.flatMap(tree => tree.nodes)
