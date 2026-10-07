@@ -45,11 +45,18 @@ const viewportEvents: readonly TelegramViewportEvent[] = [
 interface StoredWebAuthenticationData {
   value: string
   expiresAtUtc: string
+  telegramUserId?: string | null
+}
+
+interface RuntimeAuthenticationData {
+  value: string
+  expiresAtUtc: string | null
+  telegramUserId: string | null
 }
 
 const webAuthenticationStorageKey = 'elyndor.telegram-web-auth.session'
 
-let webAuthenticationData: string | null = null
+let webAuthenticationData: RuntimeAuthenticationData | null = null
 let subscribedWebApp: TelegramWebApp | null = null
 
 const viewportEventHandler: TelegramEventHandler = () => {
@@ -57,20 +64,58 @@ const viewportEventHandler: TelegramEventHandler = () => {
 }
 
 export function getTelegramInitData(): string | null {
+  const miniAppInitData = getTelegramMiniAppInitData()
+
+  if (!webAuthenticationData) {
+    webAuthenticationData = readStoredWebAuthenticationData()
+  }
+
+  if (webAuthenticationData?.value.startsWith('session:')) {
+    const miniAppUserId = getTelegramMiniAppUserId()
+    if (
+      !miniAppInitData
+      || (
+        webAuthenticationData.telegramUserId
+        && miniAppUserId === webAuthenticationData.telegramUserId
+      )
+    ) {
+      return webAuthenticationData.value
+    }
+  }
+
+  if (miniAppInitData) return miniAppInitData
+  return webAuthenticationData?.value ?? null
+}
+
+export function getTelegramMiniAppInitData(): string | null {
   const initData = window.Telegram?.WebApp?.initData
-  if (initData && initData.length > 0) return initData
+  return initData && initData.length > 0 ? initData : null
+}
 
-  if (webAuthenticationData) return webAuthenticationData
+export function getTelegramMiniAppUserId(): string | null {
+  const initData = getTelegramMiniAppInitData()
+  if (!initData) return null
 
-  webAuthenticationData = readStoredWebAuthenticationData()
-  return webAuthenticationData
+  try {
+    const user = new URLSearchParams(initData).get('user')
+    if (!user) return null
+    const parsed = JSON.parse(user) as { id?: number | string }
+    return typeof parsed.id === 'number' || typeof parsed.id === 'string'
+      ? String(parsed.id)
+      : null
+  } catch {
+    return null
+  }
 }
 
 export function setWebAuthenticationData(
   value: string | null,
   expiresAtUtc: string | null = null,
+  telegramUserId: string | null = null,
 ): void {
-  webAuthenticationData = value && value.length > 0 ? value : null
+  webAuthenticationData = value && value.length > 0
+    ? { value, expiresAtUtc, telegramUserId }
+    : null
   if (!webAuthenticationData) {
     removeStoredWebAuthenticationData()
     return
@@ -85,8 +130,9 @@ export function setWebAuthenticationData(
 
   try {
     const stored: StoredWebAuthenticationData = {
-      value: webAuthenticationData,
+      value: webAuthenticationData.value,
       expiresAtUtc,
+      telegramUserId,
     }
     window.sessionStorage.setItem(webAuthenticationStorageKey, JSON.stringify(stored))
   } catch {
@@ -99,7 +145,7 @@ export function clearWebAuthenticationData(): void {
   removeStoredWebAuthenticationData()
 }
 
-function readStoredWebAuthenticationData(): string | null {
+function readStoredWebAuthenticationData(): RuntimeAuthenticationData | null {
   try {
     const raw = window.sessionStorage.getItem(webAuthenticationStorageKey)
     if (!raw) return null
@@ -118,7 +164,13 @@ function readStoredWebAuthenticationData(): string | null {
       return null
     }
 
-    return stored.value
+    return {
+      value: stored.value,
+      expiresAtUtc: stored.expiresAtUtc,
+      telegramUserId: typeof stored.telegramUserId === 'string'
+        ? stored.telegramUserId
+        : null,
+    }
   } catch {
     removeStoredWebAuthenticationData()
     return null
