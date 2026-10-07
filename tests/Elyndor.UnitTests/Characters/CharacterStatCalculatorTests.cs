@@ -149,15 +149,15 @@ public sealed class CharacterStatCalculatorTests
     }
 
     [Fact]
-    public void PersistentAttackSpeedBonusIsCappedAtThirtyPercent()
+    public void PersistentAttackSpeedBonusIsCappedAtFiftyPercent()
     {
         CharacterStatCalculator calculator = new(Formula(), Profiles());
         CharacterStatInputs inputs = CharacterStatInputs.Empty with
         {
             EquipmentDerived = new CharacterEquipmentDerivedModifiers(
-                AttackSpeedPercent: 25),
+                AttackSpeedPercent: 35),
             TalentDerived = new TalentStatModifiers(
-                AttackSpeedPercent: 20)
+                AttackSpeedPercent: 30)
         };
 
         CharacterStatCalculation result = calculator.CalculateDetailed(
@@ -165,7 +165,7 @@ public sealed class CharacterStatCalculatorTests
             level: 3,
             inputs);
 
-        Assert.Equal(1.30m, result.Stats.AttackSpeed);
+        Assert.Equal(1.50m, result.Stats.AttackSpeed);
         Assert.Equal(
             -0.15m,
             Assert.Single(
