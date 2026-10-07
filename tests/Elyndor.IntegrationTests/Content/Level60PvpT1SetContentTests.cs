@@ -120,6 +120,31 @@ public sealed class Level60PvpT1SetContentTests
     }
 
     [Fact]
+    public async Task EveryPvpT1SetUsesADifferentBonusPackageFromPveT1()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+        foreach (string pvpSetId in ExpectedSets.Keys)
+        {
+            string pveSetId = pvpSetId.Replace(
+                "SET_L60_PVP_T1_",
+                "SET_L60_PVE_T1_",
+                StringComparison.Ordinal);
+            EquipmentSetDefinition pvp = Assert.Single(
+                package.EquipmentSets!,
+                set => set.Id == pvpSetId);
+            EquipmentSetDefinition pve = Assert.Single(
+                package.EquipmentSets!,
+                set => set.Id == pveSetId);
+
+            Assert.False(
+                pvp.Bonuses.SequenceEqual(pve.Bonuses),
+                $"PvP set '{pvpSetId}' must not reuse its PvE T1 bonus package.");
+        }
+    }
+
+    [Fact]
     public async Task PvpT1IsNotReferencedByAnyLootTable()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
