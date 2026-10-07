@@ -19,7 +19,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Оружие 60 уровня для ветки «BERSERKER»: базовая ступень перед уникальным оружием.",
+      "description": "Базовое оружие 60 уровня для ветки «Берсерк», ступень перед уникальным оружием.",
       "version": 1,
       "iconId": "items_outside_sets/shattered_order_citadel/mirror_bastard_sword",
       "itemLevelMin": 60,
@@ -59,7 +59,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Оружие 60 уровня для ветки «GUARDIAN»: базовая ступень перед уникальным оружием.",
+      "description": "Базовое оружие 60 уровня для ветки «Страж», ступень перед уникальным оружием.",
       "version": 1,
       "iconId": "items_outside_sets/black_bastion/first_guardian_blade",
       "itemLevelMin": 60,
@@ -99,7 +99,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Оружие 60 уровня для ветки «WARLORD»: базовая ступень перед уникальным оружием.",
+      "description": "Базовое оружие 60 уровня для ветки «Командир», ступень перед уникальным оружием.",
       "version": 1,
       "iconId": "items_outside_sets/black_bastion/ark_tor_hammer",
       "itemLevelMin": 60,
@@ -139,7 +139,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Оружие 60 уровня для ветки «FIRE»: базовая ступень перед уникальным оружием.",
+      "description": "Базовое оружие 60 уровня для ветки «Огонь», ступень перед уникальным оружием.",
       "version": 1,
       "iconId": "items_outside_sets/black_bastion/black_star_staff",
       "itemLevelMin": 60,
@@ -179,7 +179,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Оружие 60 уровня для ветки «FROST»: базовая ступень перед уникальным оружием.",
+      "description": "Базовое оружие 60 уровня для ветки «Лёд», ступень перед уникальным оружием.",
       "version": 1,
       "iconId": "items_outside_sets/open_world_mid/interrupted_mana_staff",
       "itemLevelMin": 60,
@@ -219,7 +219,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Оружие 60 уровня для ветки «ARCANE»: базовая ступень перед уникальным оружием.",
+      "description": "Базовое оружие 60 уровня для ветки «Аркана», ступень перед уникальным оружием.",
       "version": 1,
       "iconId": "items_outside_sets/open_world_mid/shard_wand",
       "itemLevelMin": 60,
@@ -259,7 +259,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Оружие 60 уровня для ветки «MARKSMAN»: базовая ступень перед уникальным оружием.",
+      "description": "Базовое оружие 60 уровня для ветки «Меткость», ступень перед уникальным оружием.",
       "version": 1,
       "iconId": "items_outside_sets/shattered_order_citadel/triple_aspect_bow",
       "itemLevelMin": 60,
@@ -299,7 +299,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Оружие 60 уровня для ветки «BEAST_MASTERY»: базовая ступень перед уникальным оружием.",
+      "description": "Базовое оружие 60 уровня для ветки «Повелитель зверей», ступень перед уникальным оружием.",
       "version": 1,
       "iconId": "items_outside_sets/open_world_mid/double_echo_bow",
       "itemLevelMin": 60,
@@ -339,7 +339,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Оружие 60 уровня для ветки «SURVIVAL»: базовая ступень перед уникальным оружием.",
+      "description": "Базовое оружие 60 уровня для ветки «Выживание», ступень перед уникальным оружием.",
       "version": 1,
       "iconId": "items_outside_sets/black_bastion/black_gate_crossbow",
       "itemLevelMin": 60,
@@ -379,7 +379,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Оружие 60 уровня для ветки «HOLY»: базовая ступень перед уникальным оружием.",
+      "description": "Базовое оружие 60 уровня для ветки «Свет», ступень перед уникальным оружием.",
       "version": 1,
       "iconId": "items_outside_sets/eclipse_citadel/umbra_smith_hammer",
       "itemLevelMin": 60,
@@ -419,7 +419,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Оружие 60 уровня для ветки «PROTECTION»: базовая ступень перед уникальным оружием.",
+      "description": "Базовое оружие 60 уровня для ветки «Защита», ступень перед уникальным оружием.",
       "version": 1,
       "iconId": "items_outside_sets/eclipse_citadel/broken_captain_blade",
       "itemLevelMin": 60,
@@ -459,7 +459,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Оружие 60 уровня для ветки «RETRIBUTION»: базовая ступень перед уникальным оружием.",
+      "description": "Базовое оружие 60 уровня для ветки «Воздаяние», ступень перед уникальным оружием.",
       "version": 1,
       "iconId": "imported/molot_khoziaina_zhil",
       "itemLevelMin": 60,
@@ -499,7 +499,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Классовое кольцо 60 уровня для WARRIOR; заполняет базовый endgame-слот до уникальных трофеев.",
+      "description": "Классовое кольцо 60 уровня для Воина; базовая endgame-ступень до уникальных трофеев.",
       "version": 1,
       "iconId": "acc_uncommon_6_ring",
       "itemLevelMin": 60,
@@ -535,7 +535,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Классовый плащ 60 уровня для WARRIOR; базовая endgame-ступень до уникального плаща.",
+      "description": "Классовый плащ 60 уровня для Воина; базовая endgame-ступень до уникального плаща.",
       "version": 1,
       "iconId": "acc_uncommon_6_cloak",
       "itemLevelMin": 60,
@@ -571,7 +571,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Классовый амулет 60 уровня для WARRIOR; закрывает базовый endgame-слот амулета.",
+      "description": "Классовый амулет 60 уровня для Воина; закрывает базовый слот экипировки 60 уровня.",
       "version": 1,
       "iconId": "acc_uncommon_6_amulet",
       "itemLevelMin": 60,
@@ -607,7 +607,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Классовое кольцо 60 уровня для MAGE; заполняет базовый endgame-слот до уникальных трофеев.",
+      "description": "Классовое кольцо 60 уровня для Мага; базовая endgame-ступень до уникальных трофеев.",
       "version": 1,
       "iconId": "acc_uncommon_6_ring",
       "itemLevelMin": 60,
@@ -643,7 +643,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Классовый плащ 60 уровня для MAGE; базовая endgame-ступень до уникального плаща.",
+      "description": "Классовый плащ 60 уровня для Мага; базовая endgame-ступень до уникального плаща.",
       "version": 1,
       "iconId": "acc_uncommon_6_cloak",
       "itemLevelMin": 60,
@@ -679,7 +679,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Классовый амулет 60 уровня для MAGE; закрывает базовый endgame-слот амулета.",
+      "description": "Классовый амулет 60 уровня для Мага; закрывает базовый слот экипировки 60 уровня.",
       "version": 1,
       "iconId": "acc_uncommon_6_amulet",
       "itemLevelMin": 60,
@@ -715,7 +715,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Классовое кольцо 60 уровня для ARCHER; заполняет базовый endgame-слот до уникальных трофеев.",
+      "description": "Классовое кольцо 60 уровня для Лучника; базовая endgame-ступень до уникальных трофеев.",
       "version": 1,
       "iconId": "acc_uncommon_6_ring",
       "itemLevelMin": 60,
@@ -751,7 +751,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Классовый плащ 60 уровня для ARCHER; базовая endgame-ступень до уникального плаща.",
+      "description": "Классовый плащ 60 уровня для Лучника; базовая endgame-ступень до уникального плаща.",
       "version": 1,
       "iconId": "acc_uncommon_6_cloak",
       "itemLevelMin": 60,
@@ -787,7 +787,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Классовый амулет 60 уровня для ARCHER; закрывает базовый endgame-слот амулета.",
+      "description": "Классовый амулет 60 уровня для Лучника; закрывает базовый слот экипировки 60 уровня.",
       "version": 1,
       "iconId": "acc_uncommon_6_amulet",
       "itemLevelMin": 60,
@@ -823,7 +823,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Классовое кольцо 60 уровня для PALADIN; заполняет базовый endgame-слот до уникальных трофеев.",
+      "description": "Классовое кольцо 60 уровня для Паладина; базовая endgame-ступень до уникальных трофеев.",
       "version": 1,
       "iconId": "acc_uncommon_6_ring",
       "itemLevelMin": 60,
@@ -859,7 +859,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Классовый плащ 60 уровня для PALADIN; базовая endgame-ступень до уникального плаща.",
+      "description": "Классовый плащ 60 уровня для Паладина; базовая endgame-ступень до уникального плаща.",
       "version": 1,
       "iconId": "acc_uncommon_6_cloak",
       "itemLevelMin": 60,
@@ -895,7 +895,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Классовый амулет 60 уровня для PALADIN; закрывает базовый endgame-слот амулета.",
+      "description": "Классовый амулет 60 уровня для Паладина; закрывает базовый слот экипировки 60 уровня.",
       "version": 1,
       "iconId": "acc_uncommon_6_amulet",
       "itemLevelMin": 60,
