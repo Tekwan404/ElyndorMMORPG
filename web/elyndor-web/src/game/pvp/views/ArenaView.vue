@@ -2,7 +2,8 @@
 import { computed, onMounted, onUnmounted } from 'vue'
 
 import ArenaBattlefield from '@/game/pvp/components/ArenaBattlefield.vue'
-import ArenaInvitations from '@/game/pvp/components/ArenaInvitations.vue'\nimport ArenaHonorShop from '@/game/pvp/components/ArenaHonorShop.vue'
+import ArenaInvitations from '@/game/pvp/components/ArenaInvitations.vue'
+import ArenaHonorShop from '@/game/pvp/components/ArenaHonorShop.vue'
 import { useArenaStore } from '@/game/pvp/arenaStore'
 import { arenaErrorMessage, arenaResultLabel } from '@/game/pvp/arenaPresentation'
 import { UIButton } from '@/ui/components'
@@ -18,7 +19,10 @@ onMounted(async () => {
   await arena.refresh()
   await arena.loadLeaderboard()
   if (arena.enabled) {
-    try {\n      await arena.connect()\n      await Promise.all([arena.loadInvites(), arena.loadShop()])\n    }
+    try {
+      await arena.connect()
+      await Promise.all([arena.loadInvites(), arena.loadShop()])
+    }
     catch { arena.errorCode = 'arena_load_failed' }
   }
 })
