@@ -15,6 +15,19 @@ This document supersedes the legacy Arcane Charges / Frostbite-stack / Fire Come
 
 Exact production ranks, prerequisites and numeric modifier values live in `content/talents/mage-pyromancer.json`; ability definitions live in `content/abilities/mage-pyromancer.json`. This document defines the gameplay/runtime contract those values implement.
 
+Presentation release `0.42.1` rewrites all 96 Russian talent descriptions and the
+three branch summaries against the current runtime. It preserves talent IDs,
+ranks, prerequisites, modifiers, tree version 2 and balance version `0.33.0`.
+Player-facing terms are «Воспламенение» (Ignite), «Ясность мысли» (Clearcasting),
+«Охлаждение» (Chill), заморозка (Freeze) and «Глубокое охлаждение» (Deep Chill).
+Descriptions distinguish direct damage, critical chance, additional critical
+damage, personal effects, shared group stacks and activation limits.
+
+Arcane Missiles and Blizzard currently resolve damage after a four-second cast;
+Evocation restores Mana only on successful completion. Their descriptions reflect
+that shipped behavior. A real channel primitive, Mage Core changes, Mana economy
+retuning and Fire/Arcane/Frost runtime extraction remain separate work.
+
 ---
 
 # 1. Общий каркас
