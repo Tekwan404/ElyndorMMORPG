@@ -59,13 +59,7 @@ const allVisibleLocations = computed(() => {
       || left.displayName.localeCompare(right.displayName),
   )
 })
-const availableMaps = computed(() => {
-  const ids = new Set<string>([currentMapId.value])
-  for (const location of world.value?.outgoingTransitions ?? []) {
-    ids.add(locationMapId(location))
-  }
-  return mapOptions.filter(map => ids.has(map.id))
-})
+const availableMaps = computed(() => mapOptions)
 const activeMap = computed(() =>
   mapOptions.find(map => map.id === selectedMapId.value) ?? mapOptions[0]!,
 )
@@ -108,7 +102,15 @@ function locationArt(locationId: string | null | undefined): string {
 }
 
 const mapArt = computed(() =>
-  selectedMapId.value === BORDERLANDS_MAP_ID ? gameArt.world.worldMap : null,
+  selectedMapId.value === OUTER_REACHES_MAP_ID
+    ? gameArt.world.outerReachesMap
+    : gameArt.world.worldMap,
+)
+const mapAspectRatio = computed(() =>
+  selectedMapId.value === OUTER_REACHES_MAP_ID ? '280 / 498' : '1055 / 1491',
+)
+const mapViewportRatio = computed(() =>
+  selectedMapId.value === OUTER_REACHES_MAP_ID ? '0.562' : '0.707',
 )
 const selectedArt = computed(() => locationArt(selectedLocation.value?.id))
 const activeContract = computed(() =>
@@ -261,7 +263,9 @@ function nodeStyle(locationId: string, fallbackIndex: number): Record<string, st
 }
 
 const mapCanvasStyle = computed(() => ({
-  '--map-art': mapArt.value ? `url(${mapArt.value})` : 'none',
+  '--map-art': `url(${mapArt.value})`,
+  '--map-aspect': mapAspectRatio.value,
+  '--map-viewport-ratio': mapViewportRatio.value,
 }))
 
 watch(currentLocationId, locationId => {
@@ -617,10 +621,12 @@ onMounted(() => {
 
 .map-canvas {
   --map-art: none;
+  --map-aspect: 1055 / 1491;
+  --map-viewport-ratio: 0.707;
 
   position: relative;
-  width: min(100%, 34rem, calc(75dvh * 0.707));
-  aspect-ratio: 1055 / 1491;
+  width: min(100%, 34rem, calc(75dvh * var(--map-viewport-ratio)));
+  aspect-ratio: var(--map-aspect);
   margin-inline: auto;
   overflow: hidden;
   border: 1px solid var(--ui-color-border-strong);
