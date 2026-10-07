@@ -48,16 +48,18 @@ describe('world map placement', () => {
   })
 
   it('keeps the level 41-60 region on its own authored map', () => {
-    expect(Object.keys(OUTER_REACHES_MAP_POSITIONS).sort()).toEqual([
-      'BLACK_CRAGS',
-      'DEAD_REACHES',
-      'DOOMED_LANDS',
-      'FROZEN_EDGE',
-      'GLASS_DESERT',
-      'PLAGUEWOOD',
-    ])
-    expect(worldMapPosition('BLACK_CRAGS', 0, OUTER_REACHES_MAP_ID)).toMatchObject({ x: 20, y: 82 })
-    expect(worldMapPosition('DEAD_REACHES', 0, OUTER_REACHES_MAP_ID).y).toBeLessThan(20)
+    expect(OUTER_REACHES_MAP_POSITIONS).toEqual({
+      BLACK_CRAGS: { x: 22, y: 30 },
+      PLAGUEWOOD: { x: 52, y: 43 },
+      GLASS_DESERT: { x: 22, y: 55 },
+      FROZEN_EDGE: { x: 78, y: 25 },
+      DOOMED_LANDS: { x: 52, y: 69 },
+      DEAD_REACHES: { x: 82, y: 61 },
+    })
+
+    for (const [locationId, position] of Object.entries(OUTER_REACHES_MAP_POSITIONS)) {
+      expect(worldMapPosition(locationId, 0, OUTER_REACHES_MAP_ID)).toEqual(position)
+    }
   })
 
   it('keeps authored touch targets inside the map frame', () => {
