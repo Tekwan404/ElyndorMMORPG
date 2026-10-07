@@ -82,7 +82,7 @@ _markedShotSequence = 0;
 if (ability.ResourceCost > 0
 && TryGetArcherHook(
 "M-7-3",
-"MISS_REFUND",
+"PHYSICAL_MISS_REFUND",
 out ResolvedTalentEventHook refund))
 {
 AddResource(
@@ -101,7 +101,7 @@ RegisterSuccessfulPhysicalShot(target, now);
 if (string.Equals(ability.Id, "PIERCING_ARROW", StringComparison.Ordinal)
 && TryGetArcherHook(
 "M-4-3",
-"EXPOSED_DEFENSE",
+"PIERCING_EXPOSED_DEFENSE",
 out ResolvedTalentEventHook exposed))
 {
 ApplyArcherEffect(
@@ -249,7 +249,7 @@ break;
 }
 if (TryGetArcherHook(
 "B-5-4",
-"COMMANDING_VOICE",
+"COMMAND_PET_DAMAGE",
 out ResolvedTalentEventHook voice))
 {
 ApplyCompanionMultiplier(
@@ -261,7 +261,7 @@ now);
 }
 if (TryGetArcherHook(
 "B-8-2",
-"COORDINATION",
+"COMMAND_OWNER_SHOT",
 out ResolvedTalentEventHook coordination))
 {
 ApplyOneShotBuff(
@@ -279,7 +279,7 @@ return;
 decimal totalPercent = ArcherRuntimeParameter("MEND_PET", "healPercent");
 if (TryGetArcherHook(
 "B-3-1",
-"IMPROVED_MEND",
+"MEND_PET_BONUS",
 out ResolvedTalentEventHook improved))
 {
 totalPercent *= 1 + improved.Value / 100m;
@@ -372,7 +372,7 @@ now);
 RemoveCompanionControls(now);
 bool resetCommand =
 TryGetArcherHook("B-7-2", "PRIMAL_COMMAND", out _)
-|| TryGetArcherHook("B-8-3", "UNSTOPPABLE_PACK", out _);
+|| TryGetArcherHook("B-8-3", "BESTIAL_WRATH_UNSTOPPABLE", out _);
 if (resetCommand)
 _playerRuntime.Cooldowns.Remove("COMMAND_ATTACK");
 _bestialWrathFirstCommandAvailable =
@@ -414,7 +414,7 @@ duration += TimeSpan.FromSeconds(
 decimal carriedDamage = 0;
 if (TryGetArcherHook(
 "S-3-3",
-"TOXICOLOGY_CARRY",
+"TOXICOLOGY",
 out _))
 {
 ActiveEffect? old = FindArcherEffect(target, SerpentStingEffectId, now);
