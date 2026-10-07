@@ -81,6 +81,8 @@ const sessionErrorMessage = computed(() => {
     return 'Не удалось подтвердить вход через Telegram. Попробуйте войти ещё раз.'
   if (code === 'telegram_web_session_invalid')
     return 'Сессия Telegram в этой вкладке устарела. Войдите через Telegram ещё раз.'
+  if (code === 'telegram_init_data_expired' || code === 'telegram_session_invalid')
+    return 'Сессия Mini App устарела. Полностью закройте игру в Telegram и откройте её заново из бота.'
   if (code === 'bootstrap_failed') return 'Не удалось загрузить состояние персонажа и мира.'
   if (code === 'internal_server_error' || code === 'http_500') {
     const trace = session.errorCorrelationId ? ` ID запроса: ${session.errorCorrelationId}` : ''
