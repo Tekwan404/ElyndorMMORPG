@@ -898,6 +898,100 @@ public sealed class CombatSessionTests
     }
 
     [Fact]
+    public void InstantAbilitySpamPreservesMainHandSwingClock()
+    {
+        CombatSession session = CreateSession(
+            enemyHp: 100_000,
+            playerResource: 100,
+            playerAutoAttackInterval: TimeSpan.FromSeconds(2));
+
+        for (int index = 1; index <= 19; index++)
+        {
+            DateTimeOffset abilityAt = Now.AddSeconds(index * 1.5);
+            CombatCommandResult result = session.HandleAbilityInterruptingAutoAttack(
+                PlayerId,
+                new UseAbilityCommand($"spam-strike-{index}", "STRIKE", EnemyId),
+                abilityAt);
+
+            Assert.True(result.Succeeded, result.ErrorCode);
+        }
+
+        session.AdvanceTo(Now.AddSeconds(30));
+
+        CombatEvent[] swings = session.GetEventsAfter(0)
+            .Where(item => item.Type == CombatEventType.DamageDealt
+                && item.DefinitionId == "AUTO_ATTACK"
+                && item.SourceActorId == PlayerId)
+            .ToArray();
+
+        Assert.Equal(16, swings.Length);
+        Assert.Equal(
+            Enumerable.Range(0, 16).Select(index => Now.AddSeconds(index * 2)),
+            swings.Select(item => item.OccurredAtUtc));
+    }
+
+    [Fact]
+    public void InstantAbilitySpamPreservesIndependentDualWieldSwingClocks()
+    {
+        AutoAttackProfile mainHand = new(
+            TimeSpan.FromSeconds(2),
+            BaseDamage: 20,
+            AttackPowerCoefficient: 0,
+            ResourceOnHit: 0,
+            WeaponDefinitionId: "MAIN_TEST_SWORD",
+            WeaponHand: CombatWeaponHand.MainHand);
+        AutoAttackProfile offHand = new(
+            TimeSpan.FromSeconds(1.6),
+            BaseDamage: 8,
+            AttackPowerCoefficient: 0,
+            ResourceOnHit: 0,
+            WeaponDefinitionId: "OFF_TEST_SWORD",
+            WeaponHand: CombatWeaponHand.OffHand);
+        CombatSession session = CreateSession(
+            enemyHp: 100_000,
+            playerResource: 100,
+            playerCriticalChance: 0,
+            mainHandAutoAttack: mainHand,
+            offHandAutoAttack: offHand);
+
+        for (int index = 1; index <= 6; index++)
+        {
+            DateTimeOffset abilityAt = Now.AddSeconds(index * 1.5);
+            CombatCommandResult result = session.HandleAbilityInterruptingAutoAttack(
+                PlayerId,
+                new UseAbilityCommand($"dual-spam-{index}", "STRIKE", EnemyId),
+                abilityAt);
+
+            Assert.True(result.Succeeded, result.ErrorCode);
+        }
+
+        session.AdvanceTo(Now.AddSeconds(10));
+
+        CombatEvent[] swings = session.GetEventsAfter(0)
+            .Where(item => item.Type == CombatEventType.DamageDealt
+                && item.DefinitionId == "AUTO_ATTACK"
+                && item.SourceActorId == PlayerId)
+            .ToArray();
+        CombatEvent[] mainSwings = swings
+            .Where(item => item.WeaponHand == CombatWeaponHand.MainHand)
+            .ToArray();
+        CombatEvent[] offSwings = swings
+            .Where(item => item.WeaponHand == CombatWeaponHand.OffHand)
+            .ToArray();
+
+        Assert.Equal(6, mainSwings.Length);
+        Assert.Equal(6, offSwings.Length);
+        Assert.Equal(
+            [Now, Now.AddSeconds(2), Now.AddSeconds(4), Now.AddSeconds(6), Now.AddSeconds(8), Now.AddSeconds(10)],
+            mainSwings.Select(item => item.OccurredAtUtc));
+        TimeSpan offHandInitialDelay = TimeSpan.FromTicks(offHand.Interval.Ticks / 2);
+        Assert.Equal(
+            Enumerable.Range(0, 6)
+                .Select(index => Now + offHandInitialDelay + TimeSpan.FromTicks(offHand.Interval.Ticks * index)),
+            offSwings.Select(item => item.OccurredAtUtc));
+    }
+
+    [Fact]
     public void DualWieldEqualSpeedAlternatesHandsAndPreservesWeaponSource()
     {
         AutoAttackProfile mainHand = new(
