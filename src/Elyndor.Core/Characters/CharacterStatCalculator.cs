@@ -38,7 +38,7 @@ public sealed class CharacterStatCalculator(
     public const decimal AgilityDiminishingReturnsRating = 200m;
     public const decimal CriticalChanceCap = 60m;
     public const decimal DodgeCap = 35m;
-    public const decimal AttackSpeedPercentCap = 30m;
+    public const decimal AttackSpeedPercentCap = 50m;
 
     public CharacterStats Calculate(
         string classId,
