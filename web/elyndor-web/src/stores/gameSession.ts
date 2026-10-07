@@ -37,6 +37,8 @@ import type {
 import {
   clearWebAuthenticationData,
   getTelegramInitData,
+  getTelegramMiniAppUserId,
+  setWebAuthenticationData,
 } from '@/telegram/telegramWebApp'
 
 export type GameSessionState =
@@ -95,11 +97,44 @@ export const useGameSessionStore = defineStore('gameSession', () => {
       )
       apiClient.setAccessToken(authentication.accessToken)
       roles.value = authentication.roles ?? []
+      if (
+        authentication.sessionCredential
+        && authentication.sessionCredentialExpiresAtUtc
+      ) {
+        setWebAuthenticationData(
+          authentication.sessionCredential,
+          authentication.sessionCredentialExpiresAtUtc,
+          getTelegramMiniAppUserId(),
+        )
+      }
       return authentication.accessToken
     } catch (error) {
-      const browserCredential = getTelegramInitData()
+      const currentCredential = getTelegramInitData()
       if (
-        browserCredential?.startsWith('web:')
+        currentCredential?.startsWith('session:')
+        && error instanceof ApiRequestError
+        && error.status === 401
+        && error.code === 'telegram_session_credential_invalid'
+      ) {
+        clearWebAuthenticationData()
+        const fallback = getTelegramInitData()
+        if (
+          fallback
+          && !fallback.startsWith('session:')
+          && !fallback.startsWith('web:')
+        ) {
+          return await authenticate(isRetry)
+        }
+
+        throw new ApiRequestError(
+          401,
+          'telegram_session_invalid',
+          error.correlationId,
+        )
+      }
+
+      if (
+        currentCredential?.startsWith('web:')
         && error instanceof ApiRequestError
         && error.status === 401
         && error.code === 'telegram_web_credential_invalid'
