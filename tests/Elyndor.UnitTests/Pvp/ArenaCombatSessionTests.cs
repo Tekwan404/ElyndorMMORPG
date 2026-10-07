@@ -342,12 +342,13 @@ public sealed class ArenaCombatSessionTests
     public void LethalOffHandAndMainHandAtSameTimestampResolveToDraw()
     {
         var noAbilities = new Dictionary<string, AbilityDefinition>();
+        CombatStats guaranteedHitStats = CombatStats.Default with { Accuracy = 100 };
         var first = new ArenaFighter(AccountA, ActorA,
-            new CombatActorState(ActorA, 100, 100, 100, 100, CombatStats.Default),
+            new CombatActorState(ActorA, 100, 100, 100, 100, guaranteedHitStats),
             noAbilities, new AutoAttackProfile(TimeSpan.FromHours(1), 1, 0, 0),
             OffHandAutoAttack: new AutoAttackProfile(TimeSpan.FromSeconds(2), 200, 0, 0));
         var second = new ArenaFighter(AccountB, ActorB,
-            new CombatActorState(ActorB, 100, 100, 100, 100, CombatStats.Default),
+            new CombatActorState(ActorB, 100, 100, 100, 100, guaranteedHitStats),
             noAbilities, new AutoAttackProfile(TimeSpan.FromSeconds(1), 200, 0, 0));
         var session = new ArenaCombatSession(Guid.NewGuid(), first, second,
             new SeededGameRandom(42), Start);
