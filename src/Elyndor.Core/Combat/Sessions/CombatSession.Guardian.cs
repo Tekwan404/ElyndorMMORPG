@@ -1,4 +1,5 @@
 using Elyndor.Core.Combat;
+using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Targeting;
 using Elyndor.Core.Monsters;
@@ -10,8 +11,6 @@ public sealed partial class CombatSession
 {
     private const string GuardianStanceDamageEffectId = "GUARDIAN_STANCE_DAMAGE";
     private const string GuardianOneHandDamageEffectId = "GUARDIAN_ONE_HAND_DAMAGE";
-    private const string GuardianLastStandActiveEffectId = "GUARDIAN_LAST_STAND_ACTIVE";
-    private const string GuardianLastStandMaxHpSourceId = "GUARDIAN_LAST_STAND_MAX_HP";
     private const string GuardianRevengeWindowEffectId = "GUARDIAN_REVENGE_WINDOW";
     private const string GuardianCapstoneShieldBlockEffectId = "GUARDIAN_CAPSTONE_SHIELD_BLOCK";
     private const string GuardianLowHpBlockMinEffectId = "GUARDIAN_LAST_FORTRESS_MIN";
@@ -41,6 +40,22 @@ public sealed partial class CombatSession
     private bool GuardianHasShieldProfile =>
         _player.Actor.Stats.BlockValueMax > 0
         || _player.Actor.Stats.BlockChance > 0;
+
+    private AbilityDefinition ResolveGuardianAbility(AbilityDefinition ability, DateTimeOffset now)
+    {
+        if (ability.Id != "SHIELD_SLAM" || !_playerTalents.UnlockedAbilityIds.Contains("SUNDER_ARMOR")
+            || !_abilities.TryGetValue("SUNDER_ARMOR", out AbilityDefinition? sunder))
+            return ability;
+        decimal originalCost = sunder.ResourceCost;
+        sunder = TalentAbilityResolver.Apply(sunder, _playerTalents);
+        return ability with
+        {
+            ResourceCost = Math.Max(0, ability.ResourceCost - (originalCost - sunder.ResourceCost)),
+            Actions = (ability.Actions ?? []).Concat((sunder.Actions ?? [])
+                .Where(action => action.Type == AbilityActionType.ApplyEffect)
+                .Select(action => action with { RequiresSuccessfulHit = true })).ToArray()
+        };
+    }
 
     private void ApplyGuardianStartingEffects(DateTimeOffset now)
     {
@@ -89,10 +104,6 @@ public sealed partial class CombatSession
 
         switch (combatEvent.DefinitionId)
         {
-            case "LAST_STAND":
-                SyncGuardianLastStand(now);
-                break;
-
             case "REVENGE":
                 if (targetActorId is { } revengeTarget)
                 {
@@ -101,7 +112,6 @@ public sealed partial class CombatSession
                         revengeTarget,
                         GuardianRevengeBaseThreat * threatBonus,
                         now);
-                    TryApplyGuardianRevengeStun(revengeTarget, now);
                 }
                 break;
 
@@ -134,23 +144,6 @@ public sealed partial class CombatSession
                 }
                 break;
 
-            case "CONCUSSION_BLOW":
-                if (targetActorId is { } concussionTarget)
-                    TryApplyGuardianConcussionStun(concussionTarget, now);
-                break;
-
-            case "SHIELD_BASH":
-                if (targetActorId is { } bashTarget
-                    && GetGuardianHook("G-4-2") is { } improvedBash)
-                {
-                    ApplyGuardianControlEffect(
-                        bashTarget,
-                        "GUARDIAN_IMPROVED_SHIELD_BASH",
-                        EffectKind.Silence,
-                        TimeSpan.FromSeconds((double)improvedBash.Value),
-                        now);
-                }
-                break;
 
             case "BASTION":
                 ApplyGuardianPartyMitigationForDefensiveWindow(
@@ -194,6 +187,20 @@ public sealed partial class CombatSession
         }
 
         SyncGuardianConditionalEffects(combatEvent.OccurredAtUtc);
+    }
+
+    private void ApplyGuardianSuccessfulHitHooks(CombatEvent input)
+    {
+        if (!IsGuardian || input.TargetActorId is not { } target) return;
+        if (input.DefinitionId == "SHIELD_SLAM" && _playerTalents.UnlockedAbilityIds.Contains("SUNDER_ARMOR"))
+            AddGuardianFlatThreat(target, GuardianSunderBaseThreat * (1 + (GetGuardianHook("G-3-6")?.Value ?? 0) / 100m), input.OccurredAtUtc);
+        if (input.DefinitionId == "CONCUSSION_BLOW")
+            TryApplyGuardianConcussionStun(target, input.OccurredAtUtc);
+        if (input.DefinitionId == "REVENGE")
+            TryApplyGuardianRevengeStun(target, input.OccurredAtUtc);
+        if (input.DefinitionId == "SHIELD_BASH" && GetGuardianHook("G-4-2") is { } bash)
+            ApplyGuardianControlEffect(target, "GUARDIAN_IMPROVED_SHIELD_BASH", EffectKind.Silence,
+                TimeSpan.FromSeconds((double)bash.Value), input.OccurredAtUtc);
     }
 
     private void ApplyGuardianBlockHooks(CombatEvent combatEvent)
@@ -438,7 +445,6 @@ public sealed partial class CombatSession
         if (!IsGuardian)
             return;
 
-        SyncGuardianLastStand(now);
         decimal hpPercent = _player.Actor.MaxHp <= 0
             ? 0
             : _player.Actor.CurrentHp / _player.Actor.MaxHp * 100m;
@@ -477,25 +483,6 @@ public sealed partial class CombatSession
         {
             _guardianProvokeThreatWindows.Remove(key);
         }
-    }
-
-    private void SyncGuardianLastStand(DateTimeOffset now)
-    {
-        bool active = HasActiveGuardianEffect(
-            _player.Actor,
-            GuardianLastStandActiveEffectId,
-            now);
-        if (!active)
-        {
-            _player.Actor.RemoveTemporaryMaxHpPercentBonus(GuardianLastStandMaxHpSourceId);
-            return;
-        }
-
-        decimal bonusPercent = 20 + (GetGuardianHook("G-5-4")?.Value ?? 0);
-        _player.Actor.SetTemporaryMaxHpPercentBonus(
-            GuardianLastStandMaxHpSourceId,
-            bonusPercent,
-            healByIncrease: true);
     }
 
     private void ReduceGuardianCooldown(

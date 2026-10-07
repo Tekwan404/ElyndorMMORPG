@@ -1,0 +1,105 @@
+{
+  "contentVersion": "0.39.0",
+  "abilities": [
+    {
+      "id": "BERSERK",
+      "iconId": "warrior-berserk",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 50,
+      "cooldown": "00:02:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "BERSERK_ATTACK_POWER",
+            "kind": "StatModifier",
+            "duration": "00:00:08",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.15,
+            "modifiedStat": "AttackPower",
+            "modifierMode": "Percent"
+          }
+        },
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "BERSERK_CRITICAL_CHANCE",
+            "kind": "StatModifier",
+            "duration": "00:00:08",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 8,
+            "modifiedStat": "CriticalChance",
+            "modifierMode": "Flat"
+          }
+        },
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "BERSERK_ATTACK_SPEED",
+            "kind": "StatModifier",
+            "duration": "00:00:08",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.25,
+            "modifiedStat": "AttackSpeed",
+            "modifierMode": "Percent"
+          }
+        }
+      ],
+      "displayName": "Берсерк",
+      "description": "На 8 сек. повышает скорость атаки на 25%, силу атаки на 15% и шанс критического удара на 8 п.п. Блок щитом, Бастион и Последний рубеж недоступны во время действия. Стоимость: 50 ярости. Не запускает общую перезарядку. Перезарядка: 120 сек."
+    },
+    {
+      "id": "WHIRLWIND",
+      "type": "Instant",
+      "targetType": "AllEnemiesInCombat",
+      "resourceCost": 35,
+      "cooldown": "00:00:10",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 0.7
+        }
+      ],
+      "displayName": "Вихрь",
+      "description": "Наносит всем живым противникам в бою физический урон в размере 70% силы атаки каждому. Стоимость: 35 ярости. Перезарядка: 10 сек.",
+      "iconId": "warrior-whirlwind"
+    },
+    {
+      "id": "WILD_STRIKE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 25,
+      "cooldown": "00:00:06",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 1.35
+        }
+      ],
+      "displayName": "Дикий удар",
+      "description": "Наносит выбранному противнику физический урон в размере 135% силы атаки. Стоимость: 25 ярости. Перезарядка: 6 сек.",
+      "iconId": "warrior-wild-strike"
+    }
+  ]
+}

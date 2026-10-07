@@ -1,4 +1,5 @@
 using Elyndor.Core.Content;
+using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Characters;
 
@@ -30,6 +31,7 @@ public static class CharacterKnownAbilityResolver
             knownAbilityIds.UnionWith(talentUnlockedAbilityIds.Where(id => !string.IsNullOrWhiteSpace(id)));
 
         return knownAbilityIds
+            .Where(id => classProfile.Id != "WARRIOR" || GuardianTalentRuntimeCatalog.IsStandaloneAbility(id, knownAbilityIds))
             .OrderBy(id => id, StringComparer.Ordinal)
             .ToArray();
     }

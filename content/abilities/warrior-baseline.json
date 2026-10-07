@@ -1,0 +1,74 @@
+{
+  "contentVersion": "0.39.0",
+  "abilities": [
+    {
+      "id": "STRIKE",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 0.8
+        },
+        {
+          "type": "ResourceChange",
+          "amount": 10
+        }
+      ],
+      "displayName": "Удар",
+      "description": "Наносит выбранному противнику физический урон в размере 80% силы атаки и даёт 10 ярости. Запускает общую перезарядку.",
+      "iconId": "warrior-strike"
+    },
+    {
+      "id": "BATTLE_SHOUT",
+      "iconId": "warrior-battle-shout",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 0,
+      "cooldown": "00:00:15",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ResourceChange",
+          "amount": 20
+        }
+      ],
+      "displayName": "Клич ярости",
+      "description": "Мгновенно даёт 20 ярости. Не запускает общую перезарядку. Перезарядка: 15 сек."
+    },
+    {
+      "id": "HEAVY_BLOW",
+      "iconId": "warrior-heavy-blow",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 30,
+      "cooldown": "00:00:04",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 1.6
+        }
+      ],
+      "displayName": "Тяжёлый удар",
+      "description": "Наносит выбранному противнику физический урон в размере 160% силы атаки. Стоимость: 30 ярости. Перезарядка: 4 сек."
+    }
+  ]
+}

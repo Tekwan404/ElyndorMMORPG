@@ -32,11 +32,14 @@
         "HEAVY"
       ],
       "prototypeIdentity": "Strength fighter balancing pressure and defense through Rage.",
-      "startingAbilityIds": [],
+      "startingAbilityIds": ["STRIKE"],
       "startingEquipmentItemIds": [
         "RECRUIT_IRON_SWORD"
       ],
-      "abilityUnlocks": [],
+      "abilityUnlocks": [
+        { "abilityId": "BATTLE_SHOUT", "unlockLevel": 3 },
+        { "abilityId": "HEAVY_BLOW", "unlockLevel": 6 }
+      ],
       "combatAutoAttack": {
         "interval": "00:00:02",
         "baseDamage": 0,

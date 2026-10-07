@@ -123,7 +123,8 @@ public static class AbilityEngine
         AbilityActionDefinition action,
         Guid targetActorId,
         DateTimeOffset now,
-        IGameRandom random)
+        IGameRandom random,
+        AbilityTargetModifier? targetModifier = null)
     {
         ArgumentNullException.ThrowIfNull(runtime);
         ArgumentNullException.ThrowIfNull(ability);
@@ -134,7 +135,8 @@ public static class AbilityEngine
             return [];
 
         return ResolveActions(runtime, ability with { Actions = [action] },
-            [targetActorId], null, now, random);
+            [targetActorId], targetModifier is null ? null
+                : new Dictionary<Guid, AbilityTargetModifier> { [targetActorId] = targetModifier }, now, random);
     }
 
     public static AbilityExecutionResult Interrupt(
@@ -174,6 +176,8 @@ public static class AbilityEngine
     {
         if (runtime.Actor.IsDead) return AbilityErrorCode.DeadActor;
         if (!string.Equals(intent.AbilityId, ability.Id, StringComparison.Ordinal))
+            return AbilityErrorCode.AbilityUnavailable;
+        if (ability.BlockedByEffectId is { } blocked && HasActiveEffect(runtime.Actor, blocked, now))
             return AbilityErrorCode.AbilityUnavailable;
         if (!string.IsNullOrWhiteSpace(ability.RequiredActiveEffectId)
             && !HasActiveEffect(runtime.Actor, ability.RequiredActiveEffectId, now))
@@ -279,11 +283,13 @@ public static class AbilityEngine
         foreach (Guid targetId in targetIds)
         {
             CombatActorState target = runtime.Actors[targetId];
+            bool successfulHit = false;
             AbilityTargetModifier targetModifier =
                 targetModifiers?.GetValueOrDefault(targetId)
                 ?? new AbilityTargetModifier();
             foreach (AbilityActionDefinition action in ability.Actions)
             {
+                if (action.RequiresSuccessfulHit && !successfulHit) continue;
                 if (action.Delay is { } delay && delay > TimeSpan.Zero)
                 {
                     runtime.SchedulePendingAction(
@@ -352,6 +358,7 @@ public static class AbilityEngine
                             random,
                             now);
                         events.AddRange(damage.Events);
+                        successfulHit = damage.Avoidance == DamageAvoidance.None;
                         if (action.LifestealPercent > 0
                             && damage.HpDamage > 0
                             && !runtime.Actor.IsDead)
@@ -372,7 +379,7 @@ public static class AbilityEngine
                         HealingResult healing = HealingPipeline.Resolve(
                             new HealingRequest(
                                 target,
-                                action.Amount,
+                                action.Amount + target.MaxHp * action.TargetMaxHpPercent / 100m,
                                 OccurredAtUtc: now,
                                 Source: runtime.Actor,
                                 CanCrit: action.HealingCanCrit,

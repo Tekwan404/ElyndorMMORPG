@@ -225,6 +225,7 @@ public sealed partial class CombatSession
     {
         SyncBerserkerConditionalEffects(now);
         SyncGuardianConditionalEffects(now);
+        SyncWarlordConditionalEffects(now);
         SyncMageConditionalEffects(now);
         SyncArcherConditionalEffects(now);
     }
@@ -282,5 +283,6 @@ public sealed partial class CombatSession
             IsCritical: death.IsCritical,
             IsReflected: death.IsReflected));
         EventRouter.DispatchKill(death);
+        ForEachOtherWarlord(() => ApplyWarlordEnemyKilledHooks(death));
     }
 }

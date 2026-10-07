@@ -9,6 +9,7 @@ public sealed partial class CombatSession
     // Bind adapters once, but read the active participant at each call. Party commands
     // and snapshots must not retain the first player's talents or runtime conditions.
     private AbilityModifierComposer AbilityComposer => _abilityComposer ??= new(new AbilityModifierStages(
+        ResolveGuardianAbility,
         ResolveBerserkerAbility,
         ResolvePaladinAbility,
         ResolveWarlordAbility,

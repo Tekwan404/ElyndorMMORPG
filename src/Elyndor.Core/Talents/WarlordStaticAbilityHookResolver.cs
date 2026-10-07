@@ -3,8 +3,7 @@ using Elyndor.Core.Combat.Abilities;
 namespace Elyndor.Core.Talents;
 
 /// <summary>
-/// Warlord hooks whose PvE behaviour is fully captured by an ability definition.
-/// Party-wide effects and hooks with combat state remain unsupported in 1v1 Arena.
+/// Static Warlord transformations shared by live combat and offline simulation.
 /// </summary>
 public static class WarlordStaticAbilityHookResolver
 {
@@ -78,5 +77,5 @@ public static class WarlordStaticAbilityHookResolver
     private static ResolvedTalentEventHook? FindHook(
         ResolvedTalentModifiers talents,
         string talentId) => talents.EventHooks.FirstOrDefault(hook =>
-            hook.TalentId == talentId && Supports(hook));
+            hook.TalentId == talentId);
 }

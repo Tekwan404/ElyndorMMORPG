@@ -7,14 +7,10 @@ namespace Elyndor.Core.Combat.Sessions;
 
 public sealed partial class CombatSession
 {
-    private const string WarlordPermanentEffectId = "WARLORD_PERMANENT";
-    private const string WarlordBattleCryEffectId = "WARLORD_BATTLE_CRY";
-    private const string WarlordEnduranceEffectId = "WARLORD_ENDURANCE_CRY";
     private const string WarlordBannerEffectId = "WARLORD_WAR_BANNER";
-    private const string WarlordVictoryFlagEffectId = "WARLORD_VICTORY_FLAG";
-    private const string WarlordBattleStandardEffectId = "WARLORD_BATTLE_STANDARD";
     private const string WarlordPartyShieldEffectId = "WARLORD_PARTY_SHIELD";
-    private const string WarlordVengeanceStackEffectId = "WARLORD_CRIT_OF_VENGEANCE";
+    private const string WarlordVengeanceActiveEffectId = "WARLORD_CRIT_OF_VENGEANCE";
+    private const string WarlordVengeanceStackEffectId = "WARLORD_VENGEANCE_STACKS";
 
     private bool IsWarlord =>
         string.Equals(_player.DefinitionId, "WARRIOR", StringComparison.Ordinal)
@@ -28,27 +24,13 @@ public sealed partial class CombatSession
         if (!IsWarlord)
             return ability;
 
+        ability = WarlordStaticAbilityHookResolver.Apply(ability, _playerTalents);
         decimal resourceCost = ability.ResourceCost;
         TimeSpan cooldown = ability.Cooldown;
-        if (IsWarlordCry(ability.Id)
-            && TryGetWarlordHook("W-1-1", out ResolvedTalentEventHook cryCost))
-        {
-            resourceCost = Math.Max(0, resourceCost - cryCost.Value);
-        }
-
-        if (ability.Id is "WAR_BANNER" or "VICTORY_FLAG" or "BATTLE_STANDARD"
-            && TryGetWarlordHook("W-5-2", out ResolvedTalentEventHook flagCooldown))
-        {
-            cooldown = MaxZero(cooldown - TimeSpan.FromSeconds((double)flagCooldown.Value));
-        }
-
+        if (IsWarlordCry(ability.Id) && GetWarlordHook("W-7-3") is { } cadence)
+            cooldown = MaxZero(cooldown - TimeSpan.FromSeconds((double)cadence.Value));
         IReadOnlyList<AbilityActionDefinition>? actions = ability.Actions;
         decimal durationBonus = 0;
-        if (IsWarlordCry(ability.Id)
-            && TryGetWarlordHook("W-4-4", out ResolvedTalentEventHook echo))
-        {
-            durationBonus += echo.Value;
-        }
         if (IsWarlordCry(ability.Id)
             && HasWarlordTalent("W-9-1"))
         {
@@ -69,11 +51,46 @@ public sealed partial class CombatSession
                 }).ToArray();
         }
 
+        List<AbilityActionDefinition> resolvedActions = (actions ?? []).ToList();
+        TimeSpan effectDuration = resolvedActions.Where(a => a.Effect is not null)
+            .Select(a => a.Effect!.Duration).DefaultIfEmpty(TimeSpan.Zero).Max();
+        void AddUpgrade(string talentId, string effectId, EffectStat stat,
+            EffectModifierMode mode = EffectModifierMode.Percent)
+        {
+            if (GetWarlordHook(talentId) is not { } hook || effectDuration <= TimeSpan.Zero)
+                return;
+            decimal magnitude = mode == EffectModifierMode.Multiplicative
+                ? Math.Max(0, 1 - hook.Value / 100m)
+                : mode == EffectModifierMode.Flat ? hook.Value : hook.Value / 100m;
+            resolvedActions.Add(new(AbilityActionType.ApplyEffect,
+                Effect: new EffectDefinition(effectId, EffectKind.StatModifier, effectDuration,
+                    1, EffectStackPolicy.Replace, magnitude, ModifiedStat: stat, ModifierMode: mode,
+                    DispelCategory: "WARLORD")));
+        }
+        if (ability.Id == "BATTLE_CRY")
+        {
+            AddUpgrade("W-2-4", "WARLORD_UNIFIED_RHYTHM", EffectStat.Accuracy);
+            AddUpgrade("W-4-1", "WARLORD_STRENGTHENED_CRY", EffectStat.AttackSpeed);
+            AddUpgrade("W-5-4", "WARLORD_ADVANCE_ORDER", EffectStat.CriticalChance, EffectModifierMode.Flat);
+        }
+        if (ability.Id == "ENDURANCE_CRY")
+        {
+            AddUpgrade("W-6-2", "WARLORD_ENDURANCE_BANNER", EffectStat.Armor);
+            AddUpgrade("W-6-2", "WARLORD_ENDURANCE_BANNER_MR", EffectStat.MagicResistance);
+        }
+        if (ability.Id is "WAR_BANNER" or "VICTORY_FLAG" or "BATTLE_STANDARD")
+            AddUpgrade("W-3-4", "WARLORD_UNITY_BANNER", EffectStat.IncomingDamageMultiplier, EffectModifierMode.Multiplicative);
+        if (ability.Id == "VICTORY_FLAG" && GetWarlordHook("W-8-2") is { } vanguard)
+            resolvedActions.Add(new(AbilityActionType.ApplyEffect,
+                Effect: new EffectDefinition("WARLORD_UNBREAKABLE_VANGUARD", EffectKind.LethalDamagePrevention,
+                    TimeSpan.FromSeconds((double)vanguard.Value), 1, EffectStackPolicy.Replace, 1,
+                    DispelCategory: "WARLORD")));
+
         return ability with
         {
             ResourceCost = resourceCost,
             Cooldown = cooldown,
-            Actions = actions
+            Actions = resolvedActions
         };
     }
 
@@ -81,6 +98,7 @@ public sealed partial class CombatSession
     {
         if (!IsWarlord)
             return;
+        SyncWarlordConditionalEffects(now);
 
         if (TryGetWarlordHook("W-1-2", out ResolvedTalentEventHook attackPower))
         {
@@ -125,8 +143,6 @@ public sealed partial class CombatSession
             talentIds.Add("W-8-1");
         if (abilityId is "WAR_BANNER" or "VICTORY_FLAG" or "BATTLE_STANDARD")
             talentIds.Add("W-9-1");
-        if (IsWarlordCry(abilityId))
-            talentIds.Add("W-7-3");
         if (abilityId is "WAR_BANNER" or "VICTORY_FLAG" or "BATTLE_STANDARD")
             talentIds.Add("W-8-4");
 
@@ -139,44 +155,9 @@ public sealed partial class CombatSession
             ApplyWarlordPartyAction(action, abilityId, combatEvent.OccurredAtUtc);
         }
 
-        if (IsWarlordCry(abilityId)
-            && GetWarlordHook("W-7-3") is { } rhythm)
-        {
-            ReduceWarlordCryCooldowns(rhythm.Value, combatEvent.OccurredAtUtc);
-        }
-        if (abilityId is "WAR_BANNER" or "VICTORY_FLAG" or "BATTLE_STANDARD"
-            && GetWarlordHook("W-8-4") is { } commander)
-        {
-            ReduceWarlordCryCooldowns(commander.Value, combatEvent.OccurredAtUtc);
-        }
+        if (abilityId == "RALLY_CRY" && HasWarlordTalent("W-9-1"))
+            AddResource(_player.Actor, _player.Actor.MaxResource * 0.20m, combatEvent.OccurredAtUtc, "W-9-1-RALLY");
 
-        if (abilityId == "BATTLE_CRY")
-        {
-            ApplyWarlordPartyEffectFromHook("W-2-4", "WARLORD_UNIFIED_RHYTHM", EffectStat.Accuracy, combatEvent.OccurredAtUtc);
-            ApplyWarlordPartyEffectFromHook("W-4-1", "WARLORD_STRENGTHENED_CRY", EffectStat.AttackSpeed, combatEvent.OccurredAtUtc);
-            ApplyWarlordPartyEffectFromHook("W-5-4", "WARLORD_ADVANCE_ORDER", EffectStat.CriticalChance, combatEvent.OccurredAtUtc);
-        }
-        if (abilityId == "ENDURANCE_CRY")
-        {
-            ApplyWarlordPartyEffectFromHook("W-6-2", "WARLORD_ENDURANCE_BANNER", EffectStat.Armor, combatEvent.OccurredAtUtc);
-            ApplyWarlordPartyEffectFromHook("W-6-2", "WARLORD_ENDURANCE_BANNER_MR", EffectStat.MagicResistance, combatEvent.OccurredAtUtc);
-        }
-        if (abilityId == "WAR_BANNER")
-        {
-            ApplyWarlordPartyEffectFromHook("W-3-4", "WARLORD_UNITY_BANNER", EffectStat.IncomingDamageMultiplier, combatEvent.OccurredAtUtc);
-        }
-        if (abilityId == "VICTORY_FLAG")
-        {
-            ApplyWarlordPartyEffectFromHook("W-8-2", "WARLORD_UNBREAKABLE_VANGUARD", null, combatEvent.OccurredAtUtc);
-        }
-        if (abilityId == "CRY_OF_VENGEANCE" && _companion is not null)
-        {
-            ApplyKernelEvents(
-                EffectEngine.Remove(_companion.Actor, WarlordVengeanceStackEffectId, combatEvent.OccurredAtUtc),
-                _player.Actor.ActorId,
-                _companion.Actor.ActorId,
-                WarlordVengeanceStackEffectId);
-        }
     }
 
     private void ApplyWarlordPartyDamageHooks(CombatEvent combatEvent)
@@ -189,7 +170,7 @@ public sealed partial class CombatSession
             return;
         }
 
-        HashSet<string> talentIds = ["W-2-2", "W-7-4"];
+        HashSet<string> talentIds = ["W-2-2"];
         CombatActorState? ally = GetPartyActor(targetActorId);
         foreach (TalentRuntimeAction action in PublishWarlordPartyEvent(
                      combatEvent.OccurredAtUtc,
@@ -206,19 +187,6 @@ public sealed partial class CombatSession
                 decimal shield = ally.MaxHp * (GetWarlordHook("W-2-2")?.SecondaryValue ?? 4) / 100m;
                 ApplyWarlordShield(ally, shield, TimeSpan.FromSeconds(5), combatEvent.OccurredAtUtc);
             }
-            else if (action.TalentId == "W-7-4"
-                && GetPartyActor(targetActorId) is { } affected
-                && affected.CurrentHp / affected.MaxHp < 0.25m)
-            {
-                ApplyWarlordEffect(
-                    affected,
-                    "WARLORD_STAND_TO_THE_END",
-                    EffectStat.IncomingDamageMultiplier,
-                    Math.Max(0, 1 - action.Value / 100m),
-                    combatEvent.OccurredAtUtc,
-                    EffectModifierMode.Multiplicative,
-                    TimeSpan.FromSeconds(10));
-            }
         }
 
         if (combatEvent.DefinitionId == "AUTO_ATTACK")
@@ -226,8 +194,14 @@ public sealed partial class CombatSession
 
         if (HasWarlordAbility("CRY_OF_VENGEANCE")
             && targetActorId != _player.Actor.ActorId
-            && _player.Actor.ActiveEffects.Any(effect => effect.Definition.Id == WarlordVengeanceStackEffectId))
+            && combatEvent.Amount > 0
+            && _player.Actor.ActiveEffects.FirstOrDefault(effect => effect.Definition.Id == WarlordVengeanceActiveEffectId
+                && effect.ExpiresAtUtc > combatEvent.OccurredAtUtc) is { } vengeance
+            && _procGuard.IsReady(_player.Actor.ActorId, "warlord-vengeance-stack", combatEvent.OccurredAtUtc))
         {
+            _procGuard.StartCooldown(_player.Actor.ActorId, "warlord-vengeance-stack",
+                combatEvent.OccurredAtUtc, TimeSpan.FromSeconds((double)(
+                    _abilities["CRY_OF_VENGEANCE"].RuntimeParameters?.GetValueOrDefault("VENGEANCE_STACK_ICD_SECONDS") ?? 0.5m)));
             ApplyKernelEvents(
                 EffectEngine.Apply(
                     _player.Actor,
@@ -235,15 +209,18 @@ public sealed partial class CombatSession
                     new EffectDefinition(
                         WarlordVengeanceStackEffectId,
                         EffectKind.Buff,
-                        TimeSpan.FromSeconds(10),
-                        5,
+                        vengeance.ExpiresAtUtc - combatEvent.OccurredAtUtc,
+                        vengeance.Definition.MaxStacks,
                         EffectStackPolicy.Stack,
-                        0.35m,
+                        vengeance.Definition.Magnitude,
                         DispelCategory: "WARLORD"),
                     combatEvent.OccurredAtUtc),
                 _player.Actor.ActorId,
                 _player.Actor.ActorId,
                 WarlordVengeanceStackEffectId);
+            // Stack refresh must never extend the cry's original window.
+            _player.Actor.ActiveEffects.First(effect => effect.Definition.Id == WarlordVengeanceStackEffectId)
+                .ExpiresAtUtc = vengeance.ExpiresAtUtc;
         }
     }
 
@@ -272,14 +249,14 @@ public sealed partial class CombatSession
             && _random.NextUnit() < (rhythm.Rank == 1 ? 0.15m : 0.25m))
         {
             string[] cries = ["BATTLE_CRY", "ENDURANCE_CRY", "RALLY_CRY"];
-            string? selected = cries
+            string[] available = cries
                 .Where(id => _playerRuntime.Cooldowns.TryGetValue(id, out DateTimeOffset ready) && ready > combatEvent.OccurredAtUtc)
                 .OrderBy(id => id, StringComparer.Ordinal)
-                .FirstOrDefault();
-            if (selected is not null)
+                .ToArray();
+            if (available.Length > 0)
             {
-                _playerRuntime.Cooldowns[selected] = _playerRuntime.Cooldowns[selected] -
-                    TimeSpan.FromSeconds((double)rhythm.Value);
+                string selected = available[(int)(_random.NextUnit() * available.Length)];
+                _playerRuntime.ModifyCooldown(selected, -TimeSpan.FromSeconds((double)rhythm.Value), combatEvent.OccurredAtUtc);
             }
         }
     }
@@ -317,7 +294,7 @@ public sealed partial class CombatSession
                 "WARLORD_UNBROKEN_FORMATION",
                 EffectStat.AttackPower,
                 action.Value / 100m,
-                now);
+                now, duration: TimeSpan.FromSeconds(10));
             if (GetWarlordHook("W-7-2") is { } hook)
             {
                 ApplyWarlordEffectToParty(
@@ -325,7 +302,7 @@ public sealed partial class CombatSession
                     EffectStat.Dodge,
                     hook.SecondaryValue,
                     now,
-                    EffectModifierMode.Flat);
+                    EffectModifierMode.Flat, TimeSpan.FromSeconds(10));
             }
         }
     }
@@ -335,26 +312,15 @@ public sealed partial class CombatSession
         if (!IsWarlord)
             return;
 
-        foreach (TalentRuntimeAction action in PublishWarlordPartyEvent(
-                     death.OccurredAtUtc,
-                     _player.Actor.ActorId,
-                     "ENEMY_KILLED",
-                     talentId => talentId is "W-9-1"))
+        if (HasWarlordTalent("W-9-1")
+            && _procGuard.IsReady(_player.Actor.ActorId, "warlord-capstone-kill", death.OccurredAtUtc))
         {
-            if (action.TalentId == "W-9-1")
-            {
-                foreach (string abilityId in WarlordAbilityIds)
-                {
-                    if (_playerRuntime.Cooldowns.TryGetValue(abilityId, out DateTimeOffset ready)
-                        && ready > death.OccurredAtUtc)
-                    {
-                        _playerRuntime.Cooldowns[abilityId] = ready - TimeSpan.FromSeconds(1);
-                    }
-                }
-            }
+            _procGuard.StartCooldown(_player.Actor.ActorId, "warlord-capstone-kill", death.OccurredAtUtc, TimeSpan.FromSeconds(1));
+            ReduceWarlordCryCooldowns(1, death.OccurredAtUtc);
         }
 
-        if (_player.Actor.ActiveEffects.Any(effect => effect.Definition.Id == WarlordBannerEffectId)
+        if (_player.Actor.ActiveEffects.Any(effect => effect.Definition.Id == WarlordBannerEffectId
+                && effect.SourceId == _player.Actor.ActorId && effect.ExpiresAtUtc > death.OccurredAtUtc)
             && HasWarlordAbility("WAR_BANNER"))
         {
             foreach (CombatActorState actor in PartyActors)
@@ -392,31 +358,27 @@ public sealed partial class CombatSession
         {
             case "W-6-3":
                 AddResource(_player.Actor, action.Value, now, action.TalentId);
-                ApplyKernelEvents(
-                    EffectEngine.Dispel(_player.Actor, "POISON", now),
-                    _player.Actor.ActorId,
-                    _player.Actor.ActorId,
-                    action.TalentId);
-                if (_companion is not null)
+                RemoveOnePoison(_player.Actor, now);
+                CombatActorState[] poisonedAllies = PartyActors.Where(actor => actor.ActorId != _player.Actor.ActorId
+                    && actor.ActiveEffects.Any(effect => effect.Definition.DispelCategory == "POISON" && effect.ExpiresAtUtc > now)).ToArray();
+                if (poisonedAllies.Length > 0)
                 {
-                    ApplyKernelEvents(
-                        EffectEngine.Dispel(_companion.Actor, "POISON", now),
-                        _player.Actor.ActorId,
-                        _companion.Actor.ActorId,
-                        action.TalentId);
+                    RemoveOnePoison(poisonedAllies[(int)(_random.NextUnit() * poisonedAllies.Length)], now);
                 }
                 break;
             case "W-8-1":
                 foreach (CombatActorState actor in PartyActors)
                 {
-                    string resourceType = actor.ActorId == _player.Actor.ActorId
-                        ? _player.ResourceType
-                        : _companion?.ResourceType ?? string.Empty;
+                    string resourceType = _playerStatesByActorId.TryGetValue(actor.ActorId, out CombatPlayerRuntimeState? state)
+                        ? state.Definition.ResourceType : _companion?.ResourceType ?? string.Empty;
                     decimal percent = string.Equals(resourceType, "RAGE", StringComparison.Ordinal)
                         ? action.Value
                         : GetWarlordHook("W-8-1")?.SecondaryValue ?? action.Value;
                     AddResource(actor, actor.MaxResource * percent / 100m, now, action.TalentId);
                 }
+                break;
+            case "W-8-4":
+                ReduceWarlordCryCooldowns(action.Value, now);
                 break;
             case "W-9-1":
                 decimal duration = GetWarlordHook("W-9-1")?.SecondaryValue ?? 6;
@@ -432,59 +394,13 @@ public sealed partial class CombatSession
         }
     }
 
-    private void ApplyWarlordPartyEffectFromHook(
-        string talentId,
-        string effectId,
-        EffectStat? stat,
-        DateTimeOffset now)
+    private void RemoveOnePoison(CombatActorState actor, DateTimeOffset now)
     {
-        if (GetWarlordHook(talentId) is not { } hook)
-            return;
-
-        if (stat is null)
-        {
-            foreach (CombatActorState actor in PartyActors)
-            {
-                if (effectId == "WARLORD_UNBREAKABLE_VANGUARD")
-                {
-                    ApplyKernelEvents(
-                        EffectEngine.Apply(
-                            actor,
-                            _player.Actor.ActorId,
-                            new EffectDefinition(
-                                effectId,
-                                EffectKind.LethalDamagePrevention,
-                                TimeSpan.FromSeconds((double)hook.Value),
-                                1,
-                                EffectStackPolicy.Replace,
-                                1,
-                                DispelCategory: "WARLORD"),
-                            now),
-                        _player.Actor.ActorId,
-                        actor.ActorId,
-                        effectId);
-                    continue;
-                }
-
-                ApplyWarlordEffect(
-                    actor,
-                    effectId,
-                    null,
-                    1,
-                    now,
-                    EffectModifierMode.Flat,
-                    TimeSpan.FromSeconds((double)hook.Value));
-            }
-            return;
-        }
-
-        decimal value = stat is EffectStat.IncomingDamageMultiplier
-            ? Math.Max(0, 1 - hook.Value / 100m)
-            : hook.Value / 100m;
-        ApplyWarlordEffectToParty(effectId, stat.Value, value, now,
-            stat is EffectStat.IncomingDamageMultiplier
-                ? EffectModifierMode.Multiplicative
-                : EffectModifierMode.Percent);
+        ActiveEffect? poison = actor.ActiveEffects.FirstOrDefault(effect =>
+            effect.Definition.DispelCategory == "POISON" && effect.ExpiresAtUtc > now);
+        if (poison is not null)
+            ApplyKernelEvents(EffectEngine.RemoveInstance(actor, poison.InstanceId, now),
+                _player.Actor.ActorId, actor.ActorId, "W-6-3");
     }
 
     private void ApplyWarlordEffectToParty(
@@ -575,15 +491,18 @@ public sealed partial class CombatSession
     private decimal ResolveWarlordAutoAttackResource(decimal amount) =>
         amount * (1 + (GetWarlordHook("W-5-3")?.Value ?? 0) / 100m);
 
-    private decimal ResolveWarlordVengeanceMultiplier()
+    private decimal ResolveWarlordVengeanceMultiplier(DateTimeOffset now)
     {
         ActiveEffect? stacks = _player.Actor.ActiveEffects.FirstOrDefault(effect =>
-            effect.Definition.Id == WarlordVengeanceStackEffectId);
+            effect.Definition.Id == WarlordVengeanceStackEffectId && effect.ExpiresAtUtc > now);
         if (stacks is null)
             return 1;
 
-        _player.Actor.ActiveEffects.Remove(stacks);
-        return 1 + stacks.Stacks * stacks.Definition.Magnitude;
+        ApplyKernelEvents(EffectEngine.Remove(_player.Actor, WarlordVengeanceStackEffectId, now),
+            _player.Actor.ActorId, _player.Actor.ActorId, WarlordVengeanceStackEffectId);
+        bool active = _player.Actor.ActiveEffects.Any(effect =>
+            effect.Definition.Id == WarlordVengeanceActiveEffectId && effect.ExpiresAtUtc > now);
+        return active ? 1 + stacks.Stacks * stacks.Definition.Magnitude : 1;
     }
 
     private void ReduceWarlordCryCooldowns(decimal seconds, DateTimeOffset now)
@@ -600,25 +519,40 @@ public sealed partial class CombatSession
     }
 
     private decimal ScaleWarlordResource(string definitionId, decimal amount) =>
-        definitionId is "W-3-3" or "W-6-3" or "W-8-1"
+        definitionId is "W-3-3" or "W-6-3" or "W-8-1" or "W-8-3" or "W-9-1-RALLY"
             ? amount * (1 + (GetWarlordHook("W-6-4")?.Value ?? 0) / 100m)
             : amount;
 
-    private bool IsPartyActor(Guid actorId) =>
-        actorId == _player.Actor.ActorId
-        || _companion?.Actor.ActorId == actorId;
+    private void SyncWarlordConditionalEffects(DateTimeOffset now)
+    {
+        if (!IsWarlord || GetWarlordHook("W-7-4") is not { } hook) return;
+        Guid ownerId = _player.Actor.ActorId;
+        string effectId = $"WARLORD_STAND_TO_THE_END_{ownerId:N}";
+        foreach (CombatActorState actor in PartyActors.Append(_player.Actor).DistinctBy(actor => actor.ActorId).ToArray())
+        {
+            bool active = IsActiveParticipant(ownerId) && !_player.Actor.IsDead
+                && !actor.IsDead && actor.CurrentHp / actor.MaxHp < 0.25m;
+            bool exists = actor.ActiveEffects.Any(e => e.Definition.Id == effectId && e.ExpiresAtUtc > now);
+            if (active && !exists)
+                ApplyWarlordEffect(actor, effectId, EffectStat.IncomingDamageMultiplier,
+                    Math.Max(0, 1 - hook.Value / 100m), now, EffectModifierMode.Multiplicative, TimeSpan.FromHours(24));
+            else if (!active && exists)
+                ApplyKernelEvents(EffectEngine.RemoveOwned(actor, effectId, ownerId, now), ownerId, actor.ActorId, "W-7-4");
+        }
+    }
+
+    private bool IsPartyActor(Guid actorId) => GetPartyActor(actorId) is not null;
 
     private CombatActorState? GetPartyActor(Guid actorId) =>
-        actorId == _player.Actor.ActorId
-            ? _player.Actor
+        _playerStatesByActorId.TryGetValue(actorId, out CombatPlayerRuntimeState? state)
+            ? state.Definition.Actor
             : _companion?.Actor.ActorId == actorId
                 ? _companion.Actor
                 : null;
 
-    private IEnumerable<CombatActorState> PartyActors =>
-        _companion is null
-            ? [_player.Actor]
-            : [_player.Actor, _companion.Actor];
+    private IEnumerable<CombatActorState> PartyActors => ActivePlayerActorIds()
+        .Select(id => _playerStatesByActorId[id].Definition.Actor)
+        .Concat(_companion is not null && !_companion.Actor.IsDead ? [_companion.Actor] : []);
 
     private static bool IsWarlordCry(string abilityId) =>
         abilityId is "BATTLE_CRY" or "ENDURANCE_CRY" or "CRY_OF_VENGEANCE" or "RALLY_CRY";
@@ -631,4 +565,19 @@ public sealed partial class CombatSession
 
     private static TimeSpan MaxZero(TimeSpan value) =>
         value < TimeSpan.Zero ? TimeSpan.Zero : value;
+
+    private void ForEachOtherWarlord(Action action)
+    {
+        CombatPlayerRuntimeState previous = _activePlayerState;
+        try
+        {
+            foreach (CombatPlayerRuntimeState state in _playerStatesByActorId.Values
+                         .Where(state => state != previous && !state.Definition.Actor.IsDead).ToArray())
+            {
+                _activePlayerState = state;
+                if (IsWarlord) action();
+            }
+        }
+        finally { _activePlayerState = previous; }
+    }
 }

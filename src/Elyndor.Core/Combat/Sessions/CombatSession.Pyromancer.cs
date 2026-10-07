@@ -65,10 +65,12 @@ public sealed partial class CombatSession
     private bool IsMage => string.Equals(_player.DefinitionId, "MAGE", StringComparison.Ordinal);
 
     private bool IsPlayerAbilityKnown(string abilityId, DateTimeOffset now) =>
-        _player.KnownAbilityIds.Contains(abilityId);
+        _player.KnownAbilityIds.Contains(abilityId)
+        && (_player.DefinitionId != "WARRIOR" || GuardianTalentRuntimeCatalog.IsStandaloneAbility(abilityId, _player.KnownAbilityIds));
 
     private HashSet<string> GetPlayerKnownAbilityIds(DateTimeOffset now) =>
-        new(_player.KnownAbilityIds, StringComparer.Ordinal);
+        new(_player.KnownAbilityIds.Where(id => _player.DefinitionId != "WARRIOR"
+            || GuardianTalentRuntimeCatalog.IsStandaloneAbility(id, _player.KnownAbilityIds)), StringComparer.Ordinal);
 
     private AbilityDefinition ResolvePyromancerAbility(AbilityDefinition ability, DateTimeOffset now)
     {

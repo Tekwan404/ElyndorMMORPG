@@ -99,7 +99,8 @@ public sealed record AbilityDefinition(
     string? ConsumeEffectId = null,
     bool RequiresWeapon = false,
     bool RequiresMobility = false,
-    bool CanUseWhileFeared = false);
+    bool CanUseWhileFeared = false,
+    string? BlockedByEffectId = null);
 
 public sealed record AbilityActionDefinition(
     AbilityActionType Type,
@@ -121,7 +122,9 @@ public sealed record AbilityActionDefinition(
     string? DispelCategory = null,
     TimeSpan? Delay = null,
     TimeSpan? InterruptLockout = null,
-    decimal LifestealPercent = 0);
+    decimal LifestealPercent = 0,
+    decimal TargetMaxHpPercent = 0,
+    bool RequiresSuccessfulHit = false);
 
 public sealed record AbilityTargetModifier(
     decimal DamageMultiplier = 1,

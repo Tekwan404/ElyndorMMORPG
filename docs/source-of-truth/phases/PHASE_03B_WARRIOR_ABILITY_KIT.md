@@ -2,12 +2,11 @@
 
 Status: approved for implementation on 2026-08-31.
 
-## Runtime access update — 2026-09-05
+## Runtime access update — 2026-10-07
 
-The six Phase 3B ability definitions remain valid combat content and kernel fixtures, but ClassProfile no longer grants them automatically and character level no longer unlocks them.
-Production player access to active abilities is talent-owned: an ability becomes known only through a selected talent modifier with UNLOCK_ABILITY.
+The Warrior baseline is STRIKE at level 1, BATTLE_SHOUT at level 3 and HEAVY_BLOW at level 6. ClassProfile grants these independently of talents. Their authoritative execution, resource changes, cooldowns and client exposure are covered by WarriorProductionContractTests.
 
-The historical phrase "known kit" in this phase describes ability definitions validated against the combat kernel, not free abilities granted to every Warrior. Auto Attack remains available independently of active skill unlocks.
+Other active abilities are talent-owned. Auto Attack remains available independently of active skill unlocks. The current mechanical contract and branch button policy are recorded in `docs/development/warrior-mechanical-contracts.md`; the prototype table below is historical.
 
 ## Goal
 

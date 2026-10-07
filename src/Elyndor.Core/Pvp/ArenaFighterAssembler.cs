@@ -28,11 +28,14 @@ public static class ArenaFighterAssembler
             arenaTalents);
 
         var known = new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal);
-        IEnumerable<string> availableAbilityIds = player.Participant.KnownAbilityIds
+        IReadOnlySet<string> availableAbilityIds = player.Participant.KnownAbilityIds
             .Concat(arenaTalents.UnlockedAbilityIds)
-            .Distinct(StringComparer.Ordinal);
+            .ToHashSet(StringComparer.Ordinal);
         foreach (string abilityId in availableAbilityIds)
         {
+            if (player.Participant.DefinitionId == "WARRIOR"
+                && !GuardianTalentRuntimeCatalog.IsStandaloneAbility(abilityId, availableAbilityIds))
+                continue;
             if (ArenaCompanionCapability.RequiresCompanion(abilityId))
                 continue;
             if (!availableAbilities.TryGetValue(abilityId, out AbilityDefinition? ability))

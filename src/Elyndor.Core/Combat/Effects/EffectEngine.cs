@@ -1,6 +1,6 @@
 namespace Elyndor.Core.Combat.Effects;
 
-public static class EffectEngine
+public static partial class EffectEngine
 {
     public static IReadOnlyList<CombatEvent> Apply(
         CombatActorState target,
@@ -8,6 +8,10 @@ public static class EffectEngine
         EffectDefinition definition,
         DateTimeOffset now)
     {
+        if (target.ActiveEffects.Any(effect => effect.ExpiresAtUtc > now
+                && effect.Definition.ControlImmunities?.Contains(definition.Kind) == true))
+            return [new CombatEvent(CombatEventType.EffectImmune, now, target.ActorId, definition.Id,
+                SourceActorId: sourceId, TargetActorId: target.ActorId)];
         if (definition.Kind is EffectKind.Stun or EffectKind.Silence
             && target.IncomingControlDurationMultiplier < 1)
         {
@@ -75,17 +79,22 @@ public static class EffectEngine
                 Refresh(current, now, policyResult?.Definition?.Duration);
                 break;
             case EffectStackPolicy.Replace:
+                foreach (ActiveEffect replaced in matching)
+                    if (definition.Kind != EffectKind.TemporaryMaxHp || replaced.Definition.Kind != EffectKind.TemporaryMaxHp)
+                        RemoveState(target, replaced);
                 target.ActiveEffects.RemoveAll(effect =>
                     effect.Definition.Id == definition.Id
                     && (!definition.SourceSpecific || effect.SourceId == sourceId));
-                AddNew(target, sourceId, definition, now, events);
+                AddNew(target, sourceId, definition, now, events, matching);
                 policyResult?.OnApplied?.Invoke();
                 return events;
             case EffectStackPolicy.StrongestWins:
                 if (definition.Magnitude >= current.RemainingMagnitude)
                 {
+                    if (definition.Kind != EffectKind.TemporaryMaxHp || current.Definition.Kind != EffectKind.TemporaryMaxHp)
+                        RemoveState(target, current);
                     target.ActiveEffects.Remove(current);
-                    AddNew(target, sourceId, definition, now, events);
+                    AddNew(target, sourceId, definition, now, events, [current]);
                     policyResult?.OnApplied?.Invoke();
                     return events;
                 }
@@ -100,6 +109,7 @@ public static class EffectEngine
             definition.Id,
             SourceActorId: sourceId,
             TargetActorId: target.ActorId));
+        ApplyState(target, current);
         policyResult?.OnApplied?.Invoke();
         return events;
     }
@@ -244,6 +254,7 @@ public static class EffectEngine
                      .OrderBy(effect => effect.Sequence)
                      .ToArray())
         {
+            RemoveState(target, expired);
             target.ActiveEffects.Remove(expired);
             events.Add(new CombatEvent(
                 CombatEventType.EffectExpired,
@@ -337,6 +348,10 @@ public static class EffectEngine
         return RemoveEffects(target, removed, now);
     }
 
+    public static IReadOnlyList<CombatEvent> RemoveInstance(
+        CombatActorState target, Guid instanceId, DateTimeOffset now) =>
+        RemoveEffects(target, target.ActiveEffects.Where(effect => effect.InstanceId == instanceId).ToArray(), now);
+
     public static IReadOnlyList<CombatEvent> RemoveByKind(
         CombatActorState target,
         EffectKind kind,
@@ -355,6 +370,7 @@ public static class EffectEngine
     {
         foreach (ActiveEffect effect in removed)
         {
+            RemoveState(target, effect);
             target.ActiveEffects.Remove(effect);
         }
 
@@ -372,13 +388,16 @@ public static class EffectEngine
         Guid sourceId,
         EffectDefinition definition,
         DateTimeOffset now,
-        List<CombatEvent> events)
+        List<CombatEvent> events,
+        IReadOnlyList<ActiveEffect>? replaced = null)
     {
         long sequence = target.ActiveEffects.Count == 0
             ? 1
             : target.ActiveEffects.Max(existing => existing.Sequence) + 1;
         ActiveEffect effect = new(sequence, sourceId, target.ActorId, definition, now);
         target.ActiveEffects.Add(effect);
+        decimal previousHp = target.CurrentHp;
+        ApplyState(target, effect, replaced);
         events.Add(new CombatEvent(
             CombatEventType.EffectApplied,
             now,
@@ -386,6 +405,24 @@ public static class EffectEngine
             definition.Id,
             SourceActorId: sourceId,
             TargetActorId: target.ActorId));
+        if (target.CurrentHp > previousHp)
+            events.Add(new CombatEvent(CombatEventType.HealingApplied, now, target.ActorId, definition.Id,
+                target.CurrentHp - previousHp, SourceActorId: sourceId, TargetActorId: target.ActorId));
+    }
+
+    private static void ApplyState(CombatActorState target, ActiveEffect effect, IReadOnlyList<ActiveEffect>? replaced = null)
+    {
+        if (effect.Definition.Kind == EffectKind.TemporaryMaxHp)
+            target.SetTemporaryMaxHpPercentBonus(effect.InstanceId.ToString(),
+                effect.Definition.Magnitude * effect.Stacks * 100m, effect.Definition.HealByMaxHpIncrease,
+                replaced?.Where(item => item.Definition.Kind == EffectKind.TemporaryMaxHp)
+                    .Select(item => item.InstanceId.ToString()).ToArray());
+    }
+
+    private static void RemoveState(CombatActorState target, ActiveEffect effect)
+    {
+        if (effect.Definition.Kind == EffectKind.TemporaryMaxHp)
+            target.RemoveTemporaryMaxHpPercentBonus(effect.InstanceId.ToString());
     }
 
     private static void Refresh(ActiveEffect effect, DateTimeOffset now, TimeSpan? duration = null)
@@ -402,6 +439,10 @@ public static class EffectEngine
         if (string.IsNullOrWhiteSpace(definition.Id)
             || definition.Duration <= TimeSpan.Zero
             || definition.MaxStacks <= 0
+            || !Enum.IsDefined(definition.Kind)
+            || definition.HealByMaxHpIncrease && definition.Kind != EffectKind.TemporaryMaxHp
+            || definition.ControlImmunities?.Any(kind => kind is not (EffectKind.Stun or EffectKind.Silence
+                or EffectKind.Root or EffectKind.Fear or EffectKind.Disarm)) == true
             || invalidNegativeMagnitude
             || definition.ResourceCostPerAbsorbedDamage < 0
             || definition.ResourceCostPerAbsorbedDamage > 0 && definition.Kind != EffectKind.Shield
@@ -432,5 +473,24 @@ public static class EffectEngine
                 "Effect expiration actions contain invalid values.",
                 nameof(definition));
         }
+        foreach (EffectEventActionDefinition rule in definition.EventActions ?? [])
+        {
+            if (!Enum.IsDefined(rule.Trigger) || rule.ChancePercent is < 0 or > 100
+                || rule.InternalCooldown < TimeSpan.Zero || rule.EventAmountPercent < 0
+                || rule.Action.RequiresSuccessfulHit || rule.Action.Delay is not null
+                || rule.Action.Type is not (Abilities.AbilityActionType.Damage or Abilities.AbilityActionType.Healing
+                    or Abilities.AbilityActionType.ApplyEffect or Abilities.AbilityActionType.ResourceChange)
+                || rule.Action.Amount < 0 && rule.Action.Type != Abilities.AbilityActionType.ResourceChange
+                || rule.Action.Type == Abilities.AbilityActionType.ApplyEffect && rule.Action.Effect is null
+                || rule.Action.Type != Abilities.AbilityActionType.ApplyEffect && rule.Action.Effect is not null)
+                throw new ArgumentException("Effect event actions contain invalid values.", nameof(definition));
+            if (rule.Action.Effect is { } child) Validate(child);
+        }
+    }
+
+    internal static bool IsValidDefinition(EffectDefinition definition)
+    {
+        try { Validate(definition); return true; }
+        catch (ArgumentException) { return false; }
     }
 }

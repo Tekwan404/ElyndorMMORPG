@@ -1,19 +1,117 @@
 {
-  "contentVersion": "0.21.0",
+  "contentVersion": "0.39.0",
   "balanceVersion": "0.16.0",
   "publishedAtUtc": "2026-09-13T19:50:00+00:00",
   "definitions": [
-    { "type": "ABILITY", "id": "LAST_STAND", "references": [] },
-    { "type": "ABILITY", "id": "REVENGE", "references": [] },
-    { "type": "ABILITY", "id": "SHIELD_BLOCK", "references": [] },
-    { "type": "ABILITY", "id": "SUNDER_ARMOR", "references": [] },
-    { "type": "ABILITY", "id": "CONCUSSION_BLOW", "references": [] },
-    { "type": "ABILITY", "id": "CHALLENGING_SHOUT", "references": [] },
-    { "type": "ABILITY", "id": "SHIELD_SLAM", "references": [] }
+    {
+      "type": "ABILITY",
+      "id": "LAST_STAND",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "REVENGE",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "SHIELD_BLOCK",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "SUNDER_ARMOR",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "CONCUSSION_BLOW",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "CHALLENGING_SHOUT",
+      "references": []
+    },
+    {
+      "type": "ABILITY",
+      "id": "SHIELD_SLAM",
+      "references": []
+    }
   ],
   "abilities": [
     {
+      "id": "BASTION",
+      "blockedByEffectId": "BERSERK_ATTACK_POWER",
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 40,
+      "cooldown": "00:02:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "BASTION_GUARD",
+            "kind": "StatModifier",
+            "duration": "00:00:06",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 0.6,
+            "modifiedStat": "IncomingDamageMultiplier",
+            "modifierMode": "Multiplicative"
+          }
+        }
+      ],
+      "displayName": "Бастион",
+      "description": "На 6 сек. уменьшает весь получаемый урон на 40%. Стоимость: 40 ярости. Не запускает общую перезарядку. Перезарядка: 120 сек.",
+      "iconId": "warrior-bastion"
+    },
+    {
+      "id": "CHALLENGING_SHOUT",
+      "type": "Instant",
+      "targetType": "AllEnemiesInCombat",
+      "resourceCost": 0,
+      "cooldown": "00:01:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [],
+      "displayName": "Вызывающий клич",
+      "description": "Заставляет всех живых противников атаковать вас 4 сек., не меняя накопленную угрозу. Не требует ярости. Перезарядка: 90 сек. На игроков принуждение к атаке не действует.",
+      "iconId": "warrior-challenging-shout"
+    },
+    {
+      "id": "CONCUSSION_BLOW",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 15,
+      "cooldown": "00:00:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 0.45
+        }
+      ],
+      "displayName": "Оглушающий удар",
+      "description": "Наносит выбранному противнику физический урон в размере 45% силы атаки и при попадании оглушает на 3 сек. Боссы невосприимчивы к этому оглушению. Стоимость: 15 ярости. Перезарядка: 30 сек.",
+      "iconId": "warrior-concussion-blow"
+    },
+    {
       "id": "LAST_STAND",
+      "blockedByEffectId": "BERSERK_ATTACK_POWER",
       "type": "Instant",
       "targetType": "Self",
       "resourceCost": 0,
@@ -28,17 +126,39 @@
           "type": "ApplyEffect",
           "effect": {
             "id": "GUARDIAN_LAST_STAND_ACTIVE",
-            "kind": "Buff",
+            "kind": "TemporaryMaxHp",
             "duration": "00:00:08",
             "maxStacks": 1,
             "stackPolicy": "Replace",
-            "magnitude": 1
+            "magnitude": 0.2,
+            "healByMaxHpIncrease": true
           }
         }
       ],
       "displayName": "Последний рубеж",
-      "description": "На 8 сек. увеличивает максимальный запас здоровья на 20% и сразу восстанавливает столько же здоровья. Затем максимум здоровья возвращается к обычному значению.",
+      "description": "На 8 сек. увеличивает максимальное здоровье на 20% и сразу восстанавливает столько же здоровья. После окончания здоровье ограничивается обычным максимумом. Не требует ярости и не запускает общую перезарядку. Перезарядка: 120 сек.",
       "iconId": "warrior-last-stand"
+    },
+    {
+      "id": "PROVOKE",
+      "type": "Taunt",
+      "targetType": "SingleEnemy",
+      "resourceCost": 0,
+      "cooldown": "00:00:10",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Taunt",
+          "duration": "00:00:05"
+        }
+      ],
+      "displayName": "Провокация",
+      "description": "Поднимает угрозу выше текущего лидера и заставляет выбранного противника атаковать вас 5 сек. Не требует ярости. Перезарядка: 10 сек. На игроков принуждение к атаке не действует.",
+      "iconId": "warrior-provoke"
     },
     {
       "id": "REVENGE",
@@ -52,17 +172,56 @@
       "isSpell": false,
       "school": "PHYSICAL",
       "actions": [
-        { "type": "Damage", "damageType": "Physical", "attackPowerCoefficient": 0.85 }
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 0.85
+        }
       ],
       "displayName": "Возмездие",
-      "description": "Контратака с высокой угрозой. Доступна в течение 5 сек. после успешного блока.",
+      "description": "После успешного блока доступно в течение 5 сек. Наносит выбранному противнику физический урон в размере 85% силы атаки и создаёт высокую угрозу. Стоимость: 5 ярости. Перезарядка: 1,5 сек.",
       "iconId": "warrior-revenge",
       "requiredActiveEffectId": "GUARDIAN_REVENGE_WINDOW",
       "freeResourceCostWhileEffectId": "GUARDIAN_CAPSTONE_SHIELD_BLOCK",
       "consumeEffectId": "GUARDIAN_REVENGE_WINDOW"
     },
     {
+      "id": "SHIELD_BASH",
+      "type": "Instant",
+      "targetType": "SingleEnemy",
+      "resourceCost": 20,
+      "cooldown": "00:00:08",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 0.7
+        },
+        {
+          "type": "ApplyEffect",
+          "requiresSuccessfulHit": true,
+          "effect": {
+            "id": "SHIELD_BASH_STUN",
+            "kind": "Stun",
+            "duration": "00:00:01.5000000",
+            "maxStacks": 1,
+            "stackPolicy": "Replace",
+            "magnitude": 0
+          }
+        }
+      ],
+      "displayName": "Удар щитом",
+      "description": "Наносит выбранному противнику физический урон в размере 70% силы атаки. При попадании оглушает на 1,5 сек. Стоимость: 20 ярости. Перезарядка: 8 сек.",
+      "iconId": "warrior-shield-bash"
+    },
+    {
       "id": "SHIELD_BLOCK",
+      "blockedByEffectId": "BERSERK_ATTACK_POWER",
       "type": "Instant",
       "targetType": "Self",
       "resourceCost": 20,
@@ -114,26 +273,31 @@
         }
       ],
       "displayName": "Блок щитом",
-      "description": "На 5 сек. повышает шанс блока на 30 п.п. и силу блока на 25%. Шанс блока не может превышать 60%.",
+      "description": "На 5 сек. повышает шанс блока на 30 п.п. и силу блока на 25%. Шанс блока ограничен 60%. Стоимость: 20 ярости. Не запускает общую перезарядку. Перезарядка: 12 сек.",
       "iconId": "warrior-shield-block"
     },
     {
-      "id": "PROVOKE",
-      "type": "Taunt",
+      "id": "SHIELD_SLAM",
+      "type": "Instant",
       "targetType": "SingleEnemy",
-      "resourceCost": 0,
-      "cooldown": "00:00:10",
+      "resourceCost": 20,
+      "cooldown": "00:00:06",
       "castTime": "00:00:00",
       "usesGlobalCooldown": true,
       "globalCooldownCategory": "Standard",
       "isSpell": false,
       "school": "PHYSICAL",
       "actions": [
-        { "type": "Taunt", "duration": "00:00:05" }
+        {
+          "type": "Damage",
+          "damageType": "Physical",
+          "attackPowerCoefficient": 0.55,
+          "blockValueCoefficient": 1.0
+        }
       ],
-      "displayName": "Провокация",
-      "description": "Поднимает угрозу Стража выше текущего лидера и заставляет выбранного противника атаковать его 5 сек. Не требует ярости.",
-      "iconId": "warrior-provoke"
+      "displayName": "Сокрушение щитом",
+      "description": "Наносит выбранному противнику физический урон в размере 55% силы атаки плюс средняя сила блока. Создаёт очень высокую угрозу. Стоимость: 20 ярости. Перезарядка: 6 сек. Если изучен «Раскол брони», при попадании также накладывает его эффект.",
+      "iconId": "warrior-shield-slam"
     },
     {
       "id": "SUNDER_ARMOR",
@@ -162,90 +326,8 @@
         }
       ],
       "displayName": "Раскол брони",
-      "description": "Создаёт высокую угрозу и снижает броню цели на 4% на 30 сек. Эффект складывается до 5 раз.",
+      "description": "Снижает броню выбранного противника на 4% на 30 сек. Складывается до 5 раз и создаёт высокую угрозу. Стоимость: 10 ярости. Запускает общую перезарядку.",
       "iconId": "warrior-sunder-armor"
-    },
-    {
-      "id": "CONCUSSION_BLOW",
-      "type": "Instant",
-      "targetType": "SingleEnemy",
-      "resourceCost": 15,
-      "cooldown": "00:00:30",
-      "castTime": "00:00:00",
-      "usesGlobalCooldown": true,
-      "globalCooldownCategory": "Standard",
-      "isSpell": false,
-      "school": "PHYSICAL",
-      "actions": [
-        { "type": "Damage", "damageType": "Physical", "attackPowerCoefficient": 0.45 }
-      ],
-      "displayName": "Оглушающий удар",
-      "description": "Наносит физический урон и оглушает обычного противника на 3 сек. Боссы невосприимчивы к оглушению.",
-      "iconId": "warrior-concussion-blow"
-    },
-    {
-      "id": "BASTION",
-      "type": "Instant",
-      "targetType": "Self",
-      "resourceCost": 40,
-      "cooldown": "00:02:00",
-      "castTime": "00:00:00",
-      "usesGlobalCooldown": false,
-      "globalCooldownCategory": "None",
-      "isSpell": false,
-      "school": "PHYSICAL",
-      "actions": [
-        {
-          "type": "ApplyEffect",
-          "effect": {
-            "id": "BASTION_GUARD",
-            "kind": "StatModifier",
-            "duration": "00:00:06",
-            "maxStacks": 1,
-            "stackPolicy": "Replace",
-            "magnitude": 0.60,
-            "modifiedStat": "IncomingDamageMultiplier",
-            "modifierMode": "Multiplicative"
-          }
-        }
-      ],
-      "displayName": "Бастион",
-      "description": "На 6 сек. уменьшает получаемый урон на 40%. Стоимость: 40 ярости.",
-      "iconId": "warrior-bastion"
-    },
-    {
-      "id": "CHALLENGING_SHOUT",
-      "type": "Instant",
-      "targetType": "AllEnemiesInCombat",
-      "resourceCost": 0,
-      "cooldown": "00:01:30",
-      "castTime": "00:00:00",
-      "usesGlobalCooldown": true,
-      "globalCooldownCategory": "Standard",
-      "isSpell": false,
-      "school": "PHYSICAL",
-      "actions": [],
-      "displayName": "Вызывающий клич",
-      "description": "На 4 сек. заставляет всех живых противников атаковать Стража, не меняя накопленную угрозу.",
-      "iconId": "warrior-challenging-shout"
-    },
-    {
-      "id": "SHIELD_SLAM",
-      "type": "Instant",
-      "targetType": "SingleEnemy",
-      "resourceCost": 20,
-      "cooldown": "00:00:06",
-      "castTime": "00:00:00",
-      "usesGlobalCooldown": true,
-      "globalCooldownCategory": "Standard",
-      "isSpell": false,
-      "school": "PHYSICAL",
-      "actions": [
-        { "type": "Damage", "damageType": "Physical", "attackPowerCoefficient": 0.55, "blockValueCoefficient": 1.0 }
-      ],
-      "displayName": "Сокрушение щитом",
-      "description": "Мощный удар щитом. Урон зависит от силы атаки и силы блока; создаёт очень высокую угрозу.",
-      "iconId": "warrior-shield-slam"
     }
   ]
 }
