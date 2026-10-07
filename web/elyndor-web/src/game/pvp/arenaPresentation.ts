@@ -23,6 +23,8 @@ const ERRORS: Record<string, string> = {
   arena_invite_player_offline: 'Оба игрока должны открыть раздел «Арена». Друг сейчас не в сети арены.',
   arena_invite_failed: 'Не удалось обновить приглашение. Попробуйте ещё раз.',
   arena_start_failed: 'Не удалось начать бой. Отправьте новое приглашение.',
+  arena_shop_character_not_found: 'Герой не найден для магазина чести.',
+  arena_shop_mutation_id_invalid: 'Не удалось начать покупку. Обновите магазин и попробуйте ещё раз.',
   arena_shop_not_enough_honor: 'Недостаточно чести для этой покупки.',
   arena_shop_inventory_full: 'В инвентаре нет свободного места.',
   arena_shop_required_level: 'Для этого предмета нужен 60-й уровень.',
