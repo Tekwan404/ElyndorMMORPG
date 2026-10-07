@@ -921,7 +921,7 @@ public sealed class CombatSessionTests
         CombatEvent[] swings = session.GetEventsAfter(0)
             .Where(item => item.Type == CombatEventType.DamageDealt
                 && item.DefinitionId == "AUTO_ATTACK"
-                && item.WeaponHand == CombatWeaponHand.MainHand)
+                && item.SourceActorId == PlayerId)
             .ToArray();
 
         Assert.Equal(16, swings.Length);
@@ -969,7 +969,8 @@ public sealed class CombatSessionTests
 
         CombatEvent[] swings = session.GetEventsAfter(0)
             .Where(item => item.Type == CombatEventType.DamageDealt
-                && item.DefinitionId == "AUTO_ATTACK")
+                && item.DefinitionId == "AUTO_ATTACK"
+                && item.SourceActorId == PlayerId)
             .ToArray();
         CombatEvent[] mainSwings = swings
             .Where(item => item.WeaponHand == CombatWeaponHand.MainHand)
