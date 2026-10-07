@@ -4,47 +4,6 @@
   "publishedAtUtc": "2026-10-07T10:50:50+00:00",
   "items": [
     {
-      "id": "UNIQUE_WARRIOR_BLACKHEART",
-      "itemFamilyId": "UNIQUE_WARRIOR_BLACKHEART",
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
-      "name": "Черносерд",
-      "type": "Equipment",
-      "generationMode": "Rolled",
-      "rarity": "Unique",
-      "requiredLevel": 60,
-      "stackable": false,
-      "maxStack": 1,
-      "slot": "MainHand",
-      "stats": {
-        "strength": 0,
-        "agility": 0,
-        "intellect": 0,
-        "stamina": 0
-      },
-      "description": "Уникальный предмет 60 уровня для ветки «Берсерк». Источник: персональные сундуки мирового босса «Архон Пепла».",
-      "version": 1,
-      "iconId": "items_outside_sets/shattered_order_citadel/mirror_bastard_sword",
-      "itemLevelMin": 60,
-      "itemLevelMax": 60,
-      "generationVersion": 1,
-      "tradePolicyId": "ORDINARY_TRADEABLE",
-      "affixCountProfileId": "LEVEL_60_UNIQUE",
-      "guaranteedAffixStatIds": [
-        "STRENGTH",
-        "CRITICAL_CHANCE",
-        "ARMOR_PENETRATION"
-      ],
-      "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "WARRIOR_WEAPON",
-      "weaponCategory": "TWO_HAND_SWORD",
-      "weaponDamageMin": 320,
-      "weaponDamageMax": 440,
-      "weaponBaseAttackIntervalSeconds": 3
-    },
-    {
       "id": "UNIQUE_L60_WARRIOR_BERSERKER_RING",
       "itemFamilyId": "UNIQUE_L60_WARRIOR_BERSERKER_RING",
       "allowedClassIds": [
@@ -579,47 +538,6 @@
       "randomAffixPoolId": "ACCESSORY_GENERAL"
     },
     {
-      "id": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
-      "itemFamilyId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
-      "allowedClassIds": [
-        "MAGE"
-      ],
-      "name": "Око Погасшей Звезды",
-      "type": "Equipment",
-      "generationMode": "Rolled",
-      "rarity": "Unique",
-      "requiredLevel": 60,
-      "stackable": false,
-      "maxStack": 1,
-      "slot": "MainHand",
-      "stats": {
-        "strength": 0,
-        "agility": 0,
-        "intellect": 0,
-        "stamina": 0
-      },
-      "description": "Уникальный предмет 60 уровня для ветки «Аркана». Источник: персональные сундуки мирового босса «Архон Пепла».",
-      "version": 1,
-      "iconId": "items_outside_sets/open_world_mid/shard_wand",
-      "itemLevelMin": 60,
-      "itemLevelMax": 60,
-      "generationVersion": 1,
-      "tradePolicyId": "ORDINARY_TRADEABLE",
-      "affixCountProfileId": "LEVEL_60_UNIQUE",
-      "guaranteedAffixStatIds": [
-        "INTELLECT",
-        "MAX_RESOURCE",
-        "SPELL_POWER"
-      ],
-      "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "MAGE_WEAPON",
-      "weaponCategory": "ONE_HAND_STAFF",
-      "weaponDamageMin": 210,
-      "weaponDamageMax": 295,
-      "weaponBaseAttackIntervalSeconds": 2.4
-    },
-    {
       "id": "UNIQUE_L60_MAGE_ARCANE_RING",
       "itemFamilyId": "UNIQUE_L60_MAGE_ARCANE_RING",
       "allowedClassIds": [
@@ -692,47 +610,6 @@
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
       "randomAffixPoolId": "ACCESSORY_GENERAL"
-    },
-    {
-      "id": "UNIQUE_ARCHER_LAST_CONSTELLATION",
-      "itemFamilyId": "UNIQUE_ARCHER_LAST_CONSTELLATION",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
-      "name": "Лук Последнего Созвездия",
-      "type": "Equipment",
-      "generationMode": "Rolled",
-      "rarity": "Unique",
-      "requiredLevel": 60,
-      "stackable": false,
-      "maxStack": 1,
-      "slot": "MainHand",
-      "stats": {
-        "strength": 0,
-        "agility": 0,
-        "intellect": 0,
-        "stamina": 0
-      },
-      "description": "Уникальный предмет 60 уровня для ветки «Меткость». Источник: персональные сундуки мирового босса «Архон Пепла».",
-      "version": 1,
-      "iconId": "items_outside_sets/shattered_order_citadel/triple_aspect_bow",
-      "itemLevelMin": 60,
-      "itemLevelMax": 60,
-      "generationVersion": 1,
-      "tradePolicyId": "ORDINARY_TRADEABLE",
-      "affixCountProfileId": "LEVEL_60_UNIQUE",
-      "guaranteedAffixStatIds": [
-        "AGILITY",
-        "CRITICAL_CHANCE",
-        "ACCURACY"
-      ],
-      "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ARCHER_WEAPON",
-      "weaponCategory": "BOW",
-      "weaponDamageMin": 300,
-      "weaponDamageMax": 410,
-      "weaponBaseAttackIntervalSeconds": 2.7
     },
     {
       "id": "UNIQUE_L60_ARCHER_MARKSMAN_RING",
