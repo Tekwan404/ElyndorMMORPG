@@ -66,9 +66,10 @@ RepositoryContentPath());
 ClassProfile archer = Assert.Single(
 package.ClassProfiles!,
 item => string.Equals(item.Id, "ARCHER", StringComparison.Ordinal));
-Assert.Equal(
-new[] { "QUICK_SHOT", "COMMAND_ATTACK" },
-archer.StartingAbilityIds);
+Assert.Collection(
+archer.StartingAbilityIds!,
+abilityId => Assert.Equal("QUICK_SHOT", abilityId),
+abilityId => Assert.Equal("COMMAND_ATTACK", abilityId));
 Assert.Contains(
 package.Abilities!,
 ability => string.Equals(ability.Id, "QUICK_SHOT", StringComparison.Ordinal));
