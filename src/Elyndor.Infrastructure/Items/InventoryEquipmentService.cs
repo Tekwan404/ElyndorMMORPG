@@ -505,7 +505,7 @@ public sealed class InventoryEquipmentService(
                             definition.OffHandCategory,
                             EquipmentCategoryIds.Quiver,
                             StringComparison.Ordinal)
-                        && await HasBowMainHandAsync(character.Id, cancellationToken)))
+                        && await HasQuiverCompatibleMainHandAsync(character.Id, cancellationToken)))
                 {
                     return InventoryOperationResult.Failure(
                         InventoryErrorCodes.TwoHandedConflict);
@@ -605,10 +605,7 @@ public sealed class InventoryEquipmentService(
 
                     CharacterEquipment[] displaced = offHandEntries
                         .Where(entry =>
-                            !string.Equals(
-                                definition.WeaponCategory,
-                                EquipmentCategoryIds.Bow,
-                                StringComparison.Ordinal)
+                            !EquipmentCategoryIds.SupportsQuiver(definition.WeaponCategory)
                             || !string.Equals(
                                 FindItem(entry.ItemDefinitionId)?.OffHandCategory,
                                 EquipmentCategoryIds.Quiver,
@@ -884,10 +881,7 @@ public sealed class InventoryEquipmentService(
         HashSet<Guid> projectedEquippedItemIds = [.. currentEquippedItemIds];
         HashSet<Guid> compatibleQuiverItemIds = [];
         if (targetSlot == EquipmentSlot.MainHand
-            && string.Equals(
-                definition.WeaponCategory,
-                EquipmentCategoryIds.Bow,
-                StringComparison.Ordinal))
+            && EquipmentCategoryIds.SupportsQuiver(definition.WeaponCategory))
         {
             Guid[] offHandItemIds = current
                 .Where(equipment => equipment.Slot == EquipmentSlot.OffHand)
@@ -1070,17 +1064,14 @@ public sealed class InventoryEquipmentService(
             && EquipmentCategoryIds.UsesBothHands(definition.WeaponCategory);
     }
 
-    private async Task<bool> HasBowMainHandAsync(
+    private async Task<bool> HasQuiverCompatibleMainHandAsync(
         Guid characterId,
         CancellationToken cancellationToken)
     {
         ItemDefinition? definition = await GetMainHandDefinitionAsync(
             characterId,
             cancellationToken);
-        return string.Equals(
-            definition?.WeaponCategory,
-            EquipmentCategoryIds.Bow,
-            StringComparison.Ordinal);
+        return EquipmentCategoryIds.SupportsQuiver(definition?.WeaponCategory);
     }
 
     private async Task<ItemDefinition?> GetMainHandDefinitionAsync(

@@ -153,7 +153,10 @@ public sealed class AuthoredWorldContentTests
         {
             "DEAD_REACHES_VARGHIM_HEADLESS_L60",
             "DEAD_REACHES_MORANA_PALE_L60",
-            "DEAD_REACHES_GOR_KAR_DEVOURER_L60",
+            "DEAD_REACHES_GOR_KAR_DEVOURER_L60"
+        };
+        HashSet<string> pveT1LootMonsterIds = new(StringComparer.Ordinal)
+        {
             "DEAD_REACHES_MORDREK_LAST_GATE_L60",
             "DEAD_REACHES_NAMELESS_KING_L60",
             "DEAD_REACHES_NERZAR_L60"
@@ -174,6 +177,8 @@ public sealed class AuthoredWorldContentTests
                 Assert.Equal("AUTHORED_EMPTY_AI", monster.AiProfileId);
                 if (normalSetLootMonsterIds.Contains(monster.Id))
                     Assert.Equal("DEAD_REACHES_L60_NORMAL_SET_LOOT", monster.LootTableId);
+                else if (pveT1LootMonsterIds.Contains(monster.Id))
+                    Assert.Equal("DEAD_REACHES_L60_PVE_T1_LOOT", monster.LootTableId);
                 else
                     Assert.Null(monster.LootTableId);
                 Assert.Equal(0, monster.GoldRewardMin);

@@ -74,39 +74,41 @@ public sealed class Level60UniqueContentTests
             Assert.All(new[] { weapon, ring, cloak }, item =>
             {
                 Assert.Equal(item.Id, item.ItemFamilyId);
+                Assert.Equal(60, item.RequiredLevel);
+                Assert.Equal(60, item.ItemLevelMin);
                 Assert.Equal(60, item.ItemLevelMax);
+                Assert.Equal("LEVEL_60_UNIQUE", item.AffixCountProfileId);
                 Assert.Equal(3, item.GuaranteedAffixStatIds?.Count ?? 0);
                 Assert.Equal(0.08m, item.ExtraAffixBudgetCap);
                 Assert.Null(item.PrefixSuffixPolicyId);
                 Assert.False(string.IsNullOrWhiteSpace(item.IconId));
+                Assert.False(item.Description.StartsWith("Уникальный предмет", StringComparison.Ordinal));
+                Assert.NotEqual("WORLD_GENERAL", item.RandomAffixPoolId);
                 Assert.Single(item.AllowedClassIds!);
                 Assert.Equal(classId, item.AllowedClassIds![0]);
-            });
-
-            if (LegacyWeaponIds.ContainsKey(branchId))
-            {
-                Assert.Equal(25, weapon.RequiredLevel);
-                Assert.Equal(25, weapon.ItemLevelMin);
-                Assert.Equal("UNIQUE_FAMILY", weapon.AffixCountProfileId);
-            }
-            else
-            {
-                Assert.Equal(60, weapon.RequiredLevel);
-                Assert.Equal(60, weapon.ItemLevelMin);
-                Assert.Equal("LEVEL_60_UNIQUE", weapon.AffixCountProfileId);
-            }
-
-            Assert.All(new[] { ring, cloak }, item =>
-            {
-                Assert.Equal(60, item.RequiredLevel);
-                Assert.Equal(60, item.ItemLevelMin);
-                Assert.Equal("LEVEL_60_UNIQUE", item.AffixCountProfileId);
             });
 
             Assert.False(string.IsNullOrWhiteSpace(weapon.WeaponCategory));
             Assert.True(weapon.WeaponDamageMin > 0);
             Assert.True(weapon.WeaponDamageMax > weapon.WeaponDamageMin);
         }
+    }
+
+    [Fact]
+    public async Task Level60UniqueMatrixUsesDistinctGuaranteedIdentityPackages()
+    {
+        var package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+        ItemDefinition[] matrix = MatrixItemIds()
+            .Select(id => package.Items!.Single(item => item.Id == id))
+            .ToArray();
+
+        string[] packages = matrix
+            .Select(item => string.Join("|", item.GuaranteedAffixStatIds ?? []))
+            .ToArray();
+
+        Assert.Equal(36, packages.Distinct(StringComparer.Ordinal).Count());
     }
 
     [Fact]

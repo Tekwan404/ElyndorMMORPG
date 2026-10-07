@@ -1085,6 +1085,83 @@ public sealed class InventoryEquipmentServiceTests(PostgresFixture postgres) : I
     }
 
     [Fact]
+    public async Task ArcherCrossbowPreservesCompatibleQuiverOffHand()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(
+            currentHp: 100,
+            classId: "ARCHER",
+            level: 60);
+        Guid crossbowId = await AddItemAsync(characterId, "L60_NORMAL_ARCHER_SURVIVAL_WEAPON", 1);
+        Guid quiverId = await AddItemAsync(characterId, "L60_NORMAL_ARCHER_QUIVER", 1);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        Assert.True((await service.EquipAsync(
+            accountId,
+            quiverId,
+            Guid.CreateVersion7(),
+            CancellationToken.None)).IsSuccess);
+        Assert.True((await service.EquipAsync(
+            accountId,
+            crossbowId,
+            Guid.CreateVersion7(),
+            CancellationToken.None)).IsSuccess);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterEquipment mainHand = await verify.CharacterEquipment
+            .AsNoTracking()
+            .SingleAsync(item => item.CharacterId == characterId
+                && item.Slot == EquipmentSlot.MainHand);
+        CharacterEquipment offHand = await verify.CharacterEquipment
+            .AsNoTracking()
+            .SingleAsync(item => item.CharacterId == characterId
+                && item.Slot == EquipmentSlot.OffHand);
+
+        Assert.Equal(crossbowId, mainHand.CharacterItemId);
+        Assert.Equal(quiverId, offHand.CharacterItemId);
+    }
+
+
+    [Fact]
+    public async Task ArcherCanEquipQuiverAfterCrossbow()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(
+            currentHp: 100,
+            classId: "ARCHER",
+            level: 60);
+        Guid crossbowId = await AddItemAsync(characterId, "L60_NORMAL_ARCHER_SURVIVAL_WEAPON", 1);
+        Guid quiverId = await AddItemAsync(characterId, "L60_NORMAL_ARCHER_QUIVER", 1);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        InventoryEquipmentService service = await CreateServiceAsync(context);
+
+        Assert.True((await service.EquipAsync(
+            accountId,
+            crossbowId,
+            Guid.CreateVersion7(),
+            CancellationToken.None)).IsSuccess);
+        InventoryOperationResult quiver = await service.EquipAsync(
+            accountId,
+            quiverId,
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+
+        Assert.True(quiver.IsSuccess);
+        Assert.Null(quiver.ErrorCode);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Contains(
+            await verify.CharacterEquipment
+                .AsNoTracking()
+                .Where(item => item.CharacterId == characterId)
+                .ToArrayAsync(),
+            item => item.Slot == EquipmentSlot.OffHand
+                && item.CharacterItemId == quiverId);
+    }
+
+
+    [Fact]
     public async Task MageCanEquipEyeOfDeadStarWithResidualManaFocus()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync(

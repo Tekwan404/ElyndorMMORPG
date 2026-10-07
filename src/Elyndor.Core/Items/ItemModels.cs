@@ -163,6 +163,9 @@ public static class EquipmentCategoryIds
 
     public static bool IsOneHandedWeapon(string? weaponCategory) =>
         IsWeapon(weaponCategory) && !UsesBothHands(weaponCategory);
+
+    public static bool SupportsQuiver(string? weaponCategory) =>
+        weaponCategory is Bow or Crossbow;
 }
 
 public sealed record ItemDefinition(

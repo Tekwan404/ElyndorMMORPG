@@ -1,0 +1,1075 @@
+{
+  "contentVersion": "0.41.0",
+  "balanceVersion": "0.31.0",
+  "publishedAtUtc": "2026-10-07T11:40:27+00:00",
+  "items": [
+    {
+      "id": "L60_NORMAL_WARRIOR_BERSERKER_WEAPON",
+      "name": "Клинок последнего натиска",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Базовое оружие 60 уровня для ветки «Берсерк», ступень перед уникальным оружием.",
+      "version": 1,
+      "iconId": "items_outside_sets/shattered_order_citadel/mirror_bastard_sword",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_WEAPON",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_WARRIOR_BERSERKER_WEAPON",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "weaponCategory": "TWO_HAND_SWORD",
+      "weaponDamageMin": 305,
+      "weaponDamageMax": 420,
+      "weaponBaseAttackIntervalSeconds": 3
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_GUARDIAN_WEAPON",
+      "name": "Клинок мёртвого дозора",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Базовое оружие 60 уровня для ветки «Страж», ступень перед уникальным оружием.",
+      "version": 1,
+      "iconId": "items_outside_sets/black_bastion/first_guardian_blade",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_WEAPON",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_WARRIOR_GUARDIAN_WEAPON",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "weaponCategory": "ONE_HAND_SWORD",
+      "weaponDamageMin": 215,
+      "weaponDamageMax": 295,
+      "weaponBaseAttackIntervalSeconds": 2.2
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_WARLORD_WEAPON",
+      "name": "Молот полевого командира",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Базовое оружие 60 уровня для ветки «Командир», ступень перед уникальным оружием.",
+      "version": 1,
+      "iconId": "items_outside_sets/black_bastion/ark_tor_hammer",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_WEAPON",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "ACCURACY"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_WARRIOR_WARLORD_WEAPON",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "weaponCategory": "TWO_HAND_MACE",
+      "weaponDamageMin": 315,
+      "weaponDamageMax": 430,
+      "weaponBaseAttackIntervalSeconds": 3.1
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FIRE_WEAPON",
+      "name": "Посох пепельного рубежа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Базовое оружие 60 уровня для ветки «Огонь», ступень перед уникальным оружием.",
+      "version": 1,
+      "iconId": "items_outside_sets/black_bastion/black_star_staff",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_MAGE_FIRE_WEAPON",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "weaponCategory": "STAFF",
+      "weaponDamageMin": 265,
+      "weaponDamageMax": 370,
+      "weaponBaseAttackIntervalSeconds": 2.8
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FROST_WEAPON",
+      "name": "Жезл белой пустоши",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Базовое оружие 60 уровня для ветки «Лёд», ступень перед уникальным оружием.",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_mid/interrupted_mana_staff",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_MAGE_FROST_WEAPON",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "weaponCategory": "ONE_HAND_STAFF",
+      "weaponDamageMin": 200,
+      "weaponDamageMax": 280,
+      "weaponBaseAttackIntervalSeconds": 2.4
+    },
+    {
+      "id": "L60_NORMAL_MAGE_ARCANE_WEAPON",
+      "name": "Жезл мёртвого потока",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Базовое оружие 60 уровня для ветки «Аркана», ступень перед уникальным оружием.",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_mid/shard_wand",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "MAX_RESOURCE"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_MAGE_ARCANE_WEAPON",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "weaponCategory": "ONE_HAND_STAFF",
+      "weaponDamageMin": 200,
+      "weaponDamageMax": 280,
+      "weaponBaseAttackIntervalSeconds": 2.4
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_MARKSMAN_WEAPON",
+      "name": "Лук дальнего рубежа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Базовое оружие 60 уровня для ветки «Меткость», ступень перед уникальным оружием.",
+      "version": 1,
+      "iconId": "items_outside_sets/shattered_order_citadel/triple_aspect_bow",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "ACCURACY"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_ARCHER_MARKSMAN_WEAPON",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "weaponCategory": "BOW",
+      "weaponDamageMin": 285,
+      "weaponDamageMax": 390,
+      "weaponBaseAttackIntervalSeconds": 2.7
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_BEAST_MASTERY_WEAPON",
+      "name": "Лук чёрной стаи",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Базовое оружие 60 уровня для ветки «Повелитель зверей», ступень перед уникальным оружием.",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_mid/double_echo_bow",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_ARCHER_BEAST_MASTERY_WEAPON",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "weaponCategory": "BOW",
+      "weaponDamageMin": 285,
+      "weaponDamageMax": 390,
+      "weaponBaseAttackIntervalSeconds": 2.7
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_SURVIVAL_WEAPON",
+      "name": "Арбалет гиблого следа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Базовое оружие 60 уровня для ветки «Выживание», ступень перед уникальным оружием.",
+      "version": 1,
+      "iconId": "items_outside_sets/black_bastion/black_gate_crossbow",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "ARMOR_PENETRATION"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_ARCHER_SURVIVAL_WEAPON",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "weaponCategory": "CROSSBOW",
+      "weaponDamageMin": 310,
+      "weaponDamageMax": 425,
+      "weaponBaseAttackIntervalSeconds": 3
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_HOLY_WEAPON",
+      "name": "Скипетр рассветного дозора",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Базовое оружие 60 уровня для ветки «Свет», ступень перед уникальным оружием.",
+      "version": 1,
+      "iconId": "items_outside_sets/eclipse_citadel/umbra_smith_hammer",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_WEAPON",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_PALADIN_HOLY_WEAPON",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "weaponCategory": "MACE",
+      "weaponDamageMin": 225,
+      "weaponDamageMax": 305,
+      "weaponBaseAttackIntervalSeconds": 2.3
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_PROTECTION_WEAPON",
+      "name": "Клинок нерушимого рубежа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Базовое оружие 60 уровня для ветки «Защита», ступень перед уникальным оружием.",
+      "version": 1,
+      "iconId": "items_outside_sets/eclipse_citadel/broken_captain_blade",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_WEAPON",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_PALADIN_PROTECTION_WEAPON",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "weaponCategory": "ONE_HAND_SWORD",
+      "weaponDamageMin": 215,
+      "weaponDamageMax": 295,
+      "weaponBaseAttackIntervalSeconds": 2.2
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_RETRIBUTION_WEAPON",
+      "name": "Молот пепельного суда",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Базовое оружие 60 уровня для ветки «Воздаяние», ступень перед уникальным оружием.",
+      "version": 1,
+      "iconId": "imported/molot_khoziaina_zhil",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_WEAPON",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_PALADIN_RETRIBUTION_WEAPON",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "weaponCategory": "TWO_HAND_MACE",
+      "weaponDamageMin": 315,
+      "weaponDamageMax": 430,
+      "weaponBaseAttackIntervalSeconds": 3.1
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_RING",
+      "name": "Кольцо железного рубежа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Классовое кольцо 60 уровня для Воина; базовая финальная ступень до уникальных трофеев.",
+      "version": 1,
+      "iconId": "acc_uncommon_6_ring",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_WARRIOR_RING",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_CLOAK",
+      "name": "Плащ железного рубежа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Классовый плащ 60 уровня для Воина; базовая финальная ступень до уникального плаща.",
+      "version": 1,
+      "iconId": "acc_uncommon_6_cloak",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_WARRIOR_CLOAK",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_AMULET",
+      "name": "Амулет несокрушимой клятвы",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Классовый амулет 60 уровня для Воина; закрывает базовый слот экипировки 60 уровня.",
+      "version": 1,
+      "iconId": "acc_uncommon_6_amulet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_WARRIOR_AMULET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_RING",
+      "name": "Кольцо остаточного эфира",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Классовое кольцо 60 уровня для Мага; базовая финальная ступень до уникальных трофеев.",
+      "version": 1,
+      "iconId": "acc_uncommon_6_ring",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_MAGE_RING",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_CLOAK",
+      "name": "Плащ чёрного эфира",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Классовый плащ 60 уровня для Мага; базовая финальная ступень до уникального плаща.",
+      "version": 1,
+      "iconId": "acc_uncommon_6_cloak",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_MAGE_CLOAK",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_MAGE_AMULET",
+      "name": "Амулет звёздного разлома",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Классовый амулет 60 уровня для Мага; закрывает базовый слот экипировки 60 уровня.",
+      "version": 1,
+      "iconId": "acc_uncommon_6_amulet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_MAGE_AMULET",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_RING",
+      "name": "Кольцо дальнего следа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Классовое кольцо 60 уровня для Лучника; базовая финальная ступень до уникальных трофеев.",
+      "version": 1,
+      "iconId": "acc_uncommon_6_ring",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_ARCHER_RING",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_CLOAK",
+      "name": "Плащ беззвучной охоты",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Классовый плащ 60 уровня для Лучника; базовая финальная ступень до уникального плаща.",
+      "version": 1,
+      "iconId": "acc_uncommon_6_cloak",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_ARCHER_CLOAK",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_AMULET",
+      "name": "Амулет меткого пути",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Классовый амулет 60 уровня для Лучника; закрывает базовый слот экипировки 60 уровня.",
+      "version": 1,
+      "iconId": "acc_uncommon_6_amulet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_ARCHER_AMULET",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_RING",
+      "name": "Печать последнего света",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Классовое кольцо 60 уровня для Паладина; базовая финальная ступень до уникальных трофеев.",
+      "version": 1,
+      "iconId": "acc_uncommon_6_ring",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_PALADIN_RING",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_CLOAK",
+      "name": "Плащ пепельной клятвы",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Классовый плащ 60 уровня для Паладина; базовая финальная ступень до уникального плаща.",
+      "version": 1,
+      "iconId": "acc_uncommon_6_cloak",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_PALADIN_CLOAK",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_AMULET",
+      "name": "Амулет рассветной клятвы",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Классовый амулет 60 уровня для Паладина; закрывает базовый слот экипировки 60 уровня.",
+      "version": 1,
+      "iconId": "acc_uncommon_6_amulet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_PALADIN_AMULET",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_NORMAL_WARRIOR_SHIELD",
+      "name": "Щит Мёртвого Предела",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "OffHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Тяжёлый щит 60 уровня для одноручных сборок Воина.",
+      "version": 1,
+      "iconId": "items_outside_sets/eclipse_citadel/inner_gate_shield",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_SHIELD",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "STAMINA",
+        "STRENGTH"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_WARRIOR_SHIELD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "offHandCategory": "SHIELD",
+      "armorFlat": 1125,
+      "blockChancePercent": 10,
+      "blockValueMin": 185,
+      "blockValueMax": 265
+    },
+    {
+      "id": "L60_NORMAL_PALADIN_SHIELD",
+      "name": "Щит Рассветного Дозора",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "OffHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Щит 60 уровня для защитных и священных одноручных сборок Паладина.",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_mid/umbra_sentinel_shield",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "PALADIN_SHIELD",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "STAMINA",
+        "INTELLECT"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_PALADIN_SHIELD",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "offHandCategory": "SHIELD",
+      "armorFlat": 1125,
+      "blockChancePercent": 10,
+      "blockValueMin": 185,
+      "blockValueMax": 265
+    },
+    {
+      "id": "L60_NORMAL_MAGE_FOCUS",
+      "name": "Фокус Погасшего Эфира",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "OffHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Фокус 60 уровня для одноручных магических сборок.",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_late/blackstar_focus",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_FOCUS",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_MAGE_FOCUS",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "offHandCategory": "FOCUS"
+    },
+    {
+      "id": "L60_NORMAL_ARCHER_QUIVER",
+      "name": "Колчан Последней Охоты",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Epic",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "OffHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Колчан 60 уровня для сборок Лучника с луком.",
+      "version": 1,
+      "iconId": "archer_legendary_black_constellation_quiver",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_QUIVER",
+      "affixCountProfileId": "LEVEL_57_60",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "itemFamilyId": "L60_NORMAL_ARCHER_QUIVER",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "offHandCategory": "QUIVER"
+    }
+  ]
+}

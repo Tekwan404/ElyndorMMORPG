@@ -240,7 +240,7 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
         CharacterItem item = await context.CharacterItems
             .Include(candidate => candidate.Affixes)
             .SingleAsync(candidate => candidate.ItemDefinitionId == "UNIQUE_WARRIOR_BLACKHEART");
-        Assert.Equal(25, item.ItemLevel);
+        Assert.Equal(60, item.ItemLevel);
         Assert.Equal(1, item.GenerationVersion);
         Assert.Equal("ADMIN_GRANT", item.SourceType);
         Assert.Equal(5, item.Affixes.Count);

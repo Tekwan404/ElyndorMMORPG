@@ -78,7 +78,7 @@ public sealed class Level60NormalSetContentTests
     }
 
     [Fact]
-    public async Task DeadReachesNamedElitesDropEveryNormalLevel60Family()
+    public async Task DeadReachesNormalElitesDropEveryNormalLevel60GearFamily()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
@@ -86,11 +86,12 @@ public sealed class Level60NormalSetContentTests
         LootTableDefinition table = Assert.Single(
             package.LootTables!,
             candidate => candidate.Id == "DEAD_REACHES_L60_NORMAL_SET_LOOT");
+        Assert.Empty(table.Entries);
         LootSelectionGroup group = Assert.Single(table.SelectionGroups!);
 
         Assert.Equal("WeightedExclusive", group.SelectionMode);
         Assert.Equal(1, group.Rolls);
-        Assert.Equal(72, group.Entries.Count);
+        Assert.Equal(100, group.Entries.Count);
         Assert.All(group.Entries, entry =>
         {
             Assert.Equal(60, entry.ItemLevelMin);
@@ -98,25 +99,23 @@ public sealed class Level60NormalSetContentTests
         });
 
         string[] familyIds = package.Items!
-            .Where(item => item.SetId is not null && ExpectedSets.ContainsKey(item.SetId))
+            .Where(item => item.Id.StartsWith("L60_NORMAL_", StringComparison.Ordinal))
             .Select(item => item.Id)
             .OrderBy(id => id, StringComparer.Ordinal)
             .ToArray();
+        Assert.Equal(100, familyIds.Length);
         Assert.Equal(
             familyIds,
             group.Entries.Select(entry => entry.ItemId).OrderBy(id => id, StringComparer.Ordinal).ToArray());
 
-        string[] eliteIds =
+        string[] normalEliteIds =
         [
             "DEAD_REACHES_VARGHIM_HEADLESS_L60",
             "DEAD_REACHES_MORANA_PALE_L60",
             "DEAD_REACHES_GOR_KAR_DEVOURER_L60",
-            "DEAD_REACHES_MORDREK_LAST_GATE_L60",
-            "DEAD_REACHES_NAMELESS_KING_L60",
-            "DEAD_REACHES_NERZAR_L60",
         ];
 
-        foreach (string eliteId in eliteIds)
+        foreach (string eliteId in normalEliteIds)
         {
             Assert.Equal(
                 "DEAD_REACHES_L60_NORMAL_SET_LOOT",

@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.37.0",
-  "balanceVersion": "0.30.0",
-  "publishedAtUtc": "2026-10-05T19:15:00+00:00",
+  "contentVersion": "0.41.0",
+  "balanceVersion": "0.31.0",
+  "publishedAtUtc": "2026-10-07T11:40:27+00:00",
   "note": "Level 41-60 open-world roster skeleton. AI abilities, loot, exact monster art and final balance are intentionally deferred.",
   "monsters": [
     {
@@ -1595,7 +1595,7 @@
       "abilityIds": [],
       "aiProfileId": "AUTHORED_EMPTY_AI",
       "version": 1,
-      "lootTableId": "DEAD_REACHES_L60_NORMAL_SET_LOOT",
+      "lootTableId": "DEAD_REACHES_L60_PVE_T1_LOOT",
       "goldRewardMin": 0,
       "goldRewardMax": 0,
       "displayName": "Мордрек, Страж Последних Врат",
@@ -1629,7 +1629,7 @@
       "abilityIds": [],
       "aiProfileId": "AUTHORED_EMPTY_AI",
       "version": 1,
-      "lootTableId": "DEAD_REACHES_L60_NORMAL_SET_LOOT",
+      "lootTableId": "DEAD_REACHES_L60_PVE_T1_LOOT",
       "goldRewardMin": 0,
       "goldRewardMax": 0,
       "displayName": "Безымянный Король",
@@ -1663,7 +1663,7 @@
       "abilityIds": [],
       "aiProfileId": "AUTHORED_EMPTY_AI",
       "version": 1,
-      "lootTableId": "DEAD_REACHES_L60_NORMAL_SET_LOOT",
+      "lootTableId": "DEAD_REACHES_L60_PVE_T1_LOOT",
       "goldRewardMin": 0,
       "goldRewardMax": 0,
       "displayName": "Нер'Зар, Пожиратель Мёртвых",

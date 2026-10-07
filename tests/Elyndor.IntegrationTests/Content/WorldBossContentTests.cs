@@ -120,8 +120,8 @@ public sealed class WorldBossContentTests
 
             ItemDefinition family = package.Items!.Single(item => item.Id == uniqueId);
             Assert.Equal(uniqueId, family.ItemFamilyId);
-            Assert.True(family.RequiredLevel is 25 or 60);
-            Assert.True(family.ItemLevelMin is 25 or 60);
+            Assert.Equal(60, family.RequiredLevel);
+            Assert.Equal(60, family.ItemLevelMin);
             Assert.Equal(60, family.ItemLevelMax);
         });
 

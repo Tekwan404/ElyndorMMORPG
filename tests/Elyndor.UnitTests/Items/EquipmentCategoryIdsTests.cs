@@ -23,4 +23,21 @@ public sealed class EquipmentCategoryIdsTests
         Assert.False(EquipmentCategoryIds.UsesBothHands(EquipmentCategoryIds.OneHandStaff));
         Assert.True(EquipmentCategoryIds.IsOneHandedWeapon(EquipmentCategoryIds.OneHandStaff));
     }
+    [Theory]
+    [InlineData("BOW")]
+    [InlineData("CROSSBOW")]
+    public void RangedProjectileWeaponsSupportQuivers(string category)
+    {
+        Assert.True(EquipmentCategoryIds.SupportsQuiver(category));
+    }
+
+    [Theory]
+    [InlineData("STAFF")]
+    [InlineData("TWO_HAND_SWORD")]
+    [InlineData("ONE_HAND_SWORD")]
+    public void NonProjectileWeaponsDoNotSupportQuivers(string category)
+    {
+        Assert.False(EquipmentCategoryIds.SupportsQuiver(category));
+    }
+
 }
