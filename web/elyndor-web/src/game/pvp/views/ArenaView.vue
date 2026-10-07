@@ -19,9 +19,10 @@ onMounted(async () => {
   await arena.refresh()
   await arena.loadLeaderboard()
   if (arena.enabled) {
+    await arena.loadShop()
     try {
       await arena.connect()
-      await Promise.all([arena.loadInvites(), arena.loadShop()])
+      await arena.loadInvites()
     }
     catch { arena.errorCode = 'arena_load_failed' }
   }
