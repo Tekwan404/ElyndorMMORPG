@@ -12,18 +12,18 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxHpFlat": 174.5959,
-          "armorFlat": 164.8961
+          "maxHpFlat": 235.8932,
+          "armorFlat": 222.788
         },
         {
           "requiredPieces": 4,
-          "magicResistanceFlat": 54.3187,
+          "magicResistanceFlat": 286.1297,
           "dodgePercent": 2
         },
         {
           "requiredPieces": 6,
-          "maxHpFlat": 174.5959,
-          "armorFlat": 164.8961
+          "maxHpFlat": 235.8932,
+          "armorFlat": 222.788
         }
       ]
     },
@@ -40,7 +40,7 @@
         },
         {
           "requiredPieces": 4,
-          "attackPowerFlat": 58.1986
+          "attackPowerFlat": 85.8389
         },
         {
           "requiredPieces": 6,
@@ -58,16 +58,16 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxHpFlat": 174.5959
+          "maxHpFlat": 490.5081
         },
         {
           "requiredPieces": 4,
-          "attackPowerFlat": 58.1986
+          "attackPowerFlat": 85.8389
         },
         {
           "requiredPieces": 6,
           "accuracyPercent": 3,
-          "maxHpFlat": 174.5959
+          "maxHpFlat": 490.5081
         }
       ]
     },
@@ -84,7 +84,7 @@
         },
         {
           "requiredPieces": 4,
-          "spellPowerFlat": 58.1986
+          "spellPowerFlat": 85.8389
         },
         {
           "requiredPieces": 6,
@@ -102,16 +102,16 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxResourceFlat": 77.5982
+          "maxResourceFlat": 686.7113
         },
         {
           "requiredPieces": 4,
-          "spellPowerFlat": 58.1986
+          "spellPowerFlat": 85.8389
         },
         {
           "requiredPieces": 6,
           "magicPenetrationPercent": 5,
-          "maxResourceFlat": 77.5982
+          "maxResourceFlat": 686.7113
         }
       ]
     },
@@ -124,17 +124,17 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxResourceFlat": 58.1986,
-          "magicResistanceFlat": 27.1594
+          "maxResourceFlat": 323.9203,
+          "magicResistanceFlat": 151.1629
         },
         {
           "requiredPieces": 4,
-          "spellPowerFlat": 46.5589,
-          "maxHpFlat": 139.6767
+          "spellPowerFlat": 56.2878,
+          "maxHpFlat": 168.8633
         },
         {
           "requiredPieces": 6,
-          "magicResistanceFlat": 54.3187,
+          "magicResistanceFlat": 286.1297,
           "criticalChancePercent": 4
         }
       ]
@@ -157,7 +157,7 @@
         {
           "requiredPieces": 6,
           "armorPenetrationPercent": 5,
-          "attackPowerFlat": 58.1986
+          "attackPowerFlat": 85.8389
         }
       ]
     },
@@ -170,11 +170,11 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxHpFlat": 174.5959
+          "maxHpFlat": 490.5081
         },
         {
           "requiredPieces": 4,
-          "attackPowerFlat": 58.1986
+          "attackPowerFlat": 85.8389
         },
         {
           "requiredPieces": 6,
@@ -201,7 +201,7 @@
         {
           "requiredPieces": 6,
           "armorPenetrationPercent": 5,
-          "maxHpFlat": 174.5959
+          "maxHpFlat": 490.5081
         }
       ]
     },
@@ -214,16 +214,16 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxResourceFlat": 77.5982
+          "maxResourceFlat": 686.7113
         },
         {
           "requiredPieces": 4,
-          "spellPowerFlat": 58.1986
+          "spellPowerFlat": 85.8389
         },
         {
           "requiredPieces": 6,
           "criticalChancePercent": 4,
-          "maxResourceFlat": 58.1986
+          "maxResourceFlat": 686.7113
         }
       ]
     },
@@ -236,17 +236,17 @@
       "bonuses": [
         {
           "requiredPieces": 2,
-          "maxHpFlat": 174.5959,
-          "armorFlat": 164.8961
+          "maxHpFlat": 235.8932,
+          "armorFlat": 222.788
         },
         {
           "requiredPieces": 4,
-          "magicResistanceFlat": 54.3187
+          "magicResistanceFlat": 286.1297
         },
         {
           "requiredPieces": 6,
-          "maxHpFlat": 174.5959,
-          "armorFlat": 164.8961
+          "maxHpFlat": 235.8932,
+          "armorFlat": 222.788
         }
       ]
     },
@@ -263,11 +263,11 @@
         },
         {
           "requiredPieces": 4,
-          "attackPowerFlat": 58.1986
+          "attackPowerFlat": 85.8389
         },
         {
           "requiredPieces": 6,
-          "spellPowerFlat": 40.739,
+          "spellPowerFlat": 85.8389,
           "criticalChancePercent": 4
         }
       ]

@@ -29,7 +29,9 @@ public sealed class SetPassiveEvaluator
         CombatEvent combatEvent,
         IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> equippedSetPieceCounts,
         SetPassiveRuntimeState runtimeState,
-        ProcGuard? guard = null)
+        ProcGuard? guard = null,
+        Func<SetPassiveDefinition, CombatEvent, Guid?>? actorResolver = null,
+        Func<SetPassiveDefinition, Guid, CombatEvent, bool>? filter = null)
     {
         ArgumentNullException.ThrowIfNull(combatEvent);
         ArgumentNullException.ThrowIfNull(equippedSetPieceCounts);
@@ -47,11 +49,20 @@ public sealed class SetPassiveEvaluator
                 continue;
             }
 
-            Guid? actorId = ResolveActorId(combatEvent, definition.Trigger.ActorRole);
+            Guid? actorId = actorResolver is null ? ResolveActorId(combatEvent, definition.Trigger.ActorRole)
+                : actorResolver(definition, combatEvent);
             if (actorId is null || !HasRequiredPieces(actorId.Value, definition, equippedSetPieceCounts))
             {
                 continue;
             }
+
+            if (definition.Conditions.CriticalOnly && !combatEvent.IsCritical
+                || definition.Conditions.PositiveAmountOnly && combatEvent.Amount <= 0
+                || definition.Conditions.ResourceSpent > 0 && combatEvent.Amount >= 0
+                || definition.Conditions.AbilityIds is { Count: > 0 } ids
+                    && !ids.Contains(combatEvent.DefinitionId, StringComparer.Ordinal)
+                || filter is not null && !filter(definition, actorId.Value, combatEvent))
+                continue;
 
             SetPassiveProcState state = runtimeState.Get(actorId.Value, definition.Id);
             if (!guard.TryObserve(actorId.Value, definition.Id, combatEvent.ProcDispatchToken, combatEvent.Sequence)
@@ -66,6 +77,27 @@ public sealed class SetPassiveEvaluator
                 continue;
             }
 
+            string actionId = $"{combatEvent.SourceActorId}:{combatEvent.DefinitionId}:{combatEvent.WeaponHand}";
+            if (definition.Conditions.OncePerAction && state.LastActionAt == combatEvent.OccurredAtUtc
+                && state.LastActionId == actionId) continue;
+            state = state with { LastActionAt = combatEvent.OccurredAtUtc, LastActionId = actionId };
+            if (definition.Conditions.ResourceSpent > 0)
+            {
+                bool expired = state.WindowStartedAt is null
+                    || definition.Conditions.SpendingWindow is { } window
+                        && combatEvent.OccurredAtUtc >= state.WindowStartedAt + window;
+                decimal spent = (expired ? 0 : state.ResourceTotal) - combatEvent.Amount;
+                state = state with { ResourceTotal = spent,
+                    WindowStartedAt = expired ? combatEvent.OccurredAtUtc : state.WindowStartedAt };
+                if (spent < definition.Conditions.ResourceSpent)
+                {
+                    runtimeState.Set(state);
+                    continue;
+                }
+            }
+            if (definition.Conditions.AlternatingSources && state.LastSourceActorId == combatEvent.SourceActorId)
+                continue;
+            state = state with { LastSourceActorId = combatEvent.SourceActorId };
             int eventCounter = state.EventCounter + 1;
             if (eventCounter < definition.Conditions.EveryNth)
             {
@@ -81,6 +113,8 @@ public sealed class SetPassiveEvaluator
             runtimeState.Set(state with
             {
                 EventCounter = 0,
+                ResourceTotal = 0,
+                WindowStartedAt = null,
                 CooldownUntil = nextCooldown,
                 LastProcAt = combatEvent.OccurredAtUtc
             });
@@ -118,7 +152,7 @@ public sealed class SetPassiveEvaluator
             && pieces >= definition.RequiredPieces;
     }
 
-    private static void Validate(SetPassiveDefinition definition)
+    public static void Validate(SetPassiveDefinition definition)
     {
         ArgumentNullException.ThrowIfNull(definition);
         ArgumentException.ThrowIfNullOrWhiteSpace(definition.Id);
@@ -126,6 +160,11 @@ public sealed class SetPassiveEvaluator
         ArgumentNullException.ThrowIfNull(definition.Trigger);
         ArgumentNullException.ThrowIfNull(definition.Conditions);
         ArgumentNullException.ThrowIfNull(definition.Actions);
+
+        if (!Enum.IsDefined(definition.Trigger.ActorRole) || !Enum.IsDefined(definition.Trigger.EventType)
+            || definition.Conditions.ResourceSpent < 0
+            || definition.Conditions.ResourceSpent > 0 && definition.Conditions.SpendingWindow is not { Ticks: > 0 })
+            throw new ArgumentException("Invalid set trigger or resource window.", nameof(definition));
 
         if (definition.RequiredPieces <= 0)
         {
@@ -159,6 +198,14 @@ public sealed class SetPassiveEvaluator
 
         foreach (SetPassiveActionDefinition action in definition.Actions)
         {
+            if (!Enum.IsDefined(action.Kind) || action.Magnitude < 0
+                || action.Kind == SetPassiveActionKind.ReduceCooldown && string.IsNullOrWhiteSpace(action.ReferenceId)
+                || !Enum.IsDefined(action.ModifierMode) || !Enum.IsDefined(action.StackPolicy)
+                || action.Kind is SetPassiveActionKind.EmpowerNextDirect or SetPassiveActionKind.EmpowerNextEffect
+                    && (string.IsNullOrWhiteSpace(action.ReferenceId) || action.Duration is not { Ticks: > 0 })
+                || action.Kind == SetPassiveActionKind.ExtendTargetEffect && action.AbilityIds is not { Count: > 0 })
+                throw new ArgumentException("Invalid set passive action.", nameof(definition));
+
             if (action.MaxStacks <= 0)
             {
                 throw new ArgumentOutOfRangeException(

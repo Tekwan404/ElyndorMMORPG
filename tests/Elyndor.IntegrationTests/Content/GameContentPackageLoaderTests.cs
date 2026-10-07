@@ -12,14 +12,6 @@ namespace Elyndor.IntegrationTests.Content;
 
 public sealed class GameContentPackageLoaderTests
 {
-    private static readonly string[] CanonicalSignatureSetIds =
-    [
-        "SET_WARRIOR_BLACK_BASTION",
-        "SET_MAGE_ECLIPSED_ORACLE",
-        "SET_ARCHER_BLACK_CONSTELLATION",
-        "SET_PALADIN_FIRST_GUARD"
-    ];
-
     [Fact]
     public void EveryAuthoredEquipmentDefinitionDeclaresGenerationMode()
     {
@@ -81,8 +73,8 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.41.0", package.ContentVersion);
-        Assert.Equal("0.31.0", package.BalanceVersion);
+        Assert.Equal("0.42.0", package.ContentVersion);
+        Assert.Equal("0.32.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");
@@ -293,14 +285,12 @@ public sealed class GameContentPackageLoaderTests
             .Single(dungeon => dungeon.Id == "BLACK_BASTION");
 
         ItemDefinition[] canonicalSetItems = package.Items!
-            .Where(item => item.SetId is not null
-                && CanonicalSignatureSetIds.Contains(item.SetId, StringComparer.Ordinal))
+            .Where(item => item.RequiredLevel == 23 && item.Rarity == ItemRarity.Legendary
+                && item.AllowedClassIds is { Count: 1 })
             .ToArray();
 
         Assert.Equal(24, canonicalSetItems.Length);
-        Assert.All(
-            CanonicalSignatureSetIds,
-            setId => Assert.Equal(6, canonicalSetItems.Count(item => item.SetId == setId)));
+        Assert.All(canonicalSetItems, item => Assert.Null(item.SetId));
         Assert.All(canonicalSetItems, item =>
         {
             Assert.Equal(ItemRarity.Legendary, item.Rarity);
@@ -415,8 +405,8 @@ public sealed class GameContentPackageLoaderTests
             .ToHashSet(StringComparer.Ordinal);
 
         string[] dungeonSetItemIds = package.Items!
-            .Where(item => item.SetId is not null
-                && CanonicalSignatureSetIds.Contains(item.SetId, StringComparer.Ordinal))
+            .Where(item => item.RequiredLevel == 23 && item.Rarity == ItemRarity.Legendary
+                && item.AllowedClassIds is { Count: 1 })
             .Select(item => item.Id)
             .ToArray();
 

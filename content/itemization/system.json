@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.41.0",
-  "balanceVersion": "0.31.0",
-  "publishedAtUtc": "2026-10-07T11:40:27+00:00",
+  "contentVersion": "0.42.0",
+  "balanceVersion": "0.32.0",
+  "publishedAtUtc": "2026-10-07T12:00:00+00:00",
   "itemization": {
     "templateBasePower": 110,
     "levelLinearCoefficient": 0.055,
@@ -587,6 +587,30 @@
         "guaranteedCount": 0,
         "minimumBonusCount": 4,
         "maximumBonusCount": 5
+      },
+      {
+        "id": "LEVELING_SET_35_2G",
+        "guaranteedCount": 2,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVELING_SET_45_3G",
+        "guaranteedCount": 3,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVELING_SET_45_2G",
+        "guaranteedCount": 2,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
+      },
+      {
+        "id": "LEVELING_SET_55_3G",
+        "guaranteedCount": 3,
+        "minimumBonusCount": 1,
+        "maximumBonusCount": 2
       }
     ],
     "qualityProfiles": [

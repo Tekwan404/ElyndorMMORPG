@@ -11,14 +11,6 @@ namespace Elyndor.UnitTests.Content;
 
 public sealed class ShatteredOrderDungeonContentTests
 {
-    private static readonly string[] CanonicalSignatureSetIds =
-    [
-        "SET_WARRIOR_BLACK_BASTION",
-        "SET_MAGE_ECLIPSED_ORACLE",
-        "SET_ARCHER_BLACK_CONSTELLATION",
-        "SET_PALADIN_FIRST_GUARD"
-    ];
-
     private static readonly string[] BossIds =
     [
         "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30",
@@ -92,13 +84,12 @@ public sealed class ShatteredOrderDungeonContentTests
         HashSet<string> observatoryLoot = LootItemIds(observatory, indexes);
         HashSet<string> blackBastionLoot = LootItemIds(blackBastion, indexes);
         ItemDefinition[] canonicalSetItems = package.Items!
-            .Where(item => item.SetId is not null
-                && CanonicalSignatureSetIds.Contains(item.SetId, StringComparer.Ordinal))
+            .Where(item => item.RequiredLevel == 23 && item.Rarity == ItemRarity.Legendary
+                && item.AllowedClassIds is { Count: 1 })
             .ToArray();
 
         Assert.Equal(24, canonicalSetItems.Length);
-        Assert.All(CanonicalSignatureSetIds, setId =>
-            Assert.Equal(6, canonicalSetItems.Count(item => item.SetId == setId)));
+        Assert.All(canonicalSetItems, item => Assert.Null(item.SetId));
         Assert.All(canonicalSetItems, item =>
         {
             Assert.Equal(23, item.RequiredLevel);

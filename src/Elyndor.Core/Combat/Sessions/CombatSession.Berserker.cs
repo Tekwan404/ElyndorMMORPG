@@ -308,7 +308,8 @@ public sealed partial class CombatSession
                 ForceCritical: consumeDeathsEmbrace,
                 AccuracyBonus: archerModifier.AccuracyBonus,
                 CriticalChanceBonus: archerModifier.CriticalChanceBonus + paladinModifier.CriticalChanceBonus,
-                CriticalDamageBonus: archerModifier.CriticalDamageBonus),
+                CriticalDamageBonus: archerModifier.CriticalDamageBonus,
+                DefinitionId: "AUTO_ATTACK"),
             _random,
             now);
         ApplyKernelEvents(
