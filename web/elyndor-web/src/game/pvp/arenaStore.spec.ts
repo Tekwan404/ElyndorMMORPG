@@ -276,6 +276,7 @@ describe('arenaStore', () => {
     expect(arena.status?.honor).toBe(40)
     expect(arena.shopPurchasePendingId).toBeNull()
     expect(arena.shopErrorCode).toBeNull()
+    expect(request).toHaveBeenCalledWith('/api/v1/bootstrap')
   })
 
 })
