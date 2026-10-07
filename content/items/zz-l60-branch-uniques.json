@@ -1,0 +1,1387 @@
+{
+  "contentVersion": "0.40.0",
+  "balanceVersion": "0.31.0",
+  "publishedAtUtc": "2026-10-07T10:50:50+00:00",
+  "items": [
+    {
+      "id": "UNIQUE_WARRIOR_BLACKHEART",
+      "itemFamilyId": "UNIQUE_WARRIOR_BLACKHEART",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "name": "Черносерд",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Берсерк». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/shattered_order_citadel/mirror_bastard_sword",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "CRITICAL_CHANCE",
+        "ARMOR_PENETRATION"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "WARRIOR_WEAPON",
+      "weaponCategory": "TWO_HAND_SWORD",
+      "weaponDamageMin": 320,
+      "weaponDamageMax": 440,
+      "weaponBaseAttackIntervalSeconds": 3
+    },
+    {
+      "id": "UNIQUE_L60_WARRIOR_BERSERKER_RING",
+      "itemFamilyId": "UNIQUE_L60_WARRIOR_BERSERKER_RING",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "name": "Печать Кровавой Бури",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Берсерк». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "imported/pechat_predvestnika",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "CRITICAL_CHANCE",
+        "ARMOR_PENETRATION"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_WARRIOR_BERSERKER_CLOAK",
+      "itemFamilyId": "UNIQUE_L60_WARRIOR_BERSERKER_CLOAK",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "name": "Плащ Алого Натиска",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Берсерк». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "warrior/item-warrior-cloak",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "DODGE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_WARRIOR_GUARDIAN_WEAPON",
+      "itemFamilyId": "UNIQUE_L60_WARRIOR_GUARDIAN_WEAPON",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "name": "Клинок Непоколебимой Стены",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Страж». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/black_bastion/first_guardian_blade",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "ATTACK_POWER"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "WARRIOR_WEAPON",
+      "weaponCategory": "ONE_HAND_SWORD",
+      "weaponDamageMin": 225,
+      "weaponDamageMax": 310,
+      "weaponBaseAttackIntervalSeconds": 2.2
+    },
+    {
+      "id": "UNIQUE_L60_WARRIOR_GUARDIAN_RING",
+      "itemFamilyId": "UNIQUE_L60_WARRIOR_GUARDIAN_RING",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "name": "Кольцо Каменной Клятвы",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Страж». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/ancient_mine/stoneheart_ring",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "MAX_HP"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_WARRIOR_GUARDIAN_CLOAK",
+      "itemFamilyId": "UNIQUE_L60_WARRIOR_GUARDIAN_CLOAK",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "name": "Плащ Последнего Стража",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Страж». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "imported/plashch_brodiachego_naiomnika",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "MAX_HP"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_WARRIOR_WARLORD_WEAPON",
+      "itemFamilyId": "UNIQUE_L60_WARRIOR_WARLORD_WEAPON",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "name": "Молот Последнего Приказа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Полководец». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/black_bastion/ark_tor_hammer",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "ATTACK_SPEED"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "WARRIOR_WEAPON",
+      "weaponCategory": "TWO_HAND_MACE",
+      "weaponDamageMin": 330,
+      "weaponDamageMax": 450,
+      "weaponBaseAttackIntervalSeconds": 3.1
+    },
+    {
+      "id": "UNIQUE_L60_WARRIOR_WARLORD_RING",
+      "itemFamilyId": "UNIQUE_L60_WARRIOR_WARLORD_RING",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "name": "Печать Боевого Знамени",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Полководец». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/black_bastion/silent_judgement_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "ACCURACY",
+        "ATTACK_SPEED"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_WARRIOR_WARLORD_CLOAK",
+      "itemFamilyId": "UNIQUE_L60_WARRIOR_WARLORD_CLOAK",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "name": "Плащ Пепельного Маршала",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Полководец». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_mid/basilisk_scale_cloak",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "MAX_HP"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_MAGE_FIRE_WEAPON",
+      "itemFamilyId": "UNIQUE_L60_MAGE_FIRE_WEAPON",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "name": "Посох Пепельного Солнца",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Огонь». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/black_bastion/black_star_staff",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "CRITICAL_CHANCE",
+        "SPELL_POWER"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "weaponCategory": "STAFF",
+      "weaponDamageMin": 280,
+      "weaponDamageMax": 390,
+      "weaponBaseAttackIntervalSeconds": 2.8
+    },
+    {
+      "id": "UNIQUE_L60_MAGE_FIRE_RING",
+      "itemFamilyId": "UNIQUE_L60_MAGE_FIRE_RING",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "name": "Кольцо Живого Пламени",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Огонь». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/shattered_order_citadel/triune_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "CRITICAL_CHANCE",
+        "MAGIC_PENETRATION"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_MAGE_FIRE_CLOAK",
+      "itemFamilyId": "UNIQUE_L60_MAGE_FIRE_CLOAK",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "name": "Плащ Горящей Звезды",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Огонь». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "acc_common_2_cloak",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "MAX_RESOURCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_MAGE_FROST_WEAPON",
+      "itemFamilyId": "UNIQUE_L60_MAGE_FROST_WEAPON",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "name": "Жезл Безмолвной Зимы",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Лёд». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_mid/interrupted_mana_staff",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "MAGIC_PENETRATION"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "weaponCategory": "ONE_HAND_STAFF",
+      "weaponDamageMin": 210,
+      "weaponDamageMax": 295,
+      "weaponBaseAttackIntervalSeconds": 2.4
+    },
+    {
+      "id": "UNIQUE_L60_MAGE_FROST_RING",
+      "itemFamilyId": "UNIQUE_L60_MAGE_FROST_RING",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "name": "Кольцо Вечного Инея",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Лёд». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/shattered_order_citadel/broken_reflection_ring",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "CRITICAL_DAMAGE",
+        "MAGIC_PENETRATION"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_MAGE_FROST_CLOAK",
+      "itemFamilyId": "UNIQUE_L60_MAGE_FROST_CLOAK",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "name": "Плащ Белой Тишины",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Лёд». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "acc_uncommon_6_cloak",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "DODGE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
+      "itemFamilyId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "name": "Око Погасшей Звезды",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Аркана». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_mid/shard_wand",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "MAX_RESOURCE",
+        "SPELL_POWER"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "weaponCategory": "ONE_HAND_STAFF",
+      "weaponDamageMin": 210,
+      "weaponDamageMax": 295,
+      "weaponBaseAttackIntervalSeconds": 2.4
+    },
+    {
+      "id": "UNIQUE_L60_MAGE_ARCANE_RING",
+      "itemFamilyId": "UNIQUE_L60_MAGE_ARCANE_RING",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "name": "Печать Бездонного Потока",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Аркана». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_mid/rift_keeper_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "MAX_RESOURCE",
+        "CRITICAL_DAMAGE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_MAGE_ARCANE_CLOAK",
+      "itemFamilyId": "UNIQUE_L60_MAGE_ARCANE_CLOAK",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "name": "Плащ Междумирья",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Аркана». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "imported/plashch_lesnoi_tropy",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "MAX_RESOURCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_ARCHER_LAST_CONSTELLATION",
+      "itemFamilyId": "UNIQUE_ARCHER_LAST_CONSTELLATION",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "name": "Лук Последнего Созвездия",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Меткость». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/shattered_order_citadel/triple_aspect_bow",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "CRITICAL_CHANCE",
+        "ACCURACY"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "weaponCategory": "BOW",
+      "weaponDamageMin": 300,
+      "weaponDamageMax": 410,
+      "weaponBaseAttackIntervalSeconds": 2.7
+    },
+    {
+      "id": "UNIQUE_L60_ARCHER_MARKSMAN_RING",
+      "itemFamilyId": "UNIQUE_L60_ARCHER_MARKSMAN_RING",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "name": "Кольцо Безошибочного Взгляда",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Меткость». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_late/harbinger_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "CRITICAL_CHANCE",
+        "ACCURACY"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_ARCHER_MARKSMAN_CLOAK",
+      "itemFamilyId": "UNIQUE_L60_ARCHER_MARKSMAN_CLOAK",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "name": "Плащ Последнего Созвездия",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Меткость». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_early/forest_trail_cloak",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "DODGE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_ARCHER_BEAST_MASTERY_WEAPON",
+      "itemFamilyId": "UNIQUE_L60_ARCHER_BEAST_MASTERY_WEAPON",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "name": "Лук Звериного Завета",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Повелитель зверей». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_mid/double_echo_bow",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "ATTACK_SPEED"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "weaponCategory": "BOW",
+      "weaponDamageMin": 300,
+      "weaponDamageMax": 410,
+      "weaponBaseAttackIntervalSeconds": 2.7
+    },
+    {
+      "id": "UNIQUE_L60_ARCHER_BEAST_MASTERY_RING",
+      "itemFamilyId": "UNIQUE_L60_ARCHER_BEAST_MASTERY_RING",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "name": "Кольцо Звериного Сердца",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Повелитель зверей». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_early/root_dew_ring",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "ATTACK_SPEED",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_ARCHER_BEAST_MASTERY_CLOAK",
+      "itemFamilyId": "UNIQUE_L60_ARCHER_BEAST_MASTERY_CLOAK",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "name": "Плащ Вожака Стаи",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Повелитель зверей». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_early/wandering_mercenary_cloak",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "DODGE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_ARCHER_SURVIVAL_WEAPON",
+      "itemFamilyId": "UNIQUE_L60_ARCHER_SURVIVAL_WEAPON",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "name": "Арбалет Ядовитой Тропы",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Выживание». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/black_bastion/black_gate_crossbow",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "ARMOR_PENETRATION"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "weaponCategory": "CROSSBOW",
+      "weaponDamageMin": 325,
+      "weaponDamageMax": 445,
+      "weaponBaseAttackIntervalSeconds": 3
+    },
+    {
+      "id": "UNIQUE_L60_ARCHER_SURVIVAL_RING",
+      "itemFamilyId": "UNIQUE_L60_ARCHER_SURVIVAL_RING",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "name": "Печать Чёрного Следа",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Выживание». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/eclipse_citadel/eclipse_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "ARMOR_PENETRATION",
+        "DODGE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_ARCHER_SURVIVAL_CLOAK",
+      "itemFamilyId": "UNIQUE_L60_ARCHER_SURVIVAL_CLOAK",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "name": "Плащ Ядовитой Тени",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Выживание». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "imported/cheshuichatyi_plashch_vasiliska",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA",
+        "DODGE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_PALADIN_HOLY_WEAPON",
+      "itemFamilyId": "UNIQUE_L60_PALADIN_HOLY_WEAPON",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "name": "Скипетр Первого Света",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Свет». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/eclipse_citadel/umbra_smith_hammer",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "SPELL_POWER"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "WORLD_GENERAL",
+      "weaponCategory": "MACE",
+      "weaponDamageMin": 235,
+      "weaponDamageMax": 320,
+      "weaponBaseAttackIntervalSeconds": 2.3
+    },
+    {
+      "id": "UNIQUE_L60_PALADIN_HOLY_RING",
+      "itemFamilyId": "UNIQUE_L60_PALADIN_HOLY_RING",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "name": "Кольцо Милости Рассвета",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Свет». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "imported/koltso_kornevoi_rosy",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "MAX_RESOURCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_PALADIN_HOLY_CLOAK",
+      "itemFamilyId": "UNIQUE_L60_PALADIN_HOLY_CLOAK",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "name": "Плащ Рассветной Милости",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Свет». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "warrior/item-warrior-cloak",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA",
+        "MAX_RESOURCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_PALADIN_PROTECTION_WEAPON",
+      "itemFamilyId": "UNIQUE_L60_PALADIN_PROTECTION_WEAPON",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "name": "Клинок Нерушимой Клятвы",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Защита». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/eclipse_citadel/broken_captain_blade",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "BLOCK_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "WORLD_GENERAL",
+      "weaponCategory": "ONE_HAND_SWORD",
+      "weaponDamageMin": 225,
+      "weaponDamageMax": 310,
+      "weaponBaseAttackIntervalSeconds": 2.2
+    },
+    {
+      "id": "UNIQUE_L60_PALADIN_PROTECTION_RING",
+      "itemFamilyId": "UNIQUE_L60_PALADIN_PROTECTION_RING",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "name": "Печать Несокрушимого Щита",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Защита». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "imported/pechat_khranitelia_raskola",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "MAX_HP"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_PALADIN_PROTECTION_CLOAK",
+      "itemFamilyId": "UNIQUE_L60_PALADIN_PROTECTION_CLOAK",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "name": "Плащ Нерушимой Клятвы",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Защита». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "acc_uncommon_6_cloak",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA",
+        "DODGE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_PALADIN_RETRIBUTION_WEAPON",
+      "itemFamilyId": "UNIQUE_L60_PALADIN_RETRIBUTION_WEAPON",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "name": "Молот Последнего Приговора",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Воздаяние». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "imported/molot_khoziaina_zhil",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "WORLD_GENERAL",
+      "weaponCategory": "TWO_HAND_MACE",
+      "weaponDamageMin": 330,
+      "weaponDamageMax": 450,
+      "weaponBaseAttackIntervalSeconds": 3.1
+    },
+    {
+      "id": "UNIQUE_L60_PALADIN_RETRIBUTION_RING",
+      "itemFamilyId": "UNIQUE_L60_PALADIN_RETRIBUTION_RING",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "name": "Кольцо Последнего Суда",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Воздаяние». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "acc_uncommon_6_ring",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT",
+        "CRITICAL_CHANCE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    },
+    {
+      "id": "UNIQUE_L60_PALADIN_RETRIBUTION_CLOAK",
+      "itemFamilyId": "UNIQUE_L60_PALADIN_RETRIBUTION_CLOAK",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "name": "Плащ Последнего Приговора",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Cloak",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Уникальный предмет 60 уровня для ветки «Воздаяние». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "version": 1,
+      "iconId": "items_outside_sets/open_world_mid/basilisk_scale_cloak",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 1,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "randomAffixPoolId": "ACCESSORY_GENERAL"
+    }
+  ]
+}
