@@ -308,6 +308,7 @@ public static class ItemGenerationSemantics
 public static class ItemInstanceGenerator
 {
     private const decimal MinimumAffixQuality = 0.40m;
+    private const decimal MinimumAttackSpeedAffixQuality = 0.60m;
 
     public static GeneratedItemInstance Generate(
         ItemDefinition template,
@@ -395,7 +396,9 @@ public static class ItemInstanceGenerator
             decimal maximumValue = FloorToStep(maxPowerPerAffix / weight, step);
             if (maximumValue <= 0)
                 maximumValue = step;
-            decimal minimumValue = FloorToStep(maximumValue * MinimumAffixQuality, step);
+            decimal minimumValue = FloorToStep(
+                maximumValue * MinimumAffixQualityFor(statId),
+                step);
             if (minimumValue <= 0)
                 minimumValue = step;
             if (minimumValue > maximumValue)
@@ -591,7 +594,9 @@ public static class ItemInstanceGenerator
                 decimal maximumValue = FloorToStep(slotPowerEnvelope / newWeight, step);
                 if (maximumValue <= 0)
                     maximumValue = step;
-                decimal minimumValue = FloorToStep(maximumValue * MinimumAffixQuality, step);
+                decimal minimumValue = FloorToStep(
+                maximumValue * MinimumAffixQualityFor(statId),
+                step);
                 if (minimumValue <= 0)
                     minimumValue = step;
                 if (minimumValue > maximumValue)
@@ -923,6 +928,11 @@ public static class ItemInstanceGenerator
         int index = (int)decimal.Floor(random.NextUnit() * count);
         return Math.Min(index, count - 1);
     }
+
+    private static decimal MinimumAffixQualityFor(string statId) =>
+        string.Equals(statId, ItemStatIds.AttackSpeed, StringComparison.Ordinal)
+            ? MinimumAttackSpeedAffixQuality
+            : MinimumAffixQuality;
 
     private static decimal StepFor(string statId) =>
         statId switch
