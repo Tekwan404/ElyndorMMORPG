@@ -18,6 +18,7 @@ public sealed partial class CombatSession
             [CombatReaction.GuardianSuccessfulHit] = ApplyGuardianSuccessfulHitHooks,
             [CombatReaction.Paladin] = ProcessPaladinKernelEvent,
             [CombatReaction.SetPassives] = ApplySetPassiveHooks,
+            [CombatReaction.ItemSpecialEffects] = ApplyItemSpecialEffectHooks,
             [CombatReaction.EventThreat] = ApplyEventThreat,
             [CombatReaction.GuardianBlock] = ApplyGuardianBlockHooks,
             [CombatReaction.GenericAbilityUsed] = e => TriggerEventTalent(TalentModifierKeys.OnAbilityUsed, e, CombatRuntimeEventKind.AbilityCompleted),
