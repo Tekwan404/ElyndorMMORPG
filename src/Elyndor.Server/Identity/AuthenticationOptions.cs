@@ -29,6 +29,7 @@ public sealed class AuthenticationOptions
             && !string.IsNullOrWhiteSpace(Telegram.BotToken)
             && Telegram.InitDataMaxAgeSeconds > 0
             && Telegram.MaxFutureSkewSeconds >= 0
+            && Telegram.SessionLifetimeHours is >= 1 and <= 168
             && Telegram.Web.IsValid()
             && (!Development.Enabled || Development.TelegramUserId > 0);
     }
@@ -41,6 +42,8 @@ public sealed class TelegramAuthenticationOptions
     public int InitDataMaxAgeSeconds { get; init; } = 43200;
 
     public int MaxFutureSkewSeconds { get; init; } = 30;
+
+    public int SessionLifetimeHours { get; init; } = 168;
 
     public TelegramWebAuthenticationOptions Web { get; init; } = new();
 }

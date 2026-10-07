@@ -8,11 +8,17 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import {
   clearWebAuthenticationData,
   getTelegramInitData,
+  getTelegramMiniAppUserId,
+  setWebAuthenticationData,
 } from '@/telegram/telegramWebApp'
 
 vi.mock('@/telegram/telegramWebApp', () => ({
   clearWebAuthenticationData: vi.fn<() => void>(),
   getTelegramInitData: vi.fn<() => string | null>(() => 'signed-init-data'),
+  getTelegramMiniAppUserId: vi.fn<() => string | null>(() => '42'),
+  setWebAuthenticationData: vi.fn<
+    (value: string | null, expiresAtUtc?: string | null, telegramUserId?: string | null) => void
+  >(),
 }))
 
 describe('gameSession', () => {
@@ -34,6 +40,9 @@ describe('gameSession', () => {
     vi.restoreAllMocks()
     vi.mocked(getTelegramInitData).mockReset()
     vi.mocked(getTelegramInitData).mockReturnValue('signed-init-data')
+    vi.mocked(getTelegramMiniAppUserId).mockReset()
+    vi.mocked(getTelegramMiniAppUserId).mockReturnValue('42')
+    vi.mocked(setWebAuthenticationData).mockReset()
     vi.mocked(clearWebAuthenticationData).mockReset()
   })
 
@@ -44,6 +53,25 @@ describe('gameSession', () => {
     await store.start()
     expect(request.mock.calls[0]?.[0]).toBe('/api/v1/auth/telegram')
     expect(store.state).toBe('needs-character')
+  })
+
+  it('stores the renewable Mini App session returned by authentication', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue({
+      accessToken: 'token',
+      expiresAtUtc: '2026-08-30T00:15:00Z',
+      roles: [],
+      sessionCredential: 'session:renewable',
+      sessionCredentialExpiresAtUtc: '2026-09-06T00:02:00Z',
+    })
+
+    const store = useGameSessionStore()
+    await store.authenticate()
+
+    expect(setWebAuthenticationData).toHaveBeenCalledWith(
+      'session:renewable',
+      '2026-09-06T00:02:00Z',
+      '42',
+    )
   })
 
   it('exposes the server-issued admin role', async () => {

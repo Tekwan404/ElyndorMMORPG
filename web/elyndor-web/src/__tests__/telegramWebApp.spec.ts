@@ -91,6 +91,32 @@ describe('telegramWebApp authentication data', () => {
     expect(getTelegramInitData()).toBe('signed-mini-app-init-data')
   })
 
+  it('prefers a renewable session over stale Mini App initData for the same Telegram user', () => {
+    const expiresAtUtc = new Date(Date.now() + 60_000).toISOString()
+    setWebAuthenticationData('session:renewable', expiresAtUtc, '42')
+    window.Telegram = {
+      WebApp: {
+        initData: 'auth_date=1&user=%7B%22id%22%3A42%7D',
+      },
+    }
+
+    expect(getTelegramInitData()).toBe('session:renewable')
+  })
+
+  it('does not reuse a renewable session for a different Telegram user', () => {
+    const expiresAtUtc = new Date(Date.now() + 60_000).toISOString()
+    setWebAuthenticationData('session:user-42', expiresAtUtc, '42')
+    window.Telegram = {
+      WebApp: {
+        initData: 'auth_date=1&user=%7B%22id%22%3A43%7D',
+      },
+    }
+
+    expect(getTelegramInitData()).toBe(
+      'auth_date=1&user=%7B%22id%22%3A43%7D',
+    )
+  })
+
   it('keeps the Mini App expanded and mirrors Telegram viewport geometry into CSS variables', () => {
     const handlers = new Map<string, (...args: unknown[]) => void>()
     let readyCalls = 0
