@@ -219,6 +219,7 @@ public sealed record ItemDefinition(
     decimal ExtraAffixBudgetCap = 0,
     string? PrefixSuffixPolicyId = null,
     string? UniqueEquippedGroup = null,
+    IReadOnlyList<string>? SpecialEffectIds = null,
     string? TradePolicyId = null,
     int GenerationVersion = 1,
     bool PremiumEligible = true,
