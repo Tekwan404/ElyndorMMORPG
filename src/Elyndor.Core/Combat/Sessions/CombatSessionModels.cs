@@ -62,7 +62,8 @@ public sealed record CombatParticipantDefinition(
     string? GenderId = null,
     string? SkinId = null,
     decimal EquipmentArmor = 0,
-    string? MainHandWeaponCategory = null);
+    string? MainHandWeaponCategory = null,
+    IReadOnlyList<Elyndor.Core.Combat.SetPassives.SetPassiveDefinition>? SetPassives = null);
 
 public sealed record CombatPlayerDefinition(
     Guid AccountId,

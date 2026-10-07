@@ -16,6 +16,7 @@
   [PvP player mechanics](development/pvp-player-mechanics-parity.md),
   [arena invitations](development/arena-friend-invitations.md).
 - Items/economy: [itemization](development/itemization-v2-enhancement.md),
+  [equipment sets and budgets](development/equipment-set-progression.md),
   [spatial inventory](development/spatial-inventory-v1.md),
   [money denominations](development/money-denominations.md),
   [commerce settlement](development/player-commerce-settlement.md).

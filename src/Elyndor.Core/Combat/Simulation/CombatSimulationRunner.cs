@@ -343,7 +343,8 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
             playerAutoAttack,
             new HashSet<string>(knownAbilityIds, StringComparer.Ordinal),
             resource.CombatRegenPerSecond,
-            EquippedSetPieces: equippedSetPieces);
+            EquippedSetPieces: equippedSetPieces,
+            SetPassives: EquipmentSetEffectResolver.Resolve(content.EquipmentSets ?? []));
         CombatParticipantDefinition enemy = new(
             enemyActor,
             CombatActorKind.Monster,

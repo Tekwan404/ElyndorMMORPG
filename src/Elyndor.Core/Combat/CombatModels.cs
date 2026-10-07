@@ -52,6 +52,9 @@ public sealed class CombatActorState
         TalentModifiers = talentModifiers ?? new TalentCombatModifiers();
     }
 
+    public Func<string, bool, CombatActorState, DateTimeOffset, bool, decimal>? SetPassiveMultiplier { get; set; }
+    public Func<string, DateTimeOffset, decimal>? SetPassiveEffectMultiplier { get; set; }
+
     public Guid ActorId { get; }
     public decimal BaseMaxHp => _baseMaxHp;
     public decimal MaxHp { get; private set; }

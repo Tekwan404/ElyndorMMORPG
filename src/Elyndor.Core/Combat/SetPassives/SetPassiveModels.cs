@@ -5,13 +5,21 @@ namespace Elyndor.Core.Combat.SetPassives;
 public enum SetPassiveActorRole
 {
     Source,
-    Target
+    Target,
+    CompanionOwner,
+    OwnerOrCompanion
 }
 
 public enum SetPassiveActionKind
 {
     ApplyEffect,
-    AddShield
+    AddShield,
+    EmpowerNextDirect,
+    ReduceCooldown,
+    ExtendTargetEffect,
+    RestoreResource,
+    ModifyDirectDamage,
+    EmpowerNextEffect
 }
 
 public sealed record SetPassiveTriggerDefinition(
@@ -20,7 +28,20 @@ public sealed record SetPassiveTriggerDefinition(
 
 public sealed record SetPassiveConditionDefinition(
     int EveryNth = 1,
-    TimeSpan? InternalCooldown = null);
+    TimeSpan? InternalCooldown = null,
+    IReadOnlyList<string>? AbilityIds = null,
+    string? School = null,
+    bool CriticalOnly = false,
+    bool PositiveAmountOnly = false,
+    bool ClassAbilityOnly = false,
+    bool ResourceAbilityOnly = false,
+    decimal ResourceSpent = 0,
+    TimeSpan? SpendingWindow = null,
+    IReadOnlyList<string>? TargetEffectIds = null,
+    IReadOnlyList<string>? OwnerEffectIds = null,
+    bool ControlledTargetOnly = false,
+    bool AlternatingSources = false,
+    bool OncePerAction = false);
 
 public sealed record SetPassiveActionDefinition(
     SetPassiveActionKind Kind,
@@ -34,7 +55,14 @@ public sealed record SetPassiveActionDefinition(
     bool ScaleWithMaxHp = false,
     string? DisplayName = null,
     string? Description = null,
-    string? IconId = null);
+    string? IconId = null,
+    IReadOnlyList<string>? AbilityIds = null,
+    bool SpellOnly = false,
+    bool Healing = false,
+    bool ClassAbilityOnly = false,
+    IReadOnlyList<string>? TargetEffectIds = null,
+    bool ControlledTargetOnly = false,
+    bool HealingOrDamage = false);
 
 public sealed record SetPassiveDefinition(
     string Id,

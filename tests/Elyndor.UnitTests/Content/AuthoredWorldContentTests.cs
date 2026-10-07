@@ -179,6 +179,9 @@ public sealed class AuthoredWorldContentTests
                     Assert.Equal("DEAD_REACHES_L60_NORMAL_SET_LOOT", monster.LootTableId);
                 else if (pveT1LootMonsterIds.Contains(monster.Id))
                     Assert.Equal("DEAD_REACHES_L60_PVE_T1_LOOT", monster.LootTableId);
+                else if (monster.Level is >= 41 and <= 59)
+                    Assert.Equal(monster.Level < 45 ? "LEVEL_35_SET_FIELD_LOOT"
+                        : monster.Level < 55 ? "LEVEL_45_SET_FIELD_LOOT" : "LEVEL_55_SET_FIELD_LOOT", monster.LootTableId);
                 else
                     Assert.Null(monster.LootTableId);
                 Assert.Equal(0, monster.GoldRewardMin);

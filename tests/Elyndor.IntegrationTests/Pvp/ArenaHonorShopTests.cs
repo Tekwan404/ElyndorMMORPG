@@ -170,7 +170,7 @@ public sealed class ArenaHonorShopTests(PostgresFixture postgres) : IAsyncLifeti
             .Where(item => item.Id.StartsWith("L60_PVP_T1_WARRIOR_", StringComparison.Ordinal))
             .ToArray();
 
-        Assert.Equal(18, offers.Length);
+        Assert.Equal(24, offers.Length);
         Assert.Equal(3, offers.Select(item => item.SetId).Distinct(StringComparer.Ordinal).Count());
         Assert.All(offers, item =>
         {

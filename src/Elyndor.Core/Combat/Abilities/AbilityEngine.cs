@@ -136,7 +136,7 @@ public static class AbilityEngine
 
         return ResolveActions(runtime, ability with { Actions = [action] },
             [targetActorId], targetModifier is null ? null
-                : new Dictionary<Guid, AbilityTargetModifier> { [targetActorId] = targetModifier }, now, random);
+                : new Dictionary<Guid, AbilityTargetModifier> { [targetActorId] = targetModifier }, now, random, triggered: true);
     }
 
     public static AbilityExecutionResult Interrupt(
@@ -272,7 +272,7 @@ public static class AbilityEngine
         IReadOnlyList<Guid> targetIds,
         IReadOnlyDictionary<Guid, AbilityTargetModifier>? targetModifiers,
         DateTimeOffset now,
-        IGameRandom? random)
+        IGameRandom? random, bool triggered = false)
     {
         List<CombatEvent> events = [];
         if (ability.Actions is null || ability.Actions.Count == 0)
@@ -280,6 +280,7 @@ public static class AbilityEngine
             return events;
         }
 
+        decimal? setEffectMultiplier = null;
         foreach (Guid targetId in targetIds)
         {
             CombatActorState target = runtime.Actors[targetId];
@@ -314,7 +315,7 @@ public static class AbilityEngine
                             EffectStat.AttackPower,
                             runtime.Actor.Stats.AttackPower,
                             now);
-                        decimal spellPower = runtime.Actor.Stats.SpellPower;
+                        decimal spellPower = EffectEngine.CalculateStat(runtime.Actor, EffectStat.SpellPower, runtime.Actor.Stats.SpellPower, now);
                         decimal blockValueMin = EffectEngine.CalculateStat(
                             runtime.Actor,
                             EffectStat.BlockValueMin,
@@ -354,7 +355,9 @@ public static class AbilityEngine
                                     + targetModifier.CriticalDamageBonus,
                                 MagicPenetrationBonus: ability.MagicPenetrationBonus
                                     + targetModifier.MagicPenetrationBonus,
-                                IsUnblockable: action.IsUnblockable),
+                                IsUnblockable: action.IsUnblockable,
+                                DefinitionId: triggered ? null : ability.Id,
+                                IsSpell: ability.IsSpell),
                             random,
                             now);
                         events.AddRange(damage.Events);
@@ -388,6 +391,7 @@ public static class AbilityEngine
                                 CriticalDamageBonus: ability.CriticalDamageBonus
                                     + targetModifier.CriticalDamageBonus,
                                 SpellPowerCoefficient: action.SpellPowerCoefficient,
+                                Origin: triggered ? HealingOrigin.Secondary : HealingOrigin.Direct,
                                 DefinitionId: ability.Id),
                             random);
                         events.AddRange(healing.Events);
@@ -404,6 +408,7 @@ public static class AbilityEngine
                             runtime.Actor.ActorId,
                             action.Effect with
                             {
+                                Magnitude = action.Effect.Magnitude * (setEffectMultiplier ??= (triggered ? 1m : runtime.Actor.SetPassiveEffectMultiplier?.Invoke(ability.Id, now) ?? 1m)),
                                 DisplayName = action.Effect.DisplayName ?? ability.DisplayName,
                                 Description = action.Effect.Description ?? ability.Description,
                                 IconId = action.Effect.IconId ?? ability.IconId

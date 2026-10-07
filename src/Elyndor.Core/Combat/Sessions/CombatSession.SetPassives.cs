@@ -4,7 +4,7 @@ namespace Elyndor.Core.Combat.Sessions;
 
 public sealed partial class CombatSession
 {
-    private readonly SetPassiveRuntime _setPassiveRuntime = new(SetPassiveCatalog.Definitions);
+    private SetPassiveCombatRuntime _setPassiveRuntime = null!;
     private IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> _setPassiveLoadoutSnapshot =
         new Dictionary<Guid, IReadOnlyDictionary<string, int>>();
 
@@ -22,40 +22,23 @@ public sealed partial class CombatSession
                     item => item.Value,
                     StringComparer.Ordinal)
                 : new Dictionary<string, int>(StringComparer.Ordinal)));
+        _setPassiveRuntime = new SetPassiveCombatRuntime(
+            SetPassiveCatalog.Definitions.Concat(_playerStatesByActorId.Values
+                .SelectMany(state => state.Definition.SetPassives ?? []))
+                .DistinctBy(effect => effect.Id),
+            _setPassiveLoadoutSnapshot,
+            id => _playerStatesByActorId.TryGetValue(id, out var state) ? state.Definition.Actor
+                : _enemiesById.TryGetValue(id, out var enemy) ? enemy.Actor
+                : _companion?.Actor.ActorId == id ? _companion.Actor : null,
+            _abilities,
+            id => _playerStatesByActorId.TryGetValue(id, out var state) ? state.Runtime.Cooldowns : null,
+            _companion is null ? null : new Dictionary<Guid, Guid> { [_companion.Actor.ActorId] = _companionOwnerActorId });
     }
 
     private void ApplySetPassiveHooks(CombatEvent combatEvent)
     {
-        if (!_setPassiveRuntime.HandlesEventType(combatEvent.Type))
-            return;
-
-        IReadOnlyList<SetPassiveActionInvocation> invocations = _setPassiveRuntime.Evaluate(
-            combatEvent,
-            _setPassiveLoadoutSnapshot,
-            _procGuard);
-
-        foreach (SetPassiveActionInvocation invocation in invocations)
-        {
-            if (!_playerStatesByActorId.TryGetValue(
-                    invocation.ActorId,
-                    out CombatPlayerRuntimeState? ownerState))
-            {
-                continue;
-            }
-
-            IReadOnlyList<CombatEvent> actionEvents = SetPassiveActionExecutor.Execute(
-                invocation,
-                ownerState.Definition.Actor);
-            if (actionEvents.Count == 0)
-            {
-                continue;
-            }
-
-            ApplyKernelEvents(
-                actionEvents,
-                invocation.ActorId,
-                invocation.ActorId,
-                invocation.Action.ReferenceId);
-        }
+        foreach (CombatEvent effectEvent in _setPassiveRuntime.Process(combatEvent, _procGuard))
+            ApplyKernelEvents([effectEvent], effectEvent.SourceActorId ?? effectEvent.ActorId,
+                effectEvent.TargetActorId ?? effectEvent.ActorId, effectEvent.DefinitionId);
     }
 }

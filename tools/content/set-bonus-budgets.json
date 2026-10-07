@@ -1,0 +1,358 @@
+{
+  "flatStats": {
+    "maxHpFlat": "MAX_HP",
+    "maxResourceFlat": "MAX_RESOURCE",
+    "attackPowerFlat": "ATTACK_POWER",
+    "spellPowerFlat": "SPELL_POWER",
+    "armorFlat": "ARMOR",
+    "magicResistanceFlat": "MAGIC_RESISTANCE"
+  },
+  "levelFlatPowerFractions": {
+    "18": 0.06,
+    "35": 0.07,
+    "45": 0.08,
+    "55": 0.09,
+    "60": 0.1
+  },
+  "preT1BudgetRarity": "EPIC",
+  "sets": {
+    "SET_L60_NORMAL_WARRIOR_GUARDIAN": {
+      "2": {
+        "maxHpFlat": 0.480916,
+        "armorFlat": 0.519084
+      },
+      "4": {
+        "magicResistanceFlat": 1.0
+      },
+      "6": {
+        "maxHpFlat": 0.480916,
+        "armorFlat": 0.519084
+      }
+    },
+    "SET_L60_NORMAL_WARRIOR_BERSERKER": {
+      "4": {
+        "attackPowerFlat": 1.0
+      }
+    },
+    "SET_L60_NORMAL_WARRIOR_WARLORD": {
+      "2": {
+        "maxHpFlat": 1.0
+      },
+      "4": {
+        "attackPowerFlat": 1.0
+      },
+      "6": {
+        "maxHpFlat": 1.0
+      }
+    },
+    "SET_L60_NORMAL_MAGE_FIRE": {
+      "4": {
+        "spellPowerFlat": 1.0
+      }
+    },
+    "SET_L60_NORMAL_MAGE_ARCANE": {
+      "2": {
+        "maxResourceFlat": 1.0
+      },
+      "4": {
+        "spellPowerFlat": 1.0
+      },
+      "6": {
+        "maxResourceFlat": 1.0
+      }
+    },
+    "SET_L60_NORMAL_MAGE_FROST": {
+      "2": {
+        "maxResourceFlat": 0.471698,
+        "magicResistanceFlat": 0.528302
+      },
+      "4": {
+        "maxHpFlat": 0.344262,
+        "spellPowerFlat": 0.655738
+      },
+      "6": {
+        "magicResistanceFlat": 1.0
+      }
+    },
+    "SET_L60_NORMAL_ARCHER_MARKSMAN": {
+      "6": {
+        "attackPowerFlat": 1.0
+      }
+    },
+    "SET_L60_NORMAL_ARCHER_BEAST_MASTERY": {
+      "2": {
+        "maxHpFlat": 1.0
+      },
+      "4": {
+        "attackPowerFlat": 1.0
+      }
+    },
+    "SET_L60_NORMAL_ARCHER_SURVIVAL": {
+      "6": {
+        "maxHpFlat": 1.0
+      }
+    },
+    "SET_L60_NORMAL_PALADIN_HOLY": {
+      "2": {
+        "maxResourceFlat": 1.0
+      },
+      "4": {
+        "spellPowerFlat": 1.0
+      },
+      "6": {
+        "maxResourceFlat": 1.0
+      }
+    },
+    "SET_L60_NORMAL_PALADIN_PROTECTION": {
+      "2": {
+        "maxHpFlat": 0.480916,
+        "armorFlat": 0.519084
+      },
+      "4": {
+        "magicResistanceFlat": 1.0
+      },
+      "6": {
+        "maxHpFlat": 0.480916,
+        "armorFlat": 0.519084
+      }
+    },
+    "SET_L60_NORMAL_PALADIN_RETRIBUTION": {
+      "4": {
+        "attackPowerFlat": 1.0
+      },
+      "6": {
+        "spellPowerFlat": 1.0
+      }
+    },
+    "SET_L60_PVE_T1_WARRIOR_GUARDIAN": {
+      "2": {
+        "maxHpFlat": 0.480916,
+        "armorFlat": 0.519084
+      }
+    },
+    "SET_L60_PVE_T1_WARRIOR_WARLORD": {
+      "2": {
+        "maxHpFlat": 1.0
+      }
+    },
+    "SET_L60_PVE_T1_MAGE_ARCANE": {
+      "2": {
+        "maxResourceFlat": 1.0
+      }
+    },
+    "SET_L60_PVE_T1_MAGE_FROST": {
+      "2": {
+        "maxResourceFlat": 0.471697,
+        "magicResistanceFlat": 0.528303
+      }
+    },
+    "SET_L60_PVE_T1_ARCHER_BEAST_MASTERY": {
+      "2": {
+        "maxHpFlat": 1.0
+      }
+    },
+    "SET_L60_PVE_T1_ARCHER_SURVIVAL": {
+      "2": {
+        "maxHpFlat": 1.0
+      }
+    },
+    "SET_L60_PVE_T1_PALADIN_HOLY": {
+      "2": {
+        "maxResourceFlat": 0.543478,
+        "magicResistanceFlat": 0.456522
+      }
+    },
+    "SET_L60_PVE_T1_PALADIN_PROTECTION": {
+      "2": {
+        "maxHpFlat": 0.480916,
+        "armorFlat": 0.519084
+      }
+    },
+    "SET_L60_PVP_T1_WARRIOR_GUARDIAN": {
+      "2": {
+        "maxHpFlat": 1.0
+      },
+      "4": {
+        "magicResistanceFlat": 1.0
+      },
+      "6": {
+        "armorFlat": 1.0
+      }
+    },
+    "SET_L60_PVP_T1_WARRIOR_BERSERKER": {
+      "2": {
+        "maxHpFlat": 1.0
+      },
+      "4": {
+        "attackPowerFlat": 1.0
+      }
+    },
+    "SET_L60_PVP_T1_WARRIOR_WARLORD": {
+      "2": {
+        "maxHpFlat": 1.0
+      },
+      "4": {
+        "attackPowerFlat": 1.0
+      }
+    },
+    "SET_L60_PVP_T1_MAGE_FIRE": {
+      "2": {
+        "maxHpFlat": 1.0
+      },
+      "4": {
+        "spellPowerFlat": 1.0
+      },
+      "6": {
+        "magicResistanceFlat": 1.0
+      }
+    },
+    "SET_L60_PVP_T1_MAGE_ARCANE": {
+      "2": {
+        "maxResourceFlat": 0.543478,
+        "magicResistanceFlat": 0.456522
+      },
+      "4": {
+        "spellPowerFlat": 1.0
+      }
+    },
+    "SET_L60_PVP_T1_MAGE_FROST": {
+      "2": {
+        "maxHpFlat": 0.789473,
+        "magicResistanceFlat": 0.210527
+      },
+      "4": {
+        "spellPowerFlat": 1.0
+      },
+      "6": {
+        "magicResistanceFlat": 1.0
+      }
+    },
+    "SET_L60_PVP_T1_ARCHER_MARKSMAN": {
+      "4": {
+        "attackPowerFlat": 1.0
+      }
+    },
+    "SET_L60_PVP_T1_ARCHER_BEAST_MASTERY": {
+      "2": {
+        "maxHpFlat": 1.0
+      },
+      "4": {
+        "attackPowerFlat": 1.0
+      }
+    },
+    "SET_L60_PVP_T1_ARCHER_SURVIVAL": {
+      "2": {
+        "maxHpFlat": 1.0
+      },
+      "6": {
+        "magicResistanceFlat": 1.0
+      }
+    },
+    "SET_L60_PVP_T1_PALADIN_HOLY": {
+      "2": {
+        "maxResourceFlat": 0.543478,
+        "magicResistanceFlat": 0.456522
+      },
+      "4": {
+        "maxHpFlat": 0.344262,
+        "spellPowerFlat": 0.655738
+      }
+    },
+    "SET_L60_PVP_T1_PALADIN_PROTECTION": {
+      "2": {
+        "maxHpFlat": 0.480916,
+        "armorFlat": 0.519084
+      },
+      "4": {
+        "magicResistanceFlat": 1.0
+      },
+      "6": {
+        "maxHpFlat": 1.0
+      }
+    },
+    "SET_L60_PVP_T1_PALADIN_RETRIBUTION": {
+      "2": {
+        "maxHpFlat": 1.0
+      },
+      "4": {
+        "attackPowerFlat": 0.533334,
+        "spellPowerFlat": 0.466666
+      }
+    },
+    "SET_MAGE_THREE_ELEMENTS": {
+      "4": {
+        "maxResourceFlat": 1.0
+      }
+    },
+    "SET_MAGE_SHATTERED_STAR": {
+      "4": {
+        "spellPowerFlat": 1.0
+      }
+    },
+    "SET_MAGE_SILENT_ARCHON": {
+      "2": {
+        "maxResourceFlat": 1.0
+      }
+    },
+    "SET_MAGE_ECLIPSED_ORACLE": {
+      "2": {
+        "maxResourceFlat": 0.583333,
+        "spellPowerFlat": 0.416667
+      }
+    },
+    "SET_PALADIN_LIVING_HEART": {
+      "2": {
+        "maxHpFlat": 1.0
+      },
+      "4": {
+        "maxResourceFlat": 0.555556,
+        "magicResistanceFlat": 0.444444
+      }
+    },
+    "SET_PALADIN_GROVE_DAWN": {
+      "2": {
+        "maxHpFlat": 1.0
+      },
+      "4": {
+        "attackPowerFlat": 0.5,
+        "spellPowerFlat": 0.5
+      }
+    },
+    "SET_PALADIN_SHATTERED_DAWN": {
+      "2": {
+        "maxHpFlat": 0.625,
+        "armorFlat": 0.375
+      },
+      "4": {
+        "attackPowerFlat": 0.5,
+        "spellPowerFlat": 0.5
+      }
+    },
+    "SET_PALADIN_FIRST_GUARD": {
+      "2": {
+        "maxHpFlat": 0.583333,
+        "armorFlat": 0.416667
+      },
+      "4": {
+        "attackPowerFlat": 0.5,
+        "spellPowerFlat": 0.5
+      }
+    },
+    "SET_WARRIOR_CRIMSON_FURY": {
+      "4": {
+        "attackPowerFlat": 1.0
+      }
+    },
+    "SET_WARRIOR_FIRST_GUARD": {
+      "2": {
+        "maxHpFlat": 1.0
+      }
+    },
+    "SET_WARRIOR_BLACK_BASTION": {
+      "2": {
+        "maxHpFlat": 0.583333,
+        "armorFlat": 0.416667
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.38.0",
-  "balanceVersion": "0.31.0",
-  "publishedAtUtc": "2026-10-06T21:36:00+00:00",
+  "contentVersion": "0.42.0",
+  "balanceVersion": "0.32.0",
+  "publishedAtUtc": "2026-10-07T12:00:00+00:00",
   "items": [
     {
       "id": "L60_PVE_T1_WARRIOR_GUARDIAN_CHEST",
@@ -2111,7 +2111,7 @@
     },
     {
       "id": "L60_PVE_T1_PALADIN_HOLY_CHEST",
-      "name": "Нагрудник «Клятва Расколотого Рассвета»",
+      "name": "Нагрудник «Регалии Непогасшего Рассвета»",
       "type": "Equipment",
       "generationMode": "Rolled",
       "rarity": "Legendary",
@@ -2150,7 +2150,7 @@
     },
     {
       "id": "L60_PVE_T1_PALADIN_HOLY_FEET",
-      "name": "Сапоги «Клятва Расколотого Рассвета»",
+      "name": "Сапоги «Регалии Непогасшего Рассвета»",
       "type": "Equipment",
       "generationMode": "Rolled",
       "rarity": "Legendary",
@@ -2189,7 +2189,7 @@
     },
     {
       "id": "L60_PVE_T1_PALADIN_HOLY_HANDS",
-      "name": "Рукавицы «Клятва Расколотого Рассвета»",
+      "name": "Рукавицы «Регалии Непогасшего Рассвета»",
       "type": "Equipment",
       "generationMode": "Rolled",
       "rarity": "Legendary",
@@ -2228,7 +2228,7 @@
     },
     {
       "id": "L60_PVE_T1_PALADIN_HOLY_HEAD",
-      "name": "Шлем «Клятва Расколотого Рассвета»",
+      "name": "Шлем «Регалии Непогасшего Рассвета»",
       "type": "Equipment",
       "generationMode": "Rolled",
       "rarity": "Legendary",
@@ -2267,7 +2267,7 @@
     },
     {
       "id": "L60_PVE_T1_PALADIN_HOLY_LEGS",
-      "name": "Поножи «Клятва Расколотого Рассвета»",
+      "name": "Поножи «Регалии Непогасшего Рассвета»",
       "type": "Equipment",
       "generationMode": "Rolled",
       "rarity": "Legendary",
@@ -2306,7 +2306,7 @@
     },
     {
       "id": "L60_PVE_T1_PALADIN_HOLY_SHOULDERS",
-      "name": "Наплечники «Клятва Расколотого Рассвета»",
+      "name": "Наплечники «Регалии Непогасшего Рассвета»",
       "type": "Equipment",
       "generationMode": "Rolled",
       "rarity": "Legendary",
@@ -2807,6 +2807,894 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "generationVersion": 1,
       "itemFamilyId": "L60_PVE_T1_PALADIN_RETRIBUTION_SHOULDERS",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_WARRIOR_GUARDIAN_AMULET",
+      "name": "Амулет «Оплот Сломанного Щита»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Воина, ориентированный на ветку «Страж».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_WARRIOR_GUARDIAN",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_WARRIOR_GUARDIAN_AMULET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_WARRIOR_GUARDIAN_RING",
+      "name": "Кольцо «Оплот Сломанного Щита»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Воина, ориентированный на ветку «Страж».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_WARRIOR_GUARDIAN",
+      "iconId": "items_outside_sets/black_bastion/silent_judgement_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_WARRIOR_GUARDIAN_RING",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_WARRIOR_BERSERKER_AMULET",
+      "name": "Амулет «Клятва Разбитого Клинка»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_WARRIOR_BERSERKER",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_WARRIOR_BERSERKER_AMULET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_WARRIOR_BERSERKER_RING",
+      "name": "Кольцо «Клятва Разбитого Клинка»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_WARRIOR_BERSERKER",
+      "iconId": "items_outside_sets/black_bastion/silent_judgement_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_WARRIOR_BERSERKER_RING",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_WARRIOR_WARLORD_AMULET",
+      "name": "Амулет «Регалии Павшего Командора»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Воина, ориентированный на ветку «Командир».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_WARRIOR_WARLORD",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_WARRIOR_WARLORD_AMULET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_WARRIOR_WARLORD_RING",
+      "name": "Кольцо «Регалии Павшего Командора»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Воина, ориентированный на ветку «Командир».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_WARRIOR_WARLORD",
+      "iconId": "items_outside_sets/black_bastion/silent_judgement_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_WARRIOR_WARLORD_RING",
+      "allowedClassIds": [
+        "WARRIOR"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_MAGE_FIRE_AMULET",
+      "name": "Амулет «Одеяния Запретного Пламени»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Мага, ориентированный на ветку «Пламя».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_MAGE_FIRE",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_MAGE_FIRE_AMULET",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_MAGE_FIRE_RING",
+      "name": "Кольцо «Одеяния Запретного Пламени»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Мага, ориентированный на ветку «Пламя».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_MAGE_FIRE",
+      "iconId": "items_outside_sets/open_world_mid/rift_keeper_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_MAGE_FIRE_RING",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_MAGE_ARCANE_AMULET",
+      "name": "Амулет «Ризы Единой Клятвы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Мага, ориентированный на ветку «Тайная магия».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_MAGE_ARCANE",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_MAGE_ARCANE_AMULET",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_MAGE_ARCANE_RING",
+      "name": "Кольцо «Ризы Единой Клятвы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Мага, ориентированный на ветку «Тайная магия».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_MAGE_ARCANE",
+      "iconId": "items_outside_sets/open_world_mid/rift_keeper_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_MAGE_ARCANE_RING",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_MAGE_FROST_AMULET",
+      "name": "Амулет «Покров Хладного Архива»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Мага, ориентированный на ветку «Лёд».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_MAGE_FROST",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_MAGE_FROST_AMULET",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_MAGE_FROST_RING",
+      "name": "Кольцо «Покров Хладного Архива»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Мага, ориентированный на ветку «Лёд».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_MAGE_FROST",
+      "iconId": "items_outside_sets/open_world_mid/rift_keeper_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_MAGE_FROST_RING",
+      "allowedClassIds": [
+        "MAGE"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_ARCHER_MARKSMAN_AMULET",
+      "name": "Амулет «Регалии Стрелка Чёрного Знамени»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Меткая стрельба».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_ARCHER_MARKSMAN",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_ARCHER_MARKSMAN_AMULET",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_ARCHER_MARKSMAN_RING",
+      "name": "Кольцо «Регалии Стрелка Чёрного Знамени»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Меткая стрельба».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_ARCHER_MARKSMAN",
+      "iconId": "items_outside_sets/eclipse_citadel/eclipse_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_ARCHER_MARKSMAN_RING",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_ARCHER_BEAST_MASTERY_AMULET",
+      "name": "Амулет «Клятва Зверолова Ордена»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_ARCHER_BEAST_MASTERY",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_AMULET",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_ARCHER_BEAST_MASTERY_RING",
+      "name": "Кольцо «Клятва Зверолова Ордена»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_ARCHER_BEAST_MASTERY",
+      "iconId": "items_outside_sets/eclipse_citadel/eclipse_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_RING",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_ARCHER_SURVIVAL_AMULET",
+      "name": "Амулет «Снаряжение Ловчего Раскола»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_ARCHER_SURVIVAL",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_ARCHER_SURVIVAL_AMULET",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_ARCHER_SURVIVAL_RING",
+      "name": "Кольцо «Снаряжение Ловчего Раскола»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_ARCHER_SURVIVAL",
+      "iconId": "items_outside_sets/eclipse_citadel/eclipse_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_ARCHER_SURVIVAL_RING",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_PALADIN_HOLY_AMULET",
+      "name": "Амулет «Регалии Непогасшего Рассвета»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Свет».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_PALADIN_HOLY",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_PALADIN_HOLY_AMULET",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_PALADIN_HOLY_RING",
+      "name": "Кольцо «Регалии Непогасшего Рассвета»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Свет».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_PALADIN_HOLY",
+      "iconId": "acc_uncommon_6_ring",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_PALADIN_HOLY_RING",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_PALADIN_PROTECTION_AMULET",
+      "name": "Амулет «Доспех Сломанного Щита»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Защита».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_PALADIN_PROTECTION",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_PALADIN_PROTECTION_AMULET",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_PALADIN_PROTECTION_RING",
+      "name": "Кольцо «Доспех Сломанного Щита»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Защита».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_PALADIN_PROTECTION",
+      "iconId": "acc_uncommon_6_ring",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_PALADIN_PROTECTION_RING",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_PALADIN_RETRIBUTION_AMULET",
+      "name": "Амулет «Латы Последнего Приговора»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_PALADIN_RETRIBUTION",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_PALADIN_RETRIBUTION_AMULET",
+      "allowedClassIds": [
+        "PALADIN"
+      ]
+    },
+    {
+      "id": "L60_PVE_T1_PALADIN_RETRIBUTION_RING",
+      "name": "Кольцо «Латы Последнего Приговора»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvE T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние».",
+      "version": 1,
+      "setId": "SET_L60_PVE_T1_PALADIN_RETRIBUTION",
+      "iconId": "acc_uncommon_6_ring",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVE_T1_PALADIN_RETRIBUTION_RING",
       "allowedClassIds": [
         "PALADIN"
       ]

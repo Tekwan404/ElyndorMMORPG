@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.39.0",
-  "balanceVersion": "0.31.0",
-  "publishedAtUtc": "2026-10-07T06:00:00+00:00",
+  "contentVersion": "0.42.0",
+  "balanceVersion": "0.32.0",
+  "publishedAtUtc": "2026-10-07T12:00:00+00:00",
   "items": [
     {
       "id": "L60_PVP_T1_WARRIOR_GUARDIAN_CHEST",
@@ -2882,6 +2882,918 @@
         "PALADIN"
       ],
       "honorPrice": 70
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_GUARDIAN_AMULET",
+      "name": "Амулет «Оплот Железного Круга»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Страж». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_GUARDIAN",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_GUARDIAN_AMULET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 50
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_GUARDIAN_RING",
+      "name": "Кольцо «Оплот Железного Круга»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Страж». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_GUARDIAN",
+      "iconId": "items_outside_sets/black_bastion/silent_judgement_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_GUARDIAN_RING",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 45
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_BERSERKER_AMULET",
+      "name": "Амулет «Клятва Багрового Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_BERSERKER",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_BERSERKER_AMULET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 50
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_BERSERKER_RING",
+      "name": "Кольцо «Клятва Багрового Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_BERSERKER",
+      "iconId": "items_outside_sets/black_bastion/silent_judgement_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_BERSERKER_RING",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 45
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_WARLORD_AMULET",
+      "name": "Амулет «Регалии Непокорённого Полководца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Полководец». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_WARLORD",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_WARLORD_AMULET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 50
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_WARLORD_RING",
+      "name": "Кольцо «Регалии Непокорённого Полководца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Полководец». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_WARLORD",
+      "iconId": "items_outside_sets/black_bastion/silent_judgement_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_WARLORD_RING",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 45
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FIRE_AMULET",
+      "name": "Амулет «Одеяния Пепельного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Огонь». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FIRE",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FIRE_AMULET",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 50
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FIRE_RING",
+      "name": "Кольцо «Одеяния Пепельного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Огонь». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FIRE",
+      "iconId": "items_outside_sets/open_world_mid/rift_keeper_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FIRE_RING",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 45
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_ARCANE_AMULET",
+      "name": "Амулет «Ризы Астрального Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Аркана». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_ARCANE",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_ARCANE_AMULET",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 50
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_ARCANE_RING",
+      "name": "Кольцо «Ризы Астрального Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Аркана». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_ARCANE",
+      "iconId": "items_outside_sets/open_world_mid/rift_keeper_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_ARCANE_RING",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 45
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FROST_AMULET",
+      "name": "Амулет «Покров Ледяного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Лёд». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FROST",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FROST_AMULET",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 50
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FROST_RING",
+      "name": "Кольцо «Покров Ледяного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Лёд». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FROST",
+      "iconId": "items_outside_sets/open_world_mid/rift_keeper_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FROST_RING",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 45
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_MARKSMAN_AMULET",
+      "name": "Амулет «Регалии Безошибочного Стрелка»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Стрельба». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_MARKSMAN",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_MARKSMAN_AMULET",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 50
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_MARKSMAN_RING",
+      "name": "Кольцо «Регалии Безошибочного Стрелка»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Стрельба». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_MARKSMAN",
+      "iconId": "items_outside_sets/eclipse_citadel/eclipse_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_MARKSMAN_RING",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 45
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_BEAST_MASTERY_AMULET",
+      "name": "Амулет «Клятва Зверя Арены»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_BEAST_MASTERY",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_BEAST_MASTERY_AMULET",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 50
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_BEAST_MASTERY_RING",
+      "name": "Кольцо «Клятва Зверя Арены»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_BEAST_MASTERY",
+      "iconId": "items_outside_sets/eclipse_citadel/eclipse_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_BEAST_MASTERY_RING",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 45
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_SURVIVAL_AMULET",
+      "name": "Амулет «Снаряжение Неуловимого Ловчего»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_SURVIVAL",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_SURVIVAL_AMULET",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 50
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_SURVIVAL_RING",
+      "name": "Кольцо «Снаряжение Неуловимого Ловчего»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_SURVIVAL",
+      "iconId": "items_outside_sets/eclipse_citadel/eclipse_seal",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_SURVIVAL_RING",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 45
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_HOLY_AMULET",
+      "name": "Амулет «Клятва Светлого Триумфатора»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Свет». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_HOLY",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_HOLY_AMULET",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 50
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_HOLY_RING",
+      "name": "Кольцо «Клятва Светлого Триумфатора»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Свет». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_HOLY",
+      "iconId": "acc_uncommon_6_ring",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_HOLY_RING",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 45
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_PROTECTION_AMULET",
+      "name": "Амулет «Доспех Железной Клятвы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Защита». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_PROTECTION",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_PROTECTION_AMULET",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 50
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_PROTECTION_RING",
+      "name": "Кольцо «Доспех Железной Клятвы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Защита». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_PROTECTION",
+      "iconId": "acc_uncommon_6_ring",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_PROTECTION_RING",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 45
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_RETRIBUTION_AMULET",
+      "name": "Амулет «Латы Праведного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Amulet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_RETRIBUTION",
+      "iconId": "items_outside_sets/black_bastion/ashen_marshal_banner",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_RETRIBUTION_AMULET",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 50
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_RETRIBUTION_RING",
+      "name": "Кольцо «Латы Праведного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Ring1",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_RETRIBUTION",
+      "iconId": "acc_uncommon_6_ring",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_RETRIBUTION_RING",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 45
     }
   ]
 }

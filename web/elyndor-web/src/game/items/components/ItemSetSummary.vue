@@ -2,17 +2,38 @@
 import { computed } from 'vue'
 import type { InventoryItem } from '@/api/contracts'
 const props = defineProps<{ setId: string; items: readonly InventoryItem[] }>()
+const summary = computed(() => props.items.find((item) => item.setId === props.setId)?.setSummary)
 const equippedCount = computed(
   () =>
-    props.items.filter((item) => item.setId === props.setId && item.equippedSlot !== null).length,
+    new Set(
+      props.items
+        .filter((item) => item.setId === props.setId && item.equippedSlot !== null)
+        .map((item) => item.definitionId),
+    ).size,
 )
 </script>
 
 <template>
   <section class="item-set-summary" data-item-set aria-label="Комплект предмета">
-    <strong>Предмет комплекта</strong>
-    <span>Предметов этого комплекта надето: {{ equippedCount }}</span>
-    <small>Активные бонусы учитываются сервером в характеристиках героя.</small>
+    <template v-if="summary">
+      <strong>{{ summary.name }} — {{ equippedCount }}/{{ summary.totalPieces }}</strong>
+      <span
+        v-for="bonus in summary.bonuses"
+        :key="bonus.requiredPieces"
+        :data-bonus-active="equippedCount >= bonus.requiredPieces"
+      >
+        {{ equippedCount >= bonus.requiredPieces ? '✓' : '○' }} {{ bonus.requiredPieces }} предм. —
+        {{ bonus.description }}
+      </span>
+      <small
+        >Осталось доступно частей комплекта:
+        {{ Math.max(0, summary.totalPieces - equippedCount) }}</small
+      >
+    </template>
+    <template v-else>
+      <strong>Предмет комплекта</strong>
+      <span>Предметов этого комплекта надето: {{ equippedCount }}</span>
+    </template>
   </section>
 </template>
 
