@@ -1,0 +1,2887 @@
+{
+  "contentVersion": "0.39.0",
+  "balanceVersion": "0.31.0",
+  "publishedAtUtc": "2026-10-07T06:00:00+00:00",
+  "items": [
+    {
+      "id": "L60_PVP_T1_WARRIOR_GUARDIAN_CHEST",
+      "name": "Нагрудник «Оплот Железного Круга»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Страж». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_GUARDIAN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 662.0042,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_guardian_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_GUARDIAN_CHEST",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 100
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_GUARDIAN_FEET",
+      "name": "Сапоги «Оплот Железного Круга»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Страж». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_GUARDIAN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 328.7712,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_guardian_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_GUARDIAN_FEET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_GUARDIAN_HANDS",
+      "name": "Рукавицы «Оплот Железного Круга»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Страж». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_GUARDIAN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 342.3917,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_guardian_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_GUARDIAN_HANDS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_GUARDIAN_HEAD",
+      "name": "Шлем «Оплот Железного Круга»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Страж». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_GUARDIAN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 456.5222,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_guardian_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_GUARDIAN_HEAD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 80
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_GUARDIAN_LEGS",
+      "name": "Поножи «Оплот Железного Круга»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Страж». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_GUARDIAN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 547.8737,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_guardian_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_GUARDIAN_LEGS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 90
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_GUARDIAN_SHOULDERS",
+      "name": "Наплечники «Оплот Железного Круга»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Страж». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_GUARDIAN",
+      "armorCategory": "HEAVY",
+      "armorFlat": 374.3295,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_guardian_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_GUARDIAN_SHOULDERS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 70
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_BERSERKER_CHEST",
+      "name": "Нагрудник «Клятва Багрового Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_BERSERKER",
+      "armorCategory": "HEAVY",
+      "armorFlat": 662.0042,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_berserker_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_BERSERKER_CHEST",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 100
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_BERSERKER_FEET",
+      "name": "Сапоги «Клятва Багрового Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_BERSERKER",
+      "armorCategory": "HEAVY",
+      "armorFlat": 328.7712,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_berserker_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_BERSERKER_FEET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_BERSERKER_HANDS",
+      "name": "Рукавицы «Клятва Багрового Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_BERSERKER",
+      "armorCategory": "HEAVY",
+      "armorFlat": 342.3917,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_berserker_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_BERSERKER_HANDS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_BERSERKER_HEAD",
+      "name": "Шлем «Клятва Багрового Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_BERSERKER",
+      "armorCategory": "HEAVY",
+      "armorFlat": 456.5222,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_berserker_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_BERSERKER_HEAD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 80
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_BERSERKER_LEGS",
+      "name": "Поножи «Клятва Багрового Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_BERSERKER",
+      "armorCategory": "HEAVY",
+      "armorFlat": 547.8737,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_berserker_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_BERSERKER_LEGS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 90
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_BERSERKER_SHOULDERS",
+      "name": "Наплечники «Клятва Багрового Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Берсерк». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_BERSERKER",
+      "armorCategory": "HEAVY",
+      "armorFlat": 374.3295,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_berserker_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_BERSERKER_SHOULDERS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 70
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_WARLORD_CHEST",
+      "name": "Нагрудник «Регалии Непокорённого Полководца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Полководец». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_WARLORD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 662.0042,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_warlord_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_WARLORD_CHEST",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 100
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_WARLORD_FEET",
+      "name": "Сапоги «Регалии Непокорённого Полководца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Полководец». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_WARLORD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 328.7712,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_warlord_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_WARLORD_FEET",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_WARLORD_HANDS",
+      "name": "Рукавицы «Регалии Непокорённого Полководца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Полководец». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_WARLORD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 342.3917,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_warlord_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_WARLORD_HANDS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_WARLORD_HEAD",
+      "name": "Шлем «Регалии Непокорённого Полководца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Полководец». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_WARLORD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 456.5222,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_warlord_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_WARLORD_HEAD",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 80
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_WARLORD_LEGS",
+      "name": "Поножи «Регалии Непокорённого Полководца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Полководец». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_WARLORD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 547.8737,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_warlord_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_WARLORD_LEGS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 90
+    },
+    {
+      "id": "L60_PVP_T1_WARRIOR_WARLORD_SHOULDERS",
+      "name": "Наплечники «Регалии Непокорённого Полководца»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Воина, ориентированный на ветку «Полководец». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_WARRIOR_WARLORD",
+      "armorCategory": "HEAVY",
+      "armorFlat": 374.3295,
+      "iconId": "sets/set_heart_of_blighted_grove_warrior_warlord_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_WARRIOR_WARLORD_SHOULDERS",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "honorPrice": 70
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FIRE_CHEST",
+      "name": "Нагрудник «Одеяния Пепельного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Огонь». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FIRE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 264.8956,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_fire_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FIRE_CHEST",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 100
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FIRE_FEET",
+      "name": "Сапоги «Одеяния Пепельного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Огонь». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FIRE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 131.5084,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_fire_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FIRE_FEET",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FIRE_HANDS",
+      "name": "Рукавицы «Одеяния Пепельного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Огонь». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FIRE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 136.9097,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_fire_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FIRE_HANDS",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FIRE_HEAD",
+      "name": "Шлем «Одеяния Пепельного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Огонь». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FIRE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 182.7028,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_fire_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FIRE_HEAD",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 80
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FIRE_LEGS",
+      "name": "Поножи «Одеяния Пепельного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Огонь». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FIRE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 219.1025,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_fire_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FIRE_LEGS",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 90
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FIRE_SHOULDERS",
+      "name": "Наплечники «Одеяния Пепельного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Огонь». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FIRE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 149.8258,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_fire_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FIRE_SHOULDERS",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 70
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_ARCANE_CHEST",
+      "name": "Нагрудник «Ризы Астрального Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Аркана». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_ARCANE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 264.8956,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_arcane_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_ARCANE_CHEST",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 100
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_ARCANE_FEET",
+      "name": "Сапоги «Ризы Астрального Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Аркана». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_ARCANE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 131.5084,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_arcane_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_ARCANE_FEET",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_ARCANE_HANDS",
+      "name": "Рукавицы «Ризы Астрального Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Аркана». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_ARCANE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 136.9097,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_arcane_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_ARCANE_HANDS",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_ARCANE_HEAD",
+      "name": "Шлем «Ризы Астрального Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Аркана». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_ARCANE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 182.7028,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_arcane_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_ARCANE_HEAD",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 80
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_ARCANE_LEGS",
+      "name": "Поножи «Ризы Астрального Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Аркана». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_ARCANE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 219.1025,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_arcane_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_ARCANE_LEGS",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 90
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_ARCANE_SHOULDERS",
+      "name": "Наплечники «Ризы Астрального Претендента»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Аркана». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_ARCANE",
+      "armorCategory": "CLOTH",
+      "armorFlat": 149.8258,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_arcane_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_ARCANE_SHOULDERS",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 70
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FROST_CHEST",
+      "name": "Нагрудник «Покров Ледяного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Лёд». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FROST",
+      "armorCategory": "CLOTH",
+      "armorFlat": 264.8956,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_frost_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FROST_CHEST",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 100
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FROST_FEET",
+      "name": "Сапоги «Покров Ледяного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Лёд». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FROST",
+      "armorCategory": "CLOTH",
+      "armorFlat": 131.5084,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_frost_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FROST_FEET",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FROST_HANDS",
+      "name": "Рукавицы «Покров Ледяного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Лёд». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FROST",
+      "armorCategory": "CLOTH",
+      "armorFlat": 136.9097,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_frost_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FROST_HANDS",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FROST_HEAD",
+      "name": "Шлем «Покров Ледяного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Лёд». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FROST",
+      "armorCategory": "CLOTH",
+      "armorFlat": 182.7028,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_frost_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FROST_HEAD",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 80
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FROST_LEGS",
+      "name": "Поножи «Покров Ледяного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Лёд». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FROST",
+      "armorCategory": "CLOTH",
+      "armorFlat": 219.1025,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_frost_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FROST_LEGS",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 90
+    },
+    {
+      "id": "L60_PVP_T1_MAGE_FROST_SHOULDERS",
+      "name": "Наплечники «Покров Ледяного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Мага, ориентированный на ветку «Лёд». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_MAGE_FROST",
+      "armorCategory": "CLOTH",
+      "armorFlat": 149.8258,
+      "iconId": "sets/set_heart_of_blighted_grove_mage_frost_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "MAGE_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_MAGE_FROST_SHOULDERS",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "honorPrice": 70
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_MARKSMAN_CHEST",
+      "name": "Нагрудник «Регалии Безошибочного Стрелка»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Стрельба». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_MARKSMAN",
+      "armorCategory": "LEATHER",
+      "armorFlat": 485.4071,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_MARKSMAN_CHEST",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 100
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_MARKSMAN_FEET",
+      "name": "Сапоги «Регалии Безошибочного Стрелка»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Стрельба». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_MARKSMAN",
+      "armorCategory": "LEATHER",
+      "armorFlat": 240.9423,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_MARKSMAN_FEET",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_MARKSMAN_HANDS",
+      "name": "Рукавицы «Регалии Безошибочного Стрелка»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Стрельба». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_MARKSMAN",
+      "armorCategory": "LEATHER",
+      "armorFlat": 251.0403,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_MARKSMAN_HANDS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_MARKSMAN_HEAD",
+      "name": "Шлем «Регалии Безошибочного Стрелка»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Стрельба». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_MARKSMAN",
+      "armorCategory": "LEATHER",
+      "armorFlat": 334.8769,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_MARKSMAN_HEAD",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 80
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_MARKSMAN_LEGS",
+      "name": "Поножи «Регалии Безошибочного Стрелка»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Стрельба». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_MARKSMAN",
+      "armorCategory": "LEATHER",
+      "armorFlat": 401.8053,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_MARKSMAN_LEGS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 90
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_MARKSMAN_SHOULDERS",
+      "name": "Наплечники «Регалии Безошибочного Стрелка»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Стрельба». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_MARKSMAN",
+      "armorCategory": "LEATHER",
+      "armorFlat": 274.5239,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_marksmanship_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_MARKSMAN_SHOULDERS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 70
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_BEAST_MASTERY_CHEST",
+      "name": "Нагрудник «Клятва Зверя Арены»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_BEAST_MASTERY",
+      "armorCategory": "LEATHER",
+      "armorFlat": 485.4071,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_beast_mastery_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_BEAST_MASTERY_CHEST",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 100
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_BEAST_MASTERY_FEET",
+      "name": "Сапоги «Клятва Зверя Арены»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_BEAST_MASTERY",
+      "armorCategory": "LEATHER",
+      "armorFlat": 240.9423,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_beast_mastery_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_BEAST_MASTERY_FEET",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_BEAST_MASTERY_HANDS",
+      "name": "Рукавицы «Клятва Зверя Арены»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_BEAST_MASTERY",
+      "armorCategory": "LEATHER",
+      "armorFlat": 251.0403,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_beast_mastery_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_BEAST_MASTERY_HANDS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_BEAST_MASTERY_HEAD",
+      "name": "Шлем «Клятва Зверя Арены»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_BEAST_MASTERY",
+      "armorCategory": "LEATHER",
+      "armorFlat": 334.8769,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_beast_mastery_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_BEAST_MASTERY_HEAD",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 80
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_BEAST_MASTERY_LEGS",
+      "name": "Поножи «Клятва Зверя Арены»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_BEAST_MASTERY",
+      "armorCategory": "LEATHER",
+      "armorFlat": 401.8053,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_beast_mastery_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_BEAST_MASTERY_LEGS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 90
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_BEAST_MASTERY_SHOULDERS",
+      "name": "Наплечники «Клятва Зверя Арены»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Повелитель зверей». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_BEAST_MASTERY",
+      "armorCategory": "LEATHER",
+      "armorFlat": 274.5239,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_beast_mastery_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_BEAST_MASTERY_SHOULDERS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 70
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_SURVIVAL_CHEST",
+      "name": "Нагрудник «Снаряжение Неуловимого Ловчего»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_SURVIVAL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 485.4071,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_SURVIVAL_CHEST",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 100
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_SURVIVAL_FEET",
+      "name": "Сапоги «Снаряжение Неуловимого Ловчего»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_SURVIVAL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 240.9423,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_SURVIVAL_FEET",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_SURVIVAL_HANDS",
+      "name": "Рукавицы «Снаряжение Неуловимого Ловчего»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_SURVIVAL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 251.0403,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_SURVIVAL_HANDS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_SURVIVAL_HEAD",
+      "name": "Шлем «Снаряжение Неуловимого Ловчего»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_SURVIVAL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 334.8769,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_SURVIVAL_HEAD",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 80
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_SURVIVAL_LEGS",
+      "name": "Поножи «Снаряжение Неуловимого Ловчего»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_SURVIVAL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 401.8053,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_SURVIVAL_LEGS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 90
+    },
+    {
+      "id": "L60_PVP_T1_ARCHER_SURVIVAL_SHOULDERS",
+      "name": "Наплечники «Снаряжение Неуловимого Ловчего»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Лучника, ориентированный на ветку «Выживание». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_ARCHER_SURVIVAL",
+      "armorCategory": "LEATHER",
+      "armorFlat": 274.5239,
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_ARCHER_SURVIVAL_SHOULDERS",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "honorPrice": 70
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_HOLY_CHEST",
+      "name": "Нагрудник «Клятва Светлого Триумфатора»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Свет». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_HOLY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 662.0042,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_holy_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_HOLY_CHEST",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 100
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_HOLY_FEET",
+      "name": "Сапоги «Клятва Светлого Триумфатора»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Свет». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_HOLY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 328.7712,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_holy_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_HOLY_FEET",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_HOLY_HANDS",
+      "name": "Рукавицы «Клятва Светлого Триумфатора»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Свет». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_HOLY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 342.3917,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_holy_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_HOLY_HANDS",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_HOLY_HEAD",
+      "name": "Шлем «Клятва Светлого Триумфатора»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Свет». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_HOLY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 456.5222,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_holy_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_HOLY_HEAD",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 80
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_HOLY_LEGS",
+      "name": "Поножи «Клятва Светлого Триумфатора»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Свет». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_HOLY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 547.8737,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_holy_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_HOLY_LEGS",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 90
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_HOLY_SHOULDERS",
+      "name": "Наплечники «Клятва Светлого Триумфатора»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Свет». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_HOLY",
+      "armorCategory": "HEAVY",
+      "armorFlat": 374.3295,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_holy_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_HOLY_SHOULDERS",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 70
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_PROTECTION_CHEST",
+      "name": "Нагрудник «Доспех Железной Клятвы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Защита». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_PROTECTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 662.0042,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_protection_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_PROTECTION_CHEST",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 100
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_PROTECTION_FEET",
+      "name": "Сапоги «Доспех Железной Клятвы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Защита». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_PROTECTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 328.7712,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_protection_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_PROTECTION_FEET",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_PROTECTION_HANDS",
+      "name": "Рукавицы «Доспех Железной Клятвы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Защита». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_PROTECTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 342.3917,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_protection_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_PROTECTION_HANDS",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_PROTECTION_HEAD",
+      "name": "Шлем «Доспех Железной Клятвы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Защита». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_PROTECTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 456.5222,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_protection_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_PROTECTION_HEAD",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 80
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_PROTECTION_LEGS",
+      "name": "Поножи «Доспех Железной Клятвы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Защита». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_PROTECTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 547.8737,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_protection_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_PROTECTION_LEGS",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 90
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_PROTECTION_SHOULDERS",
+      "name": "Наплечники «Доспех Железной Клятвы»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Защита». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_PROTECTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 374.3295,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_protection_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "STAMINA"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_PROTECTION_SHOULDERS",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 70
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_RETRIBUTION_CHEST",
+      "name": "Нагрудник «Латы Праведного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_RETRIBUTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 662.0042,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_retribution_chest",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_RETRIBUTION_CHEST",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 100
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_RETRIBUTION_FEET",
+      "name": "Сапоги «Латы Праведного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_RETRIBUTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 328.7712,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_retribution_feet",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_RETRIBUTION_FEET",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_RETRIBUTION_HANDS",
+      "name": "Рукавицы «Латы Праведного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_RETRIBUTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 342.3917,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_retribution_hands",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_RETRIBUTION_HANDS",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 60
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_RETRIBUTION_HEAD",
+      "name": "Шлем «Латы Праведного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_RETRIBUTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 456.5222,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_retribution_head",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_RETRIBUTION_HEAD",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 80
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_RETRIBUTION_LEGS",
+      "name": "Поножи «Латы Праведного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_RETRIBUTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 547.8737,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_retribution_legs",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_RETRIBUTION_LEGS",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 90
+    },
+    {
+      "id": "L60_PVP_T1_PALADIN_RETRIBUTION_SHOULDERS",
+      "name": "Наплечники «Латы Праведного Дуэлянта»",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Legendary",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "PvP T1 комплект 60-го уровня для Паладина, ориентированный на ветку «Воздаяние». Доступен всем персонажам этого класса за Honor.",
+      "version": 1,
+      "setId": "SET_L60_PVP_T1_PALADIN_RETRIBUTION",
+      "armorCategory": "HEAVY",
+      "armorFlat": 374.3295,
+      "iconId": "sets/set_heart_of_blighted_grove_paladin_retribution_shoulders",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "INTELLECT"
+      ],
+      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "affixCountProfileId": "LEVEL_57_60",
+      "extraAffixBudgetCap": 0.06,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "tradePolicyId": "PVP_HONOR_BOUND",
+      "generationVersion": 1,
+      "itemFamilyId": "L60_PVP_T1_PALADIN_RETRIBUTION_SHOULDERS",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "honorPrice": 70
+    }
+  ]
+}

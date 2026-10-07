@@ -137,6 +137,14 @@ describe('authored content art', () => {
     expect(missingArt).toEqual([])
   })
 
+  it('resolves artwork for all 72 PvP T1 level-60 branch set pieces', () => {
+    const setItems = getItems().filter(item => item.setId?.startsWith('SET_L60_PVP_T1_'))
+    const missingArt = setItems.filter(item => !itemArtUrl(item.iconId)).map(item => item.id)
+
+    expect(setItems).toHaveLength(72)
+    expect(missingArt).toEqual([])
+  })
+
   it('resolves artwork for all 72 normal level-60 branch set pieces', () => {
     const setItems = getItems().filter(item => item.setId?.startsWith('SET_L60_NORMAL_'))
     const missingArt = setItems.filter(item => !itemArtUrl(item.iconId)).map(item => item.id)

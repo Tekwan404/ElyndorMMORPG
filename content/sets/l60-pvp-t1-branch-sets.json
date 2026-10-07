@@ -1,0 +1,288 @@
+{
+  "contentVersion": "0.39.0",
+  "balanceVersion": "0.31.0",
+  "publishedAtUtc": "2026-10-07T06:00:00+00:00",
+  "equipmentSets": [
+    {
+      "id": "SET_L60_PVP_T1_WARRIOR_GUARDIAN",
+      "name": "Оплот Железного Круга",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 211.3529
+        },
+        {
+          "requiredPieces": 4,
+          "magicResistanceFlat": 65.7542,
+          "accuracyPercent": 3
+        },
+        {
+          "requiredPieces": 6,
+          "armorFlat": 199.6111,
+          "dodgePercent": 2
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVP_T1_WARRIOR_BERSERKER",
+      "name": "Клятва Багрового Претендента",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 169.0823,
+          "criticalChancePercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 70.4509
+        },
+        {
+          "requiredPieces": 6,
+          "accuracyPercent": 3,
+          "criticalDamagePercent": 10
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVP_T1_WARRIOR_WARLORD",
+      "name": "Регалии Непокорённого Полководца",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 211.3529
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 56.3608,
+          "accuracyPercent": 3
+        },
+        {
+          "requiredPieces": 6,
+          "attackSpeedPercent": 5,
+          "dodgePercent": 2
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVP_T1_MAGE_FIRE",
+      "name": "Одеяния Пепельного Дуэлянта",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 169.0823,
+          "criticalChancePercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "spellPowerFlat": 70.4509
+        },
+        {
+          "requiredPieces": 6,
+          "accuracyPercent": 3,
+          "magicResistanceFlat": 32.8772
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVP_T1_MAGE_ARCANE",
+      "name": "Ризы Астрального Претендента",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxResourceFlat": 93.9347,
+          "magicResistanceFlat": 32.8772
+        },
+        {
+          "requiredPieces": 4,
+          "spellPowerFlat": 56.3608
+        },
+        {
+          "requiredPieces": 6,
+          "accuracyPercent": 3,
+          "dodgePercent": 2
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVP_T1_MAGE_FROST",
+      "name": "Покров Ледяного Дуэлянта",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 211.3529,
+          "magicResistanceFlat": 32.8772
+        },
+        {
+          "requiredPieces": 4,
+          "spellPowerFlat": 56.3608,
+          "dodgePercent": 2
+        },
+        {
+          "requiredPieces": 6,
+          "magicResistanceFlat": 65.7542,
+          "accuracyPercent": 3
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVP_T1_ARCHER_MARKSMAN",
+      "name": "Регалии Безошибочного Стрелка",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "accuracyPercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 56.3608,
+          "criticalChancePercent": 4
+        },
+        {
+          "requiredPieces": 6,
+          "armorPenetrationPercent": 5,
+          "dodgePercent": 2
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVP_T1_ARCHER_BEAST_MASTERY",
+      "name": "Клятва Зверя Арены",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 211.3529,
+          "dodgePercent": 2
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 70.4509
+        },
+        {
+          "requiredPieces": 6,
+          "attackSpeedPercent": 4,
+          "accuracyPercent": 3
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVP_T1_ARCHER_SURVIVAL",
+      "name": "Снаряжение Неуловимого Ловчего",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 169.0823,
+          "dodgePercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "criticalChancePercent": 4,
+          "accuracyPercent": 3
+        },
+        {
+          "requiredPieces": 6,
+          "armorPenetrationPercent": 5,
+          "magicResistanceFlat": 32.8772
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVP_T1_PALADIN_HOLY",
+      "name": "Клятва Светлого Триумфатора",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxResourceFlat": 93.9347,
+          "magicResistanceFlat": 32.8772
+        },
+        {
+          "requiredPieces": 4,
+          "spellPowerFlat": 56.3608,
+          "maxHpFlat": 169.0823
+        },
+        {
+          "requiredPieces": 6,
+          "criticalChancePercent": 4,
+          "dodgePercent": 2
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVP_T1_PALADIN_PROTECTION",
+      "name": "Доспех Железной Клятвы",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 211.3529,
+          "armorFlat": 199.6111
+        },
+        {
+          "requiredPieces": 4,
+          "magicResistanceFlat": 65.7542,
+          "accuracyPercent": 3
+        },
+        {
+          "requiredPieces": 6,
+          "maxHpFlat": 211.3529,
+          "dodgePercent": 2
+        }
+      ]
+    },
+    {
+      "id": "SET_L60_PVP_T1_PALADIN_RETRIBUTION",
+      "name": "Латы Праведного Дуэлянта",
+      "allowedClassIds": [
+        "PALADIN"
+      ],
+      "bonuses": [
+        {
+          "requiredPieces": 2,
+          "maxHpFlat": 169.0823,
+          "criticalChancePercent": 4
+        },
+        {
+          "requiredPieces": 4,
+          "attackPowerFlat": 56.3608,
+          "spellPowerFlat": 49.3156
+        },
+        {
+          "requiredPieces": 6,
+          "accuracyPercent": 3,
+          "criticalDamagePercent": 10
+        }
+      ]
+    }
+  ]
+}

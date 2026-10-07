@@ -226,4 +226,57 @@ describe('arenaStore', () => {
     expect(arena.match?.battle?.player.autoAttackEnabled).toBe(false)
     expect(arena.autoAttackPending).toBe(false)
   })
+
+  it('loads Honor shop offers and keeps the arena Honor balance synchronized', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValueOnce({
+      honor: 140,
+      items: [{
+        itemId: 'L60_PVP_T1_WARRIOR_GUARDIAN_HEAD',
+        name: 'Шлем «Оплот Железного Круга»',
+        rarity: 'Legendary',
+        slot: 'Head',
+        iconId: 'sets/set_heart_of_blighted_grove_warrior_guardian_head',
+        setId: 'SET_L60_PVP_T1_WARRIOR_GUARDIAN',
+        requiredLevel: 60,
+        honorPrice: 80,
+      }],
+    })
+    const arena = useArenaStore()
+    arena.status = status({ honor: 0 })
+
+    await arena.loadShop()
+
+    expect(arena.shop?.honor).toBe(140)
+    expect(arena.shop?.items).toHaveLength(1)
+    expect(arena.status?.honor).toBe(140)
+    expect(arena.shopPending).toBe(false)
+    expect(arena.shopErrorCode).toBeNull()
+  })
+
+  it('retries an uncertain Honor purchase with the same mutation id', async () => {
+    const request = vi.spyOn(apiClient, 'request')
+      .mockRejectedValueOnce(new Error('network_unavailable'))
+      .mockResolvedValueOnce({
+        succeeded: true,
+        errorCode: null,
+        shop: { honor: 40, items: [] },
+      })
+    const arena = useArenaStore()
+    arena.status = status({ honor: 100 })
+
+    await arena.buyHonorItem('L60_PVP_T1_WARRIOR_GUARDIAN_HANDS')
+    await arena.buyHonorItem('L60_PVP_T1_WARRIOR_GUARDIAN_HANDS')
+
+    const first = JSON.parse(String(request.mock.calls[0]![1]!.body)) as { itemId: string; mutationId: string }
+    const retry = JSON.parse(String(request.mock.calls[1]![1]!.body)) as { itemId: string; mutationId: string }
+
+    expect(retry.itemId).toBe(first.itemId)
+    expect(retry.mutationId).toBe(first.mutationId)
+    expect(arena.shop?.honor).toBe(40)
+    expect(arena.status?.honor).toBe(40)
+    expect(arena.shopPurchasePendingId).toBeNull()
+    expect(arena.shopErrorCode).toBeNull()
+    expect(request).toHaveBeenCalledWith('/api/v1/bootstrap')
+  })
+
 })

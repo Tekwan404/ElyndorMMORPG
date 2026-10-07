@@ -21,6 +21,28 @@ export interface ArenaQueueResponse {
   status: ArenaStatus | null
 }
 
+export interface ArenaHonorShopItem {
+  itemId: string
+  name: string
+  rarity: string
+  slot: string | null
+  iconId: string | null
+  setId: string | null
+  requiredLevel: number
+  honorPrice: number
+}
+
+export interface ArenaHonorShop {
+  honor: number
+  items: ArenaHonorShopItem[]
+}
+
+export interface ArenaHonorShopPurchaseResponse {
+  succeeded: boolean
+  errorCode: string | null
+  shop: ArenaHonorShop | null
+}
+
 export interface ArenaLeaderboardEntry {
   rank: number
   characterId: string

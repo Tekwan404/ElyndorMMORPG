@@ -220,7 +220,10 @@ public sealed class GameContentPackageLoaderTests
             .Where(item => item.RequiredLevel >= 2)
             .ToArray();
         Assert.NotEmpty(currentProgressionItems);
-        Assert.All(currentProgressionItems, item => Assert.Contains(item.Id, obtainableItemIds));
+        Assert.All(currentProgressionItems, item =>
+            Assert.True(
+                obtainableItemIds.Contains(item.Id) || item.HonorPrice > 0,
+                $"Equipment '{item.Id}' has no loot or Honor acquisition source."));
 
         LootTableDefinition[] authoredRaidBossTables = package.LootTables
             .Where(table => table.Id.StartsWith("LOOT_HEART_OF_BLIGHTED_GROVE_BOSS_", StringComparison.Ordinal)

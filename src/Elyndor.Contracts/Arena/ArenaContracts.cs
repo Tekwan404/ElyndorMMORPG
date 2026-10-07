@@ -24,6 +24,7 @@ public sealed record ArenaHonorShopItemResponse(
     string Rarity,
     string? Slot,
     string? IconId,
+    string? SetId,
     int RequiredLevel,
     long HonorPrice);
 

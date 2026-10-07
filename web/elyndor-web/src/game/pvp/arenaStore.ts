@@ -9,8 +9,11 @@ import {
 
 import { apiClient } from '@/api/apiClient'
 import type { CombatEvent } from '@/api/contracts'
+import { useGameSessionStore } from '@/stores/gameSession'
 import type {
   ArenaCommandResponse,
+  ArenaHonorShop,
+  ArenaHonorShopPurchaseResponse,
   ArenaLeaderboardEntry,
   ArenaMatch,
   ArenaMatchNotification,
@@ -27,8 +30,13 @@ function newCommandId(): string {
 }
 
 export const useArenaStore = defineStore('arena', () => {
+  const session = useGameSessionStore()
   const status = ref<ArenaStatus | null>(null)
   const leaderboard = ref<ArenaLeaderboardEntry[]>([])
+  const shop = ref<ArenaHonorShop | null>(null)
+  const shopPending = ref(false)
+  const shopPurchasePendingId = ref<string | null>(null)
+  const shopErrorCode = ref<string | null>(null)
   const match = ref<ArenaMatch | null>(null)
   const log = ref<CombatEvent[]>([])
   const pending = ref(false)
@@ -56,6 +64,7 @@ export const useArenaStore = defineStore('arena', () => {
   let loadedMatchId: string | null = null
   let lastSequence = 0
   let inviteDraft: { name: string; requestId: string } | null = null
+  const shopPurchaseDrafts = new Map<string, string>()
 
   function fail(error: unknown, fallback: string): void {
     errorCode.value = error instanceof Error ? error.message : fallback
@@ -75,6 +84,7 @@ export const useArenaStore = defineStore('arena', () => {
       ])
       status.value = nextStatus
       leaderboard.value = nextLeaderboard
+      if (shop.value) shop.value = { ...shop.value, honor: nextStatus.honor }
     } catch (error) {
       fail(error, 'arena_load_failed')
     }
@@ -83,6 +93,7 @@ export const useArenaStore = defineStore('arena', () => {
   async function refresh(): Promise<void> {
     try {
       status.value = await apiClient.request<ArenaStatus>('/api/v1/arena/status')
+      if (shop.value) shop.value = { ...shop.value, honor: status.value.honor }
       if (status.value.enabled && (status.value.isQueued || status.value.activeMatchId)) {
         if (status.value.activeMatchId) rememberMatchBaseline()
         await connect()
@@ -90,6 +101,50 @@ export const useArenaStore = defineStore('arena', () => {
       }
     } catch (error) {
       fail(error, 'arena_load_failed')
+    }
+  }
+
+  async function loadShop(): Promise<void> {
+    if (shopPending.value) return
+    shopPending.value = true
+    shopErrorCode.value = null
+    try {
+      shop.value = await apiClient.request<ArenaHonorShop>('/api/v1/arena/shop')
+      if (status.value) status.value = { ...status.value, honor: shop.value.honor }
+    } catch (error) {
+      shopErrorCode.value = error instanceof Error ? error.message : 'arena_shop_unavailable'
+    } finally {
+      shopPending.value = false
+    }
+  }
+
+  async function buyHonorItem(itemId: string): Promise<void> {
+    if (shopPurchasePendingId.value) return
+    shopPurchasePendingId.value = itemId
+    shopErrorCode.value = null
+    const mutationId = shopPurchaseDrafts.get(itemId) ?? crypto.randomUUID()
+    shopPurchaseDrafts.set(itemId, mutationId)
+    try {
+      const response = await apiClient.request<ArenaHonorShopPurchaseResponse>(
+        '/api/v1/arena/shop/purchases',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemId, mutationId }),
+        },
+      )
+      if (!response.succeeded || !response.shop) {
+        shopErrorCode.value = response.errorCode ?? 'arena_shop_unavailable'
+        return
+      }
+      shop.value = response.shop
+      shopPurchaseDrafts.delete(itemId)
+      if (status.value) status.value = { ...status.value, honor: response.shop.honor }
+      try { await session.refreshSnapshot() } catch { /* purchase already committed; keep shop state authoritative */ }
+    } catch (error) {
+      shopErrorCode.value = error instanceof Error ? error.message : 'arena_shop_unavailable'
+    } finally {
+      shopPurchasePendingId.value = null
     }
   }
 
@@ -315,10 +370,11 @@ export const useArenaStore = defineStore('arena', () => {
   }
 
   return {
-    status, leaderboard, match, log, pending, autoAttackPending, errorCode, enabled, inMatch,
+    status, leaderboard, shop, shopPending, shopPurchasePendingId, shopErrorCode,
+    match, log, pending, autoAttackPending, errorCode, enabled, inMatch,
     ratingDelta, honorDelta,
     invitations, invitePending, inviteNotice, loadInvites, invitePlayer, respondToInvite,
-    refresh, loadLeaderboard, connect, disconnect, joinQueue, leaveQueue,
+    refresh, loadLeaderboard, loadShop, buyHonorItem, connect, disconnect, joinQueue, leaveQueue,
     useAbility, toggleAutoAttack, surrender, dismissMatch, findNextOpponent,
   }
 })
