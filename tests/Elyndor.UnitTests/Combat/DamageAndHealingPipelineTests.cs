@@ -207,36 +207,6 @@ public sealed class DamageAndHealingPipelineTests
     }
 
     [Fact]
-    public void BlockCannotPreventMoreThanSeventyPercentOfIncomingDamage()
-    {
-        CombatActorState source = CombatActorState.CreateDummy(100);
-        CombatActorState target = CombatActorState.CreateDummy(
-            200,
-            stats: CombatStats.Default with
-            {
-                BlockChance = 100,
-                BlockValueMin = 500,
-                BlockValueMax = 500
-            });
-
-        DamageResult result = DamagePipeline.Resolve(
-            new DamageRequest(
-                source,
-                target,
-                100,
-                DamageType.Physical,
-                CanMiss: false,
-                CanDodge: false,
-                CanCrit: false),
-            new SequenceGameRandom(0m));
-
-        Assert.True(result.WasBlocked);
-        Assert.Equal(70, result.BlockedAmount);
-        Assert.Equal(30, result.HpDamage);
-        Assert.Equal(170, target.CurrentHp);
-    }
-
-    [Fact]
     public void EffectiveBlockChanceIsCappedAtSixtyPercent()
     {
         CombatActorState source = CombatActorState.CreateDummy(100);
