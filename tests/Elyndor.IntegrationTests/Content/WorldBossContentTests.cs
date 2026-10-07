@@ -83,12 +83,12 @@ public sealed class WorldBossContentTests
         Assert.Equal(250, rewardProfile.ChestGoldMin);
         Assert.Equal(500, rewardProfile.ChestGoldMax);
 
-        string[] uniqueIds =
-        [
-            "UNIQUE_WARRIOR_BLACKHEART",
-            "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
-            "UNIQUE_ARCHER_LAST_CONSTELLATION"
-        ];
+        string[] uniqueIds = chest.SelectionGroups!
+            .SelectMany(group => group.Entries)
+            .Where(entry => package.Items!.Single(item => item.Id == entry.ItemId).Rarity == ItemRarity.Unique)
+            .Select(entry => entry.ItemId)
+            .ToArray();
+        Assert.Equal(36, uniqueIds.Length);
         Assert.All(uniqueIds, uniqueId =>
         {
             Assert.DoesNotContain(dungeonBoss.Entries, entry => entry.ItemId == uniqueId);
@@ -108,7 +108,7 @@ public sealed class WorldBossContentTests
         string[] rewardItemIds = rewardEntries
             .Select(entry => entry.ItemId)
             .ToArray();
-        Assert.Equal(7, rewardItemIds.Length);
+        Assert.Equal(40, rewardItemIds.Length);
 
         Assert.All(uniqueIds, uniqueId =>
         {
@@ -120,7 +120,8 @@ public sealed class WorldBossContentTests
 
             ItemDefinition family = package.Items!.Single(item => item.Id == uniqueId);
             Assert.Equal(uniqueId, family.ItemFamilyId);
-            Assert.Equal(25, family.ItemLevelMin);
+            Assert.True(family.RequiredLevel is 25 or 60);
+            Assert.True(family.ItemLevelMin is 25 or 60);
             Assert.Equal(60, family.ItemLevelMax);
         });
 

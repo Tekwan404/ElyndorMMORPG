@@ -9,14 +9,14 @@ const monsterContentRoot = resolve(process.cwd(), '../../content/monsters')
 const itemContentRoot = resolve(process.cwd(), '../../content/items')
 
 function getItems() {
-  const composedItems = new Map<string, { id: string; iconId?: string; setId?: string }>()
+  const composedItems = new Map<string, { id: string; iconId?: string; setId?: string; rarity?: string; requiredLevel?: number }>()
 
   readdirSync(itemContentRoot)
     .filter(fileName => fileName.endsWith('.json'))
     .sort((left, right) => left < right ? -1 : left > right ? 1 : 0)
     .forEach((fileName) => {
       const raw = readFileSync(resolve(itemContentRoot, fileName), 'utf8').replace(/^\uFEFF/, '')
-      const items = (JSON.parse(raw) as { items: Array<{ id: string; iconId?: string; setId?: string }> }).items
+      const items = (JSON.parse(raw) as { items: Array<{ id: string; iconId?: string; setId?: string; rarity?: string; requiredLevel?: number }> }).items
 
       for (const item of items) composedItems.set(item.id, item)
     })
@@ -127,6 +127,22 @@ describe('authored content art', () => {
       expect(item?.iconId).toBe(expectedIconId)
       expect(itemArtUrl(item?.iconId)).toBeDefined()
     }
+  })
+
+  it('resolves artwork for all 36 level-60 branch unique rewards', () => {
+    const legacyWeaponIds = new Set([
+      'UNIQUE_WARRIOR_BLACKHEART',
+      'UNIQUE_MAGE_EYE_OF_DEAD_STAR',
+      'UNIQUE_ARCHER_LAST_CONSTELLATION',
+    ])
+    const uniqueItems = getItems().filter(item =>
+      item.id.startsWith('UNIQUE_L60_') || legacyWeaponIds.has(item.id),
+    )
+    const missingArt = uniqueItems.filter(item => !itemArtUrl(item.iconId)).map(item => item.id)
+
+    expect(uniqueItems).toHaveLength(36)
+    expect(uniqueItems.every(item => item.rarity === 'Unique')).toBe(true)
+    expect(missingArt).toEqual([])
   })
 
   it('resolves artwork for all 72 PvE T1 level-60 branch set pieces', () => {

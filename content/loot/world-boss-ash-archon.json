@@ -1,11 +1,11 @@
 {
-  "contentVersion": "0.36.0",
-  "balanceVersion": "0.29.0",
-  "publishedAtUtc": "2026-10-02T13:40:00+00:00",
+  "contentVersion": "0.40.0",
+  "balanceVersion": "0.31.0",
+  "publishedAtUtc": "2026-10-07T10:50:50+00:00",
   "lootTables": [
     {
       "id": "WORLD_BOSS_ASH_ARCHON_LOOT",
-      "version": 2,
+      "version": 3,
       "entries": [],
       "selectionGroups": [
         {
@@ -22,7 +22,135 @@
               "itemLevelMax": 60
             },
             {
+              "itemId": "UNIQUE_L60_WARRIOR_BERSERKER_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_WARRIOR_BERSERKER_CLOAK",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_WARRIOR_GUARDIAN_WEAPON",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_WARRIOR_GUARDIAN_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_WARRIOR_GUARDIAN_CLOAK",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_WARRIOR_WARLORD_WEAPON",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_WARRIOR_WARLORD_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_WARRIOR_WARLORD_CLOAK",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_FIRE_WEAPON",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_FIRE_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_FIRE_CLOAK",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_FROST_WEAPON",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_FROST_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_FROST_CLOAK",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
               "itemId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_ARCANE_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_ARCANE_CLOAK",
               "weight": 1,
               "minQuantity": 1,
               "maxQuantity": 1,
@@ -38,26 +166,162 @@
               "itemLevelMax": 60
             },
             {
+              "itemId": "UNIQUE_L60_ARCHER_MARKSMAN_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_ARCHER_MARKSMAN_CLOAK",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_ARCHER_BEAST_MASTERY_WEAPON",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_ARCHER_BEAST_MASTERY_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_ARCHER_BEAST_MASTERY_CLOAK",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_ARCHER_SURVIVAL_WEAPON",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_ARCHER_SURVIVAL_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_ARCHER_SURVIVAL_CLOAK",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_HOLY_WEAPON",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_HOLY_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_HOLY_CLOAK",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_PROTECTION_WEAPON",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_PROTECTION_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_PROTECTION_CLOAK",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_RETRIBUTION_WEAPON",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_RETRIBUTION_RING",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_RETRIBUTION_CLOAK",
+              "weight": 1,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
               "itemId": "FOKUS_OSTATOCHNOI_MANY_L60",
-              "weight": 20,
+              "weight": 240,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
               "itemId": "LUK_TROINOGO_ASPEKTA_L60",
-              "weight": 20,
+              "weight": 240,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
               "itemId": "KOLTSO_RAZBITOGO_OTRAZHENIIA_L60",
-              "weight": 20,
+              "weight": 240,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
               "itemId": "PECHAT_TRIEDINSTVA_L60",
-              "weight": 20,
+              "weight": 240,
               "minQuantity": 1,
               "maxQuantity": 1
             }
@@ -67,7 +331,7 @@
     },
     {
       "id": "WORLD_BOSS_ASH_ARCHON_TOP5_LOOT",
-      "version": 2,
+      "version": 3,
       "entries": [],
       "selectionGroups": [
         {
@@ -84,7 +348,135 @@
               "itemLevelMax": 60
             },
             {
+              "itemId": "UNIQUE_L60_WARRIOR_BERSERKER_RING",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_WARRIOR_BERSERKER_CLOAK",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_WARRIOR_GUARDIAN_WEAPON",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_WARRIOR_GUARDIAN_RING",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_WARRIOR_GUARDIAN_CLOAK",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_WARRIOR_WARLORD_WEAPON",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_WARRIOR_WARLORD_RING",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_WARRIOR_WARLORD_CLOAK",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_FIRE_WEAPON",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_FIRE_RING",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_FIRE_CLOAK",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_FROST_WEAPON",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_FROST_RING",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_FROST_CLOAK",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
               "itemId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_ARCANE_RING",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_MAGE_ARCANE_CLOAK",
               "weight": 4,
               "minQuantity": 1,
               "maxQuantity": 1,
@@ -100,26 +492,162 @@
               "itemLevelMax": 60
             },
             {
+              "itemId": "UNIQUE_L60_ARCHER_MARKSMAN_RING",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_ARCHER_MARKSMAN_CLOAK",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_ARCHER_BEAST_MASTERY_WEAPON",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_ARCHER_BEAST_MASTERY_RING",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_ARCHER_BEAST_MASTERY_CLOAK",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_ARCHER_SURVIVAL_WEAPON",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_ARCHER_SURVIVAL_RING",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_ARCHER_SURVIVAL_CLOAK",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_HOLY_WEAPON",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_HOLY_RING",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_HOLY_CLOAK",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_PROTECTION_WEAPON",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_PROTECTION_RING",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_PROTECTION_CLOAK",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_RETRIBUTION_WEAPON",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_RETRIBUTION_RING",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
+              "itemId": "UNIQUE_L60_PALADIN_RETRIBUTION_CLOAK",
+              "weight": 4,
+              "minQuantity": 1,
+              "maxQuantity": 1,
+              "itemLevelMin": 60,
+              "itemLevelMax": 60
+            },
+            {
               "itemId": "FOKUS_OSTATOCHNOI_MANY_L60",
-              "weight": 10,
+              "weight": 120,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
               "itemId": "LUK_TROINOGO_ASPEKTA_L60",
-              "weight": 10,
+              "weight": 120,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
               "itemId": "KOLTSO_RAZBITOGO_OTRAZHENIIA_L60",
-              "weight": 10,
+              "weight": 120,
               "minQuantity": 1,
               "maxQuantity": 1
             },
             {
               "itemId": "PECHAT_TRIEDINSTVA_L60",
-              "weight": 10,
+              "weight": 120,
               "minQuantity": 1,
               "maxQuantity": 1
             }
