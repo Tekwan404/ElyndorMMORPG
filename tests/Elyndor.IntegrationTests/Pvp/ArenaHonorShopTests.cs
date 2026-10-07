@@ -146,6 +146,36 @@ public sealed class ArenaHonorShopTests(PostgresFixture postgres) : IAsyncLifeti
         Assert.Equal(100, offer.HonorPrice);
     }
 
+    [Fact]
+    public async Task BundledPvpT1OffersExposeAllThreeWarriorSetsWithoutSpecLock()
+    {
+        var (accountId, _) = await CreateCharacterAsync(level: 60, honor: 0);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+        await using GameDbContext db = postgres.CreateDbContext();
+        var service = new ArenaHonorShopService(
+            db,
+            new StaticContentSnapshotProvider(content),
+            new FixedTime(Now));
+
+        ArenaHonorShopOperationResult result = await service.GetAsync(accountId, default);
+
+        Assert.True(result.Succeeded);
+        ItemDefinition[] offers = result.Snapshot!.Items
+            .Where(item => item.Id.StartsWith("L60_PVP_T1_WARRIOR_", StringComparison.Ordinal))
+            .ToArray();
+
+        Assert.Equal(18, offers.Length);
+        Assert.Equal(3, offers.Select(item => item.SetId).Distinct(StringComparer.Ordinal).Count());
+        Assert.All(offers, item =>
+        {
+            Assert.True(item.HonorPrice > 0);
+            Assert.Equal("PVP_HONOR_BOUND", item.TradePolicyId);
+            Assert.Equal(["WARRIOR"], item.AllowedClassIds);
+        });
+    }
+
     private async Task<(Guid AccountId, Guid CharacterId)> CreateCharacterAsync(
         int level,
         long honor)
