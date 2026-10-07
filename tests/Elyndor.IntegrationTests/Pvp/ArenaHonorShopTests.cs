@@ -172,7 +172,8 @@ public sealed class ArenaHonorShopTests(PostgresFixture postgres) : IAsyncLifeti
         {
             Assert.True(item.HonorPrice > 0);
             Assert.Equal("PVP_HONOR_BOUND", item.TradePolicyId);
-            Assert.Equal(["WARRIOR"], item.AllowedClassIds);
+            Assert.Single(item.AllowedClassIds!);
+            Assert.Equal("WARRIOR", item.AllowedClassIds![0]);
         });
     }
 
