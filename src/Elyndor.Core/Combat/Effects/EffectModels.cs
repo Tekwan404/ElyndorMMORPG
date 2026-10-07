@@ -1,4 +1,5 @@
 using Elyndor.Core.Combat.Damage;
+using Elyndor.Core.Combat.Abilities;
 
 namespace Elyndor.Core.Combat.Effects;
 
@@ -17,7 +18,8 @@ public enum EffectKind
     Fear,
     Disarm,
     DamageReflection,
-    LethalDamagePrevention
+    LethalDamagePrevention,
+    TemporaryMaxHp
 }
 
 public enum EffectStackPolicy
@@ -72,6 +74,15 @@ public enum EffectStat
 }
 public enum EffectModifierMode { Flat, Percent, Multiplicative }
 
+public sealed record EffectEventActionDefinition(
+    CombatEventType Trigger,
+    AbilityActionDefinition Action,
+    string? AbilityId = null,
+    decimal ChancePercent = 100,
+    TimeSpan InternalCooldown = default,
+    decimal EventAmountPercent = 0,
+    bool UseBaseDamage = false);
+
 public sealed record EffectDefinition(
     string Id,
     EffectKind Kind,
@@ -93,7 +104,10 @@ public sealed record EffectDefinition(
     string? DisplayName = null,
     string? Description = null,
     string? IconId = null,
-    decimal ResourceCostPerAbsorbedDamage = 0);
+    decimal ResourceCostPerAbsorbedDamage = 0,
+    IReadOnlyList<EffectEventActionDefinition>? EventActions = null,
+    IReadOnlyList<EffectKind>? ControlImmunities = null,
+    bool HealByMaxHpIncrease = false);
 
 public sealed class ActiveEffect
 {

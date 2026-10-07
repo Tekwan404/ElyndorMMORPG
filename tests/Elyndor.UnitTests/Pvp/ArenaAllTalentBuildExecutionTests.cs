@@ -83,8 +83,10 @@ public sealed class ArenaAllTalentBuildExecutionTests(ITestOutputHelper output)
         };
         string[] known = (profile.StartingAbilityIds ?? []).Append(baseline)
             .Distinct(StringComparer.Ordinal).ToArray();
+        var available = known.Concat(talents.UnlockedAbilityIds).ToHashSet(StringComparer.Ordinal);
         string[] executableIds = known.Concat(talents.UnlockedAbilityIds)
             .Where(id => !ArenaCompanionCapability.RequiresCompanion(id))
+            .Where(id => classId != "WARRIOR" || GuardianTalentRuntimeCatalog.IsStandaloneAbility(id, available))
             .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
         counts.Abilities.UnionWith(executableIds);
         foreach (string abilityId in executableIds)
@@ -104,7 +106,8 @@ public sealed class ArenaAllTalentBuildExecutionTests(ITestOutputHelper output)
                 Assert.Equal(expectedHooks, first.EffectiveTalentModifiers.EventHooks);
                 Assert.Equal(expectedHooks, second.EffectiveTalentModifiers.EventHooks);
                 foreach (string unlocked in talents.UnlockedAbilityIds
-                             .Where(id => !ArenaCompanionCapability.RequiresCompanion(id)))
+                             .Where(id => !ArenaCompanionCapability.RequiresCompanion(id))
+                             .Where(id => classId != "WARRIOR" || GuardianTalentRuntimeCatalog.IsStandaloneAbility(id, available)))
                 {
                     Assert.True(first.Abilities.ContainsKey(unlocked), $"Assembler dropped {unlocked}.");
                     Assert.True(second.Abilities.ContainsKey(unlocked), $"Assembler dropped {unlocked}.");

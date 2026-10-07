@@ -1,0 +1,873 @@
+{
+  "contentVersion": "0.39.0",
+  "talentBranchReplacements": [
+    {
+      "treeId": "WARRIOR_TREE",
+      "branchId": "WARLORD",
+      "version": 1,
+      "nodes": [
+        {
+          "id": "W-1-1",
+          "iconId": "WARLORD_01",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Командный Голос",
+          "englishName": "Voice of Command",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Крики Командира расходуют на 5 / 10 / 15 ярости меньше.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                5,
+                10,
+                15
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-1-2",
+          "iconId": "WARLORD_02",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Вдохновляющее Присутствие",
+          "englishName": "Inspiring Presence",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Повышает силу атаки вам и живым союзникам в этом бою на 1% / 2% / 3%.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                1,
+                2,
+                3
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-1-3",
+          "iconId": "WARLORD_03",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Тактическая Подготовка",
+          "englishName": "Tactical Awareness",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Повышает вашу меткость на 2% / 4%.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "ACCURACY_PERCENT",
+              "values": [
+                2,
+                4
+              ]
+            }
+          ]
+        },
+        {
+          "id": "W-1-4",
+          "iconId": "WARLORD_04",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Военная Выправка",
+          "englishName": "Battle Formation",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Повышает сопротивление магии вам и живым союзникам в этом бою на 1% / 2% / 3%.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                1,
+                2,
+                3
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-2-1",
+          "iconId": "WARLORD_05",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Боевой Клич",
+          "englishName": "Battle Cry",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Боевой клич». На 20 сек. повышает силу атаки вам и живым союзникам в этом бою на 8%. Стоимость: 20 ярости. Не запускает общую перезарядку. Перезарядка: 60 сек.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "BATTLE_CRY",
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-2-2",
+          "iconId": "WARLORD_06",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Щит Товарища",
+          "englishName": "Comrade's Shield",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Когда прямой урон оставляет вам или союзнику менее 20% здоровья, с вероятностью 10% / 15% / 20% создаёт щит на 5 сек., поглощающий урон в размере 4% максимального здоровья получателя.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                10,
+                15,
+                20
+              ],
+              "secondaryValues": [
+                4,
+                4,
+                4
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-2-3",
+          "iconId": "WARLORD_07",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Сила Строя",
+          "englishName": "Formation Strength",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Повышает выносливость на 2% / 4% / 6%.",
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "STAMINA_PERCENT",
+              "values": [
+                2,
+                4,
+                6
+              ]
+            }
+          ],
+          "branchId": "WARLORD",
+          "version": 1
+        },
+        {
+          "id": "W-2-4",
+          "iconId": "WARLORD_08",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Единый Ритм",
+          "englishName": "Unified Rhythm",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "W-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Боевой клич также повышает меткость получателей на 2% / 4% на время своего действия.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                2,
+                4
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-3-1",
+          "iconId": "WARLORD_09",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Клич Стойкости",
+          "englishName": "Endurance Cry",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Клич стойкости». На 15 сек. увеличивает максимальное здоровье вам и живым союзникам в этом бою на 6%. Не восстанавливает здоровье. После окончания здоровье ограничивается обычным максимумом. Стоимость: 25 ярости. Не запускает общую перезарядку. Перезарядка: 90 сек.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "ENDURANCE_CRY",
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-3-2",
+          "iconId": "WARLORD_10",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Тактический Удар",
+          "englishName": "Tactical Strike",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Автоатаки участников группы с вероятностью 15% / 25% сокращают оставшуюся перезарядку одного случайного крика Командира на 2 / 4 сек.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                2,
+                4
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-3-3",
+          "iconId": "WARLORD_11",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Стяг Войны",
+          "englishName": "War Banner",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Знамя войны». На 30 сек. повышает шанс критического удара вам и живым союзникам в этом бою на 4 п.п. Пока знамя действует, убийство врага восстанавливает каждому 2% максимального боевого ресурса. Стоимость: 30 ярости. Не запускает общую перезарядку. Перезарядка: 120 сек.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "WAR_BANNER",
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-3-4",
+          "iconId": "WARLORD_12",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Знамя Единства",
+          "englishName": "Banner of Unity",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Пока действует ваше Знамя войны, Флаг победы или Боевой штандарт, получатели принимают на 1% / 2% / 3% меньше урона. Несколько ваших знамён не складывают этот бонус.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                1,
+                2,
+                3
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-4-1",
+          "iconId": "WARLORD_13",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Усиленный Клич",
+          "englishName": "Amplified Cry",
+          "maxRank": 3,
+          "prerequisites": [
+            {
+              "talentId": "W-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Боевой клич также повышает скорость атаки получателей на 3% / 5% / 8% на время своего действия.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                3,
+                5,
+                8
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-4-2",
+          "iconId": "WARLORD_14",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Клич Мести",
+          "englishName": "Cry of Vengeance",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Клич мести». На 10 сек. позволяет накапливать заряды мести при прямом уроне союзникам: не чаще раза в 0,5 сек., до 5 зарядов. Следующая ваша автоатака расходует все заряды и наносит на 35% больше урона за каждый. Ваш собственный урон заряды не даёт. Стоимость: 35 ярости. Не запускает общую перезарядку. Перезарядка: 30 сек.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "CRY_OF_VENGEANCE",
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-4-3",
+          "iconId": "WARLORD_15",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Железная Дисциплина",
+          "englishName": "Iron Discipline",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Повышает шанс уклонения вам и живым союзникам в этом бою на 1 / 2 / 3 п.п.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                1,
+                2,
+                3
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-4-4",
+          "iconId": "WARLORD_16",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Эхо Команды",
+          "englishName": "Echoing Command",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Положительные эффекты криков Командира действуют на 1 / 2 / 3 сек. дольше. Перезарядка не меняется.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                1,
+                2,
+                3
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-5-1",
+          "iconId": "WARLORD_17",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Флаг Победы",
+          "englishName": "Victory Flag",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Флаг победы». На 18 сек. повышает весь урон вам и живым союзникам в этом бою на 8%. Первые 4 сек. защищает от новых оглушений и немоты, но не снимает уже действующий контроль. Стоимость: 40 ярости. Не запускает общую перезарядку. Перезарядка: 180 сек.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "VICTORY_FLAG",
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-5-2",
+          "iconId": "WARLORD_18",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Неустрашимость",
+          "englishName": "Fearlessness",
+          "maxRank": 3,
+          "prerequisites": [
+            {
+              "talentId": "W-3-3",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Сокращает перезарядку Знамени войны, Флага победы и Боевого штандарта на 7 / 14 / 20 сек.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                7,
+                14,
+                20
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-5-3",
+          "iconId": "WARLORD_19",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Воля к Победе",
+          "englishName": "Will to Win",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Повышает количество ярости от ваших автоатак на 8% / 16% / 24%.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                8,
+                16,
+                24
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-5-4",
+          "iconId": "WARLORD_20",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Приказ Наступать",
+          "englishName": "Order to Advance",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "W-2-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Боевой клич также повышает шанс критического удара получателей на 2 / 4 п.п. на время своего действия.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                2,
+                4
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-6-1",
+          "iconId": "WARLORD_21",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Клич Исцеления",
+          "englishName": "Rally Cry",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Клич исцеления». Мгновенно восстанавливает вам и живым союзникам в этом бою по 6% их максимального здоровья. Лечение создаёт угрозу и не бывает критическим. Стоимость: 30 ярости. Не запускает общую перезарядку. Перезарядка: 120 сек.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "RALLY_CRY",
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-6-2",
+          "iconId": "WARLORD_22",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Знамя Стойкости",
+          "englishName": "Banner of Endurance",
+          "maxRank": 3,
+          "prerequisites": [
+            {
+              "talentId": "W-3-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Клич стойкости также повышает броню и сопротивление магии получателей на 3% / 5% / 8% на время своего действия.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                3,
+                5,
+                8
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-6-3",
+          "iconId": "WARLORD_23",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Полководец",
+          "englishName": "War Leader",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Каждый крик Командира даёт вам 10 ярости и снимает по одному отравлению с вас и одного случайного отравленного союзника в этом бою.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                10
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-6-4",
+          "iconId": "WARLORD_24",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Слаженное Снабжение",
+          "englishName": "Coordinated Supply",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Повышает восстановление боевых ресурсов от ваших талантов Командира на 10% / 20% / 30%. Не влияет на обычное восстановление ресурсов.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                10,
+                20,
+                30
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-7-1",
+          "iconId": "WARLORD_25",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Флаг Битвы",
+          "englishName": "Battle Standard",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Боевой штандарт». На 15 сек. ваши автоатаки и автоатаки живых союзников в этом бою получают 10% шанс нанести дополнительный физический удар в размере 25% урона автоатаки. Дополнительный удар не бывает критическим и не вызывает повторных срабатываний. Стоимость: 50 ярости. Не запускает общую перезарядку. Перезарядка: 150 сек.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "BATTLE_STANDARD",
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-7-2",
+          "iconId": "WARLORD_26",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Несломленный Строй",
+          "englishName": "Unbroken Formation",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Когда союзник погибает, повышает силу атаки вам и оставшимся живым союзникам на 6% / 10%, а шанс уклонения — на 4 / 7 п.п. на 10 сек.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                6,
+                10
+              ],
+              "secondaryValues": [
+                4,
+                7
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-7-3",
+          "iconId": "WARLORD_27",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Командный Ритм",
+          "englishName": "Command Rhythm",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Сокращает перезарядку всех криков Командира на 3 / 6 сек.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                3,
+                6
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-7-4",
+          "iconId": "WARLORD_28",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Стоять До Конца",
+          "englishName": "Hold the Line",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Вы и союзники со здоровьем ниже 25% получаете на 2% / 4% / 6% меньше урона. Бонус исчезает при восстановлении здоровья до 25% или выше.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                2,
+                4,
+                6
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-8-1",
+          "iconId": "WARLORD_29",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Легендарный Клич",
+          "englishName": "Legendary Cry",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "W-2-1",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "W-4-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Боевой клич также восстанавливает получателям 8% максимальной ярости или 6% максимальной маны либо энергии, в зависимости от их боевого ресурса.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                8
+              ],
+              "secondaryValues": [
+                6
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-8-2",
+          "iconId": "WARLORD_30",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Непобедимый Авангард",
+          "englishName": "Vanguard Unbroken",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "W-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Первые 2 сек. действия Флага победы получатели не могут погибнуть от урона: здоровье не опускается ниже 1.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                2
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-8-3",
+          "iconId": "WARLORD_31",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Ярость Командира",
+          "englishName": "Warlord's Rage",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Критические удары ваши и союзников дают вам 1 / 2 / 3 ярости. Периодический урон и дополнительные удары не вызывают этот эффект.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                1,
+                2,
+                3
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-8-4",
+          "iconId": "WARLORD_32",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Главнокомандующий",
+          "englishName": "Supreme Commander",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "W-3-3",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Применение Знамени войны, Флага победы или Боевого штандарта сокращает оставшуюся перезарядку всех ваших криков на 3 / 5 сек. Срабатывает не чаще раза в 20 сек.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                3,
+                5
+              ],
+              "internalCooldownSeconds": 20,
+              "runtimeStatus": "Supported"
+            }
+          ]
+        },
+        {
+          "id": "W-9-1",
+          "iconId": "WARLORD_33",
+          "tier": 9,
+          "requiredSpentPoints": 40,
+          "name": "ПОЛКОВОДЕЦ ЭЛИНДОРА",
+          "englishName": "WARLORD OF ELYNDOR",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Крики Командира действуют на 5 сек. дольше. Применение крика или знамени даёт вам и живым союзникам щит на 6 сек. в размере 4% максимального здоровья получателя. Клич исцеления дополнительно восстанавливает вам 20% максимальной ярости. Убийство врага вами или союзником сокращает оставшуюся перезарядку всех ваших криков на 1 сек., не чаще раза в секунду.",
+          "branchId": "WARLORD",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_PARTY_EVENT",
+              "values": [
+                4
+              ],
+              "secondaryValues": [
+                6
+              ],
+              "runtimeStatus": "Supported"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

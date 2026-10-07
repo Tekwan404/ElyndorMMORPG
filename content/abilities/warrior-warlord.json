@@ -1,0 +1,238 @@
+{
+  "contentVersion": "0.39.0",
+  "abilities": [
+    {
+      "id": "BATTLE_CRY",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 20,
+      "cooldown": "00:01:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_BATTLE_CRY",
+            "kind": "StatModifier",
+            "duration": "00:00:20",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.08,
+            "modifiedStat": "AttackPower",
+            "modifierMode": "Percent"
+          }
+        }
+      ],
+      "displayName": "Боевой клич",
+      "description": "На 20 сек. повышает силу атаки вам и живым союзникам в этом бою на 8%. Стоимость: 20 ярости. Не запускает общую перезарядку. Перезарядка: 60 сек.",
+      "iconId": "warrior-battle-cry"
+    },
+    {
+      "id": "BATTLE_STANDARD",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 50,
+      "cooldown": "00:02:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_BATTLE_STANDARD",
+            "kind": "Buff",
+            "duration": "00:00:15",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 1,
+            "eventActions": [
+              {
+                "trigger": "DamageDealt",
+                "abilityId": "AUTO_ATTACK",
+                "chancePercent": 10,
+                "eventAmountPercent": 25,
+                "useBaseDamage": true,
+                "action": {
+                  "type": "Damage",
+                  "damageType": "Physical",
+                  "canMiss": false,
+                  "canCrit": false,
+                  "canDodge": false
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "displayName": "Боевой штандарт",
+      "description": "На 15 сек. ваши автоатаки и автоатаки живых союзников в этом бою получают 10% шанс нанести дополнительный физический удар в размере 25% урона автоатаки. Дополнительный удар не бывает критическим и не вызывает повторных срабатываний. Стоимость: 50 ярости. Не запускает общую перезарядку. Перезарядка: 150 сек.",
+      "iconId": "warrior-battle-standard"
+    },
+    {
+      "id": "CRY_OF_VENGEANCE",
+      "runtimeParameters": {
+        "VENGEANCE_STACK_ICD_SECONDS": 0.5
+      },
+      "type": "Instant",
+      "targetType": "Self",
+      "resourceCost": 35,
+      "cooldown": "00:00:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_CRIT_OF_VENGEANCE",
+            "kind": "Buff",
+            "duration": "00:00:10",
+            "maxStacks": 5,
+            "stackPolicy": "Stack",
+            "magnitude": 0.35
+          }
+        }
+      ],
+      "displayName": "Клич мести",
+      "description": "На 10 сек. позволяет накапливать заряды мести при прямом уроне союзникам: не чаще раза в 0,5 сек., до 5 зарядов. Следующая ваша автоатака расходует все заряды и наносит на 35% больше урона за каждый. Ваш собственный урон заряды не даёт. Стоимость: 35 ярости. Не запускает общую перезарядку. Перезарядка: 30 сек.",
+      "iconId": "warrior-cry-of-vengeance"
+    },
+    {
+      "id": "ENDURANCE_CRY",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 25,
+      "cooldown": "00:01:30",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_ENDURANCE_CRY",
+            "kind": "TemporaryMaxHp",
+            "duration": "00:00:15",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 0.06,
+            "dispelCategory": "WARLORD"
+          }
+        }
+      ],
+      "displayName": "Клич стойкости",
+      "description": "На 15 сек. увеличивает максимальное здоровье вам и живым союзникам в этом бою на 6%. Не восстанавливает здоровье. После окончания здоровье ограничивается обычным максимумом. Стоимость: 25 ярости. Не запускает общую перезарядку. Перезарядка: 90 сек.",
+      "iconId": "warrior-endurance-cry"
+    },
+    {
+      "id": "RALLY_CRY",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 30,
+      "cooldown": "00:02:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "Healing",
+          "targetMaxHpPercent": 6,
+          "canMiss": false,
+          "canCrit": false,
+          "canDodge": false
+        }
+      ],
+      "displayName": "Клич исцеления",
+      "description": "Мгновенно восстанавливает вам и живым союзникам в этом бою по 6% их максимального здоровья. Лечение создаёт угрозу и не бывает критическим. Стоимость: 30 ярости. Не запускает общую перезарядку. Перезарядка: 120 сек.",
+      "iconId": "warrior-rally-cry"
+    },
+    {
+      "id": "VICTORY_FLAG",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 40,
+      "cooldown": "00:03:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_VICTORY_CONTROL_IMMUNITY",
+            "kind": "Buff",
+            "duration": "00:00:04",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 1,
+            "controlImmunities": [
+              "Stun",
+              "Silence"
+            ]
+          }
+        },
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_VICTORY_FLAG",
+            "kind": "StatModifier",
+            "duration": "00:00:18",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 1.08,
+            "modifiedStat": "OutgoingDamageMultiplier",
+            "modifierMode": "Multiplicative"
+          }
+        }
+      ],
+      "displayName": "Флаг победы",
+      "description": "На 18 сек. повышает весь урон вам и живым союзникам в этом бою на 8%. Первые 4 сек. защищает от новых оглушений и немоты, но не снимает уже действующий контроль. Стоимость: 40 ярости. Не запускает общую перезарядку. Перезарядка: 180 сек.",
+      "iconId": "warrior-victory-flag"
+    },
+    {
+      "id": "WAR_BANNER",
+      "type": "Instant",
+      "targetType": "SelfAndPartyMembersInCombat",
+      "resourceCost": 30,
+      "cooldown": "00:02:00",
+      "castTime": "00:00:00",
+      "usesGlobalCooldown": false,
+      "globalCooldownCategory": "None",
+      "isSpell": false,
+      "school": "PHYSICAL",
+      "actions": [
+        {
+          "type": "ApplyEffect",
+          "effect": {
+            "id": "WARLORD_WAR_BANNER",
+            "kind": "StatModifier",
+            "duration": "00:00:30",
+            "maxStacks": 1,
+            "stackPolicy": "Refresh",
+            "magnitude": 4,
+            "modifiedStat": "CriticalChance",
+            "modifierMode": "Flat"
+          }
+        }
+      ],
+      "displayName": "Знамя войны",
+      "description": "На 30 сек. повышает шанс критического удара вам и живым союзникам в этом бою на 4 п.п. Пока знамя действует, убийство врага восстанавливает каждому 2% максимального боевого ресурса. Стоимость: 30 ярости. Не запускает общую перезарядку. Перезарядка: 120 сек.",
+      "iconId": "warrior-war-banner"
+    }
+  ]
+}

@@ -1,0 +1,919 @@
+{
+  "contentVersion": "0.39.0",
+  "talentBranchReplacements": [
+    {
+      "treeId": "WARRIOR_TREE",
+      "branchId": "BERSERKER",
+      "version": 1,
+      "nodes": [
+        {
+          "id": "B-1-1",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Боевое Безумие",
+          "englishName": "Battle Frenzy",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Повышает силу атаки на 2% / 4% / 6% / 9%.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "ATTACK_POWER_PERCENT",
+              "values": [
+                2,
+                4,
+                6,
+                9
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_01"
+        },
+        {
+          "id": "B-1-2",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Кровожадность",
+          "englishName": "Bloodthirst",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "Убийство врага мгновенно восстанавливает 8 / 12 / 16 ярости.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ENEMY_KILLED",
+              "values": [
+                8,
+                12,
+                16
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_02"
+        },
+        {
+          "id": "B-1-3",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Острые Чувства",
+          "englishName": "Keen Senses",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Повышает меткость на 1,5% / 3% / 4,5% / 6%.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "ACCURACY_PERCENT",
+              "values": [
+                1.5,
+                3,
+                4.5,
+                6
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_03"
+        },
+        {
+          "id": "B-1-4",
+          "tier": 1,
+          "requiredSpentPoints": 0,
+          "name": "Звериная Сила",
+          "englishName": "Savage Strength",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Повышает силу на 3% / 6%.",
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "STRENGTH_PERCENT",
+              "values": [
+                3,
+                6
+              ]
+            }
+          ],
+          "branchId": "BERSERKER",
+          "version": 1,
+          "iconId": "BERSERKER_04"
+        },
+        {
+          "id": "B-2-1",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Ярость Крови",
+          "englishName": "Blood Rage",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "При здоровье ниже 50% повышает силу атаки на 7% / 12%, а скорость атаки — на 4% / 8%.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                7,
+                12
+              ],
+              "runtimeStatus": "Supported",
+              "secondaryValues": [
+                4,
+                8
+              ],
+              "threshold": 50
+            }
+          ],
+          "iconId": "BERSERKER_05"
+        },
+        {
+          "id": "B-2-2",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Дикий Удар",
+          "englishName": "Wild Strike",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Дикий удар». Наносит выбранному противнику физический урон в размере 135% силы атаки. Стоимость: 25 ярости. Перезарядка: 6 сек.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "WILD_STRIKE"
+            }
+          ],
+          "iconId": "BERSERKER_06"
+        },
+        {
+          "id": "B-2-3",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Неукротимость",
+          "englishName": "Unrelenting",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Повышает шанс критического удара на 1,5 / 3 / 4,5 / 6 п.п.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "CRITICAL_CHANCE_PERCENT",
+              "values": [
+                1.5,
+                3,
+                4.5,
+                6
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_07"
+        },
+        {
+          "id": "B-2-4",
+          "tier": 2,
+          "requiredSpentPoints": 5,
+          "name": "Разгон",
+          "englishName": "Momentum",
+          "maxRank": 3,
+          "prerequisites": [],
+          "description": "После расходования не менее 20 ярости одной способностью повышает скорость атаки на 2% / 4% / 6% на 3 сек. Повторное срабатывание обновляет длительность.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                2,
+                4,
+                6
+              ],
+              "runtimeStatus": "Supported",
+              "threshold": 20,
+              "durationSeconds": 3
+            }
+          ],
+          "iconId": "BERSERKER_08"
+        },
+        {
+          "id": "B-3-1",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Критический Инстинкт",
+          "englishName": "Critical Instinct",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Критический удар дополнительно даёт 4 / 8 ярости. Периодический урон и дополнительные удары не вызывают этот эффект.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                4,
+                8
+              ],
+              "internalCooldownSeconds": 1
+            }
+          ],
+          "iconId": "BERSERKER_09"
+        },
+        {
+          "id": "B-3-2",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Вихрь",
+          "englishName": "Whirlwind",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "B-2-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Открывает «Вихрь». Наносит всем живым противникам в бою физический урон в размере 70% силы атаки каждому. Стоимость: 35 ярости. Перезарядка: 10 сек.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "WHIRLWIND"
+            }
+          ],
+          "iconId": "BERSERKER_10"
+        },
+        {
+          "id": "B-3-3",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Пробивная Ярость",
+          "englishName": "Rending Fury",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Повышает пробивание брони на 2% / 4% / 6% / 9%.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "ARMOR_PENETRATION_PERCENT",
+              "values": [
+                2,
+                4,
+                6,
+                9
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_11"
+        },
+        {
+          "id": "B-3-4",
+          "tier": 3,
+          "requiredSpentPoints": 10,
+          "name": "Кровавый След",
+          "englishName": "Blood Trail",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "B-2-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Критическое попадание Дикого удара вызывает кровотечение на 4 сек.: каждую секунду наносит физический урон в размере 4% / 7% силы атаки.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                4,
+                7
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "WILD_STRIKE",
+              "durationSeconds": 4,
+              "tickIntervalSeconds": 1
+            }
+          ],
+          "iconId": "BERSERKER_12"
+        },
+        {
+          "id": "B-4-1",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Двойной Удар",
+          "englishName": "Double Strike",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Ваши автоатаки с вероятностью 15% наносят дополнительный физический удар в размере 45% обычного урона. Он не бывает критическим. Позволяет экипировать второе одноручное оружие.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_AUTO_ATTACK",
+              "values": [
+                45
+              ],
+              "runtimeStatus": "Supported",
+              "chancePercent": 15,
+              "internalCooldownSeconds": 2
+            },
+            {
+              "type": "EquipmentConditional",
+              "key": "EQUIPMENT_CONDITIONAL",
+              "values": [
+                1
+              ],
+              "targetId": "DUAL_WIELD_ONE_HAND_WEAPON",
+              "runtimeStatus": "Supported"
+            }
+          ],
+          "iconId": "BERSERKER_13"
+        },
+        {
+          "id": "B-4-2",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Мастер Вихря",
+          "englishName": "Whirlwind Mastery",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "B-3-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Повышает урон Вихря на 10% / 20% и сокращает его перезарядку на 1 / 2 сек.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "ABILITY_DAMAGE_PERCENT",
+              "values": [
+                10,
+                20
+              ],
+              "targetId": "WHIRLWIND"
+            },
+            {
+              "type": "AbilityModifier",
+              "key": "ABILITY_COOLDOWN_SECONDS",
+              "values": [
+                1,
+                2
+              ],
+              "targetId": "WHIRLWIND"
+            }
+          ],
+          "iconId": "BERSERKER_14"
+        },
+        {
+          "id": "B-4-3",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Пронизывающий Удар",
+          "englishName": "Piercing Blow",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "B-2-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Дикий удар дополнительно игнорирует 8% / 15% брони цели.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "ABILITY_ARMOR_PENETRATION_PERCENT",
+              "values": [
+                8,
+                15
+              ],
+              "targetId": "WILD_STRIKE"
+            }
+          ],
+          "iconId": "BERSERKER_15"
+        },
+        {
+          "id": "B-4-4",
+          "tier": 4,
+          "requiredSpentPoints": 15,
+          "name": "Безрассудство",
+          "englishName": "Recklessness",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "При здоровье ниже 50% повышает наносимый физический урон на 2% / 4%, а весь получаемый урон — на 1% / 2%.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                2,
+                4
+              ],
+              "runtimeStatus": "Supported",
+              "secondaryValues": [
+                1,
+                2
+              ],
+              "threshold": 50
+            }
+          ],
+          "iconId": "BERSERKER_16"
+        },
+        {
+          "id": "B-5-1",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Берсерк",
+          "englishName": "Berserk",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Открывает «Берсерк». На 8 сек. повышает скорость атаки на 25%, силу атаки на 15% и шанс критического удара на 8 п.п. Блок щитом, Бастион и Последний рубеж недоступны во время действия. Стоимость: 50 ярости. Не запускает общую перезарядку. Перезарядка: 120 сек.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "UNLOCK_ABILITY",
+              "values": [
+                1
+              ],
+              "targetId": "BERSERK"
+            }
+          ],
+          "iconId": "BERSERKER_17"
+        },
+        {
+          "id": "B-5-2",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Адреналин",
+          "englishName": "Adrenaline",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "Постоянно повышает скорость атаки на 1,5% / 3% / 4,5% / 6%.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "ATTACK_SPEED_PERCENT",
+              "values": [
+                1.5,
+                3,
+                4.5,
+                6
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_18"
+        },
+        {
+          "id": "B-5-3",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Смертельный Критик",
+          "englishName": "Lethal Crits",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Повышает дополнительный урон критических ударов на 8 / 15 п.п.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "CRITICAL_DAMAGE_PERCENT",
+              "values": [
+                8,
+                15
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_19"
+        },
+        {
+          "id": "B-5-4",
+          "tier": 5,
+          "requiredSpentPoints": 20,
+          "name": "Неистовство",
+          "englishName": "Frenzy",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "B-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Во время Берсерка атакующие способности расходуют на 10% / 20% меньше ярости.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                10,
+                20
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "BERSERK"
+            }
+          ],
+          "iconId": "BERSERKER_20"
+        },
+        {
+          "id": "B-6-1",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Жажда Крови",
+          "englishName": "Blood Hunger",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Восстанавливает здоровье в размере 2% / 4% физического урона, снявшего здоровье противника.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "VAMPIRISM_PERCENT",
+              "values": [
+                2,
+                4
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_21"
+        },
+        {
+          "id": "B-6-2",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Разрушительный Критик",
+          "englishName": "Devastating Blow",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Критическая автоатака делает цель уязвимой на 8 сек.: ваш физический урон по ней повышается на 5%.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                5
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "AUTO_ATTACK",
+              "durationSeconds": 8
+            }
+          ],
+          "iconId": "BERSERKER_22"
+        },
+        {
+          "id": "B-6-3",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Боевой Транс",
+          "englishName": "Battle Trance",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "B-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Во время Берсерка получение прямого урона дополнительно даёт 3 / 5 ярости.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_DAMAGE_TAKEN",
+              "values": [
+                3,
+                5
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "BERSERK"
+            }
+          ],
+          "iconId": "BERSERKER_23"
+        },
+        {
+          "id": "B-6-4",
+          "tier": 6,
+          "requiredSpentPoints": 25,
+          "name": "Кровавая Инерция",
+          "englishName": "Blood Momentum",
+          "maxRank": 3,
+          "prerequisites": [
+            {
+              "talentId": "B-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Пока Берсерк не действует, критический удар сокращает его оставшуюся перезарядку на 1 / 2 / 3 сек. Срабатывает не чаще раза в 3 сек.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                1,
+                2,
+                3
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "BERSERK",
+              "internalCooldownSeconds": 3
+            }
+          ],
+          "iconId": "BERSERKER_24"
+        },
+        {
+          "id": "B-7-1",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Неостановимая Сила",
+          "englishName": "Unstoppable Force",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "B-5-1",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "B-4-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Во время Берсерка каждая автоатака наносит дополнительный физический удар в размере 30% обычного урона. Этот удар заменяет дополнительный удар таланта Двойной удар и не бывает критическим.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_AUTO_ATTACK",
+              "values": [
+                30
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "BERSERK",
+              "chancePercent": 100
+            }
+          ],
+          "iconId": "BERSERKER_25"
+        },
+        {
+          "id": "B-7-2",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Сила Смерти",
+          "englishName": "Death's Strength",
+          "maxRank": 4,
+          "prerequisites": [],
+          "description": "При здоровье ниже 25% повышает шанс критического удара на 3 / 6 / 9 / 12 п.п.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                3,
+                6,
+                9,
+                12
+              ],
+              "runtimeStatus": "Supported",
+              "threshold": 25
+            }
+          ],
+          "iconId": "BERSERKER_26"
+        },
+        {
+          "id": "B-7-3",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Пронизывающая Ярость",
+          "englishName": "Rending Rampage",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "B-3-2",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Вихрь вызывает кровотечение у поражённых целей на 6 сек.: каждую секунду наносит физический урон в размере 5% / 8% силы атаки.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                5,
+                8
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "WHIRLWIND",
+              "durationSeconds": 6,
+              "tickIntervalSeconds": 1
+            }
+          ],
+          "iconId": "BERSERKER_27"
+        },
+        {
+          "id": "B-7-4",
+          "tier": 7,
+          "requiredSpentPoints": 30,
+          "name": "Палач",
+          "englishName": "Executioner",
+          "maxRank": 2,
+          "prerequisites": [],
+          "description": "Повышает физический урон по целям со здоровьем ниже 20% на 5% / 10%.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                5,
+                10
+              ],
+              "runtimeStatus": "Supported",
+              "threshold": 20
+            }
+          ],
+          "iconId": "BERSERKER_28"
+        },
+        {
+          "id": "B-8-1",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Смертельный Вихрь",
+          "englishName": "Death Whirlwind",
+          "maxRank": 1,
+          "prerequisites": [
+            {
+              "talentId": "B-4-2",
+              "requiredRank": 1
+            },
+            {
+              "talentId": "B-7-3",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Вихрь дополнительно наносит чистый урон в размере 15% своего физического урона до поглощения щитами.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_ABILITY_USED",
+              "values": [
+                15
+              ],
+              "runtimeStatus": "Supported",
+              "targetId": "WHIRLWIND"
+            }
+          ],
+          "iconId": "BERSERKER_29"
+        },
+        {
+          "id": "B-8-2",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Агония Берсерка",
+          "englishName": "Berserker's Agony",
+          "maxRank": 2,
+          "prerequisites": [
+            {
+              "talentId": "B-5-1",
+              "requiredRank": 1
+            }
+          ],
+          "description": "Сокращает перезарядку Берсерка на 15 / 30 сек. Во время Берсерка убийство врага сбрасывает перезарядку Дикого удара.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "AbilityModifier",
+              "key": "ABILITY_COOLDOWN_SECONDS",
+              "values": [
+                15,
+                30
+              ],
+              "targetId": "BERSERK"
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_ENEMY_KILLED",
+              "values": [
+                1,
+                1
+              ],
+              "targetId": "WILD_STRIKE",
+              "runtimeStatus": "Supported"
+            }
+          ],
+          "iconId": "BERSERKER_30"
+        },
+        {
+          "id": "B-8-3",
+          "tier": 8,
+          "requiredSpentPoints": 35,
+          "name": "Последний Вздох",
+          "englishName": "Death's Embrace",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Один раз за бой, когда здоровье опускается ниже 10%, следующая автоатака наносит удвоенный урон и гарантированно становится критической.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "EventTriggered",
+              "key": "ON_HP_THRESHOLD",
+              "values": [
+                200
+              ],
+              "runtimeStatus": "Supported",
+              "threshold": 10
+            }
+          ],
+          "iconId": "BERSERKER_31"
+        },
+        {
+          "id": "B-9-1",
+          "tier": 9,
+          "requiredSpentPoints": 40,
+          "name": "ВОПЛОЩЕНИЕ ЯРОСТИ",
+          "englishName": "AVATAR OF RAGE",
+          "maxRank": 1,
+          "prerequisites": [],
+          "description": "Постоянно повышает силу атаки на 10%. Берсерк длится на 4 сек. дольше; его можно активировать под оглушением и немотой, снимая их. Ваши критические удары с вероятностью 20% дают 10 ярости. Убийство врага во время Берсерка сокращает его оставшуюся перезарядку на 15 сек.",
+          "branchId": "BERSERKER",
+          "version": 1,
+          "modifiers": [
+            {
+              "type": "StatModifier",
+              "key": "ATTACK_POWER_PERCENT",
+              "values": [
+                10
+              ]
+            },
+            {
+              "type": "AbilityModifier",
+              "key": "EFFECT_DURATION_SECONDS",
+              "values": [
+                4
+              ],
+              "targetId": "BERSERK"
+            },
+            {
+              "type": "EventTriggered",
+              "key": "ON_CRITICAL_HIT",
+              "values": [
+                10
+              ],
+              "runtimeStatus": "Supported",
+              "chancePercent": 20,
+              "secondaryValues": [
+                15
+              ]
+            }
+          ],
+          "iconId": "BERSERKER_32"
+        }
+      ]
+    }
+  ]
+}

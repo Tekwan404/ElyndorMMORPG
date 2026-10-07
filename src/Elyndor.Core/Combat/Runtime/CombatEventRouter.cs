@@ -66,6 +66,7 @@ internal sealed class CombatEventRouter(
         if (hosted)
             DispatchPaladin(combatEvent);
         _runProcHooks(combatEvent, "sets", () => React(CombatReaction.SetPassives, combatEvent));
+        _runProcHooks(combatEvent, "active-effects", () => React(CombatReaction.ActiveEffects, combatEvent));
         React(CombatReaction.EventThreat, combatEvent);
         _runProcHooks(combatEvent, "class-talents", () => DispatchTalentReactions(combatEvent));
         if (combatEvent.Type == CombatEventType.DamageBlocked)
@@ -136,6 +137,11 @@ internal sealed class CombatEventRouter(
             React(CombatReaction.GuardianAutoAttack, combatEvent);
         }
 
+        // A fully absorbed or blocked hit still landed; avoidance produces no DamageDealt event.
+        if (combatEvent.Type == CombatEventType.DamageDealt
+            && combatEvent.SourceActorId == _context().OwnerActorId)
+            React(CombatReaction.GuardianSuccessfulHit, combatEvent);
+
         if (combatEvent.Type == CombatEventType.ShieldAbsorbed
             && combatEvent.TargetActorId == _context().OwnerActorId)
         {
@@ -158,6 +164,7 @@ internal sealed class CombatEventRouter(
             React(CombatReaction.PyromancerCritical, combatEvent);
             React(CombatReaction.MageCritical, combatEvent);
             React(CombatReaction.ArcherCritical, combatEvent);
+            React(CombatReaction.WarlordPartyCritical, combatEvent);
         }
 
         if (combatEvent.Type == CombatEventType.CriticalHit
@@ -196,6 +203,8 @@ internal readonly record struct CombatReactionContext(
 
 internal enum CombatReaction
 {
+    ActiveEffects,
+    GuardianSuccessfulHit,
     Paladin,
     SetPassives,
     EventThreat,

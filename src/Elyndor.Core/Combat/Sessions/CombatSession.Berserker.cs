@@ -165,7 +165,7 @@ public sealed partial class CombatSession
                     1,
                     EffectStackPolicy.Refresh,
                     tickDamage,
-                    bloodTrail.TickInterval),
+                    bloodTrail.TickInterval, PeriodicDamageType: DamageType.Physical),
                 now);
         }
 
@@ -252,6 +252,9 @@ public sealed partial class CombatSession
         {
             _playerRuntime.Cooldowns.Remove("WILD_STRIKE");
         }
+        if (IsBerserkActive(now) && TryGetBerserkerHook("B-9-1", out ResolvedTalentEventHook avatar)
+            && avatar.SecondaryValue > 0)
+            ReduceCooldown(_playerRuntime, "BERSERK", TimeSpan.FromSeconds((double)avatar.SecondaryValue), now);
     }
 
     private void ResolvePlayerAutoAttack(
@@ -297,7 +300,7 @@ public sealed partial class CombatSession
                 baseDamage,
                 DamageType.Physical,
                 DamageMultiplier: deathsEmbraceMultiplier
-                    * ResolveWarlordVengeanceMultiplier()
+                    * ResolveWarlordVengeanceMultiplier(now)
                     * BerserkerTargetPhysicalDamageMultiplier(target.Actor)
                     * archerModifier.DamageMultiplier
                     * paladinModifier.DamageMultiplier,
@@ -369,18 +372,6 @@ public sealed partial class CombatSession
             StartTalentCooldown(doubleStrike, now);
         }
 
-        if (_player.Actor.ActiveEffects.Any(effect =>
-                effect.Definition.Id == WarlordBattleStandardEffectId)
-            && _random.NextUnit() < 0.10m)
-        {
-            ResolveSecondaryAutoAttack(
-                target,
-                profile,
-                baseDamage,
-                0.25m,
-                "W-7-1",
-                now);
-        }
     }
 
     private void ResolveSecondaryAutoAttack(
@@ -504,7 +495,7 @@ public sealed partial class CombatSession
                     1,
                     EffectStackPolicy.Refresh,
                     tickDamage,
-                    rending.TickInterval),
+                    rending.TickInterval, PeriodicDamageType: DamageType.Physical),
                 now);
             if (Status != CombatSessionStatus.Active)
                 return;

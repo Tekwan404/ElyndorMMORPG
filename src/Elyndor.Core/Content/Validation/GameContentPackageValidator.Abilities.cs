@@ -45,6 +45,7 @@ public static partial class GameContentPackageValidator
                     || periodic != effect.TickInterval.HasValue
                     || effect.TickInterval <= TimeSpan.Zero
                     || invalidReflection
+                    || !EffectEngine.IsValidDefinition(effect)
                     || invalidExpirationAction)
                 {
                     errors.Add(new ContentValidationError(
@@ -88,6 +89,8 @@ public static partial class GameContentPackageValidator
                         || action.ArmorPenetrationBonus < 0
                         || action.Delay is { } delay && delay < TimeSpan.Zero
                         || action.LifestealPercent < 0
+                        || action.TargetMaxHpPercent < 0 || action.TargetMaxHpPercent > 100
+                        || action.Type != AbilityActionType.Healing && action.TargetMaxHpPercent != 0
                         || action.Type != AbilityActionType.Damage && action.LifestealPercent != 0
                         || action.Type == AbilityActionType.AddThreat && action.Amount <= 0
                         || action.Type == AbilityActionType.DropThreatPercent
@@ -103,6 +106,7 @@ public static partial class GameContentPackageValidator
                                 || action.Duration is null
                                 || action.Duration <= TimeSpan.Zero)
                         || action.Type == AbilityActionType.ApplyEffect && action.Effect is null
+                        || action.Effect is { } effect && !EffectEngine.IsValidDefinition(effect)
                         || action.Type != AbilityActionType.ApplyEffect && action.Effect is not null
                         || action.Type == AbilityActionType.Taunt && action.Duration <= TimeSpan.Zero
                         || action.Type == AbilityActionType.Interrupt

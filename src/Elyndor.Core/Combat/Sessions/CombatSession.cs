@@ -407,8 +407,14 @@ public sealed partial class CombatSession
         _nextCompanionAutoAttackAtUtc = companion is not null && companion.CanAutoAttack
             ? startedAtUtc + companion.AutoAttack.Interval
             : null;
-        ApplyGuardianStartingEffects(startedAtUtc);
-        ApplyWarlordPassiveEffects(startedAtUtc);
+        CombatPlayerRuntimeState initialPlayer = _activePlayerState;
+        foreach (CombatPlayerRuntimeState state in _playerStatesByActorId.Values.ToArray())
+        {
+            _activePlayerState = state;
+            ApplyGuardianStartingEffects(startedAtUtc);
+            ApplyWarlordPassiveEffects(startedAtUtc);
+        }
+        _activePlayerState = initialPlayer;
         InitializePlayerLoadoutMechanics(startedAtUtc);
         Append(new CombatEvent(
             CombatEventType.CombatStarted,
@@ -696,6 +702,7 @@ public sealed partial class CombatSession
         }
 
         _contributionLedger.MarkFled(_player.Actor.ActorId, now);
+        SyncWarlordConditionalEffects(now);
         if (!_participantRoster.HasActiveParticipants())
         {
             Status = CombatSessionStatus.Defeat;
@@ -1611,6 +1618,7 @@ public sealed partial class CombatSession
                 SourceActorId: enemyActorId,
                 TargetActorId: targetIds[0]));
             SyncArcherConditionalEffects(now);
+            SyncWarlordConditionalEffects(now);
             if (Status != CombatSessionStatus.Active || enemy.Actor.IsDead)
             {
                 aiRuntime.NextActionAtUtc = null;
@@ -1908,9 +1916,7 @@ public sealed partial class CombatSession
                 : null;
         if (source is null || source.IsDead || target.IsDead) return [];
 
-        DamageType type = effect.Definition.Id is "BERSERKER_BLOOD_TRAIL" or "BERSERKER_RENDING_RAMPAGE"
-            ? DamageType.Physical
-            : effect.Definition.PeriodicDamageType;
+        DamageType type = effect.Definition.PeriodicDamageType;
         DamageResult result = DamagePipeline.Resolve(
             new DamageRequest(
                 source,
@@ -1983,6 +1989,7 @@ public sealed partial class CombatSession
                     normalized.OccurredAtUtc);
             }
             EventRouter.Dispatch(normalized);
+            ObserveWarlordPartyEvent(normalized);
             if (normalized.Type == CombatEventType.ActorDied)
             {
                 FinishForDeath(
@@ -2148,6 +2155,8 @@ public sealed partial class CombatSession
             if (!deadPlayer.Definition.Actor.IsDead)
                 return;
             _participantRoster.TryMarkDead(death.ActorId, death.OccurredAtUtc);
+            SyncWarlordConditionalEffects(death.OccurredAtUtc);
+            ForEachOtherWarlord(() => ApplyWarlordPartyDeathHooks(death.OccurredAtUtc, death.ActorId));
             deadPlayer.AutoAttackEnabled = false;
             deadPlayer.NextMainHandAutoAttackAtUtc = null;
             deadPlayer.NextOffHandAutoAttackAtUtc = null;
@@ -2267,6 +2276,8 @@ public sealed partial class CombatSession
             ActivatePlayer(participant.CharacterId);
             SyncBerserkerConditionalEffects(now);
             SyncArcherConditionalEffects(now);
+            SyncGuardianConditionalEffects(now);
+            SyncWarlordConditionalEffects(now);
         }
     }
 

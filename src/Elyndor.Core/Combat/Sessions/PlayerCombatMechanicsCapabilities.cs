@@ -7,7 +7,7 @@ internal static class PlayerCombatMechanicsCapabilities
 {
     internal static bool HasClassAbilityHandler(string id, string classId) =>
         HasClassAbilityHandler(id) && classId == (id.StartsWith("MAGE_", StringComparison.Ordinal)
-            ? "MAGE" : id == "CHALLENGING_SHOUT" ? "WARRIOR" : "ARCHER");
+            ? "MAGE" : id is "CHALLENGING_SHOUT" or "CRY_OF_VENGEANCE" ? "WARRIOR" : "ARCHER");
 
     internal static bool HasClassAbilityHandler(string id) => id is
         "MAGE_COMBUSTION" or "MAGE_MANA_SHIELD" or "MAGE_COUNTERSPELL" or "MAGE_PRESENCE_OF_MIND"
@@ -17,7 +17,7 @@ internal static class PlayerCombatMechanicsCapabilities
         or "SNIPER_FOCUS" or "HEAVY_ARROW" or "SERPENT_STING"
         or "FREEZING_TRAP" or "IMMOLATION_TRAP" or "EXPLOSIVE_TRAP"
         or "DETERRENCE" or "WYVERN_STING" or "PREPARATION"
-        or "CHALLENGING_SHOUT";
+        or "CHALLENGING_SHOUT" or "CRY_OF_VENGEANCE";
 
     internal static bool SupportsHook(string classId, ResolvedTalentEventHook hook)
     {

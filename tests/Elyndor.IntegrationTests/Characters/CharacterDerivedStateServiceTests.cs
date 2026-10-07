@@ -159,8 +159,9 @@ public sealed class CharacterDerivedStateServiceTests(PostgresFixture postgres) 
             characterId, "WARRIOR", 60, CancellationToken.None);
 
         Assert.Contains("WILD_STRIKE", resolved.KnownAbilityIds);
-        Assert.DoesNotContain("STRIKE", resolved.KnownAbilityIds);
-        Assert.DoesNotContain("HEAVY_BLOW", resolved.KnownAbilityIds);
+        Assert.Contains("STRIKE", resolved.KnownAbilityIds);
+        Assert.Contains("BATTLE_SHOUT", resolved.KnownAbilityIds);
+        Assert.Contains("HEAVY_BLOW", resolved.KnownAbilityIds);
     }
 
     [Fact]

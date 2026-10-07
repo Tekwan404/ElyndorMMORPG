@@ -2,6 +2,9 @@ namespace Elyndor.Core.Talents;
 
 public static class GuardianTalentRuntimeCatalog
 {
+    public static bool IsStandaloneAbility(string abilityId, IReadOnlySet<string> knownAbilityIds) =>
+        abilityId != "SUNDER_ARMOR" || !knownAbilityIds.Contains("SHIELD_SLAM");
+
     private static readonly IReadOnlyDictionary<string, IReadOnlySet<string>> RuntimeKeys =
         new Dictionary<string, IReadOnlySet<string>>(StringComparer.Ordinal)
         {

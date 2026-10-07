@@ -326,7 +326,7 @@ public static class DamagePipeline
             DamageAfterMitigation: roundedAfterMitigation,
             DamageBeforeBlock: rounded,
             IsUnblockable: request.IsUnblockable,
-            IsCritical: critical));
+            IsCritical: critical) { BaseDamage = request.BaseAmount });
         if (vampirismHealing > 0)
         {
             events.Add(new CombatEvent(

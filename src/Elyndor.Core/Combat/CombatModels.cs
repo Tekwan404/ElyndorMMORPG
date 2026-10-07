@@ -128,16 +128,20 @@ public sealed class CombatActorState
     public void SetTemporaryMaxHpPercentBonus(
         string sourceId,
         decimal percent,
-        bool healByIncrease)
+        bool healByIncrease,
+        IReadOnlyList<string>? replacedSources = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceId);
         decimal previousMaxHp = MaxHp;
+        foreach (string replaced in replacedSources ?? [])
+            _temporaryMaxHpPercentBonuses.Remove(replaced);
         _temporaryMaxHpPercentBonuses[sourceId] = Math.Max(0, percent);
         RecalculateMaxHp();
         if (healByIncrease && MaxHp > previousMaxHp)
         {
             CurrentHp = ClampHp(CurrentHp + MaxHp - previousMaxHp);
         }
+        CurrentHp = ClampHp(CurrentHp);
     }
 
     public void RemoveTemporaryMaxHpPercentBonus(string sourceId)
@@ -270,4 +274,5 @@ public sealed record CombatEvent(
 {
     // Preserved by record copies and event adapters, not exposed in transport DTOs.
     internal object ProcDispatchToken { get; init; } = new();
+    public decimal BaseDamage { get; init; }
 }
