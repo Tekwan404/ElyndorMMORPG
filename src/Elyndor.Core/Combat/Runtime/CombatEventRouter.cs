@@ -66,6 +66,7 @@ internal sealed class CombatEventRouter(
         if (hosted)
             DispatchPaladin(combatEvent);
         _runProcHooks(combatEvent, "sets", () => React(CombatReaction.SetPassives, combatEvent));
+        _runProcHooks(combatEvent, "item-special-effects", () => React(CombatReaction.ItemSpecialEffects, combatEvent));
         _runProcHooks(combatEvent, "active-effects", () => React(CombatReaction.ActiveEffects, combatEvent));
         React(CombatReaction.EventThreat, combatEvent);
         _runProcHooks(combatEvent, "class-talents", () => DispatchTalentReactions(combatEvent));
@@ -207,6 +208,7 @@ internal enum CombatReaction
     GuardianSuccessfulHit,
     Paladin,
     SetPassives,
+    ItemSpecialEffects,
     EventThreat,
     GuardianBlock,
     GenericAbilityUsed,
