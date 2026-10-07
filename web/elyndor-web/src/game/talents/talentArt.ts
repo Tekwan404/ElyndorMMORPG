@@ -41,6 +41,8 @@ for (const [path, url] of Object.entries(generatedTalentArtModules)) {
 
 const abilityArt: Readonly<Record<string, string>> = {
   ...talentAbilityArt,
+  QUICK_SHOT: 'MARKSMAN_01',
+  COMMAND_ATTACK: 'BEAST_MASTERY_13',
   BERSERK: 'BERSERKER_WAR_MASK',
   WHIRLWIND: 'BERSERKER_BLOOD_BLADES',
   WILD_STRIKE: 'BERSERKER_RAGE_SLASH',

@@ -50,7 +50,7 @@ armorPenetration += ArcherRuntimeParameter(
 }
 if (TryGetArcherHook(
 "M-5-2",
-"BOW_DAMAGE",
+"BOW_PHYSICAL_DAMAGE",
 out ResolvedTalentEventHook bowDamage))
 {
 multiplier *= 1 + bowDamage.Value / 100m;
@@ -129,7 +129,7 @@ criticalChanceBonus += masterCrit.Value;
 if (IsSharedTarget(target.Actor.ActorId, now)
 && TryGetArcherHook(
 "B-3-2",
-"JOINT_HUNT",
+"SHARED_TARGET_DAMAGE",
 out ResolvedTalentEventHook joint))
 {
 multiplier *= 1 + joint.Value / 100m;

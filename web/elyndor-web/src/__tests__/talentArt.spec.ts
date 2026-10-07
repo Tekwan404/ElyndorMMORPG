@@ -42,7 +42,7 @@ describe('talent art registry', () => {
     )
   })
 
-  it('matches Archer spell art to its unlocking talent and keeps talent text readable', () => {
+  it('matches talent-unlocked Archer ability art and covers the starting kit', () => {
     const contentRoot = resolve(process.cwd(), '../../content')
     const talentTree = JSON.parse(
       readFileSync(resolve(contentRoot, 'talents/archer.json'), 'utf8').replace(/^\uFEFF/, ''),
@@ -50,6 +50,12 @@ describe('talent art registry', () => {
     const abilities = JSON.parse(
       readFileSync(resolve(contentRoot, 'abilities/archer.json'), 'utf8').replace(/^\uFEFF/, ''),
     ) as { abilities: Array<{ id: string }> }
+    const classes = JSON.parse(
+      readFileSync(resolve(contentRoot, 'classes/archer.json'), 'utf8').replace(/^\uFEFF/, ''),
+    ) as { classProfiles: Array<{ id: string; startingAbilityIds: string[] }> }
+    const archerClass = classes.classProfiles.find(profile => profile.id === 'ARCHER')
+    expect(archerClass).toBeTruthy()
+    const startingAbilityIds = new Set(archerClass?.startingAbilityIds ?? [])
     const iconByAbility = new Map<string, string>()
 
     for (const node of talentTree.talentTrees.flatMap(tree => tree.nodes)) {
@@ -60,9 +66,23 @@ describe('talent art registry', () => {
       }
     }
 
-    for (const ability of abilities.abilities) {
-      expect(resolveAbilityArt(ability.id)).toBe(resolveTalentArt(iconByAbility.get(ability.id)))
-    }
+    const talentUnlockedAbilities = abilities.abilities.filter(ability =>
+      iconByAbility.has(ability.id),
+    )
+    const nonTalentAbilities = abilities.abilities.filter(ability =>
+      !iconByAbility.has(ability.id),
+    )
+
+    expect(
+      talentUnlockedAbilities.every(ability =>
+        resolveAbilityArt(ability.id) === resolveTalentArt(iconByAbility.get(ability.id)),
+      ),
+    ).toBe(true)
+    expect(nonTalentAbilities.map(ability => ability.id).sort()).toEqual(
+      [...startingAbilityIds].sort(),
+    )
+    expect(nonTalentAbilities.every(ability => Boolean(resolveAbilityArt(ability.id)))).toBe(true)
+    expect([...startingAbilityIds].sort()).toEqual(['COMMAND_ATTACK', 'QUICK_SHOT'])
 
     const archerNodes = talentTree.talentTrees.flatMap(tree => tree.nodes)
     expect(archerNodes.every(node => !/[�]/.test(node.name + node.description))).toBe(true)

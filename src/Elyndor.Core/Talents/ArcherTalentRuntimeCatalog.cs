@@ -26,6 +26,7 @@ new(StringComparer.Ordinal)
 ["B-1-2"] = Keys(TalentModifierKeys.OnPartyEvent),
 ["B-1-3"] = Keys(TalentModifierKeys.OnAutoAttack),
 ["B-1-4"] = Keys(TalentModifierKeys.OnPartyEvent),
+["B-2-1"] = Keys(TalentModifierKeys.OnAbilityUsed),
 ["B-2-2"] = Keys(TalentModifierKeys.OnPartyEvent),
 ["B-2-3"] = Keys(TalentModifierKeys.OnPartyEvent),
 ["B-3-1"] = Keys(TalentModifierKeys.OnAbilityUsed),

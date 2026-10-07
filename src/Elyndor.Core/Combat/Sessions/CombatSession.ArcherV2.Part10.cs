@@ -80,7 +80,7 @@ decimal multiplier = 1;
 if (IsSharedTarget(target.ActorId, now)
 && TryGetArcherHook(
 "B-3-2",
-"JOINT_HUNT",
+"SHARED_TARGET_DAMAGE",
 out ResolvedTalentEventHook joint))
 {
 multiplier *= 1 + joint.Value / 100m;
@@ -102,7 +102,7 @@ DateTimeOffset now)
 _archerShotSequence++;
 if (TryGetArcherHook(
 "M-4-4",
-"COMBAT_RHYTHM",
+"PHYSICAL_SHOT_RHYTHM",
 out ResolvedTalentEventHook rhythm)
 && _archerShotSequence % Math.Max(1, rhythm.TriggerCount) == 0)
 {
