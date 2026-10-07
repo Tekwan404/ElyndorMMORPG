@@ -144,7 +144,6 @@ EffectEngine.RemoveByKind(
 _player.Actor,
 EffectKind.Silence,
 now));
-_playerRuntime.Cooldowns.Remove("FREEZING_TRAP");
 }
 }
 }

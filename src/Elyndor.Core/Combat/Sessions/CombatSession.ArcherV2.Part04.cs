@@ -14,7 +14,7 @@ _playerRuntime.Cooldowns.Remove("EXPLOSIVE_TRAP");
 _survivalPreparationArmed =
 TryGetArcherHook(
 "S-9-1",
-"SURVIVAL_MASTER_TRAPS",
+"SURVIVAL_MASTER_PREPARATION",
 out _);
 }
 private void OnTrapTriggered(
@@ -124,7 +124,7 @@ now);
 if (_survivalPreparationArmed
 && TryGetArcherHook(
 "S-9-1",
-"SURVIVAL_MASTER_TRAPS",
+"SURVIVAL_MASTER_PREPARATION",
 out ResolvedTalentEventHook master))
 {
 _survivalPreparationArmed = false;

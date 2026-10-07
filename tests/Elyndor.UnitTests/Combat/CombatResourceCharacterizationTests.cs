@@ -415,7 +415,7 @@ public sealed class CombatResourceCharacterizationTests
             RuntimeParameters = new Dictionary<string, decimal> { ["normalStunSeconds"] = 3 }
         };
         var (session, first, second) = CreateParty("ARCHER",
-            [Hook("S-9-1", 7) with { TargetId = "SURVIVAL_MASTER_TRAPS" }], regen: 0,
+            [Hook("S-9-1", 7) with { TargetId = "SURVIVAL_MASTER_PREPARATION" }], regen: 0,
             abilityOverride: preparation, additionalAbilities: [trap]);
         Assert.True(first.TrySpendResource(50));
         Assert.True(second.TrySpendResource(50));

@@ -20,6 +20,7 @@ new(StringComparer.Ordinal)
 ["M-7-2"] = Keys(TalentModifierKeys.OnCriticalHit),
 ["M-7-3"] = Keys(TalentModifierKeys.OnAbilityUsed),
 ["M-8-1"] = Keys(TalentModifierKeys.OnHpThreshold),
+["M-8-2"] = Keys(TalentModifierKeys.OnAbilityUsed),
 ["M-8-3"] = Keys(TalentModifierKeys.OnAbilityUsed),
 ["M-9-1"] = Keys(TalentModifierKeys.OnAbilityUsed, TalentModifierKeys.OnCriticalHit),
 ["B-1-1"] = Keys(TalentModifierKeys.OnPartyEvent),
