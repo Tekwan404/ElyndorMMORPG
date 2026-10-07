@@ -31,12 +31,12 @@ export const WORLD_MAP_POSITIONS: Record<string, MapPoint> = {
 }
 
 export const OUTER_REACHES_MAP_POSITIONS: Record<string, MapPoint> = {
-  BLACK_CRAGS: { x: 20, y: 82 },
-  PLAGUEWOOD: { x: 31, y: 61 },
-  GLASS_DESERT: { x: 60, y: 72 },
-  FROZEN_EDGE: { x: 72, y: 48 },
-  DOOMED_LANDS: { x: 47, y: 28 },
-  DEAD_REACHES: { x: 76, y: 15 },
+  BLACK_CRAGS: { x: 22, y: 30 },
+  PLAGUEWOOD: { x: 52, y: 43 },
+  GLASS_DESERT: { x: 22, y: 55 },
+  FROZEN_EDGE: { x: 78, y: 25 },
+  DOOMED_LANDS: { x: 52, y: 69 },
+  DEAD_REACHES: { x: 82, y: 61 },
 }
 
 export function worldMapPosition(

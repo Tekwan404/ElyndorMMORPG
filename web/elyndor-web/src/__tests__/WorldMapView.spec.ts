@@ -63,6 +63,8 @@ describe('WorldMapView', () => {
     await flushPromises()
 
     expect(apiClient.request).toHaveBeenCalledWith('/api/v1/world/locations')
+    expect(wrapper.get('[data-world-map-switch]')).toBeTruthy()
+    expect(wrapper.get('[data-map-switch-id="OUTER_REACHES"]')).toBeTruthy()
     expect(wrapper.findAll('[data-location-id]')).toHaveLength(3)
     expect(wrapper.get('[data-location-id="STARTER_TOWN"]').attributes('data-state')).toBe('current')
     expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').attributes('data-state')).toBe('reachable')
@@ -230,7 +232,7 @@ describe('WorldMapView', () => {
     }
   })
 
-  it('opens the second map only at the Obsidian Edge gateway', async () => {
+  it('keeps the second continent browsable while gateway travel remains authoritative', async () => {
     const obsidianEdge: WorldLocation = {
       ...LOCATIONS[2]!,
       id: 'OBSIDIAN_EDGE',
@@ -271,6 +273,7 @@ describe('WorldMapView', () => {
     await wrapper.get('[data-map-switch-id="OUTER_REACHES"]').trigger('click')
 
     expect(wrapper.get('[data-map-id="OUTER_REACHES"]')).toBeTruthy()
+    expect(wrapper.get('.map-canvas').attributes('style')).toContain('outer-reaches-map')
     expect(wrapper.get('[data-location-id="BLACK_CRAGS"]').attributes('data-state')).toBe('reachable')
     expect(wrapper.find('[data-location-id="OBSIDIAN_EDGE"]').exists()).toBe(false)
     expect(wrapper.get('[data-map-selection]').text()).toContain('Чёрные Кручи')
