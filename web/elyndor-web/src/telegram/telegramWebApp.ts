@@ -132,7 +132,7 @@ export function setWebAuthenticationData(
     const stored: StoredWebAuthenticationData = {
       value: webAuthenticationData.value,
       expiresAtUtc,
-      telegramUserId,
+      ...(telegramUserId ? { telegramUserId } : {}),
     }
     window.sessionStorage.setItem(webAuthenticationStorageKey, JSON.stringify(stored))
   } catch {
