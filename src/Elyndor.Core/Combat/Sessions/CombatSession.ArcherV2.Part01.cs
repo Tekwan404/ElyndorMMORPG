@@ -7,6 +7,7 @@ namespace Elyndor.Core.Combat.Sessions;
 public sealed partial class CombatSession
 {
 private const string HunterMarkEffectId = "ARCHER_HUNTER_MARK";
+private const string PerfectMarkBurstEffectId = "ARCHER_PERFECT_MARK_BURST";
 private const string SniperFocusEffectId = "ARCHER_SNIPER_FOCUS";
 private const string ExposedDefenseEffectId = "ARCHER_EXPOSED_DEFENSE";
 private const string DeadlyStreakEffectId = "ARCHER_DEADLY_STREAK";
@@ -195,6 +196,9 @@ decimal armorPenetrationBonus = modifier.ArmorPenetrationBonus;
 decimal magicPenetrationBonus = modifier.MagicPenetrationBonus;
 bool physicalShot = IsPhysicalShotAbility(ability);
 bool marked = HasArcherEffect(target, HunterMarkEffectId, now);
+if (marked && ability.Id is "AIMED_SHOT" or "PIERCING_ARROW"
+&& FindArcherEffect(target, PerfectMarkBurstEffectId, now) is { } burst)
+damageMultiplier *= 1 + burst.Definition.Magnitude / 100m;
 if (physicalShot)
 {
 if (TryGetArcherHook(
@@ -298,6 +302,10 @@ private void OnArcherAbilityStarted(AbilityDefinition ability, DateTimeOffset no
 {
 if (!IsArcher)
 return;
+if (ability.Id is "AIMED_SHOT" or "PIERCING_ARROW"
+&& SelectedEnemyActor() is { } target
+&& HasArcherEffect(target, HunterMarkEffectId, now))
+RemoveArcherEffect(target, PerfectMarkBurstEffectId, now);
 bool physicalShot = IsPhysicalShotAbility(ability);
 if (physicalShot)
 {
