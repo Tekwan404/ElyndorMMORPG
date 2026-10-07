@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.40.0",
+  "contentVersion": "0.41.0",
   "balanceVersion": "0.31.0",
-  "publishedAtUtc": "2026-10-07T10:50:50+00:00",
+  "publishedAtUtc": "2026-10-07T11:40:27+00:00",
   "items": [
     {
       "id": "UNIQUE_L60_WARRIOR_BERSERKER_RING",
@@ -23,7 +23,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Берсерк». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Печать Кровавой Бури поддерживает быстрый агрессивный темп Берсерка и пробивание тяжёлой брони.",
       "version": 1,
       "iconId": "imported/pechat_predvestnika",
       "itemLevelMin": 60,
@@ -33,12 +33,12 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "CRITICAL_CHANCE",
+        "ATTACK_SPEED",
         "ARMOR_PENETRATION"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "WARRIOR_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_WARRIOR_BERSERKER_CLOAK",
@@ -60,7 +60,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Берсерк». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Плащ Алого Натиска оставляет Берсерку запас стойкости, не отнимая его главный акцент на сокрушительных критах.",
       "version": 1,
       "iconId": "warrior/item-warrior-cloak",
       "itemLevelMin": 60,
@@ -71,11 +71,11 @@
       "guaranteedAffixStatIds": [
         "STRENGTH",
         "STAMINA",
-        "DODGE"
+        "CRITICAL_DAMAGE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "WARRIOR_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_WARRIOR_GUARDIAN_WEAPON",
@@ -97,7 +97,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Страж». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Клинок Непоколебимой Стены — одноручное оружие Стража, совмещающее живучесть и стабильное давление.",
       "version": 1,
       "iconId": "items_outside_sets/black_bastion/first_guardian_blade",
       "itemLevelMin": 60,
@@ -138,7 +138,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Страж». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Кольцо Каменной Клятвы усиливает запас здоровья и шанс пережить тяжёлую серию ударов.",
       "version": 1,
       "iconId": "items_outside_sets/ancient_mine/stoneheart_ring",
       "itemLevelMin": 60,
@@ -147,13 +147,13 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
-        "STRENGTH",
         "STAMINA",
-        "MAX_HP"
+        "MAX_HP",
+        "DODGE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "WARRIOR_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_WARRIOR_GUARDIAN_CLOAK",
@@ -175,7 +175,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Страж». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Плащ Последнего Стража закрывает слабость тяжёлой защиты против магического давления.",
       "version": 1,
       "iconId": "imported/plashch_brodiachego_naiomnika",
       "itemLevelMin": 60,
@@ -185,12 +185,12 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA",
+        "MAGIC_RESISTANCE",
         "MAX_HP"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "WARRIOR_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_WARRIOR_WARLORD_WEAPON",
@@ -212,7 +212,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Полководец». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Молот Последнего Приказа делает атаки Командира надёжными и ритмичными между кличами и поддержкой.",
       "version": 1,
       "iconId": "items_outside_sets/black_bastion/ark_tor_hammer",
       "itemLevelMin": 60,
@@ -222,7 +222,7 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA",
+        "ACCURACY",
         "ATTACK_SPEED"
       ],
       "extraAffixBudgetCap": 0.08,
@@ -253,7 +253,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Полководец». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Печать Боевого Знамени поддерживает фронтового Командира: здоровье, сила и точность.",
       "version": 1,
       "iconId": "items_outside_sets/black_bastion/silent_judgement_seal",
       "itemLevelMin": 60,
@@ -263,12 +263,12 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "ACCURACY",
-        "ATTACK_SPEED"
+        "MAX_HP",
+        "ACCURACY"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "WARRIOR_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_WARRIOR_WARLORD_CLOAK",
@@ -290,7 +290,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Полководец». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Плащ Пепельного Маршала сочетает выносливость, давление и устойчивость к магии.",
       "version": 1,
       "iconId": "items_outside_sets/open_world_mid/basilisk_scale_cloak",
       "itemLevelMin": 60,
@@ -299,13 +299,13 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
-        "STRENGTH",
         "STAMINA",
-        "MAX_HP"
+        "ATTACK_POWER",
+        "MAGIC_RESISTANCE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "WARRIOR_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_MAGE_FIRE_WEAPON",
@@ -327,7 +327,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Огонь». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Посох Пепельного Солнца усиливает прямой взрывной урон Огня через интеллект, силу заклинаний и криты.",
       "version": 1,
       "iconId": "items_outside_sets/black_bastion/black_star_staff",
       "itemLevelMin": 60,
@@ -368,7 +368,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Огонь». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Кольцо Живого Пламени помогает Огню пробивать сопротивление и сильнее наказывать критическими заклинаниями.",
       "version": 1,
       "iconId": "items_outside_sets/shattered_order_citadel/triune_seal",
       "itemLevelMin": 60,
@@ -378,12 +378,12 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "INTELLECT",
-        "CRITICAL_CHANCE",
-        "MAGIC_PENETRATION"
+        "MAGIC_PENETRATION",
+        "CRITICAL_DAMAGE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "MAGE_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_MAGE_FIRE_CLOAK",
@@ -405,7 +405,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Огонь». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Плащ Горящей Звезды добавляет Огню выживаемость, сохраняя высокий spell-power профиль.",
       "version": 1,
       "iconId": "acc_common_2_cloak",
       "itemLevelMin": 60,
@@ -414,13 +414,13 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
-        "INTELLECT",
         "STAMINA",
-        "MAX_RESOURCE"
+        "SPELL_POWER",
+        "MAX_HP"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "MAGE_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_MAGE_FROST_WEAPON",
@@ -442,7 +442,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Лёд». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Жезл Безмолвной Зимы сочетает контрольный стиль Льда с живучестью и магическим пробиванием.",
       "version": 1,
       "iconId": "items_outside_sets/open_world_mid/interrupted_mana_staff",
       "itemLevelMin": 60,
@@ -483,7 +483,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Лёд». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Кольцо Вечного Инея усиливает дуэльную стойкость Льда и ценность редких критических окон.",
       "version": 1,
       "iconId": "items_outside_sets/shattered_order_citadel/broken_reflection_ring",
       "itemLevelMin": 60,
@@ -493,12 +493,12 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "INTELLECT",
-        "CRITICAL_DAMAGE",
-        "MAGIC_PENETRATION"
+        "MAGIC_RESISTANCE",
+        "CRITICAL_DAMAGE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "MAGE_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_MAGE_FROST_CLOAK",
@@ -520,7 +520,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Лёд». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Плащ Белой Тишины даёт Льду запас маны и сопротивление для затяжного контроля.",
       "version": 1,
       "iconId": "acc_uncommon_6_cloak",
       "itemLevelMin": 60,
@@ -529,13 +529,13 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
-        "INTELLECT",
         "STAMINA",
-        "DODGE"
+        "MAGIC_RESISTANCE",
+        "MAX_RESOURCE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "MAGE_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_MAGE_ARCANE_RING",
@@ -557,7 +557,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Аркана». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Печать Бездонного Потока усиливает ресурсный запас Арканы и её взрывные окна против защищённых целей.",
       "version": 1,
       "iconId": "items_outside_sets/open_world_mid/rift_keeper_seal",
       "itemLevelMin": 60,
@@ -566,13 +566,13 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
-        "INTELLECT",
         "MAX_RESOURCE",
-        "CRITICAL_DAMAGE"
+        "CRITICAL_DAMAGE",
+        "MAGIC_PENETRATION"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "MAGE_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_MAGE_ARCANE_CLOAK",
@@ -594,7 +594,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Аркана». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Плащ Междумирья делает Аркану стабильнее: больше маны, интеллекта и точности.",
       "version": 1,
       "iconId": "imported/plashch_lesnoi_tropy",
       "itemLevelMin": 60,
@@ -604,12 +604,12 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "INTELLECT",
-        "STAMINA",
+        "ACCURACY",
         "MAX_RESOURCE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "MAGE_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_ARCHER_MARKSMAN_RING",
@@ -631,7 +631,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Меткость». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Кольцо Безошибочного Взгляда превращает точный выстрел в более тяжёлое попадание по бронированной цели.",
       "version": 1,
       "iconId": "items_outside_sets/open_world_late/harbinger_seal",
       "itemLevelMin": 60,
@@ -641,12 +641,12 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "AGILITY",
-        "CRITICAL_CHANCE",
-        "ACCURACY"
+        "ARMOR_PENETRATION",
+        "CRITICAL_DAMAGE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "ARCHER_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_ARCHER_MARKSMAN_CLOAK",
@@ -668,7 +668,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Меткость». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Плащ Последнего Созвездия поддерживает мобильную дистанционную игру Меткости без потери точности.",
       "version": 1,
       "iconId": "items_outside_sets/open_world_early/forest_trail_cloak",
       "itemLevelMin": 60,
@@ -678,12 +678,12 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "AGILITY",
-        "STAMINA",
-        "DODGE"
+        "DODGE",
+        "ACCURACY"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "ARCHER_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_ARCHER_BEAST_MASTERY_WEAPON",
@@ -705,7 +705,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Повелитель зверей». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Лук Звериного Завета поддерживает непрерывный темп хозяина и зверя через скорость и выживаемость.",
       "version": 1,
       "iconId": "items_outside_sets/open_world_mid/double_echo_bow",
       "itemLevelMin": 60,
@@ -746,7 +746,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Повелитель зверей». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Кольцо Звериного Сердца усиливает постоянное физическое давление Повелителя зверей.",
       "version": 1,
       "iconId": "items_outside_sets/open_world_early/root_dew_ring",
       "itemLevelMin": 60,
@@ -756,12 +756,12 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "AGILITY",
-        "ATTACK_SPEED",
-        "CRITICAL_CHANCE"
+        "ATTACK_POWER",
+        "ATTACK_SPEED"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "ARCHER_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_ARCHER_BEAST_MASTERY_CLOAK",
@@ -783,7 +783,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Повелитель зверей». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Плащ Вожака Стаи помогает переживать давление, пока зверь продолжает бой.",
       "version": 1,
       "iconId": "items_outside_sets/open_world_early/wandering_mercenary_cloak",
       "itemLevelMin": 60,
@@ -792,13 +792,13 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
-        "AGILITY",
         "STAMINA",
+        "MAX_HP",
         "DODGE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "ARCHER_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_ARCHER_SURVIVAL_WEAPON",
@@ -820,7 +820,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Выживание». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Арбалет Ядовитой Тропы сочетает стойкость Выживания с тяжёлым пробивающим выстрелом.",
       "version": 1,
       "iconId": "items_outside_sets/black_bastion/black_gate_crossbow",
       "itemLevelMin": 60,
@@ -861,7 +861,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Выживание». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Печать Чёрного Следа подчёркивает уклонение, мобильность и пробивание ветки Выживания.",
       "version": 1,
       "iconId": "items_outside_sets/eclipse_citadel/eclipse_seal",
       "itemLevelMin": 60,
@@ -871,12 +871,12 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "AGILITY",
-        "ARMOR_PENETRATION",
-        "DODGE"
+        "DODGE",
+        "ARMOR_PENETRATION"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "ARCHER_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_ARCHER_SURVIVAL_CLOAK",
@@ -898,7 +898,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Выживание». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Плащ Ядовитой Тени сохраняет живучесть Выживания и оставляет шанс на резкий ответный урон.",
       "version": 1,
       "iconId": "imported/cheshuichatyi_plashch_vasiliska",
       "itemLevelMin": 60,
@@ -907,13 +907,13 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
-        "AGILITY",
         "STAMINA",
-        "DODGE"
+        "DODGE",
+        "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "ARCHER_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_PALADIN_HOLY_WEAPON",
@@ -935,7 +935,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Свет». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Скипетр Первого Света — одноручное оружие Света для сильного исцеления без отказа от тяжёлой защиты.",
       "version": 1,
       "iconId": "items_outside_sets/eclipse_citadel/umbra_smith_hammer",
       "itemLevelMin": 60,
@@ -950,7 +950,7 @@
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "WORLD_GENERAL",
+      "randomAffixPoolId": "PALADIN_WEAPON",
       "weaponCategory": "MACE",
       "weaponDamageMin": 235,
       "weaponDamageMax": 320,
@@ -976,7 +976,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Свет». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Кольцо Милости Рассвета усиливает ману и критическую ценность священных заклинаний.",
       "version": 1,
       "iconId": "imported/koltso_kornevoi_rosy",
       "itemLevelMin": 60,
@@ -986,12 +986,12 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "INTELLECT",
-        "STAMINA",
-        "MAX_RESOURCE"
+        "MAX_RESOURCE",
+        "CRITICAL_DAMAGE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "PALADIN_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_PALADIN_HOLY_CLOAK",
@@ -1013,7 +1013,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Свет». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Плащ Рассветной Милости даёт Свету устойчивость в затяжных боях и поддержку интеллекта.",
       "version": 1,
       "iconId": "warrior/item-warrior-cloak",
       "itemLevelMin": 60,
@@ -1024,11 +1024,11 @@
       "guaranteedAffixStatIds": [
         "INTELLECT",
         "STAMINA",
-        "MAX_RESOURCE"
+        "MAGIC_RESISTANCE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "PALADIN_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_PALADIN_PROTECTION_WEAPON",
@@ -1050,7 +1050,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Защита». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Клинок Нерушимой Клятвы удерживает профиль Защиты на здоровье, силе и стойкости перед щитом.",
       "version": 1,
       "iconId": "items_outside_sets/eclipse_citadel/broken_captain_blade",
       "itemLevelMin": 60,
@@ -1061,11 +1061,11 @@
       "guaranteedAffixStatIds": [
         "STRENGTH",
         "STAMINA",
-        "BLOCK_CHANCE"
+        "MAX_HP"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "WORLD_GENERAL",
+      "randomAffixPoolId": "PALADIN_WEAPON",
       "weaponCategory": "ONE_HAND_SWORD",
       "weaponDamageMin": 225,
       "weaponDamageMax": 310,
@@ -1091,7 +1091,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Защита». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Печать Несокрушимого Щита усиливает защиту Паладина от физического и магического давления.",
       "version": 1,
       "iconId": "imported/pechat_khranitelia_raskola",
       "itemLevelMin": 60,
@@ -1102,11 +1102,11 @@
       "guaranteedAffixStatIds": [
         "STRENGTH",
         "STAMINA",
-        "MAX_HP"
+        "MAGIC_RESISTANCE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "PALADIN_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_PALADIN_PROTECTION_CLOAK",
@@ -1128,7 +1128,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Защита». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Плащ Нерушимой Клятвы добавляет Защите здоровье и дополнительный слой избегания урона.",
       "version": 1,
       "iconId": "acc_uncommon_6_cloak",
       "itemLevelMin": 60,
@@ -1138,12 +1138,12 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA",
+        "MAX_HP",
         "DODGE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "PALADIN_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_PALADIN_RETRIBUTION_WEAPON",
@@ -1165,7 +1165,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Воздаяние». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Молот Последнего Приговора поддерживает гибридную природу Воздаяния через силу, интеллект и криты.",
       "version": 1,
       "iconId": "imported/molot_khoziaina_zhil",
       "itemLevelMin": 60,
@@ -1180,7 +1180,7 @@
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "WORLD_GENERAL",
+      "randomAffixPoolId": "PALADIN_WEAPON",
       "weaponCategory": "TWO_HAND_MACE",
       "weaponDamageMin": 330,
       "weaponDamageMax": 450,
@@ -1206,7 +1206,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Воздаяние». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Кольцо Последнего Суда усиливает точность и критический финиш Воздаяния.",
       "version": 1,
       "iconId": "acc_uncommon_6_ring",
       "itemLevelMin": 60,
@@ -1216,12 +1216,12 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "INTELLECT",
-        "CRITICAL_CHANCE"
+        "CRITICAL_DAMAGE",
+        "ACCURACY"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "PALADIN_ACCESSORY"
     },
     {
       "id": "UNIQUE_L60_PALADIN_RETRIBUTION_CLOAK",
@@ -1243,7 +1243,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Уникальный предмет 60 уровня для ветки «Воздаяние». Источник: персональные сундуки мирового босса «Архон Пепла».",
+      "description": "Плащ Последнего Приговора поддерживает гибридный урон Воздаяния без копирования оружейного профиля.",
       "version": 1,
       "iconId": "items_outside_sets/open_world_mid/basilisk_scale_cloak",
       "itemLevelMin": 60,
@@ -1252,13 +1252,13 @@
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
-        "STRENGTH",
         "INTELLECT",
-        "STAMINA"
+        "ATTACK_POWER",
+        "CRITICAL_CHANCE"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "ACCESSORY_GENERAL"
+      "randomAffixPoolId": "PALADIN_ACCESSORY"
     },
     {
       "id": "UNIQUE_WARRIOR_BLACKHEART",
@@ -1270,7 +1270,7 @@
       "type": "Equipment",
       "generationMode": "Rolled",
       "rarity": "Unique",
-      "requiredLevel": 25,
+      "requiredLevel": 60,
       "stackable": false,
       "maxStack": 1,
       "slot": "MainHand",
@@ -1280,25 +1280,26 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Именное семейство оружия 25–60 уровня. Архонт Пепла выдаёт его как уникальный трофей 60 уровня для ветки «Берсерк».",
+      "description": "Черносерд превращает силу Берсерка в чистое давление: сила, критический шанс и критический урон без защитного уклона.",
       "version": 1,
       "weaponCategory": "TWO_HAND_SWORD",
-      "weaponDamageMin": 96,
-      "weaponDamageMax": 128,
+      "weaponDamageMin": 320,
+      "weaponDamageMax": 440,
       "iconId": "items_outside_sets/shattered_order_citadel/mirror_bastard_sword",
-      "itemLevelMin": 25,
+      "itemLevelMin": 60,
       "itemLevelMax": 60,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "WARRIOR_WEAPON",
-      "affixCountProfileId": "UNIQUE_FAMILY",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "STRENGTH",
-        "STAMINA",
-        "CRITICAL_CHANCE"
+        "CRITICAL_CHANCE",
+        "CRITICAL_DAMAGE"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "weaponBaseAttackIntervalSeconds": 3
     },
     {
       "id": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
@@ -1310,7 +1311,7 @@
       "type": "Equipment",
       "generationMode": "Rolled",
       "rarity": "Unique",
-      "requiredLevel": 25,
+      "requiredLevel": 60,
       "stackable": false,
       "maxStack": 1,
       "slot": "MainHand",
@@ -1320,25 +1321,26 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Именное семейство одноручных посохов 25–60 уровня. Архонт Пепла выдаёт его как уникальный трофей 60 уровня для ветки «Аркана».",
+      "description": "Око Погасшей Звезды стало каноническим трофеем 60 уровня для Арканы: интеллект, мана и сила заклинаний.",
       "version": 1,
       "weaponCategory": "ONE_HAND_STAFF",
-      "weaponDamageMin": 88,
-      "weaponDamageMax": 118,
+      "weaponDamageMin": 210,
+      "weaponDamageMax": 295,
       "iconId": "items_outside_sets/open_world_mid/shard_wand",
-      "itemLevelMin": 25,
+      "itemLevelMin": 60,
       "itemLevelMax": 60,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "MAGE_WEAPON",
-      "affixCountProfileId": "UNIQUE_FAMILY",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "INTELLECT",
-        "STAMINA",
-        "CRITICAL_CHANCE"
+        "MAX_RESOURCE",
+        "SPELL_POWER"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "weaponBaseAttackIntervalSeconds": 2.4
     },
     {
       "id": "UNIQUE_ARCHER_LAST_CONSTELLATION",
@@ -1350,7 +1352,7 @@
       "type": "Equipment",
       "generationMode": "Rolled",
       "rarity": "Unique",
-      "requiredLevel": 25,
+      "requiredLevel": 60,
       "stackable": false,
       "maxStack": 1,
       "slot": "MainHand",
@@ -1360,25 +1362,26 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Именное семейство луков 25–60 уровня. Архонт Пепла выдаёт его как уникальный трофей 60 уровня для ветки «Меткость».",
+      "description": "Лук Последнего Созвездия стал каноническим трофеем 60 уровня для Меткости: точность, ловкость и критический шанс.",
       "version": 1,
       "weaponCategory": "BOW",
-      "weaponDamageMin": 92,
-      "weaponDamageMax": 124,
+      "weaponDamageMin": 300,
+      "weaponDamageMax": 410,
       "iconId": "items_outside_sets/shattered_order_citadel/triple_aspect_bow",
-      "itemLevelMin": 25,
+      "itemLevelMin": 60,
       "itemLevelMax": 60,
       "generationVersion": 1,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_WEAPON",
-      "affixCountProfileId": "UNIQUE_FAMILY",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "AGILITY",
-        "STAMINA",
-        "CRITICAL_CHANCE"
+        "CRITICAL_CHANCE",
+        "ACCURACY"
       ],
       "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null
+      "prefixSuffixPolicyId": null,
+      "weaponBaseAttackIntervalSeconds": 2.7
     }
   ]
 }
