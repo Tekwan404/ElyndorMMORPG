@@ -783,7 +783,7 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Плащ Вожака Стаи помогает переживать давление, пока зверь продолжает бой.",
+      "description": "Плащ Вожака Стаи помогает переживать давление и сохранять высокий темп Повелителя зверей.",
       "version": 1,
       "iconId": "items_outside_sets/open_world_early/wandering_mercenary_cloak",
       "itemLevelMin": 60,
@@ -793,8 +793,8 @@
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
         "STAMINA",
-        "MAX_HP",
-        "DODGE"
+        "DODGE",
+        "ATTACK_SPEED"
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
