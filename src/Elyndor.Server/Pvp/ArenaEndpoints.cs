@@ -127,6 +127,7 @@ public static class ArenaEndpoints
                 item.Rarity.ToString(),
                 item.Slot?.ToString(),
                 item.IconId,
+                item.SetId,
                 item.RequiredLevel,
                 item.HonorPrice)).ToArray());
 
