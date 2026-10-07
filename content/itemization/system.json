@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.17.0",
-  "balanceVersion": "0.15.0",
-  "publishedAtUtc": "2026-09-13T14:19:08+00:00",
+  "contentVersion": "0.41.0",
+  "balanceVersion": "0.31.0",
+  "publishedAtUtc": "2026-10-07T11:40:27+00:00",
   "itemization": {
     "templateBasePower": 110,
     "levelLinearCoefficient": 0.055,
@@ -245,6 +245,104 @@
           "ATTACK_SPEED",
           "ACCURACY",
           "DODGE"
+        ]
+      },
+      {
+        "id": "PALADIN_WEAPON",
+        "statIds": [
+          "STRENGTH",
+          "INTELLECT",
+          "STAMINA",
+          "ATTACK_POWER",
+          "SPELL_POWER",
+          "CRITICAL_CHANCE",
+          "CRITICAL_DAMAGE",
+          "ACCURACY",
+          "ARMOR_PENETRATION",
+          "MAGIC_PENETRATION",
+          "MAX_HP",
+          "MAX_RESOURCE"
+        ]
+      },
+      {
+        "id": "PALADIN_SHIELD",
+        "statIds": [
+          "STAMINA",
+          "STRENGTH",
+          "INTELLECT",
+          "BLOCK_CHANCE",
+          "BLOCK_VALUE",
+          "MAGIC_RESISTANCE",
+          "MAX_HP",
+          "MAX_RESOURCE",
+          "SPELL_POWER"
+        ]
+      },
+      {
+        "id": "WARRIOR_ACCESSORY",
+        "statIds": [
+          "STRENGTH",
+          "STAMINA",
+          "MAX_HP",
+          "ATTACK_POWER",
+          "CRITICAL_CHANCE",
+          "CRITICAL_DAMAGE",
+          "ACCURACY",
+          "ATTACK_SPEED",
+          "DODGE",
+          "ARMOR_PENETRATION",
+          "MAGIC_RESISTANCE"
+        ]
+      },
+      {
+        "id": "MAGE_ACCESSORY",
+        "statIds": [
+          "INTELLECT",
+          "STAMINA",
+          "MAX_HP",
+          "SPELL_POWER",
+          "CRITICAL_CHANCE",
+          "CRITICAL_DAMAGE",
+          "ACCURACY",
+          "ATTACK_SPEED",
+          "DODGE",
+          "MAGIC_PENETRATION",
+          "MAX_RESOURCE",
+          "MAGIC_RESISTANCE"
+        ]
+      },
+      {
+        "id": "ARCHER_ACCESSORY",
+        "statIds": [
+          "AGILITY",
+          "STAMINA",
+          "MAX_HP",
+          "ATTACK_POWER",
+          "CRITICAL_CHANCE",
+          "CRITICAL_DAMAGE",
+          "ACCURACY",
+          "ATTACK_SPEED",
+          "DODGE",
+          "ARMOR_PENETRATION"
+        ]
+      },
+      {
+        "id": "PALADIN_ACCESSORY",
+        "statIds": [
+          "STRENGTH",
+          "INTELLECT",
+          "STAMINA",
+          "MAX_HP",
+          "ATTACK_POWER",
+          "SPELL_POWER",
+          "CRITICAL_CHANCE",
+          "CRITICAL_DAMAGE",
+          "ACCURACY",
+          "DODGE",
+          "ARMOR_PENETRATION",
+          "MAGIC_PENETRATION",
+          "MAX_RESOURCE",
+          "MAGIC_RESISTANCE"
         ]
       }
     ],
