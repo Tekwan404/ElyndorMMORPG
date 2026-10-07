@@ -14,6 +14,7 @@ public static class ArenaCompanionCapability
         ("B-1-1", TalentModifierKeys.OnPartyEvent, "PET_MAX_HP"),
         ("B-1-2", TalentModifierKeys.OnPartyEvent, "PET_DAMAGE"),
         ("B-1-4", TalentModifierKeys.OnPartyEvent, "PET_FOCUS_PROC"),
+        ("B-2-1", TalentModifierKeys.OnAbilityUsed, "COMMAND_ATTACK_DAMAGE"),
         ("B-2-2", TalentModifierKeys.OnPartyEvent, "PET_DAMAGE_REDUCTION"),
         ("B-2-3", TalentModifierKeys.OnPartyEvent, "PET_CRIT"),
         ("B-3-1", TalentModifierKeys.OnAbilityUsed, "MEND_PET_BONUS"),
@@ -36,7 +37,7 @@ public static class ArenaCompanionCapability
         ("B-8-3", TalentModifierKeys.OnAbilityUsed, "BESTIAL_WRATH_UNSTOPPABLE"),
         ("B-9-1", TalentModifierKeys.OnPartyEvent, "BEAST_MASTER_BASE"),
         ("B-9-1", TalentModifierKeys.OnCriticalHit, "BEAST_MASTER_EXTRA_ATTACK"),
-        ("B-9-1", TalentModifierKeys.OnCriticalHit, "BEST_MASTER_OWNER_SHOT")
+        ("B-9-1", TalentModifierKeys.OnCriticalHit, "BEAST_MASTER_OWNER_SHOT")
     ];
 
     private static readonly HashSet<string> CompanionAbilityIds = new(StringComparer.Ordinal)
