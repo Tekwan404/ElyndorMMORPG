@@ -158,5 +158,5 @@ public sealed class Level60PveT1SetContentTests
                 "DEAD_REACHES_L60_PVE_T1_LOOT",
                 package.Monsters!.Single(monster => monster.Id == eliteId).LootTableId);
         }
-    }}
+    }
 }
