@@ -119,7 +119,19 @@ public sealed class ArenaHonorWallet
     public ArenaHonorWallet(Guid characterId) => CharacterId = characterId;
     public Guid CharacterId { get; private set; }
     public long Balance { get; private set; }
-    public void Grant(long amount) => Balance = checked(Balance + (amount > 0 ? amount : throw new ArgumentOutOfRangeException(nameof(amount))));
+
+    public void Grant(long amount) =>
+        Balance = checked(Balance + (amount > 0 ? amount : throw new ArgumentOutOfRangeException(nameof(amount))));
+
+    public bool TrySpend(long amount)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(amount);
+        if (Balance < amount)
+            return false;
+
+        Balance -= amount;
+        return true;
+    }
 }
 
 public sealed class ArenaHonorLedgerEntry

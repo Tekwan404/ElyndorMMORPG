@@ -128,6 +128,15 @@ public static partial class GameContentPackageValidator
                     }
                 }
 
+                if (item.HonorPrice < 0
+                    || item.HonorPrice > 0 && item.Type != ItemType.Equipment)
+                {
+                    errors.Add(new(
+                        "INVALID_ITEM_HONOR_PRICE",
+                        $"{path}.honorPrice",
+                        $"Item '{item.Id}' has an invalid Honor price."));
+                }
+
                 if (item.AllowedClassIds is not null)
                 {
                     bool invalidClassRestriction =

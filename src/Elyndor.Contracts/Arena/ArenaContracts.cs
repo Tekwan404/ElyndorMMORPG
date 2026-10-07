@@ -18,6 +18,28 @@ public sealed record ArenaStatusResponse(
 
 public sealed record ArenaQueueResponse(bool Succeeded, string? ErrorCode, ArenaStatusResponse? Status);
 
+public sealed record ArenaHonorShopItemResponse(
+    string ItemId,
+    string Name,
+    string Rarity,
+    string? Slot,
+    string? IconId,
+    int RequiredLevel,
+    long HonorPrice);
+
+public sealed record ArenaHonorShopResponse(
+    long Honor,
+    IReadOnlyList<ArenaHonorShopItemResponse> Items);
+
+public sealed record ArenaHonorShopPurchaseRequest(
+    string ItemId,
+    Guid MutationId);
+
+public sealed record ArenaHonorShopPurchaseResponse(
+    bool Succeeded,
+    string? ErrorCode,
+    ArenaHonorShopResponse? Shop);
+
 public sealed record ArenaLeaderboardEntryResponse(
     int Rank,
     Guid CharacterId,
