@@ -176,8 +176,8 @@ public sealed class ItemSpecialEffectEvaluator
             bool requiresDuration =
                 action.Kind is ItemSpecialEffectActionKind.ApplyEffect
                     or ItemSpecialEffectActionKind.AddShield;
-            if (requiresDuration && action.Duration is not { } positiveDuration
-                    || requiresDuration && positiveDuration <= TimeSpan.Zero)
+            if (requiresDuration
+                && (action.Duration is null || action.Duration <= TimeSpan.Zero))
             {
                 throw new ArgumentException(
                     "Timed item special effect actions require a positive duration.",
