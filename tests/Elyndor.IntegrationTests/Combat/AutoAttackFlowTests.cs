@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using Elyndor.Contracts.Characters;
 using Elyndor.Contracts.Combat;
 using Elyndor.Core.Characters;
+using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Identity;
 using Elyndor.Core.Items;
 using Elyndor.Infrastructure.Persistence;
@@ -275,6 +276,8 @@ public sealed class AutoAttackFlowTests(PostgresFixture postgres) : IAsyncLifeti
                     "autoattack-flow-test-signing-key-with-more-than-32-bytes");
                 builder.UseSetting("Authentication:Telegram:BotToken", "123456:TEST_TOKEN");
                 builder.UseSetting("Authentication:Development:Enabled", "false");
+                builder.ConfigureServices(services =>
+                    services.AddSingleton<IGameRandomFactory, FixedGameRandomFactory>());
             });
 
     private static HttpClient CreateAuthenticatedClient(
@@ -317,6 +320,16 @@ public sealed class AutoAttackFlowTests(PostgresFixture postgres) : IAsyncLifeti
         factory.Services.GetRequiredService<JwtTokenIssuer>().Issue(
             accountId,
             telegramUserId);
+
+    private sealed class FixedGameRandomFactory : IGameRandomFactory
+    {
+        public IGameRandom Create() => new FixedGameRandom();
+    }
+
+    private sealed class FixedGameRandom : IGameRandom
+    {
+        public decimal NextUnit() => 0.5m;
+    }
 
     private static HubConnection CreateHubConnection(
         WebApplicationFactory<Program> factory,
