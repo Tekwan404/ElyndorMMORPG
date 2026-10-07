@@ -79,6 +79,34 @@ public sealed class Level60PveT1SetContentTests
     }
 
     [Fact]
+    public async Task EveryPveT1SetUsesADifferentBonusPackageFromNormalAndPvp()
+    {
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+        foreach (string pveSetId in ExpectedSets.Keys)
+        {
+            string suffix = pveSetId.Replace("SET_L60_PVE_T1_", string.Empty, StringComparison.Ordinal);
+            EquipmentSetDefinition pve = Assert.Single(
+                package.EquipmentSets!,
+                set => set.Id == pveSetId);
+            EquipmentSetDefinition normal = Assert.Single(
+                package.EquipmentSets!,
+                set => set.Id == $"SET_L60_NORMAL_{suffix}");
+            EquipmentSetDefinition pvp = Assert.Single(
+                package.EquipmentSets!,
+                set => set.Id == $"SET_L60_PVP_T1_{suffix}");
+
+            Assert.False(
+                pve.Bonuses.SequenceEqual(normal.Bonuses),
+                $"PvE T1 set '{pveSetId}' must not be a scaled copy of Normal.");
+            Assert.False(
+                pve.Bonuses.SequenceEqual(pvp.Bonuses),
+                $"PvE T1 set '{pveSetId}' must not reuse its PvP package.");
+        }
+    }
+
+    [Fact]
     public async Task EveryPveT1PieceIsStrongerThanItsNormalTierCounterpart()
     {
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
