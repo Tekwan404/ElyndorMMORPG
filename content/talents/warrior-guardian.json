@@ -1,6 +1,6 @@
 {
-  "contentVersion": "0.46.0",
-  "balanceVersion": "0.36.0",
+  "contentVersion": "0.45.2",
+  "balanceVersion": "0.35.2",
   "publishedAtUtc": "2026-10-08T07:35:31Z",
   "talentBranchReplacements": [
     {

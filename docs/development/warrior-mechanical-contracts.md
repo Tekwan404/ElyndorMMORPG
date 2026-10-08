@@ -1,6 +1,6 @@
 # Warrior mechanical contracts — 2026-10-07
 
-Initial ability contracts landed in content `0.39.0` on 2026-10-07. Guardian progression was then normalized on 2026-10-08 in content `0.46.0` / balance `0.36.0`; numeric ability coefficients remain unchanged. This document records executable ability contracts and the updated unlock progression.
+Initial ability contracts landed in content `0.39.0` on 2026-10-07. Guardian progression was then normalized on 2026-10-08 in content `0.45.2` / balance `0.35.2`; numeric ability coefficients remain unchanged. This document records executable ability contracts and the updated unlock progression.
 
 ## Baseline and access
 
