@@ -5,6 +5,12 @@ import type { CombatAbility, CombatCastSnapshot, InventoryItem, PendingLootItem 
 import { gameArt } from '@/assets/gameArt'
 import { isAuraAbility } from '@/game/combat/combatAbilityGroups'
 import { orderCombatAbilities } from '@/game/combat/combatHotbarSettings'
+import {
+  loadCombatNumberSettings,
+  saveCombatNumberSettings,
+  type CombatNumberDensity,
+  type CombatNumberSettings,
+} from '@/game/combat/combatNumberSettings'
 import BattleArena from '@/game/combat/components/BattleArena.vue'
 import BattleControls from '@/game/combat/components/BattleControls.vue'
 import BattleHeader from '@/game/combat/components/BattleHeader.vue'
@@ -20,6 +26,26 @@ import { UIButton, UIModal, UIToast } from '@/ui/components'
 
 const emit = defineEmits<{ leave: [] }>()
 const battle = useBattle()
+const numberSettings = shallowRef<CombatNumberSettings>(loadCombatNumberSettings())
+
+function updateNumberSettings(patch: Partial<CombatNumberSettings>): void {
+  numberSettings.value = { ...numberSettings.value, ...patch }
+  saveCombatNumberSettings(numberSettings.value)
+}
+
+function onDensityChange(event: Event): void {
+  const value = (event.target as HTMLSelectElement).value
+  if (value === 'full' || value === 'balanced' || value === 'minimal') {
+    updateNumberSettings({ density: value as CombatNumberDensity })
+  }
+}
+
+function onNumberSettingChange(
+  key: 'emphasizeCrits' | 'hitEffects' | 'showPeriodicDamage',
+  event: Event,
+): void {
+  updateNumberSettings({ [key]: (event.target as HTMLInputElement).checked })
+}
 const reconnectPending = shallowRef(false)
 const reconnectFailed = shallowRef(false)
 const connectionRecovering = computed(() => battle.connectionState.value !== 'connected' || reconnectPending.value || reconnectFailed.value)
@@ -305,6 +331,7 @@ onUnmounted(() => window.clearInterval(timer))
 
       <div class="battle-screen__arena-wrap">
         <BattleArena
+          :key="snapshot.sessionId"
           :allies="battle.allies.value"
           :enemies="displayEnemies"
           :local-actor-id="localActor.actorId"
@@ -312,6 +339,7 @@ onUnmounted(() => window.clearInterval(timer))
           :selected-enemy-actor-id="selectedEnemy.actorId"
           :aggro-actor-ids="battle.aggroActorIds.value"
           :numbers="battle.eventProjection.value.numbers"
+          :number-settings="numberSettings"
           :companion="battle.companion.value"
           :battlefield-art="battlefieldArt"
           :enemy-disabled="connectionRecovering"
@@ -319,6 +347,47 @@ onUnmounted(() => window.clearInterval(timer))
           @select-friendly="battle.selectFriendlyActor"
           @select-enemy="battle.selectEnemyActor"
         />
+
+        <details class="battle-screen__number-settings" data-combat-number-settings>
+          <summary aria-label="Настройки боевых чисел" title="Настройки боевых чисел">
+            ⚙ <span>Числа</span>
+          </summary>
+          <div class="battle-screen__number-settings-panel">
+            <strong>Числа урона</strong>
+            <label>
+              Плотность
+              <select :value="numberSettings.density" @change="onDensityChange">
+                <option value="full">Все удары</option>
+                <option value="balanced">Сбалансированно</option>
+                <option value="minimal">Минимально</option>
+              </select>
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                :checked="numberSettings.emphasizeCrits"
+                @change="onNumberSettingChange('emphasizeCrits', $event)"
+              />
+              Выделять криты
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                :checked="numberSettings.hitEffects"
+                @change="onNumberSettingChange('hitEffects', $event)"
+              />
+              Эффекты попаданий
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                :checked="numberSettings.showPeriodicDamage"
+                @change="onNumberSettingChange('showPeriodicDamage', $event)"
+              />
+              Периодический урон
+            </label>
+          </div>
+        </details>
 
         <CombatEffectStrip
           v-if="selectedEnemy.effects.length"
@@ -608,6 +677,75 @@ onUnmounted(() => window.clearInterval(timer))
 .battle-screen__arena-wrap :deep(.battle-arena) {
   height: 100%;
   min-height: 0;
+}
+.battle-screen__number-settings {
+  position: absolute;
+  z-index: 120;
+  top: 0.4rem;
+  left: 0.4rem;
+  width: max-content;
+  max-width: calc(100% - 0.8rem);
+  color: #e9dfd4;
+}
+.battle-screen__number-settings summary {
+  display: flex;
+  min-height: 44px;
+  width: max-content;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0.3rem 0.55rem;
+  border: 1px solid rgb(183 154 91 / 45%);
+  border-radius: 8px;
+  background: rgb(7 10 17 / 92%);
+  font-size: 0.7rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  list-style: none;
+}
+.battle-screen__number-settings summary::-webkit-details-marker {
+  display: none;
+}
+.battle-screen__number-settings summary:focus-visible {
+  outline: 2px solid #dfb676;
+  outline-offset: 2px;
+}
+.battle-screen__number-settings-panel {
+  display: grid;
+  width: min(16rem, calc(100vw - 1.6rem));
+  max-height: min(22rem, 65svh);
+  gap: 0.55rem;
+  margin-top: 0.3rem;
+  padding: 0.7rem;
+  overflow-y: auto;
+  border: 1px solid rgb(183 154 91 / 45%);
+  border-radius: 8px;
+  background: #0b1019;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 44%);
+}
+.battle-screen__number-settings-panel strong {
+  font-size: 0.82rem;
+}
+.battle-screen__number-settings-panel label {
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+}
+.battle-screen__number-settings-panel select {
+  max-width: 9rem;
+  padding: 0.35rem 0.2rem;
+  border: 1px solid #746044;
+  border-radius: 6px;
+  background: #151c28;
+  color: inherit;
+  font: inherit;
+}
+.battle-screen__number-settings-panel input {
+  width: 1.15rem;
+  height: 1.15rem;
+  accent-color: #d3a962;
 }
 .battle-screen__enemy-effects {
   position: absolute;
