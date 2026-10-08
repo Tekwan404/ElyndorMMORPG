@@ -173,5 +173,5 @@ public sealed class ArcherP0P1RegressionTests
         new(Guid.NewGuid(), 10000, 10000, 100, 100,
             CombatStats.Default with { AttackPower = 100, Accuracy = 100, CriticalChance = 0 });
 
-    private static IGameRandom Random() => new SequenceGameRandom(Enumerable.Repeat(0.99m, 200).ToArray());
+    private static SequenceGameRandom Random() => new SequenceGameRandom(Enumerable.Repeat(0.99m, 200).ToArray());
 }
