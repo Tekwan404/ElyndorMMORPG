@@ -28,7 +28,8 @@ public sealed record DamageRequest(
     bool IsUnblockable = false,
     string? DefinitionId = null,
     bool IsSpell = false,
-    bool SkipIncomingHpInterception = false);
+    bool SkipIncomingHpInterception = false,
+    bool IsTransferredDamage = false);
 
 public sealed record DamageResult(
     decimal AttemptedAmount,
@@ -188,7 +189,12 @@ public static class DamagePipeline
             * incomingPhysicalMultiplier
             * Math.Max(0, talentDamageMultiplier)
             * talentIncomingMultiplier;
-        if (request.Target.IncomingDamageModifier is { } incomingDamageModifier)
+        // Redirected true damage is the already admitted post-mitigation HP slice.
+        // Reapplying the protector's offensive buffs or defensive reductions would
+        // alter how much damage was moved off the ally.
+        if (request.IsTransferredDamage)
+            modified = request.BaseAmount;
+        else if (request.Target.IncomingDamageModifier is { } incomingDamageModifier)
         {
             modified = Math.Max(0, incomingDamageModifier(
                 new IncomingDamageContext(
