@@ -150,4 +150,59 @@ public sealed class AffixV2CatalogTests
         }
         throw new DirectoryNotFoundException("Repository content not found.");
     }
+    [Fact]
+    public async Task VampirismAffixesAreEligibleOnClassGearAndUniversalOnlyOnJewelry()
+    {
+        GameContentPackage content = await LoadAsync();
+        ItemizationDefinition itemization = content.Itemization!;
+        foreach (string statId in new[]
+                 {
+                     ItemStatIds.PhysicalVampirism,
+                     ItemStatIds.MagicalVampirism,
+                     ItemStatIds.UniversalVampirism
+                 })
+        {
+            Assert.Contains(statId, ItemStatIds.ApprovedV1);
+            Assert.True(ItemStatIds.IsPercentage(statId));
+            Assert.True(itemization.StatPowerWeights[statId] > 0);
+        }
+
+        Assert.Contains(ItemStatIds.PhysicalVampirism,
+            itemization.AffixPools.Single(pool => pool.Id == "WARRIOR_WEAPON").StatIds);
+        Assert.Contains(ItemStatIds.MagicalVampirism,
+            itemization.AffixPools.Single(pool => pool.Id == "MAGE_WEAPON").StatIds);
+        Assert.Contains(ItemStatIds.UniversalVampirism,
+            itemization.AffixPools.Single(pool => pool.Id == "ACCESSORY_GENERAL").StatIds);
+
+        ItemAffixRuleDefinition universal = itemization.AffixRules!.Single(
+            rule => rule.StatId == ItemStatIds.UniversalVampirism);
+        ItemDefinition sample = content.Items!.First(item => item.Slot == EquipmentSlot.MainHand);
+        Assert.False(ItemAffixEligibilityPolicy.IsAllowed(sample, universal));
+        Assert.True(ItemAffixEligibilityPolicy.IsAllowed(sample with { Slot = EquipmentSlot.Ring1 }, universal));
+    }
+
+    [Fact]
+    public void GeneratedVampirismAffixesBecomeUsableEquipmentStats()
+    {
+        ItemDefinition template = new(
+            "TEST_VAMP_WAND", "Vamp Wand", ItemType.Equipment, ItemRarity.Rare,
+            60, false, 1, EquipmentSlot.MainHand,
+            new PrimaryStats(0, 0, 0, 0), "");
+        GeneratedItemAffix[] affixes =
+        [
+            new("AFFIX_1", ItemStatIds.PhysicalVampirism, ItemStatIds.PhysicalVampirism,
+                3.5m, 1m, 5m, 0.1m, 3, false, true, 0),
+            new("AFFIX_2", ItemStatIds.MagicalVampirism, ItemStatIds.MagicalVampirism,
+                2m, 1m, 5m, 0.1m, 3, false, true, 1),
+            new("AFFIX_3", ItemStatIds.UniversalVampirism, ItemStatIds.UniversalVampirism,
+                0.7m, 0.2m, 2m, 0.1m, 3, false, true, 2)
+        ];
+
+        ItemDefinition item = ItemInstanceGenerator.ApplyGeneratedAffixes(template, affixes);
+
+        Assert.Equal(3.5m, item.PhysicalVampirismPercent);
+        Assert.Equal(2m, item.MagicalVampirismPercent);
+        Assert.Equal(0.7m, item.UniversalVampirismPercent);
+    }
+
 }

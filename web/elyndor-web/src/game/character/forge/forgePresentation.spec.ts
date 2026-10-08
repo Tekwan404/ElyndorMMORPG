@@ -132,5 +132,8 @@ describe('forge affix quality presentation', () => {
     expect(forgeStatValue('CRITICAL_DAMAGE', 17.9)).toBe('+17.9%')
     expect(forgeStatRange('CRITICAL_DAMAGE', 12, 24)).toBe('12–24%')
     expect(forgeStatValue('SPELL_POWER', 176)).toBe('+176')
+    expect(forgeStatValue('PHYSICAL_VAMPIRISM', 2.5)).toBe('+2.5%')
+    expect(forgeStatRange('MAGICAL_VAMPIRISM', 0.4, 3.2)).toBe('0.4–3.2%')
+    expect(forgeStatLabel('UNIVERSAL_VAMPIRISM')).toBe('Универсальный вампиризм')
   })
 })
