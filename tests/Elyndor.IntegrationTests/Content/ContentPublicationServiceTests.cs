@@ -310,7 +310,7 @@ public sealed class ContentPublicationServiceTests(PostgresFixture postgres) : I
         _ = await service.RestoreLatestReleaseAsync(CancellationToken.None);
 
         GameContentPackage restored = provider.GetCurrent().Package;
-        Assert.Equal("0.45.0", restored.ContentVersion);
+        Assert.Equal("0.46.0", restored.ContentVersion);
         Assert.Equal(
             EquipmentCategoryIds.OneHandStaff,
             restored.Items!.Single(item => item.Id == bundledEye.Id).WeaponCategory);
