@@ -9,6 +9,19 @@ public enum CombatParticipantStatus
     Completed
 }
 
+public enum CombatGroupContext
+{
+    Solo,
+    Party,
+    Raid
+}
+
+public static class CombatParticipantLimit
+{
+    public const int DefaultParty = 5;
+    public const int MaximumRaid = 20;
+}
+
 public sealed record CombatParticipantIdentity(
     Guid AccountId,
     Guid CharacterId,
@@ -34,7 +47,7 @@ public static class CombatParticipantErrorCodes
 
 public sealed class CombatParticipantRoster
 {
-    public const int DefaultMaximumParticipants = 5;
+    public const int DefaultMaximumParticipants = CombatParticipantLimit.DefaultParty;
 
     private readonly Dictionary<Guid, ParticipantState> _participants;
 
@@ -49,7 +62,7 @@ public sealed class CombatParticipantRoster
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maximumParticipants);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(
             maximumParticipants,
-            DefaultMaximumParticipants);
+            CombatParticipantLimit.MaximumRaid);
         if (initialRoster.Count > maximumParticipants)
             throw new ArgumentException("The combat roster exceeds its participant limit.", nameof(initialRoster));
         if (initialRoster.Select(item => item.CharacterId).Distinct().Count() != initialRoster.Count

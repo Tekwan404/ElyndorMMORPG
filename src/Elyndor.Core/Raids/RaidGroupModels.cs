@@ -113,6 +113,7 @@ public sealed class RaidGroup
         EnsureActive();
         EnsureUtc(leftAtUtc);
         RaidMember member = FindMember(characterId);
+        member.MarkLeft(leftAtUtc);
         _members.Remove(member);
 
         if (_members.Count == 0)
@@ -122,13 +123,31 @@ public sealed class RaidGroup
         else if (characterId == LeaderCharacterId)
         {
             RaidMember nextLeader = _members
-                .OrderBy(candidate => candidate.JoinedAtUtc)
+                .OrderBy(candidate => candidate.Role == RaidMemberRole.Assistant ? 0 : 1)
+                .ThenBy(candidate => candidate.JoinedAtUtc)
                 .ThenBy(candidate => candidate.CharacterId)
                 .First();
             nextLeader.SetRole(RaidMemberRole.Leader);
             LeaderCharacterId = nextLeader.CharacterId;
         }
 
+        Version++;
+        return member;
+    }
+
+    public RaidMember Kick(
+        Guid leaderCharacterId,
+        Guid targetCharacterId,
+        DateTimeOffset kickedAtUtc)
+    {
+        EnsureLeader(leaderCharacterId);
+        EnsureUtc(kickedAtUtc);
+        if (targetCharacterId == LeaderCharacterId)
+            throw new InvalidOperationException("Raid leader cannot kick itself.");
+
+        RaidMember member = FindMember(targetCharacterId);
+        member.MarkKicked(kickedAtUtc);
+        _members.Remove(member);
         Version++;
         return member;
     }
@@ -144,6 +163,46 @@ public sealed class RaidGroup
         Version++;
     }
 
+    public void TransferLeadership(Guid leaderCharacterId, Guid targetCharacterId)
+    {
+        EnsureLeader(leaderCharacterId);
+        if (targetCharacterId == LeaderCharacterId)
+            throw new InvalidOperationException("Target is already the raid leader.");
+
+        RaidMember currentLeader = FindMember(leaderCharacterId);
+        RaidMember target = FindMember(targetCharacterId);
+        currentLeader.SetRole(RaidMemberRole.Member);
+        target.SetRole(RaidMemberRole.Leader);
+        LeaderCharacterId = targetCharacterId;
+        Version++;
+    }
+
+    public void Disband(Guid leaderCharacterId)
+    {
+        EnsureLeader(leaderCharacterId);
+        _members.Clear();
+        State = RaidState.Disbanded;
+        Version++;
+    }
+
+    public void BeginReadyCheck(Guid actorCharacterId)
+    {
+        EnsureLeaderOrAssistant(actorCharacterId);
+        foreach (RaidMember member in _members)
+            member.ResetReadyState();
+        Version++;
+    }
+
+    public void SetReadyState(Guid characterId, RaidReadyState readyState)
+    {
+        EnsureActive();
+        if (readyState == RaidReadyState.NoResponse)
+            throw new ArgumentException("Ready state must be Ready or NotReady.", nameof(readyState));
+
+        FindMember(characterId).SetReadyState(readyState);
+        Version++;
+    }
+
     private RaidMember FindMember(Guid characterId) =>
         _members.SingleOrDefault(member => member.CharacterId == characterId)
         ?? throw new InvalidOperationException("Character is not in the raid.");
@@ -153,6 +212,14 @@ public sealed class RaidGroup
         EnsureActive();
         if (LeaderCharacterId != characterId)
             throw new UnauthorizedAccessException("Only the raid leader can perform this action.");
+    }
+
+    private void EnsureLeaderOrAssistant(Guid characterId)
+    {
+        EnsureActive();
+        RaidMember member = FindMember(characterId);
+        if (member.Role is not (RaidMemberRole.Leader or RaidMemberRole.Assistant))
+            throw new UnauthorizedAccessException("Only the raid leader or an assistant can perform this action.");
     }
 
     private void EnsureActive()
@@ -185,12 +252,14 @@ public sealed class RaidMember
         Role = role;
         JoinedAtUtc = joinedAtUtc;
         State = RaidMemberState.Active;
+        ReadyState = RaidReadyState.NoResponse;
     }
 
     public Guid RaidId { get; private set; }
     public Guid CharacterId { get; private set; }
     public RaidMemberRole Role { get; private set; }
     public RaidMemberState State { get; private set; }
+    public RaidReadyState ReadyState { get; private set; }
     public DateTimeOffset JoinedAtUtc { get; private set; }
 
     internal static RaidMember Create(
@@ -201,6 +270,28 @@ public sealed class RaidMember
         new(raidId, characterId, role, joinedAtUtc);
 
     internal void SetRole(RaidMemberRole role) => Role = role;
+
+    internal void ResetReadyState() => ReadyState = RaidReadyState.NoResponse;
+
+    internal void SetReadyState(RaidReadyState readyState) => ReadyState = readyState;
+
+    internal void MarkLeft(DateTimeOffset timestamp)
+    {
+        EnsureUtc(timestamp);
+        State = RaidMemberState.Left;
+    }
+
+    internal void MarkKicked(DateTimeOffset timestamp)
+    {
+        EnsureUtc(timestamp);
+        State = RaidMemberState.Kicked;
+    }
+
+    private static void EnsureUtc(DateTimeOffset timestamp)
+    {
+        if (timestamp.Offset != TimeSpan.Zero)
+            throw new ArgumentException("Raid timestamps must be UTC.", nameof(timestamp));
+    }
 }
 
 public sealed class RaidInvite
@@ -260,19 +351,38 @@ public sealed class RaidInvite
         DecidedAtUtc = decidedAtUtc;
     }
 
+    public void Decline(Guid actorCharacterId, DateTimeOffset decidedAtUtc)
+    {
+        EnsurePendingTarget(actorCharacterId, decidedAtUtc);
+        Status = RaidInviteStatus.Declined;
+        DecidedAtUtc = decidedAtUtc;
+    }
+
+    public void Expire(DateTimeOffset now)
+    {
+        EnsureUtc(now);
+        if (Status == RaidInviteStatus.Pending && now >= ExpiresAtUtc)
+            Status = RaidInviteStatus.Expired;
+    }
+
     private void EnsurePendingTarget(Guid actorCharacterId, DateTimeOffset decidedAtUtc)
     {
         if (Status != RaidInviteStatus.Pending)
-            throw new InvalidOperationException("Only pending raid invites can be accepted.");
+            throw new InvalidOperationException("Only pending raid invites can be decided.");
         if (actorCharacterId != TargetCharacterId)
-            throw new UnauthorizedAccessException("Only the target can accept a raid invite.");
-        if (decidedAtUtc.Offset != TimeSpan.Zero)
-            throw new ArgumentException("Raid invite timestamps must be UTC.", nameof(decidedAtUtc));
+            throw new UnauthorizedAccessException("Only the target can decide a raid invite.");
+        EnsureUtc(decidedAtUtc);
         if (decidedAtUtc >= ExpiresAtUtc)
         {
             Status = RaidInviteStatus.Expired;
             throw new InvalidOperationException("Raid invite has expired.");
         }
+    }
+
+    private static void EnsureUtc(DateTimeOffset value)
+    {
+        if (value.Offset != TimeSpan.Zero)
+            throw new ArgumentException("Raid invite timestamps must be UTC.", nameof(value));
     }
 }
 
@@ -282,6 +392,28 @@ public sealed class RaidReadyCheck
     {
     }
 
+    private RaidReadyCheck(
+        Guid id,
+        Guid raidId,
+        Guid startedByCharacterId,
+        DateTimeOffset startedAtUtc,
+        DateTimeOffset expiresAtUtc)
+    {
+        if (id == Guid.Empty || raidId == Guid.Empty || startedByCharacterId == Guid.Empty)
+            throw new ArgumentException("Raid ready-check identifiers cannot be empty.");
+        EnsureUtc(startedAtUtc);
+        EnsureUtc(expiresAtUtc);
+        if (expiresAtUtc <= startedAtUtc)
+            throw new ArgumentException("Raid ready check must expire after it starts.");
+
+        Id = id;
+        RaidId = raidId;
+        StartedByCharacterId = startedByCharacterId;
+        State = RaidReadyCheckState.Open;
+        StartedAtUtc = startedAtUtc;
+        ExpiresAtUtc = expiresAtUtc;
+    }
+
     public Guid Id { get; private set; }
     public Guid RaidId { get; private set; }
     public Guid StartedByCharacterId { get; private set; }
@@ -289,4 +421,44 @@ public sealed class RaidReadyCheck
     public DateTimeOffset StartedAtUtc { get; private set; }
     public DateTimeOffset ExpiresAtUtc { get; private set; }
     public DateTimeOffset? CompletedAtUtc { get; private set; }
+
+    public static RaidReadyCheck Create(
+        Guid id,
+        Guid raidId,
+        Guid startedByCharacterId,
+        DateTimeOffset startedAtUtc,
+        DateTimeOffset expiresAtUtc) =>
+        new(id, raidId, startedByCharacterId, startedAtUtc, expiresAtUtc);
+
+    public void Complete(DateTimeOffset completedAtUtc)
+    {
+        EnsureUtc(completedAtUtc);
+        if (State != RaidReadyCheckState.Open)
+            throw new InvalidOperationException("Only an open ready check can be completed.");
+        if (completedAtUtc < StartedAtUtc || completedAtUtc >= ExpiresAtUtc)
+            throw new InvalidOperationException("Ready check cannot complete outside its active window.");
+
+        State = RaidReadyCheckState.Completed;
+        CompletedAtUtc = completedAtUtc;
+    }
+
+    public void Expire(DateTimeOffset now)
+    {
+        EnsureUtc(now);
+        if (State == RaidReadyCheckState.Open && now >= ExpiresAtUtc)
+            State = RaidReadyCheckState.Expired;
+    }
+
+    public void Cancel(DateTimeOffset now)
+    {
+        EnsureUtc(now);
+        if (State == RaidReadyCheckState.Open)
+            State = RaidReadyCheckState.Expired;
+    }
+
+    private static void EnsureUtc(DateTimeOffset value)
+    {
+        if (value.Offset != TimeSpan.Zero)
+            throw new ArgumentException("Raid ready-check timestamps must be UTC.", nameof(value));
+    }
 }
