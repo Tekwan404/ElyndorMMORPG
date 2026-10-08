@@ -178,12 +178,81 @@ public sealed partial class CombatSession
             {
                 _activePlayerState = state;
                 InitializePaladinLoadout(now);
+                ConfigurePaladinHitAdmission();
             }
         }
         finally
         {
             _activePlayerState = previous;
         }
+    }
+
+    // All party members may be protected by another Paladin. Attach to their
+    // authoritative pre-HP admission path even if this actor is not a Paladin.
+    private void ConfigurePaladinHitAdmission()
+    {
+        CombatActorState actor = _player.Actor;
+        IncomingHpDamageInterceptor? previous = actor.IncomingHpDamageInterceptor;
+        PaladinSessionRuntimeState? bastionState = IsActivePaladin && HasPaladinTalent("P-8-1")
+            ? ActivePaladinState() : null;
+
+        actor.IncomingHpDamageInterceptor = (context, random) =>
+        {
+            IncomingHpDamageResult? preceding = previous?.Invoke(context, random);
+            decimal damage = preceding?.DamageToTarget ?? context.PendingHpDamage;
+            List<CombatEvent> extraEvents = preceding?.RedirectedEvents.ToList() ?? [];
+            if (damage <= 0)
+                return new IncomingHpDamageResult(0, extraEvents);
+
+            // Unbreakable Bastion: only an admitted, post-shield large hit can
+            // start its 20-second ICD. Redirected true damage cannot re-proc it.
+            if (bastionState is not null
+                && context.Source.ActorId != actor.ActorId
+                && damage >= actor.MaxHp * 0.25m
+                && (bastionState.UnbreakableBastionReadyAtUtc is null
+                    || context.OccurredAtUtc >= bastionState.UnbreakableBastionReadyAtUtc))
+            {
+                damage *= 0.80m;
+                bastionState.UnbreakableBastionReadyAtUtc = context.OccurredAtUtc.AddSeconds(20);
+            }
+
+            // Redirect after the target's mitigation/block/shields but BEFORE the
+            // target's HP or ActorDied event is committed. Do not intercept self
+            // damage, and never redirect onto the protected actor or a dead caster.
+            ActiveEffect? intercession = actor.ActiveEffects
+                .Where(effect => effect.Definition.Id == "PALADIN_INTERCESSION"
+                    && effect.ExpiresAtUtc > context.OccurredAtUtc)
+                .OrderByDescending(effect => effect.AppliedAtUtc)
+                .FirstOrDefault();
+            if (context.Source.ActorId != actor.ActorId
+                && intercession is not null
+                && intercession.SourceId != actor.ActorId
+                && _playerStatesByActorId.TryGetValue(intercession.SourceId, out CombatPlayerRuntimeState? protector)
+                && !protector.Definition.Actor.IsDead)
+            {
+                decimal redirect = Math.Min(damage,
+                    PaladinProtectionRuntime.ResolveIntercessionRedirectDamage(damage,
+                        Math.Clamp(intercession.Definition.Magnitude * 100m, 0, 100)));
+                if (redirect > 0)
+                {
+                    CombatActorState protectorActor = protector.Definition.Actor;
+                    DamageResult transferred = DamagePipeline.Resolve(new DamageRequest(
+                        protectorActor, protectorActor, redirect, DamageType.True,
+                        CanMiss: false, CanDodge: false, CanCrit: false,
+                        IgnoreShields: true, SkipDefenseMitigation: true,
+                        MinimumDamage: 0, CanBlock: false, IsUnblockable: true,
+                        SkipIncomingHpInterception: true),
+                        random, context.OccurredAtUtc);
+                    damage -= redirect;
+                    extraEvents.AddRange(transferred.Events.Select(e => e with
+                    {
+                        DefinitionId = "PALADIN_INTERCESSION_REDIRECT",
+                        IsProc = true
+                    }));
+                }
+            }
+            return new IncomingHpDamageResult(damage, extraEvents);
+        };
     }
 
     private void InitializePaladinLoadout(DateTimeOffset now) =>
