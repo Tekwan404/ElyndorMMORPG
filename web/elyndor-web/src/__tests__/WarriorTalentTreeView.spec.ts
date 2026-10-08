@@ -108,16 +108,16 @@ describe('WarriorTalentTreeView', () => {
     wrapper.unmount()
   })
 
-  it('uses the Guardian presentation row without changing the gameplay tier', async () => {
+  it('shows the Guardian capstone on its real ninth gameplay tier', async () => {
     vi.mocked(apiClient.request).mockResolvedValueOnce({
       ...snapshot,
-      earnedPoints: 30,
-      availablePoints: 30,
+      earnedPoints: 42,
+      availablePoints: 42,
       nodes: [{
         ...snapshot.nodes[0],
         id: 'G-6-5',
-        tier: 6,
-        requiredSpentPoints: 25,
+        tier: 9,
+        requiredSpentPoints: 40,
         name: 'НЕПОКОЛЕБИМЫЙ СТРАЖ',
         maxRank: 1,
       }],
@@ -127,8 +127,9 @@ describe('WarriorTalentTreeView', () => {
     await flushPromises()
 
     const node = wrapper.get('[data-talent-node]')
-    expect(node.attributes('data-gameplay-tier')).toBe('6')
+    expect(node.attributes('data-gameplay-tier')).toBe('9')
     expect(node.attributes('data-visual-row')).toBe('9')
+    expect(wrapper.text()).toContain('нужно 40 очков')
     expect(node.attributes('style')).toContain('grid-column: 6')
     wrapper.unmount()
   })
