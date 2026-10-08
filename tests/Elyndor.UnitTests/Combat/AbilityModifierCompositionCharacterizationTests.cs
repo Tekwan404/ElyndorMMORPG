@@ -193,6 +193,17 @@ public sealed class AbilityModifierCompositionCharacterizationTests
     }
 
     [Fact]
+    public void PaladinArtOfWarRankOneReducesFlashOfLightCastTimeAndManaCost()
+    {
+        AbilityDefinition ability = Base("FLASH_OF_LIGHT", "HOLY") with { TargetType = AbilityTargetType.Self };
+        AbilityDefinition result = Both("PALADIN", ability, Generic(ability.Id),
+            f => Buff(f.Player, "PALADIN_ART_OF_WAR", 1));
+        Assert.Equal(AbilityType.Casted, result.Type);
+        Assert.Equal(TimeSpan.FromSeconds(2.65), result.CastTime);
+        Assert.Equal(58.5m, result.ResourceCost);
+    }
+
+    [Fact]
     public void PaladinJudgementCombinesGenericCooldownWithRankBonusesAndCapturedTwoHandLoadout()
     {
         AbilityDefinition ability = Base("JUDGEMENT", "PHYSICAL");
