@@ -68,16 +68,25 @@ describe('BattleArena', () => {
     expect(wrapper.get('[data-character-figure="ally-1"]').attributes('data-aggro')).toBe('true')
   })
 
-  it('anchors server-provided numbers to their target actors', () => {
+  it('anchors newly received server numbers to their target actors without replaying history', async () => {
     const wrapper = mountArena(
       [actor('local', 'Player'), actor('ally-1', 'Player')],
-      [
-        { key: 1, targetActorId: 'ally-1', kind: 'heal', value: 44 },
-        { key: 2, targetActorId: 'enemy', kind: 'crit', value: 91 },
-      ],
+      [{ key: 1, targetActorId: 'enemy', kind: 'damage', value: 12 }],
     )
+
+    // Initial history is already accounted for, so only fresh events are animated.
+    expect(wrapper.get('[data-combat-numbers-for="enemy"]').text()).toBe('')
+    await wrapper.setProps({
+      numbers: [
+        { key: 1, targetActorId: 'enemy', kind: 'damage', value: 12 },
+        { key: 2, targetActorId: 'ally-1', kind: 'heal', value: 44 },
+        { key: 3, targetActorId: 'enemy', kind: 'crit', value: 91 },
+      ],
+    })
 
     expect(wrapper.get('[data-combat-numbers-for="ally-1"]').text()).toContain('+44')
     expect(wrapper.get('[data-combat-numbers-for="enemy"]').text()).toContain('-91')
+    expect(wrapper.get('[data-combat-numbers-for="enemy"]').text()).not.toContain('-12')
+    wrapper.unmount()
   })
 })
