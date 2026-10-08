@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 import cityArt from '@/assets/world/starter-town.webp'
 import ForgeView from '@/game/character/views/ForgeView.vue'
@@ -19,6 +19,7 @@ type CityDestination =
   | 'guild' | 'adventurers' | 'gates' | 'auction' | 'market'
   | 'teleport' | 'bank' | 'craft' | 'arena' | 'professions' | 'store' | 'mailbox'
 
+const props = withDefaults(defineProps<{ openAdventurers?: boolean }>(), { openAdventurers: false })
 const emit = defineEmits<{
   'open-map': []
   'open-inventory': []
@@ -29,6 +30,9 @@ const activeDestination = ref<CityDestination | null>(null)
 const merchantOpen = ref(false)
 const forgeOpen = ref(false)
 const adventurersOpen = ref(false)
+watch(() => props.openAdventurers, (open) => {
+  if (open) adventurersOpen.value = true
+}, { immediate: true })
 
 const cityMarkers: readonly { id: CityDestination; label: string; glyph: GlyphName; x: number; y: number }[] = [
   { id: 'guild', label: 'Гильдия', glyph: 'shield', x: 47, y: 16 },
