@@ -117,7 +117,7 @@ public sealed class ArenaAllTalentBuildExecutionTests(ITestOutputHelper output)
                     or AbilityTargetType.SelfAndPartyMembersInCombat
                     ? first.Actor.ActorId : second.Actor.ActorId;
                 ArenaCommandResult result = session.UseAbility(first.AccountId, "sweep-cast", abilityId, targetId, Now);
-                if (abilityId == "INTERCESSION")
+                if (abilityId == "INTERCESSION" || ability.TargetType == AbilityTargetType.SingleDeadAlly)
                 {
                     Assert.False(result.Succeeded);
                     Assert.Equal("arena_invalid_target", result.ErrorCode);

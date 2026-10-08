@@ -1129,6 +1129,17 @@ public sealed partial class CombatSession
                     : [];
         }
 
+        if (ability.TargetType == AbilityTargetType.SingleDeadAlly)
+        {
+            return _participantRoster.Participants.Any(participant =>
+                    participant.ActorId == requestedTargetActorId
+                    && participant.Status == CombatParticipantStatus.Dead
+                    && _playerStatesByActorId.TryGetValue(participant.ActorId, out var state)
+                    && state.Definition.Actor.IsDead)
+                ? [requestedTargetActorId]
+                : [];
+        }
+
         if (ability.TargetType == AbilityTargetType.SingleAlly)
         {
             if (requestedTargetActorId == Guid.Empty)
@@ -2001,6 +2012,8 @@ public sealed partial class CombatSession
             }
             RegisterThreat(normalized);
             Append(normalized);
+            if (normalized.Type == CombatEventType.ActorResurrected)
+                RestoreResurrectedParticipant(normalized);
             InterruptChannelOnControl(normalized);
             ProcessEnemyInterruptUtilityEvent(normalized);
             ProcessMonsterInterruptActionEvent(normalized);
@@ -2026,6 +2039,18 @@ public sealed partial class CombatSession
                     break;
             }
         }
+    }
+
+    private void RestoreResurrectedParticipant(CombatEvent combatEvent)
+    {
+        CombatParticipantSnapshot? participant = _participantRoster.Participants
+            .FirstOrDefault(item => item.ActorId == combatEvent.ActorId);
+        if (participant is null || !_participantRoster.TryResurrect(participant.CharacterId))
+            return;
+
+        _deadActors.Remove(combatEvent.ActorId);
+        _playerStatesByActorId[combatEvent.ActorId].LastResourceRegenAtUtc = combatEvent.OccurredAtUtc;
+        SyncWarlordConditionalEffects(combatEvent.OccurredAtUtc);
     }
 
     private bool TryActivatePlayerForActor(Guid? actorId)
@@ -2181,7 +2206,11 @@ public sealed partial class CombatSession
             ActivatePlayer(death.ActorId);
             if (!deadPlayer.Definition.Actor.IsDead)
                 return;
-            _participantRoster.TryMarkDead(death.ActorId, death.OccurredAtUtc);
+            Guid characterId = _participantRoster.Participants
+                .Single(participant => participant.ActorId == death.ActorId).CharacterId;
+            _participantRoster.TryMarkDead(characterId, death.OccurredAtUtc);
+            deadPlayer.Runtime.ActiveCast = null;
+            deadPlayer.Runtime.PendingActions.Clear();
             SyncWarlordConditionalEffects(death.OccurredAtUtc);
             ForEachOtherWarlord(() => ApplyWarlordPartyDeathHooks(death.OccurredAtUtc, death.ActorId));
             deadPlayer.AutoAttackEnabled = false;

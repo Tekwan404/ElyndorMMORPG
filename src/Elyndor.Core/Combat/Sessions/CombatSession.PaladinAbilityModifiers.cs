@@ -271,6 +271,19 @@ public sealed partial class CombatSession
         if (!IsActivePaladin)
             return;
         ActivePaladinState().UsesTwoHandedWeapon = usesTwoHandedWeapon;
+        if (EquipmentCategoryIds.IsOneHandedWeapon(_player.MainHandWeaponCategory)
+            && _player.OffHandEquipmentCategory == EquipmentCategoryIds.Shield
+            && TryGetPaladinHook("P-6-2", out var oneHanded))
+        {
+            ApplyPaladinEffect(_player.Actor, new EffectDefinition("PALADIN_ONE_HAND_DAMAGE",
+                EffectKind.StatModifier, TimeSpan.FromHours(12), 1, EffectStackPolicy.Replace,
+                1 + oneHanded.Value / 100m, ModifiedStat: EffectStat.OutgoingDamageMultiplier,
+                ModifierMode: EffectModifierMode.Multiplicative), now);
+            ApplyPaladinEffect(_player.Actor, new EffectDefinition("PALADIN_ONE_HAND_ACCURACY",
+                EffectKind.StatModifier, TimeSpan.FromHours(12), 1, EffectStackPolicy.Replace,
+                oneHanded.SecondaryValue, ModifiedStat: EffectStat.Accuracy,
+                ModifierMode: EffectModifierMode.Flat), now);
+        }
         if (TryGetPaladinHook("P-1-1", out var toughness) && equipmentArmor > 0)
             ApplyPaladinEffect(_player.Actor, new EffectDefinition("PALADIN_TOUGHNESS_ARMOR",
                 EffectKind.StatModifier, TimeSpan.FromHours(12), 1, EffectStackPolicy.Replace,

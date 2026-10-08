@@ -30,6 +30,8 @@ function healthRatio(actor: CombatActorSnapshot): number {
 }
 
 const visibleAllies = computed(() => props.allies.slice(0, 5))
+const canSelectDead = computed(() => props.allies.find(ally => ally.actorId === props.localActorId)
+  ?.abilities?.some(ability => ability.targetType === 'SingleDeadAlly') ?? false)
 </script>
 
 <template>
@@ -49,7 +51,7 @@ const visibleAllies = computed(() => props.allies.slice(0, 5))
       :data-aggro="aggroActorIds.includes(ally.actorId)"
       :aria-pressed="selectedActorId === ally.actorId"
       :aria-label="`${ally.name}, ${Math.round(healthRatio(ally))}% HP${aggroActorIds.includes(ally.actorId) ? ', под агро' : ''}`"
-      :disabled="disabled || ally.hp <= 0"
+      :disabled="disabled || (ally.hp <= 0 && !canSelectDead)"
       @click="emit('select', ally.actorId)"
     >
       <span class="allies-strip__portrait">

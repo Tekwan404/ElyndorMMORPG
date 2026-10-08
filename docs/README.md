@@ -13,6 +13,7 @@
   [ability composition](development/ability-modifier-composition.md),
   [resource orchestration](development/combat-resource-runtime.md),
   [Mage Core, channels and Mana economy](development/mage-core-mana-channels.md),
+  [Paladin resurrection and remaining P1 contracts](development/paladin-resurrection-p1.md),
   [proc safety](development/proc-safety.md),
   [PvP player mechanics](development/pvp-player-mechanics-parity.md),
   [arena invitations](development/arena-friend-invitations.md).

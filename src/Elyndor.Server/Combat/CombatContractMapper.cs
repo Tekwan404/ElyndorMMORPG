@@ -191,6 +191,7 @@ internal static class CombatContractMapper
             {
                 AbilityActionType.Damage => "Наносит урон цели.",
                 AbilityActionType.Healing => "Восстанавливает здоровье.",
+                AbilityActionType.Resurrect => "Воскрешает погибшего союзника.",
                 AbilityActionType.ApplyEffect => "Накладывает боевой эффект.",
                 AbilityActionType.ResourceChange => action.Amount >= 0
                     ? "Восстанавливает ресурс."
@@ -215,6 +216,7 @@ internal static class CombatContractMapper
             {
                 AbilityTargetType.Self => "Применяется к персонажу.",
                 AbilityTargetType.SingleAlly => "Применяется к выбранному союзнику.",
+                AbilityTargetType.SingleDeadAlly => "Применяется к погибшему участнику группы.",
                 AbilityTargetType.SingleEnemy => "Применяется к выбранному противнику.",
                 AbilityTargetType.AllEnemiesInCombat => "Воздействует на всех противников в бою.",
                 AbilityTargetType.NEnemiesInCombat => "Воздействует на несколько противников в бою.",

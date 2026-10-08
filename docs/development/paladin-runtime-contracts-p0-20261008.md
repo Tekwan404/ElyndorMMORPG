@@ -1,5 +1,9 @@
 # Paladin P0 talent-runtime contracts — 8 October 2026
 
+Follow-up: the five P1 gaps listed below are completed by
+[Paladin resurrection and P1 contracts](paladin-resurrection-p1.md), content
+0.49.0 / balance 0.39.0. The original PR inventory below records its delivery scope.
+
 This change is stacked on top of the prior **96/96 Paladin description review** (PR #343), not a global DPS rebalance. It closes concrete combat behavior gaps using the existing authoritative CombatSession and ability/effect pipeline.
 
 ## Finished contracts (14 of the 19 complete-contract gaps)

@@ -47,6 +47,21 @@ describe('BattleHeader', () => {
     expect(wrapper.emitted('selectFriendly')).toEqual([['ally']])
   })
 
+  it('allows selecting a corpse only when the local actor has resurrection', async () => {
+    const local = actor('local', 'Player')
+    const ally = { ...actor('ally', 'Player'), hp: 0 }
+    const wrapper = mount(BattleHeader, { props: {
+      localActor: local, enemy: actor('enemy', 'Monster'), allies: [local, ally],
+      selectedFriendlyActorId: 'local', aggroActorIds: [], disabled: false,
+    } })
+    expect(wrapper.get('[data-ally-strip-actor="ally"]').attributes('disabled')).toBeDefined()
+    const paladin = { ...local, abilities: [{ id: 'RESURRECTION', targetType: 'SingleDeadAlly' }] } as CombatActorSnapshot
+    await wrapper.setProps({ localActor: paladin, allies: [paladin, ally] })
+    expect(wrapper.get('[data-ally-strip-actor="ally"]').attributes('disabled')).toBeUndefined()
+    await wrapper.get('[data-ally-strip-actor="ally"]').trigger('click')
+    expect(wrapper.emitted('selectFriendly')).toEqual([['ally']])
+  })
+
   it('shows selected and aggro states independently in the strip', () => {
     const local = actor('local', 'Player')
     const ally = actor('ally', 'Player')

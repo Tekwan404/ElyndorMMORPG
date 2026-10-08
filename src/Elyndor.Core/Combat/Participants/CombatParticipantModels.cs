@@ -145,6 +145,17 @@ public sealed class CombatParticipantRoster
         return true;
     }
 
+    public bool TryResurrect(Guid characterId)
+    {
+        if (!_participants.TryGetValue(characterId, out ParticipantState? participant)
+            || participant.Status != CombatParticipantStatus.Dead)
+            return false;
+
+        participant.Status = CombatParticipantStatus.Active;
+        participant.DiedAtUtc = null;
+        return true;
+    }
+
     public bool HasActiveParticipants() =>
         _participants.Values.Any(item => item.Status is CombatParticipantStatus.Active);
 

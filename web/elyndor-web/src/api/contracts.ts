@@ -837,6 +837,7 @@ export interface CombatAbility {
 export type CombatAbilityTargetType =
   | 'Self'
   | 'SingleAlly'
+  | 'SingleDeadAlly'
   | 'SingleEnemy'
   | 'AllEnemiesInCombat'
   | 'NEnemiesInCombat'

@@ -23,11 +23,13 @@ import type {
 
 type CombatRealtimeStage = 'auth_refresh' | 'signalr_start' | 'hub_invoke' | 'resume'
 
-function activeFriendlyActors(current: CombatSnapshot): CombatActorSnapshot[] {
+function selectableFriendlyActors(current: CombatSnapshot): CombatActorSnapshot[] {
   const rosterStatus = new Map(current.participantRoster?.map(item => [item.actorId, item.status]))
+  const canResurrect = current.player.abilities?.some(ability => ability.targetType === 'SingleDeadAlly')
   return [current.player, ...(current.players ?? [])]
-    .filter((actor, index, actors) => actor.hp > 0
-      && (rosterStatus.get(actor.actorId) ?? 'Active') === 'Active'
+    .filter((actor, index, actors) => ((actor.hp > 0
+      && (rosterStatus.get(actor.actorId) ?? 'Active') === 'Active')
+      || (canResurrect && actor.hp <= 0 && rosterStatus.get(actor.actorId) === 'Dead'))
       && actors.findIndex(candidate => candidate.actorId === actor.actorId) === index)
 }
 
@@ -465,7 +467,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   function selectFriendlyTarget(targetActorId: string): void {
     const current = snapshot.value
     if (!current || current.status !== 'Active') return
-    const activeFriendlies = activeFriendlyActors(current)
+    const activeFriendlies = selectableFriendlyActors(current)
     if (activeFriendlies.some(actor => actor.actorId === targetActorId)) {
       selectedFriendlyTargetActorId.value = targetActorId
     }
@@ -475,7 +477,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     if (!targetType || targetType === 'SingleEnemy') {
       return current.selectedTargetActorId ?? current.enemy.actorId
     }
-    if (targetType === 'SingleAlly') {
+    if (targetType === 'SingleAlly' || targetType === 'SingleDeadAlly') {
       return selectedFriendlyTargetActorId.value ?? current.player.actorId
     }
     return current.player.actorId
@@ -855,7 +857,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       selectedFriendlyTargetActorId.value = null
       return
     }
-    const activeFriendlies = activeFriendlyActors(current)
+    const activeFriendlies = selectableFriendlyActors(current)
     if (!activeFriendlies.some(actor => actor.actorId === selectedFriendlyTargetActorId.value)) {
       selectedFriendlyTargetActorId.value = activeFriendlies.find(actor => actor.actorId === current.player.actorId)?.actorId
         ?? activeFriendlies[0]?.actorId ?? null

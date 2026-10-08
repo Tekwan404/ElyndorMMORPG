@@ -44,7 +44,8 @@
         "JUDGEMENT",
         "SEAL_OF_RIGHTEOUSNESS",
         "DEVOTION_AURA",
-        "LAY_ON_HANDS"
+        "LAY_ON_HANDS",
+        "RESURRECTION"
       ],
       "startingEquipmentItemIds": [
         "RECRUIT_IRON_SWORD"

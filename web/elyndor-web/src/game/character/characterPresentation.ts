@@ -93,5 +93,6 @@ export function abilityTargetLabel(targetType: string): string {
   if (targetType === 'SingleEnemy') return 'Один противник'
   if (targetType === 'AllEnemiesInCombat') return 'Все противники'
   if (targetType === 'SingleAlly') return 'Один союзник'
+  if (targetType === 'SingleDeadAlly') return 'Погибший союзник'
   return 'Особая цель'
 }

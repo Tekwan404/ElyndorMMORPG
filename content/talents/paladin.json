@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.48.0",
-  "balanceVersion": "0.38.0",
-  "publishedAtUtc": "2026-10-08T07:40:00+00:00",
+  "contentVersion": "0.49.0",
+  "balanceVersion": "0.39.0",
+  "publishedAtUtc": "2026-10-08T08:30:00+00:00",
   "talentTrees": [
     {
       "id": "PALADIN_TREE",
@@ -305,20 +305,22 @@
           "englishName": "Judgement of Wisdom",
           "maxRank": 1,
           "prerequisites": [],
-          "description": "«Правосудие» на 12 сек. накладывает эффект, благодаря которому атаки союзников могут восстанавливать им ману. Срабатывания имеют личную перезарядку.",
+          "description": "«Правосудие» на 12 сек. отмечает врага. Прямое попадание союзника по этой цели с вероятностью 50% возвращает ему 2% максимальной маны. Личная перезарядка — 2 сек.; периодический урон и срабатывания эффектов не учитываются.",
           "modifiers": [
             {
               "type": "EventTriggered",
               "key": "ON_ABILITY_USED",
               "values": [
-                1
+                2
               ],
               "targetId": "PALADIN_H_3_3",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported",
+              "durationSeconds": 12,
+              "internalCooldownSeconds": 2,
+              "chancePercent": 50
             }
           ],
-          "version": 1
+          "version": 2
         },
         {
           "id": "H-3-4",
@@ -681,20 +683,22 @@
           "englishName": "Judgement of Light",
           "maxRank": 1,
           "prerequisites": [],
-          "description": "«Правосудие» отмечает врага: атаки союзников по нему могут восстанавливать немного здоровья. У эффекта есть личная перезарядка.",
+          "description": "«Правосудие» на 12 сек. отмечает врага. Прямое попадание союзника по этой цели с вероятностью 50% восстанавливает ему 2% максимального здоровья. Личная перезарядка — 2 сек.; периодический урон и срабатывания эффектов не учитываются.",
           "modifiers": [
             {
               "type": "EventTriggered",
               "key": "ON_ABILITY_USED",
               "values": [
-                1
+                2
               ],
               "targetId": "PALADIN_H_7_1",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "PARTY"
+              "runtimeStatus": "Supported",
+              "durationSeconds": 12,
+              "internalCooldownSeconds": 2,
+              "chancePercent": 50
             }
           ],
-          "version": 1
+          "version": 2
         },
         {
           "id": "H-7-2",
@@ -1178,7 +1182,7 @@
           "englishName": "Consecrated Ground",
           "maxRank": 2,
           "prerequisites": [],
-          "description": "Увеличивает периодический урон «Освящения» на 10 / 20%.",
+          "description": "Увеличивает периодический урон «Освящения» на 10 / 20% и создаваемую этим уроном угрозу ещё на 10 / 20%.",
           "modifiers": [
             {
               "type": "EventTriggered",
@@ -1188,11 +1192,14 @@
                 20
               ],
               "targetId": "PALADIN_P_3_4",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported",
+              "secondaryValues": [
+                10,
+                20
+              ]
             }
           ],
-          "version": 1
+          "version": 2
         },
         {
           "id": "P-4-1",
@@ -1445,22 +1452,26 @@
           "englishName": "One-Handed Weapon Specialization",
           "maxRank": 3,
           "prerequisites": [],
-          "description": "При использовании одноручного оружия и щита увеличивает урон и точность паладина.",
+          "description": "При использовании одноручного оружия и щита увеличивает весь исходящий урон на 2 / 4 / 6% и точность на 1 / 2 / 3%.",
           "modifiers": [
             {
               "type": "EventTriggered",
               "key": "ON_DAMAGE_TAKEN",
               "values": [
-                1,
-                1,
-                1
+                2,
+                4,
+                6
               ],
               "targetId": "PALADIN_P_6_2",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported",
+              "secondaryValues": [
+                1,
+                2,
+                3
+              ]
             }
           ],
-          "version": 1
+          "version": 2
         },
         {
           "id": "P-6-3",
@@ -2193,22 +2204,26 @@
           "englishName": "Fanaticism",
           "maxRank": 3,
           "prerequisites": [],
-          "description": "Повышает шанс критического удара «Правосудия» на 3 / 6 / 9% и снижает угрозу от урона Воздаяния.",
+          "description": "Повышает шанс критического удара «Правосудия» на 3 / 6 / 9% и снижает угрозу от автоатак, «Правосудия», «Удара воина Света», «Вердикта храмовника», «Божественной бури» и урона печатей на 10 / 20 / 30%. Не снижает угрозу «Освящения» или лечения.",
           "modifiers": [
             {
               "type": "EventTriggered",
               "key": "ON_ABILITY_USED",
               "values": [
-                1,
-                1,
-                1
+                3,
+                6,
+                9
               ],
               "targetId": "PALADIN_R_5_2",
-              "runtimeStatus": "Deferred",
-              "deferredOwner": "COMBAT_SESSION"
+              "runtimeStatus": "Supported",
+              "secondaryValues": [
+                10,
+                20,
+                30
+              ]
             }
           ],
-          "version": 1
+          "version": 2
         },
         {
           "id": "R-5-3",

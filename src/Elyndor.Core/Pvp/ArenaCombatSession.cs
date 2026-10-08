@@ -1067,6 +1067,7 @@ public sealed class ArenaCombatSession
                 || !classHandled && ability.RuntimeParameters?.Count > 0
                 || !classHandled && ability.Actions is null or { Count: 0 }
                 || ability.TargetType is not (AbilityTargetType.Self or AbilityTargetType.SingleAlly
+                or AbilityTargetType.SingleDeadAlly
                 or AbilityTargetType.SingleEnemy or AbilityTargetType.AllEnemiesInCombat
                 or AbilityTargetType.NEnemiesInCombat)
                 && !IsSupportedSoloPartyAbility(ability)

@@ -245,6 +245,7 @@ public sealed class CombatSessionFactory(
             SkinId: character.ActiveSkinId,
             EquipmentArmor: derived.Equipment.ArmorFlat,
             MainHandWeaponCategory: derived.Equipment.MainHandWeaponCategory,
+            OffHandEquipmentCategory: offHandItem?.Definition.OffHandCategory,
             SetPassives: EquipmentSetEffectResolver.Resolve(contentSnapshot.Package.EquipmentSets ?? []),
             ItemSpecialEffects: contentSnapshot.Package.ItemSpecialEffects);
         CombatParticipantDefinition? companion =
@@ -460,6 +461,7 @@ public sealed class CombatSessionFactory(
             SkinId: character.ActiveSkinId,
             EquipmentArmor: derived.Equipment.ArmorFlat,
             MainHandWeaponCategory: derived.Equipment.MainHandWeaponCategory,
+            OffHandEquipmentCategory: offHandItem?.Definition.OffHandCategory,
             SetPassives: EquipmentSetEffectResolver.Resolve(contentSnapshot.Package.EquipmentSets ?? []),
             ItemSpecialEffects: contentSnapshot.Package.ItemSpecialEffects);
         IReadOnlyDictionary<string, DateTimeOffset> cooldowns =

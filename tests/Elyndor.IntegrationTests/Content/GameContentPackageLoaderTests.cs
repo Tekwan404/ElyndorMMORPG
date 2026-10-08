@@ -13,6 +13,23 @@ namespace Elyndor.IntegrationTests.Content;
 public sealed class GameContentPackageLoaderTests
 {
     [Fact]
+    public async Task ResurrectionIsBasePaladinAbilityWithExplicitDeadAllyAction()
+    {
+        var package = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
+        var paladin = Assert.Single(package.ClassProfiles!, profile => profile.Id == "PALADIN");
+        Assert.Contains("RESURRECTION", CharacterKnownAbilityResolver.Resolve(paladin, level: 1));
+        var ability = Assert.Single(package.Abilities!, definition => definition.Id == "RESURRECTION");
+        Assert.Equal(AbilityTargetType.SingleDeadAlly, ability.TargetType);
+        Assert.Equal(AbilityType.Casted, ability.Type);
+        Assert.True(ability.Interruptible);
+        Assert.False(ability.AllowSelfTarget);
+        var action = Assert.Single(ability.Actions!);
+        Assert.Equal(AbilityActionType.Resurrect, action.Type);
+        Assert.Equal(30, action.TargetMaxHpPercent);
+        Assert.Equal(20, action.TargetMaxResourcePercent);
+    }
+
+    [Fact]
     public void EveryAuthoredEquipmentDefinitionDeclaresGenerationMode()
     {
         string contentDirectory = Path.GetFullPath("content");
@@ -73,8 +90,8 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.48.0", package.ContentVersion);
-        Assert.Equal("0.38.0", package.BalanceVersion);
+        Assert.Equal("0.49.0", package.ContentVersion);
+        Assert.Equal("0.39.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");
