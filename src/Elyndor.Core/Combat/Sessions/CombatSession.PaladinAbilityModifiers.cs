@@ -21,6 +21,8 @@ public sealed partial class CombatSession
         _paladinSessionStates.TryGetValue(_player.Actor.ActorId, out var state);
         decimal cost = ability.ResourceCost;
         decimal criticalBonus = ability.CriticalChanceBonus;
+        decimal criticalDamageBonus = ability.CriticalDamageBonus;
+        decimal accuracyBonus = ability.AccuracyBonus;
         decimal damageMultiplier = ability.DamageMultiplier;
         TimeSpan cooldown = ability.Cooldown;
         TimeSpan castTime = ability.CastTime;
@@ -51,6 +53,44 @@ public sealed partial class CombatSession
             damageMultiplier *= 1 + 0.03m * specialization.Rank;
         if (ability.Id == "DIVINE_FAVOR" && TryGetPaladinHook("H-3-2", out var favor))
             cooldown -= TimeSpan.FromSeconds(5 * favor.Rank);
+
+        if (ability.Id == "LAY_ON_HANDS" && TryGetPaladinHook("H-3-4", out var layHands))
+            cooldown -= TimeSpan.FromSeconds(60 * layHands.Rank);
+
+        if (ability.Id is "HOLY_SHOCK" or "HOLY_SHOCK_OFFENSIVE"
+            && TryGetPaladinHook("H-4-2", out var improvedShock))
+        {
+            cooldown -= TimeSpan.FromSeconds(improvedShock.Rank);
+            criticalBonus += 2 * improvedShock.Rank;
+        }
+
+        if (ability.Id == "BLESSING_OF_PROTECTION"
+            && TryGetPaladinHook("P-2-4", out var guardianFavor))
+            cooldown -= TimeSpan.FromSeconds(5 * guardianFavor.Rank);
+
+        if (ability.Id == "AVENGERS_SHIELD"
+            && TryGetPaladinHook("P-5-2", out var improvedAvenger))
+        {
+            cooldown -= TimeSpan.FromSeconds(improvedAvenger.Rank);
+            damageMultiplier *= 1 + 0.10m * improvedAvenger.Rank;
+        }
+
+        if (ability.Id == "CRUSADER_STRIKE"
+            && TryGetPaladinHook("R-3-4", out var improvedCrusader))
+        {
+            cooldown -= TimeSpan.FromSeconds(0.5 * improvedCrusader.Rank);
+            criticalBonus += 3 * improvedCrusader.Rank;
+        }
+
+        if (ability.Id == "JUDGEMENT" && TryGetPaladinHook("R-4-4", out var righteousVerdict))
+        {
+            damageMultiplier *= 1 + 0.06m * righteousVerdict.Rank;
+            criticalBonus += 3 * righteousVerdict.Rank;
+        }
+
+        if (offensive && ActivePaladinEffect("PALADIN_AVENGING_WRATH", now) is not null
+            && TryGetPaladinHook("R-7-2", out var wrathfulVengeance))
+            criticalDamageBonus += 10 * wrathfulVengeance.Rank;
         if (ability.Id == "JUDGEMENT")
         {
             if (TryGetPaladinHook("R-2-1", out var judgement))
@@ -60,10 +100,18 @@ public sealed partial class CombatSession
         }
         if (ability.Id == "HOLY_LIGHT" && ActivePaladinEffect(PaladinLightsGraceEffectId, now) is { } grace)
             castTime -= TimeSpan.FromSeconds((double)grace.Definition.Magnitude);
-        if (ability.Id == "FLASH_OF_LIGHT"
-            && (ActivePaladinEffect(PaladinArtOfWarEffectId, now)?.Definition.Magnitude >= 2
-                || ActivePaladinEffect("PALADIN_SURGE_OF_LIGHT", now)?.Definition.Magnitude >= 2))
-            castTime = TimeSpan.Zero;
+        if (ability.Id == "FLASH_OF_LIGHT")
+        {
+            decimal instantRank = Math.Max(
+                ActivePaladinEffect(PaladinArtOfWarEffectId, now)?.Definition.Magnitude ?? 0,
+                ActivePaladinEffect("PALADIN_SURGE_OF_LIGHT", now)?.Definition.Magnitude ?? 0);
+            if (instantRank >= 2)
+                castTime = TimeSpan.Zero;
+            else if (instantRank >= 1)
+                castTime -= TimeSpan.FromSeconds(0.35);
+            if (instantRank >= 1)
+                cost *= 1 - 0.10m * instantRank;
+        }
         if (ability.Id is "HOLY_SHOCK" or "HOLY_SHOCK_OFFENSIVE"
             && state?.Healing.NextHolyShockFree == true
             && ActivePaladinEffect(PaladinHeraldFreeShockEffectId, now) is not null)
@@ -82,6 +130,14 @@ public sealed partial class CombatSession
                 { Duration = TimeSpan.FromSeconds((double)ResolveHolyShieldDurationSeconds()) },
                 "PALADIN_AVENGING_WRATH" when HasPaladinTalent("R-9-1") => action.Effect with
                 { Duration = TimeSpan.FromSeconds(16) },
+                PaladinDevotionAuraEffectId when TryGetPaladinHook("P-1-4", out var devotion) =>
+                    action.Effect with { Magnitude = action.Effect.Magnitude + 0.03m * devotion.Rank },
+                "PALADIN_BLESSING_PROTECTION" when TryGetPaladinHook("P-2-4", out var favorOfGuardian) =>
+                    action.Effect with { Duration = action.Effect.Duration + TimeSpan.FromSeconds(favorOfGuardian.Rank) },
+                "PALADIN_CONSECRATION_DAMAGE" when TryGetPaladinHook("P-3-4", out var consecrated) =>
+                    action.Effect with { Magnitude = action.Effect.Magnitude * (1 + 0.10m * consecrated.Rank) },
+                "PALADIN_BLESSING_SANCTUARY" when HasPaladinTalent("P-8-3") =>
+                    action.Effect with { Magnitude = action.Effect.Magnitude - 0.05m },
                 _ => action.Effect
             }
         }).ToArray();
@@ -92,6 +148,8 @@ public sealed partial class CombatSession
             CastTime = castTime < TimeSpan.Zero ? TimeSpan.Zero : castTime,
             Type = ability.Type == AbilityType.Casted && castTime <= TimeSpan.Zero ? AbilityType.Instant : ability.Type,
             CriticalChanceBonus = criticalBonus,
+            CriticalDamageBonus = criticalDamageBonus,
+            AccuracyBonus = accuracyBonus,
             DamageMultiplier = damageMultiplier,
             Actions = actions
         };
@@ -139,7 +197,12 @@ public sealed partial class CombatSession
         decimal damage = state?.UsesTwoHandedWeapon == true && TryGetPaladinHook("R-2-3", out var specialization)
             ? 1 + 0.03m * specialization.Rank : 1;
         decimal critical = TryGetPaladinHook("R-1-3", out var conviction) ? conviction.Rank : 0;
-        return new AbilityTargetModifier(DamageMultiplier: damage, CriticalChanceBonus: critical);
+        decimal criticalDamage = ActivePaladinEffect("PALADIN_AVENGING_WRATH", now) is not null
+            && TryGetPaladinHook("R-7-2", out var wrathfulVengeance) ? 10 * wrathfulVengeance.Rank : 0;
+        return new AbilityTargetModifier(
+            DamageMultiplier: damage,
+            CriticalChanceBonus: critical,
+            CriticalDamageBonus: criticalDamage);
     }
 
     private void ConfigurePaladinIncomingDamage(PaladinSessionRuntimeState state)
