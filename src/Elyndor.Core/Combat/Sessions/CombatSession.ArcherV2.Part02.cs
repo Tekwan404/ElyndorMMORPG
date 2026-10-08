@@ -378,11 +378,26 @@ ArcherRuntimeParameter(
 duration,
 now);
 RemoveCompanionControls(now);
-bool resetCommand =
-TryGetArcherHook("B-7-2", "PRIMAL_COMMAND", out _)
-|| TryGetArcherHook("B-8-3", "BESTIAL_WRATH_UNSTOPPABLE", out _);
-if (resetCommand)
+// Only Primal Command resets Command: Attack. Unstoppable Pack instead grants
+// immunity to all five control kinds for the duration of Bestial Wrath.
+if (TryGetArcherHook("B-7-2", "PRIMAL_COMMAND", out _))
 _playerRuntime.Cooldowns.Remove("COMMAND_ATTACK");
+if (TryGetArcherHook("B-8-3", "BESTIAL_WRATH_UNSTOPPABLE", out _))
+{
+RemoveCompanionExtendedControls(now);
+ApplyArcherEffect(
+_companion.Actor,
+new EffectDefinition(
+"ARCHER_UNSTOPPABLE_PACK_IMMUNITY",
+EffectKind.Buff,
+duration,
+1,
+EffectStackPolicy.Replace,
+0,
+ControlImmunities:
+[EffectKind.Stun, EffectKind.Silence, EffectKind.Root, EffectKind.Fear, EffectKind.Disarm]),
+now);
+}
 _bestialWrathFirstCommandAvailable =
 TryGetArcherHook("B-7-2", "PRIMAL_COMMAND", out _);
 }
