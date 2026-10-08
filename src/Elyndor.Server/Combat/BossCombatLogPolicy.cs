@@ -23,7 +23,8 @@ internal static class BossCombatLogPolicy
         if (TryResolve(snapshot, out target))
             return true;
 
-        CombatActorSnapshot enemy = (snapshot.Enemies ?? [snapshot.Enemy]).First();
+        IReadOnlyList<CombatActorSnapshot> enemies = snapshot.Enemies ?? [snapshot.Enemy];
+        CombatActorSnapshot enemy = enemies[0];
         target = new(
             enemy.DefinitionId,
             string.IsNullOrWhiteSpace(enemy.Name) ? enemy.DefinitionId : enemy.Name,
