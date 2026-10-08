@@ -827,15 +827,14 @@ public sealed partial class CombatSession
                 && !string.IsNullOrWhiteSpace(effect.Definition.DispelCategory))
             .OrderBy(effect => effect.Sequence)
             .FirstOrDefault();
-        if (negative is not null && negative.Definition.DispelCategory is { } category)
-        {
-            ApplyKernelEvents(
-                EffectEngine.Dispel(target, category, now),
-                _player.Actor.ActorId,
-                target.ActorId,
-                "CLEANSE");
-        }
+        if (negative is null || negative.Definition.DispelCategory is not { } category)
+            return;
 
+        IReadOnlyList<CombatEvent> dispelled = EffectEngine.Dispel(target, category, now);
+        if (dispelled.Count == 0)
+            return;
+
+        ApplyKernelEvents(dispelled, _player.Actor.ActorId, target.ActorId, "CLEANSE");
         if (TryGetPaladinHook("H-7-2", out ResolvedTalentEventHook sacredCleansing))
         {
             ApplySecondaryPaladinHealing(
