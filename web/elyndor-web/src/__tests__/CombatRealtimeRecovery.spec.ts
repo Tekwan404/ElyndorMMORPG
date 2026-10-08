@@ -68,6 +68,23 @@ function recoveryUpdate(sequence = 1) {
   }
 }
 
+function abilityUpdate(sequence = 1) {
+  const update = recoveryUpdate(sequence)
+  return {
+    ...update,
+    snapshot: {
+      ...update.snapshot,
+      player: {
+        ...update.snapshot.player,
+        abilities: [
+          { id: 'HEROIC_STRIKE', targetType: 'SingleEnemy' },
+          { id: 'SHIELD_SLAM', targetType: 'SingleEnemy' },
+        ],
+      },
+    },
+  }
+}
+
 describe('combat realtime recovery', () => {
   afterEach(() => {
     vi.clearAllTimers()
@@ -515,14 +532,107 @@ describe('combat realtime recovery', () => {
     expect(store.reward?.xpEarned).toBe(25)
   })
 
-  it.each(['domain rejection', 'transport error'])('resumes authoritative state after an ordinary command %s', async failure => {
+  it.each([
+    'combat_ability_on_cooldown',
+    'combat_insufficient_resource',
+    'combat_invalid_target',
+    'combat_invalid_state',
+  ])('keeps combat connected after an ordinary %s ability rejection', async errorCode => {
     vi.useFakeTimers()
+    realtimeMock.invoke.mockImplementation(method => Promise.resolve(
+      method === 'UseAbility'
+        ? { ...abilityUpdate(2), succeeded: false, errorCode }
+        : method === 'ResumeCombatFromSequence' ? abilityUpdate(3) : [],
+    ))
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(abilityUpdate())
+    await store.useAbility('HEROIC_STRIKE')
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(store.errorCode).toBe(errorCode)
+    expect(store.snapshot?.sequence).toBe(2)
+    expect(store.connectionState).toBe('connected')
+    expect(store.lastResyncedAtUtc).toBeNull()
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(1)
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'ResumeCombatFromSequence')).toHaveLength(0)
+  })
+
+  it('queues another ability while the first is pending without resyncing on a cooldown rejection', async () => {
+    vi.useFakeTimers()
+    let finishFirst!: (result: unknown) => void
+    let abilityCalls = 0
     realtimeMock.invoke.mockImplementation(method => {
-      if (method === 'StartAutoAttack') return failure === 'domain rejection'
-        ? Promise.resolve({ succeeded: false, errorCode: 'combat_invalid_state' })
-        : Promise.reject(new Error('command failed'))
-      return Promise.resolve(method === 'ResumeCombatFromSequence' ? recoveryUpdate(2) : [])
+      if (method === 'UseAbility') {
+        abilityCalls++
+        return abilityCalls === 1
+          ? new Promise(resolve => { finishFirst = resolve })
+          : Promise.resolve(abilityUpdate(3))
+      }
+      return Promise.resolve(method === 'ResumeCombatFromSequence' ? abilityUpdate(4) : [])
     })
+
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(abilityUpdate())
+    await store.useAbility('HEROIC_STRIKE')
+    await vi.advanceTimersByTimeAsync(0)
+    expect(store.abilityPending).toBe(true)
+
+    await store.useAbility('SHIELD_SLAM')
+    expect(store.abilityQueue.map(item => item.abilityId)).toEqual(['SHIELD_SLAM'])
+    finishFirst({ ...abilityUpdate(2), succeeded: false, errorCode: 'combat_ability_on_cooldown' })
+    await vi.advanceTimersByTimeAsync(40)
+
+    const sent = realtimeMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
+    expect(sent.map(call => call[2])).toEqual(['HEROIC_STRIKE', 'SHIELD_SLAM'])
+    expect(store.snapshot?.sequence).toBe(3)
+    expect(store.connectionState).toBe('connected')
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'ResumeCombatFromSequence')).toHaveLength(0)
+  })
+
+  it('does not treat the server rate limit as a broken SignalR connection', async () => {
+    vi.useFakeTimers()
+    realtimeMock.invoke.mockImplementation(method => method === 'UseAbility'
+      ? Promise.reject(new Error('HubException: rate_limited'))
+      : Promise.resolve(method === 'ResumeCombatFromSequence' ? abilityUpdate(2) : []))
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(abilityUpdate())
+    await store.useAbility('HEROIC_STRIKE')
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(store.errorCode).toBe('rate_limited')
+    expect(store.connectionState).toBe('connected')
+    expect(store.abilityPending).toBe(false)
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'ResumeCombatFromSequence')).toHaveLength(0)
+  })
+
+  it.each(['combat_duplicate_command', 'combat_not_found'])('still resyncs after %s', async errorCode => {
+    vi.useFakeTimers()
+    realtimeMock.invoke.mockImplementation(method => Promise.resolve(
+      method === 'UseAbility'
+        ? { succeeded: false, errorCode, snapshot: null, events: [], reward: null }
+        : method === 'ResumeCombatFromSequence' ? abilityUpdate(2) : [],
+    ))
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(abilityUpdate())
+    await store.useAbility('HEROIC_STRIKE')
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(store.snapshot?.sequence).toBe(2)
+    expect(store.connectionState).toBe('connected')
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'ResumeCombatFromSequence')).toEqual([
+      ['ResumeCombatFromSequence', 0],
+    ])
+  })
+
+  it('resumes authoritative state after a transport error during an ordinary command', async () => {
+    vi.useFakeTimers()
+    realtimeMock.invoke.mockImplementation(method => method === 'StartAutoAttack'
+      ? Promise.reject(new Error('command failed'))
+      : Promise.resolve(method === 'ResumeCombatFromSequence' ? recoveryUpdate(2) : []))
     const store = useCombatSessionStore()
     await store.connect()
     realtimeMock.handlers.get('CombatUpdated')?.(recoveryUpdate())
