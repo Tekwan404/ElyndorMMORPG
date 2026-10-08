@@ -274,6 +274,7 @@ public static class DamagePipeline
             _ => 0m
         };
         if (hpDamage > 0
+            && !request.Source.IsDead
             && !request.IsTransferredDamage
             && !request.IsReflectedDamage
             && request.Source.ActorId != request.Target.ActorId

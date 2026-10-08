@@ -726,4 +726,22 @@ public sealed class DamageAndHealingPipelineTests
             item.Type == CombatEventType.HealingApplied).Amount);
     }
 
+    [Fact]
+    public void DeadSourceCannotResurrectThroughVampirism()
+    {
+        CombatActorState source = CombatActorState.CreateDummy(
+            1_000, stats: CombatStats.Default with { UniversalVampirismPercent = 50 });
+        source.SetCurrentHp(0);
+        CombatActorState target = CombatActorState.CreateDummy(500);
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(source, target, 100, DamageType.Magical,
+                CanMiss: false, CanDodge: false, CanCrit: false),
+            new SequenceGameRandom());
+
+        Assert.Equal(0, source.CurrentHp);
+        Assert.DoesNotContain(result.Events, item =>
+            item.Type == CombatEventType.HealingApplied);
+    }
+
 }
