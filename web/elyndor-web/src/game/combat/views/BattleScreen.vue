@@ -727,7 +727,7 @@ onUnmounted(() => window.clearInterval(timer))
 }
 .battle-screen__number-settings-panel label {
   display: flex;
-  min-height: 32px;
+  min-height: 44px;
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
@@ -741,8 +741,10 @@ onUnmounted(() => window.clearInterval(timer))
   background: #151c28;
   color: inherit;
   font: inherit;
+  font-size: 1rem;
 }
 .battle-screen__number-settings-panel input {
+  order: 2;
   width: 1.15rem;
   height: 1.15rem;
   accent-color: #d3a962;
