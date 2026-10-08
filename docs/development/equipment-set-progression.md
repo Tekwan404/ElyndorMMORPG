@@ -1,6 +1,6 @@
 # Equipment set progression
 
-Implemented content contract, content `0.42.0`, balance `0.32.0`.
+Implemented content contract, content `0.44.0`, balance `0.34.0`.
 
 | Required level | Sets | Members per set | Bonus thresholds | Purpose |
 | --- | --- | --- | --- | --- |
@@ -86,17 +86,27 @@ PvE T1 durations and secondary values, where the design did not specify them:
 | --- | --- | --- |
 | Guardian | Block: next Revenge +15% | Shield Block: Block Value +15% for 6s, next Revenge +25%; stronger Revenge charge wins |
 | Berserker | Spend 30 Rage in 8s: AS +5% for 4s, ICD 4s | Wild Strike/Heavy Blow crit: next direct hit +20% |
-| Warlord | Cry: next direct class ability +10% | Third command: next Cry effect magnitudes +15% |
+| Warlord | Cry: next direct class ability +20% for 10s | Every command: next Battle/Endurance/Vengeance Cry effect magnitudes +25% for 12s |
 | Fire | Direct Fire crit: own Burn +1s, capped at +4s total, ICD 1s | Pyroblast/Fire Blast against own Burning target: +20% direct damage |
-| Frost | Direct Frost hit: Ice Lance CD −0.5s, ICD 0.5s | Controlled target: next Ice Lance +25% |
+| Frost | Direct Frost hit: Ice Lance CD −0.5s, ICD 0.5s | Third direct Frost hit: next Ice Lance +25% |
 | Arcane | Spend 60 Mana in 8s: SP +5% for 4s, ICD 6s | Spark/Missiles: Arcane Power CD −1s, ICD 1s |
 | Marksman | Direct shot: Aimed Shot CD −0.5s, ICD 0.5s | Third direct shot: next Aimed Shot +20% |
-| Beast Mastery | Pet direct crit: owner's next shot +10%, ICD 1s | Four alternating owner/pet hits: owner AS +5% for 6s |
+| Beast Mastery | Third direct pet hit: owner's next shot +15% | Four alternating owner/pet hits: owner AS +5% for 6s |
 | Survival | Direct hit on own Sting/Trap target: trap CDs −0.5s, ICD 1s | Sting/Trap ability: next direct shot against own affected target +20% |
 | Holy | Critical effective direct heal: Holy Shock CDs −1s, ICD 1s | Third effective direct heal: one shared next Holy Shock damage/healing charge +20% |
 | Protection | Block: next Hammer of the Righteous +15% | Third block while Holy Shield is active: next offensive hit +20% |
-| Retribution | Crusader Strike crit: Judgement CD −1s | Judgement hit: next Templar's Verdict +20% |
+| Retribution | Crusader Strike hit: Judgement CD −1s | Judgement hit: next Templar's Verdict +20% |
 
 All next-action charges last 8 seconds. Normal and PvP have no special effects.
 No database migration is needed. Bundled content changes reach production through
 the existing release/publication workflow, not by mutating running player rows.
+
+### Weak-bonus audit (0.34.0)
+
+The 2026-10-08 pass reviewed all authored set thresholds. Normal, PvP T1 and L18–55
+stat packages remain unchanged because their flat allocations still follow the shared
+item-budget generator and their percentage bonuses are role-relevant. Four PvE T1
+mechanics were strengthened because their trigger cadence made them materially weaker
+than neighboring branch sets: Warlord 4/6, Frost 6, Beast Mastery 4 and Retribution 4.
+The changes remove boss-incompatible hard-CC dependence, a 5% pet-crit bottleneck,
+a three-command gate measured in minutes, and a low-frequency Crusader-crit gate.
