@@ -28,9 +28,9 @@ describe('CharacterStatsView', () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot()
     const wrapper = mount(CharacterStatsView, { attachTo: document.body })
-    expect(wrapper.get('[data-stat="physicalVampirismPercent"]').text()).toContain('2.5%')
-    expect(wrapper.get('[data-stat="magicalVampirismPercent"]').text()).toContain('1.5%')
-    expect(wrapper.get('[data-stat="universalVampirismPercent"]').text()).toContain('0.5%')
+    expect(wrapper.get('[data-stat="physicalVampirismPercent"]').text()).toContain('2.50%')
+    expect(wrapper.get('[data-stat="magicalVampirismPercent"]').text()).toContain('1.50%')
+    expect(wrapper.get('[data-stat="universalVampirismPercent"]').text()).toContain('0.50%')
     wrapper.unmount()
   })
 
