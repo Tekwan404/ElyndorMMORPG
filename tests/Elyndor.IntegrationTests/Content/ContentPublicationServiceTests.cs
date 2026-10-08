@@ -274,7 +274,7 @@ public sealed class ContentPublicationServiceTests(PostgresFixture postgres) : I
         };
         GameContentPackage olderPublished = bundled with
         {
-            ContentVersion = "0.36.0",
+            ContentVersion = "0.37.0",
             PublishedAtUtc = bundled.PublishedAtUtc.AddMinutes(-1),
             Items = bundled.Items!
                 .Select(item => item.Id == staleEye.Id ? staleEye : item)
@@ -310,7 +310,7 @@ public sealed class ContentPublicationServiceTests(PostgresFixture postgres) : I
         _ = await service.RestoreLatestReleaseAsync(CancellationToken.None);
 
         GameContentPackage restored = provider.GetCurrent().Package;
-        Assert.Equal("0.46.0", restored.ContentVersion);
+        Assert.Equal("0.47.0", restored.ContentVersion);
         Assert.Equal(
             EquipmentCategoryIds.OneHandStaff,
             restored.Items!.Single(item => item.Id == bundledEye.Id).WeaponCategory);
