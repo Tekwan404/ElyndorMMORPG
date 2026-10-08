@@ -51,6 +51,20 @@ describe('projectBattleEvents', () => {
     ])
   })
 
+  it('preserves explicit periodic metadata without guessing from ability names', () => {
+    const result = projectBattleEvents([
+      event(1, 'DamageDealt', { definitionId: 'BURN', isPeriodic: true }),
+      event(2, 'DamageDealt', { definitionId: 'BURN', isPeriodic: false }),
+    ], {
+      actorNames: new Map(),
+      abilityNames: new Map(),
+      enemyActorIds: new Set(['enemy']),
+      localActorId: 'local',
+    })
+    expect(result.numbers[0]).toMatchObject({ key: 1, periodic: true })
+    expect(result.numbers[1]).not.toHaveProperty('periodic')
+  })
+
   it('keeps join, leave, skill and aggro events in the readable log', () => {
     const result = projectBattleEvents(
       [

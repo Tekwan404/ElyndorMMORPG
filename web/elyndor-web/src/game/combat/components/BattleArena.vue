@@ -4,6 +4,7 @@ import { computed } from 'vue'
 import type { CombatActorSnapshot } from '@/api/contracts'
 import { monsterArtUrl } from '@/assets/monsterArt'
 import type { CombatNumberPresentation } from '@/game/combat/battleEventPresentation'
+import { DEFAULT_COMBAT_NUMBER_SETTINGS, type CombatNumberSettings } from '@/game/combat/combatNumberSettings'
 import { buildBattleFormation } from '@/game/combat/composables/useBattleFormation'
 import CharacterFigure from './CharacterFigure.vue'
 import CombatNumbers from './CombatNumbers.vue'
@@ -17,6 +18,7 @@ const props = withDefaults(
     selectedEnemyActorId: string | null
     aggroActorIds: readonly string[]
     numbers: readonly CombatNumberPresentation[]
+    numberSettings?: CombatNumberSettings
     companion?: CombatActorSnapshot | null
     battlefieldArt?: string | null
     disabled: boolean
@@ -27,6 +29,7 @@ const props = withDefaults(
     battlefieldArt: null,
     layoutWidthPx: 390,
     companion: null,
+    numberSettings: () => ({ ...DEFAULT_COMBAT_NUMBER_SETTINGS }),
   },
 )
 
@@ -146,7 +149,7 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
           :frontline="slot.isFrontline"
           @select="emit('selectFriendly', $event)"
         />
-        <CombatNumbers :actor-id="slot.actorId" :entries="numbers" />
+        <CombatNumbers :actor-id="slot.actorId" :entries="numbers" :settings="numberSettings" />
       </div>
     </div>
 
@@ -174,7 +177,7 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
         <i><b :style="{ width: `${enemyHealthRatio}%` }" /></i>
         <small>Ур. {{ primaryEnemy.level ?? 1 }}</small>
       </span>
-      <CombatNumbers :actor-id="primaryEnemy.actorId" :entries="numbers" />
+      <CombatNumbers :actor-id="primaryEnemy.actorId" :entries="numbers" :settings="numberSettings" />
     </button>
 
     <aside
