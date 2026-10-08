@@ -280,19 +280,19 @@ coordination.Duration,
 now);
 }
 }
+private bool _improvedMendPetPendingCleanse;
+
 private void MendPet(DateTimeOffset now)
 {
 if (_companion is null || _companion.Actor.IsDead)
 return;
 decimal totalPercent = ArcherRuntimeParameter("MEND_PET", "healPercent");
-if (TryGetArcherHook(
+_improvedMendPetPendingCleanse = TryGetArcherHook(
 "B-3-1",
 "MEND_PET_BONUS",
-out ResolvedTalentEventHook improved))
-{
+out ResolvedTalentEventHook improved);
+if (_improvedMendPetPendingCleanse)
 totalPercent *= 1 + improved.Value / 100m;
-RemoveOneCompanionDebuff(now);
-}
 TimeSpan duration = ArcherRuntimeDuration("MEND_PET", "durationSeconds");
 TimeSpan tick = ArcherRuntimeDuration("MEND_PET", "tickSeconds");
 decimal ticks = Math.Max(
