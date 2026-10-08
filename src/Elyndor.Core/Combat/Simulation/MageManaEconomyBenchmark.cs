@@ -9,7 +9,8 @@ namespace Elyndor.Core.Combat.Simulation;
 
 public sealed record MageManaEconomyResult(int Level, string BranchId, CombatSimulationGearState Gear,
     decimal MaxMana, decimal? SecondsToOom, decimal RemainingMana, decimal FailedSpellCost,
-    int Casts, decimal ResourceSpent, decimal ResourceGained, IReadOnlyDictionary<string, int> TalentRanks);
+    int Casts, decimal ResourceSpent, decimal ResourceGained, IReadOnlyDictionary<string, int> TalentRanks,
+    IReadOnlyList<Elyndor.Core.Items.ItemDefinition>? Equipment = null);
 
 public sealed partial class CombatSimulationRunner
 {
@@ -121,6 +122,6 @@ public sealed partial class CombatSimulationRunner
         }
         var totals = session.Snapshot().Statistics!;
         return new(level, branchId, gear, resource.MaxValue, oom, owner.CurrentResource, failedCost,
-            casts, totals.ResourceSpent, totals.ResourceGained, ranks);
+            casts, totals.ResourceSpent, totals.ResourceGained, ranks, equipment.Items);
     }
 }

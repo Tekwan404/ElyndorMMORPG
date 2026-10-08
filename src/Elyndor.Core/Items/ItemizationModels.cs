@@ -44,7 +44,20 @@ public static class ItemStatIds
 
 public sealed record ItemAffixPoolDefinition(
     string Id,
-    IReadOnlyList<string> StatIds);
+    IReadOnlyList<string> StatIds,
+    IReadOnlyDictionary<string, decimal>? SelectionWeights = null,
+    IReadOnlyList<IReadOnlyList<string>>? ExclusiveStatGroups = null,
+    IReadOnlyList<ItemAffixLevelWeightsDefinition>? LevelSelectionWeights = null);
+
+public sealed record ItemAffixLevelWeightsDefinition(int MinimumItemLevel, int MaximumItemLevel,
+    IReadOnlyDictionary<string, decimal> Weights);
+
+public sealed record ItemAffixRuleDefinition(
+    string StatId,
+    IReadOnlyList<string>? AllowedClassIds = null,
+    IReadOnlyList<EquipmentSlot>? AllowedSlots = null,
+    bool RequiresShield = false,
+    bool RequiresWeaponDamage = false);
 
 public sealed record ItemAffixCountProfileDefinition(
     string Id,
@@ -116,7 +129,8 @@ public sealed record ItemizationDefinition(
     decimal PerfectSnapThreshold = 0.9995m,
     ItemReforgeCostProfileDefinition? ReforgeCosts = null,
     ItemSalvageProfileDefinition? Salvage = null,
-    ItemStarUpgradeProfileDefinition? StarUpgrades = null);
+    ItemStarUpgradeProfileDefinition? StarUpgrades = null,
+    IReadOnlyList<ItemAffixRuleDefinition>? AffixRules = null);
 
 public static class ItemSalvageYieldCalculator
 {
@@ -359,17 +373,13 @@ public static class ItemInstanceGenerator
             .Select(statId => (statId, true))
             .ToList();
         HashSet<string> selectedIds = guaranteed.ToHashSet(StringComparer.Ordinal);
-        List<string> candidates = pool.StatIds
-            .Where(statId => !selectedIds.Contains(statId))
-            .Distinct(StringComparer.Ordinal)
-            .ToList();
         for (var index = 0; index < bonusCount; index++)
         {
+            IReadOnlyList<string> candidates = ItemAffixEligibilityPolicy.GetCandidates(
+                template, itemization, pool, selectedIds);
             if (candidates.Count == 0)
                 throw new InvalidOperationException($"Template '{template.Id}' affix pool cannot satisfy unique-affix rules.");
-            int choice = RollIndex(candidates.Count, random);
-            string statId = candidates[choice];
-            candidates.RemoveAt(choice);
+            string statId = ItemAffixEligibilityPolicy.SelectWeighted(pool, candidates, random, itemLevel);
             selectedIds.Add(statId);
             selected.Add((statId, false));
         }
@@ -579,9 +589,7 @@ public static class ItemInstanceGenerator
             .ToHashSet(StringComparer.Ordinal);
         decimal slotPowerEnvelope = selected.MaxAtGeneration * previousWeight;
 
-        return pool.StatIds
-            .Where(statId => !occupied.Contains(statId))
-            .Distinct(StringComparer.Ordinal)
+        return ItemAffixEligibilityPolicy.GetCandidates(template, itemization, pool, occupied)
             .Select(statId =>
             {
                 if (!itemization.StatPowerWeights.TryGetValue(statId, out decimal newWeight)
@@ -613,7 +621,8 @@ public static class ItemInstanceGenerator
         IReadOnlyList<GeneratedItemAffix> currentAffixes,
         string slotKey,
         string qualityProfileId,
-        IGameRandom random)
+        IGameRandom random,
+        int? itemLevel = null)
     {
         ArgumentNullException.ThrowIfNull(random);
         ArgumentException.ThrowIfNullOrWhiteSpace(qualityProfileId);
@@ -625,7 +634,9 @@ public static class ItemInstanceGenerator
         if (candidates.Count == 0)
             throw new InvalidOperationException("Reforge pool has no legal affix candidate.");
 
-        ReforgeAffixCandidate candidate = candidates[RollIndex(candidates.Count, random)];
+        string selectedStatId = ItemAffixEligibilityPolicy.SelectWeighted(
+            FindPool(template, itemization), candidates.Select(candidate => candidate.StatId).ToArray(), random, itemLevel ?? template.RequiredLevel);
+        ReforgeAffixCandidate candidate = candidates.Single(candidate => candidate.StatId == selectedStatId);
 
         ItemQualityProfileDefinition qualityProfile = itemization.QualityProfiles
             .SingleOrDefault(profile => string.Equals(profile.Id, qualityProfileId, StringComparison.Ordinal))

@@ -46,7 +46,7 @@ public static class ItemizationBudgetPolicy
             ?? throw new InvalidOperationException($"Template '{template.Id}' has no valid random-affix pool.");
 
         decimal minimumPowerPerAffix = (template.GuaranteedAffixStatIds ?? [])
-            .Concat(pool.StatIds)
+            .Concat(ItemAffixEligibilityPolicy.GetCandidates(template, itemization, pool, []))
             .Distinct(StringComparer.Ordinal)
             .Select(statId => MinimumPowerEnvelope(statId, itemization))
             .DefaultIfEmpty(0m)
@@ -91,7 +91,12 @@ public static class ItemizationBudgetPolicy
 
         Dictionary<string, decimal> slotMultipliers = itemization.SlotMultipliers
             .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
-        slotMultipliers[slotId] = requiredSlotMultiplier;
+        // Division/multiplication can leave a decimal a fraction below a whole
+        // stat step. V2 rounds the envelope upwards so floor-to-step cannot
+        // collapse a promised 1..2 roll into 1..1.
+        slotMultipliers[slotId] = template.GenerationVersion >= 2
+            ? decimal.Ceiling(requiredSlotMultiplier * 1_000_000_000m) / 1_000_000_000m
+            : requiredSlotMultiplier;
         return itemization with { SlotMultipliers = slotMultipliers };
     }
 

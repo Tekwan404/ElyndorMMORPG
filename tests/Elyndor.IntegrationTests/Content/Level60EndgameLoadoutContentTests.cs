@@ -88,7 +88,10 @@ public sealed class Level60EndgameLoadoutContentTests
             .ToArray();
 
         Assert.Equal(6, paladinWeapons.Length);
-        Assert.All(paladinWeapons, item => Assert.Equal("PALADIN_WEAPON", item.RandomAffixPoolId));
+        Assert.All(paladinWeapons, item => Assert.Equal(
+            item.Id.Contains("PALADIN_HOLY", StringComparison.Ordinal) ? "PALADIN_HOLY"
+                : item.Id.StartsWith("L60_NORMAL_PALADIN_PROTECTION_", StringComparison.Ordinal) ? "PALADIN_PROTECTION"
+                : "PALADIN_WEAPON", item.RandomAffixPoolId));
 
         Dictionary<string, string> expectedAccessoryPools = new(StringComparer.Ordinal)
         {
@@ -108,7 +111,12 @@ public sealed class Level60EndgameLoadoutContentTests
         Assert.All(classAccessories, item =>
         {
             string classId = Assert.Single(item.AllowedClassIds!);
-            Assert.Equal(expectedAccessoryPools[classId], item.RandomAffixPoolId);
+            string expected = item.Id.Contains("PALADIN_HOLY", StringComparison.Ordinal) ? "PALADIN_HOLY"
+                : item.Id.StartsWith("L60_NORMAL_WARRIOR_GUARDIAN_", StringComparison.Ordinal) ? "WARRIOR_GUARDIAN"
+                : item.Id.StartsWith("L60_NORMAL_PALADIN_PROTECTION_", StringComparison.Ordinal) ? "PALADIN_PROTECTION"
+                : item.Id.StartsWith("L60_NORMAL_ARCHER_BEAST_MASTERY_", StringComparison.Ordinal) ? "ARCHER_BEAST_MASTERY"
+                : expectedAccessoryPools[classId];
+            Assert.Equal(expected, item.RandomAffixPoolId);
         });
     }
 }

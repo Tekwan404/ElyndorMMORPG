@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.36.1",
-  "balanceVersion": "0.29.0",
-  "publishedAtUtc": "2026-10-04T07:34:18+00:00",
+  "contentVersion": "0.50.0",
+  "balanceVersion": "0.40.0",
+  "publishedAtUtc": "2026-10-08T12:00:00+00:00",
   "items": [
     
     
@@ -37,7 +37,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "LUK_TROINOGO_ASPEKTA_L60",
@@ -73,7 +73,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "KOLTSO_RAZBITOGO_OTRAZHENIIA_L60",
@@ -102,7 +102,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "PECHAT_TRIEDINSTVA_L60",
@@ -131,7 +131,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     }
   ]
 }

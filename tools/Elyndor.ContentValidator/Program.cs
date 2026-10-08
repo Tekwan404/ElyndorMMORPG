@@ -37,6 +37,14 @@ try
         + $"BalanceVersion={package.BalanceVersion}, Definitions={indexes.DefinitionsByKey.Count}, "
         + $"Locations={indexes.LocationsById.Count}, Monsters={indexes.MonstersById.Count}, "
         + $"Items={indexes.ItemsById.Count}");
+    if (args.Contains("--audit-affixes", StringComparer.Ordinal))
+    {
+        IReadOnlyList<ItemAffixAuditEntry> affixAudit = ItemAffixAudit.Create(package);
+        Console.WriteLine($"Affix audit: Items={affixAudit.Count}, Rolled={affixAudit.Count(row => row.Envelopes.Count > 0)}, Issues={affixAudit.Sum(row => row.Issues.Count)}");
+        foreach (ItemAffixAuditEntry entry in affixAudit.Where(row => row.Issues.Count > 0))
+            Console.WriteLine($"AFFIX {entry.Definition.Id}: {string.Join(", ", entry.Issues)}");
+        if (affixAudit.Any(row => row.Issues.Count > 0)) return 1;
+    }
 
     if (auditItemIcons)
     {
@@ -102,9 +110,9 @@ try
     {
         CombatSimulationRunner runner = new(package);
         List<MageManaEconomyResult> manaResults = [];
-        foreach (int level in new[] { 1, 9, 10, 18, 29, 35, 45, 55, 59, 60 })
+        foreach (int level in args.Contains("--affix-mana-sample", StringComparer.Ordinal) ? new[] { 10, 18, 20, 30, 35, 40, 55, 60 } : new[] { 1, 9, 10, 18, 29, 35, 45, 55, 59, 60 })
         foreach (string branch in new[] { "FIRE", "ARCANE", "FROST" })
-        foreach (CombatSimulationGearState gear in new[] { CombatSimulationGearState.None, CombatSimulationGearState.Normal, CombatSimulationGearState.Good })
+        foreach (CombatSimulationGearState gear in args.Contains("--affix-mana-sample", StringComparer.Ordinal) ? new[] { CombatSimulationGearState.Normal } : new[] { CombatSimulationGearState.None, CombatSimulationGearState.Normal, CombatSimulationGearState.Good })
         {
             MageManaEconomyResult result = runner.RunMageManaEconomy(level, branch, gear);
             manaResults.Add(result);

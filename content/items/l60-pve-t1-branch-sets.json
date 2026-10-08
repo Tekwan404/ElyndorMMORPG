@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.42.0",
-  "balanceVersion": "0.32.0",
-  "publishedAtUtc": "2026-10-07T12:00:00+00:00",
+  "contentVersion": "0.50.0",
+  "balanceVersion": "0.40.0",
+  "publishedAtUtc": "2026-10-08T12:00:00+00:00",
   "items": [
     {
       "id": "L60_PVE_T1_WARRIOR_GUARDIAN_CHEST",
@@ -31,12 +31,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "WARRIOR_GUARDIAN",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_GUARDIAN_CHEST",
       "allowedClassIds": [
         "WARRIOR"
@@ -70,12 +70,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "WARRIOR_GUARDIAN",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_GUARDIAN_FEET",
       "allowedClassIds": [
         "WARRIOR"
@@ -109,12 +109,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "WARRIOR_GUARDIAN",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_GUARDIAN_HANDS",
       "allowedClassIds": [
         "WARRIOR"
@@ -148,12 +148,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "WARRIOR_GUARDIAN",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_GUARDIAN_HEAD",
       "allowedClassIds": [
         "WARRIOR"
@@ -187,12 +187,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "WARRIOR_GUARDIAN",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_GUARDIAN_LEGS",
       "allowedClassIds": [
         "WARRIOR"
@@ -226,12 +226,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "WARRIOR_GUARDIAN",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_GUARDIAN_SHOULDERS",
       "allowedClassIds": [
         "WARRIOR"
@@ -270,7 +270,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_BERSERKER_CHEST",
       "allowedClassIds": [
         "WARRIOR"
@@ -309,7 +309,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_BERSERKER_FEET",
       "allowedClassIds": [
         "WARRIOR"
@@ -348,7 +348,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_BERSERKER_HANDS",
       "allowedClassIds": [
         "WARRIOR"
@@ -387,7 +387,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_BERSERKER_HEAD",
       "allowedClassIds": [
         "WARRIOR"
@@ -426,7 +426,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_BERSERKER_LEGS",
       "allowedClassIds": [
         "WARRIOR"
@@ -465,7 +465,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_BERSERKER_SHOULDERS",
       "allowedClassIds": [
         "WARRIOR"
@@ -504,7 +504,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_WARLORD_CHEST",
       "allowedClassIds": [
         "WARRIOR"
@@ -543,7 +543,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_WARLORD_FEET",
       "allowedClassIds": [
         "WARRIOR"
@@ -582,7 +582,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_WARLORD_HANDS",
       "allowedClassIds": [
         "WARRIOR"
@@ -621,7 +621,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_WARLORD_HEAD",
       "allowedClassIds": [
         "WARRIOR"
@@ -660,7 +660,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_WARLORD_LEGS",
       "allowedClassIds": [
         "WARRIOR"
@@ -699,7 +699,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_WARLORD_SHOULDERS",
       "allowedClassIds": [
         "WARRIOR"
@@ -738,7 +738,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FIRE_CHEST",
       "allowedClassIds": [
         "MAGE"
@@ -777,7 +777,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FIRE_FEET",
       "allowedClassIds": [
         "MAGE"
@@ -816,7 +816,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FIRE_HANDS",
       "allowedClassIds": [
         "MAGE"
@@ -855,7 +855,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FIRE_HEAD",
       "allowedClassIds": [
         "MAGE"
@@ -894,7 +894,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FIRE_LEGS",
       "allowedClassIds": [
         "MAGE"
@@ -933,7 +933,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FIRE_SHOULDERS",
       "allowedClassIds": [
         "MAGE"
@@ -972,7 +972,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_ARCANE_CHEST",
       "allowedClassIds": [
         "MAGE"
@@ -1011,7 +1011,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_ARCANE_FEET",
       "allowedClassIds": [
         "MAGE"
@@ -1050,7 +1050,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_ARCANE_HANDS",
       "allowedClassIds": [
         "MAGE"
@@ -1089,7 +1089,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_ARCANE_HEAD",
       "allowedClassIds": [
         "MAGE"
@@ -1128,7 +1128,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_ARCANE_LEGS",
       "allowedClassIds": [
         "MAGE"
@@ -1167,7 +1167,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_ARCANE_SHOULDERS",
       "allowedClassIds": [
         "MAGE"
@@ -1206,7 +1206,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FROST_CHEST",
       "allowedClassIds": [
         "MAGE"
@@ -1245,7 +1245,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FROST_FEET",
       "allowedClassIds": [
         "MAGE"
@@ -1284,7 +1284,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FROST_HANDS",
       "allowedClassIds": [
         "MAGE"
@@ -1323,7 +1323,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FROST_HEAD",
       "allowedClassIds": [
         "MAGE"
@@ -1362,7 +1362,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FROST_LEGS",
       "allowedClassIds": [
         "MAGE"
@@ -1401,7 +1401,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FROST_SHOULDERS",
       "allowedClassIds": [
         "MAGE"
@@ -1440,7 +1440,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_MARKSMAN_CHEST",
       "allowedClassIds": [
         "ARCHER"
@@ -1479,7 +1479,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_MARKSMAN_FEET",
       "allowedClassIds": [
         "ARCHER"
@@ -1518,7 +1518,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_MARKSMAN_HANDS",
       "allowedClassIds": [
         "ARCHER"
@@ -1557,7 +1557,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_MARKSMAN_HEAD",
       "allowedClassIds": [
         "ARCHER"
@@ -1596,7 +1596,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_MARKSMAN_LEGS",
       "allowedClassIds": [
         "ARCHER"
@@ -1635,7 +1635,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_MARKSMAN_SHOULDERS",
       "allowedClassIds": [
         "ARCHER"
@@ -1669,12 +1669,12 @@
         "AGILITY",
         "STAMINA"
       ],
-      "randomAffixPoolId": "ARCHER_ARMOR",
+      "randomAffixPoolId": "ARCHER_BEAST_MASTERY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_CHEST",
       "allowedClassIds": [
         "ARCHER"
@@ -1708,12 +1708,12 @@
         "AGILITY",
         "STAMINA"
       ],
-      "randomAffixPoolId": "ARCHER_ARMOR",
+      "randomAffixPoolId": "ARCHER_BEAST_MASTERY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_FEET",
       "allowedClassIds": [
         "ARCHER"
@@ -1747,12 +1747,12 @@
         "AGILITY",
         "STAMINA"
       ],
-      "randomAffixPoolId": "ARCHER_ARMOR",
+      "randomAffixPoolId": "ARCHER_BEAST_MASTERY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_HANDS",
       "allowedClassIds": [
         "ARCHER"
@@ -1786,12 +1786,12 @@
         "AGILITY",
         "STAMINA"
       ],
-      "randomAffixPoolId": "ARCHER_ARMOR",
+      "randomAffixPoolId": "ARCHER_BEAST_MASTERY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_HEAD",
       "allowedClassIds": [
         "ARCHER"
@@ -1825,12 +1825,12 @@
         "AGILITY",
         "STAMINA"
       ],
-      "randomAffixPoolId": "ARCHER_ARMOR",
+      "randomAffixPoolId": "ARCHER_BEAST_MASTERY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_LEGS",
       "allowedClassIds": [
         "ARCHER"
@@ -1864,12 +1864,12 @@
         "AGILITY",
         "STAMINA"
       ],
-      "randomAffixPoolId": "ARCHER_ARMOR",
+      "randomAffixPoolId": "ARCHER_BEAST_MASTERY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_SHOULDERS",
       "allowedClassIds": [
         "ARCHER"
@@ -1908,7 +1908,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_SURVIVAL_CHEST",
       "allowedClassIds": [
         "ARCHER"
@@ -1947,7 +1947,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_SURVIVAL_FEET",
       "allowedClassIds": [
         "ARCHER"
@@ -1986,7 +1986,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_SURVIVAL_HANDS",
       "allowedClassIds": [
         "ARCHER"
@@ -2025,7 +2025,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_SURVIVAL_HEAD",
       "allowedClassIds": [
         "ARCHER"
@@ -2064,7 +2064,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_SURVIVAL_LEGS",
       "allowedClassIds": [
         "ARCHER"
@@ -2103,7 +2103,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_SURVIVAL_SHOULDERS",
       "allowedClassIds": [
         "ARCHER"
@@ -2137,12 +2137,12 @@
         "INTELLECT",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_HOLY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_HOLY_CHEST",
       "allowedClassIds": [
         "PALADIN"
@@ -2176,12 +2176,12 @@
         "INTELLECT",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_HOLY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_HOLY_FEET",
       "allowedClassIds": [
         "PALADIN"
@@ -2215,12 +2215,12 @@
         "INTELLECT",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_HOLY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_HOLY_HANDS",
       "allowedClassIds": [
         "PALADIN"
@@ -2254,12 +2254,12 @@
         "INTELLECT",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_HOLY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_HOLY_HEAD",
       "allowedClassIds": [
         "PALADIN"
@@ -2293,12 +2293,12 @@
         "INTELLECT",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_HOLY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_HOLY_LEGS",
       "allowedClassIds": [
         "PALADIN"
@@ -2332,12 +2332,12 @@
         "INTELLECT",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_HOLY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_HOLY_SHOULDERS",
       "allowedClassIds": [
         "PALADIN"
@@ -2371,12 +2371,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_PROTECTION",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_PROTECTION_CHEST",
       "allowedClassIds": [
         "PALADIN"
@@ -2410,12 +2410,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_PROTECTION",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_PROTECTION_FEET",
       "allowedClassIds": [
         "PALADIN"
@@ -2449,12 +2449,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_PROTECTION",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_PROTECTION_HANDS",
       "allowedClassIds": [
         "PALADIN"
@@ -2488,12 +2488,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_PROTECTION",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_PROTECTION_HEAD",
       "allowedClassIds": [
         "PALADIN"
@@ -2527,12 +2527,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_PROTECTION",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_PROTECTION_LEGS",
       "allowedClassIds": [
         "PALADIN"
@@ -2566,12 +2566,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_PROTECTION",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_PROTECTION_SHOULDERS",
       "allowedClassIds": [
         "PALADIN"
@@ -2605,12 +2605,12 @@
         "STRENGTH",
         "INTELLECT"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_ARMOR",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_RETRIBUTION_CHEST",
       "allowedClassIds": [
         "PALADIN"
@@ -2644,12 +2644,12 @@
         "STRENGTH",
         "INTELLECT"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_ARMOR",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_RETRIBUTION_FEET",
       "allowedClassIds": [
         "PALADIN"
@@ -2683,12 +2683,12 @@
         "STRENGTH",
         "INTELLECT"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_ARMOR",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_RETRIBUTION_HANDS",
       "allowedClassIds": [
         "PALADIN"
@@ -2722,12 +2722,12 @@
         "STRENGTH",
         "INTELLECT"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_ARMOR",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_RETRIBUTION_HEAD",
       "allowedClassIds": [
         "PALADIN"
@@ -2761,12 +2761,12 @@
         "STRENGTH",
         "INTELLECT"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_ARMOR",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_RETRIBUTION_LEGS",
       "allowedClassIds": [
         "PALADIN"
@@ -2800,12 +2800,12 @@
         "STRENGTH",
         "INTELLECT"
       ],
-      "randomAffixPoolId": "WARRIOR_ARMOR",
+      "randomAffixPoolId": "PALADIN_ARMOR",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_RETRIBUTION_SHOULDERS",
       "allowedClassIds": [
         "PALADIN"
@@ -2837,12 +2837,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "randomAffixPoolId": "WARRIOR_GUARDIAN",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_GUARDIAN_AMULET",
       "allowedClassIds": [
         "WARRIOR"
@@ -2874,12 +2874,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "WARRIOR_ACCESSORY",
+      "randomAffixPoolId": "WARRIOR_GUARDIAN",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_GUARDIAN_RING",
       "allowedClassIds": [
         "WARRIOR"
@@ -2916,7 +2916,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_BERSERKER_AMULET",
       "allowedClassIds": [
         "WARRIOR"
@@ -2953,7 +2953,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_BERSERKER_RING",
       "allowedClassIds": [
         "WARRIOR"
@@ -2990,7 +2990,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_WARLORD_AMULET",
       "allowedClassIds": [
         "WARRIOR"
@@ -3027,7 +3027,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_WARRIOR_WARLORD_RING",
       "allowedClassIds": [
         "WARRIOR"
@@ -3064,7 +3064,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FIRE_AMULET",
       "allowedClassIds": [
         "MAGE"
@@ -3101,7 +3101,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FIRE_RING",
       "allowedClassIds": [
         "MAGE"
@@ -3138,7 +3138,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_ARCANE_AMULET",
       "allowedClassIds": [
         "MAGE"
@@ -3175,7 +3175,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_ARCANE_RING",
       "allowedClassIds": [
         "MAGE"
@@ -3212,7 +3212,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FROST_AMULET",
       "allowedClassIds": [
         "MAGE"
@@ -3249,7 +3249,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_MAGE_FROST_RING",
       "allowedClassIds": [
         "MAGE"
@@ -3286,7 +3286,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_MARKSMAN_AMULET",
       "allowedClassIds": [
         "ARCHER"
@@ -3323,7 +3323,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_MARKSMAN_RING",
       "allowedClassIds": [
         "ARCHER"
@@ -3355,12 +3355,12 @@
         "AGILITY",
         "STAMINA"
       ],
-      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "randomAffixPoolId": "ARCHER_BEAST_MASTERY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_AMULET",
       "allowedClassIds": [
         "ARCHER"
@@ -3392,12 +3392,12 @@
         "AGILITY",
         "STAMINA"
       ],
-      "randomAffixPoolId": "ARCHER_ACCESSORY",
+      "randomAffixPoolId": "ARCHER_BEAST_MASTERY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_BEAST_MASTERY_RING",
       "allowedClassIds": [
         "ARCHER"
@@ -3434,7 +3434,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_SURVIVAL_AMULET",
       "allowedClassIds": [
         "ARCHER"
@@ -3471,7 +3471,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_ARCHER_SURVIVAL_RING",
       "allowedClassIds": [
         "ARCHER"
@@ -3503,12 +3503,12 @@
         "INTELLECT",
         "STAMINA"
       ],
-      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "randomAffixPoolId": "PALADIN_HOLY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_HOLY_AMULET",
       "allowedClassIds": [
         "PALADIN"
@@ -3540,12 +3540,12 @@
         "INTELLECT",
         "STAMINA"
       ],
-      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "randomAffixPoolId": "PALADIN_HOLY",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_HOLY_RING",
       "allowedClassIds": [
         "PALADIN"
@@ -3577,12 +3577,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "randomAffixPoolId": "PALADIN_PROTECTION",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_PROTECTION_AMULET",
       "allowedClassIds": [
         "PALADIN"
@@ -3614,12 +3614,12 @@
         "STRENGTH",
         "STAMINA"
       ],
-      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "randomAffixPoolId": "PALADIN_PROTECTION",
       "affixCountProfileId": "LEVEL_57_60",
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_PROTECTION_RING",
       "allowedClassIds": [
         "PALADIN"
@@ -3656,7 +3656,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_RETRIBUTION_AMULET",
       "allowedClassIds": [
         "PALADIN"
@@ -3693,7 +3693,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1,
+      "generationVersion": 2,
       "itemFamilyId": "L60_PVE_T1_PALADIN_RETRIBUTION_RING",
       "allowedClassIds": [
         "PALADIN"

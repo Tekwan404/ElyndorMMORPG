@@ -655,7 +655,7 @@ public sealed partial class CombatSimulationRunner(GameContentPackage content)
             .Where(item => !string.IsNullOrWhiteSpace(item.SetId))
             .GroupBy(item => item.SetId!, StringComparer.Ordinal)
             .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
-        return new SimulationEquipment(modifiers, setPieces);
+        return new SimulationEquipment(modifiers, setPieces, selected.ToArray());
     }
 
     private bool CanEquip(ClassProfile classProfile, ItemDefinition item)
@@ -729,7 +729,8 @@ public sealed partial class CombatSimulationRunner(GameContentPackage content)
 
     private sealed record SimulationEquipment(
         EquipmentModifierSummary Modifiers,
-        IReadOnlyDictionary<string, int> SetPieces);
+        IReadOnlyDictionary<string, int> SetPieces,
+        IReadOnlyList<ItemDefinition>? Items = null);
 
     private sealed record SimulationRun(
         CombatSessionStatus Status,

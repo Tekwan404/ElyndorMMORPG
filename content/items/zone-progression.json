@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.16.0",
-  "balanceVersion": "0.13.0",
-  "publishedAtUtc": "2026-09-09T06:50:00+00:00",
+  "contentVersion": "0.50.0",
+  "balanceVersion": "0.40.0",
+  "publishedAtUtc": "2026-10-08T12:00:00+00:00",
   "items": [
     {
       "id": "DEEP_FOREST_CHARM",
@@ -34,7 +34,7 @@
       "extraAffixBudgetCap": 0.04,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "BROODMOTHER_FANG_CHARM",
@@ -68,7 +68,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "BLIGHTED_GROVE_RING",
@@ -102,7 +102,7 @@
       "extraAffixBudgetCap": 0.04,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     }
   ]
 }

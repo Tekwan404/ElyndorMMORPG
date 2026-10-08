@@ -47,6 +47,10 @@ internal static class ContentAuditExporter
             Path.Combine(outputDirectory, "04-combat-balance.json"),
             BuildCombatBalance(package),
             cancellationToken);
+        await WriteAsync(Path.Combine(outputDirectory, "05-affix-inventory.json"),
+            Envelope(package, "items", (package.Items ?? []).Count, ItemAffixAudit.Create(package).Cast<object>().ToArray()), cancellationToken);
+        await WriteAsync(Path.Combine(outputDirectory, "06-affix-balance.json"),
+            AffixBalanceBenchmark.Run(package), cancellationToken);
     }
 
     private static Dictionary<string, object?> BuildItems(GameContentPackage package)
@@ -55,6 +59,7 @@ internal static class ContentAuditExporter
         IReadOnlyList<EquipmentSetDefinition> sets = package.EquipmentSets ?? [];
         IReadOnlyList<LootTableDefinition> lootTables = package.LootTables ?? [];
         ItemizationDefinition? itemization = package.Itemization;
+        Dictionary<string, List<string>> references = BuildReferences(package);
 
         Dictionary<string, ItemAffixPoolDefinition> pools = (itemization?.AffixPools ?? [])
             .ToDictionary(pool => pool.Id, StringComparer.Ordinal);
@@ -97,6 +102,9 @@ internal static class ContentAuditExporter
                     item.Rarity,
                     item.IconId,
                     item.Version,
+                    item.AllowedClassIds,
+                    item.ItemFamilyId,
+                    item.SpecialEffectIds,
                     Stats = new
                     {
                         item.Stats.Strength,
@@ -198,6 +206,9 @@ internal static class ContentAuditExporter
                         },
                     Acquisition = new
                     {
+                        RuntimeReferencePaths = references.GetValueOrDefault(item.Id) ?? [],
+                        LootTableUsage = lootTables.Where(table => ContainsItem(table, item.Id))
+                            .Select(table => new { table.Id, ReferencePaths = references.GetValueOrDefault(table.Id) ?? [] }),
                         LootTableIds = lootTables
                             .Where(table => ContainsItem(table, item.Id))
                             .Select(table => table.Id)
@@ -218,7 +229,13 @@ internal static class ContentAuditExporter
                         StartingClasses = (package.ClassProfiles ?? [])
                             .Where(profile => profile.StartingEquipmentItemIds?.Contains(item.Id, StringComparer.Ordinal) == true)
                             .Select(profile => profile.Id)
-                            .Order(StringComparer.Ordinal)
+                            .Order(StringComparer.Ordinal),
+                        QuestIds = (package.Quests ?? [])
+                            .Where(quest => quest.RewardItems?.Any(reward => reward.ItemId == item.Id) == true)
+                            .Select(quest => quest.Id).Order(StringComparer.Ordinal),
+                        ContainerItemIds = items.Where(container => container.LootContainerTableId is { } tableId
+                            && lootTables.Any(table => table.Id == tableId && ContainsItem(table, item.Id)))
+                            .Select(container => container.Id).Order(StringComparer.Ordinal)
                     }
                 };
             })
@@ -429,6 +446,33 @@ internal static class ContentAuditExporter
         table.Entries.Any(entry => string.Equals(entry.ItemId, itemId, StringComparison.Ordinal))
         || (table.SelectionGroups ?? []).Any(group => group.Entries.Any(entry =>
             string.Equals(entry.ItemId, itemId, StringComparison.Ordinal)));
+
+    private static Dictionary<string, List<string>> BuildReferences(GameContentPackage package)
+    {
+        Dictionary<string, List<string>> references = new(StringComparer.Ordinal);
+        Visit(JsonSerializer.SerializeToElement(package, JsonOptions), "$");
+        return references;
+
+        void Visit(JsonElement element, string path)
+        {
+            if (element.ValueKind == JsonValueKind.Object)
+            {
+                foreach (JsonProperty property in element.EnumerateObject())
+                    if (path != "$" || property.Name is not ("items" or "definitions"))
+                        Visit(property.Value, $"{path}.{property.Name}");
+            }
+            else if (element.ValueKind == JsonValueKind.Array)
+            {
+                int index = 0;
+                foreach (JsonElement child in element.EnumerateArray()) Visit(child, $"{path}[{index++}]");
+            }
+            else if (element.ValueKind == JsonValueKind.String && element.GetString() is { } value)
+            {
+                if (!references.TryGetValue(value, out List<string>? paths)) references[value] = paths = [];
+                paths.Add(path);
+            }
+        }
+    }
 
     private static async Task WriteAsync(
         string path,

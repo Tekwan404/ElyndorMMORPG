@@ -69,6 +69,26 @@ public static partial class GameContentPackageValidator
         }
 
         Dictionary<string, ItemAffixPoolDefinition> pools = new(StringComparer.Ordinal);
+        IReadOnlyList<ItemAffixRuleDefinition> affixRules = itemization.AffixRules ?? [];
+        if (affixRules.Select(rule => rule.StatId).Distinct(StringComparer.Ordinal).Count() != affixRules.Count
+            || affixRules.Any(rule => !ItemStatIds.ApprovedV1.Contains(rule.StatId)
+                || rule.AllowedClassIds?.Any(id => id is not ("WARRIOR" or "MAGE" or "ARCHER" or "PALADIN")) == true
+                || rule.AllowedSlots?.Any(slot => !Enum.IsDefined(slot)) == true))
+            errors.Add(new("INVALID_AFFIX_ELIGIBILITY_RULE", "itemization.affixRules", "Affix rules contain duplicate or unsupported identifiers."));
+        foreach (ItemAffixPoolDefinition candidate in itemization.AffixPools)
+        {
+            var bands = candidate.LevelSelectionWeights ?? [];
+            if (bands.Any(band => band.MinimumItemLevel < 1 || band.MaximumItemLevel < band.MinimumItemLevel
+                    || band.Weights.Any(pair => pair.Value <= 0 || !candidate.StatIds.Contains(pair.Key, StringComparer.Ordinal)))
+                || bands.SelectMany((band, index) => bands.Skip(index + 1).Select(other => (band, other)))
+                    .Any(pair => pair.band.MinimumItemLevel <= pair.other.MaximumItemLevel && pair.other.MinimumItemLevel <= pair.band.MaximumItemLevel))
+                errors.Add(new("INVALID_AFFIX_LEVEL_WEIGHTS", "itemization.affixPools", $"Pool '{candidate.Id}' has invalid or overlapping item-level weights."));
+            if (candidate.SelectionWeights?.Any(pair => pair.Value <= 0 || !candidate.StatIds.Contains(pair.Key, StringComparer.Ordinal)) == true
+                || candidate.ExclusiveStatGroups?.Any(group => group.Count < 2
+                    || group.Count != group.Distinct(StringComparer.Ordinal).Count()
+                    || group.Any(statId => !candidate.StatIds.Contains(statId, StringComparer.Ordinal))) == true)
+                errors.Add(new("INVALID_AFFIX_SELECTION_POLICY", "itemization.affixPools", $"Pool '{candidate.Id}' has invalid weights or exclusion groups."));
+        }
         for (var index = 0; index < itemization.AffixPools.Count; index++)
         {
             ItemAffixPoolDefinition pool = itemization.AffixPools[index];
@@ -254,6 +274,16 @@ public static partial class GameContentPackageValidator
             int minimumLevel = item.ItemLevelMin ?? item.RequiredLevel;
             int maximumLevel = item.ItemLevelMax ?? minimumLevel;
             string[] guaranteed = (item.GuaranteedAffixStatIds ?? []).ToArray();
+            if (item.GenerationVersion >= 2)
+            {
+                IReadOnlyList<string> candidates = ItemAffixEligibilityPolicy.GetCandidates(item, itemization, pool, guaranteed);
+                if (guaranteed.Any(statId => affixRules.FirstOrDefault(rule => rule.StatId == statId) is not { } rule
+                        || !ItemAffixEligibilityPolicy.IsAllowed(item, rule)
+                        || !ItemAffixEligibilityPolicy.IsCompatible(pool, statId, guaranteed.Where(other => other != statId)))
+                    || pool.StatIds.Any(statId => !affixRules.Any(rule => rule.StatId == statId))
+                    || !ItemAffixEligibilityPolicy.CanAlwaysFill(pool, candidates, guaranteed, countProfile.MaximumBonusCount))
+                    errors.Add(new("INVALID_V2_AFFIX_POLICY", path, $"Item '{item.Id}' has forbidden guarantees or cannot complete every eligible affix combination."));
+            }
             if (minimumLevel < 1
                 || maximumLevel < minimumLevel
                 || guaranteed.Length != countProfile.GuaranteedCount
