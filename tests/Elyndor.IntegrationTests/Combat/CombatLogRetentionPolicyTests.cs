@@ -63,7 +63,7 @@ public sealed class CombatLogRetentionPolicyTests
 
         FullCombatLogSnapshot? full = FullCombatLogArchive.Read(session.SessionId, now);
         Assert.NotNull(full);
-        Assert.Equal([1L, 2L], full.Events.Select(item => item.Sequence));
+        Assert.Equal(new long[] { 1L, 2L }, full.Events.Select(item => item.Sequence).ToArray());
         Assert.False(full.SizeLimitReached);
         Assert.Equal(1, full.FirstCapturedSequence);
     }
