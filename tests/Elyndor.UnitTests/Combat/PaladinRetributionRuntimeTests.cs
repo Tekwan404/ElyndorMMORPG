@@ -27,6 +27,21 @@ public sealed class PaladinRetributionRuntimeTests
     }
 
     [Fact]
+    public void SealMasteryJudgementRefreshesExistingVengeanceWithoutGrantingStacks()
+    {
+        DateTimeOffset now = new(2026, 10, 8, 6, 0, 0, TimeSpan.Zero);
+        PaladinRetributionRuntime runtime = new();
+        Assert.False(runtime.RefreshVengeance(now, TimeSpan.FromSeconds(12)));
+        runtime.RecordPhysicalOrHolyCritical(now, TimeSpan.FromSeconds(12));
+        runtime.RecordPhysicalOrHolyCritical(now.AddSeconds(1), TimeSpan.FromSeconds(12));
+        Assert.True(runtime.RefreshVengeance(now.AddSeconds(11), TimeSpan.FromSeconds(12)));
+        Assert.Equal(2, runtime.VengeanceStacks);
+        Assert.Equal(now.AddSeconds(23), runtime.VengeanceEndsAtUtc);
+        Assert.False(runtime.RefreshVengeance(now.AddSeconds(23), TimeSpan.FromSeconds(12)));
+        Assert.Equal(0, runtime.VengeanceStacks);
+    }
+
+    [Fact]
     public void EveryThirdSuccessfulJudgementArmsDivinePurpose()
     {
         PaladinRetributionRuntime runtime = new();
