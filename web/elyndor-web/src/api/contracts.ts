@@ -946,6 +946,7 @@ export interface CombatEvent {
   damageAfterMitigation?: number
   damageBeforeBlock?: number
   isUnblockable?: boolean
+  isPeriodic?: boolean
 }
 
 export interface CombatUpdate {
