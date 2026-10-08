@@ -2,13 +2,12 @@
 import { defineAsyncComponent, ref, watch } from 'vue'
 
 import cityArt from '@/assets/world/starter-town.webp'
-
-
-
-
-
-
-
+import { useGameSessionStore } from '@/stores/gameSession'
+import { useCombatSessionStore } from '@/stores/combatSession'
+import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
+import IconGenerator from '@/ui/icons/IconGenerator.vue'
+import type { GlyphName } from '@/ui/icons/icon.types'
+import { UIButton } from '@/ui/components'
 
 const ForgeView = defineAsyncComponent(() => import('@/game/character/views/ForgeView.vue'))
 const AuctionView = defineAsyncComponent(() => import('@/game/economy/views/AuctionView.vue'))
@@ -18,12 +17,6 @@ const MerchantShop = defineAsyncComponent(() => import('@/game/world/components/
 const AdventurerGuildBoard = defineAsyncComponent(() => import('@/game/world/components/AdventurerGuildBoard.vue'))
 const ArenaView = defineAsyncComponent(() => import('@/game/pvp/views/ArenaView.vue'))
 const ProfessionView = defineAsyncComponent(() => import('@/game/professions/views/ProfessionView.vue'))
-import { useGameSessionStore } from '@/stores/gameSession'
-import { useCombatSessionStore } from '@/stores/combatSession'
-import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
-import IconGenerator from '@/ui/icons/IconGenerator.vue'
-import type { GlyphName } from '@/ui/icons/icon.types'
-import { UIButton } from '@/ui/components'
 
 type CityDestination =
   | 'guild' | 'adventurers' | 'gates' | 'auction' | 'market'
