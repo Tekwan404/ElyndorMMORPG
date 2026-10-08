@@ -4,8 +4,9 @@ namespace Elyndor.Core.Items;
 
 public static class ItemAffixEligibilityPolicy
 {
-    public static bool IsAllowed(ItemDefinition item, ItemAffixRuleDefinition rule) =>
-        (rule.AllowedClassIds is not { Count: > 0 }
+    public static bool IsAllowed(ItemDefinition item, ItemAffixRuleDefinition rule, int? itemLevel = null) =>
+        (itemLevel ?? item.ItemLevelMin ?? item.RequiredLevel) >= rule.MinimumItemLevel
+        && (rule.AllowedClassIds is not { Count: > 0 }
             || item.AllowedClassIds is not { Count: > 0 }
             || item.AllowedClassIds.Any(rule.AllowedClassIds.Contains))
         && (rule.AllowedSlots is not { Count: > 0 }
@@ -20,12 +21,12 @@ public static class ItemAffixEligibilityPolicy
 
     public static IReadOnlyList<string> GetCandidates(
         ItemDefinition item, ItemizationDefinition itemization, ItemAffixPoolDefinition pool,
-        IEnumerable<string> occupied) =>
+        IEnumerable<string> occupied, int? itemLevel = null) =>
         pool.StatIds.Distinct(StringComparer.Ordinal)
             .Where(statId => IsCompatible(pool, statId, occupied))
             .Where(statId => item.GenerationVersion < 2
                 || itemization.AffixRules?.FirstOrDefault(rule => rule.StatId == statId) is { } rule
-                    && IsAllowed(item, rule))
+                    && IsAllowed(item, rule, itemLevel))
             .ToArray();
 
     public static string SelectWeighted(ItemAffixPoolDefinition pool, IReadOnlyList<string> candidates, IGameRandom random, int itemLevel = 1)

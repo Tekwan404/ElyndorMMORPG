@@ -50,14 +50,14 @@ public sealed class AffixV2CatalogTests
                 foreach (GeneratedItemAffix affix in generated.Affixes)
                 {
                     ItemAffixRuleDefinition rule = itemization.AffixRules!.Single(rule => rule.StatId == affix.StatId);
-                    Assert.True(ItemAffixEligibilityPolicy.IsAllowed(item, rule), $"{item.Id}:{affix.StatId}");
+                    Assert.True(ItemAffixEligibilityPolicy.IsAllowed(item, rule, generated.ItemLevel), $"{item.Id}:{affix.StatId}");
                     Assert.True(ItemAffixEligibilityPolicy.IsCompatible(pool, affix.StatId,
                         generated.Affixes.Where(other => other.SlotKey != affix.SlotKey).Select(other => other.StatId)));
                     if (affix.IsGuaranteed) continue;
-                    var candidates = ItemInstanceGenerator.GetReforgeAffixCandidates(item, normalized, generated.Affixes, affix.SlotKey);
+                    var candidates = ItemInstanceGenerator.GetReforgeAffixCandidates(item, normalized, generated.Affixes, affix.SlotKey, generated.ItemLevel);
                     Assert.NotEmpty(candidates);
                     Assert.All(candidates, candidate => Assert.True(ItemAffixEligibilityPolicy.IsAllowed(item,
-                        itemization.AffixRules!.Single(rule => rule.StatId == candidate.StatId))));
+                        itemization.AffixRules!.Single(rule => rule.StatId == candidate.StatId), generated.ItemLevel)));
                 }
             }
         }
@@ -178,7 +178,8 @@ public sealed class AffixV2CatalogTests
             rule => rule.StatId == ItemStatIds.UniversalVampirism);
         ItemDefinition sample = content.Items!.First(item => item.Slot == EquipmentSlot.MainHand);
         Assert.False(ItemAffixEligibilityPolicy.IsAllowed(sample, universal));
-        Assert.True(ItemAffixEligibilityPolicy.IsAllowed(sample with { Slot = EquipmentSlot.Ring1 }, universal));
+        Assert.True(ItemAffixEligibilityPolicy.IsAllowed(sample with { Slot = EquipmentSlot.Ring1 }, universal, 60));
+        Assert.False(ItemAffixEligibilityPolicy.IsAllowed(sample with { Slot = EquipmentSlot.Ring1 }, universal, 34));
     }
 
     [Fact]

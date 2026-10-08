@@ -62,7 +62,8 @@ public sealed record ItemAffixRuleDefinition(
     IReadOnlyList<string>? AllowedClassIds = null,
     IReadOnlyList<EquipmentSlot>? AllowedSlots = null,
     bool RequiresShield = false,
-    bool RequiresWeaponDamage = false);
+    bool RequiresWeaponDamage = false,
+    int MinimumItemLevel = 1);
 
 public sealed record ItemAffixCountProfileDefinition(
     string Id,
@@ -381,7 +382,7 @@ public static class ItemInstanceGenerator
         for (var index = 0; index < bonusCount; index++)
         {
             IReadOnlyList<string> candidates = ItemAffixEligibilityPolicy.GetCandidates(
-                template, itemization, pool, selectedIds);
+                template, itemization, pool, selectedIds, itemLevel);
             if (candidates.Count == 0)
                 throw new InvalidOperationException($"Template '{template.Id}' affix pool cannot satisfy unique-affix rules.");
             string statId = ItemAffixEligibilityPolicy.SelectWeighted(pool, candidates, random, itemLevel);
@@ -568,7 +569,8 @@ public static class ItemInstanceGenerator
         ItemDefinition template,
         ItemizationDefinition itemization,
         IReadOnlyList<GeneratedItemAffix> currentAffixes,
-        string slotKey)
+        string slotKey,
+        int? itemLevel = null)
     {
         ArgumentNullException.ThrowIfNull(template);
         ArgumentNullException.ThrowIfNull(itemization);
@@ -594,7 +596,7 @@ public static class ItemInstanceGenerator
             .ToHashSet(StringComparer.Ordinal);
         decimal slotPowerEnvelope = selected.MaxAtGeneration * previousWeight;
 
-        return ItemAffixEligibilityPolicy.GetCandidates(template, itemization, pool, occupied)
+        return ItemAffixEligibilityPolicy.GetCandidates(template, itemization, pool, occupied, itemLevel)
             .Select(statId =>
             {
                 if (!itemization.StatPowerWeights.TryGetValue(statId, out decimal newWeight)
@@ -635,7 +637,7 @@ public static class ItemInstanceGenerator
         GeneratedItemAffix selected = currentAffixes.Single(affix =>
             string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal));
         IReadOnlyList<ReforgeAffixCandidate> candidates =
-            GetReforgeAffixCandidates(template, itemization, currentAffixes, slotKey);
+            GetReforgeAffixCandidates(template, itemization, currentAffixes, slotKey, itemLevel);
         if (candidates.Count == 0)
             throw new InvalidOperationException("Reforge pool has no legal affix candidate.");
 

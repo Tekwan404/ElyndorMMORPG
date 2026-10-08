@@ -109,7 +109,8 @@ public sealed class ItemReforgeService(
                     definition,
                     itemization,
                     current.Affixes,
-                    slotKey)
+                    slotKey,
+                    current.ItemLevel)
                 .Select(candidate => new ItemReforgePossibleAffix(
                     candidate.StatId,
                     candidate.Min,

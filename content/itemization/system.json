@@ -1454,10 +1454,12 @@
         "requiresWeaponDamage": true
       },
       {
-        "statId": "PHYSICAL_VAMPIRISM"
+        "statId": "PHYSICAL_VAMPIRISM",
+        "minimumItemLevel": 35
       },
       {
-        "statId": "MAGICAL_VAMPIRISM"
+        "statId": "MAGICAL_VAMPIRISM",
+        "minimumItemLevel": 35
       },
       {
         "statId": "UNIVERSAL_VAMPIRISM",
@@ -1465,7 +1467,8 @@
           "Amulet",
           "Ring1",
           "Ring2"
-        ]
+        ],
+        "minimumItemLevel": 35
       }
     ]
   }

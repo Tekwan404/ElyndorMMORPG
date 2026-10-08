@@ -55,4 +55,29 @@ public sealed class ItemAffixEligibilityTests
         Assert.True(ItemAffixEligibilityPolicy.CanAlwaysFill(pool, pool.StatIds, [], 1));
         Assert.True(ItemAffixEligibilityPolicy.CanAlwaysFill(pool, pool.StatIds, ["STRENGTH"], 1));
     }
+    [Fact]
+    public void VampirismIsAbsentFromLowLevelRollsButAvailableAtThirtyFive()
+    {
+        ItemDefinition ring = new(
+            "EARLY_RING", "Ring", ItemType.Equipment, ItemRarity.Rare, 1,
+            false, 1, EquipmentSlot.Ring1, new PrimaryStats(0, 0, 0, 0),
+            "", GenerationVersion: 2);
+        ItemAffixPoolDefinition pool = new("RING", ["STAMINA", "UNIVERSAL_VAMPIRISM"]);
+        ItemizationDefinition itemization = new(
+            110m, 0.055m, 0.0035m,
+            new Dictionary<string, decimal>(), new Dictionary<string, decimal>(),
+            new Dictionary<string, decimal>(), [pool], [], [], [],
+            AffixRules:
+            [
+                new ItemAffixRuleDefinition("STAMINA"),
+                new ItemAffixRuleDefinition("UNIVERSAL_VAMPIRISM", MinimumItemLevel: 35,
+                    AllowedSlots: [EquipmentSlot.Ring1])
+            ]);
+
+        Assert.Equal(["STAMINA"],
+            ItemAffixEligibilityPolicy.GetCandidates(ring, itemization, pool, [], 1));
+        Assert.Equal(["STAMINA", "UNIVERSAL_VAMPIRISM"],
+            ItemAffixEligibilityPolicy.GetCandidates(ring, itemization, pool, [], 35));
+    }
+
 }
