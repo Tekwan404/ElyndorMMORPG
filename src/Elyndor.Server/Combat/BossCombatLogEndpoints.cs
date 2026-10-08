@@ -15,7 +15,7 @@ namespace Elyndor.Server.Combat;
 
 public static class BossCombatLogEndpoints
 {
-    private const int MaxEvents = 1500;
+    private const int MaxEvents = CombatLogRetentionPolicy.StandardExportEvents;
     private const string CombatRegenDefinitionId = "COMBAT_REGEN";
 
     public static IEndpointRouteBuilder MapBossCombatLogEndpoints(
@@ -521,7 +521,7 @@ public static class BossCombatLogEndpoints
         && accountId != Guid.Empty;
 }
 
-public sealed record BossCombatLogRequest(Guid SessionId);
+public sealed record BossCombatLogRequest(Guid SessionId, bool Full = false);
 
 public sealed record BossCombatLogEventRequest(
     long Sequence,
