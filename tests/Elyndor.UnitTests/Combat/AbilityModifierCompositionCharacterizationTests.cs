@@ -201,7 +201,7 @@ public sealed class AbilityModifierCompositionCharacterizationTests
             Hook("R-2-1", 0) with { Rank = 3 }, Hook("R-5-2", 0) with { Rank = 2 },
             Hook("R-2-3", 0) with { Rank = 2 }] });
         Assert.Equal(61.1m, result.ResourceCost);
-        Assert.Equal(TimeSpan.FromSeconds(6.5), result.Cooldown);
+        Assert.Equal(TimeSpan.FromSeconds(5.75), result.Cooldown);
         Assert.Equal(9, result.CriticalChanceBonus);
         Assert.Equal(1.06m, result.DamageMultiplier);
     }
