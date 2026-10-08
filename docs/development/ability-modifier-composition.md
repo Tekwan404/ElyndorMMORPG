@@ -36,6 +36,12 @@ Snapshot composition does not consume effects, spend resources or start cooldown
 
 ## Field ownership and order
 
+Mage release 0.45.0 adds an authored level-cost interpolation before the generic
+talent stage. The same resolver is used by production Arena, bootstrap and offline
+farm. Channel tick scheduling remains in the engines/schedulers; target modifiers
+are recomposed at each tick. School transformations now delegate to actor-owned
+Fire/Arcane/Frost runtimes through the existing stage adapters.
+
 | Property | Definition composition | Other authoritative owner retained |
 | --- | --- | --- |
 | Cost | Generic percent reductions summed; percent before flat, clamp zero. Berserker conditional percent; Paladin rank discounts/free state; Warlord flat cry discount; Pyromancer sequential percentages; Arcane/Frost conditions; Archer ordered one-shot percentages. | AbilityEngine applies FreeResourceCostWhileEffectId at validation/spend, without rewriting the definition or UI snapshot. |

@@ -29,12 +29,13 @@ public static class ArenaTalentRuntimeSupport
 
     public static AbilityDefinition ApplyAbilityDefinitionModifiers(
         AbilityDefinition ability,
-        ResolvedTalentModifiers talents)
+        ResolvedTalentModifiers talents,
+        int level = 1)
     {
         ArgumentNullException.ThrowIfNull(ability);
         ArgumentNullException.ThrowIfNull(talents);
 
-        AbilityDefinition resolved = TalentAbilityResolver.Apply(ability, talents);
+        AbilityDefinition resolved = TalentAbilityResolver.Apply(AbilityResourceCostScaling.Apply(ability, level), talents);
         resolved = PyromancerStaticAbilityHookResolver.Apply(resolved, talents);
         resolved = MageStaticAbilityHookResolver.Apply(resolved, talents);
         resolved = ArcherStaticAbilityHookResolver.Apply(resolved, talents);

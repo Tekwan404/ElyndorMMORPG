@@ -966,7 +966,7 @@ Default LockoutDuration = 3.0 seconds (определяется Interrupt спо
 конкретные Cooldown значения;
 конкретные Resource Cost значения;
 конкретные Threat Multiplier значения для способностей;
-Channeled Ability (не входит в core);
+Ground-targeted channels beyond the current captured-target model;
 AoE с ground targeting (требует Position System);
 Charge / Dash (требует Movement System);
 новые Companion ability families сверх правил Companion System;
@@ -990,4 +990,15 @@ UI;
 - Authoritative TargetTypes: SELF, SINGLE_ALLY, SINGLE_ENEMY, ALL_ENEMIES_IN_COMBAT, N_ENEMIES_IN_COMBAT, SELF_AND_PARTY_MEMBERS_IN_COMBAT, ACTIVE_COMPANION, OWNER.
 - Companion commands являются обычными AbilityDefinition и проходят общий validation/resource/cooldown pipeline.
 - Party-targeted ability не требует spatial Aura.
-- Channeled Ability может быть добавлена позже отдельным AbilityType; существующие Casted abilities не симулируют channel скрыто.
+- `AbilityType.Channelled` is implemented separately from `Casted`. `CastTime`
+  defines total duration and `ChannelTickInterval` must divide it exactly.
+  Resource cost and cooldown commit at start; actions execute at each due tick.
+  `ActiveCast.CompletedChannelTicks` prevents duplicate ticks. Control/death or
+  losing all captured targets cancels future ticks without refunding past costs.
+  Arena preserves a tick already committed in a simultaneous batch, then cancels
+  future ticks if control was applied in that batch. Both schedulers recompute
+  target modifiers per channel tick. See the Mage runtime engineering note.
+- Optional `ResourceCostByLevel` defines increasing level anchors from level 1;
+  costs interpolate linearly before talent/runtime discounts in combat, Arena
+  assembly and bootstrap previews. Legacy abilities without a curve retain their
+  fixed cost.

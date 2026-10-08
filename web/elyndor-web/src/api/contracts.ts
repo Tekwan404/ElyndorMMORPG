@@ -848,6 +848,9 @@ export interface CombatCastSnapshot {
   abilityId: string
   startedAtUtc: string
   resolvesAtUtc: string
+  isChannelled?: boolean
+  completedTicks?: number
+  totalTicks?: number
 }
 
 export interface CombatActorSnapshot {

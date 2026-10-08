@@ -29,7 +29,10 @@
       ],
       "prototypeIdentity": "Intellect caster managing Mana, timing, sequences, and interruption risk.",
       "startingAbilityIds": [
-        "MAGE_FIREBALL"
+        "MAGE_FIREBALL",
+        "MAGE_ARCANE_SPARK",
+        "MAGE_ICE_SHARD",
+        "MAGE_COUNTERSPELL"
       ],
       "startingEquipmentItemIds": [
         "APPRENTICE_STAFF"

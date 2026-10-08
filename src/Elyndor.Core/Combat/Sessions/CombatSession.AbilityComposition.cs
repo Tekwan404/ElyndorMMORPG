@@ -23,5 +23,5 @@ public sealed partial class CombatSession
         ResolveArcherTargetAbilityModifier));
 
     private AbilityDefinition ComposePlayerAbility(AbilityDefinition baseAbility, DateTimeOffset now) =>
-        AbilityComposer.Compose(baseAbility, new AbilityModifierContext(_playerTalents, _player.DefinitionId, now));
+        AbilityComposer.Compose(baseAbility, new AbilityModifierContext(_playerTalents, _player.DefinitionId, now, _player.Actor.Stats.Level));
 }

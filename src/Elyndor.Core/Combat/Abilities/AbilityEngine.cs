@@ -5,7 +5,7 @@ using Elyndor.Core.Combat.Resources;
 
 namespace Elyndor.Core.Combat.Abilities;
 
-public static class AbilityEngine
+public static partial class AbilityEngine
 {
     private static readonly TimeSpan StandardGcd = TimeSpan.FromSeconds(1.5);
     private static readonly TimeSpan ShortGcd = TimeSpan.FromSeconds(0.75);
@@ -50,7 +50,7 @@ public static class AbilityEngine
         StartGcd(runtime, ability, now);
 
         Guid[] targetIds = ResolveTargetIds(ability, intent);
-        if (ability.Type == AbilityType.Casted)
+        if (ability.Type is AbilityType.Casted or AbilityType.Channelled)
         {
             runtime.ActiveCast = new ActiveCast(
                 Guid.NewGuid(),
@@ -62,6 +62,8 @@ public static class AbilityEngine
                 intent.TargetModifiers is null
                     ? null
                     : new Dictionary<Guid, AbilityTargetModifier>(intent.TargetModifiers));
+            if (ability.Type == AbilityType.Channelled)
+                StartCooldown(runtime, ability, now);
         }
         else
         {
@@ -90,6 +92,9 @@ public static class AbilityEngine
         {
             return AbilityExecutionResult.Failure(AbilityErrorCode.NoActiveCast);
         }
+
+        if (cast.Ability.Type == AbilityType.Channelled)
+            return AdvanceChannel(runtime, cast, now, random);
 
         if (now < cast.ResolvesAtUtc)
         {
@@ -419,7 +424,8 @@ public static class AbilityEngine
                         CombatActorState resourceTarget = action.ResourceTarget == AbilityResourceTarget.Target
                             ? target
                             : runtime.Actor;
-                        events.Add(CombatResourceRuntime.Change(resourceTarget, action.Amount,
+                        events.Add(CombatResourceRuntime.Change(resourceTarget,
+                            action.Amount + runtime.Actor.MaxResource * action.CasterMaxResourcePercent / 100m,
                             now, ability.Id, runtime.Actor.ActorId));
                         break;
                     case AbilityActionType.Dispel:
@@ -592,6 +598,13 @@ public static class AbilityEngine
 
     private static void EnsureExecutable(AbilityDefinition ability, IGameRandom? random)
     {
+        if (!AbilityResourceCostScaling.IsValid(ability.ResourceCostByLevel))
+            throw new InvalidOperationException("Invalid level resource cost curve.");
+        if (!IsValidChannel(ability))
+            throw new InvalidOperationException("Channelled abilities require a positive integral tick schedule without delayed actions.");
+        if (ability.Actions?.Any(action => action.CasterMaxResourcePercent is < 0 or > 100
+            || action.Type != AbilityActionType.ResourceChange && action.CasterMaxResourcePercent != 0) == true)
+            throw new InvalidOperationException("Caster resource percentages are only valid for resource actions.");
         ArgumentOutOfRangeException.ThrowIfNegative(ability.ResourceCost);
         ArgumentOutOfRangeException.ThrowIfNegative(ability.DamageMultiplier);
         bool requiresRandom = ability.Actions?.Any(action =>

@@ -237,10 +237,8 @@ public sealed partial class CombatSession
         {
             if (_player.Actor.IsDead)
                 return null;
-            DateTimeOffset? next = _coldBloodReadyAtUtc;
+            DateTimeOffset? next = IsMage ? ActiveMageRuntime.NextDueAt : null;
             next = Min(next, _nextSpiritBondAtUtc);
-            foreach (PendingMageResourceRefund refund in _pendingMageResourceRefunds)
-                next = Min(next, refund.DueAtUtc);
             return next;
         }
     }
