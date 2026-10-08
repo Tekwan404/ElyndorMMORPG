@@ -2,7 +2,7 @@
 
 This change is stacked on top of the prior **96/96 Paladin description review** (PR #343), not a global DPS rebalance. It closes concrete combat behavior gaps using the existing authoritative CombatSession and ability/effect pipeline.
 
-## Finished contracts (12 of the 19 complete-contract gaps)
+## Finished contracts (14 of the 19 complete-contract gaps)
 
 | ID | Authored mechanic | Server integration |
 | --- | --- | --- |
@@ -12,6 +12,8 @@ This change is stacked on top of the prior **96/96 Paladin description review** 
 | P-1-4 Improved Devotion Aura | +3/6/9 percentage points armor above baseline 10% | Existing non-stacking Aura effect magnitude |
 | P-2-1 Bulwark | 10/20/30% proc on actual nonperiodic damage taken; +10 block for 5s | Shared damage event, no extra engine |
 | P-2-4 Guardian's Favor | −5/10s Blessing of Protection cooldown, +1/2s duration | Ability snapshot and effect duration |
+| P-4-4 Shield of Faith | After natural Holy Shield expiration, absorbs 4/8% maximum HP for 5s | OnExpireActions on the owned Holy Shield effect; natural expiration only |
+| P-5-4 Master of Sanctuary | Additional 2/4 percentage points damage reduction; owner Mana +3/6 when protected member takes direct enemy damage, 2s ICD | Sanctuary effect strength + nonperiodic incoming hit proc |
 | P-5-2 Improved Avenger's Shield | +10/20% damage and −1/2s cooldown | Ability resolver |
 | P-8-3 Perfect Sanctuary | +5 percentage points incoming damage reduction; +5 block for 10s on self-cast | Blessing effect and successful cast completion |
 | R-3-4 Improved Crusader Strike | −0.5/1s cooldown; +3/6% crit | Ability resolver |
@@ -33,8 +35,6 @@ The revised Paladin talent package is versioned **0.47.0 / 0.37.0**. Existing co
 - **H-3-3 Judgement of Wisdom:** party Mana refund proc (amount, per-ally cooldown and eligible attacks).
 - **H-7-1 Judgement of Light:** group healing-on-hit proc with personal cooldown.
 - **P-3-4 Consecrated Ground:** bonus **threat** on Consecration (damage bonus implemented).
-- **P-4-4 Shield of Faith:** shield on actual Holy Shield expiration with stable ownership.
-- **P-5-4 Master of Sanctuary:** additional protection and Mana return to owner on eligible hits.
 - **P-6-2 One-Handed Weapon Specialization:** authoritative shield+one-handed equipment capture is missing; do not guess from inferred weapon category or passive Block Chance.
 - **P-8-1 Unbreakable Bastion:** large-hit reduction must use authoritative damage admission order and cooldown to avoid incorrect mitigation.
 - **R-5-2 Fanaticism:** the Judgement critical bonus exists; Retribution-only threat reduction remains incomplete.
