@@ -357,6 +357,7 @@ onMounted(() => {
         @open-map="openWorld"
         @open-party="openMenu('party')"
         @open-inventory="showView('inventory')"
+        @open-world-boss="openWorldBoss"
       />
       <WorldView
         v-else-if="session.state === 'world' && activeView === 'location'"
