@@ -364,6 +364,7 @@ onMounted(() => {
         :open-guild="openGuildOnLocation"
         @open-party="openMenu('party')"
         @open-world-boss="openWorldBoss"
+        @open-map="showView('world')"
       />
       <section v-else-if="session.state === 'world' && activeView === 'arena'" class="arena-entry">
         <UIButton variant="ghost" @click="openLocation()">‹ Назад</UIButton>
