@@ -8,6 +8,7 @@ export interface CombatNumberPresentation {
   targetActorId: string
   kind: CombatNumberKind
   value: number | null
+  periodic?: boolean
 }
 
 export interface BattleLogEntry {
@@ -52,6 +53,7 @@ export function projectBattleEvents(
         targetActorId: event.targetActorId,
         kind: critical ? 'crit' : 'damage',
         value: event.amount,
+        ...(event.isPeriodic === true ? { periodic: true } : {}),
       })
     } else if (event.type === 'HealingApplied' && event.targetActorId) {
       numbers.push({
