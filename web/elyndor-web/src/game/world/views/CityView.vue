@@ -11,6 +11,8 @@ import AdventurerGuildBoard from '@/game/world/components/AdventurerGuildBoard.v
 import ArenaView from '@/game/pvp/views/ArenaView.vue'
 import ProfessionView from '@/game/professions/views/ProfessionView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
+import { useCombatSessionStore } from '@/stores/combatSession'
+import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName } from '@/ui/icons/icon.types'
 import { UIButton } from '@/ui/components'
@@ -24,8 +26,11 @@ const emit = defineEmits<{
   'open-map': []
   'open-inventory': []
   'open-party': []
+  'open-world-boss': []
 }>()
 const session = useGameSessionStore()
+const combat = useCombatSessionStore()
+const worldBoss = useWorldBossStore()
 const activeDestination = ref<CityDestination | null>(null)
 const merchantOpen = ref(false)
 const forgeOpen = ref(false)
@@ -74,6 +79,11 @@ function openDestination(id: CityDestination): void {
 function returnToCity(): void {
   activeDestination.value = null
 }
+
+async function startTraining(): Promise<void> {
+  if (session.snapshot?.world?.travel || session.mutationPending || combat.isActive || combat.pending) return
+  await combat.startTraining()
+}
 </script>
 
 <template>
@@ -85,6 +95,13 @@ function returnToCity(): void {
         <small>БЕЗОПАСНАЯ ЗОНА</small>
         <h1>Стартовый город</h1>
       </div>
+      <button
+        v-if="worldBoss.active && worldBoss.active.currentHealth > 0"
+        type="button"
+        class="city-map__boss"
+        data-city-world-boss
+        @click="emit('open-world-boss')"
+      >Мировой босс</button>
       <button
         v-for="marker in cityMarkers"
         :key="marker.id"
@@ -110,7 +127,10 @@ function returnToCity(): void {
       </header>
 
       <AuctionView v-if="activeDestination === 'auction'" />
-      <ArenaView v-else-if="activeDestination === 'arena'" />
+      <div v-else-if="activeDestination === 'arena'" class="city-interior__arena">
+        <UIButton data-city-training :loading="combat.lifecyclePending" :disabled="session.mutationPending || combat.pending || combat.isActive" @click="startTraining">Тренировка на манекене</UIButton>
+        <ArenaView />
+      </div>
       <PremiumStoreView v-else-if="activeDestination === 'store'" />
       <MailboxView v-else-if="activeDestination === 'mailbox'" />
       <ProfessionView v-else-if="activeDestination === 'professions'" />
@@ -195,6 +215,19 @@ function returnToCity(): void {
   color: #d2b574;
   font-size: 0.6rem;
   letter-spacing: 0.14em;
+}
+.city-map__boss {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  right: 10px;
+  min-height: 34px;
+  padding: 4px 9px;
+  border: 1px solid #d5a865;
+  border-radius: 6px;
+  background: #1a1010ee;
+  color: #f8ca8f;
+  font: 700 0.7rem Georgia, serif;
 }
 .city-map__heading h1 {
   margin: 0;
@@ -287,6 +320,10 @@ function returnToCity(): void {
   margin: 0;
   color: var(--ui-color-gold);
   font: 700 1.1rem Georgia, serif;
+}
+.city-interior__arena {
+  display: grid;
+  gap: var(--ui-space-3);
 }
 .city-interior__choices {
   display: grid;
