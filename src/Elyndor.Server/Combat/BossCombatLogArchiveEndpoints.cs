@@ -28,7 +28,18 @@ public static class BossCombatLogArchiveEndpoints
             .WithTags("Combat");
 
         group.MapPost("/boss-log/telegram-v2", SendAsync);
+        group.MapPost("/full-log/arm", ArmFullLog)
+            .RequireAuthorization(AdminAuthorization.PolicyName);
         return endpoints;
+    }
+
+    private static IResult ArmFullLog(ClaimsPrincipal user, TimeProvider timeProvider)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+
+        FullCombatLogArchive.Arm(accountId, timeProvider.GetUtcNow());
+        return Results.Ok(new { Armed = true, MaxFileBytes = CombatLogRetentionPolicy.FullExportMaxBytes });
     }
 
     private static async Task<IResult> SendAsync(
@@ -44,6 +55,9 @@ public static class BossCombatLogArchiveEndpoints
     {
         if (!TryGetAccountId(user, out Guid accountId))
             return Results.Unauthorized();
+
+        if (request.Full && !user.IsInRole(AdminAuthorization.SuperAdminRole))
+            return Results.Forbid();
 
         if (request.SessionId == Guid.Empty)
         {
@@ -106,7 +120,8 @@ public static class BossCombatLogArchiveEndpoints
             loggerFactory.CreateLogger("Elyndor.BossCombatLog"),
             timeProvider.GetUtcNow(),
             cancellationToken,
-            buildSnapshots);
+            buildSnapshots,
+            request.Full);
 
         return Results.Ok(response);
     }
@@ -118,7 +133,6 @@ public static class BossCombatLogArchiveEndpoints
 
 internal static class BossCombatLogArchive
 {
-    private const int MaxEvents = 1500;
     private const int MaxSessions = 256;
     private static readonly TimeSpan Lifetime = TimeSpan.FromMinutes(30);
     private static readonly ConcurrentDictionary<ArchiveKey, ArchiveEntry> Entries = [];
@@ -152,7 +166,7 @@ internal static class BossCombatLogArchive
         if (accountId == Guid.Empty
             || snapshot is null
             || snapshot.SessionId == Guid.Empty
-            || !BossCombatLogPolicy.TryResolve(snapshot, out _))
+            || !BossCombatLogPolicy.TryResolveArchive(snapshot, out _))
         {
             return;
         }
@@ -173,6 +187,7 @@ internal static class BossCombatLogArchive
             update.ContentSnapshot,
             update.Reward,
             capturedAtUtc);
+        FullCombatLogArchive.Capture(accountId, snapshot, update.Events, capturedAtUtc);
         Purge(capturedAtUtc);
     }
 
@@ -188,7 +203,8 @@ internal static class BossCombatLogArchive
         ILogger logger,
         DateTimeOffset nowUtc,
         CancellationToken cancellationToken,
-        CharacterBuildSnapshotService? buildSnapshots = null)
+        CharacterBuildSnapshotService? buildSnapshots = null,
+        bool full = false)
     {
         Purge(nowUtc);
 
@@ -237,7 +253,7 @@ internal static class BossCombatLogArchive
                 events = entry.Events.Values.ToArray();
                 filteredSequences = new HashSet<long>(entry.FilteredSequences);
                 droppedEvents = entry.DroppedEvents;
-                alreadySent = entry.Sent;
+                alreadySent = full ? entry.FullSent : entry.Sent;
                 reward = entry.Reward;
                 entry.UpdatedAtUtc = nowUtc;
             }
@@ -248,13 +264,28 @@ internal static class BossCombatLogArchive
             if (snapshot.Status == CombatSessionStatus.Active)
                 return new BossCombatLogResponse(false, "combat_log_combat_active");
 
-            if (!BossCombatLogPolicy.TryResolve(
+            if (!BossCombatLogPolicy.TryResolveArchive(
                     snapshot,
                     out BossCombatLogTarget target))
             {
                 return new BossCombatLogResponse(
                     false,
                     BossCombatLogPolicy.IneligibleErrorCode);
+            }
+
+            bool fullSizeLimitReached = false;
+            long fullStartSequence = 0;
+            if (full)
+            {
+                FullCombatLogSnapshot? fullLog = FullCombatLogArchive.Read(sessionId, nowUtc);
+                if (fullLog is null)
+                    return new BossCombatLogResponse(false, "combat_log_full_not_armed");
+
+                events = fullLog.Events;
+                filteredSequences.Clear();
+                droppedEvents = 0;
+                fullSizeLimitReached = fullLog.SizeLimitReached;
+                fullStartSequence = fullLog.FirstCapturedSequence;
             }
 
             if (events.Length == 0)
@@ -289,15 +320,26 @@ internal static class BossCombatLogArchive
                 filteredSequences,
                 droppedEvents,
                 reward,
-                target);
+                target,
+                full);
+            if (full)
+            {
+                log += $"\n── FULL COMBAT LOG ──\n"
+                    + $"First captured sequence: #{fullStartSequence}\n"
+                    + $"File budget reached: {(fullSizeLimitReached ? "YES (TRUNCATED)" : "no")}\n";
+            }
+
             CharacterBuildSnapshot? build = target.IsTrainingDummy && buildSnapshots is not null
                 ? await buildSnapshots.GetTrainingAsync(accountId, sessionId, cancellationToken) : null;
             if (target.IsTrainingDummy)
                 log += build is null
                     ? "\nBUILD SNAPSHOT: unavailable (training started before build capture was enabled).\n"
                     : "\n" + CharacterBuildSnapshotFormatter.FormatSummary(build);
+            if (full && Encoding.UTF8.GetByteCount(log) > CombatLogRetentionPolicy.FullExportMaxBytes)
+                return new BossCombatLogResponse(false, "combat_log_full_file_too_large");
+
             string fileName =
-                $"elyndor-boss-{FileSegment(target.DefinitionId)}-{sessionId:N}.txt";
+                $"elyndor-{(full ? "full" : "combat")}-{FileSegment(target.DefinitionId)}-{sessionId:N}.txt";
             string caption =
                 $"⚔️ Elyndor · {target.DisplayName} · {ordered.Length} событий";
 
@@ -327,7 +369,10 @@ internal static class BossCombatLogArchive
 
             lock (entry.Gate)
             {
-                entry.Sent = true;
+                if (full)
+                    entry.FullSent = true;
+                else
+                    entry.Sent = true;
                 entry.UpdatedAtUtc = nowUtc;
             }
 
@@ -365,6 +410,9 @@ internal static class BossCombatLogArchive
 
             foreach (CombatEvent combatEvent in events)
             {
+                if (combatEvent.Sequence <= entry.LastDroppedSequence)
+                    continue;
+
                 if (ShouldArchiveEvent(combatEvent))
                 {
                     entry.Events[combatEvent.Sequence] = combatEvent;
@@ -377,13 +425,17 @@ internal static class BossCombatLogArchive
                 }
             }
 
-            while (entry.Events.Count > MaxEvents)
+            while (entry.Events.Count > CombatLogRetentionPolicy.ArchiveLimit(snapshot, entry.ContentSnapshot))
             {
                 long firstSequence = entry.Events.Keys.First();
                 entry.Events.Remove(firstSequence);
+                entry.LastDroppedSequence = firstSequence;
                 entry.DroppedEvents++;
             }
 
+            // Diagnostic-only markers must not grow unbounded in long encounters.
+            long earliest = Math.Max(0, snapshot.Sequence - CombatLogRetentionPolicy.StandardExportEvents);
+            entry.FilteredSequences.RemoveWhere(sequence => sequence < earliest);
             entry.UpdatedAtUtc = capturedAtUtc;
         }
     }
@@ -427,7 +479,8 @@ internal static class BossCombatLogArchive
         HashSet<long> filteredSequences,
         int droppedEvents,
         CombatRewardApplicationResult? reward,
-        BossCombatLogTarget target)
+        BossCombatLogTarget target,
+        bool full)
     {
         Dictionary<Guid, string> actorNames = new();
         foreach (CombatActorSnapshot actor in snapshot.Players ?? [snapshot.Player])
@@ -451,7 +504,7 @@ internal static class BossCombatLogArchive
             ignoreDroppedPrefix: droppedEvents > 0);
 
         StringBuilder builder = new();
-        builder.AppendLine(target.IsTrainingDummy
+        builder.AppendLine(target.IsTrainingDummy || !target.IsBoss
             ? "⚔️ ELYNDOR · COMBAT REPORT"
             : "⚔️ ELYNDOR · BOSS COMBAT REPORT");
         builder.Append("Цель: ").AppendLine(target.DisplayName);
@@ -489,7 +542,7 @@ internal static class BossCombatLogArchive
 
         builder.AppendLine();
         builder.AppendLine("── RAW EVENTS ──");
-        WriteRawEvents(builder, events, actorNames);
+        WriteRawEvents(builder, events, actorNames, full);
 
         return builder.ToString();
     }
@@ -907,8 +960,15 @@ internal static class BossCombatLogArchive
     private static void WriteRawEvents(
         StringBuilder builder,
         CombatEvent[] events,
-        Dictionary<Guid, string> actorNames)
+        Dictionary<Guid, string> actorNames,
+        bool full)
     {
+        if (full)
+        {
+            foreach (CombatEvent combatEvent in events)
+                WriteEvent(builder, combatEvent, actorNames);
+            return;
+        }
         CombatEvent[] regeneration = events
             .Where(IsCombatRegen)
             .ToArray();
@@ -1118,6 +1178,8 @@ internal static class BossCombatLogArchive
         public CombatRewardApplicationResult? Reward { get; set; } = reward;
         public DateTimeOffset UpdatedAtUtc { get; set; } = updatedAtUtc;
         public int DroppedEvents { get; set; }
+        public long LastDroppedSequence { get; set; }
         public bool Sent { get; set; }
+        public bool FullSent { get; set; }
     }
 }
