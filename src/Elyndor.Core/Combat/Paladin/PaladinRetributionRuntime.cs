@@ -32,6 +32,16 @@ public sealed class PaladinRetributionRuntime
         _vengeanceEndsAtUtc = now + vengeanceDuration;
     }
 
+    // Seal Mastery can maintain an existing Vengeance stack without awarding a new stack.
+    public bool RefreshVengeance(DateTimeOffset now, TimeSpan duration)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(duration, TimeSpan.Zero);
+        ExpireVengeance(now);
+        if (VengeanceStacks == 0) return false;
+        _vengeanceEndsAtUtc = now + duration;
+        return true;
+    }
+
     public void ExpireVengeance(DateTimeOffset now)
     {
         if (_vengeanceEndsAtUtc is { } endsAt && endsAt <= now)
