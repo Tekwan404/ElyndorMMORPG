@@ -48,7 +48,10 @@
       "MAX_RESOURCE": 0.5,
       "BLOCK_CHANCE": 25,
       "BLOCK_VALUE": 1.5,
-      "WEAPON_DAMAGE": 5
+      "WEAPON_DAMAGE": 5,
+      "PHYSICAL_VAMPIRISM": 70,
+      "MAGICAL_VAMPIRISM": 70,
+      "UNIVERSAL_VAMPIRISM": 125
     },
     "affixPools": [
       {
@@ -81,7 +84,8 @@
           "ATTACK_SPEED",
           "ARMOR_PENETRATION",
           "ACCURACY",
-          "ATTACK_POWER"
+          "ATTACK_POWER",
+          "PHYSICAL_VAMPIRISM"
         ],
         "selectionWeights": {
           "STRENGTH": 2,
@@ -90,7 +94,8 @@
           "ATTACK_SPEED": 1,
           "ARMOR_PENETRATION": 1,
           "ACCURACY": 1,
-          "ATTACK_POWER": 2
+          "ATTACK_POWER": 2,
+          "PHYSICAL_VAMPIRISM": 0.6
         }
       },
       {
@@ -153,7 +158,8 @@
           "MAGIC_PENETRATION",
           "ACCURACY",
           "SPELL_POWER",
-          "MAX_RESOURCE"
+          "MAX_RESOURCE",
+          "MAGICAL_VAMPIRISM"
         ],
         "selectionWeights": {
           "INTELLECT": 1,
@@ -163,7 +169,8 @@
           "MAGIC_PENETRATION": 1,
           "ACCURACY": 1,
           "SPELL_POWER": 1,
-          "MAX_RESOURCE": 1
+          "MAX_RESOURCE": 1,
+          "MAGICAL_VAMPIRISM": 0.6
         },
         "levelSelectionWeights": [
           {
@@ -208,7 +215,8 @@
           "ATTACK_SPEED",
           "ARMOR_PENETRATION",
           "ACCURACY",
-          "ATTACK_POWER"
+          "ATTACK_POWER",
+          "PHYSICAL_VAMPIRISM"
         ],
         "selectionWeights": {
           "AGILITY": 2,
@@ -217,7 +225,8 @@
           "ATTACK_SPEED": 1,
           "ARMOR_PENETRATION": 1,
           "ACCURACY": 1,
-          "ATTACK_POWER": 2
+          "ATTACK_POWER": 2,
+          "PHYSICAL_VAMPIRISM": 0.6
         }
       },
       {
@@ -262,7 +271,10 @@
           "DODGE",
           "ARMOR_PENETRATION",
           "MAGIC_PENETRATION",
-          "MAX_RESOURCE"
+          "MAX_RESOURCE",
+          "PHYSICAL_VAMPIRISM",
+          "MAGICAL_VAMPIRISM",
+          "UNIVERSAL_VAMPIRISM"
         ],
         "exclusiveStatGroups": [
           [
@@ -273,6 +285,11 @@
           [
             "ARMOR_PENETRATION",
             "MAGIC_PENETRATION"
+          ],
+          [
+            "PHYSICAL_VAMPIRISM",
+            "MAGICAL_VAMPIRISM",
+            "UNIVERSAL_VAMPIRISM"
           ]
         ],
         "selectionWeights": {
@@ -288,7 +305,10 @@
           "DODGE": 1,
           "ARMOR_PENETRATION": 1,
           "MAGIC_PENETRATION": 1,
-          "MAX_RESOURCE": 1
+          "MAX_RESOURCE": 1,
+          "PHYSICAL_VAMPIRISM": 0.6,
+          "MAGICAL_VAMPIRISM": 0.6,
+          "UNIVERSAL_VAMPIRISM": 0.15
         }
       },
       {
@@ -383,7 +403,10 @@
           "MAX_RESOURCE",
           "WEAPON_DAMAGE",
           "BLOCK_CHANCE",
-          "BLOCK_VALUE"
+          "BLOCK_VALUE",
+          "PHYSICAL_VAMPIRISM",
+          "MAGICAL_VAMPIRISM",
+          "UNIVERSAL_VAMPIRISM"
         ],
         "exclusiveStatGroups": [
           [
@@ -394,6 +417,11 @@
           [
             "ARMOR_PENETRATION",
             "MAGIC_PENETRATION"
+          ],
+          [
+            "PHYSICAL_VAMPIRISM",
+            "MAGICAL_VAMPIRISM",
+            "UNIVERSAL_VAMPIRISM"
           ]
         ],
         "selectionWeights": {
@@ -416,7 +444,10 @@
           "MAX_RESOURCE": 1,
           "WEAPON_DAMAGE": 1,
           "BLOCK_CHANCE": 1,
-          "BLOCK_VALUE": 1
+          "BLOCK_VALUE": 1,
+          "PHYSICAL_VAMPIRISM": 0.6,
+          "MAGICAL_VAMPIRISM": 0.6,
+          "UNIVERSAL_VAMPIRISM": 0.15
         }
       },
       {
@@ -477,7 +508,9 @@
           "ARMOR_PENETRATION",
           "MAGIC_PENETRATION",
           "MAX_HP",
-          "MAX_RESOURCE"
+          "MAX_RESOURCE",
+          "PHYSICAL_VAMPIRISM",
+          "MAGICAL_VAMPIRISM"
         ],
         "selectionWeights": {
           "STRENGTH": 2,
@@ -491,8 +524,16 @@
           "ARMOR_PENETRATION": 1,
           "MAGIC_PENETRATION": 1,
           "MAX_HP": 1,
-          "MAX_RESOURCE": 2
-        }
+          "MAX_RESOURCE": 2,
+          "PHYSICAL_VAMPIRISM": 0.6,
+          "MAGICAL_VAMPIRISM": 0.6
+        },
+        "exclusiveStatGroups": [
+          [
+            "PHYSICAL_VAMPIRISM",
+            "MAGICAL_VAMPIRISM"
+          ]
+        ]
       },
       {
         "id": "PALADIN_SHIELD",
@@ -532,7 +573,9 @@
           "ATTACK_SPEED",
           "DODGE",
           "ARMOR_PENETRATION",
-          "MAGIC_RESISTANCE"
+          "MAGIC_RESISTANCE",
+          "PHYSICAL_VAMPIRISM",
+          "UNIVERSAL_VAMPIRISM"
         ],
         "selectionWeights": {
           "STRENGTH": 2,
@@ -545,8 +588,16 @@
           "ATTACK_SPEED": 1,
           "DODGE": 1,
           "ARMOR_PENETRATION": 1,
-          "MAGIC_RESISTANCE": 1
-        }
+          "MAGIC_RESISTANCE": 1,
+          "PHYSICAL_VAMPIRISM": 0.6,
+          "UNIVERSAL_VAMPIRISM": 0.15
+        },
+        "exclusiveStatGroups": [
+          [
+            "PHYSICAL_VAMPIRISM",
+            "UNIVERSAL_VAMPIRISM"
+          ]
+        ]
       },
       {
         "id": "MAGE_ACCESSORY",
@@ -561,7 +612,9 @@
           "DODGE",
           "MAGIC_PENETRATION",
           "MAX_RESOURCE",
-          "MAGIC_RESISTANCE"
+          "MAGIC_RESISTANCE",
+          "MAGICAL_VAMPIRISM",
+          "UNIVERSAL_VAMPIRISM"
         ],
         "selectionWeights": {
           "INTELLECT": 1,
@@ -574,7 +627,9 @@
           "DODGE": 1,
           "MAGIC_PENETRATION": 1,
           "MAX_RESOURCE": 1,
-          "MAGIC_RESISTANCE": 1
+          "MAGIC_RESISTANCE": 1,
+          "MAGICAL_VAMPIRISM": 0.6,
+          "UNIVERSAL_VAMPIRISM": 0.15
         },
         "levelSelectionWeights": [
           {
@@ -587,6 +642,12 @@
               "MAX_RESOURCE": 3
             }
           }
+        ],
+        "exclusiveStatGroups": [
+          [
+            "MAGICAL_VAMPIRISM",
+            "UNIVERSAL_VAMPIRISM"
+          ]
         ]
       },
       {
@@ -601,7 +662,9 @@
           "ACCURACY",
           "ATTACK_SPEED",
           "DODGE",
-          "ARMOR_PENETRATION"
+          "ARMOR_PENETRATION",
+          "PHYSICAL_VAMPIRISM",
+          "UNIVERSAL_VAMPIRISM"
         ],
         "selectionWeights": {
           "AGILITY": 2,
@@ -613,8 +676,16 @@
           "ACCURACY": 1,
           "ATTACK_SPEED": 1,
           "DODGE": 1,
-          "ARMOR_PENETRATION": 1
-        }
+          "ARMOR_PENETRATION": 1,
+          "PHYSICAL_VAMPIRISM": 0.6,
+          "UNIVERSAL_VAMPIRISM": 0.15
+        },
+        "exclusiveStatGroups": [
+          [
+            "PHYSICAL_VAMPIRISM",
+            "UNIVERSAL_VAMPIRISM"
+          ]
+        ]
       },
       {
         "id": "PALADIN_ACCESSORY",
@@ -632,7 +703,10 @@
           "ARMOR_PENETRATION",
           "MAGIC_PENETRATION",
           "MAX_RESOURCE",
-          "MAGIC_RESISTANCE"
+          "MAGIC_RESISTANCE",
+          "PHYSICAL_VAMPIRISM",
+          "MAGICAL_VAMPIRISM",
+          "UNIVERSAL_VAMPIRISM"
         ],
         "selectionWeights": {
           "STRENGTH": 2,
@@ -648,8 +722,18 @@
           "ARMOR_PENETRATION": 1,
           "MAGIC_PENETRATION": 1,
           "MAX_RESOURCE": 2,
-          "MAGIC_RESISTANCE": 1
-        }
+          "MAGIC_RESISTANCE": 1,
+          "PHYSICAL_VAMPIRISM": 0.6,
+          "MAGICAL_VAMPIRISM": 0.6,
+          "UNIVERSAL_VAMPIRISM": 0.15
+        },
+        "exclusiveStatGroups": [
+          [
+            "PHYSICAL_VAMPIRISM",
+            "MAGICAL_VAMPIRISM",
+            "UNIVERSAL_VAMPIRISM"
+          ]
+        ]
       },
       {
         "id": "WARRIOR_UNIQUE_WEAPON",
@@ -661,7 +745,8 @@
           "ATTACK_SPEED",
           "ARMOR_PENETRATION",
           "ACCURACY",
-          "ATTACK_POWER"
+          "ATTACK_POWER",
+          "PHYSICAL_VAMPIRISM"
         ],
         "selectionWeights": {
           "STRENGTH": 2,
@@ -671,7 +756,8 @@
           "ATTACK_SPEED": 1,
           "ARMOR_PENETRATION": 1,
           "ACCURACY": 1,
-          "ATTACK_POWER": 2
+          "ATTACK_POWER": 2,
+          "PHYSICAL_VAMPIRISM": 0.6
         }
       },
       {
@@ -686,7 +772,8 @@
           "MAX_HP",
           "ARMOR",
           "MAGIC_RESISTANCE",
-          "DODGE"
+          "DODGE",
+          "MAGICAL_VAMPIRISM"
         ],
         "selectionWeights": {
           "INTELLECT": 2,
@@ -698,7 +785,8 @@
           "MAX_HP": 1,
           "ARMOR": 1,
           "MAGIC_RESISTANCE": 1,
-          "DODGE": 1
+          "DODGE": 1,
+          "MAGICAL_VAMPIRISM": 0.6
         }
       },
       {
@@ -1149,6 +1237,30 @@
         "low": "Потока",
         "medium": "Источника",
         "high": "Бесконечности"
+      },
+      {
+        "id": "SUFFIX_PHYSICAL_VAMPIRISM",
+        "statId": "PHYSICAL_VAMPIRISM",
+        "kind": "SUFFIX",
+        "low": "Жажды",
+        "medium": "Кровавой Жажды",
+        "high": "Неутолимой Жажды"
+      },
+      {
+        "id": "SUFFIX_MAGICAL_VAMPIRISM",
+        "statId": "MAGICAL_VAMPIRISM",
+        "kind": "SUFFIX",
+        "low": "Поглощения",
+        "medium": "Похитителя Душ",
+        "high": "Арканного Поглощения"
+      },
+      {
+        "id": "SUFFIX_UNIVERSAL_VAMPIRISM",
+        "statId": "UNIVERSAL_VAMPIRISM",
+        "kind": "SUFFIX",
+        "low": "Древней Крови",
+        "medium": "Вечного Голода",
+        "high": "Безграничного Поглощения"
       }
     ],
     "individualQualityDeviationPercent": 7,
@@ -1340,6 +1452,23 @@
           "MainHand"
         ],
         "requiresWeaponDamage": true
+      },
+      {
+        "statId": "PHYSICAL_VAMPIRISM",
+        "minimumItemLevel": 35
+      },
+      {
+        "statId": "MAGICAL_VAMPIRISM",
+        "minimumItemLevel": 35
+      },
+      {
+        "statId": "UNIVERSAL_VAMPIRISM",
+        "allowedSlots": [
+          "Amulet",
+          "Ring1",
+          "Ring2"
+        ],
+        "minimumItemLevel": 35
       }
     ]
   }

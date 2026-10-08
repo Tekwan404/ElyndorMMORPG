@@ -63,6 +63,9 @@ const percentageStats = new Set([
   'ARMOR_PENETRATION',
   'MAGIC_PENETRATION',
   'BLOCK_CHANCE',
+  'PHYSICAL_VAMPIRISM',
+  'MAGICAL_VAMPIRISM',
+  'UNIVERSAL_VAMPIRISM',
 ])
 
 export function forgeAffixQuality(affix: Pick<ItemAffix, 'value' | 'min' | 'max'>): number {
@@ -109,6 +112,9 @@ export function forgeStatLabel(statId: string): string {
     BLOCK_CHANCE: 'Шанс блока',
     BLOCK_VALUE: 'Сила блока',
     WEAPON_DAMAGE: 'Урон оружия',
+    PHYSICAL_VAMPIRISM: 'Физический вампиризм',
+    MAGICAL_VAMPIRISM: 'Магический вампиризм',
+    UNIVERSAL_VAMPIRISM: 'Универсальный вампиризм',
   }
   return labels[statId] ?? 'Характеристика'
 }

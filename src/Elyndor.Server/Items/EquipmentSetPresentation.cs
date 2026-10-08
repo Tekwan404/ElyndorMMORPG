@@ -27,6 +27,9 @@ internal static class EquipmentSetPresentation
         Add(bonus.AttackSpeedPercent, "Attack Speed", "%");
         Add(bonus.ArmorPenetrationPercent, "Armor Pen", "%");
         Add(bonus.MagicPenetrationPercent, "Magic Pen", "%");
+        Add(bonus.PhysicalVampirismPercent, "Физический вампиризм", "%");
+        Add(bonus.MagicalVampirismPercent, "Магический вампиризм", "%");
+        Add(bonus.UniversalVampirismPercent, "Универсальный вампиризм", "%");
         return string.Join(", ", stats);
 
         void Add(decimal value, string name, string suffix = "")

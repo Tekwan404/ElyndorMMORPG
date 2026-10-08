@@ -230,7 +230,10 @@ public sealed record ItemDefinition(
     string? ItemFamilyId = null,
     IReadOnlyList<string>? AllowedClassIds = null,
     long HonorPrice = 0,
-    IReadOnlyList<string>? SpecialEffectIds = null);
+    IReadOnlyList<string>? SpecialEffectIds = null,
+    decimal PhysicalVampirismPercent = 0,
+    decimal MagicalVampirismPercent = 0,
+    decimal UniversalVampirismPercent = 0);
 
 public sealed record EquipmentSetBonusDefinition(
     int RequiredPieces,
@@ -248,7 +251,10 @@ public sealed record EquipmentSetBonusDefinition(
     decimal MagicPenetrationPercent = 0,
     decimal MaxResourceFlat = 0,
     IReadOnlyList<string>? SpecialEffectIds = null,
-    string? Description = null);
+    string? Description = null,
+    decimal PhysicalVampirismPercent = 0,
+    decimal MagicalVampirismPercent = 0,
+    decimal UniversalVampirismPercent = 0);
 
 public sealed record EquipmentSetDefinition(
     string Id,

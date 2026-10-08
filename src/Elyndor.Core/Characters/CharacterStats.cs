@@ -19,4 +19,7 @@ public sealed record CharacterStats(
     decimal Dodge,
     decimal BlockChance = 0,
     decimal BlockValueMin = 0,
-    decimal BlockValueMax = 0);
+    decimal BlockValueMax = 0,
+    decimal PhysicalVampirismPercent = 0,
+    decimal MagicalVampirismPercent = 0,
+    decimal UniversalVampirismPercent = 0);

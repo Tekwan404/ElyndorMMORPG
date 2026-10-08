@@ -157,7 +157,10 @@ public sealed class CharacterDerivedStateService(
                         MagicPenetrationPercent: equipment.MagicPenetrationPercent,
                         BlockChancePercent: equipment.BlockChancePercent,
                         BlockValueMin: equipment.BlockValueMin,
-                        BlockValueMax: equipment.BlockValueMax),
+                        BlockValueMax: equipment.BlockValueMax,
+                        PhysicalVampirismPercent: equipment.PhysicalVampirismPercent,
+                        MagicalVampirismPercent: equipment.MagicalVampirismPercent,
+                        UniversalVampirismPercent: equipment.UniversalVampirismPercent),
                     TalentPercentages = talentPercentages,
                     TalentDerived = talentModifiers.Stats
                 });

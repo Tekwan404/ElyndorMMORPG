@@ -381,6 +381,9 @@ export interface ItemStats {
   magicPenetration: number
   attackSpeed: number
   maxResource: number
+  physicalVampirismPercent?: number
+  magicalVampirismPercent?: number
+  universalVampirismPercent?: number
 }
 
 export const EQUIPMENT_SLOTS = [
@@ -676,6 +679,9 @@ export interface CharacterStats {
   armor: number
   magicResistance: number
   dodge: number
+  physicalVampirismPercent?: number
+  magicalVampirismPercent?: number
+  universalVampirismPercent?: number
 }
 
 export interface CharacterStatContribution {

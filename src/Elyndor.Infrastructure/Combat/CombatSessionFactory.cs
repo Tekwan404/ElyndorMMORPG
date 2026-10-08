@@ -557,7 +557,10 @@ public sealed class CombatSessionFactory(
         stats.SpellPower,
         stats.BlockChance,
         stats.BlockValueMin,
-        stats.BlockValueMax);
+        stats.BlockValueMax,
+        stats.PhysicalVampirismPercent,
+        stats.MagicalVampirismPercent,
+        stats.UniversalVampirismPercent);
 
     private static CombatSessionCreationResult Failure(
         string code,

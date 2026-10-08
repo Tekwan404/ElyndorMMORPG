@@ -24,7 +24,10 @@ public sealed record EquipmentModifierSummary(
     string? MainHandWeaponCategory = null,
     decimal BlockChancePercent = 0,
     decimal BlockValueMin = 0,
-    decimal BlockValueMax = 0);
+    decimal BlockValueMax = 0,
+    decimal PhysicalVampirismPercent = 0,
+    decimal MagicalVampirismPercent = 0,
+    decimal UniversalVampirismPercent = 0);
 
 public static class EquipmentStatModifierResolver
 {
@@ -67,6 +70,9 @@ public static class EquipmentStatModifierResolver
         decimal armorPenetrationPercent = items.Sum(item => item.ArmorPenetrationPercent);
         decimal magicPenetrationPercent = items.Sum(item => item.MagicPenetrationPercent);
         decimal maxResourceFlat = items.Sum(item => item.MaxResourceFlat);
+        decimal physicalVampirism = items.Sum(item => item.PhysicalVampirismPercent);
+        decimal magicalVampirism = items.Sum(item => item.MagicalVampirismPercent);
+        decimal universalVampirism = items.Sum(item => item.UniversalVampirismPercent);
 
         ItemDefinition? mainHand = items
             .SingleOrDefault(item => CanonicalSlot(item.Slot) == EquipmentSlot.MainHand);
@@ -108,6 +114,9 @@ public static class EquipmentStatModifierResolver
                 armorPenetrationPercent += bonus.ArmorPenetrationPercent;
                 magicPenetrationPercent += bonus.MagicPenetrationPercent;
                 maxResourceFlat += bonus.MaxResourceFlat;
+                physicalVampirism += bonus.PhysicalVampirismPercent;
+                magicalVampirism += bonus.MagicalVampirismPercent;
+                universalVampirism += bonus.UniversalVampirismPercent;
             }
         }
 
@@ -133,7 +142,10 @@ public static class EquipmentStatModifierResolver
             mainHandWeaponCategory,
             blockChancePercent,
             blockValueMin,
-            blockValueMax);
+            blockValueMax,
+            physicalVampirism,
+            magicalVampirism,
+            universalVampirism);
     }
 
     private static decimal ResolveArmorContribution(ItemDefinition item)

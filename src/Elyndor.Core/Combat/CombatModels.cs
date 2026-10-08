@@ -18,7 +18,10 @@ public sealed record CombatStats(
     decimal SpellPower = 0,
     decimal BlockChance = 0,
     decimal BlockValueMin = 0,
-    decimal BlockValueMax = 0)
+    decimal BlockValueMax = 0,
+    decimal PhysicalVampirismPercent = 0,
+    decimal MagicalVampirismPercent = 0,
+    decimal UniversalVampirismPercent = 0)
 {
     public static CombatStats Default { get; } = new(1, 0, 0, 0, 1, 0, 0, 0, 0);
 }

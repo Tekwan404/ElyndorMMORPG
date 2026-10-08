@@ -56,7 +56,8 @@ public sealed partial class CombatSession
                     CanCrit: false,
                     MinimumDamage: 0,
                     SkipDefenseMitigation: true,
-                    CanBlock: false),
+                    CanBlock: false,
+                    IsReflectedDamage: true),
                 _random,
                 combatEvent.OccurredAtUtc);
             CombatEvent[] reflectedEvents = reflected.Events

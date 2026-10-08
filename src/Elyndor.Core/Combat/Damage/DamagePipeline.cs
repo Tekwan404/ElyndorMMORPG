@@ -29,7 +29,8 @@ public sealed record DamageRequest(
     string? DefinitionId = null,
     bool IsSpell = false,
     bool SkipIncomingHpInterception = false,
-    bool IsTransferredDamage = false);
+    bool IsTransferredDamage = false,
+    bool IsReflectedDamage = false);
 
 public sealed record DamageResult(
     decimal AttemptedAmount,
@@ -260,14 +261,28 @@ public static class DamagePipeline
         // Passive lifesteal follows the same healing rules as damage-action lifesteal.
         // Resolve before publishing events; events are authoritative results, not commands.
         HealingResult? lifesteal = null;
-        if (request.Type == DamageType.Physical
-            && hpDamage > 0
+        // Equipment lifesteal works for every class; Berserker's talent stacks
+        // with physical and universal lifesteal instead of overriding them.
+        decimal vampirismPercent = request.Type switch
+        {
+            DamageType.Physical => request.Source.Stats.PhysicalVampirismPercent
+                + request.Source.Stats.UniversalVampirismPercent
+                + request.Source.TalentModifiers.VampirismPercent,
+            DamageType.Magical => request.Source.Stats.MagicalVampirismPercent
+                + request.Source.Stats.UniversalVampirismPercent,
+            DamageType.True => request.Source.Stats.UniversalVampirismPercent,
+            _ => 0m
+        };
+        if (hpDamage > 0
+            && !request.Source.IsDead
+            && !request.IsTransferredDamage
+            && !request.IsReflectedDamage
             && request.Source.ActorId != request.Target.ActorId
-            && request.Source.TalentModifiers.VampirismPercent > 0)
+            && vampirismPercent > 0)
         {
             lifesteal = HealingPipeline.Resolve(new HealingRequest(
                 request.Source,
-                hpDamage * request.Source.TalentModifiers.VampirismPercent / 100m,
+                hpDamage * vampirismPercent / 100m,
                 OccurredAtUtc: occurredAtUtc,
                 Source: request.Source,
                 CanCrit: false,

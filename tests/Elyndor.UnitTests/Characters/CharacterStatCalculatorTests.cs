@@ -281,7 +281,8 @@ public sealed class CharacterStatCalculatorTests
     [
         Profile("WARRIOR", "STRENGTH", "RAGE", new(12, 6, 4, 10), new(3, 1, 0.5m, 2)),
         Profile("ARCHER", "AGILITY", "FOCUS", new(5, 9, 5, 7), new(1, 3, 1, 2)),
-        Profile("MAGE", "INTELLECT", "MANA", new(3, 5, 11, 6), new(1, 1, 3, 2))
+        Profile("MAGE", "INTELLECT", "MANA", new(3, 5, 11, 6), new(1, 1, 3, 2)),
+        Profile("PALADIN", "STRENGTH", "MANA", new(8, 5, 8, 9), new(2, 1, 2, 2))
     ];
 
     private static ClassProfile Profile(
@@ -299,4 +300,25 @@ public sealed class CharacterStatCalculatorTests
             ["SWORD"],
             ["LIGHT"],
             "Prototype identity");
+    [Fact]
+    public void AllClassesUseVampirismEquipmentStatsWithoutRestriction()
+    {
+        CharacterStatCalculator calculator = new(Formula(), Profiles());
+        CharacterStatInputs inputs = CharacterStatInputs.Empty with
+        {
+            EquipmentDerived = new CharacterEquipmentDerivedModifiers(
+                PhysicalVampirismPercent: 2.5m,
+                MagicalVampirismPercent: 3.5m,
+                UniversalVampirismPercent: 1.25m)
+        };
+        foreach (string classId in new[] { "WARRIOR", "MAGE", "ARCHER", "PALADIN" })
+        {
+            CharacterStatCalculation result = calculator.CalculateDetailed(classId, 3, inputs);
+            Assert.Equal(2.5m, result.Stats.PhysicalVampirismPercent);
+            Assert.Equal(3.5m, result.Stats.MagicalVampirismPercent);
+            Assert.Equal(1.25m, result.Stats.UniversalVampirismPercent);
+            Assert.Equal(3.5m, result.Breakdown["magicalVampirismPercent"].FinalValue);
+        }
+    }
+
 }
