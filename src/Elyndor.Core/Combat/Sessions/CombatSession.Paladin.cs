@@ -91,6 +91,27 @@ public sealed partial class CombatSession
                 ModifierMode: EffectModifierMode.Flat), now);
         }
 
+        // Sanctuary returns Mana to its owner only when a living party member
+        // actually takes a qualifying enemy hit. Periodic damage cannot farm refunds.
+        if (combatEvent.Type == CombatEventType.DamageDealt
+            && combatEvent.Amount > 0
+            && !combatEvent.IsPeriodic
+            && combatEvent.TargetActorId is { } protectedId
+            && _playerStatesByActorId.TryGetValue(protectedId, out CombatPlayerRuntimeState? protectedState)
+            && !protectedState.Definition.Actor.IsDead
+            && protectedState.Definition.Actor.ActiveEffects.Any(effect =>
+                effect.Definition.Id == "PALADIN_BLESSING_SANCTUARY"
+                && effect.SourceId == _player.Actor.ActorId
+                && effect.ExpiresAtUtc > now)
+            && TryGetPaladinHook("P-5-4", out ResolvedTalentEventHook sanctuaryMaster)
+            && TalentCooldownReady(sanctuaryMaster.TalentId, now))
+        {
+            AddResource(_player.Actor, 3m * sanctuaryMaster.Rank, now,
+                sanctuaryMaster.TalentId);
+            StartTalentCooldown(
+                sanctuaryMaster with { InternalCooldown = TimeSpan.FromSeconds(2) }, now);
+        }
+
         switch (combatEvent.Type)
         {
             case CombatEventType.AbilityStarted:
