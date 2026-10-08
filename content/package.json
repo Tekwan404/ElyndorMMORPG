@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.36.2",
+  "contentVersion": "0.44.1",
   "balanceVersion": "0.29.0",
-  "publishedAtUtc": "2026-10-04T19:00:00+00:00",
+  "publishedAtUtc": "2026-10-08T03:48:10+00:00",
   "definitions": [
     {
       "type": "RACE",
@@ -438,5 +438,240 @@
     "xpMultiplier": 0.7,
     "goldMultiplier": 0.7,
     "lootMultiplier": 0.7
-  }
+  },
+  "promoCodes": [
+    {
+      "code": "DEV_BERSERKER_L18",
+      "enabled": true,
+      "perAccountRedemptionLimit": 1,
+      "itemRewards": [
+        {
+          "itemDefinitionId": "WARRIOR_LEGENDARY_FIRST_GUARD_CHEST",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "WARRIOR_LEGENDARY_FIRST_GUARD_HANDS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "WARRIOR_LEGENDARY_FIRST_GUARD_HEAD",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "WARRIOR_LEGENDARY_FIRST_GUARD_LEGS",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "code": "DEV_BERSERKER_L35",
+      "enabled": true,
+      "perAccountRedemptionLimit": 1,
+      "itemRewards": [
+        {
+          "itemDefinitionId": "L35_WARRIOR_RARE_GREY_FANG_CHEST",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L35_WARRIOR_RARE_GREY_FANG_FEET",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L35_WARRIOR_RARE_GREY_FANG_HANDS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L35_WARRIOR_RARE_GREY_FANG_HEAD",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L35_WARRIOR_RARE_GREY_FANG_LEGS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L35_WARRIOR_RARE_GREY_FANG_SHOULDERS",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "code": "DEV_BERSERKER_L45",
+      "enabled": true,
+      "perAccountRedemptionLimit": 1,
+      "itemRewards": [
+        {
+          "itemDefinitionId": "L45_WARRIOR_EPIC_CRIMSON_FURY_CHEST",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L45_WARRIOR_EPIC_CRIMSON_FURY_FEET",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L45_WARRIOR_EPIC_CRIMSON_FURY_HANDS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L45_WARRIOR_EPIC_CRIMSON_FURY_HEAD",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L45_WARRIOR_EPIC_CRIMSON_FURY_LEGS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L45_WARRIOR_EPIC_CRIMSON_FURY_SHOULDERS",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "code": "DEV_BERSERKER_L55",
+      "enabled": true,
+      "perAccountRedemptionLimit": 1,
+      "itemRewards": [
+        {
+          "itemDefinitionId": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_CHEST",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_FEET",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_HANDS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_HEAD",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_LEGS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L55_WARRIOR_LEGENDARY_BLACK_BASTION_SHOULDERS",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "code": "DEV_BERSERKER_L60_NORMAL",
+      "enabled": true,
+      "perAccountRedemptionLimit": 1,
+      "itemRewards": [
+        {
+          "itemDefinitionId": "L60_NORMAL_WARRIOR_BERSERKER_CHEST",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_NORMAL_WARRIOR_BERSERKER_FEET",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_NORMAL_WARRIOR_BERSERKER_HANDS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_NORMAL_WARRIOR_BERSERKER_HEAD",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_NORMAL_WARRIOR_BERSERKER_LEGS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_NORMAL_WARRIOR_BERSERKER_SHOULDERS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_NORMAL_WARRIOR_BERSERKER_AMULET",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_NORMAL_WARRIOR_BERSERKER_RING",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "code": "DEV_BERSERKER_L60_PVE",
+      "enabled": true,
+      "perAccountRedemptionLimit": 1,
+      "itemRewards": [
+        {
+          "itemDefinitionId": "L60_PVE_T1_WARRIOR_BERSERKER_CHEST",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_PVE_T1_WARRIOR_BERSERKER_FEET",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_PVE_T1_WARRIOR_BERSERKER_HANDS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_PVE_T1_WARRIOR_BERSERKER_HEAD",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_PVE_T1_WARRIOR_BERSERKER_LEGS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_PVE_T1_WARRIOR_BERSERKER_SHOULDERS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_PVE_T1_WARRIOR_BERSERKER_AMULET",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_PVE_T1_WARRIOR_BERSERKER_RING",
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "code": "DEV_BERSERKER_L60_PVP",
+      "enabled": true,
+      "perAccountRedemptionLimit": 1,
+      "itemRewards": [
+        {
+          "itemDefinitionId": "L60_PVP_T1_WARRIOR_BERSERKER_CHEST",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_PVP_T1_WARRIOR_BERSERKER_FEET",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_PVP_T1_WARRIOR_BERSERKER_HANDS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_PVP_T1_WARRIOR_BERSERKER_HEAD",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_PVP_T1_WARRIOR_BERSERKER_LEGS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_PVP_T1_WARRIOR_BERSERKER_SHOULDERS",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_PVP_T1_WARRIOR_BERSERKER_AMULET",
+          "quantity": 1
+        },
+        {
+          "itemDefinitionId": "L60_PVP_T1_WARRIOR_BERSERKER_RING",
+          "quantity": 1
+        }
+      ]
+    }
+  ]
 }
