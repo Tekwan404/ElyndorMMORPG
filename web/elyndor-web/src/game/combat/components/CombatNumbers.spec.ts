@@ -104,7 +104,7 @@ describe('CombatNumbers', () => {
       ],
     })
     expect(wrapper.findAll('[data-combat-number]')).toHaveLength(2)
-    expect(wrapper.get('[data-combat-number="5"]').exists()).toBe(true)
+    expect(wrapper.find('[data-combat-number="5"]').exists()).toBe(true)
     wrapper.unmount()
   })
 })
