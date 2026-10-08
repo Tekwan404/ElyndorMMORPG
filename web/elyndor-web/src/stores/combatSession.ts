@@ -84,6 +84,12 @@ const ABILITY_QUEUE_WINDOW_MS = 250
 const COMBAT_EVENT_BUFFER_LIMIT = 1500
 const COMBAT_INVOKE_DEADLINE_MS = 30_000
 const COMBAT_STALE_AFTER_MS = 15_000
+// A command can be rejected by gameplay rules without any loss of connectivity.
+// These responses need reconciliation because the session may have ended or an
+// earlier attempt with the same id may already have been applied.
+const COMBAT_REJECTIONS_REQUIRING_RESYNC = new Set([
+  'combat_not_found', 'combat_duplicate_command',
+])
 const SESSION_BOUND_INVOCATIONS = new Set([
   'UseAbility', 'UseConsumable', 'StartAutoAttack', 'StopAutoAttack',
   'SelectTarget', 'FleeCombat', 'LeaveCombat', 'GetThreatSnapshot',
@@ -603,10 +609,21 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       connected = true
       const update = await invokeHub<CombatUpdate>(method, ...args)
       applyUpdate(update)
-      if (!update.succeeded && !recoveryRequired.value) void resume()
+      if (!update.succeeded && !recoveryRequired.value
+        && COMBAT_REJECTIONS_REQUIRING_RESYNC.has(update.errorCode ?? '')) {
+        void resume()
+      }
       return { succeeded: update.succeeded, receivedResponse: true }
     } catch (error) {
       if (error instanceof ObsoleteCombatInvocationError) return { succeeded: false, receivedResponse: false }
+      // The server deliberately rejected this command before execution. It is
+      // not a SignalR transport failure and must not close the ability bar.
+      if (connected && connection?.state === HubConnectionState.Connected
+        && /\brate_limited\b/i.test(getErrorMessage(error))) {
+        errorCode.value = 'rate_limited'
+        diagnostic.value = null
+        return { succeeded: false, receivedResponse: true }
+      }
       if (connected || diagnostic.value === null) {
         recordFailure('hub_invoke', method, error)
       }
@@ -730,7 +747,9 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
 
   function applyUpdate(update: CombatUpdate): boolean {
     const requiresRecovery = !update.succeeded && update.errorCode === 'combat_recovery_required'
-    if (!update.succeeded && !requiresRecovery) {
+    // Rejected commands can still carry a newer authoritative snapshot.
+    // Apply it without losing the rejection reason or awarding unconfirmed loot.
+    if (!update.succeeded && !requiresRecovery && !update.snapshot) {
       errorCode.value = update.errorCode
       diagnostic.value = null
       return false
@@ -763,7 +782,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       trainingStats.value = emptyTrainingStats()
       lastAppliedSequence = incomingSnapshot?.sequence ?? 0
     }
-    errorCode.value = requiresRecovery ? update.errorCode : null
+    errorCode.value = update.succeeded ? null : update.errorCode
     diagnostic.value = null
 
     if (newSession && incomingSnapshot) {
@@ -822,7 +841,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       lastAppliedSequence = Math.max(lastAppliedSequence, ...fresh.map(event => event.sequence))
     }
     accumulateTrainingStats(fresh, snapshot.value ?? incomingSnapshot)
-    if (!requiresRecovery && !isStaleSameSession && update.reward) {
+    if (update.succeeded && !isStaleSameSession && update.reward) {
       reward.value = update.reward
       if (update.reward.lootRolls?.length) mergeLootRolls(update.reward.lootRolls)
     }
