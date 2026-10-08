@@ -27,7 +27,8 @@ public sealed record DamageRequest(
     bool CanBlock = true,
     bool IsUnblockable = false,
     string? DefinitionId = null,
-    bool IsSpell = false);
+    bool IsSpell = false,
+    bool SkipIncomingHpInterception = false);
 
 public sealed record DamageResult(
     decimal AttemptedAmount,
@@ -216,9 +217,18 @@ public static class DamagePipeline
             ? []
             : AbsorbShields(request.Target, afterBlock, occurredAtUtc);
         decimal absorbed = shieldAbsorptions.Sum(item => item.Amount);
-        decimal hpDamage = Math.Min(
-            request.Target.CurrentHp,
-            Math.Max(0, afterBlock - absorbed));
+        decimal pendingHpDamage = Math.Max(0, afterBlock - absorbed);
+        IReadOnlyList<CombatEvent> redirectedEvents = [];
+        if (pendingHpDamage > 0 && !request.SkipIncomingHpInterception
+            && request.Target.IncomingHpDamageInterceptor is { } intercept)
+        {
+            IncomingHpDamageResult intercepted = intercept(
+                new IncomingHpDamageContext(request.Source, request.Target,
+                    request.Type, pendingHpDamage, occurredAtUtc), random);
+            pendingHpDamage = decimal.Clamp(intercepted.DamageToTarget, 0, pendingHpDamage);
+            redirectedEvents = intercepted.RedirectedEvents;
+        }
+        decimal hpDamage = Math.Min(request.Target.CurrentHp, pendingHpDamage);
         bool lethal = request.Target.CanDie
                       && hpDamage >= request.Target.CurrentHp
                       && hpDamage > 0;
@@ -336,6 +346,7 @@ public static class DamagePipeline
             DamageBeforeBlock: rounded,
             IsUnblockable: request.IsUnblockable,
             IsCritical: critical) { BaseDamage = request.BaseAmount });
+        events.AddRange(redirectedEvents);
         if (vampirismHealing > 0)
         {
             events.Add(new CombatEvent(
