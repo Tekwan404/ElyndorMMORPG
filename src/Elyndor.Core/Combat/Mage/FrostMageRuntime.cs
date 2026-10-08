@@ -110,9 +110,9 @@ internal sealed class FrostMageRuntime(MageCombatContext context, MageCombatRunt
             if (string.Equals(ability.Id, IceLanceId, StringComparison.Ordinal))
             {
                 if (frozen)
-                    damageMultiplier *= 3m;
+                    damageMultiplier *= 2.5m;
                 else if (deepChill)
-                    damageMultiplier *= 1.75m;
+                    damageMultiplier *= 1.65m;
 
                 if ((frozen || deepChill)
                     && TryGetMageHook("I-6-2", out ResolvedTalentEventHook perfectLance))
