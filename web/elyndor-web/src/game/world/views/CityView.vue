@@ -1,15 +1,23 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { defineAsyncComponent, ref, watch } from 'vue'
 
 import cityArt from '@/assets/world/starter-town.webp'
-import ForgeView from '@/game/character/views/ForgeView.vue'
-import AuctionView from '@/game/economy/views/AuctionView.vue'
-import MailboxView from '@/game/economy/views/MailboxView.vue'
-import PremiumStoreView from '@/game/economy/views/PremiumStoreView.vue'
-import MerchantShop from '@/game/world/components/MerchantShop.vue'
-import AdventurerGuildBoard from '@/game/world/components/AdventurerGuildBoard.vue'
-import ArenaView from '@/game/pvp/views/ArenaView.vue'
-import ProfessionView from '@/game/professions/views/ProfessionView.vue'
+
+
+
+
+
+
+
+
+const ForgeView = defineAsyncComponent(() => import('@/game/character/views/ForgeView.vue'))
+const AuctionView = defineAsyncComponent(() => import('@/game/economy/views/AuctionView.vue'))
+const MailboxView = defineAsyncComponent(() => import('@/game/economy/views/MailboxView.vue'))
+const PremiumStoreView = defineAsyncComponent(() => import('@/game/economy/views/PremiumStoreView.vue'))
+const MerchantShop = defineAsyncComponent(() => import('@/game/world/components/MerchantShop.vue'))
+const AdventurerGuildBoard = defineAsyncComponent(() => import('@/game/world/components/AdventurerGuildBoard.vue'))
+const ArenaView = defineAsyncComponent(() => import('@/game/pvp/views/ArenaView.vue'))
+const ProfessionView = defineAsyncComponent(() => import('@/game/professions/views/ProfessionView.vue'))
 import { useGameSessionStore } from '@/stores/gameSession'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
@@ -159,9 +167,10 @@ async function startTraining(): Promise<void> {
       </div>
     </div>
 
-    <MerchantShop :open="merchantOpen" @close="merchantOpen = false" />
+    <MerchantShop v-if="merchantOpen" :open="merchantOpen" @close="merchantOpen = false" />
     <ForgeView v-if="forgeOpen" @close="forgeOpen = false" />
     <AdventurerGuildBoard
+      v-if="adventurersOpen"
       :open="adventurersOpen"
       :location-id="session.snapshot?.world?.currentLocation.id ?? ''"
       @close="adventurersOpen = false"
