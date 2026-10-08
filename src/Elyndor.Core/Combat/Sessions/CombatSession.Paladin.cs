@@ -898,14 +898,15 @@ public sealed partial class CombatSession
     {
         ActiveEffect? negative = target.ActiveEffects
             .Where(effect =>
-                effect.Definition.Kind is EffectKind.Debuff or EffectKind.Stun or EffectKind.Silence
+                effect.ExpiresAtUtc > now
+                && effect.Definition.Kind is (EffectKind.Debuff or EffectKind.Stun or EffectKind.Silence)
                 && !string.IsNullOrWhiteSpace(effect.Definition.DispelCategory))
             .OrderBy(effect => effect.Sequence)
             .FirstOrDefault();
         if (negative is null || negative.Definition.DispelCategory is not { } category)
             return;
 
-        IReadOnlyList<CombatEvent> dispelled = EffectEngine.Dispel(target, category, now);
+        IReadOnlyList<CombatEvent> dispelled = EffectEngine.RemoveInstance(target, negative.InstanceId, now);
         if (dispelled.Count == 0)
             return;
 
