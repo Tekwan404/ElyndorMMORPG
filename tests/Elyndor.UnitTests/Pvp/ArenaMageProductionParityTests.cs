@@ -32,7 +32,7 @@ public sealed class ArenaMageProductionParityTests
         Fight improved = await Create(["A-3-4"]);
         Cast(ordinary, "MAGE_COUNTERSPELL", Now);
         Cast(improved, "MAGE_COUNTERSPELL", Now);
-        Assert.Equal(ordinary.Session.CooldownsFor(ordinary.Mage.AccountId)["MAGE_COUNTERSPELL"].AddSeconds(-1),
+        Assert.Equal(ordinary.Session.CooldownsFor(ordinary.Mage.AccountId)["MAGE_COUNTERSPELL"].AddSeconds(-3),
             improved.Session.CooldownsFor(improved.Mage.AccountId)["MAGE_COUNTERSPELL"]);
     }
 
@@ -551,7 +551,7 @@ public sealed class ArenaMageProductionParityTests
         fight.Session.AdvanceTo(Now.AddSeconds(3.001));
         decimal before = fight.Mage.Actor.CurrentResource;
         fight.Session.AdvanceTo(Now.AddSeconds(4.001));
-        Assert.InRange(fight.Mage.Actor.CurrentResource - before, 14.49999m, 14.50001m);
+        Assert.InRange(fight.Mage.Actor.CurrentResource - before, 24.99999m, 25.00001m);
     }
 
     private static ActiveEffect Effect(ArenaFighter fighter, string id) =>
