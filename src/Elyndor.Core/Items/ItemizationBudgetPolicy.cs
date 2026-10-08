@@ -239,6 +239,9 @@ public static class ItemizationBudgetPolicy
             + Sum(ItemStatIds.ArmorPenetration, template.ArmorPenetrationPercent)
             + Sum(ItemStatIds.MagicPenetration, template.MagicPenetrationPercent)
             + Sum(ItemStatIds.MaxResource, template.MaxResourceFlat)
+            + Sum(ItemStatIds.PhysicalVampirism, template.PhysicalVampirismPercent)
+            + Sum(ItemStatIds.MagicalVampirism, template.MagicalVampirismPercent)
+            + Sum(ItemStatIds.UniversalVampirism, template.UniversalVampirismPercent)
             + Sum(ItemStatIds.BlockChance, template.BlockChancePercent)
             + Sum(ItemStatIds.BlockValue, blockAverage)
             + Sum(ItemStatIds.WeaponDamage, weaponAverage);

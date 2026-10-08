@@ -185,4 +185,32 @@ public sealed class EquipmentStatModifierResolverTests
             ArmorCategory: slot is EquipmentSlot.Chest or EquipmentSlot.Hands
                 ? EquipmentCategoryIds.Leather
                 : null);
+    [Fact]
+    public void VampirismFromEquippedItemsAndSetBonusStacks()
+    {
+        PrimaryStats stats = new(0, 0, 0, 0);
+        ItemDefinition ring = Item("VAMP_RING", EquipmentSlot.Ring1, stats) with
+        {
+            PhysicalVampirismPercent = 1.5m,
+            MagicalVampirismPercent = 2m,
+            UniversalVampirismPercent = 0.5m,
+            SetId = "TEST_VAMP_SET"
+        };
+        ItemDefinition amulet = Item("VAMP_AMULET", EquipmentSlot.Amulet, stats) with
+        {
+            PhysicalVampirismPercent = 1m,
+            SetId = "TEST_VAMP_SET"
+        };
+        EquipmentSetDefinition set = new(
+            "TEST_VAMP_SET", "Vampiric Set",
+            [new EquipmentSetBonusDefinition(2, UniversalVampirismPercent: 1m)]);
+
+        EquipmentModifierSummary modifiers =
+            EquipmentStatModifierResolver.ResolveDetailed([ring, amulet], [set]);
+
+        Assert.Equal(2.5m, modifiers.PhysicalVampirismPercent);
+        Assert.Equal(2m, modifiers.MagicalVampirismPercent);
+        Assert.Equal(1.5m, modifiers.UniversalVampirismPercent);
+    }
+
 }

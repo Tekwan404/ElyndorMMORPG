@@ -27,19 +27,24 @@ public static class ItemStatIds
     public const string BlockChance = "BLOCK_CHANCE";
     public const string BlockValue = "BLOCK_VALUE";
     public const string WeaponDamage = "WEAPON_DAMAGE";
+    public const string PhysicalVampirism = "PHYSICAL_VAMPIRISM";
+    public const string MagicalVampirism = "MAGICAL_VAMPIRISM";
+    public const string UniversalVampirism = "UNIVERSAL_VAMPIRISM";
 
     public static IReadOnlySet<string> ApprovedV1 { get; } = new HashSet<string>(
         [
             Strength, Agility, Intellect, Stamina, MaxHp, AttackPower, SpellPower,
             CriticalChance, CriticalDamage, Accuracy, AttackSpeed, Armor,
             MagicResistance, Dodge, ArmorPenetration, MagicPenetration, MaxResource,
-            BlockChance, BlockValue, WeaponDamage
+            BlockChance, BlockValue, WeaponDamage,
+            PhysicalVampirism, MagicalVampirism, UniversalVampirism
         ],
         StringComparer.Ordinal);
 
     public static bool IsPercentage(string statId) =>
         statId is CriticalChance or CriticalDamage or Accuracy or AttackSpeed
-            or Dodge or ArmorPenetration or MagicPenetration or BlockChance;
+            or Dodge or ArmorPenetration or MagicPenetration or BlockChance
+            or PhysicalVampirism or MagicalVampirism or UniversalVampirism;
 }
 
 public sealed record ItemAffixPoolDefinition(
@@ -685,6 +690,9 @@ public static class ItemInstanceGenerator
         decimal armorPen = template.ArmorPenetrationPercent;
         decimal magicPen = template.MagicPenetrationPercent;
         decimal maxResource = template.MaxResourceFlat;
+        decimal physicalVampirism = template.PhysicalVampirismPercent;
+        decimal magicalVampirism = template.MagicalVampirismPercent;
+        decimal universalVampirism = template.UniversalVampirismPercent;
         decimal blockChance = template.BlockChancePercent;
         decimal blockMin = template.BlockValueMin;
         decimal blockMax = template.BlockValueMax;
@@ -712,6 +720,9 @@ public static class ItemInstanceGenerator
                 case ItemStatIds.ArmorPenetration: armorPen += affix.Value; break;
                 case ItemStatIds.MagicPenetration: magicPen += affix.Value; break;
                 case ItemStatIds.MaxResource: maxResource += affix.Value; break;
+                case ItemStatIds.PhysicalVampirism: physicalVampirism += affix.Value; break;
+                case ItemStatIds.MagicalVampirism: magicalVampirism += affix.Value; break;
+                case ItemStatIds.UniversalVampirism: universalVampirism += affix.Value; break;
                 case ItemStatIds.BlockChance: blockChance += affix.Value; break;
                 case ItemStatIds.BlockValue:
                     blockMin += affix.Value;
@@ -744,6 +755,9 @@ public static class ItemInstanceGenerator
             ArmorPenetrationPercent = armorPen,
             MagicPenetrationPercent = magicPen,
             MaxResourceFlat = maxResource,
+            PhysicalVampirismPercent = physicalVampirism,
+            MagicalVampirismPercent = magicalVampirism,
+            UniversalVampirismPercent = universalVampirism,
             BlockChancePercent = blockChance,
             BlockValueMin = blockMin,
             BlockValueMax = blockMax,
@@ -825,6 +839,9 @@ public static class ItemInstanceGenerator
             + Sum(ItemStatIds.ArmorPenetration, template.ArmorPenetrationPercent)
             + Sum(ItemStatIds.MagicPenetration, template.MagicPenetrationPercent)
             + Sum(ItemStatIds.MaxResource, template.MaxResourceFlat)
+            + Sum(ItemStatIds.PhysicalVampirism, template.PhysicalVampirismPercent)
+            + Sum(ItemStatIds.MagicalVampirism, template.MagicalVampirismPercent)
+            + Sum(ItemStatIds.UniversalVampirism, template.UniversalVampirismPercent)
             + Sum(ItemStatIds.BlockChance, template.BlockChancePercent)
             + Sum(ItemStatIds.BlockValue, blockAverage)
             + Sum(ItemStatIds.WeaponDamage, weaponAverage);

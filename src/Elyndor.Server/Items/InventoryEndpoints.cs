@@ -702,7 +702,10 @@ public static class InventoryEndpoints
             definition.ArmorPenetrationPercent,
             definition.MagicPenetrationPercent,
             definition.AttackSpeedPercent,
-            definition.MaxResourceFlat);
+            definition.MaxResourceFlat,
+            definition.PhysicalVampirismPercent,
+            definition.MagicalVampirismPercent,
+            definition.UniversalVampirismPercent);
 
     private static IResult Problem(string errorCode, HttpContext context) =>
         Results.Problem(
@@ -816,7 +819,10 @@ public static class InventoryEndpoints
                 item.Definition.ArmorPenetrationPercent,
                 item.Definition.MagicPenetrationPercent,
                 item.Definition.AttackSpeedPercent,
-                item.Definition.MaxResourceFlat),
+                item.Definition.MaxResourceFlat,
+                item.Definition.PhysicalVampirismPercent,
+                item.Definition.MagicalVampirismPercent,
+                item.Definition.UniversalVampirismPercent),
             ToGeneratedItemResponse(item.GeneratedItem),
             item.Definition.IconId,
             item.SourceType);
@@ -859,7 +865,10 @@ public static class InventoryEndpoints
                 item.Definition.ArmorPenetrationPercent,
                 item.Definition.MagicPenetrationPercent,
                 item.Definition.AttackSpeedPercent,
-                item.Definition.MaxResourceFlat),
+                item.Definition.MaxResourceFlat,
+                item.Definition.PhysicalVampirismPercent,
+                item.Definition.MagicalVampirismPercent,
+                item.Definition.UniversalVampirismPercent),
             item.Definition.Description,
             item.Definition.SetId,
             item.Definition.WeaponCategory,

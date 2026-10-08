@@ -19,7 +19,10 @@ public sealed record ItemStatsResponse(
     decimal ArmorPenetration,
     decimal MagicPenetration,
     decimal AttackSpeed,
-    decimal MaxResource);
+    decimal MaxResource,
+    decimal PhysicalVampirism = 0,
+    decimal MagicalVampirism = 0,
+    decimal UniversalVampirism = 0);
 
 public sealed record ConsumableActionResponse(
     string Type,
