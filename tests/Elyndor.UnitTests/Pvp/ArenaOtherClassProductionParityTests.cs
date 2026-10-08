@@ -310,7 +310,7 @@ public sealed class ArenaOtherClassProductionParityTests
 
     [Theory]
     [InlineData("DIVINE_FAVOR", "H-3-2", true, 10)]
-    [InlineData("JUDGEMENT", "R-2-1", false, 1.5)]
+    [InlineData("JUDGEMENT", "R-2-1", false, 2.25)]
     public async Task PaladinNumericCooldownModifiersChangeAuthoritativeCooldown(
         string abilityId, string talentId, bool self, decimal seconds)
     {
@@ -573,6 +573,18 @@ public sealed class ArenaOtherClassProductionParityTests
                 Assert.Equal(index == 0, critical);
             }
         }
+    }
+
+    [Fact]
+    public async Task SacredCleansingDoesNotHealWhenNoDebuffWasDispelled()
+    {
+        var duel = await Duel("PALADIN", ["CLEANSE"], ["H-7-2"], hpPercent: 50);
+        decimal before = duel.Source.Actor.CurrentHp;
+        Cast(duel, "CLEANSE", self: true);
+        Assert.Equal(before, duel.Source.Actor.CurrentHp);
+        Assert.DoesNotContain(duel.Session.GetEventsAfter(0),
+            combatEvent => combatEvent.Type == CombatEventType.HealingApplied
+                && combatEvent.DefinitionId == "H-7-2");
     }
 
     [Theory]
