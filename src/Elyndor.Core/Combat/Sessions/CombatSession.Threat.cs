@@ -59,11 +59,15 @@ public sealed partial class CombatSession
 
         if (combatEvent.Type == CombatEventType.HealingApplied)
         {
-            RegisterHealingThreat(
-                sourceActorId,
-                combatEvent.Amount,
-                combatEvent.OccurredAtUtc);
-            SuppressLegacyAutomaticThreat(combatEvent, sourceActorId);
+            // Damage already generates threat; lifesteal must not add healing threat.
+            if (combatEvent.HealingOrigin != HealingOrigin.Lifesteal)
+            {
+                RegisterHealingThreat(
+                    sourceActorId,
+                    combatEvent.Amount,
+                    combatEvent.OccurredAtUtc);
+                SuppressLegacyAutomaticThreat(combatEvent, sourceActorId);
+            }
             return;
         }
 

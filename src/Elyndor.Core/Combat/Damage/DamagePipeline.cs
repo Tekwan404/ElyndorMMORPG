@@ -257,14 +257,22 @@ public static class DamagePipeline
 
         request.Target.ApplyDamage(hpDamage);
 
-        decimal vampirismHealing = request.Type == DamageType.Physical
-            ? hpDamage
-                * Math.Max(0, request.Source.TalentModifiers.VampirismPercent)
-                / 100m
-            : 0;
-        if (vampirismHealing > 0 && request.Source.ActorId != request.Target.ActorId)
+        // Passive lifesteal follows the same healing rules as damage-action lifesteal.
+        // Resolve before publishing events; events are authoritative results, not commands.
+        HealingResult? lifesteal = null;
+        if (request.Type == DamageType.Physical
+            && hpDamage > 0
+            && request.Source.ActorId != request.Target.ActorId
+            && request.Source.TalentModifiers.VampirismPercent > 0)
         {
-            request.Source.ApplyHealing(vampirismHealing);
+            lifesteal = HealingPipeline.Resolve(new HealingRequest(
+                request.Source,
+                hpDamage * request.Source.TalentModifiers.VampirismPercent / 100m,
+                OccurredAtUtc: occurredAtUtc,
+                Source: request.Source,
+                CanCrit: false,
+                Origin: HealingOrigin.Lifesteal,
+                DefinitionId: request.DefinitionId));
         }
 
         List<CombatEvent> events = [];
@@ -353,16 +361,8 @@ public static class DamagePipeline
             IsUnblockable: request.IsUnblockable,
             IsCritical: critical) { BaseDamage = request.BaseAmount });
         events.AddRange(redirectedEvents);
-        if (vampirismHealing > 0)
-        {
-            events.Add(new CombatEvent(
-                CombatEventType.HealingApplied,
-                occurredAtUtc,
-                request.Source.ActorId,
-                Amount: vampirismHealing,
-                SourceActorId: request.Source.ActorId,
-                TargetActorId: request.Source.ActorId));
-        }
+        if (lifesteal is { EffectiveHealing: > 0 })
+            events.AddRange(lifesteal.Events);
 
         if (request.Target.IsDead)
         {
