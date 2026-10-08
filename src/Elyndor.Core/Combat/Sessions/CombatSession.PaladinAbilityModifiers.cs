@@ -3,6 +3,7 @@ using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Paladin;
 using Elyndor.Core.Items;
+using Elyndor.Core.Talents;
 
 namespace Elyndor.Core.Combat.Sessions;
 
@@ -193,8 +194,10 @@ public sealed partial class CombatSession
     {
         CombatActorState actor = _player.Actor;
         IncomingHpDamageInterceptor? previous = actor.IncomingHpDamageInterceptor;
-        PaladinSessionRuntimeState? bastionState = IsActivePaladin && HasPaladinTalent("P-8-1")
-            ? ActivePaladinState() : null;
+        ResolvedTalentEventHook? bastion = IsActivePaladin
+            ? _playerTalents.EventHooks.FirstOrDefault(hook => hook.TalentId == "P-8-1")
+            : null;
+        PaladinSessionRuntimeState? bastionState = bastion is not null ? ActivePaladinState() : null;
 
         actor.IncomingHpDamageInterceptor = (context, random) =>
         {
@@ -205,15 +208,17 @@ public sealed partial class CombatSession
                 return new IncomingHpDamageResult(0, extraEvents);
 
             // Unbreakable Bastion: only an admitted, post-shield large hit can
-            // start its 20-second ICD. Redirected true damage cannot re-proc it.
-            if (bastionState is not null
+            // start its authored ICD. Redirected true damage cannot re-proc it.
+            if (bastionState is not null && bastion is not null
+                && bastion.Threshold > 0 && bastion.SecondaryValue > 0
+                && bastion.InternalCooldown > TimeSpan.Zero
                 && context.Source.ActorId != actor.ActorId
-                && damage >= actor.MaxHp * 0.25m
+                && damage >= actor.MaxHp * bastion.Threshold / 100m
                 && (bastionState.UnbreakableBastionReadyAtUtc is null
                     || context.OccurredAtUtc >= bastionState.UnbreakableBastionReadyAtUtc))
             {
-                damage *= 0.80m;
-                bastionState.UnbreakableBastionReadyAtUtc = context.OccurredAtUtc.AddSeconds(20);
+                damage *= 1 - Math.Clamp(bastion.SecondaryValue, 0, 100) / 100m;
+                bastionState.UnbreakableBastionReadyAtUtc = context.OccurredAtUtc + bastion.InternalCooldown;
             }
 
             // Redirect after the target's mitigation/block/shields but BEFORE the
