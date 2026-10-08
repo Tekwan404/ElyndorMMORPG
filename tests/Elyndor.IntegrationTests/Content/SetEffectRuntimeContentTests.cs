@@ -79,11 +79,11 @@ public sealed class SetEffectRuntimeContentTests
     [Theory]
     [InlineData("WARRIOR_GUARDIAN", "SHIELD_BLOCK", "REVENGE", 1.25)]
     [InlineData("WARRIOR_BERSERKER", "WILD_STRIKE", "AUTO_ATTACK", 1.20)]
-    [InlineData("WARRIOR_WARLORD", "BATTLE_STANDARD", "BATTLE_CRY", 1.15)]
+    [InlineData("WARRIOR_WARLORD", "BATTLE_STANDARD", "BATTLE_CRY", 1.25)]
     [InlineData("MAGE_FIRE", "MAGE_FIREBALL", "MAGE_PYROBLAST", 1.20)]
     [InlineData("MAGE_FROST", "MAGE_ICE_SHARD", "MAGE_ICE_LANCE", 1.25)]
     [InlineData("ARCHER_MARKSMAN", "QUICK_SHOT", "AIMED_SHOT", 1.20)]
-    [InlineData("ARCHER_BEAST_MASTERY", "AUTO_ATTACK", "QUICK_SHOT", 1.10)]
+    [InlineData("ARCHER_BEAST_MASTERY", "AUTO_ATTACK", "QUICK_SHOT", 1.15)]
     [InlineData("ARCHER_SURVIVAL", "SERPENT_STING", "QUICK_SHOT", 1.20)]
     [InlineData("PALADIN_HOLY", "HOLY_LIGHT", "HOLY_SHOCK", 1.20)]
     [InlineData("PALADIN_PROTECTION", "AUTO_ATTACK", "AUTO_ATTACK", 1.20)]
@@ -117,10 +117,9 @@ public sealed class SetEffectRuntimeContentTests
             _ => CombatEventType.DamageDealt
         };
         if (branch == "MAGE_FIRE") Effect(target, "MAGE_PYROBLAST_BURN");
-        if (branch == "MAGE_FROST") Effect(target, "TEST_ROOT", EffectKind.Root);
         if (branch == "ARCHER_SURVIVAL") Effect(target, "ARCHER_SERPENT_STING");
         if (branch == "PALADIN_PROTECTION") Effect(owner, "PALADIN_HOLY_SHIELD_BLOCK");
-        int events = branch is "WARRIOR_WARLORD" or "ARCHER_MARKSMAN" or "PALADIN_HOLY" or "PALADIN_PROTECTION" ? 3 : 1;
+        int events = branch is "MAGE_FROST" or "ARCHER_MARKSMAN" or "ARCHER_BEAST_MASTERY" or "PALADIN_HOLY" or "PALADIN_PROTECTION" ? 3 : 1;
         for (int index = 0; index < events; index++)
         {
             Guid source = branch == "ARCHER_BEAST_MASTERY" ? pet.ActorId : owner.ActorId;
@@ -136,6 +135,44 @@ public sealed class SetEffectRuntimeContentTests
         Assert.Equal(expected, result);
         if (healing)
             Assert.Equal(1, owner.SetPassiveMultiplier!("HOLY_SHOCK_OFFENSIVE", true, target, Now.AddSeconds(3), false));
+    }
+
+    [Fact]
+    public async Task WarlordFourPieceMakesEveryCryCreateAMeaningfulFollowupWindow()
+    {
+        var package = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
+        var owner = CombatActorState.CreateDummy(1000);
+        var target = CombatActorState.CreateDummy(1000);
+        var actors = new[] { owner, target }.ToDictionary(a => a.ActorId);
+        var pieces = new Dictionary<Guid, IReadOnlyDictionary<string, int>>
+            { [owner.ActorId] = new Dictionary<string, int> { ["SET_L60_PVE_T1_WARRIOR_WARLORD"] = 4 } };
+        var abilities = package.Abilities!.ToDictionary(a => a.Id, StringComparer.Ordinal);
+        var runtime = new SetPassiveCombatRuntime(EquipmentSetEffectResolver.Resolve(package.EquipmentSets!),
+            pieces, id => actors.GetValueOrDefault(id), abilities, _ => new Dictionary<string, DateTimeOffset>());
+
+        runtime.Process(new CombatEvent(CombatEventType.AbilityCompleted, Now, owner.ActorId, "BATTLE_CRY",
+            SourceActorId: owner.ActorId, TargetActorId: owner.ActorId));
+
+        Assert.Equal(1.20m, owner.SetPassiveMultiplier!("REVENGE", false, target, Now.AddSeconds(1), false));
+        Assert.Equal(1m, owner.SetPassiveMultiplier!("REVENGE", false, target, Now.AddSeconds(1), false));
+    }
+
+    [Fact]
+    public async Task RetributionFourPieceDoesNotRequireCrusaderStrikeToCrit()
+    {
+        var package = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
+        var owner = CombatActorState.CreateDummy(1000);
+        Dictionary<string, DateTimeOffset> cooldowns = new(StringComparer.Ordinal)
+            { ["JUDGEMENT"] = Now.AddSeconds(8) };
+        var pieces = new Dictionary<Guid, IReadOnlyDictionary<string, int>>
+            { [owner.ActorId] = new Dictionary<string, int> { ["SET_L60_PVE_T1_PALADIN_RETRIBUTION"] = 4 } };
+        var runtime = new SetPassiveCombatRuntime(EquipmentSetEffectResolver.Resolve(package.EquipmentSets!),
+            pieces, _ => owner, package.Abilities!.ToDictionary(a => a.Id), _ => cooldowns);
+
+        runtime.Process(new CombatEvent(CombatEventType.DamageDealt, Now, owner.ActorId, "CRUSADER_STRIKE",
+            100, owner.ActorId, Guid.NewGuid(), IsCritical: false));
+
+        Assert.Equal(Now.AddSeconds(7), cooldowns["JUDGEMENT"]);
     }
 
     [Fact]

@@ -111,6 +111,40 @@ public sealed class Level60UniqueContentTests
         Assert.Equal(36, packages.Distinct(StringComparer.Ordinal).Count());
     }
 
+
+    [Fact]
+    public async Task Level60UniqueMatrixHasOneResolvedSpecialEffectPerItem()
+    {
+        var package = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+
+        string[] matrixIds = MatrixItemIds();
+        ItemDefinition[] matrix = matrixIds
+            .Select(id => package.Items!.Single(item => item.Id == id))
+            .ToArray();
+
+        string[] effectIds = matrix
+            .SelectMany(item =>
+            {
+                Assert.NotNull(item.SpecialEffectIds);
+                Assert.Single(item.SpecialEffectIds!);
+                Assert.Contains("Уникальный эффект", item.Description, StringComparison.Ordinal);
+                return item.SpecialEffectIds!;
+            })
+            .ToArray();
+
+        Assert.Equal(36, effectIds.Length);
+        Assert.Equal(36, effectIds.Distinct(StringComparer.Ordinal).Count());
+        Assert.NotNull(package.ItemSpecialEffects);
+
+        var authoredIds = package.ItemSpecialEffects!
+            .Select(effect => effect.Id)
+            .ToHashSet(StringComparer.Ordinal);
+
+        Assert.All(effectIds, id => Assert.Contains(id, authoredIds));
+    }
+
+
     [Fact]
     public async Task Level60UniqueMatrixHasReachableAshArchonAcquisitionAndNoDeadIds()
     {
