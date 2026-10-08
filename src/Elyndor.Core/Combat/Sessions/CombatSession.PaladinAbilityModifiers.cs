@@ -54,7 +54,7 @@ public sealed partial class CombatSession
         if (ability.Id == "JUDGEMENT")
         {
             if (TryGetPaladinHook("R-2-1", out var judgement))
-                cooldown -= TimeSpan.FromSeconds(0.5 * judgement.Rank);
+                cooldown -= TimeSpan.FromSeconds(0.75 * judgement.Rank);
             if (TryGetPaladinHook("R-5-2", out var fanaticism))
                 criticalBonus += 3 * fanaticism.Rank;
         }
