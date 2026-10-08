@@ -20,3 +20,23 @@ public sealed record IncomingDamageContext(
 public delegate decimal IncomingDamageModifier(
     IncomingDamageContext context,
     IGameRandom random);
+
+/// <summary>
+/// Runs after armor, damage modifiers, block and shield absorption, but before HP
+/// and lethal prevention are committed. Returned redirected events are published
+/// alongside the original hit; the interceptor owns any secondary actor damage.
+/// </summary>
+public sealed record IncomingHpDamageContext(
+    CombatActorState Source,
+    CombatActorState Target,
+    DamageType DamageType,
+    decimal PendingHpDamage,
+    DateTimeOffset OccurredAtUtc);
+
+public sealed record IncomingHpDamageResult(
+    decimal DamageToTarget,
+    IReadOnlyList<CombatEvent> RedirectedEvents);
+
+public delegate IncomingHpDamageResult IncomingHpDamageInterceptor(
+    IncomingHpDamageContext context,
+    IGameRandom random);

@@ -27,7 +27,7 @@ public sealed class AbilityModifierCompositionCharacterizationTests
         AbilityDefinition ability = Base("TEST", "PHYSICAL") with
         { TargetType = AbilityTargetType.NEnemiesInCombat, TargetCount = 2 };
         AbilityDefinition result = Both(classId, ability, Generic(ability.Id));
-        Assert.Equal(65, result.ResourceCost);
+        Assert.Equal(65m, result.ResourceCost);
         Assert.Equal(TimeSpan.FromSeconds(8), result.Cooldown);
         Assert.Equal(13, result.Actions![0].Amount);
         Assert.Equal(0.52m, result.Actions[0].AttackPowerCoefficient);
@@ -189,7 +189,18 @@ public sealed class AbilityModifierCompositionCharacterizationTests
             f => Buff(f.Player, "PALADIN_ART_OF_WAR", 2));
         Assert.Equal(AbilityType.Instant, result.Type);
         Assert.Equal(TimeSpan.Zero, result.CastTime);
-        Assert.Equal(65, result.ResourceCost);
+        Assert.Equal(52m, result.ResourceCost); // Art of War rank 2 grants a 20% mana discount.
+    }
+
+    [Fact]
+    public void PaladinArtOfWarRankOneReducesFlashOfLightCastTimeAndManaCost()
+    {
+        AbilityDefinition ability = Base("FLASH_OF_LIGHT", "HOLY") with { TargetType = AbilityTargetType.Self };
+        AbilityDefinition result = Both("PALADIN", ability, Generic(ability.Id),
+            f => Buff(f.Player, "PALADIN_ART_OF_WAR", 1));
+        Assert.Equal(AbilityType.Casted, result.Type);
+        Assert.Equal(TimeSpan.FromSeconds(2.65), result.CastTime);
+        Assert.Equal(58.5m, result.ResourceCost);
     }
 
     [Fact]
@@ -201,7 +212,7 @@ public sealed class AbilityModifierCompositionCharacterizationTests
             Hook("R-2-1", 0) with { Rank = 3 }, Hook("R-5-2", 0) with { Rank = 2 },
             Hook("R-2-3", 0) with { Rank = 2 }] });
         Assert.Equal(61.1m, result.ResourceCost);
-        Assert.Equal(TimeSpan.FromSeconds(6.5), result.Cooldown);
+        Assert.Equal(TimeSpan.FromSeconds(5.75), result.Cooldown);
         Assert.Equal(9, result.CriticalChanceBonus);
         Assert.Equal(1.06m, result.DamageMultiplier);
     }

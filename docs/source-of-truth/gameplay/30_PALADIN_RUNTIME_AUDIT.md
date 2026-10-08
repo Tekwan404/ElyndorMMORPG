@@ -1,5 +1,8 @@
 # Elyndor — Paladin Runtime Audit
 
+> **2026-10-08 clarification:** This document records the original Paladin implementation plan. Several sections describing the class as an unpublished draft are historical and no longer describe the current `main`. Current production numeric-contract gaps are tracked in [Paladin production numeric gaps](../../development/paladin-production-numeric-gaps.md). The [2026-10-08 talent quality audit](../../development/paladin-talent-quality-20261008.md) reviewed all 96 published talents, polished Russian player-facing descriptions, made one small Retribution cooldown improvement and corrected Holy Cleanse conditional healing. Neither audit claims that the 19 older missing numeric contracts were fully completed.
+
+
 Status: active implementation contract for `feat/paladin-talent-rework`.
 
 This document maps the approved Paladin design to the runtime that exists in the feature branch. It is intentionally conservative: no talent may be reported as implemented when its gameplay effect only exists in text or when a reusable runtime primitive has not yet been connected to `CombatSession`.

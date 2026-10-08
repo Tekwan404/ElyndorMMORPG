@@ -310,7 +310,12 @@ public sealed class ArenaOtherClassProductionParityTests
 
     [Theory]
     [InlineData("DIVINE_FAVOR", "H-3-2", true, 10)]
-    [InlineData("JUDGEMENT", "R-2-1", false, 1.5)]
+    [InlineData("JUDGEMENT", "R-2-1", false, 2.25)]
+    [InlineData("LAY_ON_HANDS", "H-3-4", true, 120)]
+    [InlineData("HOLY_SHOCK", "H-4-2", true, 3)]
+    [InlineData("BLESSING_OF_PROTECTION", "P-2-4", true, 10)]
+    [InlineData("AVENGERS_SHIELD", "P-5-2", false, 2)]
+    [InlineData("CRUSADER_STRIKE", "R-3-4", false, 1)]
     public async Task PaladinNumericCooldownModifiersChangeAuthoritativeCooldown(
         string abilityId, string talentId, bool self, decimal seconds)
     {
@@ -573,6 +578,78 @@ public sealed class ArenaOtherClassProductionParityTests
                 Assert.Equal(index == 0, critical);
             }
         }
+    }
+
+    [Fact]
+    public async Task SacredCleansingDoesNotHealWhenNoDebuffWasDispelled()
+    {
+        var duel = await Duel("PALADIN", ["CLEANSE"], ["H-7-2"], hpPercent: 50);
+        decimal before = duel.Source.Actor.CurrentHp;
+        Cast(duel, "CLEANSE", self: true);
+        Assert.Equal(before, duel.Source.Actor.CurrentHp);
+        Assert.DoesNotContain(duel.Session.GetEventsAfter(0),
+            combatEvent => combatEvent.Type == CombatEventType.HealingApplied
+                && combatEvent.DefinitionId == "H-7-2");
+    }
+
+    [Fact]
+    public async Task ImprovedLayOnHandsRestoresTenPercentMaximumMana()
+    {
+        var duel = await Duel("PALADIN", ["LAY_ON_HANDS"], ["H-3-4"], hpPercent: 50, resource: 40);
+        Cast(duel, "LAY_ON_HANDS", self: true);
+        Assert.Equal(50, duel.Source.Actor.CurrentResource);
+    }
+
+    [Fact]
+    public async Task LastLightProtectsTargetAfterEffectiveLayOnHandsHealing()
+    {
+        var duel = await Duel("PALADIN", ["LAY_ON_HANDS"], ["H-8-3"], hpPercent: 50);
+        Cast(duel, "LAY_ON_HANDS", self: true);
+        Assert.Contains(duel.Source.Actor.ActiveEffects, effect =>
+            effect.Definition.Id == "PALADIN_LAST_LIGHT_GUARD"
+            && effect.Definition.Magnitude == 0.85m);
+    }
+
+    [Fact]
+    public async Task BulwarkActuallyGrantsBlockChanceAfterIncomingDamage()
+    {
+        var duel = await Duel("PALADIN", [], ["P-2-1"], roll: 0);
+        AttackSource(duel);
+        Assert.Contains(duel.Source.Actor.ActiveEffects, effect =>
+            effect.Definition.Id == "PALADIN_BULWARK_BLOCK"
+            && effect.Definition.Magnitude == 10m);
+    }
+
+    [Fact]
+    public async Task ShieldOfFaithCreatesAbsorbAfterNaturalHolyShieldExpiration()
+    {
+        var duel = await Duel("PALADIN", ["HOLY_SHIELD"], ["P-4-4"], hpPercent: 90);
+        Cast(duel, "HOLY_SHIELD", self: true);
+        Assert.DoesNotContain(duel.Source.Actor.ActiveEffects,
+            effect => effect.Definition.Id == "PALADIN_SHIELD_OF_FAITH");
+        duel.Session.AdvanceTo(Start.AddSeconds(8.01));
+        Assert.Contains(duel.Source.Actor.ActiveEffects,
+            effect => effect.Definition.Id == "PALADIN_SHIELD_OF_FAITH"
+                && effect.Definition.Magnitude == 800m);
+    }
+
+    [Fact]
+    public async Task SanctuaryMasterRefundsManaWhenProtectedPaladinActuallyTakesDamage()
+    {
+        var duel = await Duel("PALADIN", ["BLESSING_OF_SANCTUARY"], ["P-5-4"]);
+        Cast(duel, "BLESSING_OF_SANCTUARY", self: true);
+        decimal manaBefore = duel.Source.Actor.CurrentResource;
+        AttackSource(duel);
+        Assert.True(duel.Source.Actor.CurrentResource > manaBefore);
+    }
+
+    [Fact]
+    public async Task PerfectSanctuaryGrantsShieldedSelfAdditionalBlockChance()
+    {
+        var duel = await Duel("PALADIN", ["BLESSING_OF_SANCTUARY"], ["P-8-3"]);
+        Cast(duel, "BLESSING_OF_SANCTUARY", self: true);
+        Assert.Contains(duel.Source.Actor.ActiveEffects, effect =>
+            effect.Definition.Id == "PALADIN_PERFECT_SANCTUARY_BLOCK");
     }
 
     [Theory]

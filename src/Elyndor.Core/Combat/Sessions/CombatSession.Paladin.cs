@@ -35,6 +35,7 @@ public sealed partial class CombatSession
         public int BastionBlockCounter { get; set; }
         public bool UsesTwoHandedWeapon { get; set; }
         public bool DivinePurposeVerdictDamagePending { get; set; }
+        public DateTimeOffset? UnbreakableBastionReadyAtUtc { get; set; }
     }
 
     private readonly Dictionary<Guid, PaladinSessionRuntimeState> _paladinSessionStates = [];
@@ -59,7 +60,6 @@ public sealed partial class CombatSession
 
     private void ProcessSafePaladinKernelEvent(CombatEvent combatEvent)
     {
-        ApplySharedPaladinIntercession(combatEvent);
         if (!IsActivePaladin)
             return;
 
@@ -73,6 +73,43 @@ public sealed partial class CombatSession
         {
             state.LastResourceSpendByAbility[combatEvent.DefinitionId] = -combatEvent.Amount;
             return;
+        }
+
+        // The tank's reactive effects trigger from actual damage taken, not from
+        // authored ability use or unrelated (including periodic) damage events.
+        if (combatEvent.Type == CombatEventType.DamageDealt
+            && combatEvent.TargetActorId == _player.Actor.ActorId
+            && combatEvent.SourceActorId != _player.Actor.ActorId
+            && combatEvent.Amount > 0
+            && !combatEvent.IsPeriodic
+            && TryGetPaladinHook("P-2-1", out ResolvedTalentEventHook bulwark)
+            && _random.NextUnit() < 0.10m * bulwark.Rank)
+        {
+            ApplyPaladinEffect(_player.Actor, new EffectDefinition(
+                "PALADIN_BULWARK_BLOCK", EffectKind.StatModifier, TimeSpan.FromSeconds(5),
+                1, EffectStackPolicy.Refresh, 10m, ModifiedStat: EffectStat.BlockChance,
+                ModifierMode: EffectModifierMode.Flat), now);
+        }
+
+        // Sanctuary returns Mana to its owner only when a living party member
+        // actually takes a qualifying enemy hit. Periodic damage cannot farm refunds.
+        if (combatEvent.Type == CombatEventType.DamageDealt
+            && combatEvent.Amount > 0
+            && !combatEvent.IsPeriodic
+            && combatEvent.TargetActorId is { } protectedId
+            && _playerStatesByActorId.TryGetValue(protectedId, out CombatPlayerRuntimeState? protectedState)
+            && !protectedState.Definition.Actor.IsDead
+            && protectedState.Definition.Actor.ActiveEffects.Any(effect =>
+                effect.Definition.Id == "PALADIN_BLESSING_SANCTUARY"
+                && effect.SourceId == _player.Actor.ActorId
+                && effect.ExpiresAtUtc > now)
+            && TryGetPaladinHook("P-5-4", out ResolvedTalentEventHook sanctuaryMaster)
+            && TalentCooldownReady(sanctuaryMaster.TalentId, now))
+        {
+            AddResource(_player.Actor, 3m * sanctuaryMaster.Rank, now,
+                sanctuaryMaster.TalentId);
+            StartTalentCooldown(
+                sanctuaryMaster with { InternalCooldown = TimeSpan.FromSeconds(2) }, now);
         }
 
         switch (combatEvent.Type)
@@ -183,6 +220,19 @@ public sealed partial class CombatSession
             case "DIVINE_PROTECTION":
                 ApplyDivineBastionPartyShields(now);
                 break;
+            case "LAY_ON_HANDS":
+                if (TryGetPaladinHook("H-3-4", out ResolvedTalentEventHook hands))
+                    AddResource(_player.Actor, _player.Actor.MaxResource * 0.05m * hands.Rank,
+                        now, hands.TalentId);
+                break;
+            case "BLESSING_OF_SANCTUARY":
+                if (combatEvent.TargetActorId == _player.Actor.ActorId && HasPaladinTalent("P-8-3"))
+                    ApplyPaladinEffect(_player.Actor, new EffectDefinition(
+                        "PALADIN_PERFECT_SANCTUARY_BLOCK", EffectKind.StatModifier,
+                        TimeSpan.FromSeconds(10), 1, EffectStackPolicy.Replace, 5m,
+                        ModifiedStat: EffectStat.BlockChance,
+                        ModifierMode: EffectModifierMode.Flat), now);
+                break;
         }
 
         state.LastResourceSpendByAbility.Remove(abilityId);
@@ -220,6 +270,18 @@ public sealed partial class CombatSession
 
         if (state.Retribution.ConsumeIncarnationJudgementCrusaderReset(now))
             _playerRuntime.Cooldowns.Remove("CRUSADER_STRIKE");
+
+        if (TryGetPaladinHook("R-7-3", out ResolvedTalentEventHook sealMastery)
+            && state.Retribution.RefreshVengeance(now,
+                TimeSpan.FromSeconds(HasPaladinTalent("R-8-1") ? 18 : 12)))
+        {
+            ActiveEffect? existingVengeance = ActivePaladinEffect(PaladinVengeanceEffectId, now);
+            if (existingVengeance is not null)
+            {
+                ApplyPaladinEffect(_player.Actor, existingVengeance.Definition with
+                { Duration = TimeSpan.FromSeconds(HasPaladinTalent("R-8-1") ? 18 : 12) }, now);
+            }
+        }
 
         if (combatEvent.TargetActorId is { } targetId
             && ResolvePaladinActor(targetId) is { } target)
@@ -319,6 +381,17 @@ public sealed partial class CombatSession
 
             if (bonusPercent > 0)
                 ApplySecondaryPaladinHealing(targetId, combatEvent.Amount * bonusPercent / 100m, now, "PALADIN_HEALING_BONUS");
+        }
+
+        if (combatEvent.DefinitionId == "LAY_ON_HANDS" && origin == HealingOrigin.Direct
+            && HasPaladinTalent("H-8-3")
+            && ResolvePaladinActor(targetId) is { } rescued)
+        {
+            ApplyPaladinEffect(rescued, new EffectDefinition(
+                "PALADIN_LAST_LIGHT_GUARD", EffectKind.StatModifier,
+                TimeSpan.FromSeconds(4), 1, EffectStackPolicy.Replace, 0.85m,
+                ModifiedStat: EffectStat.IncomingDamageMultiplier,
+                ModifierMode: EffectModifierMode.Multiplicative), now);
         }
 
         if (combatEvent.IsCritical && origin == HealingOrigin.Direct)
@@ -611,6 +684,8 @@ public sealed partial class CombatSession
                 decimal commandMultiplier = 0.45m;
                 if (TryGetPaladinHook("R-2-4", out ResolvedTalentEventHook improvedCommand))
                     commandMultiplier += 0.10m * improvedCommand.Rank;
+                if (TryGetPaladinHook("R-7-3", out ResolvedTalentEventHook sealMastery))
+                    commandMultiplier += 0.10m * sealMastery.Rank;
                 extraMultiplier += commandMultiplier;
                 definitionId = "PALADIN_SEAL_COMMAND_PROC";
             }
@@ -694,65 +769,6 @@ public sealed partial class CombatSession
         }
     }
 
-    private void ApplySharedPaladinIntercession(CombatEvent combatEvent)
-    {
-        if (combatEvent.Type != CombatEventType.DamageDealt
-            || combatEvent.TargetActorId is not { } targetId
-            || combatEvent.Amount <= 0
-            || !_playerStatesByActorId.TryGetValue(targetId, out CombatPlayerRuntimeState? targetState))
-        {
-            return;
-        }
-
-        ActiveEffect? intercession = targetState.Definition.Actor.ActiveEffects
-            .Where(effect =>
-                effect.ExpiresAtUtc > combatEvent.OccurredAtUtc
-                && effect.Definition.Id == "PALADIN_INTERCESSION")
-            .OrderByDescending(effect => effect.AppliedAtUtc)
-            .FirstOrDefault();
-        if (intercession is null
-            || !_playerStatesByActorId.TryGetValue(intercession.SourceId, out CombatPlayerRuntimeState? paladinState)
-            || paladinState.Definition.Actor.IsDead)
-        {
-            return;
-        }
-
-        decimal redirectPercent = Math.Clamp(intercession.Definition.Magnitude * 100m, 0, 100);
-        decimal redirect = PaladinProtectionRuntime.ResolveIntercessionRedirectDamage(
-            combatEvent.Amount,
-            redirectPercent);
-        if (redirect <= 0)
-            return;
-
-        // Redirect is applied after mitigation. We restore the redirected slice on the ally
-        // and apply it as true damage to the protecting Paladin. If the original hit was
-        // already lethal, the stale ActorDied event remains authoritative for this v1 path.
-        if (!targetState.Definition.Actor.IsDead)
-            targetState.Definition.Actor.ApplyHealing(redirect);
-
-        DamageResult redirected = DamagePipeline.Resolve(
-            new DamageRequest(
-                paladinState.Definition.Actor,
-                paladinState.Definition.Actor,
-                redirect,
-                DamageType.True,
-                CanMiss: false,
-                CanDodge: false,
-                CanCrit: false,
-                IgnoreShields: true,
-                SkipDefenseMitigation: true,
-                MinimumDamage: 0,
-                CanBlock: false,
-                IsUnblockable: true),
-            _random,
-            combatEvent.OccurredAtUtc);
-        ApplyKernelEvents(
-            redirected.Events,
-            intercession.SourceId,
-            intercession.SourceId,
-            "PALADIN_INTERCESSION_REDIRECT");
-    }
-
     private void ApplyDivineStormHealing(decimal dealtDamage, DateTimeOffset now)
     {
         if (!HasPaladinTalent("R-6-2") || dealtDamage <= 0)
@@ -823,19 +839,19 @@ public sealed partial class CombatSession
     {
         ActiveEffect? negative = target.ActiveEffects
             .Where(effect =>
-                effect.Definition.Kind is EffectKind.Debuff or EffectKind.Stun or EffectKind.Silence
+                effect.ExpiresAtUtc > now
+                && effect.Definition.Kind is (EffectKind.Debuff or EffectKind.Stun or EffectKind.Silence)
                 && !string.IsNullOrWhiteSpace(effect.Definition.DispelCategory))
             .OrderBy(effect => effect.Sequence)
             .FirstOrDefault();
-        if (negative is not null && negative.Definition.DispelCategory is { } category)
-        {
-            ApplyKernelEvents(
-                EffectEngine.Dispel(target, category, now),
-                _player.Actor.ActorId,
-                target.ActorId,
-                "CLEANSE");
-        }
+        if (negative is null || negative.Definition.DispelCategory is not { } category)
+            return;
 
+        IReadOnlyList<CombatEvent> dispelled = EffectEngine.RemoveInstance(target, negative.InstanceId, now);
+        if (dispelled.Count == 0)
+            return;
+
+        ApplyKernelEvents(dispelled, _player.Actor.ActorId, target.ActorId, "CLEANSE");
         if (TryGetPaladinHook("H-7-2", out ResolvedTalentEventHook sacredCleansing))
         {
             ApplySecondaryPaladinHealing(
