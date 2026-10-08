@@ -31,6 +31,9 @@ Fire, Arcane and Frost state belongs to their actor-owned runtimes under
 `Combat/Mage`; CombatSession retains orchestration through its existing router.
 See [the Mana benchmark and runtime contract](../../development/mage-core-mana-channels.md).
 
+Content release `0.45.1` / balance `0.35.1` makes six existing talent rewards more noticeable without altering ability damage formulas: `F-6-4` (12/24 Mana), `A-3-4` (−3s Counterspell cooldown), `A-6-3` (regeneration after 1s), `A-7-4` (15/30% Echo chance), `I-6-4` (12/24 Mana) and `I-7-4` (8/16 Mana). See [Mage talent quality pass](../../development/mage-talent-quality-20261008.md).
+
+
 ---
 
 # 1. Общий каркас
