@@ -144,7 +144,7 @@ public sealed class MageCombatSessionTests
     }
 
     [Fact]
-    public void FrostNovaFreezesNormalEnemyAndIceLanceDealsTripleDamage()
+    public void FrostNovaFreezesNormalEnemyAndIceLanceDealsTwoAndHalfTimesDamage()
     {
         CombatSession session = CreateSession(
             ResolvedTalentModifiers.Empty,
@@ -173,7 +173,7 @@ public sealed class MageCombatSessionTests
             lance.Events,
             combatEvent => combatEvent.Type == CombatEventType.DamageDealt
                 && combatEvent.DefinitionId == "MAGE_ICE_LANCE");
-        Assert.Equal(285m, damage.Amount);
+        Assert.Equal(237.5m, damage.Amount);
     }
 
     [Fact]
