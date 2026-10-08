@@ -138,6 +138,39 @@ tree.Nodes.SelectMany(node => node.Modifiers ?? []),
 modifier => legacyTargetIds.Contains(modifier.TargetId, StringComparer.Ordinal));
 }
 
+[Fact]
+public async Task ArcherTalentReferenceMatchesEveryAuthoredDescription()
+{
+GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+RepositoryContentPath());
+TalentTreeDefinition tree = Assert.Single(
+package.TalentTrees!, item => item.Id == "ARCHER_TREE");
+DirectoryInfo root = Directory.GetParent(Path.GetDirectoryName(RepositoryContentPath())!)!;
+string documentation = File.ReadAllText(Path.Combine(
+root.FullName, "docs", "source-of-truth", "gameplay", "23_ARCHER_TALENT_TREE.md"));
+string[] rows = documentation.Split('\n')
+.Where(line => line.StartsWith("| ", StringComparison.Ordinal)).ToArray();
+foreach (TalentDefinition node in tree.Nodes)
+{
+Assert.Contains(rows, row =>
+row.Split('|').Length > 7
+&& row.Split('|')[2].Trim(' ', '`') == node.Id
+&& row.Split('|')[6].Trim() == node.Description);
+}
+}
+
+[Fact]
+public async Task ArcherTrapDescriptionsReflectImmediateExecution()
+{
+GameContentPackage package = await GameContentPackageLoader.LoadAsync(
+RepositoryContentPath());
+foreach (string id in new[] { "FREEZING_TRAP", "IMMOLATION_TRAP", "EXPLOSIVE_TRAP" })
+{
+var ability = Assert.Single(package.Abilities!, candidate => candidate.Id == id);
+Assert.Contains("Мгновенно", ability.Description, StringComparison.OrdinalIgnoreCase);
+}
+}
+
 private static string RepositoryContentPath()
 {
 DirectoryInfo? directory = new(AppContext.BaseDirectory);

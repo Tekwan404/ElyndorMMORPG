@@ -76,10 +76,12 @@ return;
 }
 foreach (CombatPlayerRuntimeState state in _playerStatesByActorId.Values)
 {
-if (state.Definition.Actor.ActorId == _player.Actor.ActorId)
+bool isOwner = state.Definition.Actor.ActorId == _player.Actor.ActorId;
+if (!isOwner && state.Definition.DefinitionId is not ("WARRIOR" or "ARCHER" or "PALADIN"))
 continue;
-if (state.Definition.DefinitionId is not ("WARRIOR" or "ARCHER"))
-continue;
+// The owner receives the primary 5% bonus; allied physical classes get the
+// secondary 3% bonus. StrongestWins keeps overlapping auras non-stacking.
+decimal attackPowerBonus = isOwner ? aura.Value : aura.SecondaryValue;
 ApplyArcherEffectFrom(
 state.Definition.Actor,
 _player.Actor.ActorId,
@@ -89,7 +91,7 @@ EffectKind.StatModifier,
 TimeSpan.FromSeconds(2),
 1,
 EffectStackPolicy.StrongestWins,
-1 + aura.Value / 100m,
+1 + attackPowerBonus / 100m,
 ModifiedStat: EffectStat.AttackPower,
 ModifierMode: EffectModifierMode.Multiplicative,
 SourceSpecific: false),
