@@ -46,7 +46,7 @@ internal static class FullCombatLogArchive
                 {
                     Sessions.GetOrAdd(
                         snapshot.SessionId,
-                        _ => new FullEntry(nowUtc, events.FirstOrDefault()?.Sequence ?? snapshot.Sequence));
+                        _ => new FullEntry(nowUtc, events.Count > 0 ? events[0].Sequence : snapshot.Sequence));
                 }
             }
         }
