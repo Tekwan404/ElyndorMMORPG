@@ -287,6 +287,9 @@ const itemStatLabels: Record<keyof CharacterStats | 'maxResource', string> = {
   armor: 'Броня',
   magicResistance: 'Сопротивление магии',
   dodge: 'Уклонение',
+  physicalVampirismPercent: 'Физический вампиризм',
+  magicalVampirismPercent: 'Магический вампиризм',
+  universalVampirismPercent: 'Универсальный вампиризм',
   maxResource: 'Макс. ресурс',
 }
 
@@ -298,6 +301,9 @@ const percentItemStats = new Set([
   'magicPenetration',
   'attackSpeed',
   'dodge',
+  'physicalVampirismPercent',
+  'magicalVampirismPercent',
+  'universalVampirismPercent',
 ])
 
 function itemStats(item: InventoryItem): ItemStatRow[] {

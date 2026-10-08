@@ -24,6 +24,16 @@ describe('CharacterStatsView', () => {
     wrapper.unmount()
   })
 
+  it('shows vampirism bonuses from equipment with clear percentage formatting', async () => {
+    const store = useGameSessionStore()
+    store.snapshot = snapshot()
+    const wrapper = mount(CharacterStatsView, { attachTo: document.body })
+    expect(wrapper.get('[data-stat="physicalVampirismPercent"]').text()).toContain('2.5%')
+    expect(wrapper.get('[data-stat="magicalVampirismPercent"]').text()).toContain('1.5%')
+    expect(wrapper.get('[data-stat="universalVampirismPercent"]').text()).toContain('0.5%')
+    wrapper.unmount()
+  })
+
   it('shows block stats and server-calculated effective defense percentages', async () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot()
@@ -98,6 +108,9 @@ function snapshot() {
         armor: 19,
         magicResistance: 12,
         dodge: 1.8,
+        physicalVampirismPercent: 2.5,
+        magicalVampirismPercent: 1.5,
+        universalVampirismPercent: 0.5,
       },
       statBreakdown: {
         strength: { finalValue: 5, contributions: [{ source: 'CLASS_BASE' as const, value: 5 }] },
@@ -124,6 +137,9 @@ function snapshot() {
         blockChance: { finalValue: 18, contributions: [{ source: 'EQUIPMENT_BONUS' as const, value: 18 }] },
         blockValueMin: { finalValue: 24, contributions: [{ source: 'EQUIPMENT_BONUS' as const, value: 24 }] },
         blockValueMax: { finalValue: 36, contributions: [{ source: 'EQUIPMENT_BONUS' as const, value: 36 }] },
+        physicalVampirismPercent: { finalValue: 2.5, contributions: [{ source: 'EQUIPMENT_BONUS' as const, value: 2.5 }] },
+        magicalVampirismPercent: { finalValue: 1.5, contributions: [{ source: 'EQUIPMENT_BONUS' as const, value: 1.5 }] },
+        universalVampirismPercent: { finalValue: 0.5, contributions: [{ source: 'EQUIPMENT_BONUS' as const, value: 0.5 }] },
       },
       vitals: {
         currentHp: 120,
