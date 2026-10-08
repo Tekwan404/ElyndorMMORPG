@@ -317,7 +317,7 @@ public sealed class CharacterStatCalculatorTests
             Assert.Equal(2.5m, result.Stats.PhysicalVampirismPercent);
             Assert.Equal(3.5m, result.Stats.MagicalVampirismPercent);
             Assert.Equal(1.25m, result.Stats.UniversalVampirismPercent);
-            Assert.Equal(3.5m, result.Breakdown["magicalVampirism"].FinalValue);
+            Assert.Equal(3.5m, result.Breakdown["magicalVampirismPercent"].FinalValue);
         }
     }
 

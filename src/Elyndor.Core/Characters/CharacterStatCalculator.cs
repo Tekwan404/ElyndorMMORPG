@@ -261,11 +261,11 @@ public sealed class CharacterStatCalculator(
                 ("TALENT_BONUS", shieldBlock.HasShieldProfile
                     ? talent.BlockValueFlat + shieldBlock.BlockValueMax * Math.Max(0, talent.BlockValuePercent) / 100m
                     : 0)),
-            ["physicalVampirism"] = Breakdown(stats.PhysicalVampirismPercent,
+            ["physicalVampirismPercent"] = Breakdown(stats.PhysicalVampirismPercent,
                 ("EQUIPMENT_BONUS", equipmentDerived.PhysicalVampirismPercent)),
-            ["magicalVampirism"] = Breakdown(stats.MagicalVampirismPercent,
+            ["magicalVampirismPercent"] = Breakdown(stats.MagicalVampirismPercent,
                 ("EQUIPMENT_BONUS", equipmentDerived.MagicalVampirismPercent)),
-            ["universalVampirism"] = Breakdown(stats.UniversalVampirismPercent,
+            ["universalVampirismPercent"] = Breakdown(stats.UniversalVampirismPercent,
                 ("EQUIPMENT_BONUS", equipmentDerived.UniversalVampirismPercent))
         };
 
