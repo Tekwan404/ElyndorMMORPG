@@ -246,7 +246,8 @@ public sealed partial class CombatSession
                         CanMiss: false, CanDodge: false, CanCrit: false,
                         IgnoreShields: true, SkipDefenseMitigation: true,
                         MinimumDamage: 0, CanBlock: false, IsUnblockable: true,
-                        SkipIncomingHpInterception: true),
+                        SkipIncomingHpInterception: true,
+                        IsTransferredDamage: true),
                         random, context.OccurredAtUtc);
                     damage -= redirect;
                     extraEvents.AddRange(transferred.Events.Select(e => e with
