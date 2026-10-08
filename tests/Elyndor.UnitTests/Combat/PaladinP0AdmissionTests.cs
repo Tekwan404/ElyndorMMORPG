@@ -77,6 +77,25 @@ public sealed class PaladinP0AdmissionTests
     }
 
     [Fact]
+    public void FullyAbsorbedHitDoesNotConsumeUnbreakableBastionIcd()
+    {
+        var hook = new ResolvedTalentEventHook("P-8-1", "ON_DAMAGE_TAKEN", 1, 1,
+            "PALADIN_P_8_1", TimeSpan.FromSeconds(20), false,
+            SecondaryValue: 20, Threshold: 25);
+        var (_, paladin, _, enemy) = Party(
+            ResolvedTalentModifiers.Empty with { EventHooks = [hook] });
+        EffectEngine.Apply(paladin, paladin.ActorId,
+            new EffectDefinition("TEST_ABSORB", EffectKind.Shield,
+                TimeSpan.FromSeconds(5), 1, EffectStackPolicy.Replace, 30), Now);
+
+        DamageResult absorbed = Hit(enemy, paladin, 30, Now);
+        DamageResult firstAdmitted = Hit(enemy, paladin, 30, Now.AddSeconds(1));
+
+        Assert.Equal(0, absorbed.HpDamage);
+        Assert.Equal(24, firstAdmitted.HpDamage);
+    }
+
+    [Fact]
     public void CleanseRemovesOneActiveInstanceNotEveryEffectInItsCategory()
     {
         var (session, paladin, ally, _) = Party();
