@@ -64,6 +64,7 @@ public sealed class CombatActorState
     public CombatStats Stats { get; }
     public TalentCombatModifiers TalentModifiers { get; }
     public IncomingDamageModifier? IncomingDamageModifier { get; set; }
+    public IncomingHpDamageInterceptor? IncomingHpDamageInterceptor { get; set; }
     public Func<Guid, EffectDefinition, DateTimeOffset, EffectApplicationPolicyResult>? EffectApplicationPolicy { get; set; }
     public decimal IncomingCriticalDamageReductionPercent { get; set; }
     public decimal IncomingControlDurationMultiplier { get; set; } = 1;
