@@ -1,6 +1,6 @@
 # Equipment set progression
 
-Implemented content contract, content `0.44.1`, balance `0.34.0`.
+Implemented content contract, content `0.44.0`, balance `0.34.0`.
 
 | Required level | Sets | Members per set | Bonus thresholds | Purpose |
 | --- | --- | --- | --- | --- |
