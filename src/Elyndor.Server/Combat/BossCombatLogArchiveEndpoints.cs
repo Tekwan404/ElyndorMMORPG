@@ -339,7 +339,7 @@ internal static class BossCombatLogArchive
                 return new BossCombatLogResponse(false, "combat_log_full_file_too_large");
 
             string fileName =
-                $"elyndor-{(full ? "full" : "combat")}-{FileSegment(target.DefinitionId)}-{sessionId:N}.txt";
+                $"elyndor-{(full ? "full" : target.IsBoss ? "boss" : "combat")}-{FileSegment(target.DefinitionId)}-{sessionId:N}.txt";
             string caption =
                 $"⚔️ Elyndor · {target.DisplayName} · {ordered.Length} событий";
 
