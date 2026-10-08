@@ -621,6 +621,29 @@ public sealed class ArenaOtherClassProductionParityTests
     }
 
     [Fact]
+    public async Task ShieldOfFaithCreatesAbsorbAfterNaturalHolyShieldExpiration()
+    {
+        var duel = await Duel("PALADIN", ["HOLY_SHIELD"], ["P-4-4"], hpPercent: 90);
+        Cast(duel, "HOLY_SHIELD", self: true);
+        Assert.DoesNotContain(duel.Source.Actor.ActiveEffects,
+            effect => effect.Definition.Id == "PALADIN_SHIELD_OF_FAITH");
+        duel.Session.AdvanceTo(Start.AddSeconds(8.01));
+        Assert.Contains(duel.Source.Actor.ActiveEffects,
+            effect => effect.Definition.Id == "PALADIN_SHIELD_OF_FAITH"
+                && effect.Definition.Magnitude == 800m);
+    }
+
+    [Fact]
+    public async Task SanctuaryMasterRefundsManaWhenProtectedPaladinActuallyTakesDamage()
+    {
+        var duel = await Duel("PALADIN", ["BLESSING_OF_SANCTUARY"], ["P-5-4"]);
+        Cast(duel, "BLESSING_OF_SANCTUARY", self: true);
+        decimal manaBefore = duel.Source.Actor.CurrentResource;
+        AttackSource(duel);
+        Assert.True(duel.Source.Actor.CurrentResource > manaBefore);
+    }
+
+    [Fact]
     public async Task PerfectSanctuaryGrantsShieldedSelfAdditionalBlockChance()
     {
         var duel = await Duel("PALADIN", ["BLESSING_OF_SANCTUARY"], ["P-8-3"]);
