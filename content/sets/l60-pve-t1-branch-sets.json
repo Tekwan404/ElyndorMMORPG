@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.42.0",
-  "balanceVersion": "0.32.0",
-  "publishedAtUtc": "2026-10-07T12:00:00+00:00",
+  "contentVersion": "0.44.0",
+  "balanceVersion": "0.34.0",
+  "publishedAtUtc": "2026-10-08T02:55:00+00:00",
   "equipmentSets": [
     {
       "id": "SET_L60_PVE_T1_WARRIOR_GUARDIAN",
@@ -194,14 +194,14 @@
           "specialEffectIds": [
             "SET_L60_PVE_T1_WARRIOR_WARLORD_4PC"
           ],
-          "description": "Cry усиливает следующую прямую способность на 10% на 8 с."
+          "description": "Cry усиливает следующую прямую class ability на 20% на 10 с."
         },
         {
           "requiredPieces": 6,
           "specialEffectIds": [
             "SET_L60_PVE_T1_WARRIOR_WARLORD_6PC"
           ],
-          "description": "Каждая третья command ability усиливает величину эффектов следующего Cry на 15% на 8 с."
+          "description": "Каждая command ability усиливает величину эффектов следующего Battle/Endurance/Vengeance Cry на 25% на 12 с."
         }
       ],
       "specialEffects": [
@@ -225,8 +225,8 @@
             {
               "kind": "EmpowerNextDirect",
               "referenceId": "T1_WARLORD_CRY_DAMAGE",
-              "magnitude": 0.1,
-              "duration": "00:00:08",
+              "magnitude": 0.2,
+              "duration": "00:00:10",
               "classAbilityOnly": true
             }
           ]
@@ -239,25 +239,17 @@
             "eventType": "AbilityCompleted",
             "actorRole": "Source"
           },
-          "conditions": {
-            "abilityIds": [
-              "BATTLE_STANDARD",
-              "VICTORY_FLAG",
-              "WAR_BANNER"
-            ],
-            "everyNth": 3
-          },
+          "conditions": {},
           "actions": [
             {
               "kind": "EmpowerNextEffect",
               "referenceId": "T1_WARLORD_COMMAND",
-              "magnitude": 0.15,
-              "duration": "00:00:08",
+              "magnitude": 0.25,
+              "duration": "00:00:12",
               "abilityIds": [
                 "BATTLE_CRY",
                 "CRY_OF_VENGEANCE",
-                "ENDURANCE_CRY",
-                "RALLY_CRY"
+                "ENDURANCE_CRY"
               ]
             }
           ]
@@ -451,7 +443,7 @@
           "specialEffectIds": [
             "SET_L60_PVE_T1_MAGE_FROST_6PC"
           ],
-          "description": "Прямой Frost hit по controlled target усиливает следующий Ice Lance на 25% на 8 с."
+          "description": "Каждый третий прямой Frost hit усиливает следующий Ice Lance на 25% на 8 с."
         }
       ],
       "specialEffects": [
@@ -488,8 +480,8 @@
           "conditions": {
             "school": "FROST",
             "positiveAmountOnly": true,
-            "controlledTargetOnly": true,
-            "oncePerAction": true
+            "oncePerAction": true,
+            "everyNth": 3
           },
           "actions": [
             {
@@ -597,7 +589,7 @@
           "specialEffectIds": [
             "SET_L60_PVE_T1_ARCHER_BEAST_MASTERY_4PC"
           ],
-          "description": "Критический прямой pet hit усиливает следующий owner shot на 10% на 8 с.; ICD 1 с."
+          "description": "Каждый третий прямой pet hit усиливает следующий owner shot на 15% на 8 с."
         },
         {
           "requiredPieces": 6,
@@ -617,15 +609,15 @@
             "actorRole": "CompanionOwner"
           },
           "conditions": {
-            "criticalOnly": true,
             "positiveAmountOnly": true,
-            "internalCooldown": "00:00:01"
+            "everyNth": 3,
+            "oncePerAction": true
           },
           "actions": [
             {
               "kind": "EmpowerNextDirect",
               "referenceId": "T1_BEAST_OWNER_SHOT",
-              "magnitude": 0.1,
+              "magnitude": 0.15,
               "duration": "00:00:08"
             }
           ]
@@ -935,7 +927,7 @@
           "specialEffectIds": [
             "SET_L60_PVE_T1_PALADIN_RETRIBUTION_4PC"
           ],
-          "description": "Критический Crusader Strike сокращает CD Judgement на 1 с."
+          "description": "Попадание Crusader Strike сокращает CD Judgement на 1 с."
         },
         {
           "requiredPieces": 6,
@@ -955,7 +947,6 @@
             "actorRole": "Source"
           },
           "conditions": {
-            "criticalOnly": true,
             "positiveAmountOnly": true,
             "abilityIds": [
               "CRUSADER_STRIKE"
