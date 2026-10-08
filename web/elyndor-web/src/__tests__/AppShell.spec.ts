@@ -110,7 +110,7 @@ describe('AppShell', () => {
     vi.restoreAllMocks()
   })
 
-  it('keeps World, Location and Hero as separate canonical navigation destinations', async () => {
+  it('has an illustrated city and one World tab for map and current location', async () => {
     vi.spyOn(apiClient, 'request').mockResolvedValue([
       {
         id: 'STARTER_TOWN',
@@ -152,24 +152,32 @@ describe('AppShell', () => {
     expect(wrapper.get('[role="progressbar"][aria-label="Здоровье"]')).toBeTruthy()
     expect(wrapper.get('[role="progressbar"][aria-label="Фокус"]')).toBeTruthy()
     expect(wrapper.get('main').text()).toContain('Стартовый город')
-    expect(wrapper.findAll('.navigation__item')).toHaveLength(5)
-    expect(wrapper.get('[data-nav="location"]').attributes('aria-current')).toBe('page')
-    expect(wrapper.find('[data-nav="inventory"]').exists()).toBe(false)
-    expect(wrapper.get('[data-nav="location"]').attributes('disabled')).toBeUndefined()
+    expect(wrapper.findAll('.navigation__item')).toHaveLength(6)
+    expect(wrapper.get('[data-nav="city"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.find('[data-nav="location"]').exists()).toBe(false)
+    expect(wrapper.find('[data-nav="inventory"]').exists()).toBe(true)
     expect(wrapper.get('[data-hud-location]').text()).toContain('Стартовый город')
     expect(wrapper.find('.game-shell__header').exists()).toBe(false)
     expect(wrapper.get('.hud').text()).toContain('ELYNDOR')
+    expect(wrapper.findAll('[data-city-marker]')).toHaveLength(9)
 
     await wrapper.get('[data-nav="world"]').trigger('click')
     await flushPromises()
     expect(wrapper.get('[data-nav="world"]').attributes('aria-current')).toBe('page')
     expect(wrapper.get('main').text()).toContain('Карта мира')
 
-    await wrapper.get('[data-nav="location"]').trigger('click')
+    await wrapper.get('[data-nav="world"]').trigger('click')
     await flushPromises()
-    expect(wrapper.get('[data-nav="location"]').attributes('aria-current')).toBe('page')
+    expect(wrapper.get('[data-nav="city"]').attributes('aria-current')).toBe('page')
     expect(wrapper.get('main').text()).toContain('Стартовый город')
-    expect(wrapper.find('[data-open-world-map]').exists()).toBe(false)
+
+    await wrapper.get('[data-city-marker="bank"]').trigger('click')
+    expect(wrapper.get('[data-city-interior]').text()).toContain('Банковское хранилище')
+    await wrapper.get('[data-city-back]').trigger('click')
+    expect(wrapper.findAll('[data-city-marker]')).toHaveLength(9)
+
+    await wrapper.get('[data-nav="inventory"]').trigger('click')
+    expect(wrapper.get('[data-nav="inventory"]').attributes('aria-current')).toBe('page')
 
     await wrapper.get('[data-nav="hero"]').trigger('click')
     expect(wrapper.get('main').text()).toContain('Боевые показатели')
