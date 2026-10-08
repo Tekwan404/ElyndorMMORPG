@@ -23,7 +23,6 @@ export type MenuSection = 'profile' | 'friends' | 'party' | 'hotbar' | 'updates'
 const props = defineProps<{ initialSection: MenuSection }>()
 const emit = defineEmits<{ 'open-world': [] }>()
 const session = useGameSessionStore()
-void arena.refresh()
 const activeSection = ref<MenuSection>(props.initialSection)
 const copied = ref(false)
 const sendTrainingDummyCombatLogs = ref(isTrainingDummyCombatLogEnabled())
