@@ -189,7 +189,20 @@ public sealed class AbilityModifierCompositionCharacterizationTests
             f => Buff(f.Player, "PALADIN_ART_OF_WAR", 2));
         Assert.Equal(AbilityType.Instant, result.Type);
         Assert.Equal(TimeSpan.Zero, result.CastTime);
-        Assert.Equal(65, result.ResourceCost);
+        // Rank 2 Art of War grants both instant cast and 20% mana reduction
+        // after the generic ability modifiers (65 * 0.8 = 52).
+        Assert.Equal(52m, result.ResourceCost);
+    }
+
+    [Fact]
+    public void PaladinArtOfWarRankOneReducesFlashOfLightCastTimeAndManaCost()
+    {
+        AbilityDefinition ability = Base("FLASH_OF_LIGHT", "HOLY") with { TargetType = AbilityTargetType.Self };
+        AbilityDefinition result = Both("PALADIN", ability, Generic(ability.Id),
+            f => Buff(f.Player, "PALADIN_ART_OF_WAR", 1));
+        Assert.Equal(AbilityType.Casted, result.Type);
+        Assert.Equal(TimeSpan.FromSeconds(2.65), result.CastTime);
+        Assert.Equal(58.5m, result.ResourceCost);
     }
 
     [Fact]
