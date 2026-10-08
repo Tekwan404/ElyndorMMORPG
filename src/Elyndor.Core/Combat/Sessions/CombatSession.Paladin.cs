@@ -75,6 +75,22 @@ public sealed partial class CombatSession
             return;
         }
 
+        // The tank's reactive effects trigger from actual damage taken, not from
+        // authored ability use or unrelated (including periodic) damage events.
+        if (combatEvent.Type == CombatEventType.DamageDealt
+            && combatEvent.TargetActorId == _player.Actor.ActorId
+            && combatEvent.SourceActorId != _player.Actor.ActorId
+            && combatEvent.Amount > 0
+            && !combatEvent.IsPeriodic
+            && TryGetPaladinHook("P-2-1", out ResolvedTalentEventHook bulwark)
+            && _random.NextUnit() < 0.10m * bulwark.Rank)
+        {
+            ApplyPaladinEffect(_player.Actor, new EffectDefinition(
+                "PALADIN_BULWARK_BLOCK", EffectKind.StatModifier, TimeSpan.FromSeconds(5),
+                1, EffectStackPolicy.Refresh, 10m, ModifiedStat: EffectStat.BlockChance,
+                ModifierMode: EffectModifierMode.Flat), now);
+        }
+
         switch (combatEvent.Type)
         {
             case CombatEventType.AbilityStarted:
@@ -183,6 +199,19 @@ public sealed partial class CombatSession
             case "DIVINE_PROTECTION":
                 ApplyDivineBastionPartyShields(now);
                 break;
+            case "LAY_ON_HANDS":
+                if (TryGetPaladinHook("H-3-4", out ResolvedTalentEventHook hands))
+                    AddResource(_player.Actor, _player.Actor.MaxResource * 0.05m * hands.Rank,
+                        now, hands.TalentId);
+                break;
+            case "BLESSING_OF_SANCTUARY":
+                if (combatEvent.TargetActorId == _player.Actor.ActorId && HasPaladinTalent("P-8-3"))
+                    ApplyPaladinEffect(_player.Actor, new EffectDefinition(
+                        "PALADIN_PERFECT_SANCTUARY_BLOCK", EffectKind.StatModifier,
+                        TimeSpan.FromSeconds(10), 1, EffectStackPolicy.Replace, 5m,
+                        ModifiedStat: EffectStat.BlockChance,
+                        ModifierMode: EffectModifierMode.Flat), now);
+                break;
         }
 
         state.LastResourceSpendByAbility.Remove(abilityId);
@@ -220,6 +249,18 @@ public sealed partial class CombatSession
 
         if (state.Retribution.ConsumeIncarnationJudgementCrusaderReset(now))
             _playerRuntime.Cooldowns.Remove("CRUSADER_STRIKE");
+
+        if (TryGetPaladinHook("R-7-3", out ResolvedTalentEventHook sealMastery)
+            && state.Retribution.RefreshVengeance(now,
+                TimeSpan.FromSeconds(HasPaladinTalent("R-8-1") ? 18 : 12)))
+        {
+            ActiveEffect? existingVengeance = ActivePaladinEffect(PaladinVengeanceEffectId, now);
+            if (existingVengeance is not null)
+            {
+                ApplyPaladinEffect(_player.Actor, existingVengeance.Definition with
+                { Duration = TimeSpan.FromSeconds(HasPaladinTalent("R-8-1") ? 18 : 12) }, now);
+            }
+        }
 
         if (combatEvent.TargetActorId is { } targetId
             && ResolvePaladinActor(targetId) is { } target)
@@ -319,6 +360,17 @@ public sealed partial class CombatSession
 
             if (bonusPercent > 0)
                 ApplySecondaryPaladinHealing(targetId, combatEvent.Amount * bonusPercent / 100m, now, "PALADIN_HEALING_BONUS");
+        }
+
+        if (combatEvent.DefinitionId == "LAY_ON_HANDS" && origin == HealingOrigin.Direct
+            && HasPaladinTalent("H-8-3")
+            && ResolvePaladinActor(targetId) is { } rescued)
+        {
+            ApplyPaladinEffect(rescued, new EffectDefinition(
+                "PALADIN_LAST_LIGHT_GUARD", EffectKind.StatModifier,
+                TimeSpan.FromSeconds(4), 1, EffectStackPolicy.Replace, 0.85m,
+                ModifiedStat: EffectStat.IncomingDamageMultiplier,
+                ModifierMode: EffectModifierMode.Multiplicative), now);
         }
 
         if (combatEvent.IsCritical && origin == HealingOrigin.Direct)
@@ -611,6 +663,8 @@ public sealed partial class CombatSession
                 decimal commandMultiplier = 0.45m;
                 if (TryGetPaladinHook("R-2-4", out ResolvedTalentEventHook improvedCommand))
                     commandMultiplier += 0.10m * improvedCommand.Rank;
+                if (TryGetPaladinHook("R-7-3", out ResolvedTalentEventHook sealMastery))
+                    commandMultiplier += 0.10m * sealMastery.Rank;
                 extraMultiplier += commandMultiplier;
                 definitionId = "PALADIN_SEAL_COMMAND_PROC";
             }
