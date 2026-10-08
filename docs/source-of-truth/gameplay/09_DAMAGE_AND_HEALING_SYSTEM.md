@@ -978,6 +978,16 @@ Vampiric Healing:
   CanCrit = false
   GeneratesThreat = false
 
+Текущий P0 runtime-контракт для lifesteal (пассивного и урона способностей):
+
+- база — фактически снятое HP цели после mitigation, block, shields и overkill;
+- восстановление применяется через HealingPipeline, с модификаторами исходящего и получаемого лечения;
+- событие HealingApplied содержит только EffectiveHealing, а не Overhealing;
+- HealingOrigin = Lifesteal: такое лечение не является прямым заклинанием и не добавляет отдельный healing threat;
+- урон по себе и нулевое восстановление не создают lifesteal-события;
+- талант Берсерка VAMPIRISM_PERCENT по-прежнему срабатывает только от физического урона;
+- специальные ограничения AoE, DoT и PvP не вводятся этим P0-исправлением.
+
 Scripted Healing:
   правила определяются скриптом.
 

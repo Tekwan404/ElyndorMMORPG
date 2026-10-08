@@ -394,6 +394,7 @@ public static partial class AbilityEngine
                         successfulHit = damage.Avoidance == DamageAvoidance.None;
                         if (action.LifestealPercent > 0
                             && damage.HpDamage > 0
+                            && runtime.Actor.ActorId != target.ActorId
                             && !runtime.Actor.IsDead)
                         {
                             HealingResult lifesteal = HealingPipeline.Resolve(
@@ -403,9 +404,10 @@ public static partial class AbilityEngine
                                     OccurredAtUtc: now,
                                     Source: runtime.Actor,
                                     CanCrit: false,
-                                    Origin: HealingOrigin.Secondary,
+                                    Origin: HealingOrigin.Lifesteal,
                                     DefinitionId: ability.Id));
-                            events.AddRange(lifesteal.Events);
+                            if (lifesteal.EffectiveHealing > 0)
+                                events.AddRange(lifesteal.Events);
                         }
                         break;
                     case AbilityActionType.Healing:

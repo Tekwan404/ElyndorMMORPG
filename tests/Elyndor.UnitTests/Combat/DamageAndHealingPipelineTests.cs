@@ -509,7 +509,139 @@ public sealed class DamageAndHealingPipelineTests
             new SequenceGameRandom(0.9m));
 
         Assert.Equal(88, result.HpDamage);
-        Assert.Equal(58.8m, source.CurrentHp);
+        Assert.Equal(59m, source.CurrentHp);
         Assert.Equal(112, target.CurrentHp);
+        CombatEvent healing = Assert.Single(result.Events, item =>
+            item.Type == CombatEventType.HealingApplied);
+        Assert.Equal(9m, healing.Amount);
+        Assert.Equal(HealingOrigin.Lifesteal, healing.HealingOrigin);
     }
+    [Fact]
+    public void PassiveLifestealReportsOnlyEffectiveHealingAtHpCap()
+    {
+        CombatActorState source = CombatActorState.CreateDummy(
+            1_000, talentModifiers: new TalentCombatModifiers(VampirismPercent: 50));
+        source.SetCurrentHp(990);
+        CombatActorState target = CombatActorState.CreateDummy(200);
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(source, target, 100, DamageType.Physical,
+                CanMiss: false, CanDodge: false, CanCrit: false, DefinitionId: "HIT"),
+            new SequenceGameRandom());
+
+        Assert.Equal(100, result.HpDamage);
+        Assert.Equal(1_000, source.CurrentHp);
+        CombatEvent healing = Assert.Single(result.Events, item =>
+            item.Type == CombatEventType.HealingApplied);
+        Assert.Equal(10, healing.Amount);
+        Assert.Equal(HealingOrigin.Lifesteal, healing.HealingOrigin);
+        Assert.Equal("HIT", healing.DefinitionId);
+        Assert.Equal(source.ActorId, healing.SourceActorId);
+        Assert.Equal(source.ActorId, healing.TargetActorId);
+    }
+
+    [Fact]
+    public void PassiveLifestealObeysHealingDoneAndHealingReceivedModifiers()
+    {
+        DateTimeOffset now = DateTimeOffset.UnixEpoch;
+        CombatActorState source = CombatActorState.CreateDummy(
+            1_000, talentModifiers: new TalentCombatModifiers(VampirismPercent: 20));
+        source.SetCurrentHp(500);
+        CombatActorState target = CombatActorState.CreateDummy(200);
+        EffectEngine.Apply(source, source.ActorId,
+            new EffectDefinition("HEALING_DONE", EffectKind.StatModifier,
+                TimeSpan.FromSeconds(20), 1, EffectStackPolicy.Replace, 1.5m,
+                ModifiedStat: EffectStat.OutgoingHealingMultiplier,
+                ModifierMode: EffectModifierMode.Multiplicative), now);
+        EffectEngine.Apply(source, target.ActorId,
+            new EffectDefinition("MORTAL_WOUND", EffectKind.StatModifier,
+                TimeSpan.FromSeconds(20), 1, EffectStackPolicy.Replace, 0.5m,
+                ModifiedStat: EffectStat.HealingReceivedMultiplier,
+                ModifierMode: EffectModifierMode.Multiplicative), now);
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(source, target, 100, DamageType.Physical,
+                CanMiss: false, CanDodge: false, CanCrit: false),
+            new SequenceGameRandom(), now);
+
+        Assert.Equal(100, result.HpDamage);
+        Assert.Equal(515m, source.CurrentHp);
+        Assert.Equal(15m, Assert.Single(result.Events, item =>
+            item.Type == CombatEventType.HealingApplied).Amount);
+    }
+
+    [Fact]
+    public void PassiveLifestealDoesNotEmitHealingAtFullHp()
+    {
+        CombatActorState source = CombatActorState.CreateDummy(
+            1_000, talentModifiers: new TalentCombatModifiers(VampirismPercent: 50));
+        CombatActorState target = CombatActorState.CreateDummy(200);
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(source, target, 100, DamageType.Physical,
+                CanMiss: false, CanDodge: false, CanCrit: false),
+            new SequenceGameRandom());
+
+        Assert.Equal(1_000, source.CurrentHp);
+        Assert.DoesNotContain(result.Events, item => item.Type == CombatEventType.HealingApplied);
+    }
+
+    [Theory]
+    [InlineData(DamageType.Magical)]
+    [InlineData(DamageType.True)]
+    public void PassivePhysicalLifestealDoesNotApplyToOtherDamageTypes(DamageType type)
+    {
+        CombatActorState source = CombatActorState.CreateDummy(
+            1_000, talentModifiers: new TalentCombatModifiers(VampirismPercent: 50));
+        source.SetCurrentHp(500);
+        CombatActorState target = CombatActorState.CreateDummy(200);
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(source, target, 100, type,
+                CanMiss: false, CanDodge: false, CanCrit: false),
+            new SequenceGameRandom());
+
+        Assert.Equal(100, result.HpDamage);
+        Assert.Equal(500, source.CurrentHp);
+        Assert.DoesNotContain(result.Events, item => item.Type == CombatEventType.HealingApplied);
+    }
+
+    [Fact]
+    public void PassiveLifestealDoesNotHealOrPublishHealingFromSelfDamage()
+    {
+        CombatActorState actor = CombatActorState.CreateDummy(
+            1_000, talentModifiers: new TalentCombatModifiers(VampirismPercent: 50));
+        actor.SetCurrentHp(500);
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(actor, actor, 100, DamageType.Physical,
+                CanMiss: false, CanDodge: false, CanCrit: false),
+            new SequenceGameRandom());
+
+        Assert.Equal(400, actor.CurrentHp);
+        Assert.DoesNotContain(result.Events, item => item.Type == CombatEventType.HealingApplied);
+    }
+
+    [Fact]
+    public void PassiveLifestealDoesNotHealFullyShieldedDamage()
+    {
+        DateTimeOffset now = DateTimeOffset.UnixEpoch;
+        CombatActorState source = CombatActorState.CreateDummy(
+            1_000, talentModifiers: new TalentCombatModifiers(VampirismPercent: 50));
+        source.SetCurrentHp(500);
+        CombatActorState target = CombatActorState.CreateDummy(200);
+        EffectEngine.Apply(target, target.ActorId,
+            new EffectDefinition("SHIELD", EffectKind.Shield,
+                TimeSpan.FromSeconds(10), 1, EffectStackPolicy.Replace, 150), now);
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(source, target, 100, DamageType.Physical,
+                CanMiss: false, CanDodge: false, CanCrit: false),
+            new SequenceGameRandom(), now);
+
+        Assert.Equal(0, result.HpDamage);
+        Assert.Equal(500, source.CurrentHp);
+        Assert.DoesNotContain(result.Events, item => item.Type == CombatEventType.HealingApplied);
+    }
+
 }

@@ -8,7 +8,8 @@ public enum HealingOrigin
     Direct,
     Periodic,
     Copied,
-    Secondary
+    Secondary,
+    Lifesteal
 }
 
 public sealed record HealingRequest(

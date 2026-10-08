@@ -1,5 +1,6 @@
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Abilities;
+using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Monsters;
@@ -191,6 +192,57 @@ public sealed class ThreatPolicyCombatSessionTests
         Assert.Equal(
             51m,
             Assert.Single(snapshot.Entries, item => item.ActorId == PlayerId).Threat);
+    }
+
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void LifestealDoesNotGenerateHealingThreat(bool passiveLifesteal)
+    {
+        CombatStats stats = CreateStats();
+        CombatActorState actor = new(
+            PlayerId, 1_000, 500, 100, 0, stats,
+            new TalentCombatModifiers(VampirismPercent: passiveLifesteal ? 50 : 0));
+        CombatParticipantDefinition player = new(
+            actor, CombatActorKind.Player, "WARRIOR", "Drain Warrior", "RAGE",
+            new AutoAttackProfile(TimeSpan.FromSeconds(10), 0, 0, 0),
+            new HashSet<string>(["DRAIN_HIT"], StringComparer.Ordinal),
+            CanAutoAttack: false);
+        CombatParticipantDefinition enemy = CreateEnemy(stats);
+        Dictionary<string, AbilityDefinition> abilities = new(StringComparer.Ordinal)
+        {
+            ["DRAIN_HIT"] = new(
+                "DRAIN_HIT", AbilityType.Instant, AbilityTargetType.SingleEnemy,
+                0, TimeSpan.Zero, TimeSpan.Zero, false, GlobalCooldownCategory.None,
+                false, "PHYSICAL",
+                Actions:
+                [
+                    new AbilityActionDefinition(
+                        AbilityActionType.Damage,
+                        Amount: 100,
+                        DamageType: DamageType.Physical,
+                        CanMiss: false,
+                        CanDodge: false,
+                        CanCrit: false,
+                        LifestealPercent: passiveLifesteal ? 0 : 50)
+                ])
+        };
+        CombatSession session = CreateSession(player, enemy, abilities);
+
+        CombatCommandResult result = session.Handle(
+            new UseAbilityCommand("drain-hit", "DRAIN_HIT", EnemyId),
+            Now.AddMilliseconds(100));
+        CombatThreatSnapshot threat = Assert.IsType<CombatThreatSnapshot>(
+            session.GetThreatSnapshot(PlayerId, Now.AddMilliseconds(100)));
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(550, actor.CurrentHp);
+        CombatEvent healing = Assert.Single(result.Events, item =>
+            item.Type == CombatEventType.HealingApplied);
+        Assert.Equal(50, healing.Amount);
+        Assert.Equal(HealingOrigin.Lifesteal, healing.HealingOrigin);
+        Assert.Equal(101m, Assert.Single(threat.Entries, entry => entry.ActorId == PlayerId).Threat);
     }
 
     private static CombatSession CreateSession(

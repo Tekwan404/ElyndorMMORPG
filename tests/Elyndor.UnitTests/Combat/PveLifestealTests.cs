@@ -38,7 +38,7 @@ public sealed class PveLifestealTests
         CombatEvent healing = Assert.Single(result.Events, combatEvent =>
             combatEvent.Type == CombatEventType.HealingApplied);
         Assert.Equal(20, healing.Amount);
-        Assert.Equal(HealingOrigin.Secondary, healing.HealingOrigin);
+        Assert.Equal(HealingOrigin.Lifesteal, healing.HealingOrigin);
         Assert.Equal(caster.ActorId, healing.SourceActorId);
         Assert.Equal(caster.ActorId, healing.TargetActorId);
     }
@@ -82,7 +82,7 @@ public sealed class PveLifestealTests
         Assert.Contains(completed.Events, combatEvent =>
             combatEvent.Type == CombatEventType.HealingApplied
             && combatEvent.Amount == 70
-            && combatEvent.HealingOrigin == HealingOrigin.Secondary);
+            && combatEvent.HealingOrigin == HealingOrigin.Lifesteal);
     }
 
     [Fact]
@@ -155,6 +155,66 @@ public sealed class PveLifestealTests
                 Now));
 
         Assert.Contains("Lifesteal", exception.Message, StringComparison.Ordinal);
+    }
+
+
+    [Fact]
+    public void LifestealDoesNotPublishOverhealingAsEffectiveHealing()
+    {
+        CombatActorState caster = CombatActorState.CreateDummy(200);
+        caster.SetCurrentHp(190);
+        CombatActorState target = CombatActorState.CreateDummy(200);
+        CombatRuntimeState runtime = new(caster);
+        runtime.AddActor(target);
+
+        AbilityExecutionResult result = AbilityEngine.Execute(
+            runtime, DamageAbility("CAP_DRAIN", 100, 50),
+            new AbilityIntent("cap-drain", "CAP_DRAIN", target.ActorId),
+            Now, new SequenceGameRandom(0.5m));
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(200, caster.CurrentHp);
+        CombatEvent healing = Assert.Single(result.Events, item =>
+            item.Type == CombatEventType.HealingApplied);
+        Assert.Equal(10, healing.Amount);
+        Assert.Equal(HealingOrigin.Lifesteal, healing.HealingOrigin);
+    }
+
+    [Fact]
+    public void LifestealAtFullHpDoesNotPublishZeroHeal()
+    {
+        CombatActorState caster = CombatActorState.CreateDummy(200);
+        CombatActorState target = CombatActorState.CreateDummy(200);
+        CombatRuntimeState runtime = new(caster);
+        runtime.AddActor(target);
+
+        AbilityExecutionResult result = AbilityEngine.Execute(
+            runtime, DamageAbility("FULL_DRAIN", 100, 50),
+            new AbilityIntent("full-drain", "FULL_DRAIN", target.ActorId),
+            Now, new SequenceGameRandom(0.5m));
+
+        Assert.True(result.Succeeded);
+        Assert.DoesNotContain(result.Events, item => item.Type == CombatEventType.HealingApplied);
+    }
+
+    [Fact]
+    public void AbilityLifestealDoesNotHealSelfInflictedDamage()
+    {
+        CombatActorState caster = CombatActorState.CreateDummy(200);
+        CombatRuntimeState runtime = new(caster);
+        AbilityDefinition selfDamage = DamageAbility("SELF_DRAIN", 50, 50) with
+        {
+            TargetType = AbilityTargetType.Self
+        };
+
+        AbilityExecutionResult result = AbilityEngine.Execute(
+            runtime, selfDamage,
+            new AbilityIntent("self-drain", selfDamage.Id, caster.ActorId),
+            Now, new SequenceGameRandom(0.5m));
+
+        Assert.True(result.Succeeded);
+        Assert.Equal(150, caster.CurrentHp);
+        Assert.DoesNotContain(result.Events, item => item.Type == CombatEventType.HealingApplied);
     }
 
     private static AbilityDefinition DamageAbility(
