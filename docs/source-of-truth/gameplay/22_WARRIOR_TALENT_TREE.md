@@ -77,290 +77,53 @@ Party System является владельцем `PartyId` и membership. Tale
 
 ---
 
+> **Актуальный источник для чисел и рангов:** `content/talents/warrior-guardian.json`, `content/talents/warrior-berserker.json`, `content/talents/warrior-warlord.json`. Ветви Berserker/Warlord ниже содержат исторические проектные описания; при несовпадении приоритет имеет текущий исполняемый контент. Guardian ниже синхронизирован с девятью реальными тирами.
+
 # ВЕТКА I — СТРАЖ (GUARDIAN)
-**Fantasy:** непробиваемый защитник. Живёт дольше всех. Контролирует кто бьёт кого.  
-**Основные статы:** Stamina, Armor, Dodge, Threat  
-**Ресурс:** Rage генерируется от получения урона сильнее чем у других веток
+
+**Исполняемая специализация:** девять тиров, 31 узел, 59 общих очков на 60 уровне. Перераспределено 2026-10-08 (content `0.46.0`, balance `0.36.0`). Текущие значения эффектов и текст описаний берутся непосредственно из `content/talents/warrior-guardian.json`.
+
+**Роль:** танк со щитом, угрозой, блокированием и командной защитой. Ранний Guardian сохраняет Revenge, Shield Block, Provoke и Sunder Armor; основные силовые окна Bastion/Shield Slam расположены на Tier 5. Самая сильная пассивная механика открывается только после 40 очков в Guardian.
+
+| Тир | Вложено очков в ветку | ID | Талант | Предыдущий талант |
+|---:|---:|---|---|---|
+| 1 | 0 | `G-1-1` | Стойка Стража | — |
+| 1 | 0 | `G-1-2` | Специализация на щитах | — |
+| 1 | 0 | `G-1-3` | Закалённая броня | — |
+| 1 | 0 | `G-1-4` | Мастерство щита | — |
+| 1 | 0 | `G-1-5` | Предвидение | — |
+| 2 | 5 | `G-2-1` | Последний рубеж | — |
+| 2 | 5 | `G-2-2` | Возмездие | — |
+| 2 | 5 | `G-2-4` | Непокорность | `G-1-1` |
+| 2 | 5 | `G-2-5` | Ярость щита | — |
+| 3 | 10 | `G-2-3` | Улучшенное Возмездие | `G-2-2` |
+| 3 | 10 | `G-3-1` | Блок щитом | — |
+| 3 | 10 | `G-3-3` | Провокация | — |
+| 3 | 10 | `G-3-5` | Раскол брони | — |
+| 4 | 15 | `G-3-2` | Улучшенный блок щитом | `G-3-1` |
+| 4 | 15 | `G-3-4` | Улучшенная провокация | `G-3-3` |
+| 4 | 15 | `G-3-6` | Пробитая броня | `G-3-5` |
+| 4 | 15 | `G-4-1` | Оглушающий удар | — |
+| 5 | 20 | `G-4-2` | Улучшенный удар щитом | — |
+| 5 | 20 | `G-4-3` | Одноручная специализация | — |
+| 5 | 20 | `G-5-1` | Бастион | — |
+| 5 | 20 | `G-6-1` | Сокрушение щитом | — |
+| 6 | 25 | `G-4-4` | Тяжёлый щит | `G-3-1` |
+| 6 | 25 | `G-4-5` | Мастер провокации | `G-3-3` |
+| 6 | 25 | `G-5-3` | Вызывающий клич | — |
+| 7 | 30 | `G-5-2` | Укреплённый Бастион | `G-5-1` |
+| 7 | 30 | `G-5-4` | Улучшенный последний рубеж | `G-2-1` |
+| 7 | 30 | `G-6-3` | Сосредоточенная ярость | — |
+| 8 | 35 | `G-5-5` | Держать строй | — |
+| 8 | 35 | `G-6-2` | Мастер сокрушения | `G-6-1` |
+| 8 | 35 | `G-6-4` | Последняя крепость | — |
+| 9 | 40 | `G-6-5` | НЕПОКОЛЕБИМЫЙ СТРАЖ | `G-6-1` |
+
+**Принципы:** ID `G-*` и все значения модификаторов сохранены; цифровой префикс ID исторический и не обозначает текущий тир. `G-6-5` — завершающий талант Tier 9, требующий 40 уже вложенных очков и `G-6-1`; впервые может быть получен на уровне 42. Изменение порогов не очищает изученные ранги; новые вложения очков проходят обычную серверную проверку `TalentRules`.
+
+**Ротация:** Strike/Heavy Blow доступны из базового класса; Revenge после блока; Sunder Armor после изучения Shield Slam становится дополнительным эффектом Shield Slam. Защитные умения и принуждение цели остаются ситуационными решениями.
 
 ---
-
-### TIER 1 (0 spent required)
-
-**[G-1-1] Железная Кожа** *(Iron Skin)*  
-`MaxRank 4`  
-Увеличивает Armor на **2% / 4% / 6% / 9%**.  
-*Источник модификатора: TALENT → Stats System (Armor).*
-
----
-
-**[G-1-2] Боевая Стойка** *(Combat Stance)*  
-`MaxRank 3`  
-Получение урона генерирует дополнительно **+2 / +3 / +4 Rage** сверх базового значения.  
-*Источник модификатора: TALENT → Resource System (Rage generation on damage taken).*
-
----
-
-**[G-1-3] Стойкость** *(Endurance)*  
-`MaxRank 4`  
-Увеличивает Stamina на **2% / 4% / 6% / 9%**.  
-*MaxHP пересчитывается через Stats System.*
-
----
-
-**[G-1-4] Тяжёлое Присутствие** *(Heavy Presence)*  
-`MaxRank 4`  
-Threat от обычных Auto Attack увеличивается на **4% / 8% / 12% / 15%**.  
-Не увеличивает наносимый урон.  
-*Threat Modifier Talent: AutoAttack ThreatMultiplier.*
-
----
-
-### TIER 2 (5 spent required)
-
-**[G-2-1] Щитовой Рефлекс** *(Shield Reflex)*  
-`MaxRank 2`  
-Увеличивает Dodge на **2% / 4%**.  
-При HP ниже **30%** дополнительно получает **+2% Dodge**.  
-*Conditional Stat Modifier: HP < 30% → +2% Dodge.*
-
----
-
-**[G-2-2] Провокатор** *(Provocateur)*  
-`MaxRank 1`  
-Способность *Provoke* дополнительно снижает Threat всех Party Allies на этой цели на **10%** после применения Taunt.  
-Цель атакует только тебя следующие **+1 секунду** сверх базового ForcedTarget duration.  
-*Ability Modifier Talent: модифицирует Provoke AbilityDefinition.*
-
----
-
-**[G-2-3] Толстокожий** *(Thick Hide)*  
-`MaxRank 3`  
-Уменьшает входящий физический урон на **1% / 2% / 3%**.  
-*Источник: TALENT → incoming Damage Modifier (Physical), Stats System.*
-
----
-
-**[G-2-4] Первая Линия** *(Front Line)*  
-`MaxRank 3`  
-Пока HP выше **70%**, входящий урон снижается на **1% / 2% / 3%**.  
-При падении HP до 70% или ниже эффект немедленно отключается.  
-*Conditional Damage Taken Modifier: HP > 70%.*
-
----
-
-### TIER 3 (10 spent required)
-
-**[G-3-1] Ответный Удар** *(Counterattack)*  
-`MaxRank 2`  
-При получении Dodge **15% / 25%** шанс автоматически нанести ответный физический удар с уроном **50% / 70%** от обычной Auto Attack.  
-*Event-Triggered Talent: OnDodge → secondary physical hit; не считается обычной Auto Attack и не запускает OnAutoAttack proc.*  
-*Proc Safety: CanTriggerFromProc = false, InternalCooldown = 2 sec.*
-
----
-
-**[G-3-2] Укреплённый Разум** *(Fortified Mind)*  
-`MaxRank 2`  
-Уменьшает длительность Stun-эффектов на **10% / 20%**.  
-*Effect Modifier Talent: Stun Duration reduction.*
-
----
-
-**[G-3-3] Ярость Защитника** *(Guardian's Rage)*  
-`MaxRank 3`  
-Увеличивает максимальный запас Rage на **5 / 10 / 15**.  
-*Resource Modifier Talent: MaxResource (Rage).*
-
----
-
-**[G-3-4] Закалённый Ветеран** *(Battle Hardened)*  
-`MaxRank 3`  
-Уменьшает дополнительный урон получаемых критических ударов на **5% / 10% / 15%**.  
-Талант уменьшает только критическую надбавку и не влияет на обычный урон.  
-*Damage Modifier Talent: Incoming CriticalDamage component reduction.*
-
----
-
-### TIER 4 (15 spent required)
-
-**[G-4-1] Несокрушимость** *(Indomitable)*  
-`MaxRank 1`  
-Пассив. Когда HP падает ниже **25%**:  
-— входящий урон снижается на **12%** на **6 секунд**.  
-— генерируется **+15 Rage** мгновенно.  
-*Cooldown: 60 sec. Event-Triggered: OnHPBelowThreshold(25%).*  
-*Proc Safety: InternalCooldown = 60 sec.*
-
----
-
-**[G-4-2] Мастер Провокации** *(Taunt Mastery)*  
-`MaxRank 2`  
-Provoke добавляет **+150 / +300 Threat** сверх базового значения.  
-Стоимость Provoke снижается на **5 / 10 Rage**.  
-*Ability Modifier Talent: ThreatBonus + ResourceCostReduction на Provoke.*  
-*Prerequisite: [G-2-2] Провокатор.*
-
----
-
-**[G-4-3] Броня Войны** *(War Armor)*  
-`MaxRank 4`  
-Увеличивает MagicResistance на **2% / 4% / 6% / 9%**.  
-*Источник: TALENT → Stats System (MagicResistance).*
-
----
-
-**[G-4-4] Ответная Ярость** *(Defiant Fury)*  
-`MaxRank 2`  
-Успешный Dodge восстанавливает **+3 / +5 Rage**.  
-`InternalCooldown = 2 sec`.  
-*Event-Triggered: OnDodge → Rage generation.*
-
----
-
-### TIER 5 (20 spent required)
-
-**[G-5-1] Бастион** *(Bastion)*  
-`MaxRank 1`  
-**Активная способность.** Стоит **40 Rage**.  
-На **6 секунд** входящий урон (Physical + Magical) снижается на **30%**.  
-Cooldown: **90 секунд**. Off-GCD.  
-*Добавляет AbilityId BASTION в KnownAbilities персонажа.*  
-*Источник: TALENT → Ability System.*
-
----
-
-**[G-5-2] Притяжение Угрозы** *(Threat Presence)*  
-`MaxRank 4`  
-Увеличивает Threat Multiplier на **2% / 4% / 6% / 9%** для всех источников урона.  
-*Talent Source → Combat System (ThreatMultiplier modifier).*
-
----
-
-**[G-5-3] Несгибаемость** *(Unyielding)*  
-`MaxRank 2`  
-Уменьшает входящий магический урон на **2% / 4%**.  
-*Damage Modifier Talent: incoming Magical Damage reduction.*
-
----
-
-### TIER 6 (25 spent required)
-
-**[G-6-1] Живой Щит** *(Living Shield)*  
-`MaxRank 1`  
-Пассив. При нанесении Auto Attack **12% шанс** создать щит поглощающий **4% от MaxHP** урона на **8 секунд**.  
-Новый щит заменяет старый.  
-*Event-Triggered: OnAutoAttack → Apply Shield Effect.*  
-*Proc Safety: InternalCooldown = 10 sec.*
-
----
-
-**[G-6-2] Броня Крови** *(Blood Armor)*  
-`MaxRank 2`  
-Каждые **25 Rage** сверх **50** дают дополнительно **+1% / +1.5% к Armor**.  
-Максимум **+4% / +6%** при полном Rage.  
-*Conditional Stat Modifier Talent: Resource-dependent Armor bonus.*
-
----
-
-**[G-6-3] Стальная Воля** *(Iron Will)*  
-`MaxRank 1`  
-Уменьшает длительность входящих **Stun и Silence** на **25%**.  
-Не изменяет Diminishing Returns и не объединяет DR-категории.  
-*Effect Modifier Talent: Stun Duration × 0.75, Silence Duration × 0.75.*
-
----
-
-**[G-6-4] Усиленные Барьеры** *(Reinforced Barriers)*  
-`MaxRank 2`  
-Щиты, созданные **твоими собственными талантами и способностями**, поглощают на **10% / 20%** больше урона.  
-Не усиливает щиты, наложенные другими персонажами.  
-*Effect Modifier Talent: SourceId = self, Shield Absorb multiplier.*  
-*Prerequisite: [G-6-1] Живой Щит.*
-
----
-
-### TIER 7 (30 spent required)
-
-**[G-7-1] Бессмертный Воин** *(Immortal Warrior)*  
-`MaxRank 2`  
-Снижает Cooldown способности *Бастион* на **10 / 20 секунд**.  
-*Prerequisite: [G-5-1] Бастион.*  
-*Ability Modifier: Cooldown reduction on BASTION.*
-
----
-
-**[G-7-2] Щит Вечности** *(Eternal Guard)*  
-`MaxRank 1`  
-Если входящий урон должен снизить HP до **0 или ниже**: **один раз за Combat Session** lethal result предотвращается.  
-После предотвращения `CurrentHP = 12% MaxHP`.  
-Rage сбрасывается до **0**.  
-*Lethal Damage Prevention Effect: разрешается до перехода CurrentHP в 0.*  
-*CanTriggerFromProc = false. Limit: one activation per CombatSession.*
-
----
-
-**[G-7-3] Вечная Стойкость** *(Perpetual Endurance)*  
-`MaxRank 4`  
-Увеличивает MaxHP на **2% / 4% / 6% / 9%** дополнительно (помимо Stamina scaling).  
-*Direct MaxHP Modifier Talent.*
-
----
-
-**[G-7-4] Последний Рубеж** *(Last Stand)*  
-`MaxRank 2`  
-При HP ниже **35%**:  
-— получаемое лечение увеличивается на **5% / 10%**;  
-— MagicResistance увеличивается на **3% / 6%**.  
-*Conditional HealingReceived Modifier + Stat Modifier.*
-
----
-
-### TIER 8 (35 spent required)
-
-**[G-8-1] Отражение Удара** *(Retaliation)*  
-`MaxRank 1`  
-Пассив. При получении критического удара: **25% шанс** нанести ответный физический удар на **65% от AttackPower**.  
-Удар не может быть критическим.  
-*Event-Triggered: OnCriticalHitReceived → Physical Damage.*  
-*Proc Safety: InternalCooldown = 3 sec, CanTriggerFromProc = false.*
-
----
-
-**[G-8-2] Нерушимый Оплот** *(Unbreakable Bastion)*  
-`MaxRank 2`  
-Бастион теперь также даёт **+8% / +15% к Dodge** на время действия.  
-*Prerequisite: [G-5-1] Бастион, [G-7-1] Бессмертный Воин.*  
-*Effect Modifier: добавляет Dodge buff к BASTION эффекту.*
-
----
-
-**[G-8-3] Сердце Крепости** *(Fortress Heart)*  
-`MaxRank 1`  
-Увеличивает генерацию Rage от **получения урона** на **35%**.  
-Stamina даёт дополнительно **+1 MaxHP за каждые 3 единицы** сверх базового.  
-*Resource Modifier + Stat Modifier Talent.*
-
----
-
-### TIER 9 (40 spent required) — CAPSTONE
-
-**[G-9-1] СТРАЖ ВЕЧНОСТИ** *(ETERNAL GUARDIAN)* ⭐  
-`MaxRank 1` — **Capstone**  
-**Требует 40 очков в Страже.**
-
-Пассив. Ты становишься воплощением защиты.
-
-**Эффекты:**  
-— Входящий урон снижается на **6%** постоянно.  
-— Когда ты получаешь урон, ты и Party Allies в том же CombatSession восстанавливают **0.35% MaxHP**. `InternalCooldown = 2 секунды`.  
-— Provoke теперь также снижает урон цели по всем кроме тебя на **15%** на **4 секунды**.  
-— При активном Бастионе: Auto Attack генерирует **+5 Rage** дополнительно.
-
-*Composite Talent: Damage Modifier + HoT-like Event-Triggered Heal on party + Ability Modifier (Provoke debuff) + Resource Modifier (conditional Rage).*  
-*Дополнительных node prerequisites нет: Capstone требует только 40 вложенных очков в этой ветке.*
-
----
----
-
 # ВЕТКА II — БЕРСЕРК (BERSERKER)
 **Fantasy:** машина разрушения. Чем меньше HP — тем опаснее. Rage тратится быстро, урон огромный.  
 **Основные статы:** Strength, AttackPower, CriticalChance, AttackSpeed, ArmorPenetration  
