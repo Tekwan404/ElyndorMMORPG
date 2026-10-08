@@ -1885,6 +1885,13 @@ public sealed partial class CombatSession
 
         if (_companion is not null)
         {
+            // Mend Pet dispels only after its final healing tick, never on cast.
+            bool mendPetCompleted = _improvedMendPetPendingCleanse
+                && !_companion.Actor.IsDead
+                && _companion.Actor.ActiveEffects.Any(effect =>
+                    effect.Definition.Id == MendPetEffectId
+                    && effect.SourceId == _companionOwnerActorId
+                    && effect.ExpiresAtUtc <= now);
             ApplyKernelEvents(
                 EffectEngine.Process(
                     _companion.Actor,
@@ -1895,6 +1902,11 @@ public sealed partial class CombatSession
                 _companion.Actor.ActorId,
                 null);
             if (Status != CombatSessionStatus.Active) return;
+            if (mendPetCompleted && !_companion.Actor.IsDead)
+            {
+                _improvedMendPetPendingCleanse = false;
+                RemoveOneCompanionDebuff(now);
+            }
         }
 
         foreach (CombatParticipantDefinition enemy in _enemies)

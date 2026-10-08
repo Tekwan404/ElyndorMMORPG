@@ -121,6 +121,15 @@ _companion.Actor,
 EffectKind.Silence,
 now));
 }
+private void RemoveCompanionExtendedControls(DateTimeOffset now)
+{
+if (_companion is null)
+return;
+foreach (EffectKind kind in new[] { EffectKind.Root, EffectKind.Fear, EffectKind.Disarm })
+{
+RemoveTalentEffects(EffectEngine.RemoveByKind(_companion.Actor, kind, now));
+}
+}
 private void ReduceArcherCooldown(
 string abilityId,
 TimeSpan amount,
