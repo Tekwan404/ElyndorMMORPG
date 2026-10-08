@@ -112,7 +112,7 @@ public sealed class PaladinP0AdmissionTests
             paladin.ActorId, new UseAbilityCommand("p0-cleanse", "CLEANSE", ally.ActorId), Now);
 
         Assert.True(result.Succeeded, result.ErrorCode);
-        Assert.Single(ally.ActiveEffects.Where(x => x.Definition.DispelCategory == "CURSE"));
+        Assert.Single(ally.ActiveEffects, x => x.Definition.DispelCategory == "CURSE");
         Assert.DoesNotContain(ally.ActiveEffects, x => x.Definition.Id == "TEST_CURSE_A");
         Assert.Contains(ally.ActiveEffects, x => x.Definition.Id == "TEST_CURSE_B");
     }
