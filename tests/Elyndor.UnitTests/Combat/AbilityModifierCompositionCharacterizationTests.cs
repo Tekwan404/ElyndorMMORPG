@@ -27,7 +27,7 @@ public sealed class AbilityModifierCompositionCharacterizationTests
         AbilityDefinition ability = Base("TEST", "PHYSICAL") with
         { TargetType = AbilityTargetType.NEnemiesInCombat, TargetCount = 2 };
         AbilityDefinition result = Both(classId, ability, Generic(ability.Id));
-        Assert.Equal(52m, result.ResourceCost); // Art of War rank 2 reduces the post-composition cost by 20%.
+        Assert.Equal(65m, result.ResourceCost);
         Assert.Equal(TimeSpan.FromSeconds(8), result.Cooldown);
         Assert.Equal(13, result.Actions![0].Amount);
         Assert.Equal(0.52m, result.Actions[0].AttackPowerCoefficient);
@@ -189,7 +189,7 @@ public sealed class AbilityModifierCompositionCharacterizationTests
             f => Buff(f.Player, "PALADIN_ART_OF_WAR", 2));
         Assert.Equal(AbilityType.Instant, result.Type);
         Assert.Equal(TimeSpan.Zero, result.CastTime);
-        Assert.Equal(65, result.ResourceCost);
+        Assert.Equal(52m, result.ResourceCost); // Art of War rank 2 grants a 20% mana discount.
     }
 
     [Fact]
