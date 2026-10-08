@@ -72,7 +72,7 @@ public sealed class CombatSimulationException(string code, string message)
     public string Code { get; } = code;
 }
 
-public sealed class CombatSimulationRunner(GameContentPackage content)
+public sealed partial class CombatSimulationRunner(GameContentPackage content)
 {
     private static readonly DateTimeOffset SimulationEpoch =
         new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
@@ -526,7 +526,8 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
 
     private SimulationEquipment ResolveSimulationEquipment(
         CombatSimulationScenario scenario,
-        ClassProfile classProfile)
+        ClassProfile classProfile,
+        bool preferManaBudget = false)
     {
         if (scenario.GearState == CombatSimulationGearState.None)
         {
@@ -558,16 +559,35 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
                 item.Type == ItemType.Equipment
                 && item.Slot is not null
                 && item.RequiredLevel <= scenario.PlayerLevel
+                && (!preferManaBudget || item.Rarity != ItemRarity.Unique
+                    && item.SpecialEffectIds is not { Count: > 0 }
+                    && item.HonorPrice == 0
+                    && item.SetId?.StartsWith("SET_L60_PVE_T1_", StringComparison.Ordinal) != true)
                 && CanEquip(classProfile, item))
             .ToArray();
 
         List<ItemDefinition> selected = [];
+        ItemDefinition Generate(ItemDefinition template)
+        {
+            var key = ItemGenerationKey.Create(SimulationEquipmentSeed,
+                $"{scenario.ClassId}|MANA|{template.Id}", (int)template.Slot!.Value);
+            var generated = ProceduralItemPolicy.Generate(template,
+                ItemizationBudgetPolicy.NormalizeForTemplate(template, itemization),
+                gearState.QualityProfileId, key, "SIMULATION");
+            return generated is null ? template
+                : ItemInstanceGenerator.ApplyGeneratedAffixes(template, generated.Affixes, generated.DisplayName);
+        }
+        decimal ManaValue(ItemDefinition item) =>
+            item.Stats.Intellect * (content.ResourceScaling?.ManaPerIntellect ?? 0) + item.MaxResourceFlat;
+        List<ItemDefinition> manaMainHands = [];
         foreach (IGrouping<EquipmentSlot, ItemDefinition> group in wearable
                      .GroupBy(item => CanonicalSlot(item.Slot!.Value)))
         {
             ItemDefinition[] atOrBelowTarget = group
                 .Where(item => item.RequiredLevel <= targetRequiredLevel)
-                .OrderByDescending(item => item.RequiredLevel)
+                .OrderByDescending(item => preferManaBudget
+                    ? item.Stats.Intellect * (content.ResourceScaling?.ManaPerIntellect ?? 0) + item.MaxResourceFlat : 0)
+                .ThenByDescending(item => item.RequiredLevel)
                 .ThenByDescending(item => item.Rarity)
                 .ThenBy(item => item.Id, StringComparer.Ordinal)
                 .ToArray();
@@ -579,6 +599,16 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
                     .FirstOrDefault();
             if (template is null)
                 continue;
+
+            if (preferManaBudget)
+            {
+                var candidates = atOrBelowTarget.Length == 0 ? [template] : atOrBelowTarget;
+                var rolled = candidates.Select(Generate)
+                    .OrderByDescending(ManaValue).ThenBy(item => item.Id, StringComparer.Ordinal).ToArray();
+                selected.Add(rolled[0]);
+                if (group.Key == EquipmentSlot.MainHand) manaMainHands.AddRange(rolled);
+                continue;
+            }
 
             ItemizationDefinition effectiveItemization =
                 ItemizationBudgetPolicy.NormalizeForTemplate(template, itemization);
@@ -602,6 +632,16 @@ public sealed class CombatSimulationRunner(GameContentPackage content)
 
         ItemDefinition? mainHand = selected.SingleOrDefault(item =>
             CanonicalSlot(item.Slot!.Value) == EquipmentSlot.MainHand);
+        if (preferManaBudget && mainHand is not null)
+        {
+            decimal offHandMana = selected.Where(item => item.Slot == EquipmentSlot.OffHand)
+                .Sum(ManaValue);
+            var best = manaMainHands.OrderByDescending(item => ManaValue(item)
+                + (EquipmentCategoryIds.UsesBothHands(item.WeaponCategory) ? 0 : offHandMana)).First();
+            selected.Remove(mainHand);
+            selected.Add(best);
+            mainHand = best;
+        }
         if (mainHand is not null && EquipmentCategoryIds.UsesBothHands(mainHand.WeaponCategory))
         {
             selected.RemoveAll(item =>

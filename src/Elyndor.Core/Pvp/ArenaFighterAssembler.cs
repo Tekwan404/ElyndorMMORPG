@@ -43,7 +43,8 @@ public static class ArenaFighterAssembler
 
             AbilityDefinition resolved = ArenaTalentRuntimeSupport.ApplyAbilityDefinitionModifiers(
                 ability,
-                arenaTalents);
+                arenaTalents,
+                level);
             known.Add(abilityId, resolved);
         }
 

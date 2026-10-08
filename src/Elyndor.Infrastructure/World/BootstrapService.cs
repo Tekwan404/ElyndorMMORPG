@@ -270,7 +270,8 @@ public sealed class BootstrapService(
                 derived.TalentTree,
                 derived.ActiveTalentRanks,
                 derived.TalentModifiers,
-                indexes))
+                indexes,
+                character.Level))
             .ToArray();
 
         CharacterVitals? vitals = await dbContext.CharacterVitals
@@ -691,7 +692,8 @@ public sealed class BootstrapService(
         TalentTreeDefinition? talentTree,
         IReadOnlyDictionary<string, int> activeTalentRanks,
         ResolvedTalentModifiers talentModifiers,
-        GameContentIndexes indexes)
+        GameContentIndexes indexes,
+        int level)
     {
         if (!indexes.AbilitiesById.TryGetValue(
                 abilityId,
@@ -700,7 +702,8 @@ public sealed class BootstrapService(
             throw new InvalidOperationException(
                 $"Ability '{abilityId}' is missing from game content.");
         }
-        AbilityDefinition definition = TalentAbilityResolver.Apply(baseDefinition, talentModifiers);
+        AbilityDefinition definition = TalentAbilityResolver.Apply(
+            AbilityResourceCostScaling.Apply(baseDefinition, level), talentModifiers);
         TalentDefinition? sourceTalent = talentTree?.Nodes.FirstOrDefault(node =>
             activeTalentRanks.GetValueOrDefault(node.Id) > 0
             && (node.Modifiers ?? []).Any(modifier =>

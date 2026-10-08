@@ -3,7 +3,7 @@ namespace Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Effects;
 
-public enum AbilityType { Instant, Casted, NextAttackModifier, Taunt }
+public enum AbilityType { Instant, Casted, NextAttackModifier, Taunt, Channelled }
 public enum AbilityTargetType
 {
     Self,
@@ -100,7 +100,11 @@ public sealed record AbilityDefinition(
     bool RequiresWeapon = false,
     bool RequiresMobility = false,
     bool CanUseWhileFeared = false,
-    string? BlockedByEffectId = null);
+    string? BlockedByEffectId = null,
+    TimeSpan? ChannelTickInterval = null,
+    IReadOnlyList<AbilityResourceCostPoint>? ResourceCostByLevel = null);
+
+public sealed record AbilityResourceCostPoint(int Level, decimal Cost);
 
 public sealed record AbilityActionDefinition(
     AbilityActionType Type,
@@ -124,7 +128,8 @@ public sealed record AbilityActionDefinition(
     TimeSpan? InterruptLockout = null,
     decimal LifestealPercent = 0,
     decimal TargetMaxHpPercent = 0,
-    bool RequiresSuccessfulHit = false);
+    bool RequiresSuccessfulHit = false,
+    decimal CasterMaxResourcePercent = 0);
 
 public sealed record AbilityTargetModifier(
     decimal DamageMultiplier = 1,
@@ -148,7 +153,14 @@ public sealed record ActiveCast(
     DateTimeOffset StartedAtUtc,
     DateTimeOffset ResolvesAtUtc,
     IReadOnlyList<Guid>? TargetIds = null,
-    IReadOnlyDictionary<Guid, AbilityTargetModifier>? TargetModifiers = null);
+    IReadOnlyDictionary<Guid, AbilityTargetModifier>? TargetModifiers = null,
+    int CompletedChannelTicks = 0)
+{
+    public DateTimeOffset NextResolutionAtUtc => Ability.Type == AbilityType.Channelled
+        && Ability.ChannelTickInterval is { } interval
+            ? StartedAtUtc + interval * (CompletedChannelTicks + 1)
+            : ResolvesAtUtc;
+}
 
 public sealed record PendingAbilityAction(
     long Sequence,

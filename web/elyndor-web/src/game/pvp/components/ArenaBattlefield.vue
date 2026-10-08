@@ -87,7 +87,8 @@ function castProgress(cast: CombatCastSnapshot | null): number {
   if (!cast) return 0
   const start = Date.parse(cast.startedAtUtc)
   const duration = Math.max(1, Date.parse(cast.resolvesAtUtc) - start)
-  return Math.max(0, Math.min(100, ((now.value - start) / duration) * 100))
+  const elapsed = Math.max(0, Math.min(100, ((now.value - start) / duration) * 100))
+  return cast.isChannelled ? 100 - elapsed : elapsed
 }
 
 function abilityTargetId(ability: CombatAbility): string {

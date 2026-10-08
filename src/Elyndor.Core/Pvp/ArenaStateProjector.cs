@@ -48,8 +48,7 @@ public static class ArenaStateProjector
                 effect.Definition.Id, effect.Stacks, effect.ExpiresAtUtc,
                 effect.Definition.DisplayName, effect.Definition.Description,
                 effect.Definition.IconId)).ToArray(),
-            cast is null ? null : new CombatCastSnapshot(cast.Ability.Id,
-                cast.StartedAtUtc, cast.ResolvesAtUtc),
+            cast is null ? null : CombatCastSnapshot.From(cast),
             GenderId: entrant.GenderId, SkinId: entrant.SkinId, Level: entrant.Level);
     }
 }

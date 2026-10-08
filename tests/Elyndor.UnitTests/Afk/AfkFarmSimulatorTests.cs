@@ -15,6 +15,37 @@ namespace Elyndor.UnitTests.Afk;
 public sealed class AfkFarmSimulatorTests
 {
     [Fact]
+    public void ChannelKillsOnFirstTickAndDoesNotCarryRemainingTicksToNextEncounter()
+    {
+        AbilityDefinition channel = new("AFK_CHANNEL", AbilityType.Channelled, AbilityTargetType.SingleEnemy,
+            0, TimeSpan.Zero, TimeSpan.FromSeconds(4), false, GlobalCooldownCategory.None, true, "ARCANE",
+            Actions: [new(AbilityActionType.Damage, 25, Elyndor.Core.Combat.Damage.DamageType.True,
+                CanMiss: false, CanCrit: false, CanDodge: false)], ChannelTickInterval: TimeSpan.FromSeconds(1));
+        var mage = CreateSnapshot(0, [channel.Id], classId: "MAGE", autoAttackInterval: TimeSpan.FromHours(1));
+        var request = CreateRequest(mage, CreateMonster("CHANNEL_TARGET", MonsterRank.Normal, 20, 0),
+            new Dictionary<string, AbilityDefinition> { [channel.Id] = channel });
+        request = request with { EndsAtUtc = request.StartedAtUtc.AddSeconds(2.5),
+            Settings = new AfkFarmSimulationSettings(TimeSpan.Zero) };
+        var result = AfkFarmSimulator.Simulate(request);
+        Assert.Equal(2, result.Kills);
+    }
+
+    [Fact]
+    public void OfflineFarmAppliesLevelCostsBeforeConsideringAnAbilityAffordable()
+    {
+        AbilityDefinition spell = new("AFK_COST", AbilityType.Instant, AbilityTargetType.SingleEnemy,
+            0, TimeSpan.Zero, TimeSpan.Zero, true, GlobalCooldownCategory.Standard, true, "ARCANE",
+            Actions: [new(AbilityActionType.Damage, 100, Elyndor.Core.Combat.Damage.DamageType.True,
+                CanMiss: false, CanCrit: false, CanDodge: false)], ResourceCostByLevel: [new(1, 1000)]);
+        var mage = CreateSnapshot(0, [spell.Id], currentResource: 100, classId: "MAGE",
+            autoAttackInterval: TimeSpan.FromHours(1));
+        var request = CreateRequest(mage, CreateMonster("COST_TARGET", MonsterRank.Normal, 20, 0),
+            new Dictionary<string, AbilityDefinition> { [spell.Id] = spell });
+        var result = AfkFarmSimulator.Simulate(request with { EndsAtUtc = request.StartedAtUtc.AddSeconds(2) });
+        Assert.Equal(0, result.Kills);
+    }
+
+    [Fact]
     public void SameRequestProducesTheSameResult()
     {
         AfkFarmSimulationRequest request = CreateRequest(CreateSnapshot(15));

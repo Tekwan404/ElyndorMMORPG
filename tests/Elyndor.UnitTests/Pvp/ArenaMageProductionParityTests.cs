@@ -13,6 +13,45 @@ public sealed class ArenaMageProductionParityTests
 {
     private static readonly DateTimeOffset Now = new(2026, 10, 1, 12, 0, 0, TimeSpan.Zero);
 
+    [Fact]
+    public async Task LevelCostIsAppliedOnceBeforeTalentDiscountInProductionArena()
+    {
+        var package = await GameContentPackageLoader.LoadAsync(ContentPath());
+        var fireball = package.Abilities!.Single(a => a.Id == "MAGE_FIREBALL");
+        decimal expected = AbilityResourceCostScaling.Apply(fireball, 60).ResourceCost * .94m;
+        Fight fight = await Create(["F-1-3"], useLevelCosts: true);
+        Cast(fight, fireball.Id, Now);
+        Assert.Equal(1000 - expected, fight.Mage.Actor.CurrentResource);
+        Assert.Equal(expected, fight.Mage.Abilities[fireball.Id].ResourceCost);
+    }
+
+    [Fact]
+    public async Task CounterspellTalentUpgradesAnAlreadyKnownCoreAbility()
+    {
+        Fight ordinary = await Create([]);
+        Fight improved = await Create(["A-3-4"]);
+        Cast(ordinary, "MAGE_COUNTERSPELL", Now);
+        Cast(improved, "MAGE_COUNTERSPELL", Now);
+        Assert.Equal(ordinary.Session.CooldownsFor(ordinary.Mage.AccountId)["MAGE_COUNTERSPELL"].AddSeconds(-1),
+            improved.Session.CooldownsFor(improved.Mage.AccountId)["MAGE_COUNTERSPELL"]);
+    }
+
+    [Fact]
+    public async Task CompletedMissilesEchoUsesAllFourTicksAndClearcastingRollsOnce()
+    {
+        Fight fight = await Create(["A-1-2", "A-2-2", "A-5-1", "A-7-4"], roll: 0);
+        Cast(fight, "MAGE_ARCANE_POWER", Now);
+        Cast(fight, "MAGE_ARCANE_MISSILES", Now.AddSeconds(2));
+        fight.Session.AdvanceTo(Now.AddSeconds(5));
+        Assert.DoesNotContain(fight.Mage.Actor.ActiveEffects, e => e.Definition.Id == "MAGE_CLEARCASTING");
+        fight.Session.AdvanceTo(Now.AddSeconds(6));
+        decimal direct = fight.Session.GetEventsAfter(0).Where(e => e.Type == CombatEventType.DamageDealt
+            && e.DefinitionId == "MAGE_ARCANE_MISSILES").Sum(e => e.Amount);
+        Assert.Equal(direct * .3m, Effect(fight.Target, "MAGE_ARCANE_ECHO").Definition.Magnitude);
+        Assert.Single(fight.Session.GetEventsAfter(0), e => e.Type == CombatEventType.EffectApplied
+            && e.DefinitionId == "MAGE_CLEARCASTING");
+    }
+
     [Theory]
     [InlineData("MAGE_FIREBALL", 18.8)]
     [InlineData("MAGE_SCORCH", 9.4)]
@@ -164,12 +203,12 @@ public sealed class ArenaMageProductionParityTests
     }
 
     [Fact]
-    public async Task EvocationGeneratesManaOnlyWhenFourSecondCastCompletes()
+    public async Task EvocationRestoresManaOnEachTickAndCompletesAfterFourSeconds()
     {
         Fight fight = await Create(["A-6-4"], mana: 100);
         Cast(fight, "MAGE_EVOCATION", Now);
         fight.Session.AdvanceTo(Now.AddSeconds(3.9));
-        Assert.Equal(100m, fight.Mage.Actor.CurrentResource);
+        Assert.Equal(400m, fight.Mage.Actor.CurrentResource);
         fight.Session.AdvanceTo(Now.AddSeconds(4));
         Assert.Equal(500m, fight.Mage.Actor.CurrentResource);
         Assert.Null(fight.Session.ActiveCastFor(fight.Mage.AccountId));
@@ -539,7 +578,7 @@ public sealed class ArenaMageProductionParityTests
     private static async Task<Fight> Create(string[] talentIds, decimal mana = 1000,
         decimal criticalChance = 0, decimal roll = 0.5m, bool repeatColdSnap = false,
         string[]? opponentTalentIds = null, decimal resourceRegen = 0, decimal spellPower = 100,
-        bool twoDamageActions = false)
+        bool twoDamageActions = false, bool useLevelCosts = false)
     {
         var package = await GameContentPackageLoader.LoadAsync(ContentPath());
         TalentTreeDefinition tree = Assert.Single(package.TalentTrees ?? [], t => t.ClassId == "MAGE");
@@ -547,6 +586,8 @@ public sealed class ArenaMageProductionParityTests
             id => tree.Nodes.Single(node => node.Id == id).MaxRank, StringComparer.Ordinal);
         ResolvedTalentModifiers talents = TalentModifierResolver.Resolve(tree, ranks);
         Dictionary<string, AbilityDefinition> abilities = (package.Abilities ?? [])
+            // These cases isolate talent multipliers and shield payments from level budgets.
+            .Select(a => useLevelCosts ? a : a with { ResourceCostByLevel = null })
             .ToDictionary(a => a.Id, StringComparer.Ordinal);
         if (repeatColdSnap)
             abilities["MAGE_COLD_SNAP"] = abilities["MAGE_COLD_SNAP"] with { Cooldown = TimeSpan.Zero };
@@ -559,7 +600,8 @@ public sealed class ArenaMageProductionParityTests
                 Actions = actions.Concat(actions.Where(a => a.Type == AbilityActionType.Damage)).ToArray()
             };
         }
-        ArenaFighter mage = Fighter(talents, ["MAGE_FIREBALL"], mana, criticalChance, abilities, resourceRegen, spellPower);
+        string[] coreAbilities = package.ClassProfiles!.Single(profile => profile.Id == "MAGE").StartingAbilityIds!.ToArray();
+        ArenaFighter mage = Fighter(talents, coreAbilities, mana, criticalChance, abilities, resourceRegen, spellPower);
         ResolvedTalentModifiers opponentTalents = opponentTalentIds is null
             ? ResolvedTalentModifiers.Empty
             : TalentModifierResolver.Resolve(tree, opponentTalentIds.ToDictionary(id => id,

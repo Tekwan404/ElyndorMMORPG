@@ -73,8 +73,8 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.44.0", package.ContentVersion);
-        Assert.Equal("0.34.0", package.BalanceVersion);
+        Assert.Equal("0.45.0", package.ContentVersion);
+        Assert.Equal("0.35.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");
@@ -93,7 +93,8 @@ public sealed class GameContentPackageLoaderTests
         Assert.Equal("MANA", mage.ResourceProfileId);
         Assert.Equal(MageWeaponCategories, mage.AllowedWeaponCategories);
         Assert.Equal(MageArmorCategories, mage.AllowedArmorCategories);
-        Assert.Equal(["MAGE_FIREBALL"], mage.StartingAbilityIds ?? []);
+        Assert.Equal(["MAGE_FIREBALL", "MAGE_ARCANE_SPARK", "MAGE_ICE_SHARD", "MAGE_COUNTERSPELL"],
+            mage.StartingAbilityIds ?? []);
         Assert.Empty(mage.AbilityUnlocks ?? []);
         Assert.Contains(
             "MAGE_FIREBALL",
@@ -118,12 +119,10 @@ public sealed class GameContentPackageLoaderTests
         Assert.DoesNotContain(
             improvedFireball.Modifiers ?? [],
             modifier => modifier.Key == TalentModifierKeys.UnlockAbility);
-        Assert.Contains(
-            mageTree.Nodes,
-            node => node.Id == "A-3-4"
-                && node.Modifiers!.Any(modifier =>
-                    modifier.Key == TalentModifierKeys.UnlockAbility
-                    && modifier.TargetId == "MAGE_COUNTERSPELL"));
+        TalentDefinition counterspellTraining = Assert.Single(mageTree.Nodes, node => node.Id == "A-3-4");
+        Assert.DoesNotContain(counterspellTraining.Modifiers!,
+            modifier => modifier.Key == TalentModifierKeys.UnlockAbility);
+        Assert.NotEmpty(counterspellTraining.Modifiers!);
         Assert.Contains(
             mageTree.Nodes,
             node => node.Id == "I-6-1"

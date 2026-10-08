@@ -82,6 +82,7 @@ export function abilityDescription(ability: KnownAbility): string {
 export function abilityTypeLabel(type: string): string {
   if (type === 'Instant') return 'Мгновенная'
   if (type === 'Casted') return 'С применением'
+  if (type === 'Channelled') return 'Поддерживаемая'
   if (type === 'NextAttackModifier') return 'Усиление следующей атаки'
   if (type === 'Taunt') return 'Провокация'
   return 'Особая'

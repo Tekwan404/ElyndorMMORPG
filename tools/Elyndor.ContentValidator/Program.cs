@@ -98,6 +98,26 @@ try
         }
     }
 
+    if (args.Contains("--audit-mage-mana", StringComparer.Ordinal))
+    {
+        CombatSimulationRunner runner = new(package);
+        List<MageManaEconomyResult> manaResults = [];
+        foreach (int level in new[] { 1, 9, 10, 18, 29, 35, 45, 55, 59, 60 })
+        foreach (string branch in new[] { "FIRE", "ARCANE", "FROST" })
+        foreach (CombatSimulationGearState gear in new[] { CombatSimulationGearState.None, CombatSimulationGearState.Normal, CombatSimulationGearState.Good })
+        {
+            MageManaEconomyResult result = runner.RunMageManaEconomy(level, branch, gear);
+            manaResults.Add(result);
+            Console.WriteLine($"Mana L{level} {branch} {gear}: pool={result.MaxMana:0.##} first-failure={result.SecondsToOom?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "none in 600s"} casts={result.Casts}");
+        }
+        if (analysisExportDirectory is not null)
+        {
+            Directory.CreateDirectory(analysisExportDirectory);
+            await File.WriteAllTextAsync(Path.Combine(analysisExportDirectory, "mage-mana-economy.json"),
+                System.Text.Json.JsonSerializer.Serialize(manaResults, new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+        }
+    }
+
     if (auditBalance && package.CombatBalance is not null)
     {
         IReadOnlyList<MonsterBalanceAuditEntry> audit = MonsterBalanceAudit.Run(package);

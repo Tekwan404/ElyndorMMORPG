@@ -71,20 +71,24 @@ public static partial class GameContentPackageValidator
                     AbilityTargetType.AllEnemiesInCombat
                     or AbilityTargetType.NEnemiesInCombat;
                 if (ability.ResourceCost < 0
+                    || !AbilityResourceCostScaling.IsValid(ability.ResourceCostByLevel)
                     || ability.TargetCount < 0
                     || ability.TargetType == AbilityTargetType.NEnemiesInCombat
                         && ability.TargetCount <= 0
                     || !multiEnemyTarget && ability.TargetCount != 0
                     || ability.Cooldown < TimeSpan.Zero
                     || ability.CastTime < TimeSpan.Zero
-                    || ability.Type == AbilityType.Casted && ability.CastTime <= TimeSpan.Zero
-                    || ability.Type != AbilityType.Casted && ability.CastTime != TimeSpan.Zero
+                    || ability.Type is AbilityType.Casted or AbilityType.Channelled && ability.CastTime <= TimeSpan.Zero
+                    || ability.Type is not (AbilityType.Casted or AbilityType.Channelled) && ability.CastTime != TimeSpan.Zero
+                    || !AbilityEngine.IsValidChannel(ability)
                     || ability.UsesGlobalCooldown && ability.GlobalCooldownCategory == GlobalCooldownCategory.None
                     || requiresAbilityPresentation
                         && (string.IsNullOrWhiteSpace(ability.DisplayName)
                             || string.IsNullOrWhiteSpace(ability.Description))
                     || ability.Actions?.Any(action => action.Amount < 0
                             && action.Type != AbilityActionType.ResourceChange
+                        || action.CasterMaxResourcePercent is < 0 or > 100
+                        || action.Type != AbilityActionType.ResourceChange && action.CasterMaxResourcePercent != 0
                         || action.AttackPowerCoefficient < 0
                         || action.ArmorPenetrationBonus < 0
                         || action.Delay is { } delay && delay < TimeSpan.Zero

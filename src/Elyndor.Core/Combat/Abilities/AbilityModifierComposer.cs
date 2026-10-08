@@ -8,7 +8,8 @@ internal sealed class AbilityModifierComposer(AbilityModifierStages stages)
 {
     public AbilityDefinition Compose(AbilityDefinition baseAbility, AbilityModifierContext context)
     {
-        AbilityDefinition ability = TalentAbilityResolver.Apply(baseAbility, context.Talents);
+        AbilityDefinition ability = TalentAbilityResolver.Apply(
+            AbilityResourceCostScaling.Apply(baseAbility, context.Level), context.Talents);
         ability = stages.Guardian(ability, context.Now);
         ability = stages.Berserker(ability, context.Now);
         ability = stages.Paladin(ability, context.Now);
@@ -33,7 +34,7 @@ internal sealed class AbilityModifierComposer(AbilityModifierStages stages)
 }
 
 internal readonly record struct AbilityModifierContext(
-    ResolvedTalentModifiers Talents, string ClassId, DateTimeOffset Now);
+    ResolvedTalentModifiers Talents, string ClassId, DateTimeOffset Now, int Level = 1);
 
 internal sealed record AbilityModifierStages(
     Func<AbilityDefinition, DateTimeOffset, AbilityDefinition> Guardian,

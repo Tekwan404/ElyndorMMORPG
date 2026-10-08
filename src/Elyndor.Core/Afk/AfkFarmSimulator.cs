@@ -242,7 +242,7 @@ public static class AfkFarmSimulator
 
         while (!enemy.IsDead && elapsed < available)
         {
-            DateTimeOffset? castResolvesAtUtc = runtime?.ActiveCast?.ResolvesAtUtc;
+            DateTimeOffset? castResolvesAtUtc = runtime?.ActiveCast?.NextResolutionAtUtc;
             TimeSpan nextEventAt = nextAutoAttackAt;
             if (castResolvesAtUtc is { } castAt)
                 nextEventAt = Min(nextEventAt, castAt - fightStartedAtUtc);
@@ -263,12 +263,12 @@ public static class AfkFarmSimulator
             elapsed = nextEventAt;
             DateTimeOffset actionAtUtc = fightStartedAtUtc + elapsed;
 
-            if (runtime?.ActiveCast is { } activeCast && activeCast.ResolvesAtUtc <= actionAtUtc)
+            if (runtime?.ActiveCast is { } activeCast && activeCast.NextResolutionAtUtc <= actionAtUtc)
             {
                 AbilityEngine.CompleteCast(runtime, actionAtUtc, random);
                 if (enemy.IsDead)
                     break;
-                nextAbilityDecisionAtUtc = actionAtUtc;
+                nextAbilityDecisionAtUtc = runtime.ActiveCast?.ResolvesAtUtc ?? actionAtUtc;
             }
 
             if (runtime is not null
@@ -343,6 +343,9 @@ public static class AfkFarmSimulator
             }
         }
 
+        // An encounter ends its captured-target cast even when an early channel
+        // tick killed the target; the next encounter must start a new ability.
+        if (runtime is not null) runtime.ActiveCast = null;
         TimeSpan resolvedElapsed = elapsed;
         int monsterAttacks = (int)Math.Floor(
             resolvedElapsed.TotalSeconds / monster.AutoAttackInterval.TotalSeconds);
@@ -471,7 +474,7 @@ public static class AfkFarmSimulator
                 MageStaticAbilityHookResolver.Apply(
                     PyromancerStaticAbilityHookResolver.Apply(
                         WarlordStaticAbilityHookResolver.Apply(
-                            TalentAbilityResolver.Apply(baseAbility, talents),
+                            TalentAbilityResolver.Apply(AbilityResourceCostScaling.Apply(baseAbility, snapshot.Level), talents),
                             talents),
                         talents),
                     talents),
@@ -486,8 +489,9 @@ public static class AfkFarmSimulator
 
     private static bool IsSupportedFarmAbility(AbilityDefinition ability)
     {
-        if ((ability.Type != AbilityType.Instant && ability.Type != AbilityType.Casted)
-            || (ability.Type == AbilityType.Casted && ability.CastTime <= TimeSpan.Zero)
+        if (ability.Type is not (AbilityType.Instant or AbilityType.Casted or AbilityType.Channelled)
+            || (ability.Type is AbilityType.Casted or AbilityType.Channelled && ability.CastTime <= TimeSpan.Zero)
+            || !AbilityEngine.IsValidChannel(ability)
             || ability.TargetType != AbilityTargetType.SingleEnemy
             || ability.Actions is not { Count: > 0 }
             || ability.Actions.Any(action => action.Delay is { } delay && delay > TimeSpan.Zero))

@@ -23,10 +23,13 @@ Player-facing terms are «Воспламенение» (Ignite), «Ясност�
 Descriptions distinguish direct damage, critical chance, additional critical
 damage, personal effects, shared group stacks and activation limits.
 
-Arcane Missiles and Blizzard currently resolve damage after a four-second cast;
-Evocation restores Mana only on successful completion. Their descriptions reflect
-that shipped behavior. A real channel primitive, Mage Core changes, Mana economy
-retuning and Fire/Arcane/Frost runtime extraction remain separate work.
+Gameplay release `0.45.0`, balance `0.35.0`, grants Mage Core at level 1,
+adds authored level-based Mana costs, and converts Arcane Missiles, Blizzard and
+Evocation to four-second channels with one tick per second. Damage coefficients
+are divided across four hits; Evocation restores 10% maximum Mana per tick.
+Fire, Arcane and Frost state belongs to their actor-owned runtimes under
+`Combat/Mage`; CombatSession retains orchestration through its existing router.
+See [the Mana benchmark and runtime contract](../../development/mage-core-mana-channels.md).
 
 ---
 
@@ -51,13 +54,19 @@ Hard requirements:
 - no cast pushback mechanic from incoming damage;
 - no Mage branch uses a companion/pet mechanic.
 
-The class profile does not grant the three main school attacks automatically. Their first-row talents unlock them:
+Mage Core grants all three school fillers and Counterspell without spending talent points.
+Their stable talent IDs improve the abilities rather than unlocking basic class functionality:
 
 | Talent | Ability |
 | --- | --- |
-| `F-1-1` | `MAGE_FIREBALL` |
-| `A-1-1` | `MAGE_ARCANE_SPARK` |
-| `I-1-1` | `MAGE_ICE_SHARD` |
+| `F-1-1` | `MAGE_FIREBALL`: shorter cast |
+| `A-1-1` | `MAGE_ARCANE_SPARK`: Arcane accuracy |
+| `I-1-1` | `MAGE_ICE_SHARD`: shorter cast and existing Chill interaction |
+| `A-3-4` | `MAGE_COUNTERSPELL`: cooldown reduced by one second |
+
+Arcane Spark has no cooldown and can serve as the Arcane filler. Talent ranks,
+prerequisites and the 59-point cap remain unchanged. Counterspell's former unlock
+node retains its ID and now supplies a cooldown upgrade.
 
 All offensive spells resolve through the normal Magical damage pipeline. Mage does not create a parallel damage engine.
 
@@ -115,7 +124,7 @@ Impact-style Fire stuns can affect normal enemies but never hard-stun bosses.
 
 | Talent | Ability |
 | --- | --- |
-| `F-1-1` | `MAGE_FIREBALL` |
+| Core | `MAGE_FIREBALL` |
 | `F-2-3` | `MAGE_FIRE_BLAST` |
 | `F-3-1` | `MAGE_SCORCH` |
 | `F-4-1` | `MAGE_PYROBLAST` |

@@ -509,12 +509,12 @@ public sealed partial class CombatSession
                 ActivatePlayer(participant.CharacterId);
                 next = Min(next, _nextPlayerMainHandAutoAttackAtUtc);
                 next = Min(next, _nextPlayerOffHandAutoAttackAtUtc);
-                next = Min(next, _playerRuntime.ActiveCast?.ResolvesAtUtc);
+                next = Min(next, _playerRuntime.ActiveCast?.NextResolutionAtUtc);
                 next = Min(next, NextEffectDue(_player.Actor));
             }
             ActivatePlayer(activePlayerId);
             next = Min(next, _nextCompanionAutoAttackAtUtc);
-            next = Min(next, _companionRuntime?.ActiveCast?.ResolvesAtUtc);
+            next = Min(next, _companionRuntime?.ActiveCast?.NextResolutionAtUtc);
             next = Min(next, _companion is null ? null : NextEffectDue(_companion.Actor));
             next = Min(next, _nextSummonAtUtc);
             next = Min(next, NextGenericEncounterDueAtUtc);
@@ -522,7 +522,7 @@ public sealed partial class CombatSession
             foreach (CombatParticipantDefinition enemy in _enemies)
             {
                 Guid enemyActorId = enemy.Actor.ActorId;
-                next = Min(next, _enemyRuntimes[enemyActorId].ActiveCast?.ResolvesAtUtc);
+                next = Min(next, _enemyRuntimes[enemyActorId].ActiveCast?.NextResolutionAtUtc);
                 next = Min(next, _enemyAiRuntimes[enemyActorId].NextActionAtUtc);
                 next = Min(next, NextEffectDue(enemy.Actor));
             }
@@ -966,7 +966,7 @@ public sealed partial class CombatSession
             primaryTargetActorId,
             command.AbilityId);
         EventRouter.DispatchAbilityStarted(ability, now);
-        if (ability.Type != AbilityType.Casted)
+        if (ability.Type is not (AbilityType.Casted or AbilityType.Channelled))
         {
             EventRouter.DispatchAbilityResolved(ability, execution, now);
         }
@@ -1835,11 +1835,17 @@ public sealed partial class CombatSession
         Guid sourceActorId,
         DateTimeOffset now)
     {
-        if (runtime.ActiveCast?.ResolvesAtUtc > now) return;
+        if (runtime.ActiveCast?.NextResolutionAtUtc > now) return;
         ActiveCast? cast = runtime.ActiveCast;
         if (cast is null) return;
         if (runtime != _playerRuntime)
             SyncActiveMageConditionalEffects(now);
+        if (runtime == _playerRuntime && cast.Ability.Type == AbilityType.Channelled)
+            runtime.ActiveCast = cast with
+            {
+                TargetModifiers = ResolvePlayerAbilityTargetModifiers(
+                    cast.Ability, cast.TargetIds ?? [cast.TargetId], now)
+            };
         AbilityExecutionResult completion =
             AbilityEngine.CompleteCast(runtime, now, _random);
         if (!completion.Succeeded) return;
@@ -1852,7 +1858,8 @@ public sealed partial class CombatSession
             sourceActorId,
             primaryTargetActorId,
             cast.Ability.Id);
-        if (runtime == _playerRuntime)
+        if (runtime == _playerRuntime && (completion.Events.Any(e => e.Type == CombatEventType.AbilityCompleted)
+            || cast.Ability.Type == AbilityType.Channelled && completion.Events.Any(e => e.Type == CombatEventType.DamageDealt)))
         {
             EventRouter.DispatchAbilityResolved(cast.Ability, completion, now);
         }
@@ -1982,6 +1989,7 @@ public sealed partial class CombatSession
             }
             RegisterThreat(normalized);
             Append(normalized);
+            InterruptChannelOnControl(normalized);
             ProcessEnemyInterruptUtilityEvent(normalized);
             ProcessMonsterInterruptActionEvent(normalized);
             ProcessGenericDamageReflection(normalized);
@@ -2696,10 +2704,7 @@ public sealed partial class CombatSession
                     effect.Definition.IconId)).ToArray(),
             runtime.ActiveCast is null
                 ? null
-                : new CombatCastSnapshot(
-                    runtime.ActiveCast.Ability.Id,
-                    runtime.ActiveCast.StartedAtUtc,
-                    runtime.ActiveCast.ResolvesAtUtc),
+                : CombatCastSnapshot.From(runtime.ActiveCast),
             definition.Kind == CombatActorKind.Player
                 ? new Dictionary<string, DateTimeOffset>(
                     _consumableCooldowns,
@@ -2804,14 +2809,8 @@ public sealed partial class CombatSession
         public DateTimeOffset? NextOffHandAutoAttackAtUtc { get; set; }
         public Dictionary<string, DateTimeOffset> ConsumableCooldowns { get; } = new(StringComparer.Ordinal);
         public DateTimeOffset LastResourceRegenAtUtc { get; set; }
-        public DateTimeOffset? LastMageManaSpendAtUtc { get; set; }
-        public List<PendingMageResourceRefund> PendingMageResourceRefunds { get; } = [];
-        public int ArcanePowerManaSpendCount { get; set; }
-        public int CombustionCritCount { get; set; }
         public int ArcherShotSequence { get; set; }
-        public DateTimeOffset? ColdBloodReadyAtUtc { get; set; }
-        public int FireDirectCritStreak { get; set; }
-        public DateTimeOffset LastFireDirectCritAt { get; set; }
+        public Mage.MageCombatRuntime? MageRuntime { get; set; }
         public bool SurvivalPreparationArmed { get; set; }
         public bool AutoAttackEnabled { get; set; }
     }

@@ -333,7 +333,7 @@ public sealed class ArenaCombatSession
         };
 
         IReadOnlyDictionary<Guid, AbilityTargetModifier>? fireTargetModifiers =
-            ability.Type == AbilityType.Casted ? null : mechanics is not null
+            ability.Type is AbilityType.Casted or AbilityType.Channelled ? null : mechanics is not null
                 ? mechanics.ResolveMechanicsTargetModifiers(ability, targetIds ?? [targetActorId], now)
                 : null;
         AbilityExecutionResult execution = AbilityEngine.Execute(runtime, ability,
@@ -343,7 +343,7 @@ public sealed class ArenaCombatSession
         _seenCommands.Add((accountId, commandId));
         ProcessKernelEvents(execution.Events, fighter.Actor.ActorId, now, ability.Id, targetActorId);
         mechanics?.MechanicsAbilityStarted(ability, now);
-        if (ability.Type != AbilityType.Casted)
+        if (ability.Type is not (AbilityType.Casted or AbilityType.Channelled))
         {
             ApplyInterrupt(ability, isFirst ? _secondRuntime : _firstRuntime,
                 fighter.Actor.ActorId, now);
@@ -407,7 +407,7 @@ public sealed class ArenaCombatSession
         foreach (TimestampBatchEntry entry in entries)
         {
             if (entry.DueCast is not null
-                && entry.Runtime.ActiveCast?.ResolvesAtUtc <= due)
+                && entry.Runtime.ActiveCast?.NextResolutionAtUtc <= due)
             {
                 // A cast that was already due at T is committed to this batch. Remove it from
                 // mutable runtime state so another action at T cannot retroactively interrupt it.
@@ -508,7 +508,7 @@ public sealed class ArenaCombatSession
     {
         bool wasAlive = !fighter.Actor.IsDead;
         bool opponentWasAlive = !opponent.Actor.IsDead;
-        ActiveCast? dueCast = runtime.ActiveCast is { } cast && cast.ResolvesAtUtc <= due
+        ActiveCast? dueCast = runtime.ActiveCast is { } cast && cast.NextResolutionAtUtc <= due
             ? cast
             : null;
         PendingAbilityAction[] duePendingActions = runtime.PendingActions
@@ -616,7 +616,16 @@ public sealed class ArenaCombatSession
         runtime.ActiveCast = cast with { TargetModifiers = targetModifiers };
         AbilityExecutionResult execution = AbilityEngine.CompleteCast(runtime, due, _random);
         ProcessKernelEvents(execution.Events, fighter.Actor.ActorId, due, cast.Ability.Id, cast.TargetId);
-        if (!execution.Succeeded)
+        // The due tick is committed with the batch, but control applied in that
+        // same batch must still cancel the rest of a channel.
+        if (runtime.ActiveCast?.Ability.Type == AbilityType.Channelled
+            && runtime.Actor.ActiveEffects.Any(effect => effect.AppliedAtUtc <= due && effect.ExpiresAtUtc > due
+                && (effect.Definition.Kind is EffectKind.Stun or EffectKind.Fear
+                    || cast.Ability.IsSpell && effect.Definition.Kind == EffectKind.Silence)))
+            ProcessKernelEvents(AbilityEngine.Interrupt(runtime, due, TimeSpan.Zero).Events,
+                fighter.Actor.ActorId, due, cast.Ability.Id, cast.TargetId);
+        if (!execution.Succeeded || !(execution.Events.Any(e => e.Type == CombatEventType.AbilityCompleted)
+            || cast.Ability.Type == AbilityType.Channelled && execution.Events.Any(e => e.Type == CombatEventType.DamageDealt)))
             return;
         ApplyInterrupt(cast.Ability, runtime == _firstRuntime ? _secondRuntime : _firstRuntime,
             runtime.Actor.ActorId, due);
@@ -993,7 +1002,7 @@ public sealed class ArenaCombatSession
         if (timeout < next) next = timeout;
         foreach (CombatRuntimeState runtime in new[] { _firstRuntime, _secondRuntime })
         {
-            if (runtime.ActiveCast is { } cast && cast.ResolvesAtUtc < next) next = cast.ResolvesAtUtc;
+            if (runtime.ActiveCast is { } cast && cast.NextResolutionAtUtc < next) next = cast.NextResolutionAtUtc;
             if (runtime.NextPendingActionAtUtc is { } pending && pending < next) next = pending;
         }
         foreach (CombatSession? mechanics in new[] { _firstMechanics, _secondMechanics })
@@ -1053,7 +1062,7 @@ public sealed class ArenaCombatSession
         foreach (AbilityDefinition ability in abilities.Values)
         {
             bool classHandled = PlayerCombatMechanicsCapabilities.HasClassAbilityHandler(ability.Id);
-            if (ability.Type is not (AbilityType.Instant or AbilityType.Casted or AbilityType.Taunt
+            if (ability.Type is not (AbilityType.Instant or AbilityType.Casted or AbilityType.Channelled or AbilityType.Taunt
                     or AbilityType.NextAttackModifier)
                 || !classHandled && ability.RuntimeParameters?.Count > 0
                 || !classHandled && ability.Actions is null or { Count: 0 }
@@ -1061,6 +1070,7 @@ public sealed class ArenaCombatSession
                 or AbilityTargetType.SingleEnemy or AbilityTargetType.AllEnemiesInCombat
                 or AbilityTargetType.NEnemiesInCombat)
                 && !IsSupportedSoloPartyAbility(ability)
+                || !AbilityEngine.IsValidChannel(ability)
                 || ability.Actions?.Any(action => action.Type == AbilityActionType.Interrupt
                     && (action.InterruptLockout is null || action.InterruptLockout < TimeSpan.Zero)) == true)
                 throw new NotSupportedException($"Ability {ability.Id} is not supported in the arena runtime.");

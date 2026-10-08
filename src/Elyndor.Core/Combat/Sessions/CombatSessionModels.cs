@@ -89,7 +89,18 @@ public sealed record CombatAbilitySnapshot(
 public sealed record CombatCastSnapshot(
     string AbilityId,
     DateTimeOffset StartedAtUtc,
-    DateTimeOffset ResolvesAtUtc);
+    DateTimeOffset ResolvesAtUtc,
+    bool IsChannelled = false,
+    int CompletedTicks = 0,
+    int TotalTicks = 0)
+{
+    internal static CombatCastSnapshot From(ActiveCast cast) => new(
+        cast.Ability.Id, cast.StartedAtUtc, cast.ResolvesAtUtc,
+        cast.Ability.Type == AbilityType.Channelled,
+        cast.CompletedChannelTicks,
+        cast.Ability.ChannelTickInterval is { } interval
+            ? (int)(cast.Ability.CastTime.Ticks / interval.Ticks) : 0);
+}
 
 public sealed record CombatActorSnapshot(
     Guid ActorId,
