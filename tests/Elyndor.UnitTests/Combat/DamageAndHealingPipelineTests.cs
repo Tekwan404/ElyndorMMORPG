@@ -644,4 +644,86 @@ public sealed class DamageAndHealingPipelineTests
         Assert.DoesNotContain(result.Events, item => item.Type == CombatEventType.HealingApplied);
     }
 
+    [Theory]
+    [InlineData(DamageType.Physical, 18)]
+    [InlineData(DamageType.Magical, 10)]
+    [InlineData(DamageType.True, 2)]
+    public void EveryClassCanLeechItsDamageSchoolAndBerserkerBonusStacks(
+        DamageType type, decimal expectedHealing)
+    {
+        CombatActorState source = CombatActorState.CreateDummy(
+            1_000,
+            stats: CombatStats.Default with
+            {
+                PhysicalVampirismPercent = 5,
+                MagicalVampirismPercent = 8,
+                UniversalVampirismPercent = 2
+            },
+            talentModifiers: new TalentCombatModifiers(VampirismPercent: 11));
+        source.SetCurrentHp(500);
+        CombatActorState target = CombatActorState.CreateDummy(500);
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(source, target, 100, type,
+                CanMiss: false, CanDodge: false, CanCrit: false),
+            new SequenceGameRandom());
+
+        Assert.Equal(100, result.HpDamage);
+        Assert.Equal(500 + expectedHealing, source.CurrentHp);
+        Assert.Equal(expectedHealing, Assert.Single(result.Events, item =>
+            item.Type == CombatEventType.HealingApplied).Amount);
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void UniversalVampirismExcludesReflectedAndTransferredDamage(
+        bool reflected, bool transferred)
+    {
+        CombatActorState source = CombatActorState.CreateDummy(
+            1_000, stats: CombatStats.Default with { UniversalVampirismPercent = 30 });
+        source.SetCurrentHp(500);
+        CombatActorState target = CombatActorState.CreateDummy(500);
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(source, target, 100, DamageType.True,
+                CanMiss: false, CanDodge: false, CanCrit: false,
+                IsReflectedDamage: reflected, IsTransferredDamage: transferred),
+            new SequenceGameRandom());
+
+        Assert.Equal(500, source.CurrentHp);
+        Assert.DoesNotContain(result.Events, item =>
+            item.Type == CombatEventType.HealingApplied);
+    }
+
+    [Fact]
+    public void MixedMagicalLifestealRespectsOverkillAndHealingReduction()
+    {
+        DateTimeOffset now = DateTimeOffset.UnixEpoch;
+        CombatActorState source = CombatActorState.CreateDummy(
+            1_000, stats: CombatStats.Default with
+            {
+                MagicalVampirismPercent = 10,
+                UniversalVampirismPercent = 10
+            });
+        source.SetCurrentHp(500);
+        CombatActorState target = CombatActorState.CreateDummy(500);
+        target.SetCurrentHp(40);
+        EffectEngine.Apply(source, source.ActorId,
+            new EffectDefinition("HEAL_REDUCTION", EffectKind.StatModifier,
+                TimeSpan.FromSeconds(10), 1, EffectStackPolicy.Replace, 0.5m,
+                ModifiedStat: EffectStat.HealingReceivedMultiplier,
+                ModifierMode: EffectModifierMode.Multiplicative), now);
+
+        DamageResult result = DamagePipeline.Resolve(
+            new DamageRequest(source, target, 100, DamageType.Magical,
+                CanMiss: false, CanDodge: false, CanCrit: false),
+            new SequenceGameRandom(), now);
+
+        Assert.Equal(40, result.HpDamage);
+        Assert.Equal(504, source.CurrentHp);
+        Assert.Equal(4, Assert.Single(result.Events, item =>
+            item.Type == CombatEventType.HealingApplied).Amount);
+    }
+
 }

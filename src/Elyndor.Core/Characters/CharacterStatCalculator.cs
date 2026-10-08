@@ -29,7 +29,10 @@ public sealed record CharacterEquipmentDerivedModifiers(
     decimal MagicPenetrationPercent = 0,
     decimal BlockChancePercent = 0,
     decimal BlockValueMin = 0,
-    decimal BlockValueMax = 0);
+    decimal BlockValueMax = 0,
+    decimal PhysicalVampirismPercent = 0,
+    decimal MagicalVampirismPercent = 0,
+    decimal UniversalVampirismPercent = 0);
 
 public sealed class CharacterStatCalculator(
     StatFormulaProfile formula,
@@ -166,7 +169,10 @@ public sealed class CharacterStatCalculator(
             dodge,
             blockChance,
             blockValueMin,
-            blockValueMax);
+            blockValueMax,
+            Math.Max(0, equipmentDerived.PhysicalVampirismPercent),
+            Math.Max(0, equipmentDerived.MagicalVampirismPercent),
+            Math.Max(0, equipmentDerived.UniversalVampirismPercent));
 
         Dictionary<string, CharacterStatBreakdown> breakdown = new(StringComparer.Ordinal)
         {
@@ -254,7 +260,13 @@ public sealed class CharacterStatCalculator(
                 ("STRENGTH", shieldBlock.StrengthContribution),
                 ("TALENT_BONUS", shieldBlock.HasShieldProfile
                     ? talent.BlockValueFlat + shieldBlock.BlockValueMax * Math.Max(0, talent.BlockValuePercent) / 100m
-                    : 0))
+                    : 0)),
+            ["physicalVampirism"] = Breakdown(stats.PhysicalVampirismPercent,
+                ("EQUIPMENT_BONUS", equipmentDerived.PhysicalVampirismPercent)),
+            ["magicalVampirism"] = Breakdown(stats.MagicalVampirismPercent,
+                ("EQUIPMENT_BONUS", equipmentDerived.MagicalVampirismPercent)),
+            ["universalVampirism"] = Breakdown(stats.UniversalVampirismPercent,
+                ("EQUIPMENT_BONUS", equipmentDerived.UniversalVampirismPercent))
         };
 
         return new CharacterStatCalculation(stats, breakdown);
