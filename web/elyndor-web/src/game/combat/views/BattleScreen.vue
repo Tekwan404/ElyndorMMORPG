@@ -389,7 +389,7 @@ onUnmounted(() => window.clearInterval(timer))
           :resource="localActor.resource"
           :queued-ability-ids="queuedAbilityIds"
           :now="now"
-          :disabled="battle.abilityPending.value || connectionRecovering"
+          :disabled="connectionRecovering"
           @use="useAbility"
         />
         <ConsumableBar
