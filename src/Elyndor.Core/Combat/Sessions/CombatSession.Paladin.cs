@@ -35,6 +35,7 @@ public sealed partial class CombatSession
         public int BastionBlockCounter { get; set; }
         public bool UsesTwoHandedWeapon { get; set; }
         public bool DivinePurposeVerdictDamagePending { get; set; }
+        public DateTimeOffset? UnbreakableBastionReadyAtUtc { get; set; }
     }
 
     private readonly Dictionary<Guid, PaladinSessionRuntimeState> _paladinSessionStates = [];
@@ -59,7 +60,6 @@ public sealed partial class CombatSession
 
     private void ProcessSafePaladinKernelEvent(CombatEvent combatEvent)
     {
-        ApplySharedPaladinIntercession(combatEvent);
         if (!IsActivePaladin)
             return;
 
@@ -767,65 +767,6 @@ public sealed partial class CombatSession
                     "PALADIN_VERDICT_BONUS");
             }
         }
-    }
-
-    private void ApplySharedPaladinIntercession(CombatEvent combatEvent)
-    {
-        if (combatEvent.Type != CombatEventType.DamageDealt
-            || combatEvent.TargetActorId is not { } targetId
-            || combatEvent.Amount <= 0
-            || !_playerStatesByActorId.TryGetValue(targetId, out CombatPlayerRuntimeState? targetState))
-        {
-            return;
-        }
-
-        ActiveEffect? intercession = targetState.Definition.Actor.ActiveEffects
-            .Where(effect =>
-                effect.ExpiresAtUtc > combatEvent.OccurredAtUtc
-                && effect.Definition.Id == "PALADIN_INTERCESSION")
-            .OrderByDescending(effect => effect.AppliedAtUtc)
-            .FirstOrDefault();
-        if (intercession is null
-            || !_playerStatesByActorId.TryGetValue(intercession.SourceId, out CombatPlayerRuntimeState? paladinState)
-            || paladinState.Definition.Actor.IsDead)
-        {
-            return;
-        }
-
-        decimal redirectPercent = Math.Clamp(intercession.Definition.Magnitude * 100m, 0, 100);
-        decimal redirect = PaladinProtectionRuntime.ResolveIntercessionRedirectDamage(
-            combatEvent.Amount,
-            redirectPercent);
-        if (redirect <= 0)
-            return;
-
-        // Redirect is applied after mitigation. We restore the redirected slice on the ally
-        // and apply it as true damage to the protecting Paladin. If the original hit was
-        // already lethal, the stale ActorDied event remains authoritative for this v1 path.
-        if (!targetState.Definition.Actor.IsDead)
-            targetState.Definition.Actor.ApplyHealing(redirect);
-
-        DamageResult redirected = DamagePipeline.Resolve(
-            new DamageRequest(
-                paladinState.Definition.Actor,
-                paladinState.Definition.Actor,
-                redirect,
-                DamageType.True,
-                CanMiss: false,
-                CanDodge: false,
-                CanCrit: false,
-                IgnoreShields: true,
-                SkipDefenseMitigation: true,
-                MinimumDamage: 0,
-                CanBlock: false,
-                IsUnblockable: true),
-            _random,
-            combatEvent.OccurredAtUtc);
-        ApplyKernelEvents(
-            redirected.Events,
-            intercession.SourceId,
-            intercession.SourceId,
-            "PALADIN_INTERCESSION_REDIRECT");
     }
 
     private void ApplyDivineStormHealing(decimal dealtDamage, DateTimeOffset now)
