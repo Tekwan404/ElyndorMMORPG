@@ -281,7 +281,8 @@ public sealed class CharacterStatCalculatorTests
     [
         Profile("WARRIOR", "STRENGTH", "RAGE", new(12, 6, 4, 10), new(3, 1, 0.5m, 2)),
         Profile("ARCHER", "AGILITY", "FOCUS", new(5, 9, 5, 7), new(1, 3, 1, 2)),
-        Profile("MAGE", "INTELLECT", "MANA", new(3, 5, 11, 6), new(1, 1, 3, 2))
+        Profile("MAGE", "INTELLECT", "MANA", new(3, 5, 11, 6), new(1, 1, 3, 2)),
+        Profile("PALADIN", "STRENGTH", "MANA", new(8, 5, 8, 9), new(2, 1, 2, 2))
     ];
 
     private static ClassProfile Profile(
