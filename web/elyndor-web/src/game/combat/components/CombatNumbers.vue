@@ -61,7 +61,7 @@ function addEntry(entry: CombatNumberPresentation): void {
 watch(
   () => props.entries,
   (entries) => {
-    const latestKey = entries.at(-1)?.key ?? 0
+    const latestKey = entries.length ? entries[entries.length - 1]!.key : 0
     if (!initialized) {
       // A reconnect or remount must not replay the entire combat history.
       initialized = true
