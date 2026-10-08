@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.16.0",
-  "balanceVersion": "0.13.0",
-  "publishedAtUtc": "2026-09-09T06:40:00+00:00",
+  "contentVersion": "0.50.0",
+  "balanceVersion": "0.40.0",
+  "publishedAtUtc": "2026-10-08T12:00:00+00:00",
   "items": [
     {
       "id": "DUNGEON_MINES_WARRIOR_HELM_RARE",
@@ -35,7 +35,7 @@
       "extraAffixBudgetCap": 0.04,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "DUNGEON_MINES_WARRIOR_GAUNTLETS_EPIC",
@@ -69,7 +69,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "DUNGEON_MINES_WARRIOR_LEGENDARY_SHIELD",
@@ -90,10 +90,10 @@
       "description": "Массивный щит Хранителя Глубин из чёрного шахтного железа.",
       "version": 1,
       "offHandCategory": "SHIELD",
-      "armorFlat": 128,
-      "blockChancePercent": 4,
-      "blockValueMin": 28,
-      "blockValueMax": 42,
+      "armorFlat": 230,
+      "blockChancePercent": 9,
+      "blockValueMin": 24,
+      "blockValueMax": 38,
       "iconId": "dungeon_mines_warrior_legendary_shield",
       "itemLevelMin": 16,
       "itemLevelMax": 16,
@@ -106,7 +106,7 @@
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "DUNGEON_MINES_MAGE_HOOD_RARE",
@@ -140,7 +140,7 @@
       "extraAffixBudgetCap": 0.04,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "DUNGEON_MINES_MAGE_BOOTS_EPIC",
@@ -174,7 +174,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "DUNGEON_MINES_MAGE_LEGENDARY_STAFF",
@@ -209,7 +209,7 @@
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "DUNGEON_MINES_ARCHER_LEGS_RARE",
@@ -243,7 +243,7 @@
       "extraAffixBudgetCap": 0.04,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "DUNGEON_MINES_ARCHER_GLOVES_EPIC",
@@ -277,7 +277,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "DUNGEON_MINES_ARCHER_LEGENDARY_BOW",
@@ -312,7 +312,7 @@
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     }
   ]
 }

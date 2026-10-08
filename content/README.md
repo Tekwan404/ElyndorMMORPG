@@ -42,6 +42,11 @@ Category files may carry `contentVersion`, `balanceVersion`, `publishedAtUtc` pl
 collection or profile they contribute. Composition is deterministic by file path and entities are
 merged by stable id.
 
+Items have exactly one authored definition per ID in `content/items/`. Update the
+canonical definition for a new release instead of adding `z`/`zz`/hotfix overlays.
+Previous versions belong in Git history. The catalog uniqueness test enforces this
+rule; file ordering must not decide which item stats are current.
+
 Do not add feature-named JSON overlays beside `package.json`. If a new content domain is needed,
 extend the category composer and validator explicitly so the runtime, importer, and Admin all see
 the same package.

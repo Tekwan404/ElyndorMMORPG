@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.24.2",
-  "balanceVersion": "0.20.1-spatial-inventory-v1",
-  "publishedAtUtc": "2026-09-20T11:30:00+00:00",
+  "contentVersion": "0.50.0",
+  "balanceVersion": "0.40.0",
+  "publishedAtUtc": "2026-10-08T12:00:00+00:00",
   "items": [
     {
       "id": "SPATIAL_ASTRAL_RING", "iconId": "items_outside_sets/shattered_order_citadel/broken_reflection_ring",

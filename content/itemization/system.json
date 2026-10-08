@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.42.0",
-  "balanceVersion": "0.32.0",
-  "publishedAtUtc": "2026-10-07T12:00:00+00:00",
+  "contentVersion": "0.50.0",
+  "balanceVersion": "0.40.0",
+  "publishedAtUtc": "2026-10-08T12:00:00+00:00",
   "itemization": {
     "templateBasePower": 110,
     "levelLinearCoefficient": 0.055,
@@ -61,7 +61,16 @@
           "ARMOR_PENETRATION",
           "ACCURACY",
           "MAX_HP"
-        ]
+        ],
+        "selectionWeights": {
+          "STRENGTH": 2,
+          "STAMINA": 2,
+          "CRITICAL_CHANCE": 1,
+          "ATTACK_SPEED": 1,
+          "ARMOR_PENETRATION": 1,
+          "ACCURACY": 1,
+          "MAX_HP": 1
+        }
       },
       {
         "id": "WARRIOR_WEAPON",
@@ -73,7 +82,16 @@
           "ARMOR_PENETRATION",
           "ACCURACY",
           "ATTACK_POWER"
-        ]
+        ],
+        "selectionWeights": {
+          "STRENGTH": 2,
+          "STAMINA": 2,
+          "CRITICAL_CHANCE": 1,
+          "ATTACK_SPEED": 1,
+          "ARMOR_PENETRATION": 1,
+          "ACCURACY": 1,
+          "ATTACK_POWER": 2
+        }
       },
       {
         "id": "WARRIOR_SHIELD",
@@ -83,7 +101,14 @@
           "BLOCK_CHANCE",
           "BLOCK_VALUE",
           "MAGIC_RESISTANCE"
-        ]
+        ],
+        "selectionWeights": {
+          "STAMINA": 2,
+          "STRENGTH": 2,
+          "BLOCK_CHANCE": 1,
+          "BLOCK_VALUE": 1,
+          "MAGIC_RESISTANCE": 1
+        }
       },
       {
         "id": "MAGE_ARMOR",
@@ -91,11 +116,31 @@
           "INTELLECT",
           "STAMINA",
           "CRITICAL_CHANCE",
-          "ATTACK_SPEED",
           "MAGIC_PENETRATION",
           "ACCURACY",
           "MAX_RESOURCE",
           "SPELL_POWER"
+        ],
+        "selectionWeights": {
+          "INTELLECT": 1,
+          "STAMINA": 1,
+          "CRITICAL_CHANCE": 1,
+          "MAGIC_PENETRATION": 1,
+          "ACCURACY": 1,
+          "MAX_RESOURCE": 1,
+          "SPELL_POWER": 1
+        },
+        "levelSelectionWeights": [
+          {
+            "minimumItemLevel": 50,
+            "maximumItemLevel": 60,
+            "weights": {
+              "INTELLECT": 2,
+              "STAMINA": 2,
+              "MAX_RESOURCE": 3,
+              "SPELL_POWER": 2
+            }
+          }
         ]
       },
       {
@@ -105,11 +150,32 @@
           "STAMINA",
           "CRITICAL_CHANCE",
           "CRITICAL_DAMAGE",
-          "ATTACK_SPEED",
           "MAGIC_PENETRATION",
           "ACCURACY",
           "SPELL_POWER",
           "MAX_RESOURCE"
+        ],
+        "selectionWeights": {
+          "INTELLECT": 1,
+          "STAMINA": 1,
+          "CRITICAL_CHANCE": 1,
+          "CRITICAL_DAMAGE": 1,
+          "MAGIC_PENETRATION": 1,
+          "ACCURACY": 1,
+          "SPELL_POWER": 1,
+          "MAX_RESOURCE": 1
+        },
+        "levelSelectionWeights": [
+          {
+            "minimumItemLevel": 50,
+            "maximumItemLevel": 60,
+            "weights": {
+              "INTELLECT": 2,
+              "STAMINA": 2,
+              "SPELL_POWER": 2,
+              "MAX_RESOURCE": 3
+            }
+          }
         ]
       },
       {
@@ -122,7 +188,16 @@
           "ARMOR_PENETRATION",
           "ACCURACY",
           "DODGE"
-        ]
+        ],
+        "selectionWeights": {
+          "AGILITY": 2,
+          "STAMINA": 2,
+          "CRITICAL_CHANCE": 1,
+          "ATTACK_SPEED": 1,
+          "ARMOR_PENETRATION": 1,
+          "ACCURACY": 1,
+          "DODGE": 1
+        }
       },
       {
         "id": "ARCHER_WEAPON",
@@ -134,7 +209,16 @@
           "ARMOR_PENETRATION",
           "ACCURACY",
           "ATTACK_POWER"
-        ]
+        ],
+        "selectionWeights": {
+          "AGILITY": 2,
+          "STAMINA": 2,
+          "CRITICAL_CHANCE": 1,
+          "ATTACK_SPEED": 1,
+          "ARMOR_PENETRATION": 1,
+          "ACCURACY": 1,
+          "ATTACK_POWER": 2
+        }
       },
       {
         "id": "PALADIN_ARMOR",
@@ -149,7 +233,19 @@
           "MAX_HP",
           "MAX_RESOURCE",
           "MAGIC_RESISTANCE"
-        ]
+        ],
+        "selectionWeights": {
+          "STRENGTH": 2,
+          "INTELLECT": 2,
+          "STAMINA": 2,
+          "ATTACK_POWER": 2,
+          "SPELL_POWER": 2,
+          "CRITICAL_CHANCE": 1,
+          "ACCURACY": 1,
+          "MAX_HP": 1,
+          "MAX_RESOURCE": 2,
+          "MAGIC_RESISTANCE": 1
+        }
       },
       {
         "id": "ACCESSORY_GENERAL",
@@ -167,7 +263,33 @@
           "ARMOR_PENETRATION",
           "MAGIC_PENETRATION",
           "MAX_RESOURCE"
-        ]
+        ],
+        "exclusiveStatGroups": [
+          [
+            "STRENGTH",
+            "AGILITY",
+            "INTELLECT"
+          ],
+          [
+            "ARMOR_PENETRATION",
+            "MAGIC_PENETRATION"
+          ]
+        ],
+        "selectionWeights": {
+          "STRENGTH": 1,
+          "AGILITY": 1,
+          "INTELLECT": 1,
+          "STAMINA": 1,
+          "MAX_HP": 1,
+          "CRITICAL_CHANCE": 1,
+          "CRITICAL_DAMAGE": 1,
+          "ACCURACY": 1,
+          "ATTACK_SPEED": 1,
+          "DODGE": 1,
+          "ARMOR_PENETRATION": 1,
+          "MAGIC_PENETRATION": 1,
+          "MAX_RESOURCE": 1
+        }
       },
       {
         "id": "MAGE_FOCUS",
@@ -177,10 +299,31 @@
           "SPELL_POWER",
           "CRITICAL_CHANCE",
           "CRITICAL_DAMAGE",
-          "ATTACK_SPEED",
           "MAGIC_PENETRATION",
           "ACCURACY",
           "MAX_RESOURCE"
+        ],
+        "selectionWeights": {
+          "INTELLECT": 1,
+          "STAMINA": 1,
+          "SPELL_POWER": 1,
+          "CRITICAL_CHANCE": 1,
+          "CRITICAL_DAMAGE": 1,
+          "MAGIC_PENETRATION": 1,
+          "ACCURACY": 1,
+          "MAX_RESOURCE": 1
+        },
+        "levelSelectionWeights": [
+          {
+            "minimumItemLevel": 50,
+            "maximumItemLevel": 60,
+            "weights": {
+              "INTELLECT": 2,
+              "STAMINA": 2,
+              "SPELL_POWER": 2,
+              "MAX_RESOURCE": 3
+            }
+          }
         ]
       },
       {
@@ -191,10 +334,31 @@
           "SPELL_POWER",
           "CRITICAL_CHANCE",
           "CRITICAL_DAMAGE",
-          "ATTACK_SPEED",
           "MAGIC_PENETRATION",
           "ACCURACY",
           "MAX_RESOURCE"
+        ],
+        "selectionWeights": {
+          "INTELLECT": 1,
+          "STAMINA": 1,
+          "SPELL_POWER": 1,
+          "CRITICAL_CHANCE": 1,
+          "CRITICAL_DAMAGE": 1,
+          "MAGIC_PENETRATION": 1,
+          "ACCURACY": 1,
+          "MAX_RESOURCE": 1
+        },
+        "levelSelectionWeights": [
+          {
+            "minimumItemLevel": 50,
+            "maximumItemLevel": 60,
+            "weights": {
+              "INTELLECT": 2,
+              "STAMINA": 2,
+              "SPELL_POWER": 2,
+              "MAX_RESOURCE": 3
+            }
+          }
         ]
       },
       {
@@ -220,7 +384,40 @@
           "WEAPON_DAMAGE",
           "BLOCK_CHANCE",
           "BLOCK_VALUE"
-        ]
+        ],
+        "exclusiveStatGroups": [
+          [
+            "STRENGTH",
+            "AGILITY",
+            "INTELLECT"
+          ],
+          [
+            "ARMOR_PENETRATION",
+            "MAGIC_PENETRATION"
+          ]
+        ],
+        "selectionWeights": {
+          "STRENGTH": 1,
+          "AGILITY": 1,
+          "INTELLECT": 1,
+          "STAMINA": 1,
+          "MAX_HP": 1,
+          "ATTACK_POWER": 1,
+          "SPELL_POWER": 1,
+          "CRITICAL_CHANCE": 1,
+          "CRITICAL_DAMAGE": 1,
+          "ACCURACY": 1,
+          "ATTACK_SPEED": 1,
+          "ARMOR": 1,
+          "MAGIC_RESISTANCE": 1,
+          "ARMOR_PENETRATION": 1,
+          "MAGIC_PENETRATION": 1,
+          "DODGE": 1,
+          "MAX_RESOURCE": 1,
+          "WEAPON_DAMAGE": 1,
+          "BLOCK_CHANCE": 1,
+          "BLOCK_VALUE": 1
+        }
       },
       {
         "id": "ARCHER_QUIVER",
@@ -233,7 +430,17 @@
           "ACCURACY",
           "DODGE",
           "ARMOR_PENETRATION"
-        ]
+        ],
+        "selectionWeights": {
+          "AGILITY": 2,
+          "STAMINA": 2,
+          "ATTACK_POWER": 2,
+          "CRITICAL_CHANCE": 1,
+          "ATTACK_SPEED": 1,
+          "ACCURACY": 1,
+          "DODGE": 1,
+          "ARMOR_PENETRATION": 1
+        }
       },
       {
         "id": "ARCHER_STARTER",
@@ -245,7 +452,16 @@
           "ATTACK_SPEED",
           "ACCURACY",
           "DODGE"
-        ]
+        ],
+        "selectionWeights": {
+          "STRENGTH": 2,
+          "AGILITY": 2,
+          "STAMINA": 2,
+          "CRITICAL_CHANCE": 1,
+          "ATTACK_SPEED": 1,
+          "ACCURACY": 1,
+          "DODGE": 1
+        }
       },
       {
         "id": "PALADIN_WEAPON",
@@ -262,7 +478,21 @@
           "MAGIC_PENETRATION",
           "MAX_HP",
           "MAX_RESOURCE"
-        ]
+        ],
+        "selectionWeights": {
+          "STRENGTH": 2,
+          "INTELLECT": 2,
+          "STAMINA": 2,
+          "ATTACK_POWER": 2,
+          "SPELL_POWER": 2,
+          "CRITICAL_CHANCE": 1,
+          "CRITICAL_DAMAGE": 1,
+          "ACCURACY": 1,
+          "ARMOR_PENETRATION": 1,
+          "MAGIC_PENETRATION": 1,
+          "MAX_HP": 1,
+          "MAX_RESOURCE": 2
+        }
       },
       {
         "id": "PALADIN_SHIELD",
@@ -276,7 +506,18 @@
           "MAX_HP",
           "MAX_RESOURCE",
           "SPELL_POWER"
-        ]
+        ],
+        "selectionWeights": {
+          "STAMINA": 2,
+          "STRENGTH": 2,
+          "INTELLECT": 2,
+          "BLOCK_CHANCE": 1,
+          "BLOCK_VALUE": 1,
+          "MAGIC_RESISTANCE": 1,
+          "MAX_HP": 1,
+          "MAX_RESOURCE": 2,
+          "SPELL_POWER": 2
+        }
       },
       {
         "id": "WARRIOR_ACCESSORY",
@@ -292,7 +533,20 @@
           "DODGE",
           "ARMOR_PENETRATION",
           "MAGIC_RESISTANCE"
-        ]
+        ],
+        "selectionWeights": {
+          "STRENGTH": 2,
+          "STAMINA": 2,
+          "MAX_HP": 1,
+          "ATTACK_POWER": 2,
+          "CRITICAL_CHANCE": 1,
+          "CRITICAL_DAMAGE": 1,
+          "ACCURACY": 1,
+          "ATTACK_SPEED": 1,
+          "DODGE": 1,
+          "ARMOR_PENETRATION": 1,
+          "MAGIC_RESISTANCE": 1
+        }
       },
       {
         "id": "MAGE_ACCESSORY",
@@ -304,11 +558,35 @@
           "CRITICAL_CHANCE",
           "CRITICAL_DAMAGE",
           "ACCURACY",
-          "ATTACK_SPEED",
           "DODGE",
           "MAGIC_PENETRATION",
           "MAX_RESOURCE",
           "MAGIC_RESISTANCE"
+        ],
+        "selectionWeights": {
+          "INTELLECT": 1,
+          "STAMINA": 1,
+          "MAX_HP": 1,
+          "SPELL_POWER": 1,
+          "CRITICAL_CHANCE": 1,
+          "CRITICAL_DAMAGE": 1,
+          "ACCURACY": 1,
+          "DODGE": 1,
+          "MAGIC_PENETRATION": 1,
+          "MAX_RESOURCE": 1,
+          "MAGIC_RESISTANCE": 1
+        },
+        "levelSelectionWeights": [
+          {
+            "minimumItemLevel": 50,
+            "maximumItemLevel": 60,
+            "weights": {
+              "INTELLECT": 2,
+              "STAMINA": 2,
+              "SPELL_POWER": 2,
+              "MAX_RESOURCE": 3
+            }
+          }
         ]
       },
       {
@@ -324,7 +602,19 @@
           "ATTACK_SPEED",
           "DODGE",
           "ARMOR_PENETRATION"
-        ]
+        ],
+        "selectionWeights": {
+          "AGILITY": 2,
+          "STAMINA": 2,
+          "MAX_HP": 1,
+          "ATTACK_POWER": 2,
+          "CRITICAL_CHANCE": 1,
+          "CRITICAL_DAMAGE": 1,
+          "ACCURACY": 1,
+          "ATTACK_SPEED": 1,
+          "DODGE": 1,
+          "ARMOR_PENETRATION": 1
+        }
       },
       {
         "id": "PALADIN_ACCESSORY",
@@ -343,7 +633,23 @@
           "MAGIC_PENETRATION",
           "MAX_RESOURCE",
           "MAGIC_RESISTANCE"
-        ]
+        ],
+        "selectionWeights": {
+          "STRENGTH": 2,
+          "INTELLECT": 2,
+          "STAMINA": 2,
+          "MAX_HP": 1,
+          "ATTACK_POWER": 2,
+          "SPELL_POWER": 2,
+          "CRITICAL_CHANCE": 1,
+          "CRITICAL_DAMAGE": 1,
+          "ACCURACY": 1,
+          "DODGE": 1,
+          "ARMOR_PENETRATION": 1,
+          "MAGIC_PENETRATION": 1,
+          "MAX_RESOURCE": 2,
+          "MAGIC_RESISTANCE": 1
+        }
       },
       {
         "id": "WARRIOR_UNIQUE_WEAPON",
@@ -356,7 +662,131 @@
           "ARMOR_PENETRATION",
           "ACCURACY",
           "ATTACK_POWER"
-        ]
+        ],
+        "selectionWeights": {
+          "STRENGTH": 2,
+          "STAMINA": 2,
+          "CRITICAL_CHANCE": 1,
+          "CRITICAL_DAMAGE": 1,
+          "ATTACK_SPEED": 1,
+          "ARMOR_PENETRATION": 1,
+          "ACCURACY": 1,
+          "ATTACK_POWER": 2
+        }
+      },
+      {
+        "id": "PALADIN_HOLY",
+        "statIds": [
+          "INTELLECT",
+          "STAMINA",
+          "SPELL_POWER",
+          "CRITICAL_CHANCE",
+          "CRITICAL_DAMAGE",
+          "MAX_RESOURCE",
+          "MAX_HP",
+          "ARMOR",
+          "MAGIC_RESISTANCE",
+          "DODGE"
+        ],
+        "selectionWeights": {
+          "INTELLECT": 2,
+          "STAMINA": 2,
+          "SPELL_POWER": 2,
+          "CRITICAL_CHANCE": 1,
+          "CRITICAL_DAMAGE": 1,
+          "MAX_RESOURCE": 2,
+          "MAX_HP": 1,
+          "ARMOR": 1,
+          "MAGIC_RESISTANCE": 1,
+          "DODGE": 1
+        }
+      },
+      {
+        "id": "WARRIOR_GUARDIAN",
+        "statIds": [
+          "STRENGTH",
+          "STAMINA",
+          "ATTACK_POWER",
+          "CRITICAL_CHANCE",
+          "ACCURACY",
+          "ARMOR",
+          "MAGIC_RESISTANCE",
+          "DODGE",
+          "MAX_HP",
+          "BLOCK_CHANCE"
+        ],
+        "selectionWeights": {
+          "STRENGTH": 2,
+          "STAMINA": 2,
+          "ATTACK_POWER": 2,
+          "CRITICAL_CHANCE": 1,
+          "ACCURACY": 1,
+          "ARMOR": 1,
+          "MAGIC_RESISTANCE": 1,
+          "DODGE": 1,
+          "MAX_HP": 1,
+          "BLOCK_CHANCE": 1
+        }
+      },
+      {
+        "id": "PALADIN_PROTECTION",
+        "statIds": [
+          "STRENGTH",
+          "INTELLECT",
+          "STAMINA",
+          "ATTACK_POWER",
+          "SPELL_POWER",
+          "CRITICAL_CHANCE",
+          "ACCURACY",
+          "ARMOR",
+          "MAGIC_RESISTANCE",
+          "DODGE",
+          "MAX_HP",
+          "MAX_RESOURCE",
+          "BLOCK_CHANCE"
+        ],
+        "selectionWeights": {
+          "STRENGTH": 2,
+          "INTELLECT": 2,
+          "STAMINA": 2,
+          "ATTACK_POWER": 2,
+          "SPELL_POWER": 2,
+          "CRITICAL_CHANCE": 1,
+          "ACCURACY": 1,
+          "ARMOR": 1,
+          "MAGIC_RESISTANCE": 1,
+          "DODGE": 1,
+          "MAX_HP": 1,
+          "MAX_RESOURCE": 2,
+          "BLOCK_CHANCE": 1
+        }
+      },
+      {
+        "id": "ARCHER_BEAST_MASTERY",
+        "statIds": [
+          "AGILITY",
+          "STAMINA",
+          "ATTACK_POWER",
+          "CRITICAL_CHANCE",
+          "CRITICAL_DAMAGE",
+          "ATTACK_SPEED",
+          "ACCURACY",
+          "ARMOR_PENETRATION",
+          "MAX_HP",
+          "DODGE"
+        ],
+        "selectionWeights": {
+          "AGILITY": 2,
+          "STAMINA": 2,
+          "ATTACK_POWER": 2,
+          "CRITICAL_CHANCE": 1,
+          "CRITICAL_DAMAGE": 1,
+          "ATTACK_SPEED": 1,
+          "ACCURACY": 1,
+          "ARMOR_PENETRATION": 1,
+          "MAX_HP": 1,
+          "DODGE": 1
+        }
       }
     ],
     "affixCountProfiles": [
@@ -804,6 +1234,113 @@
       },
       "highEndCatalystItemId": "DUNGEON_CATALYST",
       "highEndCatalystQuantity": 1
-    }
+    },
+    "affixRules": [
+      {
+        "statId": "STRENGTH",
+        "allowedClassIds": [
+          "WARRIOR",
+          "PALADIN"
+        ]
+      },
+      {
+        "statId": "AGILITY",
+        "allowedClassIds": [
+          "ARCHER"
+        ]
+      },
+      {
+        "statId": "INTELLECT",
+        "allowedClassIds": [
+          "MAGE",
+          "PALADIN"
+        ]
+      },
+      {
+        "statId": "STAMINA"
+      },
+      {
+        "statId": "MAX_HP"
+      },
+      {
+        "statId": "ATTACK_POWER",
+        "allowedClassIds": [
+          "WARRIOR",
+          "ARCHER",
+          "PALADIN"
+        ]
+      },
+      {
+        "statId": "SPELL_POWER",
+        "allowedClassIds": [
+          "MAGE",
+          "PALADIN"
+        ]
+      },
+      {
+        "statId": "CRITICAL_CHANCE"
+      },
+      {
+        "statId": "CRITICAL_DAMAGE"
+      },
+      {
+        "statId": "ACCURACY"
+      },
+      {
+        "statId": "ATTACK_SPEED"
+      },
+      {
+        "statId": "ARMOR"
+      },
+      {
+        "statId": "MAGIC_RESISTANCE"
+      },
+      {
+        "statId": "DODGE"
+      },
+      {
+        "statId": "ARMOR_PENETRATION",
+        "allowedClassIds": [
+          "WARRIOR",
+          "ARCHER",
+          "PALADIN"
+        ]
+      },
+      {
+        "statId": "MAGIC_PENETRATION",
+        "allowedClassIds": [
+          "MAGE",
+          "PALADIN"
+        ]
+      },
+      {
+        "statId": "MAX_RESOURCE"
+      },
+      {
+        "statId": "BLOCK_CHANCE",
+        "allowedClassIds": [
+          "WARRIOR",
+          "PALADIN"
+        ]
+      },
+      {
+        "statId": "BLOCK_VALUE",
+        "allowedClassIds": [
+          "WARRIOR",
+          "PALADIN"
+        ],
+        "allowedSlots": [
+          "OffHand"
+        ],
+        "requiresShield": true
+      },
+      {
+        "statId": "WEAPON_DAMAGE",
+        "allowedSlots": [
+          "MainHand"
+        ],
+        "requiresWeaponDamage": true
+      }
+    ]
   }
 }

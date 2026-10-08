@@ -262,7 +262,8 @@ public sealed class ItemReforgeService(
             current.Affixes,
             slotKey,
             "REFORGE",
-            random);
+            random,
+            current.ItemLevel);
         GeneratedItemAffix proposedAffix = ItemReforgeQualityPolicy.Constrain(selected, rawCandidate, random);
         GeneratedItemAffix[] proposedAffixes = current.Affixes
             .Select(affix => string.Equals(affix.SlotKey, slotKey, StringComparison.Ordinal)

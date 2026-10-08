@@ -18,6 +18,7 @@
   [PvP player mechanics](development/pvp-player-mechanics-parity.md),
   [arena invitations](development/arena-friend-invitations.md).
 - Items/economy: [itemization](development/itemization-v2-enhancement.md),
+  [Affix V2 and canonical item catalog](development/affix-v2.md),
   [equipment sets and budgets](development/equipment-set-progression.md),
   [item special effects](development/item-special-effects.md),
   [spatial inventory](development/spatial-inventory-v1.md),

@@ -1,8 +1,140 @@
 {
-  "contentVersion": "0.43.0",
-  "balanceVersion": "0.33.0",
-  "publishedAtUtc": "2026-10-07T20:50:00+00:00",
+  "contentVersion": "0.50.0",
+  "balanceVersion": "0.40.0",
+  "publishedAtUtc": "2026-10-08T12:00:00+00:00",
   "items": [
+    {
+      "id": "UNIQUE_ARCHER_LAST_CONSTELLATION",
+      "itemFamilyId": "UNIQUE_ARCHER_LAST_CONSTELLATION",
+      "allowedClassIds": [
+        "ARCHER"
+      ],
+      "name": "Лук Последнего Созвездия",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Лук Последнего Созвездия стал каноническим трофеем 60 уровня для Меткости: точность, ловкость и критический шанс. Уникальный эффект — Идеальный выстрел: Aimed Shot периодически наносит ещё 25% от прямого урона.",
+      "version": 1,
+      "weaponCategory": "BOW",
+      "weaponDamageMin": 300,
+      "weaponDamageMax": 410,
+      "iconId": "items_outside_sets/shattered_order_citadel/triple_aspect_bow",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 2,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_WEAPON",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "CRITICAL_CHANCE",
+        "ACCURACY"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "weaponBaseAttackIntervalSeconds": 2.7,
+      "specialEffectIds": [
+        "UNIQUE_EFFECT_ARCHER_MARKSMAN_WEAPON"
+      ]
+    },
+    {
+      "id": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
+      "itemFamilyId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
+      "allowedClassIds": [
+        "MAGE"
+      ],
+      "name": "Око Погасшей Звезды",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Око Погасшей Звезды стало каноническим трофеем 60 уровня для Арканы: интеллект, мана и сила заклинаний. Уникальный эффект — Бездонный поток: каждое третье завершение Arcane Missiles/Spark восстанавливает 40 маны.",
+      "version": 1,
+      "weaponCategory": "ONE_HAND_STAFF",
+      "weaponDamageMin": 210,
+      "weaponDamageMax": 295,
+      "iconId": "items_outside_sets/open_world_mid/shard_wand",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 2,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "MAGE_WEAPON",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "INTELLECT",
+        "MAX_RESOURCE",
+        "SPELL_POWER"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "weaponBaseAttackIntervalSeconds": 2.4,
+      "specialEffectIds": [
+        "UNIQUE_EFFECT_MAGE_ARCANE_WEAPON"
+      ]
+    },
+    {
+      "id": "UNIQUE_WARRIOR_BLACKHEART",
+      "itemFamilyId": "UNIQUE_WARRIOR_BLACKHEART",
+      "allowedClassIds": [
+        "WARRIOR"
+      ],
+      "name": "Черносерд",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Unique",
+      "requiredLevel": 60,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "MainHand",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Черносерд превращает силу Берсерка в чистое давление: сила, критический шанс и критический урон без защитного уклона. Уникальный эффект — Кровавый приговор: критический удар вызывает дополнительную физическую контратаку от силы атаки.",
+      "version": 1,
+      "weaponCategory": "TWO_HAND_SWORD",
+      "weaponDamageMin": 320,
+      "weaponDamageMax": 440,
+      "iconId": "items_outside_sets/shattered_order_citadel/mirror_bastard_sword",
+      "itemLevelMin": 60,
+      "itemLevelMax": 60,
+      "generationVersion": 2,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "WARRIOR_UNIQUE_WEAPON",
+      "affixCountProfileId": "LEVEL_60_UNIQUE",
+      "guaranteedAffixStatIds": [
+        "STRENGTH",
+        "CRITICAL_CHANCE",
+        "CRITICAL_DAMAGE"
+      ],
+      "extraAffixBudgetCap": 0.08,
+      "prefixSuffixPolicyId": null,
+      "weaponBaseAttackIntervalSeconds": 3,
+      "specialEffectIds": [
+        "UNIQUE_EFFECT_WARRIOR_BERSERKER_WEAPON"
+      ]
+    },
     {
       "id": "UNIQUE_L60_WARRIOR_BERSERKER_RING",
       "itemFamilyId": "UNIQUE_L60_WARRIOR_BERSERKER_RING",
@@ -28,7 +160,7 @@
       "iconId": "imported/pechat_predvestnika",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -68,7 +200,7 @@
       "iconId": "warrior/item-warrior-cloak",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -108,7 +240,7 @@
       "iconId": "items_outside_sets/black_bastion/first_guardian_blade",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -152,7 +284,7 @@
       "iconId": "items_outside_sets/ancient_mine/stoneheart_ring",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -192,7 +324,7 @@
       "iconId": "imported/plashch_brodiachego_naiomnika",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -232,7 +364,7 @@
       "iconId": "items_outside_sets/black_bastion/ark_tor_hammer",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -276,7 +408,7 @@
       "iconId": "items_outside_sets/black_bastion/silent_judgement_seal",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -316,7 +448,7 @@
       "iconId": "items_outside_sets/open_world_mid/basilisk_scale_cloak",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -356,7 +488,7 @@
       "iconId": "items_outside_sets/black_bastion/black_star_staff",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -400,7 +532,7 @@
       "iconId": "items_outside_sets/shattered_order_citadel/triune_seal",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -440,7 +572,7 @@
       "iconId": "acc_common_2_cloak",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -480,7 +612,7 @@
       "iconId": "items_outside_sets/open_world_mid/interrupted_mana_staff",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -524,7 +656,7 @@
       "iconId": "items_outside_sets/shattered_order_citadel/broken_reflection_ring",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -564,7 +696,7 @@
       "iconId": "acc_uncommon_6_cloak",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -604,7 +736,7 @@
       "iconId": "items_outside_sets/open_world_mid/rift_keeper_seal",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -644,7 +776,7 @@
       "iconId": "imported/plashch_lesnoi_tropy",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -684,7 +816,7 @@
       "iconId": "items_outside_sets/open_world_late/harbinger_seal",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -724,7 +856,7 @@
       "iconId": "items_outside_sets/open_world_early/forest_trail_cloak",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -764,7 +896,7 @@
       "iconId": "items_outside_sets/open_world_mid/double_echo_bow",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -808,7 +940,7 @@
       "iconId": "items_outside_sets/open_world_early/root_dew_ring",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -848,7 +980,7 @@
       "iconId": "items_outside_sets/open_world_early/wandering_mercenary_cloak",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -888,7 +1020,7 @@
       "iconId": "items_outside_sets/black_bastion/black_gate_crossbow",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -932,7 +1064,7 @@
       "iconId": "items_outside_sets/eclipse_citadel/eclipse_seal",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -972,7 +1104,7 @@
       "iconId": "imported/cheshuichatyi_plashch_vasiliska",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -1012,7 +1144,7 @@
       "iconId": "items_outside_sets/eclipse_citadel/umbra_smith_hammer",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -1022,7 +1154,7 @@
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "PALADIN_WEAPON",
+      "randomAffixPoolId": "PALADIN_HOLY",
       "weaponCategory": "MACE",
       "weaponDamageMin": 235,
       "weaponDamageMax": 320,
@@ -1056,7 +1188,7 @@
       "iconId": "imported/koltso_kornevoi_rosy",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -1066,7 +1198,7 @@
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "randomAffixPoolId": "PALADIN_HOLY",
       "specialEffectIds": [
         "UNIQUE_EFFECT_PALADIN_HOLY_RING"
       ]
@@ -1096,7 +1228,7 @@
       "iconId": "warrior/item-warrior-cloak",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -1106,7 +1238,7 @@
       ],
       "extraAffixBudgetCap": 0.08,
       "prefixSuffixPolicyId": null,
-      "randomAffixPoolId": "PALADIN_ACCESSORY",
+      "randomAffixPoolId": "PALADIN_HOLY",
       "specialEffectIds": [
         "UNIQUE_EFFECT_PALADIN_HOLY_CLOAK"
       ]
@@ -1136,7 +1268,7 @@
       "iconId": "items_outside_sets/eclipse_citadel/broken_captain_blade",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -1180,7 +1312,7 @@
       "iconId": "imported/pechat_khranitelia_raskola",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -1220,7 +1352,7 @@
       "iconId": "acc_uncommon_6_cloak",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -1260,7 +1392,7 @@
       "iconId": "imported/molot_khoziaina_zhil",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -1304,7 +1436,7 @@
       "iconId": "acc_uncommon_6_ring",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -1344,7 +1476,7 @@
       "iconId": "items_outside_sets/open_world_mid/basilisk_scale_cloak",
       "itemLevelMin": 60,
       "itemLevelMax": 60,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "affixCountProfileId": "LEVEL_60_UNIQUE",
       "guaranteedAffixStatIds": [
@@ -1357,138 +1489,6 @@
       "randomAffixPoolId": "PALADIN_ACCESSORY",
       "specialEffectIds": [
         "UNIQUE_EFFECT_PALADIN_RETRIBUTION_CLOAK"
-      ]
-    },
-    {
-      "id": "UNIQUE_WARRIOR_BLACKHEART",
-      "itemFamilyId": "UNIQUE_WARRIOR_BLACKHEART",
-      "allowedClassIds": [
-        "WARRIOR"
-      ],
-      "name": "Черносерд",
-      "type": "Equipment",
-      "generationMode": "Rolled",
-      "rarity": "Unique",
-      "requiredLevel": 60,
-      "stackable": false,
-      "maxStack": 1,
-      "slot": "MainHand",
-      "stats": {
-        "strength": 0,
-        "agility": 0,
-        "intellect": 0,
-        "stamina": 0
-      },
-      "description": "Черносерд превращает силу Берсерка в чистое давление: сила, критический шанс и критический урон без защитного уклона. Уникальный эффект — Кровавый приговор: критический удар вызывает дополнительную физическую контратаку от силы атаки.",
-      "version": 1,
-      "weaponCategory": "TWO_HAND_SWORD",
-      "weaponDamageMin": 320,
-      "weaponDamageMax": 440,
-      "iconId": "items_outside_sets/shattered_order_citadel/mirror_bastard_sword",
-      "itemLevelMin": 60,
-      "itemLevelMax": 60,
-      "generationVersion": 1,
-      "tradePolicyId": "ORDINARY_TRADEABLE",
-      "randomAffixPoolId": "WARRIOR_UNIQUE_WEAPON",
-      "affixCountProfileId": "LEVEL_60_UNIQUE",
-      "guaranteedAffixStatIds": [
-        "STRENGTH",
-        "CRITICAL_CHANCE",
-        "CRITICAL_DAMAGE"
-      ],
-      "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null,
-      "weaponBaseAttackIntervalSeconds": 3,
-      "specialEffectIds": [
-        "UNIQUE_EFFECT_WARRIOR_BERSERKER_WEAPON"
-      ]
-    },
-    {
-      "id": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
-      "itemFamilyId": "UNIQUE_MAGE_EYE_OF_DEAD_STAR",
-      "allowedClassIds": [
-        "MAGE"
-      ],
-      "name": "Око Погасшей Звезды",
-      "type": "Equipment",
-      "generationMode": "Rolled",
-      "rarity": "Unique",
-      "requiredLevel": 60,
-      "stackable": false,
-      "maxStack": 1,
-      "slot": "MainHand",
-      "stats": {
-        "strength": 0,
-        "agility": 0,
-        "intellect": 0,
-        "stamina": 0
-      },
-      "description": "Око Погасшей Звезды стало каноническим трофеем 60 уровня для Арканы: интеллект, мана и сила заклинаний. Уникальный эффект — Бездонный поток: каждое третье завершение Arcane Missiles/Spark восстанавливает 40 маны.",
-      "version": 1,
-      "weaponCategory": "ONE_HAND_STAFF",
-      "weaponDamageMin": 210,
-      "weaponDamageMax": 295,
-      "iconId": "items_outside_sets/open_world_mid/shard_wand",
-      "itemLevelMin": 60,
-      "itemLevelMax": 60,
-      "generationVersion": 1,
-      "tradePolicyId": "ORDINARY_TRADEABLE",
-      "randomAffixPoolId": "MAGE_WEAPON",
-      "affixCountProfileId": "LEVEL_60_UNIQUE",
-      "guaranteedAffixStatIds": [
-        "INTELLECT",
-        "MAX_RESOURCE",
-        "SPELL_POWER"
-      ],
-      "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null,
-      "weaponBaseAttackIntervalSeconds": 2.4,
-      "specialEffectIds": [
-        "UNIQUE_EFFECT_MAGE_ARCANE_WEAPON"
-      ]
-    },
-    {
-      "id": "UNIQUE_ARCHER_LAST_CONSTELLATION",
-      "itemFamilyId": "UNIQUE_ARCHER_LAST_CONSTELLATION",
-      "allowedClassIds": [
-        "ARCHER"
-      ],
-      "name": "Лук Последнего Созвездия",
-      "type": "Equipment",
-      "generationMode": "Rolled",
-      "rarity": "Unique",
-      "requiredLevel": 60,
-      "stackable": false,
-      "maxStack": 1,
-      "slot": "MainHand",
-      "stats": {
-        "strength": 0,
-        "agility": 0,
-        "intellect": 0,
-        "stamina": 0
-      },
-      "description": "Лук Последнего Созвездия стал каноническим трофеем 60 уровня для Меткости: точность, ловкость и критический шанс. Уникальный эффект — Идеальный выстрел: Aimed Shot периодически наносит ещё 25% от прямого урона.",
-      "version": 1,
-      "weaponCategory": "BOW",
-      "weaponDamageMin": 300,
-      "weaponDamageMax": 410,
-      "iconId": "items_outside_sets/shattered_order_citadel/triple_aspect_bow",
-      "itemLevelMin": 60,
-      "itemLevelMax": 60,
-      "generationVersion": 1,
-      "tradePolicyId": "ORDINARY_TRADEABLE",
-      "randomAffixPoolId": "ARCHER_WEAPON",
-      "affixCountProfileId": "LEVEL_60_UNIQUE",
-      "guaranteedAffixStatIds": [
-        "AGILITY",
-        "CRITICAL_CHANCE",
-        "ACCURACY"
-      ],
-      "extraAffixBudgetCap": 0.08,
-      "prefixSuffixPolicyId": null,
-      "weaponBaseAttackIntervalSeconds": 2.7,
-      "specialEffectIds": [
-        "UNIQUE_EFFECT_ARCHER_MARKSMAN_WEAPON"
       ]
     }
   ],

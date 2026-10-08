@@ -118,6 +118,7 @@ public static class ItemInstancePersistenceFactory
                 perfectOrigin: null);
             return repaired with
             {
+                GenerationVersion = item.GenerationVersion,
                 MinimumTemplateItemPower = item.MinimumTemplateItemPower.Value,
                 ActualItemPower = item.ActualItemPower.Value,
                 MaxTemplateItemPower = item.MaxTemplateItemPower.Value,

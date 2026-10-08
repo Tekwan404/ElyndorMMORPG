@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.29.0",
-  "balanceVersion": "0.24.0",
-  "publishedAtUtc": "2026-09-26T00:00:00+00:00",
+  "contentVersion": "0.50.0",
+  "balanceVersion": "0.40.0",
+  "publishedAtUtc": "2026-10-08T12:00:00+00:00",
   "items": [
     {
       "id": "ARBALET_CHIORNYKH_VRAT",
@@ -37,7 +37,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "FOKUS_OSTATOCHNOI_MANY",
@@ -70,7 +70,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "FRAGMENT_CHIORNOGO_NASLEDIIA",
@@ -119,7 +119,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "KADILO_OCHISHCHAIUSHCHEGO_PLAMENI",
@@ -149,7 +149,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "KLINOK_PERVOGO_STRAZHA",
@@ -182,7 +182,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "KLIUCH_KOMENDANTA",
@@ -215,7 +215,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "KOLTSO_RAZBITOGO_OTRAZHENIIA",
@@ -244,7 +244,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "KRUSHITEL_KRIVOKORNIA",
@@ -277,7 +277,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "LIK_POKHISHCHENNOI_DUSHI",
@@ -306,7 +306,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "LUK_BEZMOLVNOGO_ZNAMENI",
@@ -342,7 +342,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "LUK_TROINOGO_ASPEKTA",
@@ -378,7 +378,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "MOLOT_ARK_TORA",
@@ -411,7 +411,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "OSKOLOK_SERDTSA_BASTIONA",
@@ -440,7 +440,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "OSKVERNIONNOE_SEMIA",
@@ -488,7 +488,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "PECHAT_TRIEDINSTVA",
@@ -517,7 +517,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "POSOKH_CHIORNOI_ZVEZDY",
@@ -553,7 +553,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "RUNNOE_SERDTSE_KOLOSSA",
@@ -582,7 +582,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "SERDTSE_CHASHCHI",
@@ -611,7 +611,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "SERDTSE_ZERKALNOGO_IADRA",
@@ -659,7 +659,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "SFERA_ZATMIONNOGO_ORAKULA",
@@ -692,7 +692,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "TETIVA_ZHIVOI_LOZY",
@@ -745,7 +745,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "ZERKALNYI_BASTARD",
@@ -778,7 +778,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "ZNAMIA_PEPELNOGO_MARSHALA",
@@ -807,7 +807,7 @@
       "extraAffixBudgetCap": 0.06,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     }
   ]
 }

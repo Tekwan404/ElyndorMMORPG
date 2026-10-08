@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.18.0",
-  "balanceVersion": "0.14.0",
-  "publishedAtUtc": "2026-09-09T17:25:10+00:00",
+  "contentVersion": "0.50.0",
+  "balanceVersion": "0.40.0",
+  "publishedAtUtc": "2026-10-08T12:00:00+00:00",
   "items": [
     {
       "id": "WOLF_HIDE",
@@ -36,8 +36,9 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Острый клык лесного волка. Пригодится для оружейного ремесла.",
-      "version": 1
+      "description": "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+      "version": 1,
+      "iconId": "wolf_fang"
     },
     {
       "id": "BOAR_HIDE",
@@ -59,7 +60,7 @@
     },
     {
       "id": "BOAR_TUSK",
-      "name": "Кабаний клык",
+      "name": "Клык кабана",
       "type": "Material",
       "rarity": "Common",
       "requiredLevel": 1,
@@ -72,15 +73,16 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Тяжёлый кабаний клык. Заготовка для будущих оружейных деталей.",
-      "version": 1
+      "description": "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
+      "version": 1,
+      "iconId": "boar_tusk"
     },
     {
       "id": "SPIDER_SILK",
       "name": "Паучий шёлк",
       "type": "Material",
-      "rarity": "Common",
-      "requiredLevel": 1,
+      "rarity": "Rare",
+      "requiredLevel": 16,
       "stackable": true,
       "maxStack": 99,
       "slot": null,
@@ -90,8 +92,9 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Прочная нить гигантского паука. Основа для ткани и лёгкой брони.",
-      "version": 1
+      "description": "Изготовление ткани, тетив и расходников.",
+      "version": 1,
+      "iconId": "spider_silk"
     },
     {
       "id": "SPIDER_VENOM_SAC",
@@ -135,7 +138,7 @@
       "weaponDamageMax": 11,
       "itemLevelMin": 1,
       "itemLevelMax": 2,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_STARTER",
       "affixCountProfileId": "LEVEL_1_4",
@@ -165,7 +168,7 @@
       "armorFlat": 4,
       "itemLevelMin": 1,
       "itemLevelMax": 2,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_STARTER",
       "affixCountProfileId": "LEVEL_1_4",
@@ -195,7 +198,7 @@
       "armorFlat": 8,
       "itemLevelMin": 1,
       "itemLevelMax": 2,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_STARTER",
       "affixCountProfileId": "LEVEL_1_4",
@@ -225,7 +228,7 @@
       "armorFlat": 6,
       "itemLevelMin": 1,
       "itemLevelMax": 2,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_STARTER",
       "affixCountProfileId": "LEVEL_1_4",
@@ -255,7 +258,7 @@
       "armorFlat": 4,
       "itemLevelMin": 1,
       "itemLevelMax": 2,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ARCHER_STARTER",
       "affixCountProfileId": "LEVEL_1_4",
@@ -284,7 +287,7 @@
       "version": 1,
       "itemLevelMin": 1,
       "itemLevelMax": 2,
-      "generationVersion": 1,
+      "generationVersion": 2,
       "tradePolicyId": "ORDINARY_TRADEABLE",
       "randomAffixPoolId": "ACCESSORY_GENERAL",
       "affixCountProfileId": "LEVEL_1_4",
@@ -307,9 +310,9 @@
         "intellect": 0,
         "stamina": 0
       },
-      "description": "Мгновенно восстанавливает 120 здоровья. Все лечебные зелья этого ранга делят общий кулдаун.",
+      "description": "Мгновенно восстанавливает 120 здоровья. Лечебные зелья этой категории можно использовать раз в 5 секунд.",
       "version": 2,
-      "consumableCooldownSeconds": 30,
+      "consumableCooldownSeconds": 5,
       "consumableCooldownCategoryId": "HEALING_POTION",
       "consumableActions": [
         {
@@ -351,7 +354,7 @@
       "extraAffixBudgetCap": 0,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "RECRUIT_WOODEN_SHIELD",
@@ -386,7 +389,7 @@
       "extraAffixBudgetCap": 0,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "RECRUIT_HEAVY_CHEST",
@@ -418,7 +421,7 @@
       "extraAffixBudgetCap": 0,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "HUNTER_SHORTBOW",
@@ -451,7 +454,7 @@
       "extraAffixBudgetCap": 0,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "HUNTER_LEATHER_VEST",
@@ -482,7 +485,7 @@
       "extraAffixBudgetCap": 0,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "APPRENTICE_STAFF",
@@ -515,7 +518,7 @@
       "extraAffixBudgetCap": 0,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "APPRENTICE_WAND",
@@ -548,7 +551,7 @@
       "extraAffixBudgetCap": 0,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "APPRENTICE_CLOTH_ROBE",
@@ -579,7 +582,7 @@
       "extraAffixBudgetCap": 0,
       "prefixSuffixPolicyId": "WORLD_V1",
       "tradePolicyId": "ORDINARY_TRADEABLE",
-      "generationVersion": 1
+      "generationVersion": 2
     },
     {
       "id": "SMALL_MANA_POTION",
@@ -718,6 +721,114 @@
         }
       ],
       "buyPriceGold": 30
+    },
+    {
+      "id": "MINOR_HEALING_POTION",
+      "name": "Зелье лечения",
+      "type": "Consumable",
+      "rarity": "Common",
+      "requiredLevel": 3,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 150 здоровья. Лечебные зелья этой категории можно использовать раз в 5 секунд.",
+      "version": 1,
+      "consumableCooldownSeconds": 5,
+      "consumableCooldownCategoryId": "HEALING_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreHp",
+          "amount": 150
+        }
+      ],
+      "buyPriceGold": 28
+    },
+    {
+      "id": "HEALING_POTION",
+      "name": "Крепкое зелье лечения",
+      "type": "Consumable",
+      "rarity": "Common",
+      "requiredLevel": 5,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 200 здоровья. Лечебные зелья этой категории можно использовать раз в 5 секунд.",
+      "version": 1,
+      "consumableCooldownSeconds": 5,
+      "consumableCooldownCategoryId": "HEALING_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreHp",
+          "amount": 200
+        }
+      ],
+      "buyPriceGold": 38
+    },
+    {
+      "id": "MAJOR_HEALING_POTION",
+      "name": "Большое зелье лечения",
+      "type": "Consumable",
+      "rarity": "Uncommon",
+      "requiredLevel": 8,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 250 здоровья. Лечебные зелья этой категории можно использовать раз в 5 секунд.",
+      "version": 1,
+      "consumableCooldownSeconds": 5,
+      "consumableCooldownCategoryId": "HEALING_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreHp",
+          "amount": 250
+        }
+      ],
+      "buyPriceGold": 52
+    },
+    {
+      "id": "SUPERIOR_HEALING_POTION",
+      "name": "Превосходное зелье лечения",
+      "type": "Consumable",
+      "rarity": "Rare",
+      "requiredLevel": 15,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 500 здоровья. Лечебные зелья этой категории можно использовать раз в 5 секунд.",
+      "version": 1,
+      "consumableCooldownSeconds": 5,
+      "consumableCooldownCategoryId": "HEALING_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreHp",
+          "amount": 500
+        }
+      ],
+      "buyPriceGold": 95
     }
   ]
 }

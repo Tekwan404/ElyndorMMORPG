@@ -27,7 +27,7 @@ The bundled L60 catalog assigns one authored combat mechanic to every branch-spe
 Unique weapon, ring and cloak (36 total). These effects use the shared runtime only:
 no item ID is hardcoded in CombatSession. Weapons primarily create offensive branch
 moments, rings reinforce resource/proc loops, and cloaks provide reactive defense or
-counter-pressure. The catalog lives in `content/items/zz-l60-branch-uniques.json`
+counter-pressure. The catalog lives in `content/items/l60-branch-uniques.json`
 and is regression-tested so every L60 Unique resolves exactly one distinct effect.
 
 Current authoring limits still apply: item effects cannot inspect arbitrary health

@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.19.1",
-  "balanceVersion": "0.15.1",
-  "publishedAtUtc": "2026-09-15T16:05:00+00:00",
+  "contentVersion": "0.50.0",
+  "balanceVersion": "0.40.0",
+  "publishedAtUtc": "2026-10-08T12:00:00+00:00",
   "items": [
     {
       "id": "ROUGH_HIDE",
@@ -12,7 +12,12 @@
       "stackable": true,
       "maxStack": 99,
       "slot": null,
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Необработанная шкура зверя стартовых территорий. Кожевник может выделать из неё грубую кожу.",
       "version": 1,
       "iconId": "leather"
@@ -26,7 +31,12 @@
       "stackable": true,
       "maxStack": 99,
       "slot": null,
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Качественная необработанная шкура сильного зверя. После выделки превращается в лёгкую кожу.",
       "version": 1,
       "iconId": "leather"
@@ -40,7 +50,12 @@
       "stackable": true,
       "maxStack": 99,
       "slot": null,
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Толстая прочная шкура опасных зверей глубокого леса. Требует опытного кожевника для выделки.",
       "version": 1,
       "iconId": "leather"
@@ -54,7 +69,12 @@
       "stackable": true,
       "maxStack": 99,
       "slot": null,
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Выделанная грубая кожа. Базовый материал кожевничества для ранней экипировки.",
       "version": 1,
       "iconId": "leather"
@@ -68,7 +88,12 @@
       "stackable": true,
       "maxStack": 99,
       "slot": null,
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Выделанная лёгкая кожа высокого качества. Используется в более сложных рецептах кожевничества.",
       "version": 1,
       "iconId": "leather"
@@ -82,24 +107,34 @@
       "stackable": true,
       "maxStack": 99,
       "slot": null,
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
       "description": "Плотная выделанная кожа для прочной экипировки среднего уровня.",
       "version": 1,
       "iconId": "leather"
     },
     {
       "id": "CHITIN_FRAGMENT",
-      "name": "Обломок хитина",
+      "name": "Хитиновая пластина",
       "type": "Material",
-      "rarity": "Common",
+      "rarity": "Uncommon",
       "requiredLevel": 1,
       "stackable": true,
       "maxStack": 99,
       "slot": null,
-      "stats": { "strength": 0, "agility": 0, "intellect": 0, "stamina": 0 },
-      "description": "Прочный фрагмент панциря подходящего существа. Используется кожевниками для усиления экипировки.",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Материал Elyndor. Источник и шанс определены в таблицах добычи/профессий 1–40.",
       "version": 1,
-      "iconId": "leather"
+      "iconId": "chitin_fragment"
     }
   ]
 }

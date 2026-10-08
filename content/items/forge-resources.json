@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.36.3",
-  "balanceVersion": "0.9.1",
-  "publishedAtUtc": "2026-10-05T08:52:00+00:00",
+  "contentVersion": "0.50.0",
+  "balanceVersion": "0.40.0",
+  "publishedAtUtc": "2026-10-08T12:00:00+00:00",
   "items": [
     {
       "id": "REFORGE_STONE",
