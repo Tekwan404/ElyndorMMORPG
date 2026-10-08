@@ -127,7 +127,17 @@ public sealed partial class CombatSession
             Effect = action.Effect.Id switch
             {
                 PaladinHolyShieldEffectId => action.Effect with
-                { Duration = TimeSpan.FromSeconds((double)ResolveHolyShieldDurationSeconds()) },
+                {
+                    Duration = TimeSpan.FromSeconds((double)ResolveHolyShieldDurationSeconds()),
+                    OnExpireActions = TryGetPaladinHook("P-4-4", out var shieldOfFaith)
+                        ? [new EffectExpirationActionDefinition(
+                            EffectExpirationActionType.ApplyEffect,
+                            Effect: new EffectDefinition(
+                                "PALADIN_SHIELD_OF_FAITH", EffectKind.Shield,
+                                TimeSpan.FromSeconds(5), 1, EffectStackPolicy.Replace,
+                                _player.Actor.MaxHp * 0.04m * shieldOfFaith.Rank))]
+                        : action.Effect.OnExpireActions
+                },
                 "PALADIN_AVENGING_WRATH" when HasPaladinTalent("R-9-1") => action.Effect with
                 { Duration = TimeSpan.FromSeconds(16) },
                 PaladinDevotionAuraEffectId when TryGetPaladinHook("P-1-4", out var devotion) =>
@@ -136,8 +146,12 @@ public sealed partial class CombatSession
                     action.Effect with { Duration = action.Effect.Duration + TimeSpan.FromSeconds(favorOfGuardian.Rank) },
                 "PALADIN_CONSECRATION_DAMAGE" when TryGetPaladinHook("P-3-4", out var consecrated) =>
                     action.Effect with { Magnitude = action.Effect.Magnitude * (1 + 0.10m * consecrated.Rank) },
-                "PALADIN_BLESSING_SANCTUARY" when HasPaladinTalent("P-8-3") =>
-                    action.Effect with { Magnitude = action.Effect.Magnitude - 0.05m },
+                "PALADIN_BLESSING_SANCTUARY" => action.Effect with
+                {
+                    Magnitude = action.Effect.Magnitude
+                        - (TryGetPaladinHook("P-5-4", out var master) ? 0.02m * master.Rank : 0)
+                        - (HasPaladinTalent("P-8-3") ? 0.05m : 0)
+                },
                 _ => action.Effect
             }
         }).ToArray();
