@@ -1,12 +1,25 @@
 # Warrior mechanical contracts — 2026-10-07
 
-Implemented against main `0fb5bf7a`; composed content version `0.39.0`, balance version unchanged (`0.31.0`). This document records the current executable kit, not a numerical balance proposal.
+Initial ability contracts landed in content `0.39.0` on 2026-10-07. Guardian progression was then normalized on 2026-10-08 in content `0.45.2` / balance `0.35.2`; numeric ability coefficients remain unchanged. This document records executable ability contracts and the updated unlock progression.
 
 ## Baseline and access
 
 STRIKE unlocks at level 1, BATTLE_SHOUT at level 3 and HEAVY_BLOW at level 6 without spending talent points. CharacterKnownAbilityResolver, CombatSession snapshots and ArenaFighterAssembler expose the same learned kit. The baseline is defined once in `content/abilities/warrior-baseline.json`.
 
 Each branch has one ability fragment and one talent branch replacement. Old Warrior nodes and duplicate ability definitions were removed from the root package. Other classes and balance coefficients are unaffected.
+
+## Guardian nine-tier progression (2026-10-08)
+
+Guardian now has the same nine playable tier thresholds as Berserker and Warlord: `0/5/10/15/20/25/30/35/40` spent branch points. All 31 talent IDs, names, ranks, modifiers and prerequisites are retained; only `tier`, `requiredSpentPoints`, node/tree version and UI layout change. This preserves invested ranks in existing builds; future learning follows the new gates.
+
+- Tier 2: Last Stand and Revenge.
+- Tier 3: Shield Block, Provoke and Sunder Armor.
+- Tier 4: initial offensive control and improvements.
+- Tier 5: Bastion and Shield Slam alongside one-handed specialization.
+- Tier 6–8: heavier mitigation, taunt and defensive coordination, plus Shield Slam improvements.
+- Tier 9: Unyielding Guardian (`G-6-5`) after 40 branch points, prerequisite Shield Slam (`G-6-1`); earliest character level 42.
+
+The original `G-6-5` ID is intentionally stable even though its gameplay tier is now 9. UI rows follow actual gameplay tiers and server restrictions. The authoritative full node mapping lives in `content/talents/warrior-guardian.json` and the Source of Truth Warrior talent document.
 
 ## Audited talent abilities
 
@@ -53,7 +66,7 @@ Berserker retains Strike for generation, Heavy Blow and Wild Strike as active sp
 
 Rage remains authoritative, capped and charged once. Strike grants 10, Battle Shout grants 20 every 15 seconds; Heavy Blow spends 30 every four seconds subject to GCD. Support spending remains a deliberate tradeoff against damage. Warlord cry cadence modifies base cooldowns; flag-driven reductions respect the existing 20-second ICD. The capstone kill reduction has a one-second admission interval. Numerical retuning is intentionally deferred.
 
-The three level-60 PvE T1 branch sets contain only stat bonuses, resolved through the common equipment stat path: Guardian HP/armor/resistance/dodge, Berserker crit/attack power/haste/crit damage, Warlord HP/attack power/accuracy. They introduce no separate ability or proc path. No authored Warrior PvP T1 branch sets exist in the current content package; no speculative bonuses were invented.
+Equipment note (updated after #334/#339): each Warrior branch now has Normal, PvE T1 and PvP T1 level-60 sets with eight unique members and 2/4/6 thresholds. Normal/PvP T1 bonuses remain stat-only; PvE T1 effects are handled by the shared `SetPassiveCombatRuntime`: Guardian block/Revenge, Berserker Rage-spend/crit, Warlord cry/command. The previous no-PvP/no-proc statement is historical and does not describe the current content.
 
 ## Remaining Warrior-specific debt
 
