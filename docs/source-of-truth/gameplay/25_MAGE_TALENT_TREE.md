@@ -31,6 +31,8 @@ Fire, Arcane and Frost state belongs to their actor-owned runtimes under
 `Combat/Mage`; CombatSession retains orchestration through its existing router.
 See [the Mana benchmark and runtime contract](../../development/mage-core-mana-channels.md).
 
+Balance release `0.46.0` / `0.36.0` tunes school coefficients and AoE cooldowns without changing Mana-cost curves: Flamestrike (1.15 SP / 3s), Arcane Spark (0.82 SP), Missiles (0.72 SP/tick), Explosion (1.05 SP / 4s), Blizzard (22 + 0.48 SP/tick), and Ice Lance (2.5× frozen / 1.65× boss Deep Chill). See [Mage P1 numerical balance](../../development/mage-numerical-balance-p1.md).
+
 ---
 
 # 1. Общий каркас
