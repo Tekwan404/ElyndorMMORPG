@@ -60,6 +60,7 @@ public sealed partial class CombatSession
 
     private void ProcessSafePaladinKernelEvent(CombatEvent combatEvent)
     {
+        ProcessPaladinJudgementSupport(combatEvent);
         if (!IsActivePaladin)
             return;
 
@@ -660,11 +661,16 @@ public sealed partial class CombatSession
         DateTimeOffset now)
     {
         if (combatEvent.SourceActorId != _player.Actor.ActorId
-            || combatEvent.TargetActorId is not { } targetId
-            || combatEvent.Amount <= 0)
+            || combatEvent.TargetActorId is not { } targetId)
         {
             return;
         }
+
+        if (combatEvent.DefinitionId == "JUDGEMENT" && !combatEvent.IsPeriodic && !combatEvent.IsProc)
+            ApplyPaladinJudgementSupportMarks(targetId, now);
+
+        if (combatEvent.Amount <= 0)
+            return;
 
         if (combatEvent.DefinitionId == "AUTO_ATTACK"
             && _enemiesById.TryGetValue(targetId, out CombatParticipantDefinition? targetEnemy)

@@ -142,6 +142,7 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
           :aggro="aggroActorIds.includes(slot.actorId)"
           :local="localActorId === slot.actorId"
           :disabled="disabled"
+          :can-select-dead="actorById.get(localActorId)?.abilities?.some(ability => ability.targetType === 'SingleDeadAlly') ?? false"
           :frontline="slot.isFrontline"
           @select="emit('selectFriendly', $event)"
         />

@@ -81,6 +81,9 @@ public static partial class GameContentPackageValidator
                     || ability.Type is AbilityType.Casted or AbilityType.Channelled && ability.CastTime <= TimeSpan.Zero
                     || ability.Type is not (AbilityType.Casted or AbilityType.Channelled) && ability.CastTime != TimeSpan.Zero
                     || !AbilityEngine.IsValidChannel(ability)
+                    || ability.TargetType == AbilityTargetType.SingleDeadAlly
+                        && (ability.AllowSelfTarget || ability.Actions is not { Count: 1 }
+                            || ability.Actions[0].Type != AbilityActionType.Resurrect)
                     || ability.UsesGlobalCooldown && ability.GlobalCooldownCategory == GlobalCooldownCategory.None
                     || requiresAbilityPresentation
                         && (string.IsNullOrWhiteSpace(ability.DisplayName)
@@ -94,7 +97,13 @@ public static partial class GameContentPackageValidator
                         || action.Delay is { } delay && delay < TimeSpan.Zero
                         || action.LifestealPercent < 0
                         || action.TargetMaxHpPercent < 0 || action.TargetMaxHpPercent > 100
-                        || action.Type != AbilityActionType.Healing && action.TargetMaxHpPercent != 0
+                        || action.Type is not (AbilityActionType.Healing or AbilityActionType.Resurrect)
+                            && action.TargetMaxHpPercent != 0
+                        || action.TargetMaxResourcePercent is < 0 or > 100
+                        || action.Type != AbilityActionType.Resurrect && action.TargetMaxResourcePercent != 0
+                        || action.Type == AbilityActionType.Resurrect
+                            && (ability.TargetType != AbilityTargetType.SingleDeadAlly
+                                || action.TargetMaxHpPercent <= 0 || action.Delay is not null)
                         || action.Type != AbilityActionType.Damage && action.LifestealPercent != 0
                         || action.Type == AbilityActionType.AddThreat && action.Amount <= 0
                         || action.Type == AbilityActionType.DropThreatPercent

@@ -135,6 +135,8 @@ function eventText(event: CombatEvent, context: BattleEventProjectionContext): s
       return `${sourceName} выбирает цель: ${targetName}`
     case 'ActorDied':
       return `${targetName} погибает`
+    case 'ActorResurrected':
+      return `${sourceName} воскрешает ${targetName}`
     case 'EnemyKilled':
       return `${targetName} повержен`
     case 'CombatStarted':

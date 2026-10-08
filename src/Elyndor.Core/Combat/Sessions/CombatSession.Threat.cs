@@ -228,6 +228,8 @@ public sealed partial class CombatSession
 
         if (IsMage)
             multiplier *= ResolveMageThreatMultiplier(combatEvent);
+        if (IsActivePaladin)
+            multiplier *= ResolvePaladinThreatMultiplier(combatEvent);
 
         return Math.Max(0, multiplier);
     }

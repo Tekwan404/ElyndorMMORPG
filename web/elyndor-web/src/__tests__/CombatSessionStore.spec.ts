@@ -384,6 +384,31 @@ describe('combatSession realtime authentication', () => {
     expect(useAbilityCall?.[3]).toBe(allyId)
   })
 
+  it('selects a dead captured ally for resurrection and preserves the choice on reconnect', async () => {
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    const snapshot = {
+      sessionId: 'res-session', status: 'Active', sequence: 1,
+      serverTimeUtc: '2026-10-08T12:00:00Z', contentVersion: '0.1.0', balanceVersion: '0.1.0',
+      player: { actorId: 'paladin', hp: 100, cooldowns: {},
+        abilities: [{ id: 'RESURRECTION', targetType: 'SingleDeadAlly' }] },
+      players: [{ actorId: 'dead-ally', hp: 0 }],
+      participantRoster: [{ actorId: 'paladin', status: 'Active' }, { actorId: 'dead-ally', status: 'Dead' }],
+      enemy: { actorId: 'enemy', definitionId: 'WOLF' }, selectedTargetActorId: 'enemy',
+    }
+    signalRMock.invoke.mockResolvedValue({ succeeded: true, errorCode: null, snapshot, events: [], reward: null })
+    const store = useCombatSessionStore()
+    await store.connect()
+    store.snapshot = snapshot as never
+    store.selectFriendlyTarget('dead-ally')
+    expect(store.selectedFriendlyTargetActorId).toBe('dead-ally')
+    await store.resume()
+    expect(store.selectedFriendlyTargetActorId).toBe('dead-ally')
+    await store.useAbility('RESURRECTION')
+    await vi.waitFor(() => {
+      expect(signalRMock.invoke.mock.calls.find(([method]) => method === 'UseAbility')?.[3]).toBe('dead-ally')
+    })
+  })
+
   it('keeps target selection responsive while a consumable request is pending', async () => {
     vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
     const sessionId = '00000000-0000-0000-0000-000000000161'

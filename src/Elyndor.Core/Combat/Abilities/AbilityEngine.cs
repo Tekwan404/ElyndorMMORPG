@@ -191,6 +191,7 @@ public static partial class AbilityEngine
         }
         if (ability.TargetType is not (AbilityTargetType.Self
             or AbilityTargetType.SingleAlly
+            or AbilityTargetType.SingleDeadAlly
             or AbilityTargetType.SingleEnemy
             or AbilityTargetType.AllEnemiesInCombat
             or AbilityTargetType.NEnemiesInCombat
@@ -203,7 +204,9 @@ public static partial class AbilityEngine
             || targetIds.Distinct().Count() != targetIds.Length
             || targetIds.Any(targetId =>
                 !runtime.Actors.TryGetValue(targetId, out CombatActorState? target)
-                || target.IsDead))
+                || (ability.TargetType == AbilityTargetType.SingleDeadAlly
+                    ? !target.IsDead
+                    : target.IsDead)))
         {
             return AbilityErrorCode.InvalidTarget;
         }
@@ -225,6 +228,9 @@ public static partial class AbilityEngine
                 || targetIds[0] == runtime.Actor.ActorId && !ability.AllowSelfTarget))
             return AbilityErrorCode.InvalidTarget;
         if (ability.TargetType == AbilityTargetType.Owner
+            && (targetIds.Length != 1 || targetIds[0] == runtime.Actor.ActorId))
+            return AbilityErrorCode.InvalidTarget;
+        if (ability.TargetType == AbilityTargetType.SingleDeadAlly
             && (targetIds.Length != 1 || targetIds[0] == runtime.Actor.ActorId))
             return AbilityErrorCode.InvalidTarget;
         if (ability.TargetType is AbilityTargetType.AllEnemiesInCombat
@@ -309,6 +315,25 @@ public static partial class AbilityEngine
 
                 switch (action.Type)
                 {
+                    case AbilityActionType.Resurrect:
+                        if (ability.TargetType != AbilityTargetType.SingleDeadAlly
+                            || !target.IsDead || action.TargetMaxHpPercent <= 0)
+                            break;
+
+                        // Remove dead-period ticks and expired effects before restoring life.
+                        events.AddRange(EffectEngine.Process(target, now)
+                            .Select(combatEvent => combatEvent with { OccurredAtUtc = now }));
+                        target.SetCurrentHp(target.MaxHp * action.TargetMaxHpPercent / 100m);
+                        decimal previousResource = target.CurrentResource;
+                        target.ConfigureResource(target.MaxResource,
+                            target.MaxResource * action.TargetMaxResourcePercent / 100m);
+                        events.Add(new CombatEvent(CombatEventType.ActorResurrected, now,
+                            target.ActorId, ability.Id, target.CurrentHp,
+                            SourceActorId: runtime.Actor.ActorId, TargetActorId: target.ActorId));
+                        events.Add(new CombatEvent(CombatEventType.ResourceChanged, now,
+                            target.ActorId, ability.Id, target.CurrentResource - previousResource,
+                            SourceActorId: runtime.Actor.ActorId, TargetActorId: target.ActorId));
+                        break;
                     case AbilityActionType.Damage:
                         if (random is null)
                         {

@@ -13,7 +13,8 @@ public enum AbilityTargetType
     NEnemiesInCombat,
     SelfAndPartyMembersInCombat,
     ActiveCompanion,
-    Owner
+    Owner,
+    SingleDeadAlly
 }
 public enum GlobalCooldownCategory { None, Reduced, Standard }
 public enum AbilityTargetSelectorProfile
@@ -41,7 +42,8 @@ public enum AbilityActionType
     DropThreatPercent,
     ClearThreat,
     Fixate,
-    TemporaryUntargetable
+    TemporaryUntargetable,
+    Resurrect
 }
 public enum AbilityResourceTarget { Caster, Target }
 public enum AbilityErrorCode
@@ -129,7 +131,8 @@ public sealed record AbilityActionDefinition(
     decimal LifestealPercent = 0,
     decimal TargetMaxHpPercent = 0,
     bool RequiresSuccessfulHit = false,
-    decimal CasterMaxResourcePercent = 0);
+    decimal CasterMaxResourcePercent = 0,
+    decimal TargetMaxResourcePercent = 0);
 
 public sealed record AbilityTargetModifier(
     decimal DamageMultiplier = 1,

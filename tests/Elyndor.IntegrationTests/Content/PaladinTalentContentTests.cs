@@ -14,7 +14,7 @@ public sealed class PaladinTalentContentTests
         var paladin = Assert.Single(package.ClassProfiles!, profile => profile.Id == "PALADIN");
 
         Assert.Equal(
-            ["DEVOTION_AURA", "FLASH_OF_LIGHT", "HOLY_LIGHT", "JUDGEMENT", "LAY_ON_HANDS", "SEAL_OF_RIGHTEOUSNESS"],
+            ["DEVOTION_AURA", "FLASH_OF_LIGHT", "HOLY_LIGHT", "JUDGEMENT", "LAY_ON_HANDS", "RESURRECTION", "SEAL_OF_RIGHTEOUSNESS"],
             CharacterKnownAbilityResolver.Resolve(paladin, level: 1));
     }
 

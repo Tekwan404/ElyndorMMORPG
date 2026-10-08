@@ -15,6 +15,7 @@ const props = withDefaults(
     local: boolean
     disabled: boolean
     frontline: boolean
+    canSelectDead?: boolean
     threatPercent?: number | null
   }>(),
   {
@@ -79,7 +80,7 @@ const accessibleLabel = computed(() =>
       class="character-figure__button"
       :aria-label="accessibleLabel"
       :aria-pressed="selected"
-      :disabled="disabled || actor.hp <= 0"
+      :disabled="disabled || (actor.hp <= 0 && !canSelectDead)"
       @click="emit('select', actor.actorId)"
     >
       <span class="character-figure__aura" aria-hidden="true" />

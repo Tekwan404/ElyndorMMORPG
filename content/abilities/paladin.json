@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.22.0",
-  "balanceVersion": "0.18.0",
-  "publishedAtUtc": "2026-09-15T05:35:00+00:00",
+  "contentVersion": "0.49.0",
+  "balanceVersion": "0.39.0",
+  "publishedAtUtc": "2026-10-08T08:30:00+00:00",
   "definitions": [
     {
       "type": "CLASS",
@@ -12,10 +12,12 @@
         { "type": "ABILITY", "id": "JUDGEMENT" },
         { "type": "ABILITY", "id": "SEAL_OF_RIGHTEOUSNESS" },
         { "type": "ABILITY", "id": "DEVOTION_AURA" },
-        { "type": "ABILITY", "id": "LAY_ON_HANDS" }
+        { "type": "ABILITY", "id": "LAY_ON_HANDS" },
+        { "type": "ABILITY", "id": "RESURRECTION" }
       ]
     },
     { "type": "ABILITY", "id": "HOLY_LIGHT", "references": [] },
+    { "type": "ABILITY", "id": "RESURRECTION", "references": [] },
     { "type": "ABILITY", "id": "FLASH_OF_LIGHT", "references": [] },
     { "type": "ABILITY", "id": "JUDGEMENT", "references": [] },
     { "type": "ABILITY", "id": "SEAL_OF_RIGHTEOUSNESS", "references": [] },
@@ -49,6 +51,26 @@
     { "type": "ABILITY", "id": "AVENGING_WRATH", "references": [] }
   ],
   "abilities": [
+    {
+      "id": "RESURRECTION",
+      "iconId": "paladin-holy-light",
+      "type": "Casted",
+      "targetType": "SingleDeadAlly",
+      "resourceCost": 80,
+      "cooldown": "00:05:00",
+      "castTime": "00:00:06",
+      "usesGlobalCooldown": true,
+      "globalCooldownCategory": "Standard",
+      "isSpell": true,
+      "school": "HOLY",
+      "interruptible": true,
+      "allowSelfTarget": false,
+      "actions": [
+        { "type": "Resurrect", "targetMaxHpPercent": 30, "targetMaxResourcePercent": 20 }
+      ],
+      "displayName": "Воскрешение",
+      "description": "За 6 сек. воскрешает погибшего участника группы с 30% здоровья и 20% ресурса. Можно применять в бою. Произнесение можно прервать. Личная перезарядка — 5 мин.; общего лимита для группы нет."
+    },
     {
       "id": "HOLY_LIGHT", "iconId": "paladin-holy-light",
       "type": "Casted",
