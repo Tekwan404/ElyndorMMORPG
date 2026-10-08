@@ -30,3 +30,9 @@ beneficiary ICD, Consecration threat, Fanaticism threat limited to Retribution
 damage, and one-hand + shield specialization based on captured equipment.
 Author missing magnitudes/ICD/chance in talent content. Preserve all existing
 P0 admission fixes and the 96 talent IDs; no global class rebalance.
+
+Implementation and local verification completed: Release build (zero warnings or
+errors), 1416 unit / 615 integration / 505 frontend tests, frontend lint/typecheck/
+build, strict content validation and repository layout passed. Independent review's
+absorbed-hit finding was fixed with a red/green regression test. PR #349 tracks
+required CI and merge.
