@@ -1,4 +1,5 @@
 import { mount } from '@vue/test-utils'
+import { nextTick } from 'vue'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import type { CombatNumberPresentation } from '@/game/combat/battleEventPresentation'
@@ -40,6 +41,7 @@ describe('CombatNumbers', () => {
     expect(wrapper.get('[data-combat-number="12"]').text()).toBe('-120')
 
     await vi.advanceTimersByTimeAsync(780)
+    await nextTick()
     expect(wrapper.findAll('[data-combat-number]')).toHaveLength(0)
     wrapper.unmount()
   })
