@@ -36,7 +36,7 @@ The revised Paladin talent package is versioned **0.47.0 / 0.37.0**. Existing co
 - **H-7-1 Judgement of Light:** group healing-on-hit proc with personal cooldown.
 - **P-3-4 Consecrated Ground:** bonus **threat** on Consecration (damage bonus implemented).
 - **P-6-2 One-Handed Weapon Specialization:** authoritative shield+one-handed equipment capture is missing; do not guess from inferred weapon category or passive Block Chance.
-- **P-8-1 Unbreakable Bastion:** large-hit reduction must use authoritative damage admission order and cooldown to avoid incorrect mitigation.
+- **P-8-1 Unbreakable Bastion:** completed in stacked P0 PR #346. Content owns threshold 25% of maximum HP, mitigation 20% and 20-second ICD. The interception occurs only after block/shields and before HP/death admission; a fully absorbed hit does not start its ICD.
 - **R-5-2 Fanaticism:** the Judgement critical bonus exists; Retribution-only threat reduction remains incomplete.
 
 **Separate correctness P0:** Intercession redirect for an already-lethal incoming hit currently restores HP after the damage event and cannot annul the previously emitted ActorDied event. Repair this in the authoritative damage-routing path rather than with post-hoc healing.
@@ -44,3 +44,13 @@ The revised Paladin talent package is versioned **0.47.0 / 0.37.0**. Existing co
 ## Validation
 
 Retain full backend CI and content validator; targeted Arena production parity extends existing cooldown tests for five talents, checks Lay on Hands refund and Last Light protection, incoming-damage Bulwark, self-cast Sanctuary, and safe Vengeance refresh. This pass intentionally does not add a large benchmark suite or change cross-class combat formulas.
+
+## Follow-up P0 admission correction (PR #346)
+
+- **Intercession:** old damage-event healing/redirect was removed. A session-owned post-shield HP interceptor moves the rounded redirected slice before `ApplyDamage` / `ActorDied`; direct transfer is exact true damage and skips shields, mitigation, scaling and recursive interception. A lethal hit can now be saved and the protecting Paladin may die in its place.
+- **Cleanse:** uses `EffectEngine.RemoveInstance` for the first active eligible negative effect rather than category-wide `Dispel`. H-7-2 bonus healing still requires a successful removal.
+- **Unbreakable Bastion:** talent metadata carries `threshold: 25`, `secondaryValues: [20]`, `internalCooldownSeconds: 20` with a matching Russian tooltip. An admitted non-self large hit consumes the ICD; wholly absorbed hits and redirect transfers do not.
+- **Strict validation:** each known Paladin event-hook ID must be explicitly registered and its target must match `PALADIN_<ID>`, so an unknown prefix cannot claim runtime support. This validates routing identity, not proof that every qualitative talent mechanic is complete.
+- **Known remaining work:** H-3-3, H-7-1, P-3-4 threat, P-6-2, R-5-2 threat; these remain P1 and are not marked complete by this PR. Global Mana scaling and general class balance also remain P1.
+
+The PR is not merge-ready until full CI is green and all admission/regression tests pass.
