@@ -335,7 +335,7 @@ public sealed class InventoryEquipmentService(
                         return InventoryOperationResult.Failure(InventoryErrorCodes.ItemNotOwned);
                     if (item.TransactionLockId.HasValue)
                         return InventoryOperationResult.Failure(InventoryErrorCodes.TransactionLocked);
-                    if (item.IsLocked)
+                    if (item.IsLocked && item.SourceType != GmItemForge.SourceType)
                         return InventoryOperationResult.Failure(InventoryErrorCodes.ItemLocked);
                     if (equippedIds.Contains(item.Id) || spatialArtifactId == item.Id)
                         return InventoryOperationResult.Failure(InventoryErrorCodes.ItemEquipped);
