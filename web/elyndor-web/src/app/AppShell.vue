@@ -10,17 +10,13 @@ import HeroView from '@/game/character/views/HeroView.vue'
 import BattleScreen from '@/game/combat/views/BattleScreen.vue'
 import BossCombatLogReporter from '@/game/combat/BossCombatLogReporter.vue'
 import MenuView, { type MenuSection } from '@/game/menu/views/MenuView.vue'
-import InventoryView from '@/game/character/views/InventoryView.vue'
 import ArenaView from '@/game/pvp/views/ArenaView.vue'
 import CityView from '@/game/world/views/CityView.vue'
-import { locationKind } from '@/game/world/locationPresentation'
-import IconGenerator from '@/ui/icons/IconGenerator.vue'
-import type { GlyphName } from '@/ui/icons/icon.types'
 import QuestView from '@/game/quests/views/QuestView.vue'
 import WorldBossView from '@/game/worldBoss/views/WorldBossView.vue'
 import WorldMapView from '@/game/world/views/WorldMapView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
-import { locationPresentation } from '@/game/world/locationPresentation'
+import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
 import { useTradeStore } from '@/game/economy/tradeStore'
@@ -29,7 +25,7 @@ import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { beginTelegramWebLogin } from '@/telegram/telegramWebLogin'
 import { UIButton, UIHealthBar, UILoadingState, UIModal } from '@/ui/components'
 
-type ShellView = 'world' | 'hero' | 'city' | 'location' | 'quests' | 'inventory' | 'menu' | 'arena' | 'world-boss'
+type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu' | 'arena' | 'world-boss'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
@@ -39,10 +35,11 @@ const activeView = ref<ShellView>('location')
 const contentElement = ref<HTMLElement | null>(null)
 const openGuildOnLocation = ref(false)
 const menuSection = ref<MenuSection>('profile')
+const heroInitialTab = ref<'character' | 'inventory'>('character')
 const character = computed(() => session.snapshot?.character)
 const currentLocation = computed(() => session.snapshot?.world?.currentLocation ?? null)
-const isCityLocation = computed(() => locationKind(currentLocation.value?.id) === 'city')
 const activeTravel = computed(() => session.snapshot?.world?.travel ?? null)
+const isCityLocation = computed(() => locationKind(currentLocation.value?.id) === 'city' && !activeTravel.value)
 const releaseUpdate = computed(() => session.snapshot?.releaseUpdate ?? null)
 const acknowledgingRelease = ref(false)
 const portraitArt = computed(() =>
@@ -112,28 +109,36 @@ async function retrySession(): Promise<void> {
   await session.start()
 }
 
-const navigation = computed<readonly {
+const navigation: readonly {
   id: ShellView
   label: string
-  icon?: string
-  glyph?: GlyphName
+  icon: string
   enabled: boolean
   primary?: boolean
-}[]>(() => [
+}[] = [
   { id: 'world', label: 'Мир', icon: gameArt.navigation.world, enabled: true },
   { id: 'hero', label: 'Герой', icon: gameArt.navigation.hero, enabled: true },
-  ...(isCityLocation.value
-    ? [{ id: 'city' as const, label: 'Город', glyph: 'shield' as const, enabled: true, primary: true }]
-    : []),
-  { id: 'quests', label: 'Задания', icon: gameArt.navigation.quests, enabled: true },
-  { id: 'inventory', label: 'Инвентарь', glyph: 'chest', enabled: true },
-  { id: 'menu', label: 'Ещё', icon: gameArt.navigation.menu, enabled: true },
-])
+  {
+    id: 'location',
+    label: 'Локация',
+    icon: gameArt.navigation.location,
+    enabled: true,
+    primary: true,
+  },
+  {
+    id: 'quests',
+    label: 'Квесты',
+    icon: gameArt.navigation.quests,
+    enabled: true,
+  },
+  { id: 'menu', label: 'Меню', icon: gameArt.navigation.menu, enabled: true },
+]
 
-function selectView(item: (typeof navigation.value)[number]) {
+function selectView(item: (typeof navigation)[number]) {
   if (!item.enabled) return
   if (item.id === 'world') return openWorld()
-  if (item.id === 'city') return openLocation()
+  if (item.id === 'location') return openLocation()
+  if (item.id === 'hero') return openHero()
 
   showView(item.id)
   if (item.id === 'menu') menuSection.value = 'profile'
@@ -146,15 +151,13 @@ function showView(view: ShellView): void {
 }
 
 function openWorld(): void {
-  // One "Мир" destination: map and current area are two modes, not duplicate tabs.
-  if (activeView.value === 'world') return openLocation()
   showView('world')
   openGuildOnLocation.value = false
 }
 
 function openLocation(openGuild = false): void {
+  showView('location')
   openGuildOnLocation.value = openGuild
-  showView(isCityLocation.value ? 'city' : 'location')
 }
 
 function openMenu(section: MenuSection): void {
@@ -163,6 +166,12 @@ function openMenu(section: MenuSection): void {
 }
 
 function openHero(): void {
+  heroInitialTab.value = 'character'
+  showView('hero')
+}
+
+function openInventory(): void {
+  heroInitialTab.value = 'inventory'
   showView('hero')
 }
 
@@ -232,15 +241,6 @@ watch(
   ([resultUnseen, combatActive]) => {
     if (resultUnseen && !combatActive) openWorldBoss()
   },
-)
-
-watch(
-  isCityLocation,
-  (city) => {
-    if (city && activeView.value === 'location') showView('city')
-    if (!city && activeView.value === 'city') showView('location')
-  },
-  { immediate: true },
 )
 
 onMounted(() => {
@@ -352,11 +352,11 @@ onMounted(() => {
         @open-location="openLocation()"
       />
       <CityView
-        v-else-if="session.state === 'world' && activeView === 'city' && isCityLocation"
+        v-else-if="session.state === 'world' && activeView === 'location' && isCityLocation"
         :open-adventurers="openGuildOnLocation"
-        @open-map="openWorld"
+        @open-map="openWorld()"
         @open-party="openMenu('party')"
-        @open-inventory="showView('inventory')"
+        @open-inventory="openInventory()"
         @open-world-boss="openWorldBoss"
       />
       <WorldView
@@ -364,14 +364,12 @@ onMounted(() => {
         :open-guild="openGuildOnLocation"
         @open-party="openMenu('party')"
         @open-world-boss="openWorldBoss"
-        @open-map="showView('world')"
       />
       <section v-else-if="session.state === 'world' && activeView === 'arena'" class="arena-entry">
         <UIButton variant="ghost" @click="openLocation()">‹ Назад</UIButton>
         <ArenaView />
       </section>
-      <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" />
-      <InventoryView v-else-if="session.state === 'world' && activeView === 'inventory'" />
+      <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" :initial-tab="heroInitialTab" />
       <QuestView
         v-else-if="session.state === 'world' && activeView === 'quests'"
         @open-world="openWorld()"
@@ -387,7 +385,6 @@ onMounted(() => {
     <nav
       v-if="session.state === 'world' && !combat.isActive && activeView !== 'world-boss'"
       class="navigation"
-      :style="{ '--navigation-items': navigation.length }"
       aria-label="Основная навигация"
     >
       <button
@@ -395,21 +392,17 @@ onMounted(() => {
         :key="item.id"
         class="navigation__item"
         :class="{
-          'navigation__item--active': item.id === activeView || (item.id === 'world' && activeView === 'location'),
+          'navigation__item--active': item.id === activeView,
           'navigation__item--primary': item.primary,
         }"
         :data-nav="item.id"
         type="button"
         :disabled="!item.enabled"
-        :aria-current="item.id === activeView || (item.id === 'world' && activeView === 'location') ? 'page' : undefined"
+        :aria-current="item.id === activeView ? 'page' : undefined"
         @click="selectView(item)"
       >
         <span class="navigation__icon-wrap">
-          <IconGenerator
-            v-if="item.glyph"
-            :config="{ id: 'nav-' + item.id, glyph: item.glyph, category: 'utility' }"
-          />
-          <img v-else-if="item.icon" class="navigation__icon" :src="item.icon" alt="" aria-hidden="true" />
+          <img class="navigation__icon" :src="item.icon" alt="" aria-hidden="true" />
         </span>
         <small>{{ item.label }}</small>
       </button>
@@ -448,6 +441,12 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.arena-entry {
+  display: grid;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-3);
+}
+
 .trade-notice { position:fixed; z-index:50; top:calc(env(safe-area-inset-top, 0px) + 8px); left:50%; transform:translateX(-50%); max-width:calc(100vw - 24px); min-height:44px; padding:8px 14px; border:1px solid var(--ui-color-gold); border-radius:var(--ui-radius-md); background:#16130f; color:var(--ui-color-gold); font:700 .8rem var(--ui-font-display); box-shadow:0 6px 24px #0009; }
 .game-shell {
   position: relative;
@@ -708,7 +707,7 @@ onMounted(() => {
   position: relative;
   z-index: 4;
   display: grid;
-  grid-template-columns: repeat(var(--navigation-items, 5), minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 1px;
   padding: 3px calc(4px + var(--ui-safe-area-right)) calc(4px + var(--ui-safe-area-bottom))
     calc(4px + var(--ui-safe-area-left));
@@ -800,22 +799,6 @@ onMounted(() => {
   transition:
     filter var(--ui-transition-fast),
     transform var(--ui-transition-fast);
-}
-
-.navigation__icon-wrap :deep(.icon-generator) {
-  width: 27px;
-  height: 27px;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
-}
-.navigation__icon-wrap :deep(.icon-generator__glyph) {
-  color: var(--ui-color-gold);
-}
-.arena-entry {
-  display: grid;
-  gap: var(--ui-space-3);
-  padding: var(--ui-space-3);
 }
 
 .navigation__item--primary .navigation__icon {
