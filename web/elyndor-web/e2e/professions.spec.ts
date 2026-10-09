@@ -2,6 +2,9 @@ import { expect, test, type Page } from '@playwright/test'
 
 test('learns and restores Skinning and Leatherworking against the real database', async ({ page }) => {
   test.skip(process.env.ELYNDOR_E2E_REAL !== 'true', 'requires the real ASP.NET/PostgreSQL E2E server')
+  // This suite shares its test account with the world-travel smoke test.
+  // Returning from Deep Forest uses real timed travel, not an instant teleport.
+  test.setTimeout(180_000)
 
   await installTelegramBridge(page)
   await page.goto('/')
@@ -66,9 +69,14 @@ async function openProfessions(page: Page): Promise<void> {
   if (!(await page.locator('[data-city-hub]').isVisible())) {
     await page.locator('[data-nav="world"]').click()
     for (const locationId of ['WHISPERING_FOREST', 'STARTER_TOWN']) {
-      await page.locator(`[data-location-id="${locationId}"]`).click()
+      const marker = page.locator(`[data-location-id="${locationId}"]`)
+      if ((await marker.getAttribute('data-state')) === 'current') continue
+      await marker.click()
       const travel = page.locator('[data-map-travel-inline]')
-      if (await travel.isEnabled()) await travel.click()
+      // A second trip cannot be issued until the previous travel has fully settled.
+      await expect(travel).toBeEnabled({ timeout: 15_000 })
+      await travel.click()
+      await expect(marker).toHaveAttribute('data-state', 'current', { timeout: 90_000 })
     }
     await page.locator('[data-nav="location"]').click()
   }
