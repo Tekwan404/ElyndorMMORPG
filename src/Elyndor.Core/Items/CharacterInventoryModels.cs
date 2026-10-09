@@ -145,9 +145,22 @@ public sealed class CharacterItem
         SetRolledPrimaryStats(null);
     }
 
+    /// <summary>Marks a developer-only item as bound and permanently player-locked.
+    /// It can still be equipped and used in combat, but cannot be traded or sold.
+    /// </summary>
+    public void MarkDeveloperOnly()
+    {
+        if (SourceType != GmItemForge.SourceType)
+            throw new InvalidOperationException("Only GM-forged items can be marked as developer-only.");
+        BindState = ItemBindStates.Bound;
+        IsLocked = true;
+    }
+
     public void SetLocked(bool isLocked)
     {
         if (TransactionLockId.HasValue) throw new InvalidOperationException("Item is reserved for a transaction.");
+        if (SourceType == GmItemForge.SourceType && !isLocked)
+            return; // Never allow player endpoints to unlock a GM item for resale.
         IsLocked = isLocked;
     }
 
