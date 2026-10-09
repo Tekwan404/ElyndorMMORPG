@@ -269,12 +269,26 @@ const entityNeedsApply = computed(() => {
   return entityJson.value !== JSON.stringify(selectedEntityDraft.value, null, 2)
 })
 
+const hasPendingEdits = computed(() => isDirty.value || entityNeedsApply.value)
+
 function entityId(entity: JsonRecord): string {
   const id = entity.id
   return typeof id === 'string' ? id : '(without id)'
 }
 
+function confirmPendingEntityJson(): boolean {
+  return !entityNeedsApply.value || window.confirm(
+    'Есть неприменённые изменения в JSON сущности. Сначала нажми Apply JSON, чтобы сохранить их в draft. Отбросить изменения?',
+  )
+}
+
+function changeEditorMode(nextMode: 'form' | 'json'): void {
+  if (nextMode === editorMode.value || !confirmPendingEntityJson()) return
+  editorMode.value = nextMode
+}
+
 function selectEntity(entity: JsonRecord): void {
+  if (entityId(entity) !== selectedEntityId.value && !confirmPendingEntityJson()) return
   selectedEntityId.value = entityId(entity)
   duplicateMode.value = false
   entityJson.value = JSON.stringify(entity, null, 2)
@@ -283,12 +297,13 @@ function selectEntity(entity: JsonRecord): void {
 }
 
 function selectSection(section: (typeof sections)[number]['key']): void {
-  if (section === selectedSection.value) return
+  if (section === selectedSection.value || !confirmPendingEntityJson()) return
   selectedSection.value = section
   changeSection()
 }
 
 function openEntityLocation(sectionKey: string, targetEntityId: string): void {
+  if (!confirmPendingEntityJson()) return
   const section = sections.find(candidate => candidate.key === sectionKey)
   if (!section) return
 
@@ -652,16 +667,27 @@ async function refreshAll(resetDraft = true): Promise<void> {
 }
 
 async function validateDraft(): Promise<void> {
+  if (entityNeedsApply.value) {
+    errorMessage.value = 'Сначала примени изменения JSON сущности кнопкой Apply JSON.'
+    return
+  }
+  const candidateJson = draftJson.value
   await runAction('validate', async () => {
-    validation.value = await apiClient.request<ContentAdminValidation>(
+    const response = await apiClient.request<ContentAdminValidation>(
       '/api/v1/admin/content/validate',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payloadJson: draftJson.value }),
+        body: JSON.stringify({ payloadJson: candidateJson }),
       },
     )
-    statusMessage.value = validation.value.isValid
+    if (draftJson.value !== candidateJson) {
+      validation.value = null
+      statusMessage.value = 'Черновик изменился во время проверки. Запусти Validate ещё раз.'
+      return
+    }
+    validation.value = response
+    statusMessage.value = response.isValid
       ? 'Draft прошёл серверную валидацию.'
       : 'Draft содержит ошибки.'
   })
@@ -669,6 +695,14 @@ async function validateDraft(): Promise<void> {
 
 async function saveDraft(): Promise<void> {
   if (!current.value) return
+  if (entityNeedsApply.value) {
+    errorMessage.value = 'Сначала примени изменения JSON сущности кнопкой Apply JSON.'
+    return
+  }
+  if (!parseRecord(draftJson.value)) {
+    errorMessage.value = 'JSON пакета некорректен. Исправь ошибки до сохранения revision.'
+    return
+  }
 
   await runAction('save', async () => {
     const revision = await apiClient.request<ContentAdminRevision>(
@@ -795,6 +829,7 @@ async function runAction(name: string, action: () => Promise<void>): Promise<voi
 
 function resetDraft(): void {
   if (!current.value) return
+  if (!window.confirm('Сбросить все локальные изменения? Восстановить их после этого будет невозможно.')) return
   cancelLocalDraftSave()
   clearLocalContentDraft(current.value.payloadSha256)
   draftJson.value = prettyJson(current.value.payloadJson)
@@ -816,8 +851,13 @@ function scheduleLocalDraftSave(payloadJson: string): void {
   }
 
   localDraftSaveTimer = setTimeout(() => {
-    saveLocalContentDraft(basePayloadSha256, payloadJson)
-    localDraftSaveTimer = null
+    try {
+      saveLocalContentDraft(basePayloadSha256, payloadJson)
+    } catch {
+      errorMessage.value = 'Не удалось сохранить локальный autosave. Проверь свободное место браузера.'
+    } finally {
+      localDraftSaveTimer = null
+    }
   }, 400)
 }
 
@@ -829,7 +869,7 @@ function cancelLocalDraftSave(): void {
 }
 
 function handleBeforeUnload(event: BeforeUnloadEvent): void {
-  if (!isDirty.value) return
+  if (!hasPendingEdits.value) return
   event.preventDefault()
   event.returnValue = ''
 }
@@ -886,11 +926,12 @@ function formatDate(value: string): string {
   return new Date(value).toLocaleString()
 }
 
-watch(isDirty, dirty => {
+watch(hasPendingEdits, dirty => {
   emit('dirty-change', dirty)
 }, { immediate: true })
 
 watch(draftJson, payloadJson => {
+  validation.value = null
   scheduleLocalDraftSave(payloadJson)
 })
 
@@ -921,6 +962,13 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload)
   cancelLocalDraftSave()
+  if (current.value && isDirty.value) {
+    try {
+      saveLocalContentDraft(current.value.payloadSha256, draftJson.value)
+    } catch {
+      // The browser may deny localStorage; navigation has already been confirmed.
+    }
+  }
   emit('dirty-change', false)
 })
 </script>
@@ -1011,17 +1059,19 @@ onBeforeUnmount(() => {
           <button type="button" :disabled="Boolean(busyAction)" @click="validateDraft">
             {{ busyAction === 'validate' ? 'Проверка…' : 'Validate' }}
           </button>
-          <button class="primary" type="button" :disabled="Boolean(busyAction) || !isDirty" @click="saveDraft">
+          <button class="primary" type="button" :disabled="Boolean(busyAction) || !isDirty || entityNeedsApply" @click="saveDraft">
             {{ busyAction === 'save' ? 'Сохранение…' : 'Save draft' }}
           </button>
-          <button type="button" :disabled="Boolean(busyAction) || !isDirty" @click="resetDraft">
+          <button type="button" :disabled="Boolean(busyAction) || !hasPendingEdits" @click="resetDraft">
             Reset
           </button>
         </div>
       </section>
 
-      <p v-if="statusMessage" class="message message--success">{{ statusMessage }}</p>
-      <p v-if="errorMessage" class="message message--danger">{{ errorMessage }}</p>
+      <p v-if="statusMessage" class="message message--success" role="status">{{ statusMessage }}</p>
+      <p v-if="errorMessage" class="message message--danger" role="alert">{{ errorMessage }}</p>
+
+      <p v-if="entityNeedsApply" class="message message--danger" role="status">В JSON-редакторе есть неприменённые изменения — нажми Apply JSON перед сохранением или уходом из раздела.</p>
 
       <section class="validation-strip" :data-valid="validation?.isValid">
         <b>{{ validationLabel }}</b>
@@ -1146,14 +1196,14 @@ onBeforeUnmount(() => {
                 <button
                   type="button"
                   :class="{ active: editorMode === 'form' }"
-                  @click="editorMode = 'form'"
+                  @click="changeEditorMode('form')"
                 >
                   Form
                 </button>
                 <button
                   type="button"
                   :class="{ active: editorMode === 'json' }"
-                  @click="editorMode = 'json'"
+                  @click="changeEditorMode('json')"
                 >
                   JSON
                 </button>
