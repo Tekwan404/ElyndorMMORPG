@@ -60,6 +60,19 @@ test('learns and restores Skinning and Leatherworking against the real database'
 
 async function openProfessions(page: Page): Promise<void> {
   await page.locator('[data-nav="location"]').click()
+
+  // The preceding real-world journey can leave this same E2E character in Deep Forest.
+  // Walk the actual world routes back to town instead of bypassing location authority.
+  if (!(await page.locator('[data-city-hub]').isVisible())) {
+    await page.locator('[data-nav="world"]').click()
+    for (const locationId of ['WHISPERING_FOREST', 'STARTER_TOWN']) {
+      await page.locator(`[data-location-id="${locationId}"]`).click()
+      const travel = page.locator('[data-map-travel-inline]')
+      if (await travel.isEnabled()) await travel.click()
+    }
+    await page.locator('[data-nav="location"]').click()
+  }
+
   await expect(page.locator('[data-city-hub]')).toBeVisible()
   await page.locator('[data-city-marker="craft"]').click()
   await page.locator('[data-city-professions]').click()
