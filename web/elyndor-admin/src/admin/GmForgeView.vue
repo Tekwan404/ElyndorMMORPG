@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { adminRequest, type ContentAdminCurrent } from '@/api'
+import { computed, ref, watch } from 'vue'
+import { adminRequest, AdminApiError, type ContentAdminCurrent } from '@/api'
 
 const props = defineProps<{ defaultTelegramId: string; packageJson: ContentAdminCurrent['payloadJson'] }>()
 type ItemOption = { id: string; name: string }
@@ -19,6 +19,7 @@ const overrides = ref<Override[]>([])
 const busy = ref(false)
 const error = ref('')
 const result = ref<ForgeResponse | null>(null)
+const retryRequestId = ref<string | null>(null)
 
 const statIds = [
   'WEAPON_DAMAGE', 'CRITICAL_DAMAGE', 'CRITICAL_CHANCE', 'STRENGTH',
@@ -82,6 +83,12 @@ const specification = computed(() => {
 const command = computed(() => '/gmforge ' + recipient.value.trim() + ' ' + specification.value)
 const previewStars = computed(() => quality.value === 'PERFECT' ? 5 : stars.value === 'auto' ? null : Number(stars.value))
 
+watch([specification, recipient], () => {
+  retryRequestId.value = null
+  result.value = null
+  error.value = ''
+})
+
 function addOverride(): void {
   const stat = statIds.find(id => !overrides.value.some(row => row.stat === id))
   if (stat) overrides.value.push({ stat, value: '' })
@@ -98,7 +105,8 @@ function useCrazySword(): void {
 }
 
 function validate(): string | null {
-  if (!/^[1-9]\d*$/.test(recipient.value.trim())) return 'Нужен Telegram ID получателя.'
+  if (!/^[1-9]\d*$/.test(recipient.value.trim())
+      || !Number.isSafeInteger(Number(recipient.value.trim()))) return 'Нужен корректный Telegram ID получателя.'
   if (mode.value === 'new' && !itemId.value.trim()) return 'Выбери ID предмета.'
   if (mode.value === 'clone'
       && !/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(cloneId.value.trim()))
@@ -117,12 +125,15 @@ function validate(): string | null {
 }
 
 async function forge(): Promise<void> {
+  if (busy.value) return
   error.value = ''
   result.value = null
   const issue = validate()
   if (issue) { error.value = issue; return }
 
   busy.value = true
+  const requestId = retryRequestId.value ?? crypto.randomUUID()
+  retryRequestId.value = requestId
   try {
     result.value = await adminRequest<ForgeResponse>('/api/v1/admin/gm-forge/create', {
       method: 'POST',
@@ -130,11 +141,25 @@ async function forge(): Promise<void> {
       body: JSON.stringify({
         targetTelegramUserId: Number(recipient.value.trim()),
         specification: specification.value,
-        requestId: crypto.randomUUID(),
+        requestId,
       }),
     })
+    retryRequestId.value = null
   } catch (cause) {
-    error.value = cause instanceof Error ? cause.message : 'Не удалось создать предмет.'
+    if (cause instanceof AdminApiError) {
+      const messages: Record<string, string> = {
+        admin_inventory_full: 'Недостаточно места в инвентаре.',
+        admin_target_not_found: 'Игрок не найден.',
+        admin_gmforge_not_generated: 'У предмета нет генерируемых аффиксов.',
+        admin_gmforge_not_rolled: 'Этот шаблон не поддерживает случайные аффиксы.',
+        admin_gmforge_source_missing: 'Исходный предмет не найден в инвентаре игрока.',
+        admin_gmforge_invalid: 'Неверные параметры предмета.',
+      }
+      error.value = messages[cause.code] ?? 'Ошибка выдачи: ' + cause.code
+      if (cause.status < 500) retryRequestId.value = null
+    } else {
+      error.value = 'Нет ответа от сервера. Повтори запрос — тот же ID предотвратит двойную выдачу.'
+    }
   } finally {
     busy.value = false
   }
