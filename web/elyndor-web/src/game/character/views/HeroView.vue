@@ -12,8 +12,9 @@ import { useGameSessionStore } from '@/stores/gameSession'
 
 type HeroTab = 'character' | 'inventory' | 'stats' | 'talents' | 'companion' | 'skins'
 
+const props = withDefaults(defineProps<{ initialTab?: 'character' | 'inventory' }>(), { initialTab: 'character' })
 const session = useGameSessionStore()
-const activeTab = ref<HeroTab>('character')
+const activeTab = ref<HeroTab>(props.initialTab)
 const requestedSlot = ref<EquipmentSlot | null>(null)
 const requestedSlotInitialItemId = ref<string | null>(null)
 const hasTalentTree = computed(() => ['WARRIOR', 'MAGE', 'ARCHER', 'PALADIN'].includes(session.snapshot?.character?.classId ?? ''))
