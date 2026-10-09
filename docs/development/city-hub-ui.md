@@ -28,10 +28,11 @@ The city uses the original shell HUD and five navigation icons.
 The city keeps access to active world boss through a small banner/shortcut.
 The `arenaInvite` query deep-link continues to open ArenaView independently of the city so already sent invites don't break.
 
-## UI assets
-The initial branch uses the **existing tracked** `src/assets/world/starter-town.webp` as an interim city background. The nine markers are **independent DOM buttons** with CSS ornamentation and vector glyphs; all names and click targets remain screen-reader accessible. Never flatten icons/text into the background screenshot.
-
-Before release, optimize/import the supplied clean 9:16 city illustration into `src/assets/world/` and the ornate transparent marker assets into the city feature folder. Recheck marker percentage positions against that final art; current percentages are layout anchors only. Keep the fallback bundled background if art cannot be loaded.
+## Supplied production assets
+The actual provided 9:16 city painting is now committed as `src/assets/world/elyndor-city-background.webp` (480×854, ~80 KB) and used by `CityView`.
+Eight **original user-provided transparent gold sign PNGs** were optimized into `src/assets/world/elyndor-city-markers.webp` (~51 KB, 4×2 atlas, 116×145 per tile). Each tile is displayed as an independent accessible button and remains independently clickable.
+The teleport badge is rendered separately with the existing icon kit, because no standalone teleport PNG was supplied. HUD and bottom navigation are unchanged.
+The art is mobile-first: do not bake coordinates/hotspots or the interface into the JPG/WEBP itself; marker coordinates are percentages for responsive scaling.
 
 ## Regression and release check
 - `npm run type-check`, `npm run lint`, frontend unit suite
@@ -42,4 +43,4 @@ Before release, optimize/import the supplied clean 9:16 city illustration into `
 - invite link and mid-fight reconnect still render combat instead of city
 - all economic mutations remain controlled by their existing stores; do not refactor balances/commands with this pass
 
-Do not merge based solely on unit tests: require mobile visual review with the **final clean artwork**.
+Do not merge based solely on unit tests: require mobile visual review with the **imported clean artwork and original supplied signs**.
