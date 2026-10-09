@@ -2,9 +2,11 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import App from '../App.vue'
+import { setAdminAccessToken } from '../api'
 
 describe('Admin V2 foundation', () => {
   afterEach(() => {
+    setAdminAccessToken(null)
     vi.unstubAllGlobals()
   })
 
