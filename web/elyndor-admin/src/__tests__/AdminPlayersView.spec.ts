@@ -6,7 +6,7 @@ describe('admin player inspector', () => {
   afterEach(() => vi.unstubAllGlobals())
 
   it('looks up a player and hands off their Telegram ID to GM Forge', async () => {
-    const mockFetch = vi.fn().mockResolvedValue(
+    const mockFetch = vi.fn<typeof fetch>().mockResolvedValue(
       new Response(JSON.stringify({
         telegramUserId: 123,
         telegramUsername: 'tester',
@@ -37,7 +37,7 @@ describe('admin player inspector', () => {
   })
 
   it('rejects invalid identifiers without making a request', async () => {
-    const mockFetch = vi.fn()
+    const mockFetch = vi.fn<typeof fetch>()
     vi.stubGlobal('fetch', mockFetch)
     const wrapper = mount(AdminPlayersView)
     await wrapper.find('#player-telegram-id').setValue('invalid')
