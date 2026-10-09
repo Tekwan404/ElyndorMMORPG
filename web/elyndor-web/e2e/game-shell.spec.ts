@@ -27,6 +27,18 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.getByLabel('Лучник').check()
   await page.getByRole('button', { name: 'Войти в мир' }).click()
   await expect(page.getByRole('heading', { name: 'Стартовый город' })).toBeVisible()
+  await expect(page.locator('[data-city-marker]')).toHaveCount(8)
+  await expect(page.locator('[data-city-marker="gates"]')).toHaveCount(0)
+  const compactMarkerWidth = await page.locator('[data-city-marker="auction"]').evaluate(
+    element => element.getBoundingClientRect().width,
+  )
+  expect(compactMarkerWidth).toBeLessThan(100)
+  await page.setViewportSize({ width: 320, height: 568 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false)
+  const smallMarker = await page.locator('[data-city-marker="auction"]').boundingBox()
+  expect(smallMarker?.width ?? 0).toBeGreaterThanOrEqual(44)
+  await page.screenshot({ path: '../../output/playwright/session-city-compact-320.png', fullPage: true })
+  await page.setViewportSize({ width: 393, height: 851 })
 
   await page.locator('[data-nav="menu"]').click()
   await expect(page.getByRole('heading', { name: 'Меню' })).toBeVisible()
