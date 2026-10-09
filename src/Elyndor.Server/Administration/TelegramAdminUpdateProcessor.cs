@@ -39,7 +39,7 @@ public sealed class TelegramAdminUpdateProcessor(
         /giveitem <telegramId> <itemId> [quantity] [NORMAL|ELITE|BOSS]
         /gmforge <telegramId> <itemId> [quality=NORMAL|ELITE|BOSS|PERFECT] [stars=1..5] [enhance=0..5] [STAT=VALUE ...]
         /gmforge <telegramId> clone:<itemGuid> [quality=PERFECT] [stars=1..5] [enhance=0..5] [STAT=VALUE ...]
-        Пример: /gmforge 123 WARRIOR_SWORD quality=PERFECT WEAPON_DAMAGE=1500 CRITICAL_DAMAGE=150
+        Пример: /gmforge 123 UNIQUE_WARRIOR_BLACKHEART quality=PERFECT WEAPON_DAMAGE=1500 CRITICAL_DAMAGE=150
         /worldboss spawn [WORLD_BOSS_ID]
         /wb spawn [WORLD_BOSS_ID]
         /promocode create <CODE> [crystals=<amount>] [gold=<amount>] [item=<ITEM_ID>:<qty>] [global=<N>] [per=<N>] [hours=<N>]
