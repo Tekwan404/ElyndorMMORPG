@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import MoneyAmount from '@/ui/components/MoneyAmount.vue'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 
 import { gameArt } from '@/assets/gameArt'
 import { resolveCharacterArt } from '@/assets/characterArt'
@@ -10,11 +10,12 @@ import HeroView from '@/game/character/views/HeroView.vue'
 import BattleScreen from '@/game/combat/views/BattleScreen.vue'
 import BossCombatLogReporter from '@/game/combat/BossCombatLogReporter.vue'
 import MenuView, { type MenuSection } from '@/game/menu/views/MenuView.vue'
+import CityView from '@/game/world/views/CityView.vue'
 import QuestView from '@/game/quests/views/QuestView.vue'
 import WorldBossView from '@/game/worldBoss/views/WorldBossView.vue'
 import WorldMapView from '@/game/world/views/WorldMapView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
-import { locationPresentation } from '@/game/world/locationPresentation'
+import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
 import { useTradeStore } from '@/game/economy/tradeStore'
@@ -23,7 +24,9 @@ import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { beginTelegramWebLogin } from '@/telegram/telegramWebLogin'
 import { UIButton, UIHealthBar, UILoadingState, UIModal } from '@/ui/components'
 
-type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu' | 'world-boss'
+const ArenaView = defineAsyncComponent(() => import('@/game/pvp/views/ArenaView.vue'))
+
+type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu' | 'arena' | 'world-boss'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
@@ -33,9 +36,11 @@ const activeView = ref<ShellView>('location')
 const contentElement = ref<HTMLElement | null>(null)
 const openGuildOnLocation = ref(false)
 const menuSection = ref<MenuSection>('profile')
+const heroInitialTab = ref<'character' | 'inventory'>('character')
 const character = computed(() => session.snapshot?.character)
 const currentLocation = computed(() => session.snapshot?.world?.currentLocation ?? null)
 const activeTravel = computed(() => session.snapshot?.world?.travel ?? null)
+const isCityLocation = computed(() => locationKind(currentLocation.value?.id) === 'city' && !activeTravel.value)
 const releaseUpdate = computed(() => session.snapshot?.releaseUpdate ?? null)
 const acknowledgingRelease = ref(false)
 const portraitArt = computed(() =>
@@ -134,6 +139,7 @@ function selectView(item: (typeof navigation)[number]) {
   if (!item.enabled) return
   if (item.id === 'world') return openWorld()
   if (item.id === 'location') return openLocation()
+  if (item.id === 'hero') return openHero()
 
   showView(item.id)
   if (item.id === 'menu') menuSection.value = 'profile'
@@ -161,6 +167,12 @@ function openMenu(section: MenuSection): void {
 }
 
 function openHero(): void {
+  heroInitialTab.value = 'character'
+  showView('hero')
+}
+
+function openInventory(): void {
+  heroInitialTab.value = 'inventory'
   showView('hero')
 }
 
@@ -234,7 +246,7 @@ watch(
 
 onMounted(() => {
   initializeTelegramWebApp()
-  if (new URLSearchParams(window.location.search).has('arenaInvite')) openMenu('arena')
+  if (new URLSearchParams(window.location.search).has('arenaInvite')) showView('arena')
   void session.start()
 })
 </script>
@@ -340,13 +352,25 @@ onMounted(() => {
         v-else-if="session.state === 'world' && activeView === 'world'"
         @open-location="openLocation()"
       />
+      <CityView
+        v-else-if="session.state === 'world' && activeView === 'location' && isCityLocation"
+        :open-adventurers="openGuildOnLocation"
+        @open-map="openWorld()"
+        @open-party="openMenu('party')"
+        @open-inventory="openInventory()"
+        @open-world-boss="openWorldBoss"
+      />
       <WorldView
         v-else-if="session.state === 'world' && activeView === 'location'"
         :open-guild="openGuildOnLocation"
         @open-party="openMenu('party')"
         @open-world-boss="openWorldBoss"
       />
-      <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" />
+      <section v-else-if="session.state === 'world' && activeView === 'arena'" class="arena-entry">
+        <UIButton variant="ghost" @click="openLocation()">‹ Назад</UIButton>
+        <ArenaView />
+      </section>
+      <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" :initial-tab="heroInitialTab" />
       <QuestView
         v-else-if="session.state === 'world' && activeView === 'quests'"
         @open-world="openWorld()"
@@ -418,6 +442,12 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.arena-entry {
+  display: grid;
+  gap: var(--ui-space-3);
+  padding: var(--ui-space-3);
+}
+
 .trade-notice { position:fixed; z-index:50; top:calc(env(safe-area-inset-top, 0px) + 8px); left:50%; transform:translateX(-50%); max-width:calc(100vw - 24px); min-height:44px; padding:8px 14px; border:1px solid var(--ui-color-gold); border-radius:var(--ui-radius-md); background:#16130f; color:var(--ui-color-gold); font:700 .8rem var(--ui-font-display); box-shadow:0 6px 24px #0009; }
 .game-shell {
   position: relative;

@@ -170,6 +170,23 @@ describe('AppShell', () => {
     expect(wrapper.get('[data-nav="location"]').attributes('aria-current')).toBe('page')
     expect(wrapper.get('main').text()).toContain('Стартовый город')
     expect(wrapper.find('[data-open-world-map]').exists()).toBe(false)
+    expect(wrapper.find('[data-city-hub]').exists()).toBe(true)
+    expect(wrapper.findAll('[data-city-marker]')).toHaveLength(8)
+    expect(wrapper.find('[data-city-marker="gates"]').exists()).toBe(false)
+    expect(wrapper.find('[data-nav="city"]').exists()).toBe(false)
+
+    await wrapper.get('[data-city-marker="bank"]').trigger('click')
+    expect(wrapper.get('[data-city-interior]').text()).toContain('Банковское хранилище')
+    await wrapper.get('[data-city-inventory]').trigger('click')
+    await flushPromises()
+    expect(wrapper.get('[data-hero-tab="inventory"]').attributes('aria-current')).toBe('page')
+
+    await wrapper.get('[data-nav="location"]').trigger('click')
+    store.snapshot!.world!.currentLocation.id = 'WHISPERING_FOREST'
+    await flushPromises()
+    expect(wrapper.find('[data-city-hub]').exists()).toBe(false)
+    expect(wrapper.find('.location-screen').exists()).toBe(true)
+    expect(wrapper.get('[data-nav="location"]').attributes('aria-current')).toBe('page')
 
     await wrapper.get('[data-nav="hero"]').trigger('click')
     expect(wrapper.get('main').text()).toContain('Боевые показатели')

@@ -2,6 +2,9 @@ import { expect, test, type Page } from '@playwright/test'
 
 test('learns and restores Skinning and Leatherworking against the real database', async ({ page }) => {
   test.skip(process.env.ELYNDOR_E2E_REAL !== 'true', 'requires the real ASP.NET/PostgreSQL E2E server')
+  // This suite shares its test account with the world-travel smoke test.
+  // Returning from Deep Forest uses real timed travel, not an instant teleport.
+  test.setTimeout(180_000)
 
   await installTelegramBridge(page)
   await page.goto('/')
@@ -59,9 +62,28 @@ test('learns and restores Skinning and Leatherworking against the real database'
 })
 
 async function openProfessions(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Меню' }).click()
-  await expect(page.getByRole('heading', { name: 'Меню' })).toBeVisible()
-  await page.getByRole('button', { name: 'Профессии Сбор и ремесло' }).click()
+  await page.locator('[data-nav="location"]').click()
+
+  // The preceding real-world journey can leave this same E2E character in Deep Forest.
+  // Walk the actual world routes back to town instead of bypassing location authority.
+  if (!(await page.locator('[data-city-hub]').isVisible())) {
+    await page.locator('[data-nav="world"]').click()
+    for (const locationId of ['WHISPERING_FOREST', 'STARTER_TOWN']) {
+      const marker = page.locator(`[data-location-id="${locationId}"]`)
+      if ((await marker.getAttribute('data-state')) === 'current') continue
+      await marker.click()
+      const travel = page.locator('[data-map-travel-inline]')
+      // A second trip cannot be issued until the previous travel has fully settled.
+      await expect(travel).toBeEnabled({ timeout: 15_000 })
+      await travel.click()
+      await expect(marker).toHaveAttribute('data-state', 'current', { timeout: 90_000 })
+    }
+    await page.locator('[data-nav="location"]').click()
+  }
+
+  await expect(page.locator('[data-city-hub]')).toBeVisible()
+  await page.locator('[data-city-marker="craft"]').click()
+  await page.locator('[data-city-professions]').click()
   await expect(page.getByRole('heading', { name: 'Профессии' })).toBeVisible()
 }
 
