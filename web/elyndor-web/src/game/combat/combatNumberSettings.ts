@@ -5,6 +5,7 @@ export interface CombatNumberSettings {
   emphasizeCrits: boolean
   hitEffects: boolean
   showPeriodicDamage: boolean
+  showThreatTable: boolean
 }
 
 export const DEFAULT_COMBAT_NUMBER_SETTINGS: Readonly<CombatNumberSettings> = {
@@ -12,6 +13,7 @@ export const DEFAULT_COMBAT_NUMBER_SETTINGS: Readonly<CombatNumberSettings> = {
   emphasizeCrits: true,
   hitEffects: true,
   showPeriodicDamage: true,
+  showThreatTable: false,
 }
 
 const STORAGE_KEY = 'elyndor:combat-numbers:v1'
@@ -31,6 +33,9 @@ export function normalizeCombatNumberSettings(value: unknown): CombatNumberSetti
     showPeriodicDamage: typeof settings.showPeriodicDamage === 'boolean'
       ? settings.showPeriodicDamage
       : true,
+    showThreatTable: typeof settings.showThreatTable === 'boolean'
+      ? settings.showThreatTable
+      : false,
   }
 }
 

@@ -413,6 +413,52 @@ describe('BattleScreen', () => {
     expect(leave).toHaveBeenCalledOnce()
     expect(wrapper.emitted('leave')).toHaveLength(1)
   })
+
+  it('toggles the server threat table in the existing mobile settings menu', async () => {
+    window.localStorage.removeItem('elyndor:combat-numbers:v1')
+    const store = useCombatSessionStore()
+    store.snapshot = {
+      sessionId: 'threat-session',
+      sequence: 1,
+      status: 'Active',
+      serverTimeUtc: '2026-10-09T12:00:00Z',
+      contentVersion: 'test',
+      balanceVersion: 'test',
+      player: actor('local', 'Player'),
+      enemy: actor('enemy', 'Monster'),
+    }
+    const refresh = vi.spyOn(store, 'refreshCombatTelemetry').mockResolvedValue(undefined)
+    const wrapper = mount(BattleScreen)
+
+    const toggle = wrapper.get('[data-threat-table-setting] input')
+    expect((toggle.element as HTMLInputElement).checked).toBe(false)
+    expect(wrapper.find('[data-combat-threat-meter]').exists()).toBe(false)
+    expect(refresh).not.toHaveBeenCalled()
+
+    await toggle.setValue(true)
+    await flushPromises()
+    expect(refresh).toHaveBeenCalledTimes(1)
+    expect(wrapper.get('[data-combat-threat-meter]').text()).toContain('Ожидание угрозы')
+    expect(JSON.parse(window.localStorage.getItem('elyndor:combat-numbers:v1') ?? '{}').showThreatTable).toBe(true)
+
+    store.threat = {
+      enemyActorId: 'enemy',
+      enemyName: 'Волк',
+      currentTargetActorId: 'local',
+      forcedTargetActorId: null,
+      entries: [
+        { actorId: 'local', name: 'Герой', threat: 240, isCurrentTarget: true },
+      ],
+    }
+    await wrapper.vm.$nextTick()
+    expect(wrapper.get('[data-combat-threat-meter]').text()).toContain('Герой')
+
+    await toggle.setValue(false)
+    expect(wrapper.find('[data-combat-threat-meter]').exists()).toBe(false)
+    wrapper.unmount()
+    window.localStorage.removeItem('elyndor:combat-numbers:v1')
+  })
+
 })
 
 function consumable(): InventoryItem {
