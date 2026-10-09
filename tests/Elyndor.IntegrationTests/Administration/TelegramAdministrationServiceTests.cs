@@ -277,6 +277,34 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
         Assert.Equal(1500m, item.Affixes.Single(x => x.StatId == ItemStatIds.WeaponDamage).Value);
         Assert.Equal(150m, item.Affixes.Single(x => x.StatId == ItemStatIds.CriticalDamage).Value);
         Assert.Equal(1, await context.AdminCommandAudits.CountAsync());
+
+        // Verify that persisted admin affixes become real combat stats, not just labels.
+        InventoryEquipmentService inventory = new(context, content, new FixedTimeProvider(Now));
+        InventorySnapshot snapshot = await inventory.GetForCharacterAsync(item.CharacterId, CancellationToken.None);
+        InventoryItemSnapshot forged = Assert.Single(snapshot.Items);
+        Assert.Equal(GmItemForge.SourceType, forged.SourceType);
+        Assert.Equal(1500m, forged.GeneratedItem!.Affixes.Single(
+            affix => affix.StatId == ItemStatIds.WeaponDamage).Value);
+        ItemDefinition template = content.Items!.Single(definition =>
+            definition.Id == "UNIQUE_WARRIOR_BLACKHEART");
+        Assert.Equal(template.WeaponDamageMin!.Value + 1500m, forged.Definition.WeaponDamageMin);
+        Assert.Equal(template.WeaponDamageMax!.Value + 1500m, forged.Definition.WeaponDamageMax);
+        Assert.Equal(template.CriticalDamagePercent + 150m, forged.Definition.CriticalDamagePercent);
+
+        context.CharacterEquipment.Add(new CharacterEquipment(
+            item.CharacterId, EquipmentSlot.MainHand, item.Id));
+        await context.SaveChangesAsync();
+        InventorySnapshot equipped = await inventory.GetForCharacterAsync(item.CharacterId, CancellationToken.None);
+        EquipmentModifierSummary modifiers = EquipmentStatModifierResolver.ResolveDetailed(
+            equipped.Equipped.Values.Select(piece => piece.Definition with
+            {
+                Slot = piece.EquippedSlot,
+                Stats = piece.EffectiveStats
+            }),
+            content.EquipmentSets ?? []);
+        Assert.Equal(forged.Definition.WeaponDamageMin, modifiers.WeaponDamageMin);
+        Assert.Equal(forged.Definition.WeaponDamageMax, modifiers.WeaponDamageMax);
+        Assert.Equal(forged.Definition.CriticalDamagePercent, modifiers.CriticalDamagePercent);
     }
 
     [Fact]
@@ -315,6 +343,40 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
         Assert.Equal(150m, clone.Affixes.Single(x => x.StatId == ItemStatIds.CriticalDamage).Value);
         Assert.DoesNotContain(original.Affixes,
             x => x.StatId == ItemStatIds.CriticalDamage && x.Value == 150m);
+    }
+
+    [Fact]
+    public async Task GmForgeCloneInheritsEnhancementUnlessExplicitlyOverridden()
+    {
+        await SeedCharacterAsync(732_707_324, level: 60);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        AdministrationResult initial = await ExecuteAsync(
+            9053, new AdministrationOperation(
+                AdministrationOperationType.GmForge, 732_707_324,
+                "UNIQUE_WARRIOR_BLACKHEART quality=PERFECT enhance=5"), content);
+        Assert.True(initial.IsSuccess, initial.Message);
+
+        Guid originalId;
+        await using (GameDbContext context = postgres.CreateDbContext())
+        {
+            originalId = await context.CharacterItems.AsNoTracking()
+                .Select(item => item.Id).SingleAsync();
+        }
+
+        AdministrationResult cloneResult = await ExecuteAsync(
+            9054, new AdministrationOperation(
+                AdministrationOperationType.GmForge, 732_707_324,
+                $"clone:{originalId:D} STRENGTH=500"), content);
+        Assert.True(cloneResult.IsSuccess, cloneResult.Message);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterItem[] items = await verify.CharacterItems.Include(item => item.Affixes).ToArrayAsync();
+        Assert.Equal(2, items.Length);
+        Assert.Equal(5, items.Single(item => item.Id == originalId).EnhancementLevel);
+        CharacterItem clone = items.Single(item => item.Id != originalId);
+        Assert.Equal(5, clone.EnhancementLevel);
+        Assert.Equal(500m, clone.Affixes.Single(affix => affix.StatId == ItemStatIds.Strength).Value);
     }
 
     private async Task<AdministrationResult> ExecuteAsync(
