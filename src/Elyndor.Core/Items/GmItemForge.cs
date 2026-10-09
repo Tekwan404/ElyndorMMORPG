@@ -62,7 +62,7 @@ public static class GmItemForge
 
         // Stars and Perfect are intentionally overridable only on GM-created instances.
         // An altered stat is not a legitimate natural Perfect drop.
-        bool isPerfect = perfect || (statOverrides.Count == 0 && source.IsPerfect);
+        bool isPerfect = perfect || (statOverrides.Count == 0 && !forcedStars.HasValue && source.IsPerfect);
         return source with
         {
             Affixes = affixes,
