@@ -1755,7 +1755,7 @@ async function toggleSelectedLock(): Promise<void> {
           Продать · {{ formatMoney(selectedItem.sellPriceGold * selectedItem.quantity) }}
         </UIButton>
         <UIButton
-          v-if="selectedItem && !selectedItem.isLocked"
+          v-if="selectedItem && (!selectedItem.isLocked || selectedItem.sourceType === 'GM_FORGE')"
           variant="secondary"
           data-item-discard-action
           :loading="bulkActionPending"
