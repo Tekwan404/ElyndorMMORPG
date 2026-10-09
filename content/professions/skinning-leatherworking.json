@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.19.1",
-  "balanceVersion": "0.15.1",
-  "publishedAtUtc": "2026-09-15T16:05:00+00:00",
+  "contentVersion": "0.51.0",
+  "balanceVersion": "0.41.0",
+  "publishedAtUtc": "2026-10-09T08:00:00+00:00",
   "professions": [
     {
       "id": "SKINNING",
@@ -31,9 +31,9 @@
     {
       "id": "SKIN_FOREST_BOAR_L2",
       "monsterId": "FOREST_BOAR_L2",
-      "requiredSkill": 10,
-      "skillUpUntil": 55,
-      "itemId": "ROUGH_HIDE",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "itemId": "LIGHT_HIDE",
       "minQuantity": 1,
       "maxQuantity": 2
     },
@@ -49,8 +49,8 @@
     {
       "id": "SKIN_FOREST_WOLF_L4",
       "monsterId": "FOREST_WOLF_L4",
-      "requiredSkill": 35,
-      "skillUpUntil": 85,
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
       "itemId": "LIGHT_HIDE",
       "minQuantity": 1,
       "maxQuantity": 2
@@ -67,17 +67,17 @@
     {
       "id": "SKIN_DEEP_WOLF_L6",
       "monsterId": "DEEP_WOLF_L6",
-      "requiredSkill": 65,
-      "skillUpUntil": 120,
-      "itemId": "LIGHT_HIDE",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "itemId": "THICK_HIDE",
       "minQuantity": 1,
       "maxQuantity": 3
     },
     {
       "id": "SKIN_CORRUPTED_BOAR_L7",
       "monsterId": "CORRUPTED_BOAR_L7",
-      "requiredSkill": 80,
-      "skillUpUntil": 140,
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
       "itemId": "THICK_HIDE",
       "minQuantity": 1,
       "maxQuantity": 2
@@ -85,8 +85,8 @@
     {
       "id": "SKIN_DEEP_SPIDER_L8",
       "monsterId": "DEEP_SPIDER_L8",
-      "requiredSkill": 95,
-      "skillUpUntil": 155,
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
       "itemId": "CHITIN_FRAGMENT",
       "minQuantity": 2,
       "maxQuantity": 3
@@ -103,8 +103,8 @@
     {
       "id": "SKIN_ALPHA_WOLF_L11",
       "monsterId": "ALPHA_WOLF_L11",
-      "requiredSkill": 145,
-      "skillUpUntil": 210,
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
       "itemId": "THICK_HIDE",
       "minQuantity": 2,
       "maxQuantity": 4
@@ -166,8 +166,8 @@
     {
       "id": "SKIN_WHISPERING_FOREST_IADOVITYI_PAUK_L3",
       "monsterId": "WHISPERING_FOREST_IADOVITYI_PAUK_L3",
-      "requiredSkill": 20,
-      "skillUpUntil": 70,
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
       "itemId": "CHITIN_FRAGMENT",
       "minQuantity": 1,
       "maxQuantity": 2
@@ -175,18 +175,18 @@
     {
       "id": "SKIN_WHISPERING_FOREST_LESNOI_VOLK_L3",
       "monsterId": "WHISPERING_FOREST_LESNOI_VOLK_L3",
-      "requiredSkill": 35,
-      "skillUpUntil": 85,
-      "itemId": "LIGHT_HIDE",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "itemId": "ROUGH_HIDE",
       "minQuantity": 1,
       "maxQuantity": 2
     },
     {
       "id": "SKIN_WHISPERING_FOREST_MATIORYI_VOLK_L4",
       "monsterId": "WHISPERING_FOREST_MATIORYI_VOLK_L4",
-      "requiredSkill": 35,
-      "skillUpUntil": 85,
-      "itemId": "LIGHT_HIDE",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "itemId": "ROUGH_HIDE",
       "minQuantity": 1,
       "maxQuantity": 2
     },
@@ -202,26 +202,26 @@
     {
       "id": "SKIN_WHISPERING_FOREST_KABAN_L4",
       "monsterId": "WHISPERING_FOREST_KABAN_L4",
-      "requiredSkill": 35,
-      "skillUpUntil": 85,
-      "itemId": "LIGHT_HIDE",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "itemId": "ROUGH_HIDE",
       "minQuantity": 1,
       "maxQuantity": 2
     },
     {
       "id": "SKIN_WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4",
       "monsterId": "WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4",
-      "requiredSkill": 50,
-      "skillUpUntil": 100,
-      "itemId": "LIGHT_HIDE",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "itemId": "ROUGH_HIDE",
       "minQuantity": 2,
       "maxQuantity": 3
     },
     {
       "id": "SKIN_WHISPERING_FOREST_GIGANTSKII_PAUK_L5",
       "monsterId": "WHISPERING_FOREST_GIGANTSKII_PAUK_L5",
-      "requiredSkill": 50,
-      "skillUpUntil": 100,
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
       "itemId": "CHITIN_FRAGMENT",
       "minQuantity": 2,
       "maxQuantity": 3
@@ -269,7 +269,7 @@
       "professionId": "LEATHERWORKING",
       "name": "Выделка грубой кожи",
       "requiredSkill": 1,
-      "skillUpUntil": 50,
+      "skillUpUntil": 16,
       "outputItemId": "ROUGH_LEATHER",
       "outputQuantity": 1,
       "ingredients": [
@@ -284,8 +284,8 @@
       "id": "LW_PROCESS_LIGHT_HIDE",
       "professionId": "LEATHERWORKING",
       "name": "Выделка лёгкой кожи",
-      "requiredSkill": 35,
-      "skillUpUntil": 100,
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
       "outputItemId": "LIGHT_LEATHER",
       "outputQuantity": 1,
       "ingredients": [
@@ -300,8 +300,8 @@
       "id": "LW_PROCESS_THICK_HIDE",
       "professionId": "LEATHERWORKING",
       "name": "Выделка толстой кожи",
-      "requiredSkill": 80,
-      "skillUpUntil": 180,
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
       "outputItemId": "THICK_LEATHER",
       "outputQuantity": 1,
       "ingredients": [
@@ -349,7 +349,7 @@
       "professionId": "LEATHERWORKING",
       "name": "Сапоги Шепчущего Леса",
       "requiredSkill": 1,
-      "skillUpUntil": 35,
+      "skillUpUntil": 16,
       "outputItemId": "ARCHER_COMMON_WHISPER_TRACKER_FEET",
       "outputQuantity": 1,
       "ingredients": [
@@ -364,8 +364,8 @@
       "id": "LW_WHISPER_TRACKER_HANDS",
       "professionId": "LEATHERWORKING",
       "name": "Перчатки Шепчущего Леса",
-      "requiredSkill": 5,
-      "skillUpUntil": 40,
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
       "outputItemId": "ARCHER_COMMON_WHISPER_TRACKER_HANDS",
       "outputQuantity": 1,
       "ingredients": [
@@ -380,8 +380,8 @@
       "id": "LW_WHISPER_TRACKER_CHEST",
       "professionId": "LEATHERWORKING",
       "name": "Куртка Шепчущего Леса",
-      "requiredSkill": 10,
-      "skillUpUntil": 50,
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
       "outputItemId": "ARCHER_COMMON_WHISPER_TRACKER_CHEST",
       "outputQuantity": 1,
       "ingredients": [
@@ -392,6 +392,110 @@
         {
           "itemId": "CHITIN_FRAGMENT",
           "quantity": 2
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "LW_LIGHT_FEET",
+      "professionId": "LEATHERWORKING",
+      "name": "Сапоги Серой Тропы",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "ARCHER_UNCOMMON_GREY_TRAIL_FEET",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "LIGHT_LEATHER",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "LW_THICK_FEET",
+      "professionId": "LEATHERWORKING",
+      "name": "Сапоги плотной кожи",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "ARCHER_CRAFTED_DENSE_LEATHER_FEET",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "THICK_LEATHER",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "LW_LIGHT_HANDS",
+      "professionId": "LEATHERWORKING",
+      "name": "Перчатки Серой Тропы",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "ARCHER_UNCOMMON_GREY_TRAIL_HANDS",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "LIGHT_LEATHER",
+          "quantity": 5
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "LW_THICK_HANDS",
+      "professionId": "LEATHERWORKING",
+      "name": "Перчатки плотной кожи",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "ARCHER_CRAFTED_DENSE_LEATHER_HANDS",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "THICK_LEATHER",
+          "quantity": 5
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "LW_LIGHT_CHEST",
+      "professionId": "LEATHERWORKING",
+      "name": "Куртка Серой Тропы",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "ARCHER_UNCOMMON_GREY_TRAIL_CHEST",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "LIGHT_LEATHER",
+          "quantity": 8
+        },
+        {
+          "itemId": "CHITIN_FRAGMENT",
+          "quantity": 2
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "LW_THICK_CHEST",
+      "professionId": "LEATHERWORKING",
+      "name": "Куртка плотной кожи",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "ARCHER_CRAFTED_DENSE_LEATHER_CHEST",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "THICK_LEATHER",
+          "quantity": 8
+        },
+        {
+          "itemId": "CHITIN_FRAGMENT",
+          "quantity": 4
         }
       ],
       "requiredLocationId": "STARTER_TOWN"

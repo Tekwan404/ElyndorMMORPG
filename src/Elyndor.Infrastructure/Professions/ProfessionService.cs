@@ -33,9 +33,11 @@ public static class ProfessionErrorCodes
 }
 
 public sealed record ProfessionStateItem(string Id, string Name, ProfessionCategory Category, int Skill, int MaxSkill);
-public sealed record SkinnableCorpseState(Guid CombatSessionId, Guid EnemyActorId, string MonsterDefinitionId, string MonsterName, int RequiredSkill, DateTimeOffset ExpiresAtUtc);
-public sealed record ProfessionRecipeState(string Id, string Name, string ProfessionId, int RequiredSkill, string OutputItemId, int OutputQuantity, IReadOnlyList<ProfessionRecipeIngredient> Ingredients, string? RequiredLocationId);
-public sealed record ProfessionStateSnapshot(IReadOnlyList<ProfessionStateItem> Learned, IReadOnlyList<SkinnableCorpseState> SkinnableCorpses, IReadOnlyList<ProfessionRecipeState> Recipes);
+public sealed record SkinnableCorpseState(Guid CombatSessionId, Guid EnemyActorId, string MonsterDefinitionId, string MonsterName, int RequiredSkill, DateTimeOffset ExpiresAtUtc, string? ItemName = null, int MinQuantity = 0, int MaxQuantity = 0);
+public sealed record ProfessionRecipeState(string Id, string Name, string ProfessionId, int RequiredSkill, string OutputItemId, int OutputQuantity, IReadOnlyList<ProfessionRecipeIngredient> Ingredients, string? RequiredLocationId, int SkillUpUntil = 0, string? OutputName = null, string? OutputIconId = null, int OutputRequiredLevel = 1);
+public sealed record ProfessionMaterialSourceState(string ItemId, string ItemName, string MonsterName, string LocationId, string LocationName, int RequiredSkill, int SkillUpUntil = 0);
+public sealed record ProfessionMaterialState(string Id, string Name);
+public sealed record ProfessionStateSnapshot(IReadOnlyList<ProfessionStateItem> Learned, IReadOnlyList<SkinnableCorpseState> SkinnableCorpses, IReadOnlyList<ProfessionRecipeState> Recipes, IReadOnlyList<ProfessionMaterialSourceState>? MaterialSources = null, IReadOnlyList<ProfessionMaterialState>? Materials = null);
 public sealed record ProfessionMutationResult(bool IsSuccess, string? ErrorCode, ProfessionStateSnapshot? State = null, string? ItemId = null, int Quantity = 0, bool SkillIncreased = false, bool Replayed = false);
 
 public sealed class ProfessionService(
@@ -55,6 +57,7 @@ public sealed class ProfessionService(
             return null;
 
         GameContentPackage package = contentProvider.GetCurrent().Package;
+        var itemById = (package.Items ?? []).ToDictionary(item => item.Id, StringComparer.Ordinal);
         IReadOnlyList<ProfessionDefinition> definitions = package.Professions ?? [];
         Dictionary<string, ProfessionDefinition> definitionById = definitions.ToDictionary(item => item.Id, StringComparer.Ordinal);
         CharacterProfession[] learned = await dbContext.CharacterProfessions.AsNoTracking()
@@ -98,7 +101,10 @@ public sealed class ProfessionService(
                         item.MonsterDefinitionId,
                         monsterNames.GetValueOrDefault(item.MonsterDefinitionId) ?? item.MonsterDefinitionId,
                         source.RequiredSkill,
-                        item.ExpiresAtUtc);
+                        item.ExpiresAtUtc,
+                        itemById.GetValueOrDefault(source.ItemId)?.Name,
+                        source.MinQuantity,
+                        source.MaxQuantity);
                 }).ToArray(),
             (package.ProfessionRecipes ?? [])
                 .Where(recipe => learnedIds.Contains(recipe.ProfessionId))
@@ -112,8 +118,15 @@ public sealed class ProfessionService(
                     recipe.OutputItemId,
                     recipe.OutputQuantity,
                     recipe.Ingredients,
-                    recipe.RequiredLocationId))
-                .ToArray());
+                    recipe.RequiredLocationId,
+                    recipe.SkillUpUntil,
+                    itemById.GetValueOrDefault(recipe.OutputItemId)?.Name,
+                    itemById.GetValueOrDefault(recipe.OutputItemId)?.IconId,
+                    itemById.GetValueOrDefault(recipe.OutputItemId)?.RequiredLevel ?? 1))
+                .ToArray(),
+            ProfessionWorkshopCatalog.MaterialSources(package),
+            (package.Items ?? []).Where(item => item.Type == ItemType.Material)
+                .Select(item => new ProfessionMaterialState(item.Id, item.Name)).ToArray());
     }
 
     public async Task<ProfessionMutationResult> LearnAsync(

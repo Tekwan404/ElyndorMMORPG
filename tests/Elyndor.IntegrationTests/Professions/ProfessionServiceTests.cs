@@ -19,6 +19,38 @@ public sealed class ProfessionServiceTests(PostgresFixture postgres) : IAsyncLif
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
+    public async Task WorkshopCraftConsumesOnceAndReturnsCanonicalRecipeMetadata()
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync();
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            var profession = new CharacterProfession(characterId, ProfessionIds.Leatherworking, Now);
+            for (int skill = 1; skill < 31; skill++) profession.TryIncreaseSkill(300, Now);
+            setup.CharacterProfessions.Add(profession);
+            setup.CharacterLocations.Add(new Elyndor.Core.World.CharacterLocation(characterId, "STARTER_TOWN", 1, Now));
+            setup.CharacterItems.Add(new Elyndor.Core.Items.CharacterItem(Guid.CreateVersion7(), characterId, "THICK_LEATHER", 4, Now));
+            await setup.SaveChangesAsync();
+        }
+        await using GameDbContext context = postgres.CreateDbContext();
+        var service = await CreateServiceAsync(context);
+        var state = await service.GetStateAsync(accountId, CancellationToken.None);
+        Assert.NotNull(state);
+        var recipe = Assert.Single(state.Recipes, recipe => recipe.Id == "LW_THICK_FEET");
+        Assert.Equal(61, recipe.SkillUpUntil);
+        Assert.Equal(12, recipe.OutputRequiredLevel);
+        Assert.Equal("Сапоги плотной кожи", recipe.OutputName);
+        Assert.NotEmpty(state.MaterialSources!);
+        Guid mutationId = Guid.CreateVersion7();
+        var result = await service.CraftAsync(accountId, recipe.Id, mutationId, CancellationToken.None);
+        var replay = await service.CraftAsync(accountId, recipe.Id, mutationId, CancellationToken.None);
+        Assert.True(result.IsSuccess);
+        Assert.True(replay.Replayed);
+        await using var verify = postgres.CreateDbContext();
+        Assert.Equal(1, await verify.CharacterItems.CountAsync(item => item.CharacterId == characterId && item.ItemDefinitionId == recipe.OutputItemId));
+        Assert.False(await verify.CharacterItems.AnyAsync(item => item.CharacterId == characterId && item.ItemDefinitionId == "THICK_LEATHER"));
+    }
+
+    [Fact]
     public async Task SkinningCompletesWithNpgsqlRetryStrategy()
     {
         (Guid accountId, Guid characterId) = await CreateCharacterAsync();

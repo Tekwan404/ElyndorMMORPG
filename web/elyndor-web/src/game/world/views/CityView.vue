@@ -163,9 +163,9 @@ async function startTraining(): Promise<void> {
       </div>
 
       <div v-else-if="activeDestination === 'craft'" class="city-interior__choices">
-        <p>Кузница и ремесленные мастерские города.</p>
+        <p>Выделка кожи и изготовление снаряжения — в кожевенной мастерской. Улучшение и перековка готовых вещей — в кузнице.</p>
         <UIButton data-city-forge @click="forgeOpen = true">Кузница</UIButton>
-        <UIButton variant="secondary" data-city-professions @click="activeDestination = 'professions'">Профессии</UIButton>
+        <UIButton variant="secondary" data-city-professions @click="activeDestination = 'professions'">Кожевенная мастерская</UIButton>
       </div>
 
       <div v-else-if="activeDestination === 'bank'" class="city-interior__choices">

@@ -84,7 +84,7 @@ async function openProfessions(page: Page): Promise<void> {
   await expect(page.locator('[data-city-hub]')).toBeVisible()
   await page.locator('[data-city-marker="craft"]').click()
   await page.locator('[data-city-professions]').click()
-  await expect(page.getByRole('heading', { name: 'Профессии' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Кожевенная мастерская' })).toBeVisible()
 }
 
 async function expectLearnedProfession(
