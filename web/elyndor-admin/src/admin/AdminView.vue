@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import AdminClassProfileForm from '@/admin/AdminClassProfileForm.vue'
 import AdminCombatSimulator from '@/admin/AdminCombatSimulator.vue'
 import AdminEntityForm from '@/admin/AdminEntityForm.vue'
@@ -64,6 +64,7 @@ type SectionKey = (typeof sections)[number]['key']
 
 const props = defineProps<{
   initialSection?: string
+  initialFocus?: string
 }>()
 
 const emit = defineEmits<{
@@ -935,6 +936,21 @@ watch(draftJson, payloadJson => {
   scheduleLocalDraftSave(payloadJson)
 })
 
+const focusAnchors: Record<string, string> = {
+  drafts: 'admin-drafts',
+  simulator: 'admin-simulator',
+  revisions: 'admin-revisions',
+  releases: 'admin-releases',
+}
+
+async function focusRequestedArea(area: string | undefined): Promise<void> {
+  if (!area || accessState.value !== 'ready') return
+  await nextTick()
+  document.getElementById(focusAnchors[area] ?? '')?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+}
+
+watch(() => props.initialFocus, focus => { void focusRequestedArea(focus) })
+
 watch(
   () => props.initialSection,
   sectionKey => {
@@ -950,6 +966,7 @@ onMounted(async () => {
   try {
     await refreshAll(true)
     accessState.value = 'ready'
+    await focusRequestedArea(props.initialFocus)
   } catch (error) {
     accessState.value = error instanceof ApiRequestError && error.status === 403
       ? 'denied'
@@ -1050,7 +1067,7 @@ onBeforeUnmount(() => {
         </div>
       </section>
 
-      <section class="toolbar">
+      <section id="admin-drafts" class="toolbar">
         <label class="note-field">
           <span>Причина изменения</span>
           <input v-model="note" maxlength="240" placeholder="Например: nerf wolf XP after test" />
@@ -1436,6 +1453,7 @@ onBeforeUnmount(() => {
       </section>
 
       <AdminCombatSimulator
+        id="admin-simulator"
         :payload-json="draftJson"
         :classes="simulationClassOptions"
         :monsters="simulationMonsterOptions"
@@ -1443,7 +1461,7 @@ onBeforeUnmount(() => {
       />
 
       <section class="history">
-        <div class="history__column">
+        <div id="admin-revisions" class="history__column">
           <h2>Revisions</h2>
           <article v-for="revision in history.revisions" :key="revision.id" class="history-card">
             <div>
@@ -1465,7 +1483,7 @@ onBeforeUnmount(() => {
           </article>
         </div>
 
-        <div class="history__column">
+        <div id="admin-releases" class="history__column">
           <h2>Releases</h2>
           <article v-for="release in history.releases" :key="release.id" class="history-card">
             <div>
