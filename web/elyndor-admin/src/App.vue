@@ -472,10 +472,10 @@ function formatDate(value: string | null | undefined): string {
       <section class="hero-panel">
         <div>
           <span class="live-label">● LIVE</span>
-          <h2>Production control plane</h2>
+          <h2>Панель управления Elyndor</h2>
           <p>
-            Новый отдельный Admin SPA подключён к server-side SUPER_ADMIN API.
-            Следующий блок — перенос Content Workspace.
+            Контент, публикации и тестирование GM-предметов доступны из одного интерфейса.
+            Для изменений live-баланса используй проверку и предварительный просмотр публикации.
           </p>
         </div>
         <button type="button" :disabled="busy" @click="run(loadDashboard)">
@@ -544,16 +544,14 @@ function formatDate(value: string | null | undefined): string {
       </section>
 
       <section class="next-panel">
-        <p class="eyebrow">NEXT ADMIN V2 BLOCK</p>
-        <h2>Content Workspace migration</h2>
-        <p>
-          Monsters, Items, Abilities, Talents, Locations, Loot, Merchants, Simulator,
-          Validation, Revisions, Publish и Rollback уже доступны в отдельном Content Workspace.
-          Следующий блок — global search, filters, relations и улучшение editor UX.
-        </p>
-        <button class="primary-link" type="button" @click="openContent('monsters')">
-          Открыть Content Workspace
-        </button>
+        <p class="eyebrow">QUICK ACTIONS</p>
+        <h2>С чего начать?</h2>
+        <p>Выбирай нужный инструмент. Изменения контента сохраняются в draft и публикуются отдельно; GM Forge выдаёт только тестовые предметы.</p>
+        <div class="quick-actions">
+          <button class="primary-link" type="button" @click="openContent('monsters')">Редактор контента</button>
+          <button class="primary-link" type="button" @click="openContent('items')">Предметы и экипировка</button>
+          <button class="primary-link" type="button" @click="openGmForge">GM Forge · тестовый шмот</button>
+        </div>
       </section>
 
       <p v-if="errorMessage" class="error-message error-message--dashboard">{{ errorMessage }}</p>
