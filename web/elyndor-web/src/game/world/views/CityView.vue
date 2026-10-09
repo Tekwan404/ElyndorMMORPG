@@ -2,7 +2,13 @@
 import { defineAsyncComponent, ref, watch } from 'vue'
 
 import cityArt from '@/assets/world/elyndor-city-background.webp'
-import cityMarkersArt from '@/assets/world/elyndor-city-markers.webp'
+import guildArt from '@/assets/world/city-guild.webp'
+import adventurersArt from '@/assets/world/city-adventurers.webp'
+import auctionArt from '@/assets/world/city-auction.webp'
+import marketArt from '@/assets/world/city-market.webp'
+import bankArt from '@/assets/world/city-bank.webp'
+import craftArt from '@/assets/world/city-craft.webp'
+import arenaArt from '@/assets/world/city-arena.webp'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
@@ -41,24 +47,23 @@ watch(() => props.openAdventurers, (open) => {
   if (open) adventurersOpen.value = true
 }, { immediate: true })
 
-// The supplied eight gold badges are packed into a 4 × 2 transparent sprite.
-// Each badge remains its own accessible HTML button; the city art never contains hot spots.
+// Original medallions are decorative; destination names stay readable DOM text.
 const cityMarkers: readonly {
   id: CityDestination
   label: string
   glyph: GlyphName
   x: number
   y: number
-  sprite: number | null
+  art: string | null
 }[] = [
-  { id: 'guild', label: 'Гильдия', glyph: 'shield', x: 47, y: 15, sprite: 7 },
-  { id: 'adventurers', label: 'Гильдия авантюристов', glyph: 'star', x: 19, y: 27, sprite: 5 },
-  { id: 'auction', label: 'Аукцион', glyph: 'ring', x: 80, y: 32, sprite: 4 },
-  { id: 'market', label: 'Рынок', glyph: 'chest', x: 15, y: 47, sprite: 1 },
-  { id: 'teleport', label: 'Телепорт', glyph: 'staff', x: 49, y: 50, sprite: null },
-  { id: 'bank', label: 'Банк', glyph: 'chest', x: 85, y: 49, sprite: 0 },
-  { id: 'craft', label: 'Ремесленный квартал', glyph: 'axe', x: 18, y: 71, sprite: 3 },
-  { id: 'arena', label: 'Арена', glyph: 'helmet', x: 78, y: 71, sprite: 6 },
+  { id: 'guild', label: 'Гильдия', glyph: 'shield', x: 50, y: 27, art: guildArt },
+  { id: 'adventurers', label: 'Гильдия авантюристов', glyph: 'star', x: 19, y: 35, art: adventurersArt },
+  { id: 'auction', label: 'Аукцион', glyph: 'ring', x: 81, y: 35, art: auctionArt },
+  { id: 'market', label: 'Рынок', glyph: 'chest', x: 20, y: 60, art: marketArt },
+  { id: 'teleport', label: 'Телепорт', glyph: 'staff', x: 50, y: 66, art: null },
+  { id: 'bank', label: 'Банк', glyph: 'chest', x: 81, y: 60, art: bankArt },
+  { id: 'craft', label: 'Ремесленный квартал', glyph: 'axe', x: 19, y: 85, art: craftArt },
+  { id: 'arena', label: 'Арена', glyph: 'helmet', x: 81, y: 85, art: arenaArt },
 ]
 
 const destinationNames: Record<CityDestination, string> = {
@@ -97,11 +102,11 @@ async function startTraining(): Promise<void> {
 
 <template>
   <section class="city-hub" aria-label="Город" data-city-hub>
-    <div v-if="!activeDestination" class="city-map" data-city-map>
+    <div v-if="!activeDestination" class="city-map" :class="{ 'city-map--boss-active': worldBoss.active && worldBoss.active.currentHealth > 0 }" data-city-map>
       <img class="city-map__art" :src="cityArt" alt="Стартовый город — улицы, здания и площади" />
       <div class="city-map__top-shade" aria-hidden="true" />
       <div class="city-map__heading">
-        <small>БЕЗОПАСНАЯ ЗОНА</small>
+        <small>ELYNDOR · БЕЗОПАСНАЯ ЗОНА</small>
         <h1>Стартовый город</h1>
       </div>
       <button
@@ -116,27 +121,20 @@ async function startTraining(): Promise<void> {
         :key="marker.id"
         type="button"
         class="city-marker"
+        :class="{ 'city-marker--wide': marker.id === 'adventurers' || marker.id === 'craft' }"
         :data-city-marker="marker.id"
         :style="{ left: marker.x + '%', top: marker.y + '%' }"
         :aria-label="'Открыть: ' + marker.label"
         @click="openDestination(marker.id)"
       >
-        <span
-          v-if="marker.sprite !== null"
-          class="city-marker__sprite"
-          :style="{
-            backgroundImage: 'url(' + cityMarkersArt + ')',
-            backgroundPosition: ((marker.sprite % 4) / 3) * 100 + '% ' + Math.floor(marker.sprite / 4) * 100 + '%',
-          }"
-          aria-hidden="true"
-        />
-        <template v-else>
-          <span class="city-marker__seal" aria-hidden="true">
-            <IconGenerator :config="{ id: 'city-' + marker.id, glyph: marker.glyph, category: 'utility' }" />
-          </span>
-          <span class="city-marker__name">{{ marker.label }}</span>
-          <span class="city-marker__arrow" aria-hidden="true" />
-        </template>
+        <span v-if="marker.art" class="city-marker__medallion" aria-hidden="true">
+          <img :src="marker.art" alt="" draggable="false" />
+        </span>
+        <span v-else class="city-marker__seal" aria-hidden="true">
+          <IconGenerator :config="{ id: 'city-' + marker.id, glyph: marker.glyph, category: 'utility' }" />
+        </span>
+        <span class="city-marker__name">{{ marker.label }}</span>
+        <span class="city-marker__arrow" aria-hidden="true" />
       </button>
     </div>
 
@@ -194,14 +192,14 @@ async function startTraining(): Promise<void> {
 .city-hub {
   width: 100%;
   min-width: 0;
-  min-height: 100%;
+  height: 100%;
   background: #090d15;
 }
 .city-map {
   position: relative;
   width: 100%;
-  aspect-ratio: 9 / 16;
-  min-height: min(100%, 560px);
+  height: 100%;
+  min-height: 340px;
   isolation: isolate;
   overflow: hidden;
   background: #101620;
@@ -212,22 +210,25 @@ async function startTraining(): Promise<void> {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  object-position: center 42%;
 }
 .city-map__top-shade {
   position: absolute;
-  inset: 0 0 auto;
-  height: 23%;
-  background: linear-gradient(180deg, rgb(3 5 11 / 67%), transparent);
+  inset: 0;
+  background: linear-gradient(180deg, #080b15d9, transparent 20%, transparent 85%, #080b1570),
+    linear-gradient(90deg, #080b1533, transparent 30%, transparent 70%, #080b1533);
   pointer-events: none;
 }
 .city-map__heading {
   position: absolute;
-  top: 9px;
-  left: 12px;
+  top: 13px;
+  left: 50%;
+  width: max-content;
+  text-align: center;
+  transform: translateX(-50%);
   z-index: 1;
   display: grid;
-  gap: 1px;
+  gap: 4px;
   color: #f6e9cf;
   text-shadow: 0 2px 6px black;
   pointer-events: none;
@@ -236,6 +237,16 @@ async function startTraining(): Promise<void> {
   color: #d2b574;
   font-size: 0.6rem;
   letter-spacing: 0.14em;
+}
+.city-map--boss-active .city-map__heading {
+  left: 12px;
+  width: calc(100% - 132px);
+  text-align: left;
+  transform: none;
+}
+.city-map--boss-active .city-map__heading small {
+  font-size: 0.52rem;
+  letter-spacing: 0.05em;
 }
 .city-map__boss {
   position: absolute;
@@ -258,9 +269,8 @@ async function startTraining(): Promise<void> {
   position: absolute;
   z-index: 2;
   display: grid;
-  width: clamp(68px, 20vw, 98px);
-  aspect-ratio: 116 / 145;
-  min-height: 56px;
+  width: clamp(78px, 22vw, 96px);
+  min-height: 78px;
   align-content: center;
   justify-items: center;
   padding: 0;
@@ -277,18 +287,32 @@ async function startTraining(): Promise<void> {
   outline-offset: 4px;
   border-radius: 12px;
 }
-.city-marker__sprite {
+.city-marker--wide {
+  width: clamp(100px, 30vw, 116px);
+}
+.city-marker__medallion {
+  position: relative;
   display: block;
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  background-size: 400% 200%;
-  filter: drop-shadow(0 3px 5px rgb(0 0 0 / 55%));
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  filter: drop-shadow(0 2px 3px #000b);
+}
+.city-marker__medallion img {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  width: 68px;
+  max-width: none;
+  height: auto;
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 .city-marker__seal {
   display: grid;
-  width: clamp(33px, 10vw, 46px);
-  height: clamp(33px, 10vw, 46px);
+  width: 49px;
+  height: 49px;
+  margin: 4px 0 5px;
   place-items: center;
   border: 2px solid #b68b45;
   border-radius: 50%;
@@ -309,16 +333,19 @@ async function startTraining(): Promise<void> {
 .city-marker__name {
   position: relative;
   z-index: 1;
-  width: max-content;
-  max-width: 125%;
-  margin-top: -1px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  white-space: normal;
+  margin-top: -3px;
   padding: 3px 7px 4px;
   border: 1px solid #b68b45;
-  border-radius: 5px;
+  border-radius: 2px;
   background: linear-gradient(#28201b, #090a10);
   box-shadow: inset 0 1px #e1bd7299, 0 2px 5px #000b;
   color: #fff2d3;
-  font: 600 clamp(0.63rem, 2.5vw, 0.85rem)/1.06 Georgia, serif;
+  font: 600 clamp(0.68rem, 2.6vw, 0.8rem)/1.1 Georgia, serif;
   text-align: center;
   text-wrap: balance;
 }
@@ -329,6 +356,9 @@ async function startTraining(): Promise<void> {
   border-top: 7px solid #f4ba54;
   border-left: 4px solid transparent;
   filter: drop-shadow(0 0 4px #ffab38);
+}
+@media (hover: hover) {
+  .city-marker:hover { filter: drop-shadow(0 0 7px #e7b65499); }
 }
 .city-marker:active {
   transform: translate(-50%, -50%) scale(0.96);
