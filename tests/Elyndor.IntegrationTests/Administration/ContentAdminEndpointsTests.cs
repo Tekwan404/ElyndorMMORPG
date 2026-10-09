@@ -7,6 +7,7 @@ using Elyndor.Contracts.Identity;
 using Elyndor.Infrastructure.Administration;
 using Elyndor.Infrastructure.Content;
 using Elyndor.IntegrationTests.Postgres;
+using Elyndor.Server.Administration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
