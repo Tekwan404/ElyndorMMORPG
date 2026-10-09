@@ -422,10 +422,11 @@ public sealed class TelegramAdministrationService(
         if (definition is null || definition.Type != ItemType.Equipment || definition.Stackable)
             return Failure("admin_gmforge_not_equipment", "GM Forge работает только с экипировкой.");
 
-        int used = await InventoryCapacity.CountUsedSlotsAsync(dbContext, character.Id, cancellationToken);
+        InventoryCapacityState capacity = await InventoryCapacity.GetStateAsync(
+            dbContext, character.Id, content, cancellationToken);
         int needed = await InventoryCapacity.AdditionalSlotsRequiredAsync(
             dbContext, character.Id, definition, 1, cancellationToken);
-        if (used + needed > InventoryCapacity.Resolve(content))
+        if (capacity.UsedSlots + needed > capacity.Capacity)
             return Failure("admin_inventory_full", "Недостаточно места в инвентаре.");
 
         Guid operationId = Guid.CreateVersion7();
