@@ -167,6 +167,9 @@ code { color: var(--cyan); }
 .activity-list p { margin: 2px 0 0; color: #7e879e; font-size: 10px; }
 .next-panel { margin-top: 14px; border-color: rgba(145,116,255,.22); }
 .next-panel p:last-child { max-width: 760px; margin: 9px 0 0; color: var(--muted); line-height: 1.55; }
+.quick-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.quick-actions .primary-link { margin-top: 0; cursor: pointer; }
+.quick-actions .primary-link:hover { border-color: var(--violet); }
 .error-message--dashboard { max-width: 720px; }
 
 @media (max-width: 980px) {
