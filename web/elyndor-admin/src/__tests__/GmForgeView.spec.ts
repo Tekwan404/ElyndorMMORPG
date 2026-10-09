@@ -6,7 +6,7 @@ describe('GM Forge admin form', () => {
   afterEach(() => vi.unstubAllGlobals())
 
   it('prepares a 1500 damage weapon and reuses its request ID after a network retry', async () => {
-    const mockFetch = vi.fn()
+    const mockFetch = vi.fn<typeof fetch>()
       .mockRejectedValueOnce(new Error('network'))
       .mockResolvedValueOnce(new Response(
         JSON.stringify({ code: 'admin_gmforge_created', message: 'DEV создан', isDuplicate: false }),
@@ -36,8 +36,11 @@ describe('GM Forge admin form', () => {
     await flushPromises()
     expect(wrapper.text()).toContain('DEV создан')
     expect(mockFetch).toHaveBeenCalledTimes(2)
-    const first = JSON.parse(String((mockFetch.mock.calls[0]?.[1] as RequestInit).body))
-    const second = JSON.parse(String((mockFetch.mock.calls[1]?.[1] as RequestInit).body))
+    const firstCall = mockFetch.mock.calls[0]
+    const secondCall = mockFetch.mock.calls[1]
+    if (!firstCall || !secondCall) throw new Error('Expected two mint requests')
+    const first = JSON.parse(String(firstCall[1]?.body))
+    const second = JSON.parse(String(secondCall[1]?.body))
     expect(first.requestId).toBe(second.requestId)
     expect(first.specification).toContain('WEAPON_DAMAGE=1500')
     expect(first.specification).toContain('CRITICAL_DAMAGE=150')
