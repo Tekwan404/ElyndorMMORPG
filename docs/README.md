@@ -24,7 +24,7 @@
   [spatial inventory](development/spatial-inventory-v1.md),
   [money denominations](development/money-denominations.md),
   [commerce settlement](development/player-commerce-settlement.md).
-- Frontend: [UI kit](development/elyndor-ui-kit.md), [UI migration audit](development/ui-kit-audit.md).
+- Frontend: [UI kit](development/elyndor-ui-kit.md), [UI migration audit](development/ui-kit-audit.md), [city hub](development/city-hub-ui.md).
 
 ## Document lifecycle
 

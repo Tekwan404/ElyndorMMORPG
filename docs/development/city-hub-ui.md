@@ -24,19 +24,24 @@ The city uses the original shell HUD and five navigation icons.
 | Craft district | ForgeView / ProfessionView |
 | Arena | Existing ArenaView and training dummy |
 
-The Gates marker is intentionally absent: the bottom **Мир** tab already handles travel and the world map. City badges are roughly 20% smaller than the initial version for better mobile readability.\n\nThe city keeps access to active world boss through a small banner/shortcut.
+The Gates marker is intentionally absent: the bottom **Мир** tab already handles travel and the world map.
+The city keeps access to an active world boss through a small shortcut with reserved heading space.
 The `arenaInvite` query deep-link continues to open ArenaView independently of the city so already sent invites don't break.
 
 ## Supplied production assets
-The actual provided 9:16 city painting is now committed as `src/assets/world/elyndor-city-background.webp` (480×854, ~80 KB) and used by `CityView`.
-Eight **original user-provided transparent gold sign PNGs** were optimized into `src/assets/world/elyndor-city-markers.webp` (~51 KB, 4×2 atlas, 116×145 per tile). Each tile is displayed as an independent accessible button and remains independently clickable.
+The supplied central-plaza painting is committed as `src/assets/world/elyndor-city-background.webp` (864px wide, ~370 KiB). It fills the space between the existing HUD and navigation using cover cropping, centered at 42% vertically.
+Seven original transparent gold sign PNGs are individual `src/assets/world/city-*.webp` assets (320px wide, ~304 KiB combined). The decorative medallion is clipped from each sign; its name is readable HTML text. The obsolete small atlas is removed. Explicit medallion dimensions avoid the zero-height sprites in the previous layout.
 The teleport badge is rendered separately with the existing icon kit, because no standalone teleport PNG was supplied. HUD and bottom navigation are unchanged.
 The art is mobile-first: do not bake coordinates/hotspots or the interface into the JPG/WEBP itself; marker coordinates are percentages for responsive scaling.
+The scene fills the available height with a 340px minimum. Longer names get wider buttons, and markers stay at least 44px in both dimensions. On smaller screens the left and right columns remain separated vertically, leaving the central fountain visible.
+
+MerchantShop loads on an initially open mount as well as subsequent opens. CityView mounts it lazily, so watching only later prop changes would leave the first visit empty.
 
 ## Regression and release check
 - `npm run type-check`, `npm run lint`, frontend unit suite
 - mobile Playwright shell at 320, 360, 390, 430px with Telegram safe areas
-- city markers must not overlap or be obstructed by the HUD/nav; art must not create horizontal scroll
+- city markers must not overlap or be obstructed by the HUD/nav; art must not create horizontal scroll (Playwright checks every pair of button rectangles)
+- mock a live boss and verify its shortcut does not overlap the heading at 320px
 - verify: city entry -> merchant, auction, mailbox, forge, professions, arena, training, bank/inventory, guild contracts
 - region -> map -> region, and city -> map -> city; no accidental teleport
 - invite link and mid-fight reconnect still render combat instead of city

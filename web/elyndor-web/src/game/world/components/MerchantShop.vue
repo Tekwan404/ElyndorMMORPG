@@ -141,7 +141,7 @@ watch(() => props.open, open => {
   selectedSellIds.value = []
   reaction.value = 'Осмотрись. Хорошее снаряжение само себя не купит.'
   void loadMerchant()
-})
+}, { immediate: true })
 
 watch(selectedOfferId, () => {
   selectedQuantity.value = 1

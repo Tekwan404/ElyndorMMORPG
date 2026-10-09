@@ -1,5 +1,72 @@
 import { expect, test, type Page } from '@playwright/test'
 
+test('city signs remain readable and reachable across phone sizes', async ({ page }) => {
+  test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Visual layout uses deterministic local content.')
+  await installMockApiUnlessReal(page)
+  await page.route('**/api/v1/auction?*', route => route.fulfill({ json: [] }))
+  await page.goto('/')
+  await page.getByLabel('Имя').fill('CityReview')
+  await page.getByLabel('Лучник').check()
+  await page.getByRole('button', { name: 'Войти в мир' }).click()
+  await expect(page.locator('[data-city-marker]')).toHaveCount(8)
+  for (const viewport of [{ width: 320, height: 568 }, { width: 360, height: 740 },
+    { width: 390, height: 844 }, { width: 430, height: 932 }]) {
+    await page.setViewportSize(viewport)
+    await page.locator('.content').evaluate(element => { element.scrollTop = 0 })
+    const markers = page.locator('[data-city-marker]')
+    const boxes = []
+    for (const marker of await markers.all()) {
+      await expect(marker).toBeInViewport({ ratio: 1 })
+      const box = await marker.boundingBox()
+      expect(box?.width ?? 0).toBeGreaterThanOrEqual(44)
+      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44)
+      expect(box).not.toBeNull()
+      boxes.push(box!)
+    }
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i]!
+        const b = boxes[j]!
+        expect(a.x + a.width <= b.x || b.x + b.width <= a.x
+          || a.y + a.height <= b.y || b.y + b.height <= a.y).toBe(true)
+      }
+    }
+    for (const image of await page.locator('.city-marker__medallion img').all()) {
+      expect(await image.evaluate(element => (element as HTMLImageElement).naturalWidth)).toBeGreaterThan(0)
+      expect((await image.boundingBox())?.height ?? 0).toBeGreaterThan(44)
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(viewport.width)
+    await page.screenshot({ path: `../../output/playwright/city-redesign-${viewport.width}.png` })
+  }
+  await page.locator('[data-city-marker="auction"]').click()
+  await expect(page.locator('[data-city-interior]')).toBeVisible()
+  await page.locator('[data-city-back]').click()
+  await expect(page.locator('[data-city-map]')).toBeVisible()
+  await page.route('**/api/v1/world-boss/active', route => route.fulfill({
+    json: { spawnId: 'city-layout-boss', currentHealth: 100, maxHealth: 100, name: 'Мировой босс' },
+  }))
+  await page.route('**/hubs/world-boss/negotiate*', route => route.fulfill({ json: {
+    negotiateVersion: 1, connectionId: 'city-layout', connectionToken: 'city-layout',
+    availableTransports: [{ transport: 'WebSockets', transferFormats: ['Text'] }],
+  } }))
+  await page.routeWebSocket(/\/hubs\/world-boss/, socket => {
+    socket.onMessage(message => {
+      for (const frame of String(message).split('\u001e').filter(Boolean)) {
+        const request = JSON.parse(frame) as { protocol?: string; invocationId?: string }
+        if (request.protocol) socket.send('{}\u001e')
+        else if (request.invocationId) socket.send(`${JSON.stringify({ type: 3, invocationId: request.invocationId })}\u001e`)
+      }
+    })
+  })
+  await page.setViewportSize({ width: 320, height: 568 })
+  await page.reload()
+  await expect(page.locator('[data-city-world-boss]')).toBeVisible()
+  const heading = await page.locator('.city-map__heading').boundingBox()
+  const boss = await page.locator('[data-city-world-boss]').boundingBox()
+  expect(heading!.x + heading!.width).toBeLessThanOrEqual(boss!.x)
+  await page.screenshot({ path: '../../output/playwright/city-redesign-boss-320.png' })
+})
+
 test('creates a hero, travels, and restores the world on reload', async ({ page }) => {
   const browserErrors: string[] = []
   page.on('console', (message) => {

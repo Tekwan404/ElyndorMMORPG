@@ -14,6 +14,19 @@ import { useGameSessionStore } from '@/stores/gameSession'
 describe('MerchantShop', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
+  it('loads offers when mounted already open from the city', async () => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot([])
+    const getMerchant = vi.spyOn(session, 'getMerchant').mockResolvedValue(merchantSnapshot())
+    const wrapper = mount(MerchantShop, {
+      props: { open: true },
+      global: { stubs: { Teleport: true } },
+    })
+    await flushPromises()
+    expect(getMerchant).toHaveBeenCalledWith('MARCUS_SUPPLIES')
+    expect(wrapper.find('[data-merchant-offer="SMALL_HEALING_POTION"]').exists()).toBe(true)
+  })
+
   it('renders a selectable storefront and buys only through the merchant store action', async () => {
     const session = useGameSessionStore()
     session.snapshot = snapshot([])
