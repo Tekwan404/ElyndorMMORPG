@@ -399,7 +399,7 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
         InventoryEquipmentService inventory = new(context, content, new FixedTimeProvider(Now));
         InventoryOperationResult unlock = await inventory.SetItemLockAsync(
             character.AccountId, item.Id, false, Guid.CreateVersion7(), CancellationToken.None);
-        Assert.True(unlock.Succeeded, unlock.ErrorCode);
+        Assert.True(unlock.IsSuccess, unlock.ErrorCode);
         Assert.True((await context.CharacterItems.AsNoTracking().SingleAsync()).IsLocked);
 
         InventoryOperationResult discarded = await inventory.DiscardItemsAsync(
@@ -407,7 +407,7 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
             [new InventoryDiscardSelection(item.Id, 1)],
             Guid.CreateVersion7(),
             CancellationToken.None);
-        Assert.True(discarded.Succeeded, discarded.ErrorCode);
+        Assert.True(discarded.IsSuccess, discarded.ErrorCode);
         Assert.Empty(await context.CharacterItems.AsNoTracking().ToArrayAsync());
     }
 
