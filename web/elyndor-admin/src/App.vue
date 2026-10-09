@@ -67,7 +67,12 @@ const releaseLabel = computed(() => shortId(content.value?.releaseId ?? null))
 const revisionLabel = computed(() => shortId(content.value?.revisionId ?? null))
 let clock: ReturnType<typeof setInterval> | null = null
 
+function handleInvalidSession(): void {
+  clearSession('Сессия администратора недействительна. Войди повторно.')
+}
+
 onMounted(async () => {
+  window.addEventListener('elyndor-admin-session-expired', handleInvalidSession)
   clock = setInterval(() => {
     now.value = Date.now()
     if (tokenExpiresAtUtc.value && now.value >= Date.parse(tokenExpiresAtUtc.value)) {
@@ -83,6 +88,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   if (clock) clearInterval(clock)
+  window.removeEventListener('elyndor-admin-session-expired', handleInvalidSession)
 })
 
 async function requestCode(): Promise<void> {
