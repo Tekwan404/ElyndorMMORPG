@@ -57,6 +57,46 @@ public sealed class ContentAdminEndpointsTests(PostgresFixture postgres)
     }
 
     [Fact]
+    public async Task PlayerLookupRequiresSuperAdminAndReturnsOwnAccount()
+    {
+        await using WebApplicationFactory<Program> factory =
+            CreateFactory(777, adminAllowedUserId: 777);
+        using HttpClient client = factory.CreateClient();
+
+        HttpResponseMessage anonymous = await client.GetAsync("/api/v1/admin/players/777");
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymous.StatusCode);
+
+        AuthenticationResponse authentication = await AuthenticateAsync(client);
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", authentication.AccessToken);
+
+        using HttpResponseMessage found = await client.GetAsync("/api/v1/admin/players/777");
+        Assert.Equal(HttpStatusCode.OK, found.StatusCode);
+        string payload = await found.Content.ReadAsStringAsync();
+        Assert.Contains("\"telegramUserId\":777", payload, StringComparison.Ordinal);
+        Assert.DoesNotContain("accessToken", payload, StringComparison.OrdinalIgnoreCase);
+
+        HttpResponseMessage missing = await client.GetAsync("/api/v1/admin/players/999");
+        Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+        HttpResponseMessage invalid = await client.GetAsync("/api/v1/admin/players/0");
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+    }
+
+    [Fact]
+    public async Task PlayerLookupForbidsAuthenticatedNonAdmin()
+    {
+        await using WebApplicationFactory<Program> factory =
+            CreateFactory(777, adminAllowedUserId: 999);
+        using HttpClient client = factory.CreateClient();
+        AuthenticationResponse authentication = await AuthenticateAsync(client);
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", authentication.AccessToken);
+
+        HttpResponseMessage forbidden = await client.GetAsync("/api/v1/admin/players/777");
+        Assert.Equal(HttpStatusCode.Forbidden, forbidden.StatusCode);
+    }
+
+    [Fact]
     public async Task GmForgeWebEndpointRequiresSuperAdmin()
     {
         await using WebApplicationFactory<Program> factory =
