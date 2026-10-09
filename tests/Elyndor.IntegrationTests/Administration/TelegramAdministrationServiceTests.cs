@@ -381,6 +381,36 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
         Assert.Equal(500m, clone.Affixes.Single(affix => affix.StatId == ItemStatIds.Strength).Value);
     }
 
+    [Fact]
+    public async Task DevOnlyGearCanBeDiscardedButNotUnlockedForTrade()
+    {
+        await SeedCharacterAsync(732_707_324, level: 60);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        AdministrationResult forged = await ExecuteAsync(
+            9055, new AdministrationOperation(
+                AdministrationOperationType.GmForge, 732_707_324,
+                "UNIQUE_WARRIOR_BLACKHEART WEAPON_DAMAGE=1500"), content);
+        Assert.True(forged.IsSuccess, forged.Message);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        Character character = await context.Characters.AsNoTracking().SingleAsync();
+        CharacterItem item = await context.CharacterItems.SingleAsync();
+        InventoryEquipmentService inventory = new(context, content, new FixedTimeProvider(Now));
+        InventoryOperationResult unlock = await inventory.SetItemLockAsync(
+            character.AccountId, item.Id, false, Guid.CreateVersion7(), CancellationToken.None);
+        Assert.True(unlock.Succeeded, unlock.ErrorCode);
+        Assert.True((await context.CharacterItems.AsNoTracking().SingleAsync()).IsLocked);
+
+        InventoryOperationResult discarded = await inventory.DiscardItemsAsync(
+            character.AccountId,
+            [new InventoryDiscardSelection(item.Id, 1)],
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+        Assert.True(discarded.Succeeded, discarded.ErrorCode);
+        Assert.Empty(await context.CharacterItems.AsNoTracking().ToArrayAsync());
+    }
+
     private async Task<AdministrationResult> ExecuteAsync(
         long updateId,
         AdministrationOperation operation,
