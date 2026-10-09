@@ -249,6 +249,74 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
             candidate.ItemDefinitionId == "UNIQUE_WARRIOR_BLACKHEART"));
     }
 
+    [Fact]
+    public async Task GmForgeGrantsPerfectExtremeSwordAsBoundTestEquipmentOnce()
+    {
+        await SeedCharacterAsync(732_707_324, level: 60);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        AdministrationOperation operation = new(
+            AdministrationOperationType.GmForge, 732_707_324,
+            "UNIQUE_WARRIOR_BLACKHEART quality=PERFECT stars=5 enhance=5 WEAPON_DAMAGE=1500 CRITICAL_DAMAGE=150");
+
+        AdministrationResult first = await ExecuteAsync(9050, operation, content);
+        AdministrationResult replay = await ExecuteAsync(9050, operation, content);
+
+        Assert.True(first.IsSuccess, first.Message);
+        Assert.True(replay.IsDuplicate);
+        await using GameDbContext context = postgres.CreateDbContext();
+        CharacterItem item = await context.CharacterItems.Include(x => x.Affixes).SingleAsync();
+        Assert.Equal(GmItemForge.SourceType, item.SourceType);
+        Assert.Equal(ItemBindStates.Bound, item.BindState);
+        Assert.True(item.IsLocked);
+        Assert.Equal(5, item.Stars);
+        Assert.Equal(5, item.EnhancementLevel);
+        Assert.Equal(100m, item.RollQuality);
+        Assert.True(item.IsPerfect);
+        Assert.Equal(GmItemForge.SourceType, item.PerfectOrigin);
+        Assert.Equal(1500m, item.Affixes.Single(x => x.StatId == ItemStatIds.WeaponDamage).Value);
+        Assert.Equal(150m, item.Affixes.Single(x => x.StatId == ItemStatIds.CriticalDamage).Value);
+        Assert.Equal(1, await context.AdminCommandAudits.CountAsync());
+    }
+
+    [Fact]
+    public async Task GmForgeClonePreservesOriginalAndOverridesOnlyTheCopy()
+    {
+        await SeedCharacterAsync(732_707_324, level: 60);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        AdministrationResult originalGrant = await ExecuteAsync(
+            9051, new AdministrationOperation(AdministrationOperationType.GiveItem,
+                732_707_324, "UNIQUE_WARRIOR_BLACKHEART 1 NORMAL"), content);
+        Assert.True(originalGrant.IsSuccess);
+
+        Guid originalId;
+        await using (GameDbContext context = postgres.CreateDbContext())
+        {
+            originalId = await context.CharacterItems.AsNoTracking().Select(x => x.Id).SingleAsync();
+        }
+
+        AdministrationResult cloned = await ExecuteAsync(9052,
+            new AdministrationOperation(AdministrationOperationType.GmForge, 732_707_324,
+                $"clone:{originalId:D} stars=5 CRITICAL_DAMAGE=150"), content);
+        Assert.True(cloned.IsSuccess, cloned.Message);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterItem[] items = await verify.CharacterItems.Include(x => x.Affixes).ToArrayAsync();
+        Assert.Equal(2, items.Length);
+        CharacterItem original = items.Single(x => x.Id == originalId);
+        CharacterItem clone = items.Single(x => x.Id != originalId);
+        Assert.Equal("ADMIN_GRANT", original.SourceType);
+        Assert.Equal(ItemBindStates.Unbound, original.BindState);
+        Assert.Equal(GmItemForge.SourceType, clone.SourceType);
+        Assert.Equal(ItemBindStates.Bound, clone.BindState);
+        Assert.True(clone.IsLocked);
+        Assert.Equal(5, clone.Stars);
+        Assert.Equal(150m, clone.Affixes.Single(x => x.StatId == ItemStatIds.CriticalDamage).Value);
+        Assert.DoesNotContain(original.Affixes,
+            x => x.StatId == ItemStatIds.CriticalDamage && x.Value == 150m);
+    }
+
     private async Task<AdministrationResult> ExecuteAsync(
         long updateId,
         AdministrationOperation operation,
