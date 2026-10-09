@@ -1533,6 +1533,9 @@ async function toggleSelectedLock(): Promise<void> {
             <span>для экипировки</span>
           </div>
         </section>
+        <p v-if="selectedItem.sourceType === 'GM_FORGE'" class="item-detail__hint item-detail__hint--locked" data-gm-item>
+          DEV-предмет · только для тестирования. Не продаётся и не передаётся другим игрокам.
+        </p>
         <p class="item-detail__description">{{ selectedItem.description }}</p>
         <p
           v-if="isSpatialArtifact(selectedItem)"
@@ -1620,7 +1623,7 @@ async function toggleSelectedLock(): Promise<void> {
           {{ selectedItem.type === 'Equipment' ? 'этот предмет' : 'этот предмет за штуку' }} за
           {{ formatMoney(selectedItem.sellPriceGold) }}.
         </p>
-        <p v-if="selectedItem.isLocked" class="item-detail__hint item-detail__hint--locked">
+        <p v-if="selectedItem.isLocked && selectedItem.sourceType !== 'GM_FORGE'" class="item-detail__hint item-detail__hint--locked">
           Предмет защищён от продажи торговцу. Снимите защиту, если захотите его продать.
         </p>
         <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">
@@ -1762,7 +1765,7 @@ async function toggleSelectedLock(): Promise<void> {
           Уничтожить
         </UIButton>
         <UIButton
-          v-if="selectedItem"
+          v-if="selectedItem && selectedItem.sourceType !== 'GM_FORGE'"
           variant="secondary"
           data-item-lock-action
           :loading="lockPending"
