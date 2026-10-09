@@ -287,8 +287,10 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
             affix => affix.StatId == ItemStatIds.WeaponDamage).Value);
         ItemDefinition template = content.Items!.Single(definition =>
             definition.Id == "UNIQUE_WARRIOR_BLACKHEART");
-        Assert.Equal(template.WeaponDamageMin!.Value + 1500m, forged.Definition.WeaponDamageMin);
-        Assert.Equal(template.WeaponDamageMax!.Value + 1500m, forged.Definition.WeaponDamageMax);
+        ItemDefinition enhancedTemplate = ItemEnhancementRules.ApplyStructuralEnhancement(
+            ItemFamilyScalingPolicy.Apply(template, content.Itemization!, forged.GeneratedItem.ItemLevel), 5);
+        Assert.Equal(enhancedTemplate.WeaponDamageMin!.Value + 1500m, forged.Definition.WeaponDamageMin);
+        Assert.Equal(enhancedTemplate.WeaponDamageMax!.Value + 1500m, forged.Definition.WeaponDamageMax);
         Assert.Equal(template.CriticalDamagePercent + 150m, forged.Definition.CriticalDamagePercent);
 
         context.CharacterEquipment.Add(new CharacterEquipment(
