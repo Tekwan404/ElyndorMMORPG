@@ -73,7 +73,7 @@ const specification = computed(() => {
     : itemId.value.trim().toUpperCase()
   const parameters: string[] = [base, 'quality=' + quality.value]
   if (stars.value !== 'auto') parameters.push('stars=' + stars.value)
-  parameters.push('enhance=' + enhance.value)
+  if (enhance.value !== 'keep') parameters.push('enhance=' + enhance.value)
   for (const override of overrides.value) {
     if (override.value.trim() !== '') parameters.push(override.stat + '=' + override.value.trim())
   }
@@ -164,8 +164,8 @@ async function copyCommand(): Promise<void> {
     <div class="forge-cols">
       <section class="forge-card">
         <div class="forge-tabs">
-          <button type="button" :class="{ selected: mode === 'new' }" @click="mode = 'new'">Создать предмет</button>
-          <button type="button" :class="{ selected: mode === 'clone' }" @click="mode = 'clone'">Копировать существующий</button>
+          <button type="button" :class="{ selected: mode === 'new' }" @click="mode = 'new'; enhance = '0'; quality = 'NORMAL'">Создать предмет</button>
+          <button type="button" :class="{ selected: mode === 'clone' }" @click="mode = 'clone'; enhance = 'keep'; quality = 'NORMAL'">Копировать существующий</button>
         </div>
 
         <label for="forge-player">Telegram ID получателя</label>
@@ -193,22 +193,23 @@ async function copyCommand(): Promise<void> {
           <div>
             <label for="forge-quality">Профиль качества</label>
             <select id="forge-quality" v-model="quality">
-              <option value="NORMAL">Обычный</option>
-              <option value="ELITE">Элитный</option>
-              <option value="BOSS">Босс</option>
+              <option value="NORMAL">{{ mode === 'clone' ? 'Сохранить роллы' : 'Обычный' }}</option>
+              <option v-if="mode === 'new'" value="ELITE">Элитный</option>
+              <option v-if="mode === 'new'" value="BOSS">Босс</option>
               <option value="PERFECT">Идеальный — 100%</option>
             </select>
           </div>
           <div>
             <label for="forge-stars">Звёзды</label>
             <select id="forge-stars" v-model="stars">
-              <option value="auto">По генерации</option>
+              <option value="auto">{{ mode === 'clone' ? 'Как в оригинале' : 'По генерации' }}</option>
               <option v-for="value in 5" :key="value" :value="String(value)">{{ value }} ★</option>
             </select>
           </div>
           <div>
             <label for="forge-enhance">Улучшение</label>
             <select id="forge-enhance" v-model="enhance">
+              <option v-if="mode === 'clone'" value="keep">Как в оригинале</option>
               <option v-for="value in 6" :key="value" :value="String(value - 1)">+{{ value - 1 }}</option>
             </select>
           </div>
@@ -232,13 +233,14 @@ async function copyCommand(): Promise<void> {
       <aside class="forge-card forge-preview">
         <p class="eyebrow">ПРЕДПРОСМОТР ПАРАМЕТРОВ</p>
         <h2>{{ mode === 'new' ? (allItems.find(x => x.id === itemId)?.name ?? itemId) : 'Копия предмета' }}</h2>
-        <p class="forge-stars">{{ previewStars === null ? '★ по генерации' : '★'.repeat(previewStars) }}</p>
+        <p class="forge-stars">{{ previewStars === null ? (mode === 'clone' ? '★ как в оригинале' : '★ по генерации') : '★'.repeat(previewStars) }}</p>
         <dl>
           <div><dt>Качество</dt><dd>{{ quality === 'PERFECT' ? '100% роллов' : quality }}</dd></div>
-          <div><dt>Улучшение</dt><dd>+{{ enhance }}</dd></div>
+          <div><dt>Улучшение</dt><dd>{{ enhance === 'keep' ? 'Как в оригинале' : '+' + enhance }}</dd></div>
           <div v-for="row in overrides" :key="row.stat"><dt>{{ statNames[row.stat] ?? row.stat }}</dt><dd>+{{ row.value || '—' }}</dd></div>
         </dl>
-        <p class="forge-muted">Ручные значения — бонусы к статам, а не проценты качества. Фактический результат рассчитывает сервер.</p>
+        <p class="forge-muted">Ручные значения — бонусы к статам, а не проценты качества. Например, WEAPON_DAMAGE=1500 добавит 1500 к обоим значениям урона оружия.</p>
+        <p v-if="stars !== 'auto' && quality !== 'PERFECT'" class="forge-muted">Установка звёзд вручную изменяет классификацию, но не качество аффиксов. Для настоящего максимального ролла используй «Идеальный — 100%».</p>
         <div class="forge-warning">Тестовый предмет привязан и заблокирован от продажи, обмена и аукциона. Используй тестового персонажа для боёв с наградами.</div>
         <button class="forge-primary" type="button" :disabled="busy" @click="forge">
           {{ busy ? 'Создаётся…' : 'Создать и выдать предмет' }}
