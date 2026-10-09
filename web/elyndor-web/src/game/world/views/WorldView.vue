@@ -10,7 +10,7 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import WorldViewLegacy from './WorldViewLegacy.vue'
 
 const props = withDefaults(defineProps<{ openGuild?: boolean }>(), { openGuild: false })
-const emit = defineEmits<{ 'open-party': []; 'open-world-boss': []; 'open-map': [] }>()
+const emit = defineEmits<{ 'open-party': []; 'open-world-boss': [] }>()
 const session = useGameSessionStore()
 const currentLocationId = computed(() => session.snapshot?.world?.currentLocation.id ?? '')
 const isDungeonLocation = computed(() => locationKind(currentLocationId.value) === 'dungeon')
@@ -18,7 +18,6 @@ const isDungeonLocation = computed(() => locationKind(currentLocationId.value) =
 
 <template>
   <section class="location-screen">
-    <button type="button" class="location-screen__map-link" data-location-open-map @click="emit('open-map')">‹ Карта мира</button>
     <WorldBossBanner @open="emit('open-world-boss')" />
     <LocationOverview>
       <template v-if="isDungeonLocation && currentLocationId" #primary-actions>
@@ -39,16 +38,6 @@ const isDungeonLocation = computed(() => locationKind(currentLocationId.value) =
 </template>
 
 <style scoped>
-.location-screen__map-link {
-  justify-self: start;
-  min-height: 44px;
-  padding: 0 12px;
-  border: 1px solid var(--ui-color-border-strong);
-  border-radius: var(--ui-radius-md);
-  background: var(--ui-color-surface-1);
-  color: var(--ui-color-gold);
-  font: 600 var(--ui-font-size-sm) var(--ui-font-display);
-}
 .location-screen {
   display: grid;
   width: 100%;
