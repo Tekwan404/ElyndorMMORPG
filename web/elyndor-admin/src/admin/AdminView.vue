@@ -107,6 +107,7 @@ const publishCandidate = ref<ContentAdminRevisionDetail | null>(null)
 const publishDiff = ref<ContentDiffEntry[]>([])
 const entitySearch = ref('')
 const globalSearch = ref('')
+const globalSearchInput = ref<HTMLInputElement | null>(null)
 let localDraftSaveTimer: ReturnType<typeof setTimeout> | null = null
 
 const draftPackage = computed<JsonRecord | null>(() => parseRecord(draftJson.value))
@@ -961,8 +962,9 @@ watch(
   },
 )
 
-onMounted(async () => {
-  window.addEventListener('beforeunload', handleBeforeUnload)
+async function loadWorkspace(): Promise<void> {
+  accessState.value = 'loading'
+  errorMessage.value = ''
   try {
     await refreshAll(true)
     accessState.value = 'ready'
@@ -971,13 +973,29 @@ onMounted(async () => {
     accessState.value = error instanceof ApiRequestError && error.status === 403
       ? 'denied'
       : 'error'
-    errorMessage.value =
-      error instanceof ApiRequestError ? error.code : 'network_unavailable'
+    errorMessage.value = error instanceof ApiRequestError ? error.code : 'network_unavailable'
   }
+}
+
+function handleGlobalShortcut(event: KeyboardEvent): void {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    globalSearchInput.value?.focus()
+  } else if (event.key === 'Escape' && document.activeElement === globalSearchInput.value) {
+    globalSearch.value = ''
+    globalSearchInput.value?.blur()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('beforeunload', handleBeforeUnload)
+  window.addEventListener('keydown', handleGlobalShortcut)
+  void loadWorkspace()
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload)
+  window.removeEventListener('keydown', handleGlobalShortcut)
   cancelLocalDraftSave()
   if (current.value && isDirty.value) {
     try {
@@ -1012,6 +1030,7 @@ onBeforeUnmount(() => {
     <section v-else-if="accessState === 'error'" class="system-state system-state--danger">
       <h2>Admin недоступен</h2>
       <p>{{ errorMessage }}</p>
+      <button type="button" @click="loadWorkspace">Повторить подключение</button>
     </section>
 
     <template v-else>
@@ -1040,8 +1059,9 @@ onBeforeUnmount(() => {
 
       <section class="global-search">
         <label>
-          <span>GLOBAL CONTENT SEARCH</span>
+          <span>GLOBAL CONTENT SEARCH · Ctrl/⌘ + K</span>
           <input
+            ref="globalSearchInput"
             v-model="globalSearch"
             type="search"
             placeholder="Wolf, WOLF_LOOT, Fireball…"
