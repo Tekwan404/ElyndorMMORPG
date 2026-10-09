@@ -171,7 +171,8 @@ describe('AppShell', () => {
     expect(wrapper.get('main').text()).toContain('Стартовый город')
     expect(wrapper.find('[data-open-world-map]').exists()).toBe(false)
     expect(wrapper.find('[data-city-hub]').exists()).toBe(true)
-    expect(wrapper.findAll('[data-city-marker]')).toHaveLength(9)
+    expect(wrapper.findAll('[data-city-marker]')).toHaveLength(8)
+    expect(wrapper.find('[data-city-marker="gates"]').exists()).toBe(false)
     expect(wrapper.find('[data-nav="city"]').exists()).toBe(false)
 
     await wrapper.get('[data-city-marker="bank"]').trigger('click')
