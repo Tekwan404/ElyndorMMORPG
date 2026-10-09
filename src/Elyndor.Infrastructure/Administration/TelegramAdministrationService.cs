@@ -397,6 +397,7 @@ public sealed class TelegramAdministrationService(
         GameContentSnapshot content = contentProvider.GetCurrent();
         ItemDefinition? definition;
         GeneratedItemInstance? generated;
+        int inheritedEnhancementLevel = 0;
         if (spec.CloneItemId.HasValue)
         {
             CharacterItem? original = await dbContext.CharacterItems
@@ -407,6 +408,7 @@ public sealed class TelegramAdministrationService(
                 || !content.Indexes.ItemsById.TryGetValue(original.ItemDefinitionId, out definition))
                 return Failure("admin_gmforge_source_missing", "Исходный предмет не найден в инвентаре.");
 
+            inheritedEnhancementLevel = original.EnhancementLevel;
             generated = ItemInstancePersistenceFactory.ToGeneratedInstance(
                 original, definition, content.Package.Itemization);
         }
@@ -450,7 +452,7 @@ public sealed class TelegramAdministrationService(
             Guid.CreateVersion7(), character.Id, definition.Id, 1, now, definition.Version);
         item.ApplyGeneratedInstance(
             forged, key.AuditHash, GmItemForge.SourceType, operationId, $"telegram-update:{updateId}");
-        for (int level = 1; level <= spec.EnhancementLevel; level++)
+        for (int level = 1; level <= (spec.EnhancementLevel ?? inheritedEnhancementLevel); level++)
             item.ApplyEnhancement(level);
         item.MarkDeveloperOnly();
         dbContext.CharacterItems.Add(item);
