@@ -36,7 +36,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   if (process.env.ELYNDOR_E2E_REAL !== 'true') {
     await page.route('**/api/v1/auction?*', route => route.fulfill({ json: [] }))
     await page.route('**/api/v1/mailbox', route => route.fulfill({ json: [] }))
-    await page.locator('[data-nav="city"]').click()
+    await page.locator('[data-nav="location"]').click()
     await page.locator('[data-city-marker="auction"]').click()
     await expect(page.locator('[data-auction-view]')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Мои лоты' })).toBeVisible()
@@ -53,7 +53,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.locator('[data-party-open-dungeons]').click()
   await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
 
-  await page.locator('[data-nav="city"]').click()
+  await page.locator('[data-nav="location"]').click()
   await expect(page.getByRole('heading', { name: 'Стартовый город' })).toBeVisible()
   await expect(page.locator('[data-city-marker="adventurers"]')).toBeVisible()
   await expect(page.locator('[data-city-marker="auction"]')).toBeVisible()
@@ -64,7 +64,10 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   const merchantDialog = page.getByRole('dialog', { name: 'Лавка Маркуса' })
   await expect(merchantDialog).toBeVisible()
   await expect(merchantDialog.locator('.merchant__identity h2')).toContainText('Маркус')
-  await expect(merchantDialog.locator('[data-merchant-offer]').first()).toBeVisible()
+  // Mocked merchant inventory is deterministic; production E2E may have no public offers.
+  if (process.env.ELYNDOR_E2E_REAL !== 'true') {
+    await expect(merchantDialog.locator('[data-merchant-offer]').first()).toBeVisible()
+  }
   await expect(merchantDialog.getByPlaceholder('Поиск по витрине…')).toBeVisible()
   await merchantDialog.getByRole('button', { name: 'Закрыть', exact: true }).click()
   await expect(merchantDialog).toBeHidden()
@@ -111,7 +114,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toHaveCount(0)
   await expect(page.locator('[data-location-travel]')).toHaveCount(0)
-  await page.locator('[data-nav="world"]').click()
+  await page.locator('[data-nav="location"]').click()
   await expect(page.getByRole('heading', { name: 'Шепчущий лес' })).toBeVisible()
 
   await page.locator('[data-nav="world"]').click()
@@ -120,7 +123,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await expect(page.locator('[data-map-travel]')).toBeEnabled()
   await page.locator('[data-map-travel]').click()
   await expect(page.getByRole('heading', { name: 'Карта мира' })).toBeVisible()
-  await page.locator('[data-nav="world"]').click()
+  await page.locator('[data-nav="location"]').click()
   await expect(page.getByRole('heading', { name: 'Глубокий лес' })).toBeVisible()
   expect(
     await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
@@ -143,7 +146,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
     await page.evaluate(() => document.documentElement.scrollHeight <= window.innerHeight),
   ).toBe(true)
   await page.screenshot({ path: '../../output/playwright/session-2a-hero.png', fullPage: true })
-  await page.locator('[data-nav="world"]').click()
+  await page.locator('[data-nav="location"]').click()
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Глубокий лес' })).toBeVisible()
   expect(page.viewportSize()?.width).toBeLessThanOrEqual(430)
