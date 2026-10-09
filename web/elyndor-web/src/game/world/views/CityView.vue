@@ -20,7 +20,7 @@ const ArenaView = defineAsyncComponent(() => import('@/game/pvp/views/ArenaView.
 const ProfessionView = defineAsyncComponent(() => import('@/game/professions/views/ProfessionView.vue'))
 
 type CityDestination =
-  | 'guild' | 'adventurers' | 'gates' | 'auction' | 'market'
+  | 'guild' | 'adventurers' | 'auction' | 'market'
   | 'teleport' | 'bank' | 'craft' | 'arena' | 'professions' | 'store' | 'mailbox'
 
 const props = withDefaults(defineProps<{ openAdventurers?: boolean }>(), { openAdventurers: false })
@@ -52,7 +52,6 @@ const cityMarkers: readonly {
   sprite: number | null
 }[] = [
   { id: 'guild', label: 'Гильдия', glyph: 'shield', x: 47, y: 15, sprite: 7 },
-  { id: 'gates', label: 'Ворота', glyph: 'sword', x: 86, y: 20, sprite: 2 },
   { id: 'adventurers', label: 'Гильдия авантюристов', glyph: 'star', x: 19, y: 27, sprite: 5 },
   { id: 'auction', label: 'Аукцион', glyph: 'ring', x: 80, y: 32, sprite: 4 },
   { id: 'market', label: 'Рынок', glyph: 'chest', x: 15, y: 47, sprite: 1 },
@@ -65,7 +64,6 @@ const cityMarkers: readonly {
 const destinationNames: Record<CityDestination, string> = {
   guild: 'Гильдия',
   adventurers: 'Гильдия авантюристов',
-  gates: 'Ворота',
   auction: 'Аукцион',
   market: 'Рынок',
   teleport: 'Телепорт',
@@ -78,7 +76,7 @@ const destinationNames: Record<CityDestination, string> = {
 }
 
 function openDestination(id: CityDestination): void {
-  if (id === 'gates' || id === 'teleport') {
+  if (id === 'teleport') {
     emit('open-map')
   } else if (id === 'adventurers') {
     adventurersOpen.value = true
@@ -260,9 +258,9 @@ async function startTraining(): Promise<void> {
   position: absolute;
   z-index: 2;
   display: grid;
-  width: clamp(88px, 25vw, 120px);
+  width: clamp(68px, 20vw, 98px);
   aspect-ratio: 116 / 145;
-  min-height: 74px;
+  min-height: 56px;
   align-content: center;
   justify-items: center;
   padding: 0;
