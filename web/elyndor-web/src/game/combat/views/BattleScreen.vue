@@ -17,15 +17,18 @@ import BattleHeader from '@/game/combat/components/BattleHeader.vue'
 import CombatLog from '@/game/combat/components/CombatLog.vue'
 import ConsumableBar from '@/game/combat/components/ConsumableBar.vue'
 import SkillPanel from '@/game/combat/components/SkillPanel.vue'
+import CombatThreatMeter from '@/game/combat/components/CombatThreatMeter.vue'
 import { useBattle } from '@/game/combat/composables/useBattle'
 import CombatEffectStrip from '@/game/combat/CombatEffectStrip.vue'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
+import { useCombatSessionStore } from '@/stores/combatSession'
 import { UIButton, UIModal, UIToast } from '@/ui/components'
 
 const emit = defineEmits<{ leave: [] }>()
 const battle = useBattle()
+const combatStore = useCombatSessionStore()
 const numberSettings = shallowRef<CombatNumberSettings>(loadCombatNumberSettings())
 
 function updateNumberSettings(patch: Partial<CombatNumberSettings>): void {
@@ -41,7 +44,7 @@ function onDensityChange(event: Event): void {
 }
 
 function onNumberSettingChange(
-  key: 'emphasizeCrits' | 'hitEffects' | 'showPeriodicDamage',
+  key: 'emphasizeCrits' | 'hitEffects' | 'showPeriodicDamage' | 'showThreatTable',
   event: Event,
 ): void {
   updateNumberSettings({ [key]: (event.target as HTMLInputElement).checked })
@@ -293,7 +296,34 @@ watch(
   { immediate: true },
 )
 
-onUnmounted(() => window.clearInterval(timer))
+// Only poll the authoritative threat table when the player explicitly enables it.
+let threatRefreshTimer: number | null = null
+const threatPollingEnabled = computed(
+  () => numberSettings.value.showThreatTable
+    && isActive.value
+    && !connectionRecovering.value
+    && !battle.isAwaitingAttachment.value,
+)
+watch(
+  () => [threatPollingEnabled.value, snapshot.value?.sessionId ?? '', selectedEnemy.value?.actorId ?? ''],
+  () => {
+    if (threatRefreshTimer !== null) {
+      window.clearInterval(threatRefreshTimer)
+      threatRefreshTimer = null
+    }
+    if (!threatPollingEnabled.value || !selectedEnemy.value) return
+    void combatStore.refreshCombatTelemetry()
+    threatRefreshTimer = window.setInterval(() => {
+      void combatStore.refreshCombatTelemetry()
+    }, 1_500)
+  },
+  { immediate: true },
+)
+
+onUnmounted(() => {
+  window.clearInterval(timer)
+  if (threatRefreshTimer !== null) window.clearInterval(threatRefreshTimer)
+})
 </script>
 
 <template>
@@ -349,8 +379,8 @@ onUnmounted(() => window.clearInterval(timer))
         />
 
         <details class="battle-screen__number-settings" data-combat-number-settings>
-          <summary aria-label="Настройки боевых чисел" title="Настройки боевых чисел">
-            ⚙ <span>Числа</span>
+          <summary aria-label="Настройки боя" title="Настройки боя">
+            ⚙ <span>Бой</span>
           </summary>
           <div class="battle-screen__number-settings-panel">
             <strong>Числа урона</strong>
@@ -386,8 +416,24 @@ onUnmounted(() => window.clearInterval(timer))
               />
               Периодический урон
             </label>
+            <strong class="battle-screen__number-settings-group">Интерфейс</strong>
+            <label data-threat-table-setting>
+              <input
+                type="checkbox"
+                :checked="numberSettings.showThreatTable"
+                @change="onNumberSettingChange('showThreatTable', $event)"
+              />
+              Показывать таблицу угрозы
+            </label>
           </div>
         </details>
+
+        <CombatThreatMeter
+          v-if="numberSettings.showThreatTable && isActive"
+          :threat="combatStore.threat"
+          :enemy-actor-id="selectedEnemy.actorId"
+          :local-actor-id="localActor.actorId"
+        />
 
         <CombatEffectStrip
           v-if="selectedEnemy.effects.length"
@@ -724,6 +770,10 @@ onUnmounted(() => window.clearInterval(timer))
 }
 .battle-screen__number-settings-panel strong {
   font-size: 0.82rem;
+}
+.battle-screen__number-settings-group {
+  padding-top: 0.45rem;
+  border-top: 1px solid rgb(183 154 91 / 22%);
 }
 .battle-screen__number-settings-panel label {
   display: flex;
