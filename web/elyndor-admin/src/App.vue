@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import AdminView from '@/admin/AdminView.vue'
 import GmForgeView from '@/admin/GmForgeView.vue'
+import AdminPlayersView from '@/admin/AdminPlayersView.vue'
 import {
   adminRequest,
   AdminApiError,
@@ -14,7 +15,7 @@ import {
   type ContentAdminHistory,
 } from './api'
 
-type ViewState = 'login' | 'code' | 'password' | 'dashboard' | 'content' | 'gmforge'
+type ViewState = 'login' | 'code' | 'password' | 'dashboard' | 'content' | 'gmforge' | 'players' | 'server'
 
 const view = ref<ViewState>('login')
 const telegramId = ref('')
@@ -30,6 +31,8 @@ const tokenExpiresAtUtc = ref<string | null>(null)
 const now = ref(Date.now())
 const contentSection = ref('monsters')
 const contentDirty = ref(false)
+const forgeRecipientId = ref('')
+const contentFocus = ref('')
 
 const contentNavigation = [
   { key: 'monsters', label: 'Monsters' },
@@ -236,12 +239,38 @@ function openDashboard(): void {
 function openGmForge(): void {
   if (!confirmWorkspaceNavigation()) return
   contentDirty.value = false
+  forgeRecipientId.value = telegramId.value
   view.value = 'gmforge'
+}
+
+function openGmForgeForPlayer(target: string): void {
+  if (!confirmWorkspaceNavigation()) return
+  contentDirty.value = false
+  forgeRecipientId.value = target
+  view.value = 'gmforge'
+}
+
+function openOperations(section: string): void {
+  if (section === 'GM Forge') { openGmForge(); return }
+  if (section === 'Players' || section === 'Server') {
+    if (!confirmWorkspaceNavigation()) return
+    contentDirty.value = false
+    view.value = section === 'Players' ? 'players' : 'server'
+    return
+  }
+  if (!confirmWorkspaceNavigation()) return
+  contentDirty.value = false
+  contentSection.value = 'monsters'
+  contentFocus.value = section === 'Combat Simulator' ? 'simulator'
+    : section === 'Drafts' ? 'drafts'
+    : section === 'Revisions' ? 'revisions' : 'releases'
+  view.value = 'content'
 }
 
 function openContent(section: string): void {
   if (!confirmWorkspaceNavigation()) return
   contentSection.value = section
+  contentFocus.value = ''
   view.value = 'content'
 }
 
@@ -438,11 +467,10 @@ function formatDate(value: string | null | undefined): string {
         <div v-for="section in sections" :key="section.group" class="nav-group">
           <p>{{ section.group }}</p>
           <button v-for="item in section.items" :key="item" type="button" class="nav-item"
-            :class="{ active: item === 'GM Forge' && view === 'gmforge' }"
-            :disabled="item !== 'GM Forge'"
-            @click="item === 'GM Forge' && openGmForge()">
+            :class="{ active: (item === 'GM Forge' && view === 'gmforge') || (item === 'Players' && view === 'players') || (item === 'Server' && view === 'server') || (view === 'content' && contentFocus && (item === 'Combat Simulator' && contentFocus === 'simulator' || item === 'Drafts' && contentFocus === 'drafts' || item === 'Revisions' && contentFocus === 'revisions' || item === 'Releases' && contentFocus === 'releases')) }"
+            @click="openOperations(item)">
             <span>{{ item }}</span>
-            <small v-if="item !== 'GM Forge'">soon</small>
+
           </button>
         </div>
       </nav>
@@ -559,13 +587,34 @@ function formatDate(value: string | null | undefined): string {
 
       <GmForgeView
         v-else-if="view === 'gmforge'"
-        :default-telegram-id="telegramId"
+        :default-telegram-id="forgeRecipientId"
         :package-json="content?.payloadJson ?? ''"
       />
+
+      <AdminPlayersView
+        v-else-if="view === 'players'"
+        @forge-target="openGmForgeForPlayer"
+      />
+
+      <section v-else-if="view === 'server'" class="server-panel">
+        <p class="eyebrow">OPERATIONS / SERVER</p>
+        <h1>Состояние сервера</h1>
+        <p>Данные базового статуса API. Подробные health-метрики доступны в защищённой Telegram-админке.</p>
+        <dl>
+          <div><dt>Сервис</dt><dd>{{ serviceStatus?.service ?? '—' }}</dd></div>
+          <div><dt>Статус</dt><dd>{{ serviceStatus?.status ?? '—' }}</dd></div>
+          <div><dt>Время сервера (UTC)</dt><dd>{{ serviceStatus?.utcNow ?? '—' }}</dd></div>
+          <div><dt>Версия контента</dt><dd>{{ content?.contentVersion ?? '—' }}</dd></div>
+          <div><dt>Последняя публикация</dt><dd>{{ content?.sourcePublishedAtUtc ?? '—' }}</dd></div>
+        </dl>
+        <button type="button" :disabled="busy" @click="run(loadDashboard)">{{ busy ? 'Обновление…' : 'Обновить статус' }}</button>
+        <p v-if="errorMessage" class="error-message" role="alert">{{ errorMessage }}</p>
+      </section>
 
       <AdminView
         v-else-if="view === 'content'"
         :initial-section="contentSection"
+        :initial-focus="contentFocus"
         @dirty-change="contentDirty = $event"
       />
     </section>
