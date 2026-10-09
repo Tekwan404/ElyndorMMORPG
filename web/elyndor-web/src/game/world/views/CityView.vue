@@ -260,7 +260,7 @@ async function startTraining(): Promise<void> {
   position: absolute;
   z-index: 2;
   display: grid;
-  width: clamp(74px, 23vw, 118px);
+  width: clamp(88px, 25vw, 120px);
   aspect-ratio: 116 / 145;
   min-height: 74px;
   align-content: center;
