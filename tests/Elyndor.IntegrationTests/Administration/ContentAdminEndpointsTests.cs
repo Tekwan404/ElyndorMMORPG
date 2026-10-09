@@ -56,6 +56,45 @@ public sealed class ContentAdminEndpointsTests(PostgresFixture postgres)
     }
 
     [Fact]
+    public async Task GmForgeWebEndpointRequiresSuperAdmin()
+    {
+        await using WebApplicationFactory<Program> factory =
+            CreateFactory(777, adminAllowedUserId: 999);
+        using HttpClient client = factory.CreateClient();
+        var request = new GmForgeAdminCreateRequest(
+            777, "UNIQUE_WARRIOR_BLACKHEART quality=PERFECT", Guid.CreateVersion7());
+
+        HttpResponseMessage guest = await client.PostAsJsonAsync(
+            "/api/v1/admin/gm-forge/create", request);
+        Assert.Equal(HttpStatusCode.Unauthorized, guest.StatusCode);
+
+        AuthenticationResponse authentication = await AuthenticateAsync(client);
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", authentication.AccessToken);
+        HttpResponseMessage nonAdmin = await client.PostAsJsonAsync(
+            "/api/v1/admin/gm-forge/create", request);
+        Assert.Equal(HttpStatusCode.Forbidden, nonAdmin.StatusCode);
+    }
+
+    [Fact]
+    public async Task GmForgeWebEndpointRejectsInvalidSpecBeforeMutation()
+    {
+        await using WebApplicationFactory<Program> factory =
+            CreateFactory(777, adminAllowedUserId: 777);
+        using HttpClient client = factory.CreateClient();
+        AuthenticationResponse authentication = await AuthenticateAsync(client);
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", authentication.AccessToken);
+
+        HttpResponseMessage response = await client.PostAsJsonAsync(
+            "/api/v1/admin/gm-forge/create",
+            new GmForgeAdminCreateRequest(
+                777, "SWORD quality=PERFECT stars=2", Guid.CreateVersion7()));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task SuperAdminCanCreateValidateAndPublishRevision()
     {
         await using WebApplicationFactory<Program> factory =
