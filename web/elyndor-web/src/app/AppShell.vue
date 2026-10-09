@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import MoneyAmount from '@/ui/components/MoneyAmount.vue'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 
 import { gameArt } from '@/assets/gameArt'
 import { resolveCharacterArt } from '@/assets/characterArt'
@@ -10,7 +10,6 @@ import HeroView from '@/game/character/views/HeroView.vue'
 import BattleScreen from '@/game/combat/views/BattleScreen.vue'
 import BossCombatLogReporter from '@/game/combat/BossCombatLogReporter.vue'
 import MenuView, { type MenuSection } from '@/game/menu/views/MenuView.vue'
-import ArenaView from '@/game/pvp/views/ArenaView.vue'
 import CityView from '@/game/world/views/CityView.vue'
 import QuestView from '@/game/quests/views/QuestView.vue'
 import WorldBossView from '@/game/worldBoss/views/WorldBossView.vue'
@@ -24,6 +23,8 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { beginTelegramWebLogin } from '@/telegram/telegramWebLogin'
 import { UIButton, UIHealthBar, UILoadingState, UIModal } from '@/ui/components'
+
+const ArenaView = defineAsyncComponent(() => import('@/game/pvp/views/ArenaView.vue'))
 
 type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu' | 'arena' | 'world-boss'
 
