@@ -65,7 +65,12 @@ const revisionLabel = computed(() => shortId(content.value?.revisionId ?? null))
 let clock: ReturnType<typeof setInterval> | null = null
 
 onMounted(async () => {
-  clock = setInterval(() => { now.value = Date.now() }, 1000)
+  clock = setInterval(() => {
+    now.value = Date.now()
+    if (tokenExpiresAtUtc.value && now.value >= Date.parse(tokenExpiresAtUtc.value)) {
+      clearSession('Срок действия сессии истёк. Войди в Admin повторно.')
+    }
+  }, 1000)
   try {
     serviceStatus.value = await adminRequest<ApiStatus>('/api/v1/status')
   } catch {
@@ -137,8 +142,14 @@ async function verifyPassword(): Promise<void> {
     password.value = ''
     setAdminAccessToken(authentication.accessToken)
     tokenExpiresAtUtc.value = authentication.expiresAtUtc
-    await loadDashboard()
-    view.value = 'dashboard'
+    try {
+      await loadDashboard()
+      view.value = 'dashboard'
+    } catch (error) {
+      setAdminAccessToken(null)
+      tokenExpiresAtUtc.value = null
+      throw error
+    }
   })
 }
 
@@ -168,8 +179,14 @@ async function verifyCode(): Promise<void> {
 
     setAdminAccessToken(authentication.accessToken)
     tokenExpiresAtUtc.value = authentication.expiresAtUtc
-    await loadDashboard()
-    view.value = 'dashboard'
+    try {
+      await loadDashboard()
+      view.value = 'dashboard'
+    } catch (error) {
+      setAdminAccessToken(null)
+      tokenExpiresAtUtc.value = null
+      throw error
+    }
   })
 }
 
@@ -184,14 +201,22 @@ async function loadDashboard(): Promise<void> {
   history.value = adminHistory
 }
 
-function logout(): void {
-  if (!confirmWorkspaceNavigation()) return
+function clearSession(message = ''): void {
   setAdminAccessToken(null)
   tokenExpiresAtUtc.value = null
   challenge.value = null
   code.value = ''
+  password.value = ''
   contentDirty.value = false
   view.value = 'login'
+  errorMessage.value = message
+  content.value = null
+  history.value = null
+}
+
+function logout(): void {
+  if (!confirmWorkspaceNavigation()) return
+  clearSession()
 }
 
 function backToId(): void {
@@ -215,6 +240,7 @@ function openGmForge(): void {
 }
 
 function openContent(section: string): void {
+  if (!confirmWorkspaceNavigation()) return
   contentSection.value = section
   view.value = 'content'
 }
@@ -234,7 +260,12 @@ async function run(action: () => Promise<void>): Promise<void> {
   try {
     await action()
   } catch (error) {
-    errorMessage.value = friendlyError(error)
+    const message = friendlyError(error)
+    if (error instanceof AdminApiError && error.status === 401 && tokenExpiresAtUtc.value) {
+      clearSession('Сессия администратора недействительна. Войди повторно.')
+    } else {
+      errorMessage.value = message
+    }
   } finally {
     busy.value = false
   }
