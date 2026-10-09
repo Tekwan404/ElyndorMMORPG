@@ -59,9 +59,10 @@ test('learns and restores Skinning and Leatherworking against the real database'
 })
 
 async function openProfessions(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Меню' }).click()
-  await expect(page.getByRole('heading', { name: 'Меню' })).toBeVisible()
-  await page.getByRole('button', { name: 'Профессии Сбор и ремесло' }).click()
+  await page.locator('[data-nav="location"]').click()
+  await expect(page.locator('[data-city-hub]')).toBeVisible()
+  await page.locator('[data-city-marker="craft"]').click()
+  await page.locator('[data-city-professions]').click()
   await expect(page.getByRole('heading', { name: 'Профессии' })).toBeVisible()
 }
 
