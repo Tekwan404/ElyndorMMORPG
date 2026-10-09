@@ -17,7 +17,6 @@ The city uses the original shell HUD and five navigation icons.
 | --- | --- |
 | Guild | Group entry, with future guild gameplay clearly marked unavailable |
 | Adventurers guild | Current AdventurerGuildBoard with quests/contracts |
-| Gates | Open world map, not instant travel |
 | Auction | Existing AuctionView |
 | Market | MerchantShop / PremiumStoreView / MailboxView |
 | Teleport | Open world map, not instant teleport |
@@ -25,7 +24,7 @@ The city uses the original shell HUD and five navigation icons.
 | Craft district | ForgeView / ProfessionView |
 | Arena | Existing ArenaView and training dummy |
 
-The city keeps access to active world boss through a small banner/shortcut.
+The Gates marker is intentionally absent: the bottom **Мир** tab already handles travel and the world map. City badges are roughly 20% smaller than the initial version for better mobile readability.\n\nThe city keeps access to active world boss through a small banner/shortcut.
 The `arenaInvite` query deep-link continues to open ArenaView independently of the city so already sent invites don't break.
 
 ## Supplied production assets
