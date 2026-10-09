@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { defineAsyncComponent, ref, watch } from 'vue'
 
-import cityArt from '@/assets/world/starter-town.webp'
+import cityArt from '@/assets/world/elyndor-city-background.webp'
+import cityMarkersArt from '@/assets/world/elyndor-city-markers.webp'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
@@ -40,16 +41,25 @@ watch(() => props.openAdventurers, (open) => {
   if (open) adventurersOpen.value = true
 }, { immediate: true })
 
-const cityMarkers: readonly { id: CityDestination; label: string; glyph: GlyphName; x: number; y: number }[] = [
-  { id: 'guild', label: 'Гильдия', glyph: 'shield', x: 47, y: 16 },
-  { id: 'gates', label: 'Ворота', glyph: 'sword', x: 85, y: 22 },
-  { id: 'adventurers', label: 'Гильдия авантюристов', glyph: 'star', x: 18, y: 30 },
-  { id: 'auction', label: 'Аукцион', glyph: 'ring', x: 78, y: 35 },
-  { id: 'market', label: 'Рынок', glyph: 'chest', x: 16, y: 48 },
-  { id: 'teleport', label: 'Телепорт', glyph: 'staff', x: 48, y: 53 },
-  { id: 'bank', label: 'Банк', glyph: 'chest', x: 87, y: 53 },
-  { id: 'craft', label: 'Ремесленный квартал', glyph: 'axe', x: 19, y: 74 },
-  { id: 'arena', label: 'Арена', glyph: 'helmet', x: 78, y: 74 },
+// The supplied eight gold badges are packed into a 4 × 2 transparent sprite.
+// Each badge remains its own accessible HTML button; the city art never contains hot spots.
+const cityMarkers: readonly {
+  id: CityDestination
+  label: string
+  glyph: GlyphName
+  x: number
+  y: number
+  sprite: number | null
+}[] = [
+  { id: 'guild', label: 'Гильдия', glyph: 'shield', x: 47, y: 15, sprite: 7 },
+  { id: 'gates', label: 'Ворота', glyph: 'sword', x: 86, y: 20, sprite: 2 },
+  { id: 'adventurers', label: 'Гильдия авантюристов', glyph: 'star', x: 19, y: 27, sprite: 5 },
+  { id: 'auction', label: 'Аукцион', glyph: 'ring', x: 80, y: 32, sprite: 4 },
+  { id: 'market', label: 'Рынок', glyph: 'chest', x: 15, y: 47, sprite: 1 },
+  { id: 'teleport', label: 'Телепорт', glyph: 'staff', x: 49, y: 50, sprite: null },
+  { id: 'bank', label: 'Банк', glyph: 'chest', x: 85, y: 49, sprite: 0 },
+  { id: 'craft', label: 'Ремесленный квартал', glyph: 'axe', x: 18, y: 71, sprite: 3 },
+  { id: 'arena', label: 'Арена', glyph: 'helmet', x: 78, y: 71, sprite: 6 },
 ]
 
 const destinationNames: Record<CityDestination, string> = {
@@ -113,11 +123,22 @@ async function startTraining(): Promise<void> {
         :aria-label="'Открыть: ' + marker.label"
         @click="openDestination(marker.id)"
       >
-        <span class="city-marker__seal" aria-hidden="true">
-          <IconGenerator :config="{ id: 'city-' + marker.id, glyph: marker.glyph, category: 'utility' }" />
-        </span>
-        <span class="city-marker__name">{{ marker.label }}</span>
-        <span class="city-marker__arrow" aria-hidden="true" />
+        <span
+          v-if="marker.sprite !== null"
+          class="city-marker__sprite"
+          :style="{
+            backgroundImage: 'url(' + cityMarkersArt + ')',
+            backgroundPosition: ((marker.sprite % 4) / 3) * 100 + '% ' + Math.floor(marker.sprite / 4) * 100 + '%',
+          }"
+          aria-hidden="true"
+        />
+        <template v-else>
+          <span class="city-marker__seal" aria-hidden="true">
+            <IconGenerator :config="{ id: 'city-' + marker.id, glyph: marker.glyph, category: 'utility' }" />
+          </span>
+          <span class="city-marker__name">{{ marker.label }}</span>
+          <span class="city-marker__arrow" aria-hidden="true" />
+        </template>
       </button>
     </div>
 
@@ -239,8 +260,9 @@ async function startTraining(): Promise<void> {
   position: absolute;
   z-index: 2;
   display: grid;
-  width: min(27%, 124px);
-  min-height: 62px;
+  width: clamp(74px, 23vw, 118px);
+  aspect-ratio: 116 / 145;
+  min-height: 74px;
   align-content: center;
   justify-items: center;
   padding: 0;
@@ -256,6 +278,14 @@ async function startTraining(): Promise<void> {
   outline: 2px solid #f9d079;
   outline-offset: 4px;
   border-radius: 12px;
+}
+.city-marker__sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: 400% 200%;
+  filter: drop-shadow(0 3px 5px rgb(0 0 0 / 55%));
 }
 .city-marker__seal {
   display: grid;
