@@ -285,12 +285,15 @@ public static class ProceduralItemPolicy
         }
 
         ItemGenerationOverrides? effectiveOverrides = overrides;
-        if (effectiveOverrides is null && !string.IsNullOrWhiteSpace(item.ItemFamilyId))
+        if (!string.IsNullOrWhiteSpace(item.ItemFamilyId)
+            && effectiveOverrides?.HasItemLevelOverride != true)
         {
             int minimumItemLevel = item.ItemLevelMin ?? item.RequiredLevel;
-            effectiveOverrides = new ItemGenerationOverrides(
-                minimumItemLevel,
-                minimumItemLevel);
+            effectiveOverrides = (effectiveOverrides ?? new ItemGenerationOverrides()) with
+            {
+                ItemLevelMin = minimumItemLevel,
+                ItemLevelMax = minimumItemLevel
+            };
         }
 
         return IsEnabled(item)
