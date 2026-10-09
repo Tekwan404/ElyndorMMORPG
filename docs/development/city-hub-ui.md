@@ -1,14 +1,16 @@
-# City hub: UX and route contract (first pass)
+# City hub: UX and navigation contract
 
-## Player experience
-The STARTER_TOWN scene is a real illustrated hub, not the legacy list of service cards.
+## Canonical five-tab navigation
+The existing mobile bottom navigation stays **unchanged**:
+- **Мир**: world map, locations, travel and transitions
+- **Герой**: character, gear, inventory, talents, stats
+- **Локация**: current authoritative location, including the illustrated CityView only when the player is in STARTER_TOWN and not travelling
+- **Квесты**: journal
+- **Меню**: friends, party, hotbar settings, release notes and admin options
 
-The **World** navigation destination represents both the map and the current area:
-- inside a region/dungeon, the World tab opens the map; selecting it again or using “Осмотреть локацию” opens the local scene
-- the region scene has a visible “Карта мира” button
-- the **City** tab appears only when the current authoritative location is city-kind; it never teleports a character who is outside the city
-- quests, hero, inventory and social/settings remain available in the bottom navigation
-- the main navigation never contains both “Мир” and “Локация” as peer destinations
+There is no permanent City tab or Inventory tab. Travel and location navigation remain separate destinations exactly as in main.
+A city is **one location kind**, not a global hub reachable from anywhere. The old WorldView remains active for regions and dungeons.
+The city uses the original shell HUD and five navigation icons.
 
 ## City marker destinations
 | Marker | Behavior |
