@@ -56,7 +56,8 @@ public sealed record InventoryItemSnapshot(
     bool TransactionLocked = false,
     string BindState = ItemBindStates.Unbound,
     EquipmentSetDefinition? SetDefinition = null,
-    int SetTotalPieces = 0)
+    int SetTotalPieces = 0,
+    string? SourceType = null)
 {
     public PrimaryStats EffectiveStats => RolledPrimaryStats ?? Definition.Stats;
 }
