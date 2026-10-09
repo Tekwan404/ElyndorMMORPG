@@ -12,7 +12,7 @@ public sealed record GmForgeSpecification(
     string QualityProfileId,
     bool Perfect,
     int? ForcedStars,
-    int EnhancementLevel,
+    int? EnhancementLevel,
     IReadOnlyDictionary<string, decimal> StatOverrides)
 {
     private static readonly HashSet<string> QualityProfiles =
@@ -41,7 +41,7 @@ public sealed record GmForgeSpecification(
         string quality = "NORMAL";
         bool perfect = false;
         int? stars = null;
-        int enhancement = 0;
+        int? enhancement = null;
         bool qualitySeen = false, starsSeen = false, enhancementSeen = false;
         Dictionary<string, decimal> stats = new(StringComparer.Ordinal);
         foreach (string token in tokens.Skip(1))
@@ -74,9 +74,11 @@ public sealed record GmForgeSpecification(
                     stars = parsedStars;
                     break;
                 case "ENHANCE":
-                    if (enhancementSeen || !int.TryParse(value, out enhancement) || enhancement is < 0 or > 5)
+                    if (enhancementSeen || !int.TryParse(value, out int parsedEnhancement)
+                        || parsedEnhancement is < 0 or > 5)
                         return false;
                     enhancementSeen = true;
+                    enhancement = parsedEnhancement;
                     break;
                 default:
                     if (!ItemStatIds.ApprovedV1.Contains(key)
