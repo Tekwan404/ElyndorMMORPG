@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import AdminView from '@/admin/AdminView.vue'
+import GmForgeView from '@/admin/GmForgeView.vue'
 import {
   adminRequest,
   AdminApiError,
@@ -13,7 +14,7 @@ import {
   type ContentAdminHistory,
 } from './api'
 
-type ViewState = 'login' | 'code' | 'password' | 'dashboard' | 'content'
+type ViewState = 'login' | 'code' | 'password' | 'dashboard' | 'content' | 'gmforge'
 
 const view = ref<ViewState>('login')
 const telegramId = ref('')
@@ -45,7 +46,7 @@ const contentNavigation = [
 const sections = [
   { group: 'BALANCE', items: ['Combat Simulator'] },
   { group: 'RELEASES', items: ['Drafts', 'Revisions', 'Releases'] },
-  { group: 'OPERATIONS', items: ['Players', 'Server'] },
+  { group: 'OPERATIONS', items: ['Players', 'Server', 'GM Forge'] },
 ] as const
 
 const countdown = computed(() => {
@@ -205,6 +206,12 @@ function openDashboard(): void {
   if (!confirmWorkspaceNavigation()) return
   contentDirty.value = false
   view.value = 'dashboard'
+}
+
+function openGmForge(): void {
+  if (!confirmWorkspaceNavigation()) return
+  contentDirty.value = false
+  view.value = 'gmforge'
 }
 
 function openContent(section: string): void {
@@ -399,9 +406,12 @@ function formatDate(value: string | null | undefined): string {
 
         <div v-for="section in sections" :key="section.group" class="nav-group">
           <p>{{ section.group }}</p>
-          <button v-for="item in section.items" :key="item" type="button" class="nav-item" disabled>
+          <button v-for="item in section.items" :key="item" type="button" class="nav-item"
+            :class="{ active: item === 'GM Forge' && view === 'gmforge' }"
+            :disabled="item !== 'GM Forge'"
+            @click="item === 'GM Forge' && openGmForge()">
             <span>{{ item }}</span>
-            <small>soon</small>
+            <small v-if="item !== 'GM Forge'">soon</small>
           </button>
         </div>
       </nav>
@@ -517,6 +527,12 @@ function formatDate(value: string | null | undefined): string {
 
       <p v-if="errorMessage" class="error-message error-message--dashboard">{{ errorMessage }}</p>
       </template>
+
+      <GmForgeView
+        v-else-if="view === 'gmforge'"
+        :default-telegram-id="telegramId"
+        :package-json="content?.payloadJson ?? ''"
+      />
 
       <AdminView
         v-else-if="view === 'content'"
