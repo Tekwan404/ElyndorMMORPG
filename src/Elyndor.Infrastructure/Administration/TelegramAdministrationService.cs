@@ -30,6 +30,7 @@ public enum AdministrationOperationType
     Delete,
     Message,
     GiveItem,
+    GmForge,
     CreatePromoCode,
     SpawnWorldBoss
 }
@@ -223,6 +224,10 @@ public sealed class TelegramAdministrationService(
         {
             return await GiveItemAsync(character, updateId, operation.Value, now, cancellationToken);
         }
+        if (operation.Type == AdministrationOperationType.GmForge)
+        {
+            return await ForgeGmItemAsync(character, updateId, operation.Value, now, cancellationToken);
+        }
 
         CharacterVitals vitals = await dbContext.CharacterVitals.SingleAsync(
             candidate => candidate.CharacterId == character.Id,
@@ -373,6 +378,89 @@ public sealed class TelegramAdministrationService(
         return Success(
             "admin_item_granted",
             $"{character.Name}: выдано {definition.Name} ×{quantity} ({definition.Id}), качество {qualityProfile}.");
+    }
+
+    private async Task<AdministrationResult> ForgeGmItemAsync(
+        Character character,
+        long updateId,
+        string? rawSpec,
+        DateTimeOffset now,
+        CancellationToken cancellationToken)
+    {
+        if (!GmForgeSpecification.TryParse(rawSpec, out GmForgeSpecification? spec) || spec is null)
+        {
+            return Failure("admin_gmforge_invalid",
+                "Формат: gmforge <telegramId> <itemId|clone:itemGuid> [quality=NORMAL|ELITE|BOSS|PERFECT] "
+                + "[stars=1..5] [enhance=0..5] [WEAPON_DAMAGE=1500] [CRITICAL_DAMAGE=150].");
+        }
+
+        GameContentSnapshot content = contentProvider.GetCurrent();
+        ItemDefinition? definition;
+        GeneratedItemInstance? generated;
+        int inheritedEnhancementLevel = 0;
+        if (spec.CloneItemId.HasValue)
+        {
+            CharacterItem? original = await dbContext.CharacterItems
+                .Include(item => item.Affixes)
+                .SingleOrDefaultAsync(item => item.Id == spec.CloneItemId.Value
+                    && item.CharacterId == character.Id, cancellationToken);
+            if (original is null
+                || !content.Indexes.ItemsById.TryGetValue(original.ItemDefinitionId, out definition))
+                return Failure("admin_gmforge_source_missing", "Исходный предмет не найден в инвентаре.");
+
+            inheritedEnhancementLevel = original.EnhancementLevel;
+            generated = ItemInstancePersistenceFactory.ToGeneratedInstance(
+                original, definition, content.Package.Itemization);
+        }
+        else
+        {
+            if (!content.Indexes.ItemsById.TryGetValue(spec.ItemDefinitionId, out definition))
+                return Failure("admin_gmforge_item_missing", "Шаблон предмета не найден.");
+            if (!ProceduralItemPolicy.IsEnabled(definition) || content.Package.Itemization is null)
+                return Failure("admin_gmforge_not_rolled", "GM Forge пока поддерживает только генерируемую экипировку.");
+            generated = null;
+        }
+
+        if (definition is null || definition.Type != ItemType.Equipment || definition.Stackable)
+            return Failure("admin_gmforge_not_equipment", "GM Forge работает только с экипировкой.");
+
+        InventoryCapacityState capacity = await InventoryCapacity.GetStateAsync(
+            dbContext, character.Id, content, cancellationToken);
+        int needed = await InventoryCapacity.AdditionalSlotsRequiredAsync(
+            dbContext, character.Id, definition, 1, cancellationToken);
+        if (capacity.UsedSlots + needed > capacity.Capacity)
+            return Failure("admin_inventory_full", "Недостаточно места в инвентаре.");
+
+        Guid operationId = Guid.CreateVersion7();
+        ItemGenerationKey key = ItemGenerationKey.Create(
+            operationId, $"GM_FORGE|{definition.Id}|telegram-update:{updateId}", 0);
+        if (generated is null && !spec.CloneItemId.HasValue)
+        {
+            ItemizationDefinition itemization = content.Package.Itemization!;
+            ItemizationDefinition normalized = ItemizationBudgetPolicy.NormalizeForTemplate(
+                definition, itemization);
+            generated = ProceduralItemPolicy.Generate(
+                definition, normalized, spec.QualityProfileId, key, GmItemForge.SourceType,
+                spec.Perfect ? new ItemGenerationOverrides(ForcePerfectRoll: true) : null);
+        }
+        if (generated is null)
+            return Failure("admin_gmforge_not_generated", "Исходный предмет не имеет V2-аффиксов.");
+
+        GeneratedItemInstance forged = GmItemForge.Apply(
+            generated, spec.Perfect, spec.ForcedStars, spec.StatOverrides);
+        CharacterItem item = new(
+            Guid.CreateVersion7(), character.Id, definition.Id, 1, now, definition.Version);
+        item.ApplyGeneratedInstance(
+            forged, key.AuditHash, GmItemForge.SourceType, operationId, $"telegram-update:{updateId}");
+        for (int level = 1; level <= (spec.EnhancementLevel ?? inheritedEnhancementLevel); level++)
+            item.ApplyEnhancement(level);
+        item.MarkDeveloperOnly();
+        dbContext.CharacterItems.Add(item);
+
+        return Success("admin_gmforge_created",
+            $"{character.Name}: GM-предмет {definition.Name}, {forged.Stars}★, +{item.EnhancementLevel}, "
+            + $"аффиксов {forged.Affixes.Count}, экземпляр {item.Id:D}. "
+            + "DEV: привязан, продажа/обмен запрещены.");
     }
 
     private async Task<AdministrationResult> SpawnWorldBossAsync(

@@ -2,6 +2,8 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 import AdminView from '@/admin/AdminView.vue'
+import GmForgeView from '@/admin/GmForgeView.vue'
+import AdminPlayersView from '@/admin/AdminPlayersView.vue'
 import {
   adminRequest,
   AdminApiError,
@@ -13,7 +15,7 @@ import {
   type ContentAdminHistory,
 } from './api'
 
-type ViewState = 'login' | 'code' | 'password' | 'dashboard' | 'content'
+type ViewState = 'login' | 'code' | 'password' | 'dashboard' | 'content' | 'gmforge' | 'players' | 'server'
 
 const view = ref<ViewState>('login')
 const telegramId = ref('')
@@ -29,6 +31,8 @@ const tokenExpiresAtUtc = ref<string | null>(null)
 const now = ref(Date.now())
 const contentSection = ref('monsters')
 const contentDirty = ref(false)
+const forgeRecipientId = ref('')
+const contentFocus = ref('')
 
 const contentNavigation = [
   { key: 'monsters', label: 'Monsters' },
@@ -45,7 +49,7 @@ const contentNavigation = [
 const sections = [
   { group: 'BALANCE', items: ['Combat Simulator'] },
   { group: 'RELEASES', items: ['Drafts', 'Revisions', 'Releases'] },
-  { group: 'OPERATIONS', items: ['Players', 'Server'] },
+  { group: 'OPERATIONS', items: ['Players', 'Server', 'GM Forge'] },
 ] as const
 
 const countdown = computed(() => {
@@ -63,8 +67,18 @@ const releaseLabel = computed(() => shortId(content.value?.releaseId ?? null))
 const revisionLabel = computed(() => shortId(content.value?.revisionId ?? null))
 let clock: ReturnType<typeof setInterval> | null = null
 
+function handleInvalidSession(): void {
+  clearSession('Сессия администратора недействительна. Войди повторно.')
+}
+
 onMounted(async () => {
-  clock = setInterval(() => { now.value = Date.now() }, 1000)
+  window.addEventListener('elyndor-admin-session-expired', handleInvalidSession)
+  clock = setInterval(() => {
+    now.value = Date.now()
+    if (tokenExpiresAtUtc.value && now.value >= Date.parse(tokenExpiresAtUtc.value)) {
+      clearSession('Срок действия сессии истёк. Войди в Admin повторно.')
+    }
+  }, 1000)
   try {
     serviceStatus.value = await adminRequest<ApiStatus>('/api/v1/status')
   } catch {
@@ -74,6 +88,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   if (clock) clearInterval(clock)
+  window.removeEventListener('elyndor-admin-session-expired', handleInvalidSession)
 })
 
 async function requestCode(): Promise<void> {
@@ -136,8 +151,14 @@ async function verifyPassword(): Promise<void> {
     password.value = ''
     setAdminAccessToken(authentication.accessToken)
     tokenExpiresAtUtc.value = authentication.expiresAtUtc
-    await loadDashboard()
-    view.value = 'dashboard'
+    try {
+      await loadDashboard()
+      view.value = 'dashboard'
+    } catch (error) {
+      setAdminAccessToken(null)
+      tokenExpiresAtUtc.value = null
+      throw error
+    }
   })
 }
 
@@ -167,8 +188,14 @@ async function verifyCode(): Promise<void> {
 
     setAdminAccessToken(authentication.accessToken)
     tokenExpiresAtUtc.value = authentication.expiresAtUtc
-    await loadDashboard()
-    view.value = 'dashboard'
+    try {
+      await loadDashboard()
+      view.value = 'dashboard'
+    } catch (error) {
+      setAdminAccessToken(null)
+      tokenExpiresAtUtc.value = null
+      throw error
+    }
   })
 }
 
@@ -183,14 +210,22 @@ async function loadDashboard(): Promise<void> {
   history.value = adminHistory
 }
 
-function logout(): void {
-  if (!confirmWorkspaceNavigation()) return
+function clearSession(message = ''): void {
   setAdminAccessToken(null)
   tokenExpiresAtUtc.value = null
   challenge.value = null
   code.value = ''
+  password.value = ''
   contentDirty.value = false
   view.value = 'login'
+  errorMessage.value = message
+  content.value = null
+  history.value = null
+}
+
+function logout(): void {
+  if (!confirmWorkspaceNavigation()) return
+  clearSession()
 }
 
 function backToId(): void {
@@ -207,8 +242,41 @@ function openDashboard(): void {
   view.value = 'dashboard'
 }
 
+function openGmForge(): void {
+  if (!confirmWorkspaceNavigation()) return
+  contentDirty.value = false
+  forgeRecipientId.value = telegramId.value
+  view.value = 'gmforge'
+}
+
+function openGmForgeForPlayer(target: string): void {
+  if (!confirmWorkspaceNavigation()) return
+  contentDirty.value = false
+  forgeRecipientId.value = target
+  view.value = 'gmforge'
+}
+
+function openOperations(section: string): void {
+  if (section === 'GM Forge') { openGmForge(); return }
+  if (section === 'Players' || section === 'Server') {
+    if (!confirmWorkspaceNavigation()) return
+    contentDirty.value = false
+    view.value = section === 'Players' ? 'players' : 'server'
+    return
+  }
+  if (!confirmWorkspaceNavigation()) return
+  contentDirty.value = false
+  contentSection.value = 'monsters'
+  contentFocus.value = section === 'Combat Simulator' ? 'simulator'
+    : section === 'Drafts' ? 'drafts'
+    : section === 'Revisions' ? 'revisions' : 'releases'
+  view.value = 'content'
+}
+
 function openContent(section: string): void {
+  if (!confirmWorkspaceNavigation()) return
   contentSection.value = section
+  contentFocus.value = ''
   view.value = 'content'
 }
 
@@ -227,7 +295,12 @@ async function run(action: () => Promise<void>): Promise<void> {
   try {
     await action()
   } catch (error) {
-    errorMessage.value = friendlyError(error)
+    const message = friendlyError(error)
+    if (error instanceof AdminApiError && error.status === 401 && tokenExpiresAtUtc.value) {
+      clearSession('Сессия администратора недействительна. Войди повторно.')
+    } else {
+      errorMessage.value = message
+    }
   } finally {
     busy.value = false
   }
@@ -399,9 +472,11 @@ function formatDate(value: string | null | undefined): string {
 
         <div v-for="section in sections" :key="section.group" class="nav-group">
           <p>{{ section.group }}</p>
-          <button v-for="item in section.items" :key="item" type="button" class="nav-item" disabled>
+          <button v-for="item in section.items" :key="item" type="button" class="nav-item"
+            :class="{ active: (item === 'GM Forge' && view === 'gmforge') || (item === 'Players' && view === 'players') || (item === 'Server' && view === 'server') || (view === 'content' && contentFocus && (item === 'Combat Simulator' && contentFocus === 'simulator' || item === 'Drafts' && contentFocus === 'drafts' || item === 'Revisions' && contentFocus === 'revisions' || item === 'Releases' && contentFocus === 'releases')) }"
+            @click="openOperations(item)">
             <span>{{ item }}</span>
-            <small>soon</small>
+
           </button>
         </div>
       </nav>
@@ -431,10 +506,10 @@ function formatDate(value: string | null | undefined): string {
       <section class="hero-panel">
         <div>
           <span class="live-label">● LIVE</span>
-          <h2>Production control plane</h2>
+          <h2>Панель управления Elyndor</h2>
           <p>
-            Новый отдельный Admin SPA подключён к server-side SUPER_ADMIN API.
-            Следующий блок — перенос Content Workspace.
+            Контент, публикации и тестирование GM-предметов доступны из одного интерфейса.
+            Для изменений live-баланса используй проверку и предварительный просмотр публикации.
           </p>
         </div>
         <button type="button" :disabled="busy" @click="run(loadDashboard)">
@@ -503,24 +578,49 @@ function formatDate(value: string | null | undefined): string {
       </section>
 
       <section class="next-panel">
-        <p class="eyebrow">NEXT ADMIN V2 BLOCK</p>
-        <h2>Content Workspace migration</h2>
-        <p>
-          Monsters, Items, Abilities, Talents, Locations, Loot, Merchants, Simulator,
-          Validation, Revisions, Publish и Rollback уже доступны в отдельном Content Workspace.
-          Следующий блок — global search, filters, relations и улучшение editor UX.
-        </p>
-        <button class="primary-link" type="button" @click="openContent('monsters')">
-          Открыть Content Workspace
-        </button>
+        <p class="eyebrow">QUICK ACTIONS</p>
+        <h2>С чего начать?</h2>
+        <p>Выбирай нужный инструмент. Изменения контента сохраняются в draft и публикуются отдельно; GM Forge выдаёт только тестовые предметы.</p>
+        <div class="quick-actions">
+          <button class="primary-link" type="button" @click="openContent('monsters')">Редактор контента</button>
+          <button class="primary-link" type="button" @click="openContent('items')">Предметы и экипировка</button>
+          <button class="primary-link" type="button" @click="openGmForge">GM Forge · тестовый шмот</button>
+        </div>
       </section>
 
       <p v-if="errorMessage" class="error-message error-message--dashboard">{{ errorMessage }}</p>
       </template>
 
+      <GmForgeView
+        v-else-if="view === 'gmforge'"
+        :default-telegram-id="forgeRecipientId"
+        :package-json="content?.payloadJson ?? ''"
+      />
+
+      <AdminPlayersView
+        v-else-if="view === 'players'"
+        @forge-target="openGmForgeForPlayer"
+      />
+
+      <section v-else-if="view === 'server'" class="server-panel">
+        <p class="eyebrow">OPERATIONS / SERVER</p>
+        <h1>Состояние сервера</h1>
+        <p>Данные базового статуса API. Подробные health-метрики доступны в защищённой Telegram-админке.</p>
+        <dl>
+          <div><dt>Сервис</dt><dd>{{ serviceStatus?.service ?? '—' }}</dd></div>
+          <div><dt>Статус</dt><dd>{{ serviceStatus?.status ?? '—' }}</dd></div>
+          <div><dt>Время сервера (UTC)</dt><dd>{{ serviceStatus?.utcNow ?? '—' }}</dd></div>
+          <div><dt>Версия контента</dt><dd>{{ content?.contentVersion ?? '—' }}</dd></div>
+          <div><dt>Последняя публикация</dt><dd>{{ content?.sourcePublishedAtUtc ?? '—' }}</dd></div>
+        </dl>
+        <button type="button" :disabled="busy" @click="run(loadDashboard)">{{ busy ? 'Обновление…' : 'Обновить статус' }}</button>
+        <p v-if="errorMessage" class="error-message" role="alert">{{ errorMessage }}</p>
+      </section>
+
       <AdminView
         v-else-if="view === 'content'"
         :initial-section="contentSection"
+        :initial-focus="contentFocus"
         @dirty-change="contentDirty = $event"
       />
     </section>

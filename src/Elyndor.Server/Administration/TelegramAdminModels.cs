@@ -19,6 +19,7 @@ public enum AdminCommandType
     Delete,
     Message,
     GiveItem,
+    GmForge,
     CreatePromoCode,
     SpawnWorldBoss,
     BuildDump,

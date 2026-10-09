@@ -106,6 +106,7 @@ public static class ItemInstancePersistenceFactory
         // range repair is allowed to recover malformed generation envelopes, but may never
         // reclassify Stars/RollQuality/Perfect or rewrite the birth power/name metadata.
         bool requiresHistoricalRepair = itemization is not null
+            && item.SourceType != GmItemForge.SourceType
             && ProceduralItemPolicy.IsEnabled(definition)
             && affixes.Any(affix => affix.MaxAtGeneration <= affix.MinAtGeneration);
         if (requiresHistoricalRepair)

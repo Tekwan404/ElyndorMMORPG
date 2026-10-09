@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import AdminClassProfileForm from '@/admin/AdminClassProfileForm.vue'
 import AdminCombatSimulator from '@/admin/AdminCombatSimulator.vue'
 import AdminEntityForm from '@/admin/AdminEntityForm.vue'
@@ -64,6 +64,7 @@ type SectionKey = (typeof sections)[number]['key']
 
 const props = defineProps<{
   initialSection?: string
+  initialFocus?: string
 }>()
 
 const emit = defineEmits<{
@@ -106,6 +107,7 @@ const publishCandidate = ref<ContentAdminRevisionDetail | null>(null)
 const publishDiff = ref<ContentDiffEntry[]>([])
 const entitySearch = ref('')
 const globalSearch = ref('')
+const globalSearchInput = ref<HTMLInputElement | null>(null)
 let localDraftSaveTimer: ReturnType<typeof setTimeout> | null = null
 
 const draftPackage = computed<JsonRecord | null>(() => parseRecord(draftJson.value))
@@ -269,12 +271,26 @@ const entityNeedsApply = computed(() => {
   return entityJson.value !== JSON.stringify(selectedEntityDraft.value, null, 2)
 })
 
+const hasPendingEdits = computed(() => isDirty.value || entityNeedsApply.value)
+
 function entityId(entity: JsonRecord): string {
   const id = entity.id
   return typeof id === 'string' ? id : '(without id)'
 }
 
+function confirmPendingEntityJson(): boolean {
+  return !entityNeedsApply.value || window.confirm(
+    'Есть неприменённые изменения в JSON сущности. Сначала нажми Apply JSON, чтобы сохранить их в draft. Отбросить изменения?',
+  )
+}
+
+function changeEditorMode(nextMode: 'form' | 'json'): void {
+  if (nextMode === editorMode.value || !confirmPendingEntityJson()) return
+  editorMode.value = nextMode
+}
+
 function selectEntity(entity: JsonRecord): void {
+  if (entityId(entity) !== selectedEntityId.value && !confirmPendingEntityJson()) return
   selectedEntityId.value = entityId(entity)
   duplicateMode.value = false
   entityJson.value = JSON.stringify(entity, null, 2)
@@ -283,12 +299,13 @@ function selectEntity(entity: JsonRecord): void {
 }
 
 function selectSection(section: (typeof sections)[number]['key']): void {
-  if (section === selectedSection.value) return
+  if (section === selectedSection.value || !confirmPendingEntityJson()) return
   selectedSection.value = section
   changeSection()
 }
 
 function openEntityLocation(sectionKey: string, targetEntityId: string): void {
+  if (!confirmPendingEntityJson()) return
   const section = sections.find(candidate => candidate.key === sectionKey)
   if (!section) return
 
@@ -652,16 +669,27 @@ async function refreshAll(resetDraft = true): Promise<void> {
 }
 
 async function validateDraft(): Promise<void> {
+  if (entityNeedsApply.value) {
+    errorMessage.value = 'Сначала примени изменения JSON сущности кнопкой Apply JSON.'
+    return
+  }
+  const candidateJson = draftJson.value
   await runAction('validate', async () => {
-    validation.value = await apiClient.request<ContentAdminValidation>(
+    const response = await apiClient.request<ContentAdminValidation>(
       '/api/v1/admin/content/validate',
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payloadJson: draftJson.value }),
+        body: JSON.stringify({ payloadJson: candidateJson }),
       },
     )
-    statusMessage.value = validation.value.isValid
+    if (draftJson.value !== candidateJson) {
+      validation.value = null
+      statusMessage.value = 'Черновик изменился во время проверки. Запусти Validate ещё раз.'
+      return
+    }
+    validation.value = response
+    statusMessage.value = response.isValid
       ? 'Draft прошёл серверную валидацию.'
       : 'Draft содержит ошибки.'
   })
@@ -669,6 +697,14 @@ async function validateDraft(): Promise<void> {
 
 async function saveDraft(): Promise<void> {
   if (!current.value) return
+  if (entityNeedsApply.value) {
+    errorMessage.value = 'Сначала примени изменения JSON сущности кнопкой Apply JSON.'
+    return
+  }
+  if (!parseRecord(draftJson.value)) {
+    errorMessage.value = 'JSON пакета некорректен. Исправь ошибки до сохранения revision.'
+    return
+  }
 
   await runAction('save', async () => {
     const revision = await apiClient.request<ContentAdminRevision>(
@@ -795,6 +831,7 @@ async function runAction(name: string, action: () => Promise<void>): Promise<voi
 
 function resetDraft(): void {
   if (!current.value) return
+  if (!window.confirm('Сбросить все локальные изменения? Восстановить их после этого будет невозможно.')) return
   cancelLocalDraftSave()
   clearLocalContentDraft(current.value.payloadSha256)
   draftJson.value = prettyJson(current.value.payloadJson)
@@ -816,8 +853,13 @@ function scheduleLocalDraftSave(payloadJson: string): void {
   }
 
   localDraftSaveTimer = setTimeout(() => {
-    saveLocalContentDraft(basePayloadSha256, payloadJson)
-    localDraftSaveTimer = null
+    try {
+      saveLocalContentDraft(basePayloadSha256, payloadJson)
+    } catch {
+      errorMessage.value = 'Не удалось сохранить локальный autosave. Проверь свободное место браузера.'
+    } finally {
+      localDraftSaveTimer = null
+    }
   }, 400)
 }
 
@@ -829,7 +871,7 @@ function cancelLocalDraftSave(): void {
 }
 
 function handleBeforeUnload(event: BeforeUnloadEvent): void {
-  if (!isDirty.value) return
+  if (!hasPendingEdits.value) return
   event.preventDefault()
   event.returnValue = ''
 }
@@ -886,13 +928,29 @@ function formatDate(value: string): string {
   return new Date(value).toLocaleString()
 }
 
-watch(isDirty, dirty => {
+watch(hasPendingEdits, dirty => {
   emit('dirty-change', dirty)
 }, { immediate: true })
 
 watch(draftJson, payloadJson => {
+  validation.value = null
   scheduleLocalDraftSave(payloadJson)
 })
+
+const focusAnchors: Record<string, string> = {
+  drafts: 'admin-drafts',
+  simulator: 'admin-simulator',
+  revisions: 'admin-revisions',
+  releases: 'admin-releases',
+}
+
+async function focusRequestedArea(area: string | undefined): Promise<void> {
+  if (!area || accessState.value !== 'ready') return
+  await nextTick()
+  document.getElementById(focusAnchors[area] ?? '')?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+}
+
+watch(() => props.initialFocus, focus => { void focusRequestedArea(focus) })
 
 watch(
   () => props.initialSection,
@@ -904,23 +962,48 @@ watch(
   },
 )
 
-onMounted(async () => {
-  window.addEventListener('beforeunload', handleBeforeUnload)
+async function loadWorkspace(): Promise<void> {
+  accessState.value = 'loading'
+  errorMessage.value = ''
   try {
     await refreshAll(true)
     accessState.value = 'ready'
+    await focusRequestedArea(props.initialFocus)
   } catch (error) {
     accessState.value = error instanceof ApiRequestError && error.status === 403
       ? 'denied'
       : 'error'
-    errorMessage.value =
-      error instanceof ApiRequestError ? error.code : 'network_unavailable'
+    errorMessage.value = error instanceof ApiRequestError ? error.code : 'network_unavailable'
   }
+}
+
+function handleGlobalShortcut(event: KeyboardEvent): void {
+  if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') {
+    event.preventDefault()
+    globalSearchInput.value?.focus()
+  } else if (event.key === 'Escape' && document.activeElement === globalSearchInput.value) {
+    globalSearch.value = ''
+    globalSearchInput.value?.blur()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('beforeunload', handleBeforeUnload)
+  window.addEventListener('keydown', handleGlobalShortcut)
+  void loadWorkspace()
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload)
+  window.removeEventListener('keydown', handleGlobalShortcut)
   cancelLocalDraftSave()
+  if (current.value && isDirty.value) {
+    try {
+      saveLocalContentDraft(current.value.payloadSha256, draftJson.value)
+    } catch {
+      // The browser may deny localStorage; navigation has already been confirmed.
+    }
+  }
   emit('dirty-change', false)
 })
 </script>
@@ -947,6 +1030,7 @@ onBeforeUnmount(() => {
     <section v-else-if="accessState === 'error'" class="system-state system-state--danger">
       <h2>Admin недоступен</h2>
       <p>{{ errorMessage }}</p>
+      <button type="button" @click="loadWorkspace">Повторить подключение</button>
     </section>
 
     <template v-else>
@@ -975,8 +1059,9 @@ onBeforeUnmount(() => {
 
       <section class="global-search">
         <label>
-          <span>GLOBAL CONTENT SEARCH</span>
+          <span>GLOBAL CONTENT SEARCH · Ctrl/⌘ + K</span>
           <input
+            ref="globalSearchInput"
             v-model="globalSearch"
             type="search"
             placeholder="Wolf, WOLF_LOOT, Fireball…"
@@ -1002,7 +1087,7 @@ onBeforeUnmount(() => {
         </div>
       </section>
 
-      <section class="toolbar">
+      <section id="admin-drafts" class="toolbar">
         <label class="note-field">
           <span>Причина изменения</span>
           <input v-model="note" maxlength="240" placeholder="Например: nerf wolf XP after test" />
@@ -1011,17 +1096,19 @@ onBeforeUnmount(() => {
           <button type="button" :disabled="Boolean(busyAction)" @click="validateDraft">
             {{ busyAction === 'validate' ? 'Проверка…' : 'Validate' }}
           </button>
-          <button class="primary" type="button" :disabled="Boolean(busyAction) || !isDirty" @click="saveDraft">
+          <button class="primary" type="button" :disabled="Boolean(busyAction) || !isDirty || entityNeedsApply" @click="saveDraft">
             {{ busyAction === 'save' ? 'Сохранение…' : 'Save draft' }}
           </button>
-          <button type="button" :disabled="Boolean(busyAction) || !isDirty" @click="resetDraft">
+          <button type="button" :disabled="Boolean(busyAction) || !hasPendingEdits" @click="resetDraft">
             Reset
           </button>
         </div>
       </section>
 
-      <p v-if="statusMessage" class="message message--success">{{ statusMessage }}</p>
-      <p v-if="errorMessage" class="message message--danger">{{ errorMessage }}</p>
+      <p v-if="statusMessage" class="message message--success" role="status">{{ statusMessage }}</p>
+      <p v-if="errorMessage" class="message message--danger" role="alert">{{ errorMessage }}</p>
+
+      <p v-if="entityNeedsApply" class="message message--danger" role="status">В JSON-редакторе есть неприменённые изменения — нажми Apply JSON перед сохранением или уходом из раздела.</p>
 
       <section class="validation-strip" :data-valid="validation?.isValid">
         <b>{{ validationLabel }}</b>
@@ -1146,14 +1233,14 @@ onBeforeUnmount(() => {
                 <button
                   type="button"
                   :class="{ active: editorMode === 'form' }"
-                  @click="editorMode = 'form'"
+                  @click="changeEditorMode('form')"
                 >
                   Form
                 </button>
                 <button
                   type="button"
                   :class="{ active: editorMode === 'json' }"
-                  @click="editorMode = 'json'"
+                  @click="changeEditorMode('json')"
                 >
                   JSON
                 </button>
@@ -1386,6 +1473,7 @@ onBeforeUnmount(() => {
       </section>
 
       <AdminCombatSimulator
+        id="admin-simulator"
         :payload-json="draftJson"
         :classes="simulationClassOptions"
         :monsters="simulationMonsterOptions"
@@ -1393,7 +1481,7 @@ onBeforeUnmount(() => {
       />
 
       <section class="history">
-        <div class="history__column">
+        <div id="admin-revisions" class="history__column">
           <h2>Revisions</h2>
           <article v-for="revision in history.revisions" :key="revision.id" class="history-card">
             <div>
@@ -1415,7 +1503,7 @@ onBeforeUnmount(() => {
           </article>
         </div>
 
-        <div class="history__column">
+        <div id="admin-releases" class="history__column">
           <h2>Releases</h2>
           <article v-for="release in history.releases" :key="release.id" class="history-card">
             <div>

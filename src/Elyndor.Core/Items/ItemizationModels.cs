@@ -193,7 +193,8 @@ public sealed record GeneratedItemAffix(
 
 public sealed record ItemGenerationOverrides(
     int? ItemLevelMin = null,
-    int? ItemLevelMax = null)
+    int? ItemLevelMax = null,
+    bool ForcePerfectRoll = false)
 {
     public bool HasItemLevelOverride => ItemLevelMin.HasValue || ItemLevelMax.HasValue;
 }
@@ -284,12 +285,15 @@ public static class ProceduralItemPolicy
         }
 
         ItemGenerationOverrides? effectiveOverrides = overrides;
-        if (effectiveOverrides is null && !string.IsNullOrWhiteSpace(item.ItemFamilyId))
+        if (!string.IsNullOrWhiteSpace(item.ItemFamilyId)
+            && effectiveOverrides?.HasItemLevelOverride != true)
         {
             int minimumItemLevel = item.ItemLevelMin ?? item.RequiredLevel;
-            effectiveOverrides = new ItemGenerationOverrides(
-                minimumItemLevel,
-                minimumItemLevel);
+            effectiveOverrides = (effectiveOverrides ?? new ItemGenerationOverrides()) with
+            {
+                ItemLevelMin = minimumItemLevel,
+                ItemLevelMax = minimumItemLevel
+            };
         }
 
         return IsEnabled(item)
@@ -367,10 +371,9 @@ public static class ItemInstanceGenerator
         }
 
         ItemAffixPoolDefinition pool = FindPool(template, itemization);
-        int bonusCount = RollInclusive(
-            countProfile.MinimumBonusCount,
-            countProfile.MaximumBonusCount,
-            random);
+        int bonusCount = overrides?.ForcePerfectRoll == true
+            ? countProfile.MaximumBonusCount
+            : RollInclusive(countProfile.MinimumBonusCount, countProfile.MaximumBonusCount, random);
         int maxAffixCount = checked(countProfile.GuaranteedCount + countProfile.MaximumBonusCount);
         if (maxAffixCount <= 0)
             throw new InvalidOperationException($"Template '{template.Id}' has no legal affix capacity.");
@@ -393,7 +396,9 @@ public static class ItemInstanceGenerator
         ItemQualityProfileDefinition qualityProfile = itemization.QualityProfiles
             .SingleOrDefault(profile => string.Equals(profile.Id, sourceQualityProfileId, StringComparison.Ordinal))
             ?? throw new InvalidOperationException($"Unknown item quality profile '{sourceQualityProfileId}'.");
-        decimal seedQuality = RollQuality(random, qualityProfile.BiasExponent, itemization.PerfectSnapThreshold);
+        decimal seedQuality = overrides?.ForcePerfectRoll == true
+            ? 1m
+            : RollQuality(random, qualityProfile.BiasExponent, itemization.PerfectSnapThreshold);
         decimal affixBudget = maxTemplatePower - structuralPower;
         decimal maxPowerPerAffix = affixBudget / maxAffixCount;
 
@@ -421,8 +426,9 @@ public static class ItemInstanceGenerator
                 minimumValue = maximumValue;
 
             decimal deviationUnit = (random.NextUnit() * 2m) - 1m;
-            decimal individualQuality = Clamp01(
-                seedQuality + (deviationUnit * itemization.IndividualQualityDeviationPercent / 100m));
+            decimal individualQuality = overrides?.ForcePerfectRoll == true
+                ? 1m
+                : Clamp01(seedQuality + (deviationUnit * itemization.IndividualQualityDeviationPercent / 100m));
             if (individualQuality >= itemization.PerfectSnapThreshold)
                 individualQuality = 1m;
 
@@ -448,10 +454,12 @@ public static class ItemInstanceGenerator
         decimal realizedPotential = denominator <= 0
             ? 1m
             : Clamp01((actualPower - minimumTemplatePower) / denominator);
-        decimal rollQuality = decimal.Round(realizedPotential * 100m, 2, MidpointRounding.AwayFromZero);
-        int stars = StarsFor(realizedPotential);
-        bool isPerfect = allAtMaximum
-            && decimal.Abs(actualPower - maxTemplatePower) <= 0.01m;
+        decimal rollQuality = overrides?.ForcePerfectRoll == true
+            ? 100m
+            : decimal.Round(realizedPotential * 100m, 2, MidpointRounding.AwayFromZero);
+        int stars = overrides?.ForcePerfectRoll == true ? 5 : StarsFor(realizedPotential);
+        bool isPerfect = overrides?.ForcePerfectRoll == true || (allAtMaximum
+            && decimal.Abs(actualPower - maxTemplatePower) <= 0.01m);
 
         (string? prefixId, string? suffixId, string displayName) =
             ResolveGeneratedName(template, itemization, affixes);
