@@ -30,6 +30,7 @@ public enum AdministrationOperationType
     Delete,
     Message,
     GiveItem,
+    GmForge,
     CreatePromoCode,
     SpawnWorldBoss
 }
@@ -222,6 +223,10 @@ public sealed class TelegramAdministrationService(
         if (operation.Type == AdministrationOperationType.GiveItem)
         {
             return await GiveItemAsync(character, updateId, operation.Value, now, cancellationToken);
+        }
+        if (operation.Type == AdministrationOperationType.GmForge)
+        {
+            return await ForgeGmItemAsync(character, updateId, operation.Value, now, cancellationToken);
         }
 
         CharacterVitals vitals = await dbContext.CharacterVitals.SingleAsync(
