@@ -24,7 +24,7 @@ describe('CombatThreatMeter', () => {
 
     expect(wrapper.get('[data-combat-threat-meter]').text()).toContain('Архон Пепла')
     expect(wrapper.findAll('[data-threat-actor-id]')).toHaveLength(3)
-    expect(wrapper.get('[data-threat-actor-id="tank"]').text()).toMatch(/1\\s280/)
+    expect(wrapper.get('[data-threat-actor-id="tank"]').text()).toMatch(/1\s280/)
     expect(wrapper.get('[data-threat-actor-id="tank"]').text()).toContain('ПРОВОКАЦИЯ')
     expect(wrapper.get('[data-threat-actor-id="tank"]').classes()).toContain('is-target')
     expect(wrapper.get('[data-threat-actor-id="local"]').text()).toContain('ВЫ')
