@@ -33,7 +33,7 @@ Only generated equipment is currently supported; fixed stat-only templates are r
 - \`BindState=BOUND\` and a permanent item lock prevent trade, auction, merchant sale and salvage; the item can still be equipped for combat experiments.
 - The item may still be used to defeat mobs and gain combat rewards. **Use a dedicated developer/test character**; full prevention of progression farming with such items would require an additional combat reward gate.
 - Ordinary item generation and Reforge remain unchanged; only this admin-only creation path can invoke forced perfect generation.
-- The UI is not yet integrated into the admin web app: this is a functional Telegram-command-first implementation.
+- Admin V2 includes a GM Forge builder under **OPERATIONS → GM Forge**. Its mint action posts to `POST /api/v1/admin/gm-forge/create`, protected by the existing `SUPER_ADMIN` JWT policy; only the admin's signed-in Telegram identity is used for the audit. A fresh request GUID provides replay safety. The form supports item search, clone, star/enhancement selectors and arbitrary stat rows.
 
 ## Manual verification
 
