@@ -95,7 +95,8 @@ public static class AdminPlayerEndpoints
                 item.EnhancementLevel,
                 item.SourceType,
                 item.IsLocked,
-                item.ItemLevel
+                item.ItemLevel,
+                item.GenerationVersion
             })
             .Take(300)
             .ToArrayAsync(cancellationToken);
@@ -117,6 +118,7 @@ public static class AdminPlayerEndpoints
             item.SourceType,
             item.IsLocked,
             item.ItemLevel,
+            CanClone = item.GenerationVersion > 0,
             IsEquipped = equipped.Contains(item.Id)
         });
         return Results.Ok(new { owner.Name, items = results });
