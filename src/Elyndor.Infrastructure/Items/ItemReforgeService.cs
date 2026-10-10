@@ -84,7 +84,7 @@ public sealed class ItemReforgeService(
             .Include(candidate => candidate.Affixes)
             .SingleOrDefaultAsync(candidate => candidate.Id == itemInstanceId && candidate.CharacterId == character.Id, cancellationToken);
         if (item is null) return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemNotFound);
-        if (item.IsLocked) return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemLocked);
+        if (item.IsLocked && item.SourceType != GmItemForge.SourceType) return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemLocked);
         if (item.TransactionLockId.HasValue) return ItemReforgePreviewResult.Failure(ItemReforgeErrorCodes.ItemTransactionLocked);
         GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
         if (!contentSnapshot.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
@@ -219,7 +219,7 @@ public sealed class ItemReforgeService(
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemNotFound, cancellationToken);
         if (item.TransactionLockId.HasValue)
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemTransactionLocked, cancellationToken);
-        if (item.IsLocked)
+        if (item.IsLocked && item.SourceType != GmItemForge.SourceType)
             return await RollbackFailureAsync(transaction, ItemReforgeErrorCodes.ItemLocked, cancellationToken);
 
         GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
