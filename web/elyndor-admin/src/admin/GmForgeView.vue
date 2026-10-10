@@ -16,7 +16,7 @@ type ForgeResponse = { code: string; message: string; isDuplicate: boolean }
 type BatchResult = { items: Array<{ index: number; isSuccess: boolean; isDuplicate: boolean; code: string; message: string }> }
 type DirectoryPlayer = { telegramUserId: number; telegramUsername: string | null; character: { name: string; level: number; classId: string } | null }
 type Directory = { total: number; page: number; pageSize: number; players: DirectoryPlayer[] }
-type OwnedItem = { id: string; name: string; itemDefinitionId: string; stars: number | null; quantity: number; enhancementLevel: number; isEquipped: boolean }
+type OwnedItem = { id: string; name: string; itemDefinitionId: string; stars: number | null; quantity: number; enhancementLevel: number; isEquipped: boolean; canClone: boolean }
 
 const mode = ref<Mode>(props.cloneFromId ? 'clone' : 'regular')
 const recipient = ref(props.defaultTelegramId)
@@ -399,9 +399,9 @@ async function copyCommand(): Promise<void> {
             </button>
             <div v-if="ownedItems.length" class="owned-list">
               <button v-for="item in ownedItems" :key="item.id" type="button" class="owned-choice"
-                :class="{ chosen: cloneId === item.id }" @click="cloneId = item.id">
+                :class="{ chosen: cloneId === item.id }" :disabled="!item.canClone" @click="cloneId = item.id">
                 <span><strong>{{ item.name }}</strong><small>{{ item.stars ?? '—' }}★ · +{{ item.enhancementLevel }}{{ item.isEquipped ? ' · Надето' : '' }}</small></span>
-                <span>{{ cloneId === item.id ? 'Выбрано ✓' : 'Выбрать' }}</span>
+                <span>{{ !item.canClone ? 'Нет изменяемых статов' : cloneId === item.id ? 'Выбрано ✓' : 'Выбрать' }}</span>
               </button>
             </div>
             <details class="technical">
