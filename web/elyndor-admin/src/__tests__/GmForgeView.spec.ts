@@ -47,6 +47,66 @@ describe('GM Forge admin form', () => {
     wrapper.unmount()
   })
 
+  it('grants an ordinary item without any affix configuration', async () => {
+    const mockFetch = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ items: [
+        { index: 0, isSuccess: true, isDuplicate: false, code: 'admin_item_granted', message: 'Выдано' },
+      ] }), { status: 200 }),
+    )
+    vi.stubGlobal('fetch', mockFetch)
+    vi.stubGlobal('crypto', { randomUUID: () => '04e72af5-4b11-495f-8e92-b6f04412ec4c' })
+    const wrapper = mount(GmForgeView, {
+      props: {
+        defaultTelegramId: '123',
+        packageJson: JSON.stringify({ items: [
+          { id: 'TEST_ORE', name: 'Тестовая руда', type: 'Material' },
+        ] }),
+      },
+    })
+    await wrapper.find('#forge-item').setValue('TEST_ORE')
+    await wrapper.find('#forge-quantity').setValue('25')
+    const action = wrapper.findAll('button').find(x => x.text().includes('Создать и выдать предмет'))
+    await action!.trigger('click')
+    await flushPromises()
+    expect(wrapper.text()).toContain('Выдано позиций: 1 из 1')
+    const call = mockFetch.mock.calls[0]
+    if (!call) throw new Error('Expected batch request')
+    expect(String(call[0])).toContain('/api/v1/admin/gm-forge/batch')
+    const sent = JSON.parse(String(call[1]?.body))
+    expect(sent.items[0]).toEqual({ mode: 'regular', specification: 'TEST_ORE 25 NORMAL' })
+    wrapper.unmount()
+  })
+
+  it('queues two different equipment types for one batch delivery', async () => {
+    const mockFetch = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(JSON.stringify({ items: [
+        { index: 0, isSuccess: true, isDuplicate: false, code: 'admin_item_granted', message: 'Первый' },
+        { index: 1, isSuccess: true, isDuplicate: false, code: 'admin_item_granted', message: 'Второй' },
+      ] }), { status: 200 }),
+    )
+    vi.stubGlobal('fetch', mockFetch)
+    vi.stubGlobal('crypto', { randomUUID: () => '3be6b1b3-e98d-4014-b08a-a3700452d812' })
+    const wrapper = mount(GmForgeView, {
+      props: { defaultTelegramId: '123', packageJson: JSON.stringify({ items: [
+        { id: 'SWORD', name: 'Меч', type: 'Equipment' },
+        { id: 'SHIELD', name: 'Щит', type: 'Equipment' },
+      ] }) },
+    })
+    await wrapper.find('#forge-item').setValue('SWORD')
+    await wrapper.findAll('button').find(x => x.text().includes('Добавить в список'))!.trigger('click')
+    await wrapper.find('#forge-item').setValue('SHIELD')
+    await wrapper.findAll('button').find(x => x.text().includes('Добавить в список'))!.trigger('click')
+    await wrapper.findAll('button').find(x => x.text().includes('Выдать всё (2)'))!.trigger('click')
+    await flushPromises()
+    const call = mockFetch.mock.calls[0]
+    if (!call) throw new Error('Expected batch request')
+    const sent = JSON.parse(String(call[1]?.body))
+    expect(sent.items).toHaveLength(2)
+    expect(sent.items[0].specification).toContain('SWORD')
+    expect(sent.items[1].specification).toContain('SHIELD')
+    wrapper.unmount()
+  })
+
   it('preserves clone enhancement unless explicitly overridden', async () => {
     const wrapper = mount(GmForgeView, {
       props: { defaultTelegramId: '123', packageJson: '{"items":[]}' },
