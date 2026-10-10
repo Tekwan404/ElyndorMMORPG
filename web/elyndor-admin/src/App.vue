@@ -36,15 +36,15 @@ const forgeCloneItemId = ref('')
 const contentFocus = ref('')
 
 const contentNavigation = [
-  { key: 'monsters', label: 'Monsters' },
-  { key: 'items', label: 'Items' },
-  { key: 'abilities', label: 'Abilities' },
-  { key: 'talentTrees', label: 'Talents' },
-  { key: 'classProfiles', label: 'Classes' },
-  { key: 'locations', label: 'Locations' },
-  { key: 'lootTables', label: 'Loot Tables' },
-  { key: 'merchants', label: 'Merchants' },
-  { key: 'equipmentSets', label: 'Equipment Sets' },
+  { key: 'monsters', label: 'Монстры' },
+  { key: 'items', label: 'Предметы' },
+  { key: 'abilities', label: 'Способности' },
+  { key: 'talentTrees', label: 'Таланты' },
+  { key: 'classProfiles', label: 'Классы' },
+  { key: 'locations', label: 'Локации' },
+  { key: 'lootTables', label: 'Таблицы добычи' },
+  { key: 'merchants', label: 'Торговцы' },
+  { key: 'equipmentSets', label: 'Сеты экипировки' },
 ] as const
 
 const sections = [
@@ -52,6 +52,18 @@ const sections = [
   { group: 'RELEASES', items: ['Drafts', 'Revisions', 'Releases'] },
   { group: 'OPERATIONS', items: ['Players', 'Server', 'GM Forge'] },
 ] as const
+
+function operationLabel(value: string): string {
+  const labels: Record<string, string> = {
+    'Combat Simulator': 'Симулятор боя', Drafts: 'Черновики',
+    Revisions: 'Версии', Releases: 'Публикации', Players: 'Игроки',
+    Server: 'Сервер', 'GM Forge': 'Выдача предметов',
+  }
+  return labels[value] ?? value
+}
+function operationGroupLabel(value: string): string {
+  return ({ BALANCE: 'БАЛАНС', RELEASES: 'ВЕРСИИ', OPERATIONS: 'УПРАВЛЕНИЕ' } as Record<string, string>)[value] ?? value
+}
 
 const countdown = computed(() => {
   if (!challenge.value) return ''
@@ -77,7 +89,7 @@ onMounted(async () => {
   clock = setInterval(() => {
     now.value = Date.now()
     if (tokenExpiresAtUtc.value && now.value >= Date.parse(tokenExpiresAtUtc.value)) {
-      clearSession('Срок действия сессии истёк. Войди в Admin повторно.')
+      clearSession('Срок действия сессии истёк. Войди в админку повторно.')
     }
   }, 1000)
   try {
@@ -351,19 +363,19 @@ function formatDate(value: string | null | undefined): string {
     <section class="auth-brand">
       <span class="brand-mark">E</span>
       <div>
-        <p class="eyebrow">ELYNDOR CONTROL</p>
-        <h1>Elyndor Admin</h1>
+        <p class="eyebrow">Панель управления Elyndor</p>
+        <h1>Админка Elyndor</h1>
       </div>
     </section>
 
     <section class="auth-card">
       <div class="status-chip" :data-ok="serviceStatus?.status === 'ready'">
         <span></span>
-        {{ serviceStatus?.status === 'ready' ? 'Production API online' : 'Checking production API' }}
+        {{ serviceStatus?.status === 'ready' ? 'Сервер доступен' : 'Проверяем сервер' }}
       </div>
 
       <template v-if="view === 'login'">
-        <p class="eyebrow">SECURE SIGN IN</p>
+        <p class="eyebrow">Защищённый вход</p>
         <h2>Войти через Telegram</h2>
         <p class="muted">
           Укажи Telegram ID из server-side allowlist. Elyndor Bot пришлёт одноразовый код.
@@ -391,7 +403,7 @@ function formatDate(value: string | null | undefined): string {
 
       <template v-else-if="view === 'code'">
         <button class="text-button" type="button" @click="backToId">← Другой Telegram ID</button>
-        <p class="eyebrow">ONE-TIME CODE</p>
+        <p class="eyebrow">Одноразовый код</p>
         <h2>Проверь Telegram</h2>
         <p class="muted">
           Код отправлен на аккаунт <b>{{ telegramId }}</b>. Он одноразовый и действует 5 минут.
@@ -411,13 +423,13 @@ function formatDate(value: string | null | undefined): string {
         </label>
 
         <button class="primary" type="button" :disabled="busy" @click="verifyCode">
-          {{ busy ? 'Проверяем…' : 'Войти в Admin' }}
+          {{ busy ? 'Проверяем…' : 'Войти в админку' }}
         </button>
       </template>
 
       <template v-else>
         <button class="text-button" type="button" @click="backToId">← Назад</button>
-        <p class="eyebrow">BREAK-GLASS ACCESS</p>
+        <p class="eyebrow">Резервный вход</p>
         <h2>Резервный вход</h2>
         <p class="muted">
           Используй временный пароль только пока Telegram недоступен.
@@ -454,7 +466,7 @@ function formatDate(value: string | null | undefined): string {
         <span class="brand-mark brand-mark--small">E</span>
         <div>
           <strong>ELYNDOR</strong>
-          <small>ADMIN V2</small>
+          <small>Админка</small>
         </div>
       </div>
 
@@ -465,10 +477,10 @@ function formatDate(value: string | null | undefined): string {
           type="button"
           @click="openDashboard"
         >
-          <span>Dashboard</span>
+          <span>Обзор</span>
         </button>
         <div class="nav-group">
-          <p>CONTENT</p>
+          <p>Контент</p>
           <button
             v-for="item in contentNavigation"
             :key="item.key"
@@ -482,11 +494,11 @@ function formatDate(value: string | null | undefined): string {
         </div>
 
         <div v-for="section in sections" :key="section.group" class="nav-group">
-          <p>{{ section.group }}</p>
+          <p>{{ operationGroupLabel(section.group) }}</p>
           <button v-for="item in section.items" :key="item" type="button" class="nav-item"
             :class="{ active: (item === 'GM Forge' && view === 'gmforge') || (item === 'Players' && view === 'players') || (item === 'Server' && view === 'server') || (view === 'content' && contentFocus && (item === 'Combat Simulator' && contentFocus === 'simulator' || item === 'Drafts' && contentFocus === 'drafts' || item === 'Revisions' && contentFocus === 'revisions' || item === 'Releases' && contentFocus === 'releases')) }"
             @click="openOperations(item)">
-            <span>{{ item }}</span>
+            <span>{{ operationLabel(item) }}</span>
 
           </button>
         </div>
@@ -495,7 +507,7 @@ function formatDate(value: string | null | undefined): string {
       <div class="sidebar-footer">
         <span class="status-dot"></span>
         <div>
-          <strong>Production</strong>
+          <strong>Игровой сервер</strong>
           <small>game.elyndor.su</small>
         </div>
       </div>
@@ -505,8 +517,8 @@ function formatDate(value: string | null | undefined): string {
       <template v-if="view === 'dashboard'">
       <header class="topbar">
         <div>
-          <p class="eyebrow">ADMIN V2 / FOUNDATION</p>
-          <h1>Dashboard</h1>
+          <p class="eyebrow">Управление игрой</p>
+          <h1>Обзор игры</h1>
         </div>
         <div class="topbar-actions">
           <span class="session-pill">SUPER_ADMIN · до {{ formatDate(tokenExpiresAtUtc) }}</span>
@@ -530,24 +542,24 @@ function formatDate(value: string | null | undefined): string {
 
       <section class="metric-grid">
         <article>
-          <span>SERVER</span>
+          <span>СЕРВЕР</span>
           <b>{{ serviceStatus?.status?.toUpperCase() ?? 'UNKNOWN' }}</b>
           <small>{{ serviceStatus?.service ?? 'Elyndor.Server' }}</small>
         </article>
         <article>
-          <span>CONTENT</span>
+          <span>КОНТЕНТ</span>
           <b>{{ content?.contentVersion ?? '—' }}</b>
-          <small>LIVE package</small>
+          <small>Текущая версия</small>
         </article>
         <article>
-          <span>BALANCE</span>
+          <span>БАЛАНС</span>
           <b>{{ content?.balanceVersion ?? '—' }}</b>
-          <small>LIVE profile</small>
+          <small>Текущий баланс</small>
         </article>
         <article>
-          <span>RELEASE</span>
+          <span>ПУБЛИКАЦИЯ</span>
           <b>{{ releaseLabel }}</b>
-          <small>revision {{ revisionLabel }}</small>
+          <small>версия {{ revisionLabel }}</small>
         </article>
       </section>
 
@@ -555,10 +567,10 @@ function formatDate(value: string | null | undefined): string {
         <article class="panel">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">CONTENT PLATFORM</p>
-              <h2>Live state</h2>
+              <p class="eyebrow">Управление контентом</p>
+              <h2>Состояние игры</h2>
             </div>
-            <span class="status-chip" data-ok="true"><span></span>Protected</span>
+            <span class="status-chip" data-ok="true"><span></span>Защищено</span>
           </div>
           <dl>
             <div><dt>Payload SHA</dt><dd><code>{{ content?.payloadSha256?.slice(0, 16) ?? '—' }}</code></dd></div>
@@ -570,8 +582,8 @@ function formatDate(value: string | null | undefined): string {
         <article class="panel">
           <div class="panel-heading">
             <div>
-              <p class="eyebrow">RECENT ACTIVITY</p>
-              <h2>Releases</h2>
+              <p class="eyebrow">Последние изменения</p>
+              <h2>Публикации</h2>
             </div>
           </div>
           <div v-if="history?.releases.length" class="activity-list">
@@ -589,13 +601,13 @@ function formatDate(value: string | null | undefined): string {
       </section>
 
       <section class="next-panel">
-        <p class="eyebrow">QUICK ACTIONS</p>
+        <p class="eyebrow">Быстрые действия</p>
         <h2>С чего начать?</h2>
-        <p>Выбирай нужный инструмент. Изменения контента сохраняются в draft и публикуются отдельно; GM Forge выдаёт только тестовые предметы.</p>
+        <p>Выбирай нужный инструмент. Изменения контента сохраняются в draft и публикуются отдельно; Мастерская выдаёт испытательные предметы.</p>
         <div class="quick-actions">
           <button class="primary-link" type="button" @click="openContent('monsters')">Редактор контента</button>
           <button class="primary-link" type="button" @click="openContent('items')">Предметы и экипировка</button>
-          <button class="primary-link" type="button" @click="openGmForge">GM Forge · тестовый шмот</button>
+          <button class="primary-link" type="button" @click="openGmForge">Выдача предметов</button>
         </div>
       </section>
 
@@ -616,9 +628,9 @@ function formatDate(value: string | null | undefined): string {
       />
 
       <section v-else-if="view === 'server'" class="server-panel">
-        <p class="eyebrow">OPERATIONS / SERVER</p>
+        <p class="eyebrow">Управление · Сервер</p>
         <h1>Состояние сервера</h1>
-        <p>Данные базового статуса API. Подробные health-метрики доступны в защищённой Telegram-админке.</p>
+        <p>Данные базового статуса API. Подробные показатели состояния доступны в защищённой Telegram-админке.</p>
         <dl>
           <div><dt>Сервис</dt><dd>{{ serviceStatus?.service ?? '—' }}</dd></div>
           <div><dt>Статус</dt><dd>{{ serviceStatus?.status ?? '—' }}</dd></div>
