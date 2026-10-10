@@ -1,5 +1,6 @@
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Content;
+using Elyndor.Core.Content;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Server.Administration;
