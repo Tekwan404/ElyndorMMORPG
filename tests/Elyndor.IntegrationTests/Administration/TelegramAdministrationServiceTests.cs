@@ -310,6 +310,35 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
     }
 
     [Fact]
+    public async Task GmForgeCanIssueThreeDistinctDeveloperItemsOnce()
+    {
+        await SeedCharacterAsync(732_707_324, level: 60);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        AdministrationOperation operation = new(
+            AdministrationOperationType.GmForge, 732_707_324,
+            "UNIQUE_WARRIOR_BLACKHEART qty=3 WEAPON_DAMAGE=1500");
+
+        AdministrationResult first = await ExecuteAsync(9060, operation, content);
+        AdministrationResult replay = await ExecuteAsync(9060, operation, content);
+        Assert.True(first.IsSuccess, first.Message);
+        Assert.True(replay.IsDuplicate);
+
+        await using GameDbContext db = postgres.CreateDbContext();
+        CharacterItem[] items = await db.CharacterItems.Include(x => x.Affixes).ToArrayAsync();
+        Assert.Equal(3, items.Length);
+        Assert.Equal(3, items.Select(item => item.Id).Distinct().Count());
+        Assert.All(items, item =>
+        {
+            Assert.True(item.IsLocked);
+            Assert.Equal(ItemBindStates.Bound, item.BindState);
+            Assert.Equal(GmItemForge.SourceType, item.SourceType);
+            Assert.Equal(1500m, item.Affixes.Single(
+                affix => affix.StatId == ItemStatIds.WeaponDamage).Value);
+        });
+    }
+
+    [Fact]
     public async Task GmForgeClonePreservesOriginalAndOverridesOnlyTheCopy()
     {
         await SeedCharacterAsync(732_707_324, level: 60);
