@@ -28,7 +28,7 @@ describe('admin player inspector', () => {
 
     const wrapper = mount(AdminPlayersView)
     await wrapper.find('#player-telegram-id').setValue('123')
-    await wrapper.find('form').trigger('submit')
+    await wrapper.find('form.lookup').trigger('submit')
     await flushPromises()
 
     expect(mockFetch).toHaveBeenCalledWith('/api/v1/admin/players/123', expect.any(Object))
@@ -45,7 +45,7 @@ describe('admin player inspector', () => {
     vi.stubGlobal('fetch', mockFetch)
     const wrapper = mount(AdminPlayersView)
     await wrapper.find('#player-telegram-id').setValue('invalid')
-    await wrapper.find('form').trigger('submit')
+    await wrapper.find('form.lookup').trigger('submit')
     expect(wrapper.text()).toContain('корректный числовой Telegram ID')
     expect(mockFetch.mock.calls.every(call => String(call[0]).includes('/players?'))).toBe(true)
     wrapper.unmount()
