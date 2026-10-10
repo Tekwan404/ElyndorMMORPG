@@ -310,6 +310,25 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
     }
 
     [Fact]
+    public async Task ReplayingFailedGmForgeDoesNotClaimItSucceeded()
+    {
+        await SeedCharacterAsync(732_707_324, level: 60);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        AdministrationOperation operation = new(
+            AdministrationOperationType.GmForge, 732_707_324,
+            "UNKNOWN_GM_ITEM_9999 quality=PERFECT");
+        AdministrationResult first = await ExecuteAsync(9070, operation, content);
+        AdministrationResult replay = await ExecuteAsync(9070, operation, content);
+
+        Assert.False(first.IsSuccess);
+        Assert.False(replay.IsSuccess);
+        Assert.True(replay.IsDuplicate);
+        await using GameDbContext db = postgres.CreateDbContext();
+        Assert.Empty(await db.CharacterItems.ToArrayAsync());
+    }
+
+    [Fact]
     public async Task GmForgeCanIssueThreeDistinctDeveloperItemsOnce()
     {
         await SeedCharacterAsync(732_707_324, level: 60);
