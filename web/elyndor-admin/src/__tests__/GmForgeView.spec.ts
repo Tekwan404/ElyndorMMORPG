@@ -24,6 +24,8 @@ describe('GM Forge admin form', () => {
       },
     })
     await wrapper.find('#forge-item').setValue('TEST_SWORD')
+    const customMode = wrapper.findAll('button').find(x => x.text().includes('С изменёнными статами'))
+    await customMode!.trigger('click')
     const preset = wrapper.findAll('button').find(x => x.text().includes('Пресет: 1500'))
     await preset!.trigger('click')
     expect(wrapper.text()).toContain('1500')
