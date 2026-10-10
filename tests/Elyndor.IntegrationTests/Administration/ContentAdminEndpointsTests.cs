@@ -97,6 +97,49 @@ public sealed class ContentAdminEndpointsTests(PostgresFixture postgres)
     }
 
     [Fact]
+    public async Task PlayerDirectoryAndItemViewerAreSuperAdminOnly()
+    {
+        await using WebApplicationFactory<Program> factory =
+            CreateFactory(777, adminAllowedUserId: 777);
+        using HttpClient client = factory.CreateClient();
+
+        Assert.Equal(HttpStatusCode.Unauthorized,
+            (await client.GetAsync("/api/v1/admin/players?page=1")).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized,
+            (await client.GetAsync("/api/v1/admin/players/777/items")).StatusCode);
+
+        AuthenticationResponse auth = await AuthenticateAsync(client);
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+
+        var players = await client.GetAsync("/api/v1/admin/players?page=1");
+        Assert.Equal(HttpStatusCode.OK, players.StatusCode);
+        Assert.Contains("players", await players.Content.ReadAsStringAsync());
+        var items = await client.GetAsync("/api/v1/admin/players/777/items");
+        Assert.NotEqual(HttpStatusCode.Unauthorized, items.StatusCode);
+        Assert.NotEqual(HttpStatusCode.Forbidden, items.StatusCode);
+    }
+
+    [Fact]
+    public async Task BatchItemIssuingValidatesEveryEntryAndRequiresAdmin()
+    {
+        await using WebApplicationFactory<Program> factory =
+            CreateFactory(777, adminAllowedUserId: 777);
+        using HttpClient client = factory.CreateClient();
+        var invalid = new GmForgeBatchRequest(
+            777, Guid.CreateVersion7(),
+            [new GmForgeBatchItem("custom", "SWORD qty=21")]);
+
+        Assert.Equal(HttpStatusCode.Unauthorized,
+            (await client.PostAsJsonAsync("/api/v1/admin/gm-forge/batch", invalid)).StatusCode);
+        AuthenticationResponse auth = await AuthenticateAsync(client);
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", auth.AccessToken);
+        Assert.Equal(HttpStatusCode.BadRequest,
+            (await client.PostAsJsonAsync("/api/v1/admin/gm-forge/batch", invalid)).StatusCode);
+    }
+
+    [Fact]
     public async Task GmForgeWebEndpointRequiresSuperAdmin()
     {
         await using WebApplicationFactory<Program> factory =
