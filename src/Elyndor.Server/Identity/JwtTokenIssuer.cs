@@ -23,15 +23,18 @@ public sealed class JwtTokenIssuer(
     public IssuedAccessToken Issue(
         Guid accountId,
         long telegramUserId,
-        IReadOnlyCollection<string>? roles = null)
+        IReadOnlyCollection<string>? roles = null,
+        int? lifetimeMinutes = null)
     {
         if (accountId == Guid.Empty)
             throw new ArgumentException("Account ID cannot be empty.", nameof(accountId));
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(telegramUserId);
 
         DateTimeOffset issuedAtUtc = _timeProvider.GetUtcNow();
-        DateTimeOffset expiresAtUtc = issuedAtUtc.AddMinutes(
-            AuthenticationOptions.AccessTokenLifetimeMinutes);
+        int tokenLifetimeMinutes = lifetimeMinutes ?? AuthenticationOptions.AccessTokenLifetimeMinutes;
+        if (tokenLifetimeMinutes is < 1 or > 720)
+            throw new ArgumentOutOfRangeException(nameof(lifetimeMinutes));
+        DateTimeOffset expiresAtUtc = issuedAtUtc.AddMinutes(tokenLifetimeMinutes);
         SymmetricSecurityKey securityKey = new(
             Encoding.UTF8.GetBytes(_authenticationOptions.SigningKey));
         SigningCredentials credentials = new(
