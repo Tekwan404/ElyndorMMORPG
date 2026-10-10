@@ -38,6 +38,21 @@ public sealed class GmForgeSpecificationTests
     }
 
     [Fact]
+    public void SupportsBulkCreationWithMaximumTwentyCopies()
+    {
+        Assert.True(GmForgeSpecification.TryParse(
+            "SWORD quality=PERFECT qty=20 WEAPON_DAMAGE=1500", out GmForgeSpecification? spec));
+        Assert.Equal(20, spec!.Quantity);
+    }
+
+    [Theory]
+    [InlineData("SWORD qty=0")]
+    [InlineData("SWORD qty=21")]
+    [InlineData("SWORD qty=2 qty=3")]
+    public void RejectsInvalidBulkQuantities(string text) =>
+        Assert.False(GmForgeSpecification.TryParse(text, out _));
+
+    [Fact]
     public void CloneUsesExistingInstanceId()
     {
         Guid source = Guid.CreateVersion7();

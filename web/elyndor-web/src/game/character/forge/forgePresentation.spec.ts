@@ -81,6 +81,15 @@ describe('forgeItemAvailability', () => {
     })
   })
 
+  it('allows developer-locked items in reforge without making normal locked items tradable', () => {
+    expect(forgeItemAvailability(equipment({
+      isLocked: true, sourceType: 'GM_FORGE',
+    }))).toEqual({ available: true, reason: null })
+    expect(forgeItemAvailability(equipment({
+      isLocked: true, sourceType: 'ADMIN_GRANT',
+    })).available).toBe(false)
+  })
+
   it('accepts an unequipped item with a rerollable affix', () => {
     expect(forgeItemAvailability(equipment())).toEqual({ available: true, reason: null })
   })

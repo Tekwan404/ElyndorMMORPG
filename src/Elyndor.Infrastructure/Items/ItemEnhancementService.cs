@@ -83,7 +83,7 @@ public sealed class ItemEnhancementService(
         CharacterItem? item = await dbContext.CharacterItems.AsNoTracking().Include(candidate => candidate.Affixes)
             .SingleOrDefaultAsync(candidate => candidate.Id == itemId && candidate.CharacterId == character.Id, cancellationToken);
         if (item is null) return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemNotFound);
-        if (item.IsLocked) return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemLocked);
+        if (item.IsLocked && item.SourceType != GmItemForge.SourceType) return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemLocked);
         if (item.TransactionLockId.HasValue) return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemTransactionLocked);
         if (!content.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
             return ItemEnhancementPreviewResult.Failure(ItemEnhancementErrorCodes.ItemNotFound);
@@ -173,7 +173,7 @@ public sealed class ItemEnhancementService(
         CharacterItem? item = await dbContext.CharacterItems.Include(x => x.Affixes)
             .SingleOrDefaultAsync(x => x.Id == itemId && x.CharacterId == character.Id, cancellationToken);
         if (item is null) return await Fail(transaction, ItemEnhancementErrorCodes.ItemNotFound, cancellationToken);
-        if (item.IsLocked) return await Fail(transaction, ItemEnhancementErrorCodes.ItemLocked, cancellationToken);
+        if (item.IsLocked && item.SourceType != GmItemForge.SourceType) return await Fail(transaction, ItemEnhancementErrorCodes.ItemLocked, cancellationToken);
         if (item.TransactionLockId.HasValue) return await Fail(transaction, ItemEnhancementErrorCodes.ItemTransactionLocked, cancellationToken);
         if (!content.Indexes.ItemsById.TryGetValue(item.ItemDefinitionId, out ItemDefinition? definition))
             return await Fail(transaction, ItemEnhancementErrorCodes.ItemNotFound, cancellationToken);

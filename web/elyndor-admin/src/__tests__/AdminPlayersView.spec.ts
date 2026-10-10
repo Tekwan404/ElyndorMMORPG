@@ -6,8 +6,12 @@ describe('admin player inspector', () => {
   afterEach(() => vi.unstubAllGlobals())
 
   it('looks up a player and hands off their Telegram ID to GM Forge', async () => {
-    const mockFetch = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response(JSON.stringify({
+    const mockFetch = vi.fn<typeof fetch>().mockImplementation(async (input) =>
+      new Response(JSON.stringify(String(input).includes('/players?')
+        ? { page: 1, total: 1, pageSize: 50, players: [
+            { telegramUserId: 123, telegramUsername: 'tester', character: { name: 'DevWarrior', level: 60, classId: 'WARRIOR' } },
+          ] }
+        : {
         telegramUserId: 123,
         telegramUsername: 'tester',
         createdAtUtc: '2026-10-01T12:00:00Z',
@@ -24,13 +28,13 @@ describe('admin player inspector', () => {
 
     const wrapper = mount(AdminPlayersView)
     await wrapper.find('#player-telegram-id').setValue('123')
-    await wrapper.find('form').trigger('submit')
+    await wrapper.find('form.lookup').trigger('submit')
     await flushPromises()
 
     expect(mockFetch).toHaveBeenCalledWith('/api/v1/admin/players/123', expect.any(Object))
     expect(wrapper.text()).toContain('DevWarrior')
     expect(wrapper.text()).toContain('GM-предметов')
-    const openForge = wrapper.findAll('button').find(button => button.text().includes('Открыть GM Forge'))
+    const openForge = wrapper.findAll('button').find(button => button.text().includes('Выдать предметы'))
     await openForge!.trigger('click')
     expect(wrapper.emitted('forge-target')?.[0]).toEqual(['123'])
     wrapper.unmount()
@@ -41,9 +45,9 @@ describe('admin player inspector', () => {
     vi.stubGlobal('fetch', mockFetch)
     const wrapper = mount(AdminPlayersView)
     await wrapper.find('#player-telegram-id').setValue('invalid')
-    await wrapper.find('form').trigger('submit')
+    await wrapper.find('form.lookup').trigger('submit')
     expect(wrapper.text()).toContain('корректный числовой Telegram ID')
-    expect(mockFetch).not.toHaveBeenCalled()
+    expect(mockFetch.mock.calls.every(call => String(call[0]).includes('/players?'))).toBe(true)
     wrapper.unmount()
   })
 })

@@ -186,7 +186,8 @@ public static class AdminWebAuthenticationEndpoints
         IssuedAccessToken token = tokenIssuer.Issue(
             account.Id,
             telegramUserId,
-            [AdminAuthorization.SuperAdminRole]);
+            [AdminAuthorization.SuperAdminRole],
+            lifetimeMinutes: 720);
 
         return Results.Ok(new AuthenticationResponse(
             token.AccessToken,

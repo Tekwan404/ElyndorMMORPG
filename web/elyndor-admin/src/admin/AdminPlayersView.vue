@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { adminRequest, AdminApiError } from '@/api'
 
 interface PlayerCharacter {
@@ -26,7 +26,18 @@ interface PlayerSnapshot {
   character: PlayerCharacter | null
 }
 
-const emit = defineEmits<{ 'forge-target': [telegramId: string] }>()
+interface DirectoryPlayer { telegramUserId: number; telegramUsername: string | null; lastSeenAtUtc: string; character: { name: string; level: number; classId: string } | null }
+interface PlayerDirectory { total: number; page: number; pageSize: number; players: DirectoryPlayer[] }
+interface PlayerItem { id: string; name: string; itemDefinitionId: string; quantity: number; stars: number | null; enhancementLevel: number; isEquipped: boolean; sourceType: string | null; canClone: boolean }
+
+const emit = defineEmits<{ 'forge-target': [telegramId: string]; 'clone-item': [telegramId: string, itemId: string] }>()
+const directory = ref<PlayerDirectory | null>(null)
+const directoryQuery = ref('')
+const directoryBusy = ref(false)
+const directoryError = ref('')
+const items = ref<PlayerItem[]>([])
+const itemsLoading = ref(false)
+const itemsVisible = ref(false)
 const targetId = ref('')
 const snapshot = ref<PlayerSnapshot | null>(null)
 const error = ref('')
@@ -35,6 +46,8 @@ const busy = ref(false)
 async function loadPlayer(): Promise<void> {
   if (busy.value) return
   snapshot.value = null
+  items.value = []
+  itemsVisible.value = false
   error.value = ''
   const id = targetId.value.trim()
   if (!/^[1-9]\d*$/.test(id) || !Number.isSafeInteger(Number(id))) {
@@ -59,6 +72,45 @@ async function loadPlayer(): Promise<void> {
   }
 }
 
+async function loadDirectory(page = 1): Promise<void> {
+  if (directoryBusy.value) return
+  directoryBusy.value = true
+  directoryError.value = ''
+  try {
+    directory.value = await adminRequest<PlayerDirectory>(
+      '/api/v1/admin/players?page=' + page + '&search=' + encodeURIComponent(directoryQuery.value.trim()),
+    )
+  } catch {
+    directoryError.value = 'Не удалось загрузить список игроков.'
+  } finally {
+    directoryBusy.value = false
+  }
+}
+
+async function choosePlayer(id: number): Promise<void> {
+  targetId.value = String(id)
+  await loadPlayer()
+}
+
+async function loadItems(): Promise<void> {
+  if (!snapshot.value?.character || itemsLoading.value) return
+  itemsVisible.value = true
+  itemsLoading.value = true
+  error.value = ''
+  try {
+    const response = await adminRequest<{ items: PlayerItem[] }>(
+      '/api/v1/admin/players/' + snapshot.value.telegramUserId + '/items',
+    )
+    items.value = response.items
+  } catch {
+    error.value = 'Не удалось загрузить инвентарь персонажа.'
+  } finally {
+    itemsLoading.value = false
+  }
+}
+
+onMounted(() => { void loadDirectory() })
+
 async function copyCommand(command: string): Promise<void> {
   try {
     await navigator.clipboard.writeText(command)
@@ -79,10 +131,34 @@ function formatDate(value: string): string {
 <template>
   <main class="players">
     <header>
-      <p class="eyebrow">OPERATIONS / READ ONLY</p>
+      <p class="eyebrow">Управление · Просмотр</p>
       <h1>Игроки</h1>
-      <p>Просмотр состояния персонажа без изменения базы данных. Поиск доступен только SUPER_ADMIN.</p>
+      <p>Выбери игрока из списка или найди по имени, нику либо Telegram ID.</p>
     </header>
+
+    <section class="player-card">
+      <div class="player-card__heading"><h2>Все игроки</h2><span v-if="directory">Всего: {{ directory.total }}</span></div>
+      <form class="lookup__controls" @submit.prevent="loadDirectory(1)">
+        <input v-model="directoryQuery" aria-label="Поиск игроков" placeholder="Имя персонажа, ник или Telegram ID" />
+        <button type="submit" :disabled="directoryBusy">Найти</button>
+      </form>
+      <p v-if="directoryError" role="alert" class="players-error">{{ directoryError }}</p>
+      <p v-if="directoryBusy && !directory">Загружаем игроков…</p>
+      <div v-if="directory" class="directory">
+        <button v-for="player in directory.players" :key="player.telegramUserId" type="button"
+          class="directory__item" @click="choosePlayer(player.telegramUserId)">
+          <strong>{{ player.character?.name ?? (player.telegramUsername ? '@' + player.telegramUsername : 'Без персонажа') }}</strong>
+          <span>{{ player.character ? 'Ур. ' + player.character.level + ' · ' + player.character.classId : 'Персонаж не создан' }}</span>
+          <small>{{ player.telegramUsername ? '@' + player.telegramUsername + ' · ' : '' }}{{ player.telegramUserId }}</small>
+        </button>
+        <p v-if="!directory.players.length">Игроки не найдены.</p>
+      </div>
+      <div v-if="directory" class="directory__paging">
+        <button type="button" :disabled="directoryBusy || directory.page <= 1" @click="loadDirectory(directory.page - 1)">Назад</button>
+        <span>Страница {{ directory.page }} из {{ Math.max(1, Math.ceil(directory.total / directory.pageSize)) }}</span>
+        <button type="button" :disabled="directoryBusy || directory.page * directory.pageSize >= directory.total" @click="loadDirectory(directory.page + 1)">Вперёд</button>
+      </div>
+    </section>
 
     <form class="lookup" @submit.prevent="loadPlayer">
       <label for="player-telegram-id">Telegram ID</label>
@@ -97,12 +173,12 @@ function formatDate(value: string): string {
       <section class="player-card">
         <div class="player-card__heading">
           <div>
-            <p class="eyebrow">ACCOUNT</p>
+            <p class="eyebrow">Учётная запись</p>
             <h2>{{ snapshot.telegramUsername ? '@' + snapshot.telegramUsername : 'Telegram ' + snapshot.telegramUserId }}</h2>
             <small>ID: {{ snapshot.telegramUserId }}</small>
           </div>
           <button type="button" @click="emit('forge-target', String(snapshot.telegramUserId))">
-            Открыть GM Forge
+            Выдать предметы
           </button>
         </div>
         <dl>
@@ -123,11 +199,22 @@ function formatDate(value: string): string {
           <div><span>GM-предметов</span><strong>{{ snapshot.character.gmItemsCount }}</strong></div>
         </div>
         <div class="player-card__actions">
+          <button type="button" :disabled="itemsLoading" @click="loadItems">{{ itemsLoading ? 'Загружаем вещи…' : 'Посмотреть инвентарь' }}</button>
           <button type="button" @click="copyCommand('/char ' + snapshot.telegramUserId)">Копировать /char</button>
           <button type="button" @click="copyCommand('/gear ' + snapshot.telegramUserId)">Копировать /gear</button>
           <button type="button" @click="copyCommand('/builddump ' + snapshot.telegramUserId)">Копировать /builddump</button>
         </div>
-        <p class="hint">Эти команды только копируются, ничего не выполняется автоматически. Для изменения персонажа используй защищённые команды Telegram-админки.</p>
+        <section v-if="itemsVisible" class="inventory-list">
+          <h3>Вещи персонажа</h3>
+          <p v-if="!items.length && !itemsLoading">Предметов нет.</p>
+          <div v-for="item in items" :key="item.id" class="inventory-list__item">
+            <div><strong>{{ item.name }}</strong>
+              <small>{{ item.quantity }} шт. · {{ item.stars ?? '—' }}★ · +{{ item.enhancementLevel }}{{ item.isEquipped ? ' · Надето' : '' }}</small>
+              <small class="inventory-list__id">Экземпляр: {{ item.id }}</small>
+            </div>
+            <button type="button"  :disabled="!item.canClone" @click="emit('clone-item', String(snapshot.telegramUserId), item.id)">{{ item.canClone ? 'Сделать копию' : 'Нельзя копировать' }}</button>
+          </div>
+        </section>
       </section>
       <section v-else class="player-card"><p>Аккаунт существует, но персонаж пока не создан.</p></section>
     </template>
@@ -166,4 +253,14 @@ button:focus-visible { outline: 2px solid #c2a2e4; outline-offset: 2px; }
   .player-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 @media(max-width:410px) { .player-grid { grid-template-columns: 1fr; } }
+.directory { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:16px;max-height:420px;overflow:auto; }
+.directory__item { text-align:left;display:grid;gap:4px;background:#17151c;border:1px solid #3d3547; }
+.directory__item span,.directory__item small { color:#a8a1b6;font-size:12px; }
+.directory__paging { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:14px; }
+.inventory-list { border-top:1px solid #40394a;margin-top:18px;padding-top:16px; }
+.inventory-list__item { display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #40394a;padding:10px 0; }
+.inventory-list__item > div { display:grid;gap:5px;min-width:0; }
+.inventory-list__item small { font-size:12px;color:#a8a1b6; }
+.inventory-list__id { overflow-wrap:anywhere; }
+@media(max-width:620px) { .directory { grid-template-columns:1fr; } .inventory-list__item { flex-direction:column;align-items:stretch; } }
 </style>
