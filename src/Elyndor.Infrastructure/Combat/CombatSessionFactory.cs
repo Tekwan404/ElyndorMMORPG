@@ -362,6 +362,20 @@ public sealed class CombatSessionFactory(
         {
             DungeonEncounterCombatConfigurator.Configure(session, monster.Id, contentSnapshot);
             GenericEncounterCombatConfigurator.Configure(session, monster.Id, contentSnapshot);
+            // Ambient adds use the same authoritative multi-enemy runtime as bosses,
+            // but never enter dungeon, world-boss or authored encounter sessions.
+            if (!allowUnlistedEncounter
+                && monster.Rank != MonsterRank.Boss
+                && string.IsNullOrWhiteSpace(monster.SummonMonsterId)
+                && indexes.EncountersByMonsterId.ContainsKey(monster.Id) == false
+                && content.Dungeons?.Any(dungeon => dungeon.Encounters.Any(
+                    encounter => string.Equals(encounter.MonsterId, monster.Id, StringComparison.Ordinal))) != true)
+            {
+                var ambientRandom = randomFactory.Create();
+                OpenWorldAggroConfigurator.Configure(
+                    session, monster, currentLocation, contentSnapshot,
+                    ambientRandom.NextUnit(), ambientRandom.NextUnit());
+            }
         }
 
         CombatSessionParticipant[] participants = partyMembers

@@ -252,7 +252,8 @@ public enum CombatEventType
     ActorDied,
     EffectImmune,
     ActionRejected,
-    ActorResurrected
+    ActorResurrected,
+    ActorJoined
 }
 
 public sealed record CombatEvent(

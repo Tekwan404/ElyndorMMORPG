@@ -1,0 +1,40 @@
+{
+  "contentVersion": "0.50.0",
+  "balanceVersion": "0.40.0",
+  "publishedAtUtc": "2026-10-10T19:30:00+00:00",
+  "worldContracts": [
+    {
+      "id": "CONTRACT_FIELD_WILD_BOAR",
+      "displayName": "Разыскивается: кабаний вожак",
+      "description": "В Шепчущем лесу вновь заметили дикого кабаньего вожака. Вернитесь в лес и одолейте редкого элитного зверя.",
+      "requiredLevel": 4,
+      "targetMonsterId": "WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4",
+      "unlockLocationId": "WHISPERING_FOREST",
+      "offerLocationId": "STARTER_TOWN",
+      "rewardXp": 500,
+      "rewardGold": 70
+    },
+    {
+      "id": "CONTRACT_FIELD_SWARM_MOTHER",
+      "displayName": "Разыскивается: матка роевиков",
+      "description": "Редкая матка роевиков угрожает Цветочному лугу. Отыщите её среди обычных жителей луга и победите.",
+      "requiredLevel": 7,
+      "targetMonsterId": "FLOWER_MEADOW_MATKA_ROEVIKOV_L7",
+      "unlockLocationId": "FLOWER_MEADOW",
+      "offerLocationId": "STARTER_TOWN",
+      "rewardXp": 850,
+      "rewardGold": 110
+    },
+    {
+      "id": "CONTRACT_FIELD_DUST_CAPTAIN",
+      "displayName": "Разыскивается: капитан Пыльной дороги",
+      "description": "На Старой дороге вновь появился опасный предводитель разбойников. Вернитесь туда, выследите его и победите.",
+      "requiredLevel": 13,
+      "targetMonsterId": "OLD_ROAD_KAPITAN_PYLNOI_DOROGI_L13",
+      "unlockLocationId": "OLD_ROAD",
+      "offerLocationId": "STARTER_TOWN",
+      "rewardXp": 1800,
+      "rewardGold": 190
+    }
+  ]
+}
