@@ -29,10 +29,25 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
         GameContentPackage content = await LoadContentAsync();
         IReadOnlyList<QuestDefinition> quests = QuestCatalog.Resolve(content);
 
-        Assert.Equal(20, quests.Count);
+        Assert.Equal(23, quests.Count);
         Assert.Equal(8, quests.Count(quest => quest.Type == QuestType.Story));
         Assert.Equal(7, quests.Count(quest => quest.Type == QuestType.Side));
-        Assert.Equal(5, quests.Count(quest => quest.Type == QuestType.Contract));
+        Assert.Equal(8, quests.Count(quest => quest.Type == QuestType.Contract));
+
+        foreach ((string id, string target) in new[]
+        {
+            ("CONTRACT_FIELD_WILD_BOAR", "WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4"),
+            ("CONTRACT_FIELD_SWARM_MOTHER", "FLOWER_MEADOW_MATKA_ROEVIKOV_L7"),
+            ("CONTRACT_FIELD_DUST_CAPTAIN", "OLD_ROAD_KAPITAN_PYLNOI_DOROGI_L13")
+        })
+        {
+            QuestDefinition bounty = quests.Single(quest => quest.Id == id);
+            Assert.Equal(QuestType.Contract, bounty.Type);
+            Assert.Equal("STARTER_TOWN", bounty.OfferLocationId);
+            Assert.Contains(bounty.Objectives, objective =>
+                objective.Type == QuestObjectiveType.KillMonster
+                && objective.AcceptedTargetIds().Contains(target));
+        }
 
         QuestDefinition wolfHides = quests.Single(quest => quest.Id == "QUEST_02_WOLF_HIDES");
         QuestDefinition boarTrail = quests.Single(quest => quest.Id == "QUEST_03_BOAR_TRAIL");
