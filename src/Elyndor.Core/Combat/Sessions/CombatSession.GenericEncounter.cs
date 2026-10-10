@@ -393,7 +393,8 @@ public sealed partial class CombatSession
                 _primaryEnemyActorId,
                 now,
                 summon.IsCombatObject,
-                rewardEligible: !summon.NoReward);
+                rewardEligible: !summon.NoReward,
+                isAmbientAggro: summon.IsAmbientAggro);
             if (summon.InitialHpPercent < 100)
             {
                 decimal missingHp = spawned.Actor.MaxHp
