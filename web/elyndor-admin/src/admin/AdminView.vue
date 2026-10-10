@@ -1006,16 +1006,26 @@ onBeforeUnmount(() => {
   }
   emit('dirty-change', false)
 })
+function localizedSection(key: string): string {
+  const labels: Record<string, string> = {
+    monsters: 'Монстры', items: 'Предметы', abilities: 'Способности',
+    talentTrees: 'Таланты', classProfiles: 'Классы',
+    locations: 'Локации', lootTables: 'Добыча',
+    merchants: 'Торговцы', equipmentSets: 'Сеты',
+  }
+  return labels[key] ?? key
+}
+
 </script>
 
 <template>
   <main class="admin-shell">
     <header class="admin-header">
       <div>
-        <p class="eyebrow">ADMIN V2 / CONTENT</p>
-        <h1>Content Workspace</h1>
+        <p class="eyebrow">Управление · Контент</p>
+        <h1>Редактор игрового контента</h1>
       </div>
-      <span class="workspace-badge">Standalone</span>
+      <span class="workspace-badge">Режим редактирования</span>
     </header>
 
     <section v-if="accessState === 'loading'" class="system-state">
@@ -1024,11 +1034,11 @@ onBeforeUnmount(() => {
 
     <section v-else-if="accessState === 'denied'" class="system-state system-state--danger">
       <h2>Доступ запрещён</h2>
-      <p>Этот Telegram-пользователь не входит в server-side admin allowlist.</p>
+      <p>У этого аккаунта нет прав администратора.</p>
     </section>
 
     <section v-else-if="accessState === 'error'" class="system-state system-state--danger">
-      <h2>Admin недоступен</h2>
+      <h2>Админка недоступна</h2>
       <p>{{ errorMessage }}</p>
       <button type="button" @click="loadWorkspace">Повторить подключение</button>
     </section>
@@ -1036,35 +1046,35 @@ onBeforeUnmount(() => {
     <template v-else>
       <section v-if="current" class="live-bar">
         <div>
-          <small>CONTENT</small>
+          <small>КОНТЕНТ</small>
           <b>{{ current.contentVersion }}</b>
         </div>
         <div>
-          <small>BALANCE</small>
+          <small>БАЛАНС</small>
           <b>{{ current.balanceVersion }}</b>
         </div>
         <div>
-          <small>REVISION</small>
+          <small>ВЕРСИЯ</small>
           <b>{{ shortId(current.revisionId) }}</b>
         </div>
         <div>
-          <small>RELEASE</small>
+          <small>ПУБЛИКАЦИЯ</small>
           <b>{{ shortId(current.releaseId) }}</b>
         </div>
         <div class="live-bar__hash">
-          <small>LIVE SHA</small>
+          <small>ОТПЕЧАТОК</small>
           <code>{{ current.payloadSha256.slice(0, 12) }}</code>
         </div>
       </section>
 
       <section class="global-search">
         <label>
-          <span>GLOBAL CONTENT SEARCH · Ctrl/⌘ + K</span>
+          <span>Поиск по всему контенту · Ctrl/⌘ + K</span>
           <input
             ref="globalSearchInput"
             v-model="globalSearch"
             type="search"
-            placeholder="Wolf, WOLF_LOOT, Fireball…"
+            placeholder="Название, предмет, способность или идентификатор…"
             autocomplete="off"
           />
         </label>
@@ -1076,13 +1086,13 @@ onBeforeUnmount(() => {
             @click="openEntityLocation(result.section, result.entityId)"
           >
             <span>
-              <small>{{ result.sectionLabel }}</small>
+              <small>{{ localizedSection(result.section) }}</small>
               <b>{{ result.title }}</b>
             </span>
             <code>{{ result.entityId }}</code>
           </button>
           <p v-if="globalSearchResults.length === 0" class="muted">
-            Ничего не найдено во всём content package.
+            Ничего не найдено во всём игровом контенте.
           </p>
         </div>
       </section>
@@ -1090,17 +1100,17 @@ onBeforeUnmount(() => {
       <section id="admin-drafts" class="toolbar">
         <label class="note-field">
           <span>Причина изменения</span>
-          <input v-model="note" maxlength="240" placeholder="Например: nerf wolf XP after test" />
+          <input v-model="note" maxlength="240" placeholder="Например: уменьшен опыт за волков после проверки" />
         </label>
         <div class="toolbar__actions">
           <button type="button" :disabled="Boolean(busyAction)" @click="validateDraft">
-            {{ busyAction === 'validate' ? 'Проверка…' : 'Validate' }}
+            {{ busyAction === 'validate' ? 'Проверка…' : 'Проверить' }}
           </button>
           <button class="primary" type="button" :disabled="Boolean(busyAction) || !isDirty || entityNeedsApply" @click="saveDraft">
-            {{ busyAction === 'save' ? 'Сохранение…' : 'Save draft' }}
+            {{ busyAction === 'save' ? 'Сохранение…' : 'Сохранить черновик' }}
           </button>
           <button type="button" :disabled="Boolean(busyAction) || !hasPendingEdits" @click="resetDraft">
-            Reset
+            Сбросить
           </button>
         </div>
       </section>
@@ -1108,21 +1118,21 @@ onBeforeUnmount(() => {
       <p v-if="statusMessage" class="message message--success" role="status">{{ statusMessage }}</p>
       <p v-if="errorMessage" class="message message--danger" role="alert">{{ errorMessage }}</p>
 
-      <p v-if="entityNeedsApply" class="message message--danger" role="status">В JSON-редакторе есть неприменённые изменения — нажми Apply JSON перед сохранением или уходом из раздела.</p>
+      <p v-if="entityNeedsApply" class="message message--danger" role="status">В JSON-редакторе есть неприменённые изменения — нажми «Применить JSON» перед сохранением или уходом из раздела.</p>
 
       <section class="validation-strip" :data-valid="validation?.isValid">
         <b>{{ validationLabel }}</b>
         <span v-if="validation?.errors.length">
-          {{ validation.errors.length }} error(s)
+          {{ validation.errors.length }} ошибок
         </span>
-        <span v-else-if="validation?.isValid">серверный pipeline пройден</span>
-        <span v-else>validate перед публикацией</span>
+        <span v-else-if="validation?.isValid">проверка сервера пройдена</span>
+        <span v-else>проверь перед публикацией</span>
       </section>
 
       <div class="workspace">
         <aside class="catalog">
           <div class="catalog__top">
-            <div class="section-tabs" aria-label="Content categories">
+            <div class="section-tabs" aria-label="Категории контента">
               <button
                 v-for="section in sections"
                 :key="section.key"
@@ -1130,12 +1140,12 @@ onBeforeUnmount(() => {
                 :class="{ active: selectedSection === section.key }"
                 @click="selectSection(section.key)"
               >
-                <span>{{ section.label }}</span>
+                <span>{{ localizedSection(section.key) }}</span>
                 <small>{{ sectionCounts[section.key] ?? 0 }}</small>
               </button>
             </div>
             <button v-if="canCreateEntity" class="new-entity" type="button" @click="openCreateEntity">
-              + New {{ createEntityLabel() }}
+              + Создать: {{ localizedSection(selectedSection) }}
             </button>
             <label class="entity-search">
               <span>Поиск · {{ filteredEntityList.length }}/{{ entityList.length }}</span>
@@ -1183,7 +1193,7 @@ onBeforeUnmount(() => {
             <p v-if="selectedSection === 'lootTables'" class="muted">После создания добавь хотя бы один предмет в таблицу дропа.</p>
             <div class="create-card__actions">
               <button type="button" @click="cancelCreateEntity">Отмена</button>
-              <button class="primary" type="submit">Create draft entity</button>
+              <button class="primary" type="submit">Создать в черновике</button>
             </div>
           </form>
 
@@ -1218,7 +1228,7 @@ onBeforeUnmount(() => {
         <section class="editor">
           <div class="editor__header">
             <div>
-              <small>ENTITY EDITOR</small>
+              <small>Редактор записи</small>
               <h2>{{ selectedEntityId ?? 'Выбери сущность' }}</h2>
             </div>
             <div class="editor__actions">
@@ -1227,7 +1237,7 @@ onBeforeUnmount(() => {
                 class="sync-badge"
                 :data-pending="entityNeedsApply"
               >
-                {{ editorMode === 'form' ? 'AUTO-SYNC DRAFT' : entityNeedsApply ? 'APPLY REQUIRED' : 'JSON SYNCED' }}
+                {{ editorMode === 'form' ? 'Сохранено в черновике' : entityNeedsApply ? 'Требуется применить' : 'JSON синхронизирован' }}
               </span>
               <div v-if="selectedEntityId && hasStructuredEditor" class="editor-mode" aria-label="Режим редактора">
                 <button
@@ -1235,7 +1245,7 @@ onBeforeUnmount(() => {
                   :class="{ active: editorMode === 'form' }"
                   @click="changeEditorMode('form')"
                 >
-                  Form
+                  Форма
                 </button>
                 <button
                   type="button"
@@ -1250,14 +1260,14 @@ onBeforeUnmount(() => {
                 type="button"
                 @click="duplicateMode = !duplicateMode"
               >
-                Duplicate
+                Создать копию
               </button>
               <button
                 v-if="selectedEntityId"
                 type="button"
                 @click="quickValidateSelected"
               >
-                Quick Validate
+                Быстрая проверка
               </button>
               <button
                 v-if="editorMode === 'json' || !hasStructuredEditor"
@@ -1265,28 +1275,28 @@ onBeforeUnmount(() => {
                 :disabled="!selectedEntityId || !entityNeedsApply"
                 @click="applyEntity"
               >
-                Apply JSON
+                Применить JSON
               </button>
             </div>
           </div>
 
           <form v-if="selectedEntityId && duplicateMode" class="duplicate-panel" @submit.prevent="duplicateSelectedEntity">
             <div>
-              <small>DUPLICATE ENTITY</small>
+              <small>Копирование записи</small>
               <b>Создать копию {{ selectedEntityId }}</b>
             </div>
-            <input v-model="duplicateId" placeholder="NEW_ID" />
+            <input v-model="duplicateId" placeholder="НОВЫЙ_ИДЕНТИФИКАТОР" />
             <input v-model="duplicateName" placeholder="Новое название" />
-            <button class="primary" type="submit">Duplicate</button>
+            <button class="primary" type="submit">Создать копию</button>
           </form>
 
           <section v-if="selectedEntityCompleteness" class="completeness-panel" :data-ready="selectedEntityCompleteness.ready">
             <div class="completeness-panel__header">
               <div>
-                <small>CONTENT COMPLETENESS</small>
+                <small>Готовность контента</small>
                 <b>{{ selectedEntityCompleteness.completed }} / {{ selectedEntityCompleteness.total }}</b>
               </div>
-              <strong>{{ selectedEntityCompleteness.ready ? 'READY' : 'NEEDS WORK' }}</strong>
+              <strong>{{ selectedEntityCompleteness.ready ? 'ГОТОВО' : 'ТРЕБУЕТ ВНИМАНИЯ' }}</strong>
             </div>
             <div class="completeness-checks">
               <span v-for="check in selectedEntityCompleteness.checks" :key="check.key" :data-ok="check.complete">
@@ -1295,7 +1305,7 @@ onBeforeUnmount(() => {
               </span>
             </div>
             <div v-if="selectedEntityValidationErrors.length" class="entity-validation-errors">
-              <b>Server validation</b>
+              <b>Проверка сервера</b>
               <code v-for="error in selectedEntityValidationErrors" :key="`${error.code}-${error.path}`">
                 {{ error.code }} · {{ error.path }}
               </code>
@@ -1305,7 +1315,7 @@ onBeforeUnmount(() => {
           <section v-if="selectedEntityId" class="relations-panel">
             <div class="relations-panel__heading">
               <div>
-                <small>RELATIONS</small>
+                <small>Связи</small>
                 <b>Где используется {{ selectedEntityId }}</b>
               </div>
               <span>{{ selectedEntityReferences.length }}</span>
@@ -1332,7 +1342,7 @@ onBeforeUnmount(() => {
           <section v-if="selectedSection === 'monsters' && selectedEntityId && selectedEntity" class="monster-workflow-panel">
             <div class="workflow-heading">
               <div>
-                <small>MONSTER WORKFLOW</small>
+                <small>Настройка монстра</small>
                 <b>AI · Loot · Locations · Abilities</b>
               </div>
               <code>{{ stringProperty(selectedEntity, 'aiProfileId') }}</code>
@@ -1340,18 +1350,18 @@ onBeforeUnmount(() => {
 
             <div class="workflow-grid">
               <article>
-                <small>LOOT</small>
+                <small>ДОБЫЧА</small>
                 <b>{{ monsterLootId || 'Не назначен' }}</b>
                 <button v-if="monsterLootId" type="button" @click="openEntityLocation('lootTables', monsterLootId)">
                   Open Loot
                 </button>
                 <button v-else class="primary" type="button" @click="ensureSelectedMonsterLoot">
-                  + Create & link Loot
+                  + Создать и привязать Loot
                 </button>
               </article>
 
               <article>
-                <small>LOCATIONS</small>
+                <small>ЛОКАЦИИ</small>
                 <div class="workflow-chips">
                   <button
                     v-for="location in monsterLocationLinks"
@@ -1375,12 +1385,12 @@ onBeforeUnmount(() => {
                     </option>
                   </select>
                   <input v-model.number="monsterLocationWeight" type="number" min="0.01" step="0.01" title="Encounter weight" />
-                  <button type="button" :disabled="!monsterLocationId" @click="attachSelectedMonsterToLocation">+ Add</button>
+                  <button type="button" :disabled="!monsterLocationId" @click="attachSelectedMonsterToLocation"> + Добавить</button>
                 </div>
               </article>
 
               <article class="workflow-ability">
-                <small>CREATE ABILITY INLINE</small>
+                <small>Новая способность</small>
                 <div class="workflow-inline workflow-inline--ability">
                   <input v-model="inlineAbilityId" placeholder="DIRE_WOLF_BITE" />
                   <input v-model="inlineAbilityName" placeholder="Разрывающий укус" />
@@ -1390,7 +1400,7 @@ onBeforeUnmount(() => {
                   </select>
                   <input v-model="inlineAbilitySchool" placeholder="School" />
                   <button type="button" :disabled="!inlineAbilityId.trim() || !inlineAbilityName.trim()" @click="createAbilityForSelectedMonster">
-                    Create & link
+                    Создать и привязать
                   </button>
                 </div>
               </article>
@@ -1452,7 +1462,7 @@ onBeforeUnmount(() => {
           />
 
           <details class="package-editor">
-            <summary>Full package JSON · {{ draftJson.length.toLocaleString() }} chars</summary>
+            <summary>Весь JSON игрового контента · {{ draftJson.length.toLocaleString() }} символов</summary>
             <textarea
               v-model="draftJson"
               class="code-editor code-editor--package"
@@ -1464,7 +1474,7 @@ onBeforeUnmount(() => {
       </div>
 
       <section v-if="validation?.errors.length" class="errors">
-        <h2>Validation errors</h2>
+        <h2>Ошибки проверки</h2>
         <article v-for="error in validation.errors" :key="`${error.code}-${error.path}`">
           <b>{{ error.code }}</b>
           <code>{{ error.path }}</code>
@@ -1482,7 +1492,7 @@ onBeforeUnmount(() => {
 
       <section class="history">
         <div id="admin-revisions" class="history__column">
-          <h2>Revisions</h2>
+          <h2>Версии</h2>
           <article v-for="revision in history.revisions" :key="revision.id" class="history-card">
             <div>
               <b>{{ shortId(revision.id) }}</b>
@@ -1497,18 +1507,18 @@ onBeforeUnmount(() => {
               :disabled="Boolean(busyAction)"
               @click="reviewRevision(revision.id)"
             >
-              {{ busyAction === `review:${revision.id}` ? 'Loading…' : 'Review & publish' }}
+              {{ busyAction === `review:${revision.id}` ? 'Загрузка…' : 'Проверить и опубликовать' }}
             </button>
-            <span v-else class="live-badge">LIVE REVISION</span>
+            <span v-else class="live-badge">Текущая версия</span>
           </article>
         </div>
 
         <div id="admin-releases" class="history__column">
-          <h2>Releases</h2>
+          <h2>Публикации</h2>
           <article v-for="release in history.releases" :key="release.id" class="history-card">
             <div>
               <b>{{ shortId(release.id) }}</b>
-              <small>revision {{ shortId(release.revisionId) }}</small>
+              <small>Версия {{ shortId(release.revisionId) }}</small>
               <small>{{ formatDate(release.publishedAtUtc) }} · {{ release.publishedBy }}</small>
               <p>{{ release.note || 'Без комментария' }}</p>
             </div>
@@ -1521,13 +1531,13 @@ onBeforeUnmount(() => {
             >
               {{
                 busyAction === `rollback:${release.id}`
-                  ? 'Rollback…'
+                  ? 'Восстановление…'
                   : rollbackCandidate === release.id
-                    ? 'Подтвердить rollback'
-                    : 'Rollback'
+                    ? 'Подтвердить откат'
+                    : 'Откатить'
               }}
             </button>
-            <span v-else class="live-badge">LIVE</span>
+            <span v-else class="live-badge">Текущая</span>
           </article>
         </div>
       </section>
