@@ -90,9 +90,9 @@ public sealed class LevelingItemFamilyContentTests
             .Distinct(StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(355, families.Length);
+        Assert.Equal(358, families.Length);
         Assert.Equal(88, levelingEquipment.Count(item => CanonicalSets.ContainsKey(item.SetId ?? string.Empty)));
-        Assert.Equal(267, levelingEquipment.Count(item => !CanonicalSets.ContainsKey(item.SetId ?? string.Empty)));
+        Assert.Equal(270, levelingEquipment.Count(item => !CanonicalSets.ContainsKey(item.SetId ?? string.Empty)));
 
         string[] removedCompatibilityIds =
         [
