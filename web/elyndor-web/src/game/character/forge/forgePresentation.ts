@@ -23,7 +23,7 @@ export function forgeItemAvailability(item: InventoryItem): ForgeItemAvailabilit
   if (item.type !== 'Equipment' || !item.generatedItem) {
     return { available: false, reason: 'Этот предмет нельзя перековать.' }
   }
-  if (item.isLocked) {
+  if (item.isLocked && item.sourceType !== 'GM_FORGE') {
     return { available: false, reason: 'Предмет защищён. Снимите блокировку в инвентаре.' }
   }
   if (item.transactionLocked) {
