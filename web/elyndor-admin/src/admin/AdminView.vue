@@ -890,15 +890,6 @@ function numberProperty(record: JsonRecord, key: string): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : 0
 }
 
-function createEntityLabel(): string {
-  if (selectedSection.value === 'monsters') return 'Monster'
-  if (selectedSection.value === 'items') return 'Item'
-  if (selectedSection.value === 'abilities') return 'Ability'
-  if (selectedSection.value === 'lootTables') return 'Loot Table'
-  if (selectedSection.value === 'merchants') return 'Merchant'
-  return 'Entity'
-}
-
 function prettyJson(value: string): string {
   try {
     return JSON.stringify(JSON.parse(value), null, 2)
