@@ -4,6 +4,7 @@ import { computed, onUnmounted, shallowRef, watch } from 'vue'
 import type { CombatAbility, CombatCastSnapshot, InventoryItem, PendingLootItem } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
 import { isAuraAbility } from '@/game/combat/combatAbilityGroups'
+import { combatErrorPresentation } from '@/game/combat/combatErrorPresentation'
 import { orderCombatAbilities } from '@/game/combat/combatHotbarSettings'
 import {
   loadCombatNumberSettings,
@@ -119,25 +120,12 @@ const currentPendingLoot = computed(() => {
     item.rewardResolutionId === sessionId && item.sourceType === 'COMBAT',
   )
 })
-const combatErrorMessage = computed(() => {
-  if (battle.recoveryRequired.value || battle.errorCode.value === 'combat_recovery_required') {
-    return 'Не удалось сохранить результат боя. Награды ещё не подтверждены. Повторите синхронизацию.'
-  }
-  switch (battle.errorCode.value) {
-    case 'combat_ability_on_cooldown':
-      return 'Способность ещё восстанавливается.'
-    case 'combat_insufficient_resource':
-      return 'Недостаточно ресурса для этой способности.'
-    case 'combat_invalid_target':
-      return 'Выберите доступную цель.'
-    case 'combat_actor_dead':
-      return 'Павший герой не может действовать.'
-    case 'combat_not_found':
-      return 'Бой уже завершён. Вернитесь в локацию.'
-    default:
-      return 'Не удалось выполнить действие. Проверьте связь и попробуйте ещё раз.'
-  }
-})
+const combatError = computed(() => combatErrorPresentation(battle.errorCode.value))
+const combatErrorMessage = computed(() => battle.recoveryRequired.value
+  || battle.errorCode.value === 'combat_recovery_required'
+  ? 'Не удалось сохранить результат боя. Награды ещё не подтверждены. Повторите синхронизацию.'
+  : combatError.value.message)
+
 const trainingElapsedSeconds = computed(() => {
   const startedAt = battle.trainingStats.value.startedAtUtc
   return startedAt ? Math.max(0, (now.value - Date.parse(startedAt)) / 1_000) : 0
@@ -501,6 +489,8 @@ onUnmounted(() => {
         <SkillPanel
           :abilities="activeAbilities"
           :cooldowns="localActor.cooldowns"
+          :global-cooldown-ends-at-utc="localActor.globalCooldownEndsAtUtc"
+          :active-cast-resolves-at-utc="localActor.activeCast?.resolvesAtUtc"
           :resource="localActor.resource"
           :queued-ability-ids="queuedAbilityIds"
           :now="now"
@@ -667,7 +657,7 @@ onUnmounted(() => {
         <UIButton v-if="battle.connectionState.value === 'disconnected' || reconnectFailed || reconnectPending" :loading="reconnectPending" loading-label="Подключаем…" @click="retryConnection">Повторить подключение</UIButton>
       </UIToast>
       <UIToast
-        v-else-if="battle.errorCode.value"
+        v-else-if="battle.errorCode.value && combatError.showToast"
         tone="danger"
         placement="overlay"
         data-combat-error-toast

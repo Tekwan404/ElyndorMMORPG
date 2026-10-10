@@ -84,11 +84,13 @@ const ABILITY_QUEUE_WINDOW_MS = 250
 const COMBAT_EVENT_BUFFER_LIMIT = 1500
 const COMBAT_INVOKE_DEADLINE_MS = 30_000
 const COMBAT_STALE_AFTER_MS = 15_000
+// Reserve headroom below the authoritative 20 commands/s server limit.
+const CLIENT_COMMANDS_PER_SECOND = 12
 // A command can be rejected by gameplay rules without any loss of connectivity.
 // These responses need reconciliation because the session may have ended or an
 // earlier attempt with the same id may already have been applied.
 const COMBAT_REJECTIONS_REQUIRING_RESYNC = new Set([
-  'combat_not_found', 'combat_duplicate_command',
+  'combat_not_found', 'duplicate_command', 'combat_ended',
 ])
 const SESSION_BOUND_INVOCATIONS = new Set([
   'UseAbility', 'UseConsumable', 'StartAutoAttack', 'StopAutoAttack',
@@ -172,6 +174,8 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
   let telemetryBusy = false
   let abilitySending = false
   let abilitySendingId: string | null = null
+  let recentCommandTimestamps: number[] = []
+  let commandBackoffUntil = 0
   let staleTimer: ReturnType<typeof setTimeout> | null = null
   let invocationEpoch = 0
   let lootRefreshBusy = false
@@ -347,16 +351,21 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     if (commandsBlocked()) return
     const current = snapshot.value
     if (!current || current.status !== 'Active') return
-    const ability = current.player.abilities.find((candidate) => candidate.id === abilityId)
+    const ability = current.player.abilities.find(candidate => candidate.id === abilityId)
     if (!ability) return
     if (abilitySendingId === abilityId || abilityQueue.value.some(item => item.abilityId === abilityId)) return
 
+    const now = Date.now()
     const readyAt = current.player.cooldowns[abilityId]
-    if (readyAt) {
-      const remainingMs = Date.parse(readyAt) - Date.now()
-      if (remainingMs > ABILITY_QUEUE_WINDOW_MS) return
-    }
+    if (readyAt && Date.parse(readyAt) - now > ABILITY_QUEUE_WINDOW_MS) return
+    const globalReadyAt = ability.usesGlobalCooldown === false
+      ? null : current.player.globalCooldownEndsAtUtc
+    if (globalReadyAt && Date.parse(globalReadyAt) - now > ABILITY_QUEUE_WINDOW_MS) return
+    if (current.player.activeCast && ability.canUseWhileCasting !== true
+      && Date.parse(current.player.activeCast.resolvesAtUtc) - now > ABILITY_QUEUE_WINDOW_MS) return
 
+    // One latest intent, rather than accumulating invalid commands while a cast
+    // or the server's authoritative global cooldown is still in progress.
     abilityQueue.value = [{
       abilityId,
       targetActorId: requestedTargetActorId ?? resolveAbilityTarget(current, ability.targetType),
@@ -388,11 +397,6 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       return
     }
 
-    if (current.player.activeCast) {
-      scheduleAbilityQueueDrain(Math.max(15, Date.parse(current.player.activeCast.resolvesAtUtc) - Date.now() + 25))
-      return
-    }
-
     const queued = abilityQueue.value[0]!
     const abilityId = queued.abilityId
     const ability = current.player.abilities.find((candidate) => candidate.id === abilityId)
@@ -400,6 +404,24 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       abilityQueue.value = abilityQueue.value.slice(1)
       scheduleAbilityQueueDrain()
       return
+    }
+
+    if (current.player.activeCast && ability.canUseWhileCasting !== true) {
+      scheduleAbilityQueueDrain(Math.max(15, Date.parse(current.player.activeCast.resolvesAtUtc) - Date.now() + 25))
+      return
+    }
+    const globalReadyAt = ability.usesGlobalCooldown === false
+      ? null : current.player.globalCooldownEndsAtUtc
+    if (globalReadyAt) {
+      const remainingMs = Date.parse(globalReadyAt) - Date.now()
+      if (remainingMs > ABILITY_QUEUE_WINDOW_MS) {
+        abilityQueue.value = abilityQueue.value.slice(1)
+        return
+      }
+      if (remainingMs > 0) {
+        scheduleAbilityQueueDrain(Math.max(15, remainingMs + 25))
+        return
+      }
     }
 
     const readyAt = current.player.cooldowns[abilityId]
@@ -607,6 +629,8 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       await connect()
       if (commandsBlocked()) return { succeeded: false, receivedResponse: false }
       connected = true
+      await waitForCommandBudget()
+      if (commandsBlocked()) return { succeeded: false, receivedResponse: false }
       const update = await invokeHub<CombatUpdate>(method, ...args)
       applyUpdate(update)
       if (!update.succeeded && !recoveryRequired.value
@@ -621,6 +645,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       if (connected && connection?.state === HubConnectionState.Connected
         && /\brate_limited\b/i.test(getErrorMessage(error))) {
         errorCode.value = 'rate_limited'
+        commandBackoffUntil = Date.now() + 350
         diagnostic.value = null
         return { succeeded: false, receivedResponse: true }
       }
@@ -631,6 +656,25 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       return { succeeded: false, receivedResponse: false }
     } finally {
       setOperationPending(pendingKey, false)
+    }
+  }
+
+  async function waitForCommandBudget(): Promise<void> {
+    while (true) {
+      if (commandsBlocked()) return
+      const now = Date.now()
+      recentCommandTimestamps = recentCommandTimestamps.filter(at => now - at < 1000)
+      const wait = Math.max(
+        0,
+        commandBackoffUntil - now,
+        recentCommandTimestamps.length < CLIENT_COMMANDS_PER_SECOND
+          ? 0 : 1000 - (now - recentCommandTimestamps[0]!),
+      )
+      if (wait === 0) {
+        recentCommandTimestamps.push(now)
+        return
+      }
+      await new Promise<void>(resolve => setTimeout(resolve, Math.max(1, wait)))
     }
   }
 
