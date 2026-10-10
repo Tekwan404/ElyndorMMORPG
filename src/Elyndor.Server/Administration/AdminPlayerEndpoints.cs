@@ -35,11 +35,13 @@ public static class AdminPlayerEndpoints
         IQueryable<Elyndor.Core.Identity.Account> accounts = db.Accounts.AsNoTracking();
         if (query.Length > 0)
         {
+            long telegramId = long.TryParse(query, out long parsedId) ? parsedId : -1;
+            string pattern = $"%{query}%";
             accounts = accounts.Where(account =>
-                (account.TelegramUsername != null && account.TelegramUsername.Contains(query))
-                || account.TelegramUserId.ToString() == query
+                (account.TelegramUsername != null && EF.Functions.ILike(account.TelegramUsername, pattern))
+                || account.TelegramUserId == telegramId
                 || db.Characters.Any(character =>
-                    character.AccountId == account.Id && character.Name.Contains(query)));
+                    character.AccountId == account.Id && EF.Functions.ILike(character.Name, pattern)));
         }
 
         int total = await accounts.CountAsync(cancellationToken);
