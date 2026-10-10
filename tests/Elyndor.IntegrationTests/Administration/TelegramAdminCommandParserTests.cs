@@ -55,6 +55,20 @@ public sealed class TelegramAdminCommandParserTests
     }
 
     [Theory]
+    [InlineData("/gmforge 123 UNIQUE_WARRIOR_BLACKHEART quality=PERFECT WEAPON_DAMAGE=1500 CRITICAL_DAMAGE=150")]
+    [InlineData("gmforge 123 clone:0198d397-7d9c-7c00-b721-1420ad24570a stars=5 enhance=5")]
+    public void GmForgeRequiresAnExplicitTargetAndPreservesOverrides(string text)
+    {
+        AdminCommandParseResult parsed = TelegramAdminCommandParser.Parse(text);
+
+        Assert.True(parsed.IsSuccess);
+        Assert.Equal(AdminCommandType.GmForge, parsed.Command!.Type);
+        Assert.Equal(123, parsed.Command.TargetTelegramUserId);
+        Assert.NotEmpty(parsed.Command.Value!);
+        Assert.Equal("admin_target_invalid", TelegramAdminCommandParser.Parse("/gmforge 0 SWORD PERFECT").ErrorCode);
+    }
+
+    [Theory]
     [InlineData("/help")]
     [InlineData("help")]
     [InlineData("/help@elyndor_bot")]

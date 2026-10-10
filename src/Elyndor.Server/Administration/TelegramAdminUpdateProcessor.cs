@@ -37,6 +37,9 @@ public sealed class TelegramAdminUpdateProcessor(
         /class <telegramId> WARRIOR|ARCHER|MAGE
         /race <telegramId> <raceId>
         /giveitem <telegramId> <itemId> [quantity] [NORMAL|ELITE|BOSS]
+        /gmforge <telegramId> <itemId> [quality=NORMAL|ELITE|BOSS|PERFECT] [stars=1..5] [enhance=0..5] [STAT=VALUE ...]
+        /gmforge <telegramId> clone:<itemGuid> [quality=PERFECT] [stars=1..5] [enhance=0..5] [STAT=VALUE ...]
+        Пример: /gmforge 123 UNIQUE_WARRIOR_BLACKHEART quality=PERFECT WEAPON_DAMAGE=1500 CRITICAL_DAMAGE=150
         /worldboss spawn [WORLD_BOSS_ID]
         /wb spawn [WORLD_BOSS_ID]
         /promocode create <CODE> [crystals=<amount>] [gold=<amount>] [item=<ITEM_ID>:<qty>] [global=<N>] [per=<N>] [hours=<N>]
@@ -261,6 +264,7 @@ public sealed class TelegramAdminUpdateProcessor(
         AdminCommandType.Delete => AdministrationOperationType.Delete,
         AdminCommandType.Message => AdministrationOperationType.Message,
         AdminCommandType.GiveItem => AdministrationOperationType.GiveItem,
+        AdminCommandType.GmForge => AdministrationOperationType.GmForge,
         AdminCommandType.CreatePromoCode => AdministrationOperationType.CreatePromoCode,
         AdminCommandType.SpawnWorldBoss => AdministrationOperationType.SpawnWorldBoss,
         _ => throw new ArgumentOutOfRangeException(nameof(type))

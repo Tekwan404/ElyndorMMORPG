@@ -288,6 +288,8 @@ app.MapPartyEndpoints();
 app.MapDungeonEndpoints();
 app.MapTelegramAdminEndpoints();
 app.MapContentAdminEndpoints();
+app.MapGmForgeAdminEndpoints();
+app.MapAdminPlayerEndpoints();
 app.MapBossCombatLogEndpoints();
 app.MapBossCombatLogArchiveEndpoints();
 app.MapHub<CombatHub>("/hubs/combat").RequireAuthorization();

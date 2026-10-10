@@ -101,7 +101,8 @@ internal static class InventorySnapshotReader
                 item.TransactionLockId.HasValue,
                 item.BindState,
                 definition.SetId is { } setId ? equipmentSets.GetValueOrDefault(setId) : null,
-                definition.SetId is { } sizeSetId ? setSizes.GetValueOrDefault(sizeSetId) : 0);
+                definition.SetId is { } sizeSetId ? setSizes.GetValueOrDefault(sizeSetId) : 0,
+                item.SourceType);
         }).ToArray();
 
         Dictionary<EquipmentSlot, InventoryItemSnapshot> equipped = snapshots

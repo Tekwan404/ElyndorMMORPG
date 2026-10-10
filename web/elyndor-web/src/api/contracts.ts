@@ -498,6 +498,7 @@ export interface InventoryItem {
   reforgeSlotKey?: string | null
   transactionLocked?: boolean
   bindState?: 'UNBOUND' | 'BOUND' | string
+  sourceType?: string | null
 }
 
 export interface LootContainerRewardItem {

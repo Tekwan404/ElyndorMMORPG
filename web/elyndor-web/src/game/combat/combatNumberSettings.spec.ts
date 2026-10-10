@@ -16,11 +16,13 @@ describe('combat number settings', () => {
       emphasizeCrits: false,
       hitEffects: false,
       showPeriodicDamage: false,
+      showThreatTable: true,
     })).toEqual({
       density: 'minimal',
       emphasizeCrits: false,
       hitEffects: false,
       showPeriodicDamage: false,
+      showThreatTable: true,
     })
   })
 
@@ -29,6 +31,7 @@ describe('combat number settings', () => {
       density: 'ultra',
       emphasizeCrits: 'false',
       hitEffects: null,
+      showThreatTable: 'true',
     })).toEqual(DEFAULT_COMBAT_NUMBER_SETTINGS)
   })
 })

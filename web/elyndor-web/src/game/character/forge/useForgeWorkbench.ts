@@ -261,7 +261,7 @@ export function useForgeWorkbench() {
           } else if (
             mode.value === 'upgrade' &&
             item.generatedItem &&
-            !item.isLocked &&
+            (!item.isLocked || item.sourceType === 'GM_FORGE') &&
             !item.transactionLocked
           ) {
             const result = await apiClient.request<EnhancementPreview>(

@@ -899,7 +899,8 @@ public static class InventoryEndpoints
             item.Definition.BlockValueMax + blockValueBonus,
             item.Definition.WeaponDamageMin,
             item.Definition.WeaponDamageMax,
-            EquipmentSetPresentation.ToResponse(item.SetDefinition, item.SetTotalPieces));
+            EquipmentSetPresentation.ToResponse(item.SetDefinition, item.SetTotalPieces),
+            item.SourceType);
     }
 
     private static GeneratedItemSummaryResponse? ToGeneratedItemResponse(

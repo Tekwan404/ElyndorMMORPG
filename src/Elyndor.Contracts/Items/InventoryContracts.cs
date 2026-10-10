@@ -94,7 +94,8 @@ public sealed record InventoryItemResponse(
     decimal BlockValueMax = 0,
     decimal? WeaponDamageMin = null,
     decimal? WeaponDamageMax = null,
-    EquipmentSetSummaryResponse? SetSummary = null)
+    EquipmentSetSummaryResponse? SetSummary = null,
+    string? SourceType = null)
 {
     // RequiredLevel is an equip gate. ItemLevel is a separate power/progression value.
     // Generated instances already own their authoritative resolved ItemLevel, so expose it

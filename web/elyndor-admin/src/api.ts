@@ -124,6 +124,12 @@ export async function adminRequest<T>(
   const response = await fetch(path, { ...init, headers })
   if (response.ok) return await response.json() as T
 
+  if (response.status === 401 && accessToken) {
+    // An expired JWT must invalidate every protected admin view, not just the current panel.
+    setAdminAccessToken(null)
+    window.dispatchEvent(new Event('elyndor-admin-session-expired'))
+  }
+
   const problem = await response.json().catch(() => ({})) as ApiProblem
   throw new AdminApiError(
     response.status,

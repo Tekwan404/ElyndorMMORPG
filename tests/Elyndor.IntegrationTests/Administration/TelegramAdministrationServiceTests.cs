@@ -249,6 +249,216 @@ public sealed class TelegramAdministrationServiceTests(PostgresFixture postgres)
             candidate.ItemDefinitionId == "UNIQUE_WARRIOR_BLACKHEART"));
     }
 
+    [Fact]
+    public async Task GmForgeGrantsPerfectExtremeSwordAsBoundTestEquipmentOnce()
+    {
+        await SeedCharacterAsync(732_707_324, level: 60);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        AdministrationOperation operation = new(
+            AdministrationOperationType.GmForge, 732_707_324,
+            "UNIQUE_WARRIOR_BLACKHEART quality=PERFECT stars=5 enhance=5 WEAPON_DAMAGE=1500 CRITICAL_DAMAGE=150");
+
+        AdministrationResult first = await ExecuteAsync(9050, operation, content);
+        AdministrationResult replay = await ExecuteAsync(9050, operation, content);
+
+        Assert.True(first.IsSuccess, first.Message);
+        Assert.True(replay.IsDuplicate);
+        await using GameDbContext context = postgres.CreateDbContext();
+        CharacterItem item = await context.CharacterItems.Include(x => x.Affixes).SingleAsync();
+        Assert.Equal(GmItemForge.SourceType, item.SourceType);
+        Assert.Equal(ItemBindStates.Bound, item.BindState);
+        Assert.True(item.IsLocked);
+        Assert.Equal(5, item.Stars);
+        Assert.Equal(5, item.EnhancementLevel);
+        Assert.Equal(100m, item.RollQuality);
+        Assert.True(item.IsPerfect);
+        Assert.Equal(GmItemForge.SourceType, item.PerfectOrigin);
+        Assert.Equal(1500m, item.Affixes.Single(x => x.StatId == ItemStatIds.WeaponDamage).Value);
+        Assert.Equal(150m, item.Affixes.Single(x => x.StatId == ItemStatIds.CriticalDamage).Value);
+        Assert.Equal(1, await context.AdminCommandAudits.CountAsync());
+
+        // Verify that persisted admin affixes become real combat stats, not just labels.
+        InventoryEquipmentService inventory = new(context, content, new FixedTimeProvider(Now));
+        InventorySnapshot snapshot = await inventory.GetForCharacterAsync(item.CharacterId, CancellationToken.None);
+        InventoryItemSnapshot forged = Assert.Single(snapshot.Items);
+        Assert.Equal(GmItemForge.SourceType, forged.SourceType);
+        Assert.Equal(1500m, forged.GeneratedItem!.Affixes.Single(
+            affix => affix.StatId == ItemStatIds.WeaponDamage).Value);
+        ItemDefinition template = content.Items!.Single(definition =>
+            definition.Id == "UNIQUE_WARRIOR_BLACKHEART");
+        ItemDefinition enhancedTemplate = ItemEnhancementRules.ApplyStructuralEnhancement(
+            ItemFamilyScalingPolicy.Apply(template, content.Itemization!, forged.GeneratedItem.ItemLevel), 5);
+        Assert.Equal(enhancedTemplate.WeaponDamageMin!.Value + 1500m, forged.Definition.WeaponDamageMin);
+        Assert.Equal(enhancedTemplate.WeaponDamageMax!.Value + 1500m, forged.Definition.WeaponDamageMax);
+        Assert.Equal(template.CriticalDamagePercent + 150m, forged.Definition.CriticalDamagePercent);
+
+        context.CharacterEquipment.Add(new CharacterEquipment(
+            item.CharacterId, EquipmentSlot.MainHand, item.Id));
+        await context.SaveChangesAsync();
+        InventorySnapshot equipped = await inventory.GetForCharacterAsync(item.CharacterId, CancellationToken.None);
+        EquipmentModifierSummary modifiers = EquipmentStatModifierResolver.ResolveDetailed(
+            equipped.Equipped.Values.Select(piece => piece.Definition with
+            {
+                Slot = piece.EquippedSlot,
+                Stats = piece.EffectiveStats
+            }),
+            content.EquipmentSets ?? []);
+        Assert.Equal(forged.Definition.WeaponDamageMin, modifiers.WeaponDamageMin);
+        Assert.Equal(forged.Definition.WeaponDamageMax, modifiers.WeaponDamageMax);
+        Assert.Equal(forged.Definition.CriticalDamagePercent, modifiers.CriticalDamagePercent);
+    }
+
+    [Fact]
+    public async Task ReplayingFailedGmForgeDoesNotClaimItSucceeded()
+    {
+        await SeedCharacterAsync(732_707_324, level: 60);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        AdministrationOperation operation = new(
+            AdministrationOperationType.GmForge, 732_707_324,
+            "UNKNOWN_GM_ITEM_9999 quality=PERFECT");
+        AdministrationResult first = await ExecuteAsync(9070, operation, content);
+        AdministrationResult replay = await ExecuteAsync(9070, operation, content);
+
+        Assert.False(first.IsSuccess);
+        Assert.False(replay.IsSuccess);
+        Assert.True(replay.IsDuplicate);
+        await using GameDbContext db = postgres.CreateDbContext();
+        Assert.Empty(await db.CharacterItems.ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task GmForgeCanIssueThreeDistinctDeveloperItemsOnce()
+    {
+        await SeedCharacterAsync(732_707_324, level: 60);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        AdministrationOperation operation = new(
+            AdministrationOperationType.GmForge, 732_707_324,
+            "UNIQUE_WARRIOR_BLACKHEART qty=3 WEAPON_DAMAGE=1500");
+
+        AdministrationResult first = await ExecuteAsync(9060, operation, content);
+        AdministrationResult replay = await ExecuteAsync(9060, operation, content);
+        Assert.True(first.IsSuccess, first.Message);
+        Assert.True(replay.IsDuplicate);
+
+        await using GameDbContext db = postgres.CreateDbContext();
+        CharacterItem[] items = await db.CharacterItems.Include(x => x.Affixes).ToArrayAsync();
+        Assert.Equal(3, items.Length);
+        Assert.Equal(3, items.Select(item => item.Id).Distinct().Count());
+        Assert.All(items, item =>
+        {
+            Assert.True(item.IsLocked);
+            Assert.Equal(ItemBindStates.Bound, item.BindState);
+            Assert.Equal(GmItemForge.SourceType, item.SourceType);
+            Assert.Equal(1500m, item.Affixes.Single(
+                affix => affix.StatId == ItemStatIds.WeaponDamage).Value);
+        });
+    }
+
+    [Fact]
+    public async Task GmForgeClonePreservesOriginalAndOverridesOnlyTheCopy()
+    {
+        await SeedCharacterAsync(732_707_324, level: 60);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        AdministrationResult originalGrant = await ExecuteAsync(
+            9051, new AdministrationOperation(AdministrationOperationType.GiveItem,
+                732_707_324, "UNIQUE_WARRIOR_BLACKHEART 1 NORMAL"), content);
+        Assert.True(originalGrant.IsSuccess);
+
+        Guid originalId;
+        await using (GameDbContext context = postgres.CreateDbContext())
+        {
+            originalId = await context.CharacterItems.AsNoTracking().Select(x => x.Id).SingleAsync();
+        }
+
+        AdministrationResult cloned = await ExecuteAsync(9052,
+            new AdministrationOperation(AdministrationOperationType.GmForge, 732_707_324,
+                $"clone:{originalId:D} stars=5 CRITICAL_DAMAGE=150"), content);
+        Assert.True(cloned.IsSuccess, cloned.Message);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterItem[] items = await verify.CharacterItems.Include(x => x.Affixes).ToArrayAsync();
+        Assert.Equal(2, items.Length);
+        CharacterItem original = items.Single(x => x.Id == originalId);
+        CharacterItem clone = items.Single(x => x.Id != originalId);
+        Assert.Equal("ADMIN_GRANT", original.SourceType);
+        Assert.Equal(ItemBindStates.Unbound, original.BindState);
+        Assert.Equal(GmItemForge.SourceType, clone.SourceType);
+        Assert.Equal(ItemBindStates.Bound, clone.BindState);
+        Assert.True(clone.IsLocked);
+        Assert.Equal(5, clone.Stars);
+        Assert.Equal(150m, clone.Affixes.Single(x => x.StatId == ItemStatIds.CriticalDamage).Value);
+        Assert.DoesNotContain(original.Affixes,
+            x => x.StatId == ItemStatIds.CriticalDamage && x.Value == 150m);
+    }
+
+    [Fact]
+    public async Task GmForgeCloneInheritsEnhancementUnlessExplicitlyOverridden()
+    {
+        await SeedCharacterAsync(732_707_324, level: 60);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        AdministrationResult initial = await ExecuteAsync(
+            9053, new AdministrationOperation(
+                AdministrationOperationType.GmForge, 732_707_324,
+                "UNIQUE_WARRIOR_BLACKHEART quality=PERFECT enhance=5"), content);
+        Assert.True(initial.IsSuccess, initial.Message);
+
+        Guid originalId;
+        await using (GameDbContext context = postgres.CreateDbContext())
+        {
+            originalId = await context.CharacterItems.AsNoTracking()
+                .Select(item => item.Id).SingleAsync();
+        }
+
+        AdministrationResult cloneResult = await ExecuteAsync(
+            9054, new AdministrationOperation(
+                AdministrationOperationType.GmForge, 732_707_324,
+                $"clone:{originalId:D} STRENGTH=500"), content);
+        Assert.True(cloneResult.IsSuccess, cloneResult.Message);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        CharacterItem[] items = await verify.CharacterItems.Include(item => item.Affixes).ToArrayAsync();
+        Assert.Equal(2, items.Length);
+        Assert.Equal(5, items.Single(item => item.Id == originalId).EnhancementLevel);
+        CharacterItem clone = items.Single(item => item.Id != originalId);
+        Assert.Equal(5, clone.EnhancementLevel);
+        Assert.Equal(500m, clone.Affixes.Single(affix => affix.StatId == ItemStatIds.Strength).Value);
+    }
+
+    [Fact]
+    public async Task DevOnlyGearCanBeDiscardedButNotUnlockedForTrade()
+    {
+        await SeedCharacterAsync(732_707_324, level: 60);
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(
+            Path.GetFullPath("content/package.json"));
+        AdministrationResult forged = await ExecuteAsync(
+            9055, new AdministrationOperation(
+                AdministrationOperationType.GmForge, 732_707_324,
+                "UNIQUE_WARRIOR_BLACKHEART WEAPON_DAMAGE=1500"), content);
+        Assert.True(forged.IsSuccess, forged.Message);
+
+        await using GameDbContext context = postgres.CreateDbContext();
+        Character character = await context.Characters.AsNoTracking().SingleAsync();
+        CharacterItem item = await context.CharacterItems.SingleAsync();
+        InventoryEquipmentService inventory = new(context, content, new FixedTimeProvider(Now));
+        InventoryOperationResult unlock = await inventory.SetItemLockAsync(
+            character.AccountId, item.Id, false, Guid.CreateVersion7(), CancellationToken.None);
+        Assert.True(unlock.IsSuccess, unlock.ErrorCode);
+        Assert.True((await context.CharacterItems.AsNoTracking().SingleAsync()).IsLocked);
+
+        InventoryOperationResult discarded = await inventory.DiscardItemsAsync(
+            character.AccountId,
+            [new InventoryDiscardSelection(item.Id, 1)],
+            Guid.CreateVersion7(),
+            CancellationToken.None);
+        Assert.True(discarded.IsSuccess, discarded.ErrorCode);
+        Assert.Empty(await context.CharacterItems.AsNoTracking().ToArrayAsync());
+    }
+
     private async Task<AdministrationResult> ExecuteAsync(
         long updateId,
         AdministrationOperation operation,

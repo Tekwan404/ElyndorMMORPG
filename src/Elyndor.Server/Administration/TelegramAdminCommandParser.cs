@@ -62,6 +62,7 @@ public static class TelegramAdminCommandParser
             "rename" when remainder.Length > 0 => AdminCommandParseResult.Success(new(AdminCommandType.Rename, targetId, remainder)),
             "msg" when remainder is { Length: > 0 and <= 4096 } => AdminCommandParseResult.Success(new(AdminCommandType.Message, targetId, remainder)),
             "giveitem" when remainder.Length > 0 => AdminCommandParseResult.Success(new(AdminCommandType.GiveItem, targetId, remainder)),
+            "gmforge" when remainder.Length > 0 => AdminCommandParseResult.Success(new(AdminCommandType.GmForge, targetId, remainder)),
             "delete" => ParseDelete(targetId, remainder),
             _ => AdminCommandParseResult.Failure("admin_command_unknown")
         };
