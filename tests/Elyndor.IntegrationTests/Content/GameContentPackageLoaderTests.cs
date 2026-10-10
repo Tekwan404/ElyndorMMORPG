@@ -90,8 +90,8 @@ public sealed class GameContentPackageLoaderTests
         GameContentPackage package = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.50.0", package.ContentVersion);
-        Assert.Equal("0.40.0", package.BalanceVersion);
+        Assert.Equal("0.51.0", package.ContentVersion);
+        Assert.Equal("0.41.0", package.BalanceVersion);
         Assert.NotNull(package.LevelProgression);
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_IRON_SWORD");
         Assert.Contains(package.Items!, item => item.Id == "RECRUIT_WOODEN_SHIELD");
@@ -224,14 +224,17 @@ public sealed class GameContentPackageLoaderTests
             Assert.True(ProceduralItemPolicy.IsEnabled(item), item.Id);
         });
 
+        HashSet<string> craftableItemIds = (package.ProfessionRecipes ?? [])
+            .Select(recipe => recipe.OutputItemId)
+            .ToHashSet(StringComparer.Ordinal);
         ItemDefinition[] currentProgressionItems = proceduralEquipment
             .Where(item => item.RequiredLevel >= 2)
             .ToArray();
         Assert.NotEmpty(currentProgressionItems);
         Assert.All(currentProgressionItems, item =>
             Assert.True(
-                obtainableItemIds.Contains(item.Id) || item.HonorPrice > 0,
-                $"Equipment '{item.Id}' has no loot or Honor acquisition source."));
+                obtainableItemIds.Contains(item.Id) || item.HonorPrice > 0 || craftableItemIds.Contains(item.Id),
+                $"Equipment '{item.Id}' has no loot, Honor or crafting acquisition source."));
 
         LootTableDefinition[] authoredRaidBossTables = package.LootTables
             .Where(table => table.Id.StartsWith("LOOT_HEART_OF_BLIGHTED_GROVE_BOSS_", StringComparison.Ordinal)

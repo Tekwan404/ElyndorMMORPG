@@ -1,5 +1,61 @@
 import { expect, test, type Page } from '@playwright/test'
 
+test('city workshop explains materials, crafts and restores the profession state', async ({ page }) => {
+  test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses deterministic profession content.')
+  const materials = [{ id: 'hide-stack', definitionId: 'ROUGH_HIDE', name: 'Грубая шкура',
+    type: 'Material', rarity: 'Common', quantity: 2, isLocked: false, equippedSlot: null, slot: null }]
+  await installMockApiUnlessReal(page, materials)
+  const state = {
+    learned: [{ id: 'SKINNING', name: 'Снятие шкур', skill: 1, maxSkill: 300, category: 'Gathering' },
+      { id: 'LEATHERWORKING', name: 'Кожевничество', skill: 1, maxSkill: 300, category: 'Production' }],
+    skinnableCorpses: [],
+    recipes: [{ id: 'LW_PROCESS_ROUGH_HIDE', name: 'Выделка грубой кожи', professionId: 'LEATHERWORKING',
+      requiredSkill: 1, skillUpUntil: 16, outputItemId: 'ROUGH_LEATHER', outputQuantity: 1,
+      requiredLocationId: 'STARTER_TOWN', ingredients: [{ itemId: 'ROUGH_HIDE', quantity: 1 }] },
+    { id: 'LW_LIGHT_FEET', name: 'Сапоги Серой Тропы', professionId: 'LEATHERWORKING',
+      requiredSkill: 16, skillUpUntil: 31, outputItemId: 'ARCHER_UNCOMMON_GREY_TRAIL_FEET', outputQuantity: 1,
+      requiredLocationId: 'STARTER_TOWN', ingredients: [{ itemId: 'LIGHT_LEATHER', quantity: 4 }] }],
+    materials: [{ id: 'ROUGH_HIDE', name: 'Грубая шкура' }, { id: 'ROUGH_LEATHER', name: 'Грубая кожа' }],
+    materialSources: [{ itemId: 'ROUGH_HIDE', itemName: 'Грубая шкура', monsterName: 'Лесной волк',
+      locationId: 'WHISPERING_FOREST', locationName: 'Шепчущий лес', requiredSkill: 1, skillUpUntil: 16 }],
+  }
+  await page.route('**/api/v1/professions/', route => route.fulfill({ json: state }))
+  await page.route('**/api/v1/professions/craft', route => {
+    const intent = route.request().postDataJSON() as { recipeId: string; mutationId: string }
+    expect(intent.recipeId).toBe('LW_PROCESS_ROUGH_HIDE')
+    expect(intent.mutationId).toMatch(/^[0-9a-f-]{36}$/i)
+    materials[0]!.quantity = 1
+    state.learned[1]!.skill = 2
+    return route.fulfill({ json: { isSuccess: true, state, quantity: 1, skillIncreased: true,
+      itemId: 'ROUGH_LEATHER', errorCode: null, replayed: false } })
+  })
+  await page.goto('/')
+  await page.getByLabel('Имя').fill('Leatherworker')
+  await page.getByLabel('Лучник').check()
+  await page.getByRole('button', { name: 'Войти в мир' }).click()
+  await page.locator('[data-city-marker="craft"]').click()
+  await page.locator('[data-city-professions]').click()
+  await expect(page.getByRole('heading', { name: 'Кожевенная мастерская' })).toBeVisible()
+  const processingCard = page.locator('[data-profession-recipe="LW_PROCESS_ROUGH_HIDE"]')
+  await expect(processingCard).toContainText('Грубая шкура: 2 / 1')
+  await expect(processingCard).toContainText('Шепчущий лес')
+  await expect(page.locator('[data-profession-recipe="LW_LIGHT_FEET"]')).toContainText('Требуется навык 16')
+  await page.setViewportSize({ width: 320, height: 568 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320)
+  await page.screenshot({ path: '../../output/playwright/profession-workshop-320.png', fullPage: true })
+  await processingCard.scrollIntoViewIfNeeded()
+  await page.screenshot({ path: '../../output/playwright/profession-workshop-recipes-320.png' })
+  await processingCard.getByRole('button', { name: 'Создать' }).click()
+  await expect(page.locator('.profession-message--success')).toContainText('навык +1')
+  await expect(processingCard).toContainText('Грубая шкура: 1 / 1')
+  await page.getByRole('button', { name: 'Экипировка', exact: true }).click()
+  await expect(processingCard).toHaveCount(0)
+  await page.reload()
+  await page.locator('[data-city-marker="craft"]').click()
+  await page.locator('[data-city-professions]').click()
+  await expect(page.locator('.profession-card').filter({ hasText: 'Кожевничество' })).toContainText('Навык 2 / 300')
+})
+
 test('city signs remain readable and reachable across phone sizes', async ({ page }) => {
   test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Visual layout uses deterministic local content.')
   await installMockApiUnlessReal(page)
@@ -276,7 +332,7 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   expect(browserErrors).toEqual([])
 })
 
-async function installMockApiUnlessReal(page: Page): Promise<void> {
+async function installMockApiUnlessReal(page: Page, inventoryItems: unknown[] = []): Promise<void> {
   // Keep CI independent from telegram.org availability. This only stubs the host
   // platform bridge; in real mode every Elyndor API call still reaches ASP.NET/PostgreSQL.
   await page.route('https://telegram.org/js/telegram-web-app.js?63', (route) =>
@@ -334,9 +390,11 @@ async function installMockApiUnlessReal(page: Page): Promise<void> {
       json: { accessToken: 'test-token', expiresAtUtc: '2026-08-30T12:15:00Z' },
     })
   })
-  await page.route('**/api/v1/bootstrap', (route) =>
-    route.fulfill({ json: snapshot(hasCharacter, locationId) }),
-  )
+  await page.route('**/api/v1/bootstrap', (route) => {
+    const current = snapshot(hasCharacter, locationId)
+    return route.fulfill({ json: { ...current, character: current.character
+      ? { ...current.character, inventory: { ...emptyInventory, items: inventoryItems } } : null } })
+  })
   await page.route('**/api/v1/quests/', (route) =>
     route.fulfill({
       json: {

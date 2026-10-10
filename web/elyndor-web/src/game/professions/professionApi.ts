@@ -16,6 +16,9 @@ export interface SkinnableCorpseState {
   monsterName: string
   requiredSkill: number
   expiresAtUtc: string
+  itemName?: string | null
+  minQuantity?: number
+  maxQuantity?: number
 }
 
 export interface ProfessionRecipeIngredient {
@@ -32,12 +35,26 @@ export interface ProfessionRecipeState {
   outputQuantity: number
   ingredients: ProfessionRecipeIngredient[]
   requiredLocationId: string | null
+  skillUpUntil?: number
+  outputName?: string | null
+  outputIconId?: string | null
+  outputRequiredLevel?: number
 }
 
 export interface ProfessionStateSnapshot {
   learned: ProfessionStateItem[]
   skinnableCorpses: SkinnableCorpseState[]
   recipes: ProfessionRecipeState[]
+  materials?: { id: string; name: string }[]
+  materialSources?: {
+    itemId: string
+    itemName: string
+    monsterName: string
+    locationId: string
+    locationName: string
+    requiredSkill: number
+    skillUpUntil?: number
+  }[]
 }
 
 export interface ProfessionMutationResult {

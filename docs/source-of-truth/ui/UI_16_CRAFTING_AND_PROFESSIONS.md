@@ -13,6 +13,8 @@
 
 # 1. Назначение
 
+Current runtime: the city leather workshop supports Skinning/Leatherworking, material-source guidance, processing/equipment filters and explicit disabled requirements. Profession skill follows location steps 1–15 / 16–30 / 31–60. See [implementation contract](../../development/profession-workshop.md). The remaining foundation describes future Blacksmithing/Alchemy/Cooking and timed crafting.
+
 Crafting UI supports Blacksmithing, Alchemy and Cooking, profession progression, recipe discovery and instant/timed craft.
 
 ---

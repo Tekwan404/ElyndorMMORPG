@@ -1,0 +1,118 @@
+{
+  "contentVersion": "0.51.0",
+  "balanceVersion": "0.41.0",
+  "publishedAtUtc": "2026-10-09T08:00:00+00:00",
+  "items": [
+    {
+      "id": "ARCHER_CRAFTED_DENSE_LEATHER_FEET",
+      "name": "Сапоги плотной кожи",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Uncommon",
+      "requiredLevel": 12,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Feet",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Выделанная толстая кожа. Самостоятельная экипировка городской мастерской.",
+      "version": 1,
+      "armorCategory": "LEATHER",
+      "armorFlat": 14.5,
+      "itemLevelMin": 12,
+      "itemLevelMax": 12,
+      "generationVersion": 2,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_feet",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "ARCHER_CRAFTED_DENSE_LEATHER_HANDS",
+      "name": "Перчатки плотной кожи",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Uncommon",
+      "requiredLevel": 12,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Hands",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Выделанная толстая кожа. Самостоятельная экипировка городской мастерской.",
+      "version": 1,
+      "armorCategory": "LEATHER",
+      "armorFlat": 15.5,
+      "itemLevelMin": 12,
+      "itemLevelMax": 12,
+      "generationVersion": 2,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_hands",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "ARCHER_CRAFTED_DENSE_LEATHER_CHEST",
+      "name": "Куртка плотной кожи",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Uncommon",
+      "requiredLevel": 12,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Chest",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Выделанная толстая кожа. Самостоятельная экипировка городской мастерской.",
+      "version": 1,
+      "armorCategory": "LEATHER",
+      "armorFlat": 32.5,
+      "itemLevelMin": 12,
+      "itemLevelMax": 12,
+      "generationVersion": 2,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "iconId": "sets/set_heart_of_blighted_grove_archer_survival_chest",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    }
+  ]
+}
