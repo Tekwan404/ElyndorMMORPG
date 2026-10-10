@@ -32,6 +32,7 @@ const now = ref(Date.now())
 const contentSection = ref('monsters')
 const contentDirty = ref(false)
 const forgeRecipientId = ref('')
+const forgeCloneItemId = ref('')
 const contentFocus = ref('')
 
 const contentNavigation = [
@@ -246,6 +247,7 @@ function openGmForge(): void {
   if (!confirmWorkspaceNavigation()) return
   contentDirty.value = false
   forgeRecipientId.value = telegramId.value
+  forgeCloneItemId.value = ''
   view.value = 'gmforge'
 }
 
@@ -253,6 +255,15 @@ function openGmForgeForPlayer(target: string): void {
   if (!confirmWorkspaceNavigation()) return
   contentDirty.value = false
   forgeRecipientId.value = target
+  forgeCloneItemId.value = ''
+  view.value = 'gmforge'
+}
+
+function openGmForgeClone(target: string, itemId: string): void {
+  if (!confirmWorkspaceNavigation()) return
+  contentDirty.value = false
+  forgeRecipientId.value = target
+  forgeCloneItemId.value = itemId
   view.value = 'gmforge'
 }
 
@@ -594,12 +605,14 @@ function formatDate(value: string | null | undefined): string {
       <GmForgeView
         v-else-if="view === 'gmforge'"
         :default-telegram-id="forgeRecipientId"
+        :clone-from-id="forgeCloneItemId"
         :package-json="content?.payloadJson ?? ''"
       />
 
       <AdminPlayersView
         v-else-if="view === 'players'"
         @forge-target="openGmForgeForPlayer"
+        @clone-item="openGmForgeClone"
       />
 
       <section v-else-if="view === 'server'" class="server-panel">
