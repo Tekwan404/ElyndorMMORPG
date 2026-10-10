@@ -39,7 +39,6 @@ const retryRequestId = ref<string | null>(null)
 const showPlayers = ref(false)
 const playerSearch = ref('')
 const players = ref<Directory | null>(null)
-const playerPage = ref(1)
 const playerBusy = ref(false)
 const ownedItems = ref<OwnedItem[]>([])
 const ownedBusy = ref(false)
@@ -103,7 +102,6 @@ const visibleItems = computed(() => {
   return allItems.value.filter(item =>
     !query || (item.name + ' ' + item.id).toLocaleLowerCase('ru').includes(query)).slice(0, 80)
 })
-const chosenCount = computed(() => Number(quantity.value))
 const limit = computed(() => mode.value === 'regular' ? 1000 : 20)
 const currentSpec = computed(() => {
   const id = mode.value === 'clone' ? 'clone:' + cloneId.value.trim() : itemId.value.trim()
@@ -287,7 +285,6 @@ async function loadPlayers(page = 1): Promise<void> {
     players.value = await adminRequest<Directory>(
       '/api/v1/admin/players?page=' + page + '&search=' + encodeURIComponent(playerSearch.value.trim()),
     )
-    playerPage.value = page
   } catch {
     error.value = 'Не удалось загрузить игроков.'
   } finally {
