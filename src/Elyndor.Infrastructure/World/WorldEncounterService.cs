@@ -16,7 +16,15 @@ public static class WorldEncounterErrorCodes
     public const string LocationUnavailable = "world_encounter_location_unavailable";
     public const string EncounterUnavailable = "world_encounter_unavailable";
     public const string Travelling = "world_encounter_travelling";
+    public const string InvalidSelection = "world_encounter_invalid_selection";
+    public const string TargetUnavailable = "world_target_unavailable";
 }
+
+public sealed record WorldSceneSnapshot(
+    Guid CharacterId,
+    LocationDefinition Location,
+    GameContentSnapshot Content,
+    DateTimeOffset ServerTimeUtc);
 
 public sealed record WorldEncounterSnapshot(
     Guid EncounterId,
@@ -165,11 +173,24 @@ public sealed class WorldEncounterService(
 
     public async Task<(WorldEncounterSnapshot? Encounter, string? ErrorCode)> ExploreAsync(
         Guid accountId,
+        CancellationToken cancellationToken) =>
+        await PrepareAsync(accountId, null, null, cancellationToken);
+
+    public async Task<(WorldEncounterSnapshot? Encounter, string? ErrorCode)> SelectAsync(
+        Guid accountId,
+        string locationId,
+        string monsterId,
         CancellationToken cancellationToken)
     {
-        GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
-        WorldMap worldMap = contentSnapshot.WorldMap;
-        GameContentIndexes indexes = contentSnapshot.Indexes;
+        if (string.IsNullOrWhiteSpace(locationId) || string.IsNullOrWhiteSpace(monsterId))
+            return (null, WorldEncounterErrorCodes.InvalidSelection);
+        return await PrepareAsync(accountId, locationId, monsterId, cancellationToken);
+    }
+
+    public async Task<(WorldSceneSnapshot? Scene, string? ErrorCode)> GetSceneAsync(
+        Guid accountId, CancellationToken cancellationToken)
+    {
+        GameContentSnapshot content = contentProvider.GetCurrent();
 
         Character? character = await dbContext.Characters
             .AsNoTracking()
@@ -177,20 +198,12 @@ public sealed class WorldEncounterService(
         if (character is null)
             return (null, WorldEncounterErrorCodes.CharacterNotFound);
 
-        // A corpse belongs only to the combat aftermath currently in front of the player.
-        // Looking for another encounter abandons that aftermath permanently.
-        await ProfessionCorpsePersistence.DiscardPendingAsync(
-            dbContext,
-            character.Id,
-            cancellationToken);
-
         if (await TravelPersistence.IsTravellingAsync(
                 dbContext,
                 character.Id,
                 timeProvider.GetUtcNow(),
                 cancellationToken))
         {
-            registry.Clear(accountId);
             return (null, WorldEncounterErrorCodes.Travelling);
         }
 
@@ -200,35 +213,54 @@ public sealed class WorldEncounterService(
         if (characterLocation is null)
             return (null, WorldEncounterErrorCodes.LocationUnavailable);
 
-        LocationDefinition location;
-        try
-        {
-            location = worldMap.GetRequired(characterLocation.LocationId);
-        }
-        catch (KeyNotFoundException)
-        {
+        if (!content.Indexes.LocationsById.TryGetValue(characterLocation.LocationId, out var location))
             return (null, WorldEncounterErrorCodes.LocationUnavailable);
-        }
 
-        IReadOnlyList<LocationEncounterDefinition> encounters = location.Encounters ?? [];
-        if (encounters.Count == 0)
+        return (new WorldSceneSnapshot(character.Id, location, content, timeProvider.GetUtcNow()), null);
+    }
+
+    private async Task<(WorldEncounterSnapshot? Encounter, string? ErrorCode)> PrepareAsync(
+        Guid accountId, string? expectedLocationId, string? monsterId, CancellationToken cancellationToken)
+    {
+        (WorldSceneSnapshot? scene, string? error) = await GetSceneAsync(accountId, cancellationToken);
+        if (scene is null)
+            return (null, error);
+        LocationDefinition location = scene.Location;
+        GameContentIndexes indexes = scene.Content.Indexes;
+        if (expectedLocationId is not null
+            && (!string.Equals(expectedLocationId, location.Id, StringComparison.Ordinal)
+                || location.DangerLevel == "SAFE"
+                || indexes.DungeonsById.Values.Any(dungeon =>
+                    dungeon.Id == location.Id || dungeon.EntryLocationId == location.Id)))
+            return (null, WorldEncounterErrorCodes.InvalidSelection);
+        if (monsterId is not null && !(location.Encounters ?? []).Any(entry => entry.MonsterId == monsterId))
+            return (null, WorldEncounterErrorCodes.InvalidSelection);
+
+        LocationEncounterDefinition[] encounters = (location.Encounters ?? [])
+            .Where(encounter => LocationEncounterAvailability.IsAvailable(encounter, scene.ServerTimeUtc))
+            .ToArray();
+        if (encounters.Length == 0)
         {
-            registry.Clear(accountId);
-            return (null, WorldEncounterErrorCodes.EncounterUnavailable);
+            return (null, monsterId is null
+                ? WorldEncounterErrorCodes.EncounterUnavailable
+                : WorldEncounterErrorCodes.TargetUnavailable);
         }
 
-        LocationEncounterDefinition selected = WorldEncounterSelector.Select(
-            encounters,
-            randomFactory.Create().NextUnit());
+        LocationEncounterDefinition? selected = monsterId is null
+            ? WorldEncounterSelector.Select(encounters, randomFactory.Create().NextUnit())
+            : encounters.FirstOrDefault(encounter => encounter.MonsterId == monsterId);
+        if (selected is null)
+            return (null, WorldEncounterErrorCodes.TargetUnavailable);
         MonsterDefinition? monster = indexes.MonstersById.GetValueOrDefault(selected.MonsterId);
         if (monster is null
             || string.IsNullOrWhiteSpace(monster.DisplayName)
             || string.IsNullOrWhiteSpace(monster.ArtId))
         {
-            registry.Clear(accountId);
             return (null, WorldEncounterErrorCodes.EncounterUnavailable);
         }
 
+        // Only a valid new encounter abandons the previous combat aftermath.
+        await ProfessionCorpsePersistence.DiscardPendingAsync(dbContext, scene.CharacterId, cancellationToken);
         PendingWorldEncounter pending = registry.Register(accountId, location.Id, monster.Id);
         return (new WorldEncounterSnapshot(
             pending.EncounterId,

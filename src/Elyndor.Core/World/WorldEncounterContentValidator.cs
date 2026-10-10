@@ -17,6 +17,20 @@ public static class WorldEncounterContentValidator
         for (var locationIndex = 0; locationIndex < package.Locations.Count; locationIndex++)
         {
             LocationDefinition location = package.Locations[locationIndex];
+            HashSet<string> pointIds = new(StringComparer.Ordinal);
+            foreach (LocationPointDefinition point in location.Points ?? [])
+            {
+                if (string.IsNullOrWhiteSpace(point.Id)
+                    || point.Id.Any(character => character is not (>= 'A' and <= 'Z')
+                        and not (>= '0' and <= '9') and not '_')
+                    || !pointIds.Add(point.Id)
+                    || string.IsNullOrWhiteSpace(point.DisplayName)
+                    || string.IsNullOrWhiteSpace(point.Description))
+                {
+                    errors.Add(new("INVALID_LOCATION_POINT", $"locations[{locationIndex}].points",
+                        $"Location '{location.Id}' has an invalid or duplicate inspection point."));
+                }
+            }
             IReadOnlyList<LocationEncounterDefinition> encounters = location.Encounters ?? [];
             bool isSafe = string.Equals(location.DangerLevel, "SAFE", StringComparison.Ordinal);
             if (!isSafe && encounters.Count == 0)
@@ -43,6 +57,11 @@ public static class WorldEncounterContentValidator
             {
                 LocationEncounterDefinition encounter = encounters[encounterIndex];
                 string path = $"locations[{locationIndex}].encounters[{encounterIndex}]";
+                if (encounter.Availability is { IsValid: false })
+                {
+                    errors.Add(new("INVALID_ENCOUNTER_AVAILABILITY", $"{path}.availability",
+                        "Availability requires 0 < duration < period and 0 <= offset < period."));
+                }
                 if (string.IsNullOrWhiteSpace(encounter.MonsterId)
                     || encounter.Weight <= 0
                     || !encounteredMonsterIds.Add(encounter.MonsterId))

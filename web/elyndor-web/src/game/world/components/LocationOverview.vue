@@ -4,6 +4,8 @@ import { computed, ref, watch } from 'vue'
 
 import { monsterArtUrl } from '@/assets/monsterArt'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
+import { itemRarityLabel } from '@/game/items/itemRarity'
+import LocationScene from '@/game/world/components/LocationScene.vue'
 import { usePartyStore } from '@/game/party/partyStore'
 import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
 import {
@@ -15,6 +17,7 @@ import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UILoadingState, UIModal } from '@/ui/components'
 
+const props = withDefaults(defineProps<{ interactive?: boolean }>(), { interactive: false })
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
 const party = usePartyStore()
@@ -219,7 +222,27 @@ watch(
     :data-location-id="currentLocation.id"
     aria-label="Сведения о локации"
   >
-    <div class="location-overview__hero">
+    <template v-if="props.interactive && isRegion">
+      <LocationScene
+        :location-id="currentLocationId"
+        :content-version="session.snapshot?.contentVersion ?? ''"
+        :title="location?.displayName ?? currentLocation.displayName"
+        :background="locationBackground"
+        :level-label="levelLabel"
+        :can-attack="canExplore && activeAfkFarm === null"
+      />
+      <div class="location-overview__actions">
+        <UIButton v-if="canUseAfkFarm" data-afk-farming variant="secondary"
+          :disabled="session.mutationPending || combat.pending || explorePending" @click="openAfkFarm">
+          Автоматическая охота
+        </UIButton>
+        <UIButton v-if="canExplore" data-explore variant="ghost" :loading="explorePending"
+          :disabled="session.mutationPending || combat.pending || activeAfkFarm !== null" @click="explore">
+          Случайная встреча
+        </UIButton>
+      </div>
+    </template>
+    <div v-else class="location-overview__hero">
       <img class="location-overview__background" :src="locationBackground" alt="" aria-hidden="true" />
       <div class="location-overview__shade" />
       <div class="location-overview__hero-copy">
@@ -257,7 +280,7 @@ watch(
     <UILoadingState v-if="loading" state="loading" title="Загружаем сведения об области…" />
 
     <template v-else-if="location">
-      <details v-if="residents.length" class="location-overview__section" data-location-residents>
+      <details v-if="residents.length && !props.interactive" class="location-overview__section" data-location-residents>
         <summary data-location-disclosure="residents">
           <div>
             <small>ОБИТАТЕЛИ</small>
@@ -284,7 +307,7 @@ watch(
               </div>
               <p v-if="resident.description">{{ resident.description }}</p>
               <small>
-                +{{ resident.xpReward }} XP
+                +{{ resident.xpReward }} опыта
                 <template v-if="resident.goldRewardMax > 0"> · {{ formatMoney(resident.goldRewardMin) }}–{{ formatMoney(resident.goldRewardMax) }}</template>
               </small>
             </div>
@@ -320,7 +343,7 @@ watch(
             </div>
             <div>
               <strong>{{ item.name }}</strong>
-              <small>{{ item.rarity }}<template v-if="item.requiredLevel > 1"> · ур. {{ item.requiredLevel }}</template></small>
+              <small>{{ itemRarityLabel(item.rarity) }}<template v-if="item.requiredLevel > 1"> · ур. {{ item.requiredLevel }}</template></small>
             </div>
           </article>
         </div>

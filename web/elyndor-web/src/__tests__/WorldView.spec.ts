@@ -3,6 +3,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { createEmptyEquippedInventory } from '@/api/contracts'
+import { apiClient } from '@/api/apiClient'
 import type {
   BootstrapSnapshot,
   CombatActorSnapshot,
@@ -171,10 +172,26 @@ describe('WorldView', () => {
     const wrapper = mount(WorldView)
     await flushPromises()
 
-    expect(wrapper.get('[data-world-quest-id="QUEST_STORY"]').text()).toContain('СЮЖЕТ')
-    await wrapper.get('[data-accept-world-quest]').trigger('click')
+    // Quest offers now live on the scene instead of repeating full cards below it.
+    expect(wrapper.find('[data-world-quest-id="QUEST_STORY"]').exists()).toBe(false)
+    wrapper.unmount()
+    vi.spyOn(apiClient, 'request').mockImplementation(async path => path === '/api/v1/world/scene'
+      ? {
+          locationId: 'WHISPERING_FOREST', contentVersion: 'test', state: 'Calm',
+          serverTimeUtc: '2026-10-11T00:00:00Z', nextChangeAtUtc: null,
+          objects: [{ id: 'QUEST_STORY', kind: 'Npc', displayName: 'Дозорный', description: 'История',
+            x: 18, y: 30, questId: 'QUEST_STORY', resident: null, isRare: false }],
+        }
+      : [])
+    const sceneWrapper = mount(WorldView)
+    await flushPromises()
+    await sceneWrapper.get('[data-scene-marker="QUEST_STORY"]').trigger('click')
+    await flushPromises()
+    await sceneWrapper.get('[data-scene-quest]').trigger('click')
     await flushPromises()
     expect(acceptQuest).toHaveBeenCalledWith('QUEST_STORY')
+    sceneWrapper.unmount()
+    vi.restoreAllMocks()
   })
 
   it('opens the Adventurer Guild registrar and accepts official contracts there', async () => {
@@ -249,8 +266,9 @@ describe('WorldView', () => {
     expect(combat.isActive).toBe(true)
     combat.snapshot = { ...combat.snapshot!, status: 'Victory' }
     await flushPromises()
-    expect(wrapper.get('[data-explore-after-victory]').attributes('disabled')).toBeUndefined()
-    await wrapper.get('[data-explore-after-victory]').trigger('click')
+    expect(wrapper.find('[data-explore-after-victory]').exists()).toBe(false)
+    expect(wrapper.get('[data-explore]').attributes('disabled')).toBeUndefined()
+    await wrapper.get('[data-explore]').trigger('click')
     await flushPromises()
     expect(explore).toHaveBeenCalledTimes(2)
   })
