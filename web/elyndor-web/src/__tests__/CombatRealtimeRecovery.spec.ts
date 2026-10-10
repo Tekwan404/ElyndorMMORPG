@@ -533,10 +533,10 @@ describe('combat realtime recovery', () => {
   })
 
   it.each([
-    'combat_ability_on_cooldown',
-    'combat_insufficient_resource',
-    'combat_invalid_target',
-    'combat_invalid_state',
+    'ability_on_cooldown',
+    'insufficient_resource',
+    'invalid_target',
+    'combat_command_rejected',
   ])('keeps combat connected after an ordinary %s ability rejection', async errorCode => {
     vi.useFakeTimers()
     realtimeMock.invoke.mockImplementation(method => Promise.resolve(
@@ -581,7 +581,7 @@ describe('combat realtime recovery', () => {
 
     await store.useAbility('SHIELD_SLAM')
     expect(store.abilityQueue.map(item => item.abilityId)).toEqual(['SHIELD_SLAM'])
-    finishFirst({ ...abilityUpdate(2), succeeded: false, errorCode: 'combat_ability_on_cooldown' })
+    finishFirst({ ...abilityUpdate(2), succeeded: false, errorCode: 'ability_on_cooldown' })
     await vi.advanceTimersByTimeAsync(40)
 
     const sent = realtimeMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
@@ -608,7 +608,7 @@ describe('combat realtime recovery', () => {
     expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'ResumeCombatFromSequence')).toHaveLength(0)
   })
 
-  it.each(['combat_duplicate_command', 'combat_not_found'])('still resyncs after %s', async errorCode => {
+  it.each(['duplicate_command', 'combat_not_found'])('still resyncs after %s', async errorCode => {
     vi.useFakeTimers()
     realtimeMock.invoke.mockImplementation(method => Promise.resolve(
       method === 'UseAbility'
@@ -671,5 +671,119 @@ describe('combat realtime recovery', () => {
       ['ChooseLootRoll', 'roll', 'Need'],
     ])
     expect(realtimeMock.invoke).toHaveBeenCalledWith('ResumeCombatFromSequence', 0)
+  })
+  it('buffers the next ability until authoritative GCD expires', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-10T12:00:00Z'))
+    realtimeMock.invoke.mockImplementation(async method => method === 'UseAbility' ? abilityUpdate(2) : [])
+    const store = useCombatSessionStore()
+    await store.connect()
+    const update = abilityUpdate()
+    realtimeMock.handlers.get('CombatUpdated')?.({
+      ...update,
+      snapshot: { ...update.snapshot, player: {
+        ...update.snapshot.player,
+        globalCooldownEndsAtUtc: new Date(Date.now() + 200).toISOString(),
+      } },
+    })
+    await store.useAbility('SHIELD_SLAM')
+    await vi.advanceTimersByTimeAsync(100)
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(0)
+    await vi.advanceTimersByTimeAsync(130)
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(1)
+    expect(store.connectionState).toBe('connected')
+  })
+
+  it('skips early GCD spam without blocking independent auto attacks', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-10T12:00:00Z'))
+    realtimeMock.invoke.mockImplementation(async method =>
+      method === 'StartAutoAttack' ? abilityUpdate(2) : [])
+    const store = useCombatSessionStore()
+    await store.connect()
+    const update = abilityUpdate()
+    realtimeMock.handlers.get('CombatUpdated')?.({
+      ...update,
+      snapshot: { ...update.snapshot, player: {
+        ...update.snapshot.player,
+        globalCooldownEndsAtUtc: new Date(Date.now() + 1000).toISOString(),
+      } },
+    })
+    for (let i = 0; i < 20; i++) await store.useAbility('HEROIC_STRIKE')
+    await vi.advanceTimersByTimeAsync(0)
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(0)
+    expect(store.abilityQueue).toHaveLength(0)
+    await store.toggleAutoAttack()
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'StartAutoAttack')).toHaveLength(1)
+  })
+
+  it('waits for an active cast without polling a stale cast every 15ms', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-10T12:00:00Z'))
+    realtimeMock.invoke.mockImplementation(async method => method === 'UseAbility' ? abilityUpdate(2) : [])
+    const store = useCombatSessionStore()
+    await store.connect()
+    const update = abilityUpdate()
+    realtimeMock.handlers.get('CombatUpdated')?.({
+      ...update,
+      snapshot: { ...update.snapshot, player: {
+        ...update.snapshot.player,
+        activeCast: {
+          abilityId: 'HEROIC_STRIKE',
+          startedAtUtc: new Date(Date.now() - 100).toISOString(),
+          resolvesAtUtc: new Date(Date.now() + 200).toISOString(),
+        },
+      } },
+    })
+    await store.useAbility('SHIELD_SLAM')
+    await vi.advanceTimersByTimeAsync(100)
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(0)
+    await vi.advanceTimersByTimeAsync(130)
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(1)
+  })
+
+  it('does not block explicitly off-cast abilities', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-10T12:00:00Z'))
+    realtimeMock.invoke.mockImplementation(async method => method === 'UseAbility' ? abilityUpdate(2) : [])
+    const store = useCombatSessionStore()
+    await store.connect()
+    const update = abilityUpdate()
+    realtimeMock.handlers.get('CombatUpdated')?.({
+      ...update,
+      snapshot: { ...update.snapshot, player: {
+        ...update.snapshot.player,
+        activeCast: {
+          abilityId: 'HEROIC_STRIKE',
+          startedAtUtc: new Date(Date.now()).toISOString(),
+          resolvesAtUtc: new Date(Date.now() + 2000).toISOString(),
+        },
+        abilities: [
+          { id: 'HEROIC_STRIKE', targetType: 'SingleEnemy' },
+          { id: 'SHIELD_SLAM', targetType: 'SingleEnemy', canUseWhileCasting: true, usesGlobalCooldown: false },
+        ],
+      } },
+    })
+    await store.useAbility('SHIELD_SLAM')
+    await vi.advanceTimersByTimeAsync(0)
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')).toHaveLength(1)
+  })
+
+  it('holds the thirteenth command until the local burst window clears', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-10T12:00:00Z'))
+    realtimeMock.invoke.mockImplementation(async method =>
+      method === 'StartAutoAttack' ? abilityUpdate(2) : [])
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(abilityUpdate())
+    for (let i = 0; i < 12; i++) await store.toggleAutoAttack()
+    const next = store.toggleAutoAttack()
+    await Promise.resolve()
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'StartAutoAttack')).toHaveLength(12)
+    await vi.advanceTimersByTimeAsync(1001)
+    await next
+    expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'StartAutoAttack')).toHaveLength(13)
+    expect(store.connectionState).toBe('connected')
   })
 })

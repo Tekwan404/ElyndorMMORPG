@@ -86,7 +86,9 @@ public sealed record CombatAbilitySnapshot(
     string Id,
     decimal ResourceCost,
     TimeSpan Cooldown,
-    AbilityTargetType TargetType = AbilityTargetType.SingleEnemy);
+    AbilityTargetType TargetType = AbilityTargetType.SingleEnemy,
+    bool UsesGlobalCooldown = true,
+    bool CanUseWhileCasting = false);
 public sealed record CombatCastSnapshot(
     string AbilityId,
     DateTimeOffset StartedAtUtc,
@@ -129,7 +131,8 @@ public sealed record CombatActorSnapshot(
     string? GenderId = null,
     MonsterRank? MonsterRank = null,
     string? SkinId = null,
-    int? Level = null);
+    int? Level = null,
+    DateTimeOffset? GlobalCooldownEndsAtUtc = null);
 
 public sealed record CombatAbilityStatisticsSnapshot(
     string Id,

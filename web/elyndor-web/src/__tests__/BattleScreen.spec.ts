@@ -230,7 +230,7 @@ describe('BattleScreen', () => {
       player: local,
       enemy: actor('enemy', 'Monster'),
     }
-    store.errorCode = 'combat_invalid_target'
+    store.errorCode = 'combat_hub_use_ability_failed'
 
     const wrapper = mount(BattleScreen)
 
@@ -238,6 +238,23 @@ describe('BattleScreen', () => {
     expect(wrapper.get('[data-combat-error-toast]').attributes('role')).toBe('alert')
     expect(wrapper.get('[data-combat-error-toast]').attributes('aria-live')).toBe('assertive')
   })
+
+  it.each(['ability_on_cooldown', 'insufficient_resource', 'invalid_target', 'rate_limited'])(
+    'keeps ordinary %s errors out of the red network toast', code => {
+      const store = useCombatSessionStore()
+      store.snapshot = {
+        sessionId: 'session', sequence: 1, status: 'Active',
+        serverTimeUtc: '2026-09-25T12:00:00Z',
+        contentVersion: 'test', balanceVersion: 'test',
+        player: actor('local', 'Player', [ability(1)]),
+        enemy: actor('enemy', 'Monster'),
+      }
+      store.errorCode = code
+      const wrapper = mount(BattleScreen)
+      expect(wrapper.find('[data-combat-error-toast]').exists()).toBe(false)
+      wrapper.unmount()
+    },
+  )
 
   it('keeps roster selection independent from a later aggro change', async () => {
     const store = useCombatSessionStore()

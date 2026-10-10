@@ -839,6 +839,8 @@ export interface CombatAbility {
   cooldownSeconds: number
   isUnblockable?: boolean
   targetType?: CombatAbilityTargetType
+  usesGlobalCooldown?: boolean
+  canUseWhileCasting?: boolean
 }
 
 export type CombatAbilityTargetType =
@@ -875,6 +877,7 @@ export interface CombatActorSnapshot {
   autoAttackIntervalSeconds?: number | null
   nextAutoAttackAtUtc?: string | null
   cooldowns: Record<string, string>
+  globalCooldownEndsAtUtc?: string | null
   knownAbilityIds: string[]
   abilities: CombatAbility[]
   effects: CombatEffectSnapshot[]

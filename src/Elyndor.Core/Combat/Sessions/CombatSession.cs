@@ -2714,7 +2714,9 @@ public sealed partial class CombatSession
                 ability.Id,
                 ability.ResourceCost,
                 ability.Cooldown,
-                ability.TargetType))
+                ability.TargetType,
+                ability.UsesGlobalCooldown,
+                ability.CanUseWhileCasting))
             .ToArray();
         return new(
             definition.Actor.ActorId,
@@ -2760,7 +2762,8 @@ public sealed partial class CombatSession
             definition.RewardEligible,
             definition.GenderId,
             definition.MonsterRank,
-            definition.SkinId);
+            definition.SkinId,
+            GlobalCooldownEndsAtUtc: runtime.GlobalCooldownEndsAtUtc);
     }
 
     private DateTimeOffset? NextConsumableCooldownReadyAtUtc()
