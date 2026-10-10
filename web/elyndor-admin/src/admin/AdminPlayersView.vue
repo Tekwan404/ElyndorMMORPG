@@ -28,7 +28,7 @@ interface PlayerSnapshot {
 
 interface DirectoryPlayer { telegramUserId: number; telegramUsername: string | null; lastSeenAtUtc: string; character: { name: string; level: number; classId: string } | null }
 interface PlayerDirectory { total: number; page: number; pageSize: number; players: DirectoryPlayer[] }
-interface PlayerItem { id: string; name: string; itemDefinitionId: string; quantity: number; stars: number | null; enhancementLevel: number; isEquipped: boolean; sourceType: string | null }
+interface PlayerItem { id: string; name: string; itemDefinitionId: string; quantity: number; stars: number | null; enhancementLevel: number; isEquipped: boolean; sourceType: string | null; canClone: boolean }
 
 const emit = defineEmits<{ 'forge-target': [telegramId: string]; 'clone-item': [telegramId: string, itemId: string] }>()
 const directory = ref<PlayerDirectory | null>(null)
@@ -212,7 +212,7 @@ function formatDate(value: string): string {
               <small>{{ item.quantity }} шт. · {{ item.stars ?? '—' }}★ · +{{ item.enhancementLevel }}{{ item.isEquipped ? ' · Надето' : '' }}</small>
               <small class="inventory-list__id">Экземпляр: {{ item.id }}</small>
             </div>
-            <button type="button" @click="emit('clone-item', String(snapshot.telegramUserId), item.id)">Сделать копию</button>
+            <button type="button"  :disabled="!item.canClone" @click="emit('clone-item', String(snapshot.telegramUserId), item.id)">{{ item.canClone ? 'Сделать копию' : 'Нельзя копировать' }}</button>
           </div>
         </section>
       </section>
