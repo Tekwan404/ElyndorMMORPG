@@ -12,7 +12,7 @@ export function canSalvage(item: InventoryItem): boolean {
   return (
     item.type === 'Equipment' &&
     item.equippedSlot === null &&
-    (!item.isLocked || item.sourceType === 'GM_FORGE') &&
+    !item.isLocked &&
     !item.transactionLocked
   )
 }
