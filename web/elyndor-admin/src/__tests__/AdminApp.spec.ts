@@ -20,7 +20,7 @@ describe('Admin V2 foundation', () => {
     ))
 
     const wrapper = mount(App)
-    expect(wrapper.text()).toContain('Elyndor Admin')
+    expect(wrapper.text()).toContain('Админка Elyndor')
     expect(wrapper.text()).toContain('Войти через Telegram')
     expect(wrapper.find('input[autocomplete="username"]').exists()).toBe(true)
     expect(wrapper.text()).toContain('Telegram недоступен? Войти по резервному паролю')
@@ -40,6 +40,8 @@ describe('Admin V2 foundation', () => {
             }
           : url.includes('/content/history')
             ? { revisions: [], releases: [] }
+            : url.includes('/admin/players?')
+              ? { page: 1, total: 0, pageSize: 50, players: [] }
             : { service: 'Elyndor.Server', status: 'ready', utcNow: '2026-10-09T00:00:00Z' }
       return new Response(JSON.stringify(body), { status: 200 })
     }))
@@ -54,19 +56,19 @@ describe('Admin V2 foundation', () => {
     await flushPromises()
 
     expect(wrapper.text()).toContain('Панель управления Elyndor')
-    expect(wrapper.text()).toContain('GM Forge · тестовый шмот')
+    expect(wrapper.text()).toContain('Выдача предметов')
 
-    const players = wrapper.find('.sidebar').findAll('button').find(x => x.text() === 'Players')
+    const players = wrapper.find('.sidebar').findAll('button').find(x => x.text() === 'Игроки')
     await players!.trigger('click')
-    expect(wrapper.text()).toContain('Просмотр состояния персонажа')
+    expect(wrapper.text()).toContain('Выбери игрока из списка')
 
-    const server = wrapper.find('.sidebar').findAll('button').find(x => x.text() === 'Server')
+    const server = wrapper.find('.sidebar').findAll('button').find(x => x.text() === 'Сервер')
     await server!.trigger('click')
     expect(wrapper.text()).toContain('Состояние сервера')
 
-    const forge = wrapper.find('.sidebar').findAll('button').find(x => x.text() === 'GM Forge')
+    const forge = wrapper.find('.sidebar').findAll('button').find(x => x.text() === 'Выдача предметов')
     await forge!.trigger('click')
-    expect(wrapper.text()).toContain('Лаборатория экипировки')
+    expect(wrapper.text()).toContain('Выдача предметов')
     wrapper.unmount()
   })
 
