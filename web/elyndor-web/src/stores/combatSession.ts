@@ -407,8 +407,13 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     }
 
     if (current.player.activeCast && ability.canUseWhileCasting !== true) {
-      scheduleAbilityQueueDrain(Math.max(15, Date.parse(current.player.activeCast.resolvesAtUtc) - Date.now() + 25))
-      return
+      const castRemainingMs = Date.parse(current.player.activeCast.resolvesAtUtc) - Date.now()
+      if (castRemainingMs > 0) {
+        scheduleAbilityQueueDrain(Math.max(15, castRemainingMs + 25))
+        return
+      }
+      // A cast completion update may be late; do not spin a 15ms timer on
+      // the stale snapshot. The server still validates the final command.
     }
     const globalReadyAt = ability.usesGlobalCooldown === false
       ? null : current.player.globalCooldownEndsAtUtc
