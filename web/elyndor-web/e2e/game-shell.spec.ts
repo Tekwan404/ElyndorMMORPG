@@ -1,5 +1,74 @@
 import { expect, test, type Page } from '@playwright/test'
 
+test('living location markers and interaction panels fit phone screens', async ({ page }) => {
+  test.setTimeout(90_000)
+  test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses deterministic scene data for layout coverage.')
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await installMockApiUnlessReal(page)
+  const objects = Array.from({ length: 10 }, (_, index) => ({
+    id: `ENEMY_${index}`, kind: 'Enemy', displayName: index === 0 ? 'Лесной волк' : 'Матёрый волк',
+    description: 'Хищник охраняет лесную тропу.', x: 18 + index % 8 % 3 * 32,
+    y: 30 + Math.floor(index % 8 / 3) * 23, isRare: index === 1,
+    availableUntilUtc: null, questId: null,
+    resident: { monsterId: `WOLF_${index}`, displayName: 'Лесной волк', level: 3,
+      rank: index === 1 ? 'Elite' : 'Normal', artId: 'wolf', description: 'Хищник.',
+      xpReward: 123, goldRewardMin: 7, goldRewardMax: 10,
+      loot: [{ itemId: 'ROUGH_HIDE', name: 'Грубая шкура', type: 'Material', rarity: 'Common',
+        requiredLevel: 1, description: 'Материал', iconId: null }] },
+  }))
+  await page.route('**/api/v1/world/scene', route => route.fulfill({ json: {
+    locationId: 'WHISPERING_FOREST', contentVersion: '0.1.0', state: 'Calm',
+    serverTimeUtc: '2026-10-11T00:00:00Z', nextChangeAtUtc: null, objects,
+  } }))
+  await page.goto('/')
+  await page.getByLabel('Имя').fill('SceneReview')
+  await page.getByLabel('Лучник').check()
+  await page.getByRole('button', { name: 'Войти в мир' }).click()
+  await page.locator('[data-nav="world"]').click()
+  await page.locator('[data-location-id="WHISPERING_FOREST"]').click()
+  await page.locator('[data-map-travel]').click()
+  await page.locator('[data-nav="location"]').click()
+  await expect(page.locator('[data-scene-marker]')).toHaveCount(8)
+  for (const viewport of [{ width: 320, height: 568 }, { width: 360, height: 640 },
+    { width: 390, height: 844 }, { width: 430, height: 932 }]) {
+    await page.setViewportSize(viewport)
+    await page.locator('.content').evaluate(element => { element.scrollTop = 0 })
+    await page.evaluate(() => document.fonts.ready)
+    const sceneBox = (await page.locator('.location-scene').boundingBox())!
+    const boxes = []
+    for (const marker of await page.locator('[data-scene-marker]').all()) {
+      const box = (await marker.boundingBox())!
+      expect(box.width).toBeGreaterThanOrEqual(44)
+      expect(box.height).toBeGreaterThanOrEqual(44)
+      expect(box.x).toBeGreaterThanOrEqual(sceneBox.x)
+      expect(box.x + box.width).toBeLessThanOrEqual(sceneBox.x + sceneBox.width)
+      boxes.push(box)
+    }
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        const a = boxes[i]!, b = boxes[j]!
+        expect(a.x + a.width <= b.x || b.x + b.width <= a.x
+          || a.y + a.height <= b.y || b.y + b.height <= a.y,
+          JSON.stringify({ viewport, i, j, a, b }))
+          .toBeTruthy()
+      }
+    }
+    await page.screenshot({ path: `../../output/playwright/living-location-${viewport.width}.png` })
+    await page.locator('[data-scene-marker="ENEMY_0"]').click()
+    await expect(page.locator('[data-scene-panel]')).toContainText('Лесной волк')
+    await page.locator('[data-scene-panel] summary').click()
+    await expect(page.locator('[data-scene-panel]')).toContainText('Грубая шкура')
+    await expect(page.locator('[data-scene-attack]')).toBeVisible()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(viewport.width)
+    await page.screenshot({ path: `../../output/playwright/selected-enemy-${viewport.width}.png` })
+    await page.getByRole('button', { name: 'Закрыть взаимодействие' }).click()
+  }
+  await page.locator('[data-scene-next]').click()
+  await expect(page.locator('[data-scene-marker]')).toHaveCount(2)
+  expect(errors).toEqual([])
+})
+
 test('city workshop explains materials, crafts and restores the profession state', async ({ page }) => {
   test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses deterministic profession content.')
   const materials = [{ id: 'hide-stack', definitionId: 'ROUGH_HIDE', name: 'Грубая шкура',
@@ -446,6 +515,10 @@ async function installMockApiUnlessReal(page: Page, inventoryItems: unknown[] = 
   await page.route('**/api/v1/world/locations', (route) =>
     route.fulfill({ json: [...Object.values(locations), ...additionalWorldLocations] }),
   )
+  await page.route('**/api/v1/world/scene', route => route.fulfill({ json: {
+    locationId, contentVersion: '0.1.0', state: 'Calm',
+    serverTimeUtc: '2026-10-11T00:00:00Z', nextChangeAtUtc: null, objects: [],
+  } }))
   await page.route('**/api/v1/character', async (route) => {
     hasCharacter = true
     await route.fulfill({

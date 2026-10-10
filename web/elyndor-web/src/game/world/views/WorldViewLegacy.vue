@@ -17,8 +17,8 @@ import { UIButton, UICard, UIModal, UIToast } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
 const props = withDefaults(
-  defineProps<{ openGuild?: boolean; showDungeonLocationCard?: boolean }>(),
-  { openGuild: false, showDungeonLocationCard: true },
+  defineProps<{ openGuild?: boolean; showDungeonLocationCard?: boolean; sceneInteractions?: boolean }>(),
+  { openGuild: false, showDungeonLocationCard: true, sceneInteractions: false },
 )
 const emit = defineEmits<{ 'open-party': [] }>()
 
@@ -422,7 +422,7 @@ onMounted(() => {
           </li>
         </ul>
       </div>
-      <UIButton v-if="canExplore && canStartWorldCombat" data-explore-after-victory :loading="explorePending" :disabled="session.mutationPending || combat.pending || combat.isActive" @click="explore">Исследовать дальше</UIButton>
+      <UIButton v-if="canExplore && canStartWorldCombat && !props.sceneInteractions" data-explore-after-victory :loading="explorePending" :disabled="session.mutationPending || combat.pending || combat.isActive" @click="explore">Исследовать дальше</UIButton>
       <UIButton variant="secondary" data-dismiss-combat-result @click="dismissCombatResult">Закрыть</UIButton>
     </UICard>
 
@@ -467,7 +467,7 @@ onMounted(() => {
     </UIToast>
     <UIToast v-if="recoveryMessage" tone="info" title="Восстановление">{{ recoveryMessage }}</UIToast>
 
-    <section v-if="locationQuestLeads.length" class="world-stories" aria-labelledby="stories-title">
+    <section v-if="locationQuestLeads.length && !props.sceneInteractions" class="world-stories" aria-labelledby="stories-title">
       <header class="section-heading">
         <div>
           <small>ЛЮДИ И ИСТОРИИ</small>

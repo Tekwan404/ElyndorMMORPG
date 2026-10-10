@@ -331,6 +331,25 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     await acceptQuest(contractId)
   }
 
+  async function selectEncounter(locationId: string, monsterId: string): Promise<WorldEncounter | null> {
+    const pendingKey = 'world:select-encounter'
+    if (!beginMutation(pendingKey)) return null
+    errorCode.value = null
+    errorCorrelationId.value = null
+    try {
+      return await apiClient.request<WorldEncounter>('/api/v1/world/select-encounter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ locationId, monsterId }),
+      })
+    } catch (error) {
+      handleError(error)
+      return null
+    } finally {
+      endMutation(pendingKey)
+    }
+  }
+
   async function explore(): Promise<WorldEncounter | null> {
     const pendingKey = 'world:explore'
     if (!beginMutation(pendingKey)) return null
@@ -1009,6 +1028,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     claimQuest,
     acceptContract,
     explore,
+    selectEncounter,
     previewAfkFarm,
     getAfkFarmTargets,
     startAfkFarm,

@@ -26,7 +26,15 @@
     },
     {
       "monsterId": "FLOWER_MEADOW_MATKA_ROEVIKOV_L7",
-      "weight": 0.28
+      "weight": 0.28,
+      "availability": { "periodSeconds": 3600, "durationSeconds": 600, "offsetSeconds": 1200 }
+    }
+  ],
+  "points": [
+    {
+      "id": "HOLLOW_ROOTS",
+      "displayName": "Полые корни",
+      "description": "Цветы вокруг старого дерева склоняются к земле даже в безветрие. В полых корнях слышен гул роевиков; жители поляны обходят это место стороной."
     }
   ]
 }
