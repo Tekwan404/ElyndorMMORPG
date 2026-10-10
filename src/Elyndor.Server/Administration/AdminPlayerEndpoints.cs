@@ -1,4 +1,5 @@
 using Elyndor.Infrastructure.Persistence;
+using Elyndor.Infrastructure.Content;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Server.Administration;
@@ -8,10 +9,117 @@ public static class AdminPlayerEndpoints
 {
     public static IEndpointRouteBuilder MapAdminPlayerEndpoints(this IEndpointRouteBuilder endpoints)
     {
+        endpoints.MapGet("/api/v1/admin/players", ListAsync)
+            .WithTags("Admin Players")
+            .RequireAuthorization(AdminAuthorization.PolicyName);
+        endpoints.MapGet("/api/v1/admin/players/{telegramUserId:long}/items", GetItemsAsync)
+            .WithTags("Admin Players")
+            .RequireAuthorization(AdminAuthorization.PolicyName);
         endpoints.MapGet("/api/v1/admin/players/{telegramUserId:long}", GetByTelegramIdAsync)
             .WithTags("Admin Players")
             .RequireAuthorization(AdminAuthorization.PolicyName);
         return endpoints;
+    }
+
+    private static async Task<IResult> ListAsync(
+        int? page,
+        string? search,
+        GameDbContext db,
+        CancellationToken cancellationToken)
+    {
+        int currentPage = Math.Clamp(page ?? 1, 1, 10000);
+        string query = (search ?? string.Empty).Trim();
+        if (query.Length > 64) return Results.BadRequest(new { code = "admin_player_search_too_long" });
+
+        IQueryable<Elyndor.Core.Identity.Account> accounts = db.Accounts.AsNoTracking();
+        if (query.Length > 0)
+        {
+            accounts = accounts.Where(account =>
+                (account.TelegramUsername != null && account.TelegramUsername.Contains(query))
+                || account.TelegramUserId.ToString() == query
+                || db.Characters.Any(character =>
+                    character.AccountId == account.Id && character.Name.Contains(query)));
+        }
+
+        int total = await accounts.CountAsync(cancellationToken);
+        var rows = await (
+            from account in accounts
+            join character in db.Characters.AsNoTracking()
+                on account.Id equals character.AccountId into characters
+            from character in characters.DefaultIfEmpty()
+            orderby account.LastSeenAtUtc descending, account.Id
+            select new
+            {
+                account.TelegramUserId,
+                account.TelegramUsername,
+                account.LastSeenAtUtc,
+                Character = character == null ? null : new
+                {
+                    character.Name,
+                    character.Level,
+                    character.ClassId
+                }
+            })
+            .Skip((currentPage - 1) * 50)
+            .Take(50)
+            .ToArrayAsync(cancellationToken);
+
+        return Results.Ok(new { total, page = currentPage, pageSize = 50, players = rows });
+    }
+
+    private static async Task<IResult> GetItemsAsync(
+        long telegramUserId,
+        GameDbContext db,
+        IContentSnapshotProvider contentProvider,
+        CancellationToken cancellationToken)
+    {
+        if (telegramUserId <= 0)
+            return Results.BadRequest(new { code = "admin_player_invalid_id" });
+        var owner = await (
+            from account in db.Accounts.AsNoTracking()
+            join character in db.Characters.AsNoTracking() on account.Id equals character.AccountId
+            where account.TelegramUserId == telegramUserId
+            select new { character.Id, character.Name })
+            .SingleOrDefaultAsync(cancellationToken);
+        if (owner is null) return Results.NotFound(new { code = "admin_player_not_found" });
+
+        var items = await db.CharacterItems.AsNoTracking()
+            .Where(item => item.CharacterId == owner.Id)
+            .OrderByDescending(item => item.AcquiredAtUtc)
+            .Select(item => new
+            {
+                item.Id,
+                item.ItemDefinitionId,
+                item.Quantity,
+                item.Stars,
+                item.EnhancementLevel,
+                item.SourceType,
+                item.IsLocked,
+                item.ItemLevel
+            })
+            .Take(300)
+            .ToArrayAsync(cancellationToken);
+        var equippedIds = await db.CharacterEquipment.AsNoTracking()
+            .Where(equipment => equipment.CharacterId == owner.Id)
+            .Select(equipment => equipment.CharacterItemId)
+            .ToArrayAsync(cancellationToken);
+        HashSet<Guid> equipped = [.. equippedIds];
+        var definitions = contentProvider.GetCurrent().Indexes.ItemsById;
+        var results = items.Select(item => new
+        {
+            item.Id,
+            item.ItemDefinitionId,
+            Name = definitions.TryGetValue(item.ItemDefinitionId, out var definition)
+                ? definition.Name : item.ItemDefinitionId,
+            item.Quantity,
+            item.Stars,
+            item.EnhancementLevel,
+            item.SourceType,
+            item.IsLocked,
+            item.ItemLevel,
+            IsEquipped = equipped.Contains(item.Id)
+        });
+        return Results.Ok(new { owner.Name, items = results });
     }
 
     private static async Task<IResult> GetByTelegramIdAsync(
