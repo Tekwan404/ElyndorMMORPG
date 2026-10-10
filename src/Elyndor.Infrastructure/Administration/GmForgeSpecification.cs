@@ -13,7 +13,8 @@ public sealed record GmForgeSpecification(
     bool Perfect,
     int? ForcedStars,
     int? EnhancementLevel,
-    IReadOnlyDictionary<string, decimal> StatOverrides)
+    IReadOnlyDictionary<string, decimal> StatOverrides,
+    int Quantity = 1)
 {
     private static readonly HashSet<string> QualityProfiles =
         new(["NORMAL", "ELITE", "BOSS", "PERFECT"], StringComparer.Ordinal);
@@ -42,7 +43,8 @@ public sealed record GmForgeSpecification(
         bool perfect = false;
         int? stars = null;
         int? enhancement = null;
-        bool qualitySeen = false, starsSeen = false, enhancementSeen = false;
+        int quantity = 1;
+        bool qualitySeen = false, starsSeen = false, enhancementSeen = false, quantitySeen = false;
         Dictionary<string, decimal> stats = new(StringComparer.Ordinal);
         foreach (string token in tokens.Skip(1))
         {
@@ -73,6 +75,13 @@ public sealed record GmForgeSpecification(
                     starsSeen = true;
                     stars = parsedStars;
                     break;
+                case "QTY":
+                    if (quantitySeen || !int.TryParse(value, out int parsedQuantity)
+                        || parsedQuantity is < 1 or > 20)
+                        return false;
+                    quantitySeen = true;
+                    quantity = parsedQuantity;
+                    break;
                 case "ENHANCE":
                     if (enhancementSeen || !int.TryParse(value, out int parsedEnhancement)
                         || parsedEnhancement is < 0 or > 5)
@@ -93,7 +102,7 @@ public sealed record GmForgeSpecification(
         if (perfect && stars.HasValue && stars.Value != 5)
             return false;
         specification = new GmForgeSpecification(itemId, cloneId, perfect ? "BOSS" : quality,
-            perfect, stars, enhancement, stats);
+            perfect, stars, enhancement, stats, quantity);
         return true;
     }
 }
