@@ -11,7 +11,30 @@ public sealed record WorldLocationResidentResponse(
     string? ArtId,
     int XpReward,
     int GoldRewardMin,
-    int GoldRewardMax);
+    int GoldRewardMax,
+    IReadOnlyList<WorldLocationLootResponse>? Loot = null);
+
+public sealed record SelectWorldEncounterRequest(string LocationId, string MonsterId);
+
+public sealed record WorldSceneObjectResponse(
+    string Id,
+    string Kind,
+    string DisplayName,
+    string Description,
+    decimal X,
+    decimal Y,
+    WorldLocationResidentResponse? Resident = null,
+    bool IsRare = false,
+    DateTimeOffset? AvailableUntilUtc = null,
+    string? QuestId = null);
+
+public sealed record WorldLocationSceneResponse(
+    string LocationId,
+    string ContentVersion,
+    string State,
+    DateTimeOffset ServerTimeUtc,
+    DateTimeOffset? NextChangeAtUtc,
+    IReadOnlyList<WorldSceneObjectResponse> Objects);
 
 public sealed record WorldLocationLootResponse(
     string ItemId,

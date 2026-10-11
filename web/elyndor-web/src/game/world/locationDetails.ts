@@ -11,6 +11,29 @@ export interface WorldLocationResident {
   xpReward: number
   goldRewardMin: number
   goldRewardMax: number
+  loot?: WorldLocationLoot[] | null
+}
+
+export interface WorldSceneObject {
+  id: string
+  kind: 'Enemy' | 'Npc' | 'Landmark'
+  displayName: string
+  description: string
+  x: number
+  y: number
+  resident: WorldLocationResident | null
+  isRare: boolean
+  availableUntilUtc: string | null
+  questId: string | null
+}
+
+export interface WorldLocationScene {
+  locationId: string
+  contentVersion: string
+  state: 'Calm' | 'Invasion' | 'Corruption'
+  serverTimeUtc: string
+  nextChangeAtUtc: string | null
+  objects: WorldSceneObject[]
 }
 
 export interface WorldLocationLoot {

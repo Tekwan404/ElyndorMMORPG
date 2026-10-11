@@ -19,7 +19,7 @@ const isDungeonLocation = computed(() => locationKind(currentLocationId.value) =
 <template>
   <section class="location-screen">
     <WorldBossBanner @open="emit('open-world-boss')" />
-    <LocationOverview>
+    <LocationOverview interactive>
       <template v-if="isDungeonLocation && currentLocationId" #primary-actions>
         <DungeonLocationCard
           :dungeon-id="currentLocationId"
@@ -31,6 +31,7 @@ const isDungeonLocation = computed(() => locationKind(currentLocationId.value) =
       <WorldViewLegacy
         :open-guild="props.openGuild"
         :show-dungeon-location-card="false"
+        :scene-interactions="true"
         @open-party="emit('open-party')"
       />
     </div>

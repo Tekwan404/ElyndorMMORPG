@@ -131,7 +131,11 @@ internal static class CategoryContentComposer
                             location.Id,
                             fragment.LocationId,
                             StringComparison.Ordinal)
-                        ? location with { Encounters = fragment.Encounters }
+                        ? location with
+                        {
+                            Encounters = fragment.Encounters,
+                            Points = fragment.Points ?? location.Points
+                        }
                         : location)
                     .ToArray()
             };
@@ -458,5 +462,6 @@ internal static class CategoryContentComposer
         string BalanceVersion,
         DateTimeOffset PublishedAtUtc,
         string LocationId,
-        IReadOnlyList<LocationEncounterDefinition> Encounters);
+        IReadOnlyList<LocationEncounterDefinition> Encounters,
+        IReadOnlyList<LocationPointDefinition>? Points = null);
 }

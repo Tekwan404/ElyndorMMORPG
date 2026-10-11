@@ -9,6 +9,8 @@
 
 ## Current engineering notes
 
+- World: [living locations and manual encounters](development/living-locations.md).
+
 - Combat: [event routing](development/combat-event-routing.md),
   [ability composition](development/ability-modifier-composition.md),
   [resource orchestration](development/combat-resource-runtime.md),

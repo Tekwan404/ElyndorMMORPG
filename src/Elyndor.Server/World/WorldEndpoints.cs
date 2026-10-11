@@ -31,6 +31,8 @@ public static class WorldEndpoints
                 .ToArray());
         });
         group.MapPost("/world/explore", ExploreAsync);
+        group.MapGet("/world/scene", GetSceneAsync);
+        group.MapPost("/world/select-encounter", SelectEncounterAsync);
         group.MapPost("/world/travel", TravelAsync);
         group.MapPost("/world/contracts/accept", AcceptContractAsync);
 
@@ -104,6 +106,52 @@ public static class WorldEndpoints
             () => InCombatProblem(httpContext),
             cancellationToken);
     }
+
+    private static async Task<IResult> GetSceneAsync(
+        ClaimsPrincipal user, HttpContext httpContext, WorldEncounterService encounterService,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+        httpContext.Response.Headers.CacheControl = "no-store";
+        (WorldSceneSnapshot? scene, string? error) = await encounterService.GetSceneAsync(accountId, cancellationToken);
+        return scene is null
+            ? EncounterProblem(httpContext, error)
+            : Results.Ok(WorldSceneMapper.ToResponse(scene));
+    }
+
+    private static async Task<IResult> SelectEncounterAsync(
+        SelectWorldEncounterRequest request, ClaimsPrincipal user, HttpContext httpContext,
+        WorldEncounterService encounterService, CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId))
+            return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(accountId, async () =>
+        {
+            (WorldEncounterSnapshot? encounter, string? error) = await encounterService.SelectAsync(
+                accountId, request.LocationId, request.MonsterId, cancellationToken);
+            return encounter is null
+                ? EncounterProblem(httpContext, error)
+                : Results.Ok(new WorldEncounterResponse(encounter.EncounterId, encounter.MonsterId,
+                    encounter.Name, encounter.Level, encounter.Rank, encounter.Description, encounter.ArtId));
+        }, () => InCombatProblem(httpContext), cancellationToken);
+    }
+
+    private static IResult EncounterProblem(HttpContext context, string? error) =>
+        Results.Problem(
+            statusCode: error switch
+            {
+                WorldEncounterErrorCodes.CharacterNotFound => StatusCodes.Status404NotFound,
+                WorldEncounterErrorCodes.Travelling or WorldEncounterErrorCodes.TargetUnavailable =>
+                    StatusCodes.Status409Conflict,
+                _ => StatusCodes.Status422UnprocessableEntity
+            },
+            extensions: new Dictionary<string, object?>
+            {
+                ["code"] = error ?? WorldEncounterErrorCodes.EncounterUnavailable,
+                ["correlationId"] = context.TraceIdentifier
+            });
 
     private static async Task<IResult> ExploreAsync(
         ClaimsPrincipal user,
@@ -392,7 +440,7 @@ public static class WorldEndpoints
             location.MapId);
     }
 
-    private static WorldLocationResidentResponse[] BuildResidents(
+    internal static WorldLocationResidentResponse[] BuildResidents(
         LocationDefinition location,
         GameContentSnapshot content)
     {
@@ -441,6 +489,7 @@ public static class WorldEndpoints
                 ResolveBaseMonsterXp(content.Package, monster),
                 monster.GoldRewardMin,
                 monster.GoldRewardMax))
+            .Select(resident => resident with { Loot = BuildLoot([resident], indexes) })
             .OrderBy(resident => MonsterRankOrder(resident.Rank))
             .ThenBy(resident => resident.Level)
             .ThenBy(resident => resident.DisplayName, StringComparer.Ordinal)
