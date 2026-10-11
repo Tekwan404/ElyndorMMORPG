@@ -47,6 +47,10 @@ public sealed class ProfessionServiceTests(PostgresFixture postgres) : IAsyncLif
         Assert.True(replay.Replayed);
         await using var verify = postgres.CreateDbContext();
         Assert.Equal(1, await verify.CharacterItems.CountAsync(item => item.CharacterId == characterId && item.ItemDefinitionId == recipe.OutputItemId));
+        var crafted = await verify.CharacterItems.SingleAsync(item => item.CharacterId == characterId && item.ItemDefinitionId == recipe.OutputItemId);
+        Assert.NotNull(crafted.SourceOperationId);
+        Assert.NotEqual(mutationId, crafted.SourceOperationId);
+        Assert.True(crafted.IsProcedurallyGenerated);
         Assert.False(await verify.CharacterItems.AnyAsync(item => item.CharacterId == characterId && item.ItemDefinitionId == "THICK_LEATHER"));
     }
 
@@ -97,6 +101,146 @@ public sealed class ProfessionServiceTests(PostgresFixture postgres) : IAsyncLif
         await using GameDbContext verify = postgres.CreateDbContext();
         Assert.True(await verify.SkinnableCorpses
             .AnyAsync(corpse => corpse.CharacterId == characterId && corpse.SkinnedAtUtc != null));
+    }
+
+    [Fact]
+    public async Task MiningReplayAndCooldownSurviveForgettingProfession()
+    {
+        var (accountId, characterId) = await CreateCharacterAsync();
+        await using var context = postgres.CreateDbContext();
+        context.CharacterProfessions.Add(new CharacterProfession(characterId, ProfessionIds.Mining, Now));
+        context.CharacterLocations.Add(new Elyndor.Core.World.CharacterLocation(characterId, "WHISPERING_FOREST", 1, Now));
+        await context.SaveChangesAsync();
+        var service = await CreateServiceAsync(context);
+        var mutation = Guid.NewGuid();
+        Assert.True((await service.GatherAsync(accountId, "COPPER_VEIN", mutation, CancellationToken.None)).IsSuccess);
+        Assert.True((await service.GatherAsync(accountId, "COPPER_VEIN", mutation, CancellationToken.None)).Replayed);
+        Assert.Equal("profession_gathering_cooldown", (await service.GatherAsync(accountId, "COPPER_VEIN", Guid.NewGuid(), CancellationToken.None)).ErrorCode);
+        Assert.True((await service.ForgetAsync(accountId, ProfessionIds.Mining, Guid.NewGuid(), CancellationToken.None)).IsSuccess);
+        Assert.True((await service.LearnAsync(accountId, ProfessionIds.Mining, Guid.NewGuid(), CancellationToken.None)).IsSuccess);
+        Assert.Equal("profession_gathering_cooldown", (await service.GatherAsync(accountId, "COPPER_VEIN", Guid.NewGuid(), CancellationToken.None)).ErrorCode);
+        await using var verify = postgres.CreateDbContext();
+        Assert.Equal(2, await verify.CharacterItems.Where(item => item.CharacterId == characterId && item.ItemDefinitionId == "COPPER_ORE").SumAsync(item => item.Quantity));
+    }
+
+    [Fact]
+    public async Task ParallelMiningRequestsGrantOnlyOneYield()
+    {
+        var (accountId, characterId) = await CreateCharacterAsync();
+        await using (var setup = postgres.CreateDbContext())
+        {
+            setup.CharacterProfessions.Add(new CharacterProfession(characterId, ProfessionIds.Mining, Now));
+            setup.CharacterLocations.Add(new Elyndor.Core.World.CharacterLocation(characterId, "WHISPERING_FOREST", 1, Now));
+            await setup.SaveChangesAsync();
+        }
+        async Task<ProfessionMutationResult> Gather()
+        {
+            await using var context = postgres.CreateDbContext();
+            return await (await CreateServiceAsync(context)).GatherAsync(accountId, "COPPER_VEIN", Guid.NewGuid(), CancellationToken.None);
+        }
+        var results = await Task.WhenAll(Gather(), Gather());
+        Assert.Single(results, result => result.IsSuccess);
+        Assert.Single(results, result => result.ErrorCode == "profession_gathering_cooldown");
+        await using var verify = postgres.CreateDbContext();
+        Assert.Equal(2, await verify.CharacterItems.Where(item => item.CharacterId == characterId && item.ItemDefinitionId == "COPPER_ORE").SumAsync(item => item.Quantity));
+    }
+
+    [Fact]
+    public async Task DisenchantProtectsLockedItemsAndConsumesOnlyOnce()
+    {
+        var (accountId, characterId) = await CreateCharacterAsync();
+        var itemId = Guid.NewGuid();
+        await using var context = postgres.CreateDbContext();
+        context.CharacterProfessions.Add(new CharacterProfession(characterId, ProfessionIds.Enchanting, Now));
+        context.CharacterLocations.Add(new Elyndor.Core.World.CharacterLocation(characterId, "STARTER_TOWN", 1, Now));
+        var item = new Elyndor.Core.Items.CharacterItem(itemId, characterId, "RECRUIT_HEAVY_CHEST", 1, Now);
+        item.SetLocked(true);
+        context.CharacterItems.Add(item);
+        await context.SaveChangesAsync();
+        var service = await CreateServiceAsync(context);
+        Assert.Equal("profession_item_protected", (await service.DisenchantAsync(accountId, itemId, Guid.NewGuid(), CancellationToken.None)).ErrorCode);
+        Assert.Equal("profession_enchantment_not_found", (await service.EnchantAsync(accountId, itemId, null!, Guid.NewGuid(), CancellationToken.None)).ErrorCode);
+        Assert.Equal("profession_enchantment_not_found", (await service.EnchantAsync(accountId, itemId, "", Guid.NewGuid(), CancellationToken.None)).ErrorCode);
+        var unlock = await context.CharacterItems.SingleAsync(item => item.Id == itemId);
+        unlock.SetLocked(false);
+        await context.SaveChangesAsync();
+        var mutation = Guid.NewGuid();
+        Assert.True((await service.DisenchantAsync(accountId, itemId, mutation, CancellationToken.None)).IsSuccess);
+        Assert.True((await service.DisenchantAsync(accountId, itemId, mutation, CancellationToken.None)).Replayed);
+        Assert.Equal("profession_item_not_found", (await service.DisenchantAsync(accountId, itemId, Guid.NewGuid(), CancellationToken.None)).ErrorCode);
+        Assert.Equal(ProfessionErrorCodes.IdempotencyConflict, (await service.EnchantAsync(accountId, itemId, "MINOR_STAMINA", mutation, CancellationToken.None)).ErrorCode);
+        await using var verify = postgres.CreateDbContext();
+        Assert.False(await verify.CharacterItems.AnyAsync(item => item.Id == itemId));
+        Assert.Equal(1, await verify.CharacterItems.Where(item => item.CharacterId == characterId && item.ItemDefinitionId == "STRANGE_DUST").SumAsync(item => item.Quantity));
+    }
+
+    [Fact]
+    public async Task EnchantmentPersistsWithoutStackingOrRerollingAndConsumesScrollOnce()
+    {
+        var (accountId, characterId) = await CreateCharacterAsync();
+        var itemId = Guid.NewGuid();
+        await using var context = postgres.CreateDbContext();
+        context.CharacterProfessions.Add(new CharacterProfession(characterId, ProfessionIds.Enchanting, Now));
+        context.CharacterLocations.Add(new Elyndor.Core.World.CharacterLocation(characterId, "STARTER_TOWN", 1, Now));
+        var rolled = new PrimaryStats(4, 0, 0, 2);
+        context.CharacterItems.Add(new Elyndor.Core.Items.CharacterItem(itemId, characterId, "RECRUIT_HEAVY_CHEST", 1, Now, rolledPrimaryStats: rolled));
+        context.CharacterItems.Add(new Elyndor.Core.Items.CharacterItem(Guid.NewGuid(), characterId, "MINOR_STAMINA_SCROLL", 2, Now));
+        context.CharacterItems.Add(new Elyndor.Core.Items.CharacterItem(Guid.NewGuid(), characterId, "MINOR_STRENGTH_SCROLL", 1, Now));
+        await context.SaveChangesAsync();
+        var service = await CreateServiceAsync(context);
+        var mutation = Guid.NewGuid();
+        Assert.True((await service.EnchantAsync(accountId, itemId, "MINOR_STAMINA", mutation, CancellationToken.None)).IsSuccess);
+        Assert.True((await service.EnchantAsync(accountId, itemId, "MINOR_STAMINA", mutation, CancellationToken.None)).Replayed);
+        Assert.True((await service.EnchantAsync(accountId, itemId, "MINOR_STRENGTH", Guid.NewGuid(), CancellationToken.None)).IsSuccess);
+        await using var verify = postgres.CreateDbContext();
+        var target = await verify.CharacterItems.SingleAsync(item => item.Id == itemId);
+        Assert.Equal(rolled, target.RolledPrimaryStats);
+        Assert.Equal("MINOR_STRENGTH", target.EnchantmentId);
+        Assert.Equal(1, await verify.CharacterItems.Where(item => item.CharacterId == characterId && item.ItemDefinitionId == "MINOR_STAMINA_SCROLL").SumAsync(item => item.Quantity));
+        var content = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
+        var inventory = await new Elyndor.Infrastructure.Items.InventoryEquipmentService(verify, new StaticContentSnapshotProvider(content), new FixedTimeProvider(Now)).GetForCharacterAsync(characterId, CancellationToken.None);
+        Assert.Equal(new PrimaryStats(5, 0, 0, 2), inventory.Items.Single(item => item.Id == itemId).EffectiveStats);
+    }
+
+    [Fact]
+    public async Task WorkshopRejectsCraftingDuringActiveTravelWithoutConsumingMaterials()
+    {
+        var (accountId, characterId) = await CreateCharacterAsync();
+        await using var context = postgres.CreateDbContext();
+        context.CharacterProfessions.Add(new CharacterProfession(characterId, ProfessionIds.Mining, Now));
+        context.CharacterLocations.Add(new Elyndor.Core.World.CharacterLocation(characterId, "STARTER_TOWN", 1, Now));
+        context.CharacterTravelStates.Add(new Elyndor.Core.World.CharacterTravelState(characterId, Guid.NewGuid(), "STARTER_TOWN", "WHISPERING_FOREST", Now, Now.AddMinutes(1)));
+        context.CharacterItems.Add(new Elyndor.Core.Items.CharacterItem(Guid.NewGuid(), characterId, "COPPER_ORE", 2, Now));
+        await context.SaveChangesAsync();
+        var service = await CreateServiceAsync(context);
+        Assert.Equal(ProfessionErrorCodes.WrongWorkshop, (await service.CraftAsync(accountId, "MINING_SMELT_COPPER", Guid.NewGuid(), CancellationToken.None)).ErrorCode);
+        await using var verify = postgres.CreateDbContext();
+        Assert.Equal(2, await verify.CharacterItems.Where(item => item.CharacterId == characterId && item.ItemDefinitionId == "COPPER_ORE").SumAsync(item => item.Quantity));
+        Assert.False(await verify.CharacterItems.AnyAsync(item => item.CharacterId == characterId && item.ItemDefinitionId == "COPPER_BAR"));
+    }
+
+    [Fact]
+    public async Task MiningSkillRollUsesInjectedServerRandomRatherThanClientMutation()
+    {
+        var (accountId, characterId) = await CreateCharacterAsync();
+        await using var context = postgres.CreateDbContext();
+        var profession = new CharacterProfession(characterId, ProfessionIds.Mining, Now);
+        while (profession.Skill < 15) profession.TryIncreaseSkill(300, Now);
+        context.CharacterProfessions.Add(profession);
+        context.CharacterLocations.Add(new Elyndor.Core.World.CharacterLocation(characterId, "WHISPERING_FOREST", 1, Now));
+        await context.SaveChangesAsync();
+        var content = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
+        var service = new ProfessionService(context, new StaticContentSnapshotProvider(content), new FixedTimeProvider(Now), new FixedRandomFactory());
+        var result = await service.GatherAsync(accountId, "COPPER_VEIN", Guid.NewGuid(), CancellationToken.None);
+        Assert.True(result.IsSuccess);
+        Assert.False(result.SkillIncreased);
+        await using var verify = postgres.CreateDbContext();
+        Assert.Equal(15, (await verify.CharacterProfessions.SingleAsync(item => item.CharacterId == characterId)).Skill);
+    }
+
+    private sealed class FixedRandomFactory : Elyndor.Core.Combat.Randomness.IGameRandomFactory
+    {
+        public Elyndor.Core.Combat.Randomness.IGameRandom Create() => new Elyndor.Core.Combat.Randomness.SequenceGameRandom(0.99m);
     }
 
     private async Task<(Guid AccountId, Guid CharacterId)> CreateCharacterAsync()

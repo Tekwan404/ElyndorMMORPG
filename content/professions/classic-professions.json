@@ -1,0 +1,284 @@
+{
+  "contentVersion": "0.52.0",
+  "balanceVersion": "0.42.0",
+  "publishedAtUtc": "2026-10-11T19:00:00+00:00",
+  "professions": [
+    {
+      "id": "MINING",
+      "name": "Горное дело",
+      "category": "Gathering",
+      "maxSkill": 300,
+      "requiredLocationId": null
+    },
+    {
+      "id": "BLACKSMITHING",
+      "name": "Кузнечное дело",
+      "category": "Production",
+      "maxSkill": 300,
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ENCHANTING",
+      "name": "Наложение чар",
+      "category": "Production",
+      "maxSkill": 300,
+      "requiredLocationId": "STARTER_TOWN"
+    }
+  ],
+  "professionRecipes": [
+    {
+      "id": "MINING_SMELT_COPPER",
+      "professionId": "MINING",
+      "name": "Выплавка меди",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "COPPER_BAR",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "COPPER_ORE",
+          "quantity": 2
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "MINING_SMELT_BRONZE",
+      "professionId": "MINING",
+      "name": "Выплавка бронзы",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "BRONZE_BAR",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "COPPER_BAR",
+          "quantity": 1
+        },
+        {
+          "itemId": "TIN_ORE",
+          "quantity": 2
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "MINING_SMELT_IRON",
+      "professionId": "MINING",
+      "name": "Выплавка железа",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "IRON_BAR",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "IRON_ORE",
+          "quantity": 2
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "BS_COPPER_SWORD",
+      "professionId": "BLACKSMITHING",
+      "name": "Медный меч",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "CRAFT_COPPER_SWORD",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "COPPER_BAR",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "BS_COPPER_CHEST",
+      "professionId": "BLACKSMITHING",
+      "name": "Медная кираса",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "CRAFT_COPPER_CHEST",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "COPPER_BAR",
+          "quantity": 6
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "BS_BRONZE_FEET",
+      "professionId": "BLACKSMITHING",
+      "name": "Бронзовые сапоги",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "CRAFT_BRONZE_FEET",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "BRONZE_BAR",
+          "quantity": 5
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "BS_IRON_CHEST",
+      "professionId": "BLACKSMITHING",
+      "name": "Железная кираса",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "CRAFT_IRON_CHEST",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "IRON_BAR",
+          "quantity": 8
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ENCHANT_MINOR_STAMINA",
+      "professionId": "ENCHANTING",
+      "name": "Чары: малая выносливость",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "MINOR_STAMINA_SCROLL",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "STRANGE_DUST",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ENCHANT_MINOR_STRENGTH",
+      "professionId": "ENCHANTING",
+      "name": "Чары: малая сила",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "MINOR_STRENGTH_SCROLL",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "STRANGE_DUST",
+          "quantity": 4
+        },
+        {
+          "itemId": "MAGIC_ESSENCE",
+          "quantity": 1
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ENCHANT_MINOR_INTELLECT",
+      "professionId": "ENCHANTING",
+      "name": "Чары: малый интеллект",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "MINOR_INTELLECT_SCROLL",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "STRANGE_DUST",
+          "quantity": 6
+        },
+        {
+          "itemId": "MAGIC_ESSENCE",
+          "quantity": 2
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    }
+  ],
+  "professionGatheringNodes": [
+    {
+      "id": "COPPER_VEIN",
+      "name": "Медная жила",
+      "locationId": "WHISPERING_FOREST",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "itemId": "COPPER_ORE",
+      "quantity": 2,
+      "cooldownSeconds": 60
+    },
+    {
+      "id": "TIN_VEIN",
+      "name": "Оловянная жила",
+      "locationId": "FLOWER_MEADOW",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "itemId": "TIN_ORE",
+      "quantity": 2,
+      "cooldownSeconds": 60
+    },
+    {
+      "id": "IRON_DEPOSIT",
+      "name": "Залежи железа",
+      "locationId": "DEEP_FOREST",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "itemId": "IRON_ORE",
+      "quantity": 2,
+      "cooldownSeconds": 60
+    }
+  ],
+  "professionEnchantments": [
+    {
+      "id": "MINOR_STAMINA",
+      "name": "Малая выносливость",
+      "scrollItemId": "MINOR_STAMINA_SCROLL",
+      "statId": "STAMINA",
+      "value": 1,
+      "slots": [
+        "Chest",
+        "Hands",
+        "Feet"
+      ]
+    },
+    {
+      "id": "MINOR_STRENGTH",
+      "name": "Малая сила",
+      "scrollItemId": "MINOR_STRENGTH_SCROLL",
+      "statId": "STRENGTH",
+      "value": 1,
+      "slots": [
+        "Chest",
+        "Hands",
+        "Feet"
+      ]
+    },
+    {
+      "id": "MINOR_INTELLECT",
+      "name": "Малый интеллект",
+      "scrollItemId": "MINOR_INTELLECT_SCROLL",
+      "statId": "INTELLECT",
+      "value": 1,
+      "slots": [
+        "Chest",
+        "Hands",
+        "Feet"
+      ]
+    }
+  ],
+  "professionDisenchanting": [
+    {
+      "rarity": "Common",
+      "itemId": "STRANGE_DUST",
+      "quantity": 1
+    },
+    {
+      "rarity": "Uncommon",
+      "itemId": "MAGIC_ESSENCE",
+      "quantity": 1
+    }
+  ]
+}

@@ -1,6 +1,6 @@
-# Skinning and leatherworking workshop
+# Profession workshops
 
-The production slice contains Skinning and Leatherworking, not the three proposed professions in the original crafting foundation. Skill capacity remains 300; current active gathering and processing steps are:
+The production slice contains Skinning, Leatherworking, Mining, Blacksmithing and Enchanting. Skill capacity remains 300; current active gathering and processing steps are:
 
 | Location | Practice range | Entry skill | Next-step skill | Hide |
 | --- | --- | --- | --- | --- |
@@ -26,4 +26,24 @@ Crafting still uses the existing serializable transaction and mutation fingerpri
 
 Regression coverage checks live-source reachability from skill 1, uniform location steps, ordinary equipment outputs for processed tiers, canonical Russian names, protected ingredient availability, disabled reasons, recipe filters and the highest-step message. PostgreSQL coverage verifies a thick-leather craft and replay; mobile Playwright covers city entry, processing, resource refresh and restored profession state.
 
-New professions and further gathering tiers are separate future slices. Raising current gathering/recipe ceilings to 300 without new meaningful sources and products is not part of this release.
+Further gathering tiers and additional professions are separate future slices. Raising current gathering/recipe ceilings to 300 without new meaningful sources and products is not part of this release.
+
+## Mining, blacksmithing and enchanting (2026-10-11)
+
+Mining offers copper in Whispering Forest (skill 1), tin in Flower Meadow (16) and iron in Deep Forest (31), following the existing 16/31/61 practice ceilings. Each gathering action yields two ore with a shared 60-second server cooldown. Cooldown is derived from committed mutations as well as profession state, so forgetting/relearning cannot bypass it. The serializable transaction checks the actual location, travel state, skill and inventory capacity before granting materials. Smelting produces copper, bronze and iron bars. Four blacksmith recipes use ordinary level-1/6 equipment budgets and existing item artwork; there are no set bonuses or mass-produced Rare+ items.
+
+Enchanting destroys an unequipped, unlocked Common item for one Strange Dust, or an Uncommon item for one Magic Essence. Other rarities are deliberately unavailable. Three recipes at skills 1/16/31 produce scrolls for +1 Stamina/Strength/Intellect. Applying a scroll requires Enchanting, the city workshop and unequipped chest/gloves/boots; it consumes one scroll and replaces the existing enchantment. Persisted enchantment values are separate from rolled stats, affixes, stars and enhancement. InventorySnapshotReader applies the bonus after structural enhancement and affixes, so the ordinary equipment/combat projection uses it without changing the item's birth roll.
+
+All new mutations use character-scoped intent fingerprints and serializable transactions. Replays return success without granting or consuming anything again. Forgetting a profession requires UI confirmation and resets only its learned skill; items and existing enchantments remain. The two-primary-profession limit is unchanged.
+
+The unified mobile workshop displays all five professions with generated illustrations, trained skills, selected-profession recipes, material guides, mining routes and explicit destructive-action confirmations. Current content ends at skill 61 while overall capacity remains 300. No timed craft queue, global shared veins, Rare+ disenchanting or high-tier enchants are implied.
+
+The EF migration adds nullable mining cooldown and enchantment identity/stat columns plus a zero-default enchantment value. Existing items and professions retain their current behavior. Regression coverage includes parallel gathering, retry replay, forget/relearn cooldown, protected-item destruction, replacement without stat stacking and effective inventory stats.
+
+## City craft district
+
+The city opens a generated illustrated courtyard with four working stations. Leatherworking, Mining (smelting), Blacksmithing and Enchanting each open the matching profession, putting its learning row first if it is not learned. Unlearned stations never show another profession's recipes. Back returns to the district; the district returns to the city. Existing equipment enhancement/reforging remains a separate working service. Mining routes still require the actual outdoor location.
+
+Mining and recipe skill-up rolls use injected server randomness, independent of mutation IDs. Workshop actions reject active travel before consuming materials.
+
+Crafted equipment uses a separate server-generated operation ID for item generation, stable across execution-strategy retries. Client mutation IDs only identify replay requests and cannot select affixes.

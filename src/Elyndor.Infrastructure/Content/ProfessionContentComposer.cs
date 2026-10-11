@@ -47,7 +47,10 @@ internal static class ProfessionContentComposer
                 ProfessionRecipes = ContentCompositionRules.MergeOptionalByKey(
                     package.ProfessionRecipes,
                     fragment.ProfessionRecipes,
-                    item => item.Id)
+                    item => item.Id),
+                ProfessionGatheringNodes = ContentCompositionRules.MergeOptionalByKey(package.ProfessionGatheringNodes, fragment.ProfessionGatheringNodes, item => item.Id),
+                ProfessionEnchantments = ContentCompositionRules.MergeOptionalByKey(package.ProfessionEnchantments, fragment.ProfessionEnchantments, item => item.Id),
+                ProfessionDisenchanting = ContentCompositionRules.MergeOptionalByKey(package.ProfessionDisenchanting, fragment.ProfessionDisenchanting, item => item.Rarity.ToString())
             };
         }
 
@@ -60,5 +63,8 @@ internal static class ProfessionContentComposer
         DateTimeOffset? PublishedAtUtc = null,
         IReadOnlyList<ProfessionDefinition>? Professions = null,
         IReadOnlyList<SkinningSourceDefinition>? SkinningSources = null,
-        IReadOnlyList<ProfessionRecipeDefinition>? ProfessionRecipes = null);
+        IReadOnlyList<ProfessionRecipeDefinition>? ProfessionRecipes = null,
+        IReadOnlyList<ProfessionGatheringNodeDefinition>? ProfessionGatheringNodes = null,
+        IReadOnlyList<ProfessionEnchantmentDefinition>? ProfessionEnchantments = null,
+        IReadOnlyList<ProfessionDisenchantingDefinition>? ProfessionDisenchanting = null);
 }

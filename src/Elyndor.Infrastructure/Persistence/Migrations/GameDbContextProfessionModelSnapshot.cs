@@ -1294,6 +1294,20 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer")
                         .HasDefaultValue(1);
 
+                    b.Property<string>("EnchantmentId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("EnchantmentStatId")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.Property<decimal>("EnchantmentValue")
+                        .ValueGeneratedOnAdd()
+                        .HasPrecision(18, 4)
+                        .HasColumnType("numeric(18,4)")
+                        .HasDefaultValue(0m);
+
                     b.Property<int>("EnhancementLevel")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
@@ -1847,6 +1861,10 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("LearnedAtUtc")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("learned_at_utc");
+
+                    b.Property<DateTimeOffset?>("NextGatherAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_gather_at_utc");
 
                     b.Property<int>("Skill")
                         .HasColumnType("integer")

@@ -23,6 +23,7 @@ public sealed class ContentValidationPipeline
             new AbilityValidator(),
             new TalentValidator(),
             new ItemValidator(),
+            new ProfessionContentValidator(),
             new EnhancementCatalystSourceValidator(),
             new MerchantValidator(),
             new MonsterValidator(),

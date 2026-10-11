@@ -54,7 +54,10 @@ public sealed record GameContentPackage(
     IReadOnlyList<WorldBossRewardProfileDefinition>? WorldBossRewardProfiles = null,
     CombatBalanceProfile? CombatBalance = null,
     ProgressionBalanceProfile? ProgressionBalance = null,
-    IReadOnlyList<ItemSpecialEffectDefinition>? ItemSpecialEffects = null);
+    IReadOnlyList<ItemSpecialEffectDefinition>? ItemSpecialEffects = null,
+    IReadOnlyList<ProfessionGatheringNodeDefinition>? ProfessionGatheringNodes = null,
+    IReadOnlyList<ProfessionEnchantmentDefinition>? ProfessionEnchantments = null,
+    IReadOnlyList<ProfessionDisenchantingDefinition>? ProfessionDisenchanting = null);
 
 public sealed record AfkFarmRewardProfile(
     int ProcessingIntervalSeconds,

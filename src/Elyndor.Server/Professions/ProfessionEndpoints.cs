@@ -19,6 +19,10 @@ public static class ProfessionEndpoints
         group.MapPost("/learn", LearnAsync);
         group.MapPost("/skinning", SkinAsync);
         group.MapPost("/craft", CraftAsync);
+        group.MapPost("/gather", GatherAsync);
+        group.MapPost("/disenchant", DisenchantAsync);
+        group.MapPost("/enchant", EnchantAsync);
+        group.MapPost("/forget", ForgetAsync);
         return endpoints;
     }
 
@@ -98,6 +102,27 @@ public static class ProfessionEndpoints
         return ToResult(result, httpContext);
     }
 
+    private static async Task<IResult> GatherAsync(GatherProfessionRequest request, ClaimsPrincipal user, HttpContext httpContext, ProfessionService service, CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return ToResult(await service.GatherAsync(accountId, request.NodeId, request.MutationId, cancellationToken), httpContext);
+    }
+    private static async Task<IResult> DisenchantAsync(DisenchantProfessionRequest request, ClaimsPrincipal user, HttpContext httpContext, ProfessionService service, CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return ToResult(await service.DisenchantAsync(accountId, request.ItemId, request.MutationId, cancellationToken), httpContext);
+    }
+    private static async Task<IResult> EnchantAsync(EnchantProfessionRequest request, ClaimsPrincipal user, HttpContext httpContext, ProfessionService service, CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return ToResult(await service.EnchantAsync(accountId, request.ItemId, request.EnchantmentId, request.MutationId, cancellationToken), httpContext);
+    }
+    private static async Task<IResult> ForgetAsync(LearnProfessionRequest request, ClaimsPrincipal user, HttpContext httpContext, ProfessionService service, CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return ToResult(await service.ForgetAsync(accountId, request.ProfessionId, request.MutationId, cancellationToken), httpContext);
+    }
+
     private static IResult ToResult(ProfessionMutationResult result, HttpContext httpContext)
     {
         if (result.IsSuccess)
@@ -124,6 +149,9 @@ public static class ProfessionEndpoints
                 ["correlationId"] = httpContext.TraceIdentifier
             });
 
+    public sealed record GatherProfessionRequest(string NodeId, Guid MutationId);
+    public sealed record DisenchantProfessionRequest(Guid ItemId, Guid MutationId);
+    public sealed record EnchantProfessionRequest(Guid ItemId, string EnchantmentId, Guid MutationId);
     public sealed record LearnProfessionRequest(string ProfessionId, Guid MutationId);
     public sealed record SkinCorpseRequest(Guid CombatSessionId, Guid EnemyActorId, Guid MutationId);
     public sealed record CraftProfessionRequest(string RecipeId, Guid MutationId);

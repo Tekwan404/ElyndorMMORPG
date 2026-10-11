@@ -15,6 +15,7 @@ public sealed class CharacterProfessionConfiguration : IEntityTypeConfiguration<
         builder.Property(item => item.Skill).HasColumnName("skill");
         builder.Property(item => item.LearnedAtUtc).HasColumnName("learned_at_utc");
         builder.Property(item => item.UpdatedAtUtc).HasColumnName("updated_at_utc");
+        builder.Property(item => item.NextGatherAtUtc).HasColumnName("next_gather_at_utc");
         builder.HasIndex(item => item.CharacterId);
         builder.HasOne<Elyndor.Core.Characters.Character>()
             .WithMany()

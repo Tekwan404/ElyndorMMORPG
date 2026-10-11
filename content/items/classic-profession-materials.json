@@ -1,0 +1,213 @@
+{
+  "items": [
+    {
+      "id": "COPPER_ORE",
+      "name": "Медная руда",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Добывается горняком. Переплавляется в городской мастерской.",
+      "version": 1,
+      "iconId": "materials_for_professions/mining_early/mining_early_03_copper_ore"
+    },
+    {
+      "id": "TIN_ORE",
+      "name": "Оловянная руда",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Добывается горняком. Переплавляется в городской мастерской.",
+      "version": 1,
+      "iconId": "materials_for_professions/mining_early/mining_early_07_tin_ore"
+    },
+    {
+      "id": "IRON_ORE",
+      "name": "Железная руда",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Добывается горняком. Переплавляется в городской мастерской.",
+      "version": 1,
+      "iconId": "materials_for_professions/mining_early/mining_early_10_iron_ore"
+    },
+    {
+      "id": "COPPER_BAR",
+      "name": "Медный слиток",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Материал для кузнечного дела.",
+      "version": 1,
+      "iconId": "materials_for_professions/mining_early/mining_early_02_copper_fragments"
+    },
+    {
+      "id": "BRONZE_BAR",
+      "name": "Бронзовый слиток",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Материал для кузнечного дела.",
+      "version": 1,
+      "iconId": "materials_for_professions/mining_early/mining_early_05_ferric_stone"
+    },
+    {
+      "id": "IRON_BAR",
+      "name": "Железный слиток",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Материал для кузнечного дела.",
+      "version": 1,
+      "iconId": "materials_for_professions/mining_early/mining_early_10_iron_ore"
+    },
+    {
+      "id": "STRANGE_DUST",
+      "name": "Странная пыль",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Распыление обычной экипировки. Используется для свитков чар.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_late/gathering_late_04_mana_dust"
+    },
+    {
+      "id": "MAGIC_ESSENCE",
+      "name": "Малая магическая субстанция",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Распыление необычной экипировки. Используется для свитков чар.",
+      "version": 1,
+      "iconId": "materials_not_used_in_professions/dark_magic_reagents/dark_magic_reagents_02_dark_essence"
+    },
+    {
+      "id": "MINOR_STAMINA_SCROLL",
+      "name": "Свиток чар: малая выносливость",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Зачарователь накладывает чары на снятое снаряжение в городской мастерской. Новые чары заменяют предыдущие.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_late/gathering_late_11_essence_shard"
+    },
+    {
+      "id": "MINOR_STRENGTH_SCROLL",
+      "name": "Свиток чар: малая сила",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Зачарователь накладывает чары на снятое снаряжение в городской мастерской. Новые чары заменяют предыдущие.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_late/gathering_late_11_essence_shard"
+    },
+    {
+      "id": "MINOR_INTELLECT_SCROLL",
+      "name": "Свиток чар: малый интеллект",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Зачарователь накладывает чары на снятое снаряжение в городской мастерской. Новые чары заменяют предыдущие.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_late/gathering_late_11_essence_shard"
+    }
+  ]
+}
