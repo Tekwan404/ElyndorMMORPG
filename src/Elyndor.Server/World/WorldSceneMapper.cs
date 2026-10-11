@@ -1,12 +1,13 @@
 using Elyndor.Contracts.World;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.World;
+using Elyndor.Infrastructure.Professions;
 
 namespace Elyndor.Server.World;
 
 internal static class WorldSceneMapper
 {
-    public static WorldLocationSceneResponse ToResponse(WorldSceneSnapshot scene)
+    public static WorldLocationSceneResponse ToResponse(WorldSceneSnapshot scene, IReadOnlyList<ResourceSceneState>? resources = null)
     {
         var location = scene.Location;
         var objects = new List<WorldSceneObjectResponse>();
@@ -30,6 +31,18 @@ internal static class WorldSceneMapper
                     resident.DisplayName, resident.Description, 0, 0, resident,
                     encounter.Availability is not null, encounter.Availability is null ? null : change));
             }
+        }
+
+        foreach (var resource in resources ?? [])
+        {
+            var source = resource.Source;
+            if (resource.AvailableAtUtc > scene.ServerTimeUtc && (nextChange is null || resource.AvailableAtUtc < nextChange))
+                nextChange = resource.AvailableAtUtc;
+            objects.Add(new WorldSceneObjectResponse($"RESOURCE_{source.Id}", "Resource", source.DisplayName,
+                source.Description, 0, 0, Resource: new WorldResourceResponse(source.Id, source.ItemId,
+                    resource.ItemName, resource.IconId, source.MinQuantity, source.MaxQuantity, source.RequiredSkill,
+                    resource.LearnedSkill, resource.LearnedSkill >= source.RequiredSkill && resource.AvailableAtUtc <= scene.ServerTimeUtc,
+                    resource.AvailableAtUtc)));
         }
 
         foreach (var point in location.Points ?? [])

@@ -6,11 +6,17 @@ import { locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UILoadingState } from '@/ui/components'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
-import { recipeBlockReason, usableMaterialQuantities } from '../professionWorkshop'
+import {
+  recipeBlockReason,
+  studyRecipeBlockReason,
+  usableMaterialQuantities,
+} from '../professionWorkshop'
 import {
   craftProfessionRecipe,
   getProfessionState,
   learnProfession,
+  forgetProfession,
+  studyProfessionRecipe,
   type ProfessionMutationResult,
   type ProfessionRecipeState,
   type ProfessionStateSnapshot,
@@ -22,11 +28,46 @@ const loading = ref(true)
 const pendingKey = ref<string | null>(null)
 const error = ref<string | null>(null)
 const notice = ref<string | null>(null)
+const forgetId = ref<string | null>(null)
 const category = ref<'all' | 'materials' | 'equipment'>('all')
 
-const skinning = computed(() => state.value?.learned.find((item) => item.id === 'SKINNING') ?? null)
+const selectedProductionId = ref('LEATHERWORKING')
+const available = computed(
+  () =>
+    state.value?.available ?? [
+      { id: 'SKINNING', name: 'Снятие шкур', category: 'Gathering', maxSkill: 300 },
+      {
+        id: 'LEATHERWORKING',
+        name: 'Кожевничество',
+        category: 'Production',
+        maxSkill: 300,
+        relatedProfessionId: 'SKINNING',
+      },
+    ],
+)
+const workshops = computed(() =>
+  available.value.filter(
+    (profession) => profession.category === 'Production' || profession.category === 1,
+  ),
+)
+const productionDefinition = computed(
+  () =>
+    workshops.value.find((profession) => profession.id === selectedProductionId.value) ??
+    workshops.value[0],
+)
+const gatheringId = computed(() => productionDefinition.value?.relatedProfessionId ?? 'SKINNING')
+const pair = computed(() =>
+  [
+    available.value.find((profession) => profession.id === gatheringId.value),
+    productionDefinition.value,
+  ].filter((profession) => profession !== undefined),
+)
+const isAlchemy = computed(() => productionDefinition.value?.id === 'ALCHEMY')
+const skinning = computed(
+  () => state.value?.learned.find((item) => item.id === gatheringId.value) ?? null,
+)
 const leatherworking = computed(
-  () => state.value?.learned.find((item) => item.id === 'LEATHERWORKING') ?? null,
+  () => state.value?.learned.find((item) => item.id === productionDefinition.value?.id) ?? null,
 )
 const currentLocationId = computed(() => session.snapshot?.world?.currentLocation.id ?? null)
 const inventoryQuantities = computed(() =>
@@ -45,8 +86,9 @@ const materialIds = computed(
 const recipes = computed(() =>
   (state.value?.recipes ?? []).filter(
     (recipe) =>
-      category.value === 'all' ||
-      (category.value === 'materials') === materialIds.value.has(recipe.outputItemId),
+      recipe.professionId === productionDefinition.value?.id &&
+      (category.value === 'all' ||
+        (category.value === 'materials') === materialIds.value.has(recipe.outputItemId)),
   ),
 )
 const gatheringRoutes = computed(() => {
@@ -55,6 +97,7 @@ const gatheringRoutes = computed(() => {
     { itemName: string; locationName: string; requiredSkill: number; skillUpUntil?: number }
   >()
   for (const source of state.value?.materialSources ?? []) {
+    if ((source.professionId ?? 'SKINNING') !== gatheringId.value) continue
     const key = `${source.itemId}:${source.locationId}`
     const previous = routes.get(key)
     if (!previous || source.requiredSkill < previous.requiredSkill) routes.set(key, source)
@@ -64,6 +107,11 @@ const gatheringRoutes = computed(() => {
 const maximumGatheringStep = computed(() =>
   Math.max(0, ...gatheringRoutes.value.map((route) => route.skillUpUntil ?? 0)),
 )
+
+function selectWorkshop(professionId: string): void {
+  selectedProductionId.value = professionId
+  category.value = 'all'
+}
 
 async function load(): Promise<void> {
   loading.value = true
@@ -77,14 +125,41 @@ async function load(): Promise<void> {
   }
 }
 
-async function learn(id: 'SKINNING' | 'LEATHERWORKING'): Promise<void> {
+async function learn(id: string): Promise<void> {
   await mutate(
     `learn:${id}`,
     () => learnProfession(id),
     () => {
-      const name = id === 'SKINNING' ? 'Снятие шкур' : 'Кожевничество'
+      const name = available.value.find((profession) => profession.id === id)?.name ?? id
       return `${name} изучено.`
     },
+  )
+}
+
+async function forget(id: string): Promise<void> {
+  forgetId.value = null
+  await mutate(
+    `forget:${id}`,
+    () => forgetProfession(id),
+    () => 'Профессия забыта. При повторном изучении навык начнётся с 1.',
+  )
+}
+
+function studyBlockReason(recipe: ProfessionRecipeState): string | null {
+  return studyRecipeBlockReason(
+    recipe,
+    state.value?.learned.find((item) => item.id === recipe.professionId)?.skill ?? null,
+    currentLocationId.value,
+    inventoryQuantities.value,
+  )
+}
+
+async function study(recipe: ProfessionRecipeState): Promise<void> {
+  await mutate(
+    `study:${recipe.id}`,
+    () => studyProfessionRecipe(recipe.id),
+    () => `Изучен рецепт: ${recipe.name}. Свиток израсходован.`,
+    true,
   )
 }
 
@@ -189,6 +264,11 @@ function errorMessage(caught: unknown): string {
         skinning_corpse_expired: 'Время для снятия шкуры истекло.',
         skinning_corpse_already_skinned: 'Шкура с этой туши уже снята.',
         profession_skill_too_low: 'Навык профессии пока слишком низкий.',
+        profession_recipe_not_learned: 'Сначала изучите рецепт по свитку.',
+        profession_recipe_already_learned: 'Рецепт уже изучен.',
+        profession_recipe_scroll_missing: 'Нужен незапертый свиток рецепта в инвентаре.',
+        combat_active: 'Сначала завершите бой.',
+        resource_travelling: 'Сначала завершите переход.',
         profession_wrong_workshop: 'Для изготовления нужна городская мастерская.',
         profession_missing_ingredients: 'Не хватает материалов.',
         inventory_full: 'В инвентаре нет свободного места.',
@@ -208,69 +288,119 @@ onMounted(load)
     <header class="professions-hero">
       <div>
         <small>РЕМЁСЛА ЭЛИНДОРА</small>
-        <h2>Кожевенная мастерская</h2>
-        <p>Добудьте сырьё с туши, выделайте кожу и создайте экипировку.</p>
+        <h2>{{ isAlchemy ? 'Алхимическая лаборатория' : 'Кожевенная мастерская' }}</h2>
+        <p>
+          {{
+            isAlchemy
+              ? 'Собирайте растения в локациях и готовьте зелья в городе.'
+              : 'Добудьте сырьё с туши, выделайте кожу и создайте экипировку.'
+          }}
+        </p>
       </div>
-      <span>{{ state?.learned.length ?? 0 }} / 2</span>
+      <span>{{ state?.learned.length ?? 0 }} / {{ state?.maxPrimaryProfessions ?? 2 }}</span>
     </header>
 
     <UILoadingState v-if="loading && !state" state="loading" title="Загружаем профессии" />
 
     <template v-else-if="state">
+      <nav v-if="workshops.length > 1" class="profession-filters" aria-label="Мастерские">
+        <UIButton
+          v-for="workshop in workshops"
+          :key="workshop.id"
+          :data-production="workshop.id"
+          :variant="productionDefinition?.id === workshop.id ? 'primary' : 'ghost'"
+          :disabled="pendingKey !== null"
+          @click="selectWorkshop(workshop.id)"
+          >{{ workshop.name }}</UIButton
+        >
+      </nav>
       <p v-if="notice" class="profession-message profession-message--success">{{ notice }}</p>
       <p v-if="error" class="profession-message profession-message--error">{{ error }}</p>
 
       <section class="profession-slots" aria-label="Изученные профессии">
-        <article class="profession-card" :class="{ 'profession-card--learned': skinning }">
-          <div class="profession-card__heading">
-            <span class="profession-emblem" aria-hidden="true">✦</span>
-            <div><small>СБОР</small><strong>Снятие шкур</strong></div>
-          </div>
-          <p>После победы над подходящим зверем с его туши можно снять шкуру.</p>
-          <template v-if="skinning">
-            <div class="profession-skill">
-              <span>Навык {{ skinning.skill }} / {{ skinning.maxSkill }}</span>
-              <i
-                ><b
-                  :style="{
-                    width: `${Math.min(100, (skinning.skill / skinning.maxSkill) * 100)}%`,
-                  }"
-              /></i>
-            </div>
-          </template>
-          <UIButton
-            v-else
-            variant="secondary"
-            :disabled="state.learned.length >= 2 || pendingKey !== null"
-            :loading="pendingKey === 'learn:SKINNING'"
-            @click="learn('SKINNING')"
-            >Изучить профессию</UIButton
-          >
-        </article>
-
-        <article class="profession-card" :class="{ 'profession-card--learned': leatherworking }">
+        <article
+          v-for="profession in pair"
+          :key="profession.id"
+          class="profession-card"
+          :class="{
+            'profession-card--learned': state.learned.some(
+              (learned) => learned.id === profession.id,
+            ),
+          }"
+        >
           <div class="profession-card__heading">
             <span class="profession-emblem" aria-hidden="true">◆</span>
-            <div><small>РЕМЕСЛО</small><strong>Кожевничество</strong></div>
+            <div>
+              <small>{{
+                profession.category === 'Gathering' || profession.category === 0
+                  ? 'СБОР'
+                  : 'РЕМЕСЛО'
+              }}</small
+              ><strong>{{ profession.name }}</strong>
+            </div>
           </div>
-          <p>Создавайте кожаное снаряжение из шкур и хитина в городской мастерской.</p>
-          <template v-if="leatherworking">
+          <p>
+            {{
+              profession.id === gatheringId
+                ? isAlchemy
+                  ? 'Собирайте растения через маркеры ресурсов в локациях.'
+                  : 'Снимайте шкуры с побеждённых зверей.'
+                : isAlchemy
+                  ? 'Готовьте зелья из растений в городской лаборатории.'
+                  : 'Создавайте кожаное снаряжение из шкур и хитина в городской мастерской.'
+            }}
+          </p>
+          <template v-if="state.learned.find((learned) => learned.id === profession.id)">
             <div class="profession-skill">
-              <span>Навык {{ leatherworking.skill }} / {{ leatherworking.maxSkill }}</span>
+              <span
+                >Навык {{ state.learned.find((learned) => learned.id === profession.id)!.skill }} /
+                {{ profession.maxSkill }}</span
+              >
               <i
                 ><b
                   :style="{
-                    width: `${Math.min(100, (leatherworking.skill / leatherworking.maxSkill) * 100)}%`,
+                    width:
+                      Math.min(
+                        100,
+                        (state.learned.find((learned) => learned.id === profession.id)!.skill /
+                          profession.maxSkill) *
+                          100,
+                      ) + '%',
                   }"
               /></i>
+            </div>
+            <UIButton
+              v-if="forgetId !== profession.id"
+              variant="ghost"
+              :disabled="pendingKey !== null"
+              :data-forget-profession="profession.id"
+              @click="forgetId = profession.id"
+              >Забыть профессию</UIButton
+            >
+            <div v-else role="alert">
+              <p>
+                Весь навык профессии «{{ profession.name }}» будет потерян. Восстановить его нельзя.
+                Предметы останутся в инвентаре.
+              </p>
+              <UIButton
+                variant="danger"
+                :disabled="pendingKey !== null"
+                :data-confirm-forget="profession.id"
+                @click="forget(profession.id)"
+                >Забыть и сбросить навык</UIButton
+              >
+              <UIButton variant="ghost" @click="forgetId = null">Отмена</UIButton>
             </div>
           </template>
           <UIButton
             v-else
             variant="secondary"
-            :disabled="state.learned.length >= 2 || pendingKey !== null"
-            :loading="pendingKey === 'learn:LEATHERWORKING'"
-            @click="learn('LEATHERWORKING')"
+            :data-learn-profession="profession.id"
+            :disabled="
+              state.learned.length >= (state.maxPrimaryProfessions ?? 2) || pendingKey !== null
+            "
+            :loading="pendingKey === 'learn:' + profession.id"
+            @click="learn(profession.id)"
             >Изучить профессию</UIButton
           >
         </article>
@@ -294,7 +424,7 @@ onMounted(load)
               : 'Все доступные ступени пройдены. Продолжение пока не открыто.'
           }}</small>
           <small v-if="skinning.skill < route.requiredSkill"
-            >Сначала повысьте навык снятия шкур.</small
+            >Сначала повысьте навык профессии.</small
           >
         </div>
       </details>
@@ -302,10 +432,10 @@ onMounted(load)
       <section v-if="leatherworking" class="profession-panel">
         <header>
           <div>
-            <small>КОЖЕВНИЧЕСТВО</small>
+            <small>{{ productionDefinition?.name.toUpperCase() }}</small>
             <h3>Рецепты</h3>
           </div>
-          <span>{{ state.recipes.length }}</span>
+          <span>{{ recipes.length }}</span>
         </header>
         <p
           class="profession-workshop"
@@ -322,6 +452,7 @@ onMounted(load)
             Все рецепты
           </button>
           <button
+            v-if="!isAlchemy"
             type="button"
             :aria-pressed="category === 'materials'"
             @click="category = 'materials'"
@@ -333,7 +464,7 @@ onMounted(load)
             :aria-pressed="category === 'equipment'"
             @click="category = 'equipment'"
           >
-            Экипировка
+            {{ isAlchemy ? 'Зелья' : 'Экипировка' }}
           </button>
         </div>
         <article
@@ -361,7 +492,8 @@ onMounted(load)
               {{ locationLabel(recipe.requiredLocationId) }}</span
             >
             <span v-if="recipe.outputRequiredLevel && !materialIds.has(recipe.outputItemId)"
-              >Экипировка для уровня {{ recipe.outputRequiredLevel }}</span
+              >{{ isAlchemy ? 'Использование с уровня' : 'Экипировка для уровня' }}
+              {{ recipe.outputRequiredLevel }}</span
             >
             <span v-if="recipe.skillUpUntil" class="recipe-growth">{{
               (leatherworking?.skill ?? 0) < recipe.skillUpUntil
@@ -384,7 +516,26 @@ onMounted(load)
               </li>
             </ul>
             <span v-if="blockReason(recipe)" class="recipe-blocked">{{ blockReason(recipe) }}</span>
+            <template v-if="recipe.learningScrollItemId">
+              <span
+                >{{ recipe.isLearned === false ? 'Не изучен' : 'Рецепт изучен' }} ·
+                {{ recipe.learningScrollName }}</span
+              >
+              <span
+                v-if="recipe.isLearned === false && studyBlockReason(recipe)"
+                class="recipe-blocked"
+                >{{ studyBlockReason(recipe) }}</span
+              >
+            </template>
           </div>
+          <UIButton
+            v-if="recipe.isLearned === false"
+            :data-study-recipe="recipe.id"
+            :disabled="studyBlockReason(recipe) !== null || pendingKey !== null"
+            :loading="pendingKey === `study:${recipe.id}`"
+            @click="study(recipe)"
+            >Изучить рецепт</UIButton
+          >
           <UIButton
             :disabled="!canCraft(recipe) || pendingKey !== null"
             :loading="pendingKey === `craft:${recipe.id}`"
@@ -396,8 +547,9 @@ onMounted(load)
           В этой категории пока нет рецептов.
         </p>
         <p class="profession-empty">
-          Для изготовления учитываются только незапертые материалы в инвентаре. Новые рецепты
-          открываются навыком автоматически.
+          Для изготовления учитываются только незапертые материалы в инвентаре. Базовые рецепты
+          доступны по навыку; особые рецепты изучаются по свиткам из добычи. При отказе от профессии
+          изученные рецепты теряются.
         </p>
       </section>
 

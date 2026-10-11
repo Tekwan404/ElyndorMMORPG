@@ -14,7 +14,8 @@ export function inventoryCategory(
   item: InventoryItem,
 ): Exclude<InventoryCategory, 'all'> | 'other' {
   if (item.type === 'Equipment' || String(item.type) === 'SpatialArtifact') return 'equipment'
-  if (item.type === 'Consumable' || item.type === 'LootContainer') return 'supplies'
+  if (item.type === 'Consumable' || item.type === 'LootContainer' || item.type === 'Recipe')
+    return 'supplies'
   if (item.type === 'Material') return 'material'
   return 'other'
 }
@@ -27,5 +28,6 @@ export function inventoryGroup(item: InventoryItem): { id: string; label: string
   if (item.type === 'LootContainer')
     return { id: 'container', label: 'Сундуки и награды', order: 3 }
   if (item.type === 'Material') return { id: 'material', label: 'Материалы', order: 4 }
+  if (item.type === 'Recipe') return { id: 'recipe', label: 'Свитки рецептов', order: 5 }
   return { id: 'other', label: 'Другие предметы', order: 5 }
 }

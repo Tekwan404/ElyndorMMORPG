@@ -23,6 +23,7 @@ export function recipeBlockReason(
 ): string | null {
   if (skill === null) return 'Изучите нужную профессию.'
   if (skill < recipe.requiredSkill) return `Требуется навык ${recipe.requiredSkill}.`
+  if (recipe.isLearned === false) return 'Сначала изучите рецепт по свитку.'
   if (recipe.requiredLocationId && recipe.requiredLocationId !== locationId)
     return 'Нужна городская мастерская.'
   if (
@@ -32,5 +33,21 @@ export function recipeBlockReason(
   ) {
     return 'Не хватает доступных материалов.'
   }
+  return null
+}
+
+export function studyRecipeBlockReason(
+  recipe: ProfessionRecipeState,
+  skill: number | null,
+  locationId: string | null,
+  quantities: ReadonlyMap<string, number>,
+): string | null {
+  if (recipe.isLearned !== false) return 'Рецепт уже изучен.'
+  if (skill === null) return 'Изучите нужную профессию.'
+  if (skill < recipe.requiredSkill) return `Требуется навык ${recipe.requiredSkill}.`
+  if (recipe.requiredLocationId && recipe.requiredLocationId !== locationId)
+    return 'Нужна городская мастерская.'
+  if (!recipe.learningScrollItemId || (quantities.get(recipe.learningScrollItemId) ?? 0) < 1)
+    return 'Нужен незапертый свиток рецепта в инвентаре.'
   return null
 }

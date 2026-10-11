@@ -2,6 +2,8 @@
 import { computed, nextTick, ref, toRef } from 'vue'
 
 import { monsterArtUrl } from '@/assets/monsterArt'
+import { ApiRequestError } from '@/api/apiClient'
+import { gatherResource } from '@/game/professions/professionApi'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import type { WorldSceneObject } from '@/game/world/locationDetails'
 import { useLocationScene } from '@/game/world/useLocationScene'
@@ -25,6 +27,7 @@ const root = ref<HTMLElement | null>(null)
 const busy = ref(false)
 const questLoading = ref(false)
 const actionError = ref<string | null>(null)
+const actionNotice = ref<string | null>(null)
 const {
   scene,
   selected,
@@ -83,6 +86,7 @@ function rankLabel(object: WorldSceneObject): string {
 async function choose(object: WorldSceneObject): Promise<void> {
   if (busy.value) return
   actionError.value = null
+  actionNotice.value = null
   select(object)
   if (object.questId) {
     questLoading.value = true
@@ -95,11 +99,45 @@ async function closePanel(): Promise<void> {
   const previous = selectedId.value
   selectedId.value = null
   actionError.value = null
+  actionNotice.value = null
   await nextTick()
   const markers = root.value?.querySelectorAll<HTMLButtonElement>('[data-scene-marker]')
   Array.from(markers ?? [])
     .find((marker) => marker.dataset.sceneMarker === previous)
     ?.focus()
+}
+
+async function gather(): Promise<void> {
+  const resource = selected.value?.resource
+  if (!resource?.canGather || locked.value) return
+  busy.value = true
+  actionError.value = null
+  actionNotice.value = null
+  try {
+    const result = await gatherResource(resource.nodeId)
+    actionNotice.value = `Собрано: ${resource.itemName} ×${result.quantity}${result.skillIncreased ? ' · навык +1' : ''}`
+    await session.refreshSnapshot()
+    await refresh()
+  } catch (caught) {
+    const messages: Record<string, string> = {
+      inventory_full: 'Освободите место в инвентаре.',
+      resource_unavailable: 'Растение уже собрано. Дождитесь восстановления зарослей.',
+      profession_not_learned: 'Изучите травничество в городе.',
+      profession_skill_too_low: 'Недостаточный навык травничества.',
+      resource_wrong_location: 'Растение находится в другой локации.',
+      resource_travelling: 'Сначала завершите переход.',
+      combat_active: 'Сначала завершите бой.',
+      resource_afk_active: 'Сначала завершите автоматическую охоту.',
+    }
+    actionError.value = actionNotice.value
+      ? 'Растение собрано, но не удалось обновить данные. Повторите обновление локации.'
+      : caught instanceof ApiRequestError
+        ? (messages[caught.code] ?? 'Не удалось собрать растение. Повторите попытку.')
+        : 'Не удалось собрать растение. Проверьте связь.'
+    await refresh()
+  } finally {
+    busy.value = false
+  }
 }
 
 async function attack(): Promise<void> {
@@ -194,8 +232,16 @@ async function interactWithQuest(): Promise<void> {
       @click="choose(object)"
     >
       <span class="location-scene__medallion">
+        <ItemIcon
+          v-if="object.resource"
+          :item-id="object.resource.itemId"
+          :icon-id="object.resource.iconId"
+          :name="object.resource.itemName"
+          type="Material"
+          rarity="Common"
+        />
         <img
-          v-if="object.resident && monsterArtUrl(object.resident.artId)"
+          v-else-if="object.resident && monsterArtUrl(object.resident.artId)"
           :src="monsterArtUrl(object.resident.artId)!"
           alt=""
         />
@@ -212,9 +258,11 @@ async function interactWithQuest(): Promise<void> {
       <small>{{
         object.resident
           ? 'Ур. ' + object.resident.level
-          : object.kind === 'Npc'
-            ? 'Поручение'
-            : 'Осмотреть'
+          : object.resource
+            ? 'Травничество · ' + object.resource.requiredSkill
+            : object.kind === 'Npc'
+              ? 'Поручение'
+              : 'Осмотреть'
       }}</small>
       <em v-if="object.isRare">Редкий</em>
     </button>
@@ -259,7 +307,13 @@ async function interactWithQuest(): Promise<void> {
           <span v-if="selected.resident"
             >Ур. {{ selected.resident.level }} · {{ rankLabel(selected) }}</span
           >
-          <span v-else>{{ selected.kind === 'Npc' ? 'Житель области' : 'Место интереса' }}</span>
+          <span v-else>{{
+            selected.kind === 'Npc'
+              ? 'Житель области'
+              : selected.resource
+                ? 'Ресурсы · Травничество'
+                : 'Место интереса'
+          }}</span>
         </div>
       </div>
       <p>{{ selected.description }}</p>
@@ -306,6 +360,40 @@ async function interactWithQuest(): Promise<void> {
           лидер.</small
         >
       </template>
+      <template v-else-if="selected.resource">
+        <p>
+          Добыча: {{ selected.resource.itemName }} ×{{ selected.resource.minQuantity }}–{{
+            selected.resource.maxQuantity
+          }}
+        </p>
+        <small
+          >Травничество: {{ selected.resource.learnedSkill }} /
+          {{ selected.resource.requiredSkill }}</small
+        >
+        <small v-if="selected.resource.learnedSkill === 0"
+          >Изучите травничество в городской мастерской.</small
+        >
+        <small v-else-if="selected.resource.learnedSkill < selected.resource.requiredSkill"
+          >Сначала повысьте навык травничества.</small
+        >
+        <small v-else-if="!selected.resource.canGather"
+          >Заросли восстанавливаются. Доступно с
+          {{
+            new Date(selected.resource.availableAtUtc).toLocaleTimeString('ru-RU', {
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit',
+            })
+          }}.</small
+        >
+        <UIButton
+          data-scene-gather
+          :loading="busy"
+          :disabled="locked || !selected.resource.canGather"
+          @click="gather"
+          >Собрать</UIButton
+        >
+      </template>
       <template v-else-if="selected.questId">
         <p v-if="questLoading" role="status">Узнаём о поручении…</p>
         <template v-else>
@@ -333,6 +421,9 @@ async function interactWithQuest(): Promise<void> {
       </template>
     </section>
     <p v-if="actionError" class="location-scene__error" role="alert">{{ actionError }}</p>
+    <p v-else-if="actionNotice" class="location-scene__error location-scene__notice" role="status">
+      {{ actionNotice }}
+    </p>
   </section>
 </template>
 
@@ -424,6 +515,16 @@ async function interactWithQuest(): Promise<void> {
   height: 100%;
   object-fit: contain;
 }
+.location-scene__medallion :deep(.item-icon) {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+}
+.location-scene__notice {
+  background: #173329f5;
+  color: #e0e8bb;
+}
 .location-scene__medallion :deep(svg) {
   width: 26px;
   height: 26px;
@@ -440,12 +541,20 @@ async function interactWithQuest(): Promise<void> {
   -webkit-box-orient: vertical;
 }
 .location-scene__marker small {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   padding: 1px 4px;
   background: #050a10c9;
   color: #c0b6a1;
   font-size: 10px;
 }
 .location-scene__marker em {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
   color: #e2b8fc;
   font-size: 9px;
   font-style: normal;

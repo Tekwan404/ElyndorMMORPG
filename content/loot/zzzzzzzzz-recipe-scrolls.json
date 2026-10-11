@@ -1,0 +1,600 @@
+{
+  "contentVersion": "0.53.0",
+  "balanceVersion": "0.43.0",
+  "publishedAtUtc": "2026-10-11T08:00:00+00:00",
+  "lootTableEntryAdditions": [
+    {
+      "lootTableId": "LOOT_WHISPERING_FOREST_IADOVITYI_PAUK_L3",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_HEAD",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_SHOULDERS",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_LEGS",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_HEALING_POTION",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_BATTLE_TONIC",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_WHISPERING_FOREST_LESNOI_VOLK_L3",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_HEAD",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_SHOULDERS",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_LEGS",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_HEALING_POTION",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_BATTLE_TONIC",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_WHISPERING_FOREST_MATIORYI_VOLK_L4",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_HEAD",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_SHOULDERS",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_LEGS",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_HEALING_POTION",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_BATTLE_TONIC",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_WHISPERING_FOREST_KABAN_L4",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_HEAD",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_SHOULDERS",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_LEGS",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_HEALING_POTION",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_BATTLE_TONIC",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_HEAD",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_SHOULDERS",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_LEGS",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_HEALING_POTION",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_BATTLE_TONIC",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_WHISPERING_FOREST_GIGANTSKII_PAUK_L5",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_HEAD",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_SHOULDERS",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_LEGS",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_HEALING_POTION",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_BATTLE_TONIC",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_WHISPERING_FOREST_LESNOI_RAZBOINIK_L5",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_HEAD",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_SHOULDERS",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_LEGS",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_HEALING_POTION",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_BATTLE_TONIC",
+          "dropChance": 0.02,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_FLOWER_MEADOW_POLEVOI_VOLK_L4",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_ANTIDOTE",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_FLOWER_MEADOW_LUGOVOI_KABAN_L5",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_ANTIDOTE",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_FLOWER_MEADOW_ODICHAVSHII_OLEN_L5",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_ANTIDOTE",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_FLOWER_MEADOW_ZHALIASHCHII_ROEVIK_L6",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_ANTIDOTE",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_FLOWER_MEADOW_KORNEVOI_DUKH_L7",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_ANTIDOTE",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_FLOWER_MEADOW_MATKA_ROEVIKOV_L7",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_LIGHT_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_ANTIDOTE",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_DEEP_FOREST_VOLK_CHASHCHOBY_L6",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_SUPERIOR_HEALING_POTION",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_DEEP_FOREST_OSKVERNIONNYI_KABAN_L7",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_SUPERIOR_HEALING_POTION",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_DEEP_FOREST_GLUBINNYI_PAUK_L8",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_SUPERIOR_HEALING_POTION",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_DEEP_FOREST_GOBLIN_RAZVEDCHIK_L9",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_SUPERIOR_HEALING_POTION",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_DEEP_FOREST_GOBLIN_KAPKANSHCHIK_L10",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_SUPERIOR_HEALING_POTION",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    },
+    {
+      "lootTableId": "LOOT_DEEP_FOREST_ALFA_VOLK_L7",
+      "entries": [
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_HEAD",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_SHOULDERS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_LW_THICK_LEGS",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        },
+        {
+          "itemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_SUPERIOR_HEALING_POTION",
+          "dropChance": 0.025,
+          "minQuantity": 1,
+          "maxQuantity": 1
+        }
+      ]
+    }
+  ]
+}

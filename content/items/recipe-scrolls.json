@@ -1,0 +1,362 @@
+{
+  "contentVersion": "0.53.0",
+  "balanceVersion": "0.43.0",
+  "publishedAtUtc": "2026-10-11T08:00:00+00:00",
+  "items": [
+    {
+      "id": "ARCHER_CRAFTED_DENSE_LEATHER_HEAD",
+      "name": "Капюшон плотной кожи",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Uncommon",
+      "requiredLevel": 12,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Head",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Прочная броня из плотной кожи, изготовленная городским кожевником.",
+      "version": 1,
+      "armorCategory": "LEATHER",
+      "armorFlat": 21,
+      "itemLevelMin": 12,
+      "itemLevelMax": 12,
+      "generationVersion": 2,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "ARCHER_CRAFTED_DENSE_LEATHER_SHOULDERS",
+      "name": "Наплечники плотной кожи",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Uncommon",
+      "requiredLevel": 12,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Shoulders",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Прочная броня из плотной кожи, изготовленная городским кожевником.",
+      "version": 1,
+      "armorCategory": "LEATHER",
+      "armorFlat": 18,
+      "itemLevelMin": 12,
+      "itemLevelMax": 12,
+      "generationVersion": 2,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "ARCHER_CRAFTED_DENSE_LEATHER_LEGS",
+      "name": "Поножи плотной кожи",
+      "type": "Equipment",
+      "generationMode": "Rolled",
+      "rarity": "Uncommon",
+      "requiredLevel": 12,
+      "stackable": false,
+      "maxStack": 1,
+      "slot": "Legs",
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Прочная броня из плотной кожи, изготовленная городским кожевником.",
+      "version": 1,
+      "armorCategory": "LEATHER",
+      "armorFlat": 28.5,
+      "itemLevelMin": 12,
+      "itemLevelMax": 12,
+      "generationVersion": 2,
+      "tradePolicyId": "ORDINARY_TRADEABLE",
+      "randomAffixPoolId": "ARCHER_ARMOR",
+      "affixCountProfileId": "LEVEL_9_12",
+      "guaranteedAffixStatIds": [
+        "AGILITY",
+        "STAMINA"
+      ],
+      "extraAffixBudgetCap": 0,
+      "prefixSuffixPolicyId": "WORLD_V1",
+      "allowedClassIds": [
+        "ARCHER"
+      ]
+    },
+    {
+      "id": "RECIPE_SCROLL_LW_WHISPER_TRACKER_HEAD",
+      "name": "Свиток: Капюшон Шепчущего Леса",
+      "type": "Recipe",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Открывает рецепт «Капюшон Шепчущего Леса». Кожевничество, навык 1. Изучите свиток в городской мастерской; при изучении он расходуется.",
+      "iconId": "items_outside_sets/corrupted_grove/purified_root_elixir_recipe",
+      "sellPriceGold": 0
+    },
+    {
+      "id": "RECIPE_SCROLL_LW_WHISPER_TRACKER_SHOULDERS",
+      "name": "Свиток: Наплечники Шепчущего Леса",
+      "type": "Recipe",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Открывает рецепт «Наплечники Шепчущего Леса». Кожевничество, навык 1. Изучите свиток в городской мастерской; при изучении он расходуется.",
+      "iconId": "items_outside_sets/corrupted_grove/purified_root_elixir_recipe",
+      "sellPriceGold": 0
+    },
+    {
+      "id": "RECIPE_SCROLL_LW_WHISPER_TRACKER_LEGS",
+      "name": "Свиток: Поножи Шепчущего Леса",
+      "type": "Recipe",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Открывает рецепт «Поножи Шепчущего Леса». Кожевничество, навык 1. Изучите свиток в городской мастерской; при изучении он расходуется.",
+      "iconId": "items_outside_sets/corrupted_grove/purified_root_elixir_recipe",
+      "sellPriceGold": 0
+    },
+    {
+      "id": "RECIPE_SCROLL_LW_LIGHT_HEAD",
+      "name": "Свиток: Капюшон Серой Тропы",
+      "type": "Recipe",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Открывает рецепт «Капюшон Серой Тропы». Кожевничество, навык 16. Изучите свиток в городской мастерской; при изучении он расходуется.",
+      "iconId": "items_outside_sets/corrupted_grove/purified_root_elixir_recipe",
+      "sellPriceGold": 0
+    },
+    {
+      "id": "RECIPE_SCROLL_LW_LIGHT_SHOULDERS",
+      "name": "Свиток: Наплечники Серой Тропы",
+      "type": "Recipe",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Открывает рецепт «Наплечники Серой Тропы». Кожевничество, навык 16. Изучите свиток в городской мастерской; при изучении он расходуется.",
+      "iconId": "items_outside_sets/corrupted_grove/purified_root_elixir_recipe",
+      "sellPriceGold": 0
+    },
+    {
+      "id": "RECIPE_SCROLL_LW_LIGHT_LEGS",
+      "name": "Свиток: Поножи Серой Тропы",
+      "type": "Recipe",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Открывает рецепт «Поножи Серой Тропы». Кожевничество, навык 16. Изучите свиток в городской мастерской; при изучении он расходуется.",
+      "iconId": "items_outside_sets/corrupted_grove/purified_root_elixir_recipe",
+      "sellPriceGold": 0
+    },
+    {
+      "id": "RECIPE_SCROLL_LW_THICK_HEAD",
+      "name": "Свиток: Капюшон плотной кожи",
+      "type": "Recipe",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Открывает рецепт «Капюшон плотной кожи». Кожевничество, навык 31. Изучите свиток в городской мастерской; при изучении он расходуется.",
+      "iconId": "items_outside_sets/corrupted_grove/purified_root_elixir_recipe",
+      "sellPriceGold": 0
+    },
+    {
+      "id": "RECIPE_SCROLL_LW_THICK_SHOULDERS",
+      "name": "Свиток: Наплечники плотной кожи",
+      "type": "Recipe",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Открывает рецепт «Наплечники плотной кожи». Кожевничество, навык 31. Изучите свиток в городской мастерской; при изучении он расходуется.",
+      "iconId": "items_outside_sets/corrupted_grove/purified_root_elixir_recipe",
+      "sellPriceGold": 0
+    },
+    {
+      "id": "RECIPE_SCROLL_LW_THICK_LEGS",
+      "name": "Свиток: Поножи плотной кожи",
+      "type": "Recipe",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Открывает рецепт «Поножи плотной кожи». Кожевничество, навык 31. Изучите свиток в городской мастерской; при изучении он расходуется.",
+      "iconId": "items_outside_sets/corrupted_grove/purified_root_elixir_recipe",
+      "sellPriceGold": 0
+    },
+    {
+      "id": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_HEALING_POTION",
+      "name": "Свиток: Зелье лечения",
+      "type": "Recipe",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Открывает рецепт «Зелье лечения». Алхимия, навык 1. Изучите свиток в городской мастерской; при изучении он расходуется.",
+      "iconId": "items_outside_sets/corrupted_grove/purified_root_elixir_recipe",
+      "sellPriceGold": 0
+    },
+    {
+      "id": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_BATTLE_TONIC",
+      "name": "Свиток: Малый боевой тоник",
+      "type": "Recipe",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Открывает рецепт «Малый боевой тоник». Алхимия, навык 1. Изучите свиток в городской мастерской; при изучении он расходуется.",
+      "iconId": "items_outside_sets/corrupted_grove/purified_root_elixir_recipe",
+      "sellPriceGold": 0
+    },
+    {
+      "id": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_ANTIDOTE",
+      "name": "Свиток: Малое противоядие",
+      "type": "Recipe",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Открывает рецепт «Малое противоядие». Алхимия, навык 16. Изучите свиток в городской мастерской; при изучении он расходуется.",
+      "iconId": "items_outside_sets/corrupted_grove/purified_root_elixir_recipe",
+      "sellPriceGold": 0
+    },
+    {
+      "id": "RECIPE_SCROLL_ALCHEMY_SCROLL_SUPERIOR_HEALING_POTION",
+      "name": "Свиток: Превосходное зелье лечения",
+      "type": "Recipe",
+      "rarity": "Uncommon",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Открывает рецепт «Превосходное зелье лечения». Алхимия, навык 31. Изучите свиток в городской мастерской; при изучении он расходуется.",
+      "iconId": "items_outside_sets/corrupted_grove/purified_root_elixir_recipe",
+      "sellPriceGold": 0
+    }
+  ]
+}

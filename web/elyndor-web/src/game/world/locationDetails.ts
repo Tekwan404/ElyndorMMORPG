@@ -16,7 +16,7 @@ export interface WorldLocationResident {
 
 export interface WorldSceneObject {
   id: string
-  kind: 'Enemy' | 'Npc' | 'Landmark'
+  kind: 'Enemy' | 'Npc' | 'Landmark' | 'Resource'
   displayName: string
   description: string
   x: number
@@ -25,6 +25,18 @@ export interface WorldSceneObject {
   isRare: boolean
   availableUntilUtc: string | null
   questId: string | null
+  resource?: {
+    nodeId: string
+    itemId: string
+    itemName: string
+    iconId: string | null
+    minQuantity: number
+    maxQuantity: number
+    requiredSkill: number
+    learnedSkill: number
+    canGather: boolean
+    availableAtUtc: string
+  } | null
 }
 
 export interface WorldLocationScene {
@@ -58,8 +70,9 @@ export function loadLocationCatalog(contentVersion: string): Promise<DetailedWor
   if (catalogPromise && cachedContentVersion === contentVersion) return catalogPromise
 
   cachedContentVersion = contentVersion
-  catalogPromise = apiClient.request<DetailedWorldLocation[]>('/api/v1/world/locations')
-    .catch(error => {
+  catalogPromise = apiClient
+    .request<DetailedWorldLocation[]>('/api/v1/world/locations')
+    .catch((error) => {
       catalogPromise = null
       throw error
     })

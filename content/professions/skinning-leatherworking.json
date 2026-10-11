@@ -12,6 +12,7 @@
     },
     {
       "id": "LEATHERWORKING",
+      "relatedProfessionId": "SKINNING",
       "name": "Кожевничество",
       "category": "Production",
       "maxSkill": 300,

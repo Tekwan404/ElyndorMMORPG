@@ -58,6 +58,91 @@ const props = {
 }
 
 describe('LocationScene', () => {
+  it('gathers only the selected server resource intent and refreshes inventory without starting combat', async () => {
+    const resource = {
+      id: 'RESOURCE_MINT_1',
+      kind: 'Resource',
+      displayName: 'Лесная мята',
+      description: 'Растение',
+      x: 18,
+      y: 30,
+      resident: null,
+      isRare: false,
+      questId: null,
+      availableUntilUtc: null,
+      resource: {
+        nodeId: 'MINT_1',
+        itemId: 'FOREST_MINT',
+        itemName: 'Лесная мята',
+        iconId: null,
+        minQuantity: 1,
+        maxQuantity: 2,
+        requiredSkill: 1,
+        learnedSkill: 1,
+        canGather: true,
+        availableAtUtc: '1970-01-01T00:00:00Z',
+      },
+    }
+    const request = vi
+      .spyOn(apiClient, 'request')
+      .mockImplementation(async (path) =>
+        path.includes('/gather')
+          ? { isSuccess: true, itemId: 'FOREST_MINT', quantity: 2, skillIncreased: true }
+          : { ...scene, objects: [resource] },
+      )
+    const refresh = vi.spyOn(useGameSessionStore(), 'refreshSnapshot').mockResolvedValue()
+    const combat = vi.spyOn(useCombatSessionStore(), 'startCombat')
+    const wrapper = mount(LocationScene, { props: { ...props, canAttack: false } })
+    await flushPromises()
+    await wrapper.get('[data-scene-marker="RESOURCE_MINT_1"]').trigger('click')
+    await wrapper.get('[data-scene-gather]').trigger('click')
+    await flushPromises()
+    const mutation = request.mock.calls.find((call) => call[0] === '/api/v1/professions/gather')!
+    expect(JSON.parse(mutation[1]!.body as string)).toEqual({
+      nodeId: 'MINT_1',
+      mutationId: expect.any(String),
+    })
+    expect(refresh).toHaveBeenCalledOnce()
+    expect(combat).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('Лесная мята ×2')
+    wrapper.unmount()
+  })
+
+  it('does not allow gathering an unavailable or unlearned resource', async () => {
+    vi.spyOn(apiClient, 'request').mockResolvedValue({
+      ...scene,
+      objects: [
+        {
+          id: 'RESOURCE_MINT_1',
+          kind: 'Resource',
+          displayName: 'Лесная мята',
+          description: 'Растение',
+          x: 18,
+          y: 30,
+          resident: null,
+          questId: null,
+          resource: {
+            nodeId: 'MINT_1',
+            itemId: 'FOREST_MINT',
+            itemName: 'Лесная мята',
+            iconId: null,
+            minQuantity: 1,
+            maxQuantity: 2,
+            requiredSkill: 1,
+            learnedSkill: 0,
+            canGather: false,
+            availableAtUtc: '1970-01-01T00:00:00Z',
+          },
+        },
+      ],
+    })
+    const wrapper = mount(LocationScene, { props })
+    await flushPromises()
+    await wrapper.get('[data-scene-marker="RESOURCE_MINT_1"]').trigger('click')
+    expect(wrapper.get('[data-scene-gather]').attributes('disabled')).toBeDefined()
+    expect(wrapper.text()).toContain('Изучите травничество')
+    wrapper.unmount()
+  })
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.restoreAllMocks()

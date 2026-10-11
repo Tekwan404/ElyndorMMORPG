@@ -153,6 +153,10 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<WorldBossHealingMutation> WorldBossHealingMutations => Set<WorldBossHealingMutation>();
     public DbSet<WorldBossRewardSettlement> WorldBossRewardSettlements => Set<WorldBossRewardSettlement>();
 
+    public DbSet<Elyndor.Core.Professions.ResourceNodeState> ResourceNodes => Set<Elyndor.Core.Professions.ResourceNodeState>();
+    public DbSet<Elyndor.Core.Professions.CharacterRecipeKnowledge> CharacterRecipeKnowledge => Set<Elyndor.Core.Professions.CharacterRecipeKnowledge>();
+    public DbSet<Elyndor.Core.Professions.ResourceGatheringReceipt> ResourceGatheringReceipts => Set<Elyndor.Core.Professions.ResourceGatheringReceipt>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.HasDefaultSchema("game");

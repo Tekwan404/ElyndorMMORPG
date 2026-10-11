@@ -1,4 +1,5 @@
 using Elyndor.Core.Content;
+using Elyndor.Core.Professions;
 
 namespace Elyndor.Infrastructure.Professions;
 
@@ -18,6 +19,10 @@ public static class ProfessionWorkshopCatalog
                     return new ProfessionMaterialSourceState(source.ItemId, items[source.ItemId].Name,
                         monsters[encounter.MonsterId].Name, location.Id, location.DisplayName, source.RequiredSkill, source.SkillUpUntil);
                 }))
+            .Concat((package.ResourceSources ?? []).Select(source => new ProfessionMaterialSourceState(
+                source.ItemId, items[source.ItemId].Name, source.DisplayName, source.LocationId,
+                package.Locations.Single(location => location.Id == source.LocationId).DisplayName,
+                source.RequiredSkill, source.SkillUpUntil, source.ProfessionId)))
             .Distinct()
             .OrderBy(source => source.RequiredSkill)
             .ThenBy(source => source.MonsterName, StringComparer.Ordinal)
