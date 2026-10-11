@@ -8,9 +8,26 @@ vi.mock('../professionApi', () => ({
   getProfessionState: vi.fn<typeof api.getProfessionState>(),
   learnProfession: vi.fn<typeof api.learnProfession>(),
   forgetProfession: vi.fn<typeof api.forgetProfession>(),
+  studyProfessionRecipe: vi.fn<typeof api.studyProfessionRecipe>(),
   craftProfessionRecipe: vi.fn<typeof api.craftProfessionRecipe>(),
 }))
-vi.mock('@/stores/gameSession', () => ({ useGameSessionStore: () => ({ snapshot: null }) }))
+const session = vi.hoisted(() => ({
+  snapshot: null as null | {
+    character: {
+      inventory: {
+        items: {
+          definitionId: string
+          quantity: number
+          isLocked: boolean
+          equippedSlot: null
+          transactionLocked: boolean
+        }[]
+      }
+    }
+  },
+  refreshSnapshot: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
+}))
+vi.mock('@/stores/gameSession', () => ({ useGameSessionStore: () => session }))
 
 const state = { learned: [], recipes: [], skinnableCorpses: [] }
 async function open() {
@@ -61,14 +78,126 @@ describe('ProfessionView mutations', () => {
   })
   beforeEach(() => {
     vi.clearAllMocks()
+    session.snapshot = null
     vi.mocked(api.getProfessionState).mockResolvedValue(state)
   })
+  it('consumes a scroll through study and enables the returned learned recipe', async () => {
+    session.snapshot = {
+      character: {
+        inventory: {
+          items: [
+            {
+              definitionId: 'SCROLL',
+              quantity: 1,
+              isLocked: false,
+              equippedSlot: null,
+              transactionLocked: false,
+            },
+          ],
+        },
+      },
+    }
+    const recipe = {
+      id: 'RECIPE',
+      name: 'Капюшон',
+      professionId: 'LEATHERWORKING',
+      requiredSkill: 1,
+      outputItemId: 'HEAD',
+      outputQuantity: 1,
+      ingredients: [],
+      requiredLocationId: null,
+      isLearned: false,
+      learningScrollItemId: 'SCROLL',
+      learningScrollName: 'Свиток капюшона',
+    }
+    const initial = {
+      ...state,
+      learned: [
+        {
+          id: 'LEATHERWORKING',
+          name: 'Кожевничество',
+          category: 'Production',
+          skill: 1,
+          maxSkill: 300,
+        },
+      ],
+      recipes: [recipe],
+    }
+    vi.mocked(api.getProfessionState).mockResolvedValue(initial)
+    vi.mocked(api.studyProfessionRecipe).mockResolvedValue({
+      isSuccess: true,
+      errorCode: null,
+      state: { ...initial, recipes: [{ ...recipe, isLearned: true }] },
+      itemId: null,
+      quantity: 0,
+      skillIncreased: false,
+      replayed: false,
+    })
+    const wrapper = await open()
+    await wrapper.get('[data-study-recipe="RECIPE"]').trigger('click')
+    await flushPromises()
+    expect(api.studyProfessionRecipe).toHaveBeenCalledWith('RECIPE')
+    expect(session.refreshSnapshot).toHaveBeenCalledOnce()
+    expect(wrapper.find('[data-study-recipe="RECIPE"]').exists()).toBe(false)
+    expect(
+      wrapper.get('[data-profession-recipe="RECIPE"] button').attributes('disabled'),
+    ).toBeUndefined()
+    expect(wrapper.text()).toContain('Свиток израсходован')
+    wrapper.unmount()
+  })
+  it('studies a scroll recipe before allowing crafting', async () => {
+    const recipe = {
+      id: 'LW_SCROLL_HEAD',
+      name: 'Кожаный капюшон',
+      professionId: 'LEATHERWORKING',
+      requiredSkill: 1,
+      outputItemId: 'HEAD',
+      outputQuantity: 1,
+      ingredients: [],
+      requiredLocationId: null,
+      isLearned: false,
+      learningScrollItemId: 'SCROLL_HEAD',
+      learningScrollName: 'Свиток: Кожаный капюшон',
+    }
+    vi.mocked(api.getProfessionState).mockResolvedValue({
+      ...state,
+      learned: [
+        {
+          id: 'LEATHERWORKING',
+          name: 'Кожевничество',
+          category: 'Production',
+          skill: 1,
+          maxSkill: 300,
+        },
+      ],
+      recipes: [recipe],
+    })
+    const wrapper = await open()
+    expect(wrapper.get('[data-study-recipe="LW_SCROLL_HEAD"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.text()).toContain('Свиток: Кожаный капюшон')
+    expect(
+      wrapper
+        .get('[data-profession-recipe="LW_SCROLL_HEAD"] button:last-child')
+        .attributes('disabled'),
+    ).toBeDefined()
+    wrapper.unmount()
+  })
   it('requires explicit confirmation before losing profession skill', async () => {
-    vi.mocked(api.getProfessionState).mockResolvedValue({ ...state, learned: [
-      { id: 'SKINNING', name: 'Снятие шкур', category: 'Gathering', skill: 42, maxSkill: 300 },
-    ] })
-    vi.mocked(api.forgetProfession).mockResolvedValue({ isSuccess: true, errorCode: null,
-      state, itemId: null, quantity: 0, skillIncreased: false, replayed: false })
+    vi.mocked(api.getProfessionState).mockResolvedValue({
+      ...state,
+      learned: [
+        { id: 'SKINNING', name: 'Снятие шкур', category: 'Gathering', skill: 42, maxSkill: 300 },
+      ],
+    })
+    vi.mocked(api.forgetProfession).mockResolvedValue({
+      isSuccess: true,
+      errorCode: null,
+      state,
+      itemId: null,
+      quantity: 0,
+      skillIncreased: false,
+      replayed: false,
+    })
     const wrapper = await open()
     await wrapper.get('[data-forget-profession="SKINNING"]').trigger('click')
     expect(api.forgetProfession).not.toHaveBeenCalled()

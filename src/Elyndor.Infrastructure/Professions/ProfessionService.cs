@@ -34,7 +34,7 @@ public static class ProfessionErrorCodes
 
 public sealed record ProfessionStateItem(string Id, string Name, ProfessionCategory Category, int Skill, int MaxSkill);
 public sealed record SkinnableCorpseState(Guid CombatSessionId, Guid EnemyActorId, string MonsterDefinitionId, string MonsterName, int RequiredSkill, DateTimeOffset ExpiresAtUtc, string? ItemName = null, int MinQuantity = 0, int MaxQuantity = 0);
-public sealed record ProfessionRecipeState(string Id, string Name, string ProfessionId, int RequiredSkill, string OutputItemId, int OutputQuantity, IReadOnlyList<ProfessionRecipeIngredient> Ingredients, string? RequiredLocationId, int SkillUpUntil = 0, string? OutputName = null, string? OutputIconId = null, int OutputRequiredLevel = 1);
+public sealed record ProfessionRecipeState(string Id, string Name, string ProfessionId, int RequiredSkill, string OutputItemId, int OutputQuantity, IReadOnlyList<ProfessionRecipeIngredient> Ingredients, string? RequiredLocationId, int SkillUpUntil = 0, string? OutputName = null, string? OutputIconId = null, int OutputRequiredLevel = 1, bool IsLearned = true, string? LearningScrollItemId = null, string? LearningScrollName = null);
 public sealed record ProfessionMaterialSourceState(string ItemId, string ItemName, string MonsterName, string LocationId, string LocationName, int RequiredSkill, int SkillUpUntil = 0, string? ProfessionId = null);
 public sealed record ProfessionMaterialState(string Id, string Name);
 public sealed record ProfessionStateSnapshot(IReadOnlyList<ProfessionStateItem> Learned, IReadOnlyList<SkinnableCorpseState> SkinnableCorpses, IReadOnlyList<ProfessionRecipeState> Recipes, IReadOnlyList<ProfessionMaterialSourceState>? MaterialSources = null, IReadOnlyList<ProfessionMaterialState>? Materials = null, IReadOnlyList<ProfessionDefinition>? Available = null, int MaxPrimaryProfessions = 2);
@@ -72,6 +72,9 @@ public sealed class ProfessionService(
         Dictionary<string, string> monsterNames = (package.Monsters ?? [])
             .ToDictionary(item => item.Id, item => item.Name, StringComparer.Ordinal);
         HashSet<string> learnedIds = learned.Select(item => item.ProfessionId).ToHashSet(StringComparer.Ordinal);
+        HashSet<string> knownRecipes = (await dbContext.CharacterRecipeKnowledge.AsNoTracking()
+            .Where(item => item.CharacterId == character.Id).Select(item => item.RecipeId).ToArrayAsync(cancellationToken))
+            .ToHashSet(StringComparer.Ordinal);
         SkinnableCorpse[] corpses = learnedIds.Contains(ProfessionIds.Skinning)
             ? await dbContext.SkinnableCorpses.AsNoTracking()
                 .Where(item => item.CharacterId == character.Id
@@ -123,7 +126,9 @@ public sealed class ProfessionService(
                     recipe.SkillUpUntil,
                     itemById.GetValueOrDefault(recipe.OutputItemId)?.Name,
                     itemById.GetValueOrDefault(recipe.OutputItemId)?.IconId,
-                    itemById.GetValueOrDefault(recipe.OutputItemId)?.RequiredLevel ?? 1))
+                    itemById.GetValueOrDefault(recipe.OutputItemId)?.RequiredLevel ?? 1,
+                    recipe.LearningScrollItemId is null || knownRecipes.Contains(recipe.Id), recipe.LearningScrollItemId,
+                    recipe.LearningScrollItemId is null ? null : itemById.GetValueOrDefault(recipe.LearningScrollItemId)?.Name))
                 .ToArray(),
             ProfessionWorkshopCatalog.MaterialSources(package),
             (package.Items ?? []).Where(item => item.Type == ItemType.Material)
@@ -319,6 +324,10 @@ public sealed class ProfessionService(
                 return new ProfessionMutationResult(true, null, ItemId: recipe.OutputItemId, Quantity: recipe.OutputQuantity, Replayed: true);
             }
 
+            if (recipe.LearningScrollItemId is not null && !await dbContext.CharacterRecipeKnowledge.AnyAsync(
+                item => item.CharacterId == character.Id && item.ProfessionId == recipe.ProfessionId && item.RecipeId == recipe.Id, cancellationToken))
+                return new ProfessionMutationResult(false, "profession_recipe_not_learned");
+
             if (!string.IsNullOrWhiteSpace(recipe.RequiredLocationId))
             {
                 string? locationId = await dbContext.CharacterLocations.AsNoTracking()
@@ -395,12 +404,13 @@ public sealed class ProfessionService(
                 if (occupiedAfterConsumption + recipe.OutputQuantity > capacity)
                     return new ProfessionMutationResult(false, ProfessionErrorCodes.InventoryFull);
                 DateTimeOffset now = timeProvider.GetUtcNow();
+                Guid generationOperationId = Guid.NewGuid();
                 for (int ordinal = 0; ordinal < recipe.OutputQuantity; ordinal++)
                 {
                     CharacterItem crafted = ItemInstancePersistenceFactory.CreateCharacterItem(
                         character.Id,
                         output,
-                        mutationId,
+                        generationOperationId,
                         "PROFESSION_CRAFT",
                         recipe.Id,
                         ordinal,
@@ -411,11 +421,9 @@ public sealed class ProfessionService(
             }
 
             DateTimeOffset committedAt = timeProvider.GetUtcNow();
-            bool shouldIncrease = recipe.ProfessionId == ProfessionIds.Alchemy
-                ? ProfessionSkillRules.ShouldIncrease(
+            bool shouldIncrease = ProfessionSkillRules.ShouldIncrease(
                     (randomFactory ?? new Elyndor.Core.Combat.Randomness.SystemGameRandomFactory()).Create(),
-                    profession.Skill, recipe.RequiredSkill, recipe.SkillUpUntil)
-                : ShouldIncreaseSkill(mutationId, $"CRAFT_SKILL|{recipe.Id}", profession.Skill, recipe.RequiredSkill, recipe.SkillUpUntil);
+                    profession.Skill, recipe.RequiredSkill, recipe.SkillUpUntil);
             bool skillIncreased = shouldIncrease
                 && profession.TryIncreaseSkill(MaxProfessionSkill, committedAt);
             dbContext.CharacterMutations.Add(new CharacterMutation(character.Id, mutationId, "PROFESSION_CRAFT", fingerprint, committedAt));

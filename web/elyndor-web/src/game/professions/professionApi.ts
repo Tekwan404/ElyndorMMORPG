@@ -40,6 +40,9 @@ export interface ProfessionRecipeState {
   outputName?: string | null
   outputIconId?: string | null
   outputRequiredLevel?: number
+  isLearned?: boolean
+  learningScrollItemId?: string | null
+  learningScrollName?: string | null
 }
 
 export interface ProfessionStateSnapshot {
@@ -81,6 +84,15 @@ export async function gatherResource(nodeId: string): Promise<ProfessionMutation
     path: '/api/v1/professions/gather',
     idField: 'mutationId',
     intent: { nodeId },
+  })
+}
+
+export async function studyProfessionRecipe(recipeId: string): Promise<ProfessionMutationResult> {
+  return await runReplaySafeGameMutation<ProfessionMutationResult>({
+    key: `profession:study:${recipeId}`,
+    path: '/api/v1/professions/study',
+    idField: 'mutationId',
+    intent: { recipeId },
   })
 }
 

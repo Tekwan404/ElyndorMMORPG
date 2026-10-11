@@ -226,10 +226,7 @@ internal static class CategoryContentComposer
                 package.ItemSpecialEffects,
                 fragment.ItemSpecialEffects,
                 item => item.Id),
-            LootTables = ContentCompositionRules.MergeOptionalByKey(
-                package.LootTables,
-                fragment.LootTables,
-                item => item.Id),
+            LootTables = ComposeLootTables(package.LootTables, fragment.LootTables, fragment.LootTableEntryAdditions),
             EquipmentSets = ContentCompositionRules.MergeOptionalByKey(
                 package.EquipmentSets,
                 fragment.EquipmentSets,
@@ -431,7 +428,26 @@ internal static class CategoryContentComposer
         IReadOnlyList<WorldBossDefinition>? WorldBosses = null,
         IReadOnlyList<WorldBossRewardProfileDefinition>? WorldBossRewardProfiles = null,
         CombatBalanceProfile? CombatBalance = null,
-        ProgressionBalanceProfile? ProgressionBalance = null);
+        ProgressionBalanceProfile? ProgressionBalance = null,
+        IReadOnlyList<LootTableEntryAddition>? LootTableEntryAdditions = null);
+
+    private static IReadOnlyList<LootTableDefinition>? ComposeLootTables(
+        IReadOnlyList<LootTableDefinition>? current, IReadOnlyList<LootTableDefinition>? incoming,
+        IReadOnlyList<LootTableEntryAddition>? additions)
+    {
+        var merged = ContentCompositionRules.MergeOptionalByKey(current, incoming, table => table.Id);
+        if (additions is null) return merged;
+        var tables = (merged ?? []).ToDictionary(table => table.Id, StringComparer.Ordinal);
+        foreach (var addition in additions)
+        {
+            if (!tables.TryGetValue(addition.LootTableId, out var table))
+                throw new InvalidDataException($"Loot addition references unknown table '{addition.LootTableId}'.");
+            tables[table.Id] = table with { Entries = table.Entries.Concat(addition.Entries).ToArray() };
+        }
+        return tables.Values.ToArray();
+    }
+
+    private sealed record LootTableEntryAddition(string LootTableId, IReadOnlyList<LootTableEntry> Entries);
 
     private sealed record TalentBranchReplacement(
         string TreeId,

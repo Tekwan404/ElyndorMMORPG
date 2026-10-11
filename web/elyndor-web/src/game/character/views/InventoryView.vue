@@ -862,6 +862,7 @@ function typeLabel(item: InventoryItem): string {
   if (item.type === 'Material') return 'Материал'
   if (item.type === 'Consumable') return 'Расходник'
   if (item.type === 'LootContainer') return 'Сундук'
+  if (item.type === 'Recipe') return 'Свиток рецепта'
   const labels: Record<string, string> = {
     MainHand: 'Основная рука',
     OffHand: 'Вторая рука',

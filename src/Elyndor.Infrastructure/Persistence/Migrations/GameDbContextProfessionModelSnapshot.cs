@@ -1863,6 +1863,27 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.ToTable("character_professions", "game");
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Professions.CharacterRecipeKnowledge", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ProfessionId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("RecipeId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<DateTimeOffset>("LearnedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("CharacterId", "ProfessionId", "RecipeId");
+
+                    b.ToTable("character_recipe_knowledge", "game");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Professions.ResourceGatheringReceipt", b =>
                 {
                     b.Property<Guid>("CharacterId")
@@ -3446,6 +3467,15 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.HasOne("Elyndor.Core.Characters.Character", null)
                         .WithMany()
                         .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Professions.CharacterRecipeKnowledge", b =>
+                {
+                    b.HasOne("Elyndor.Core.Professions.CharacterProfession", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId", "ProfessionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

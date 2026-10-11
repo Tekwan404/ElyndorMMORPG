@@ -420,7 +420,7 @@ export const EQUIPMENT_SLOT_TO_EQUIPPED_KEY = {
 
 export type EquippedInventoryKey =
   (typeof EQUIPMENT_SLOT_TO_EQUIPPED_KEY)[EquipmentSlot]
-export type ItemType = 'Equipment' | 'Material' | 'Consumable' | 'LootContainer'
+export type ItemType = 'Equipment' | 'Material' | 'Consumable' | 'LootContainer' | 'Recipe'
 export type ItemRarity = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary' | 'Unique'
 
 export interface ConsumableAction {

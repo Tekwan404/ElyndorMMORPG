@@ -44,7 +44,8 @@ public sealed record ProfessionRecipeDefinition(
     string OutputItemId,
     int OutputQuantity,
     IReadOnlyList<ProfessionRecipeIngredient> Ingredients,
-    string? RequiredLocationId = null);
+    string? RequiredLocationId = null,
+    string? LearningScrollItemId = null);
 
 public sealed class CharacterProfession
 {

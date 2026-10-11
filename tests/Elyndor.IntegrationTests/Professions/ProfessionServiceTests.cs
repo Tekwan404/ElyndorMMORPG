@@ -47,6 +47,9 @@ public sealed class ProfessionServiceTests(PostgresFixture postgres) : IAsyncLif
         Assert.True(replay.Replayed);
         await using var verify = postgres.CreateDbContext();
         Assert.Equal(1, await verify.CharacterItems.CountAsync(item => item.CharacterId == characterId && item.ItemDefinitionId == recipe.OutputItemId));
+        var crafted = await verify.CharacterItems.SingleAsync(item => item.CharacterId == characterId && item.ItemDefinitionId == recipe.OutputItemId);
+        Assert.NotNull(crafted.SourceOperationId);
+        Assert.NotEqual(mutationId, crafted.SourceOperationId);
         Assert.False(await verify.CharacterItems.AnyAsync(item => item.CharacterId == characterId && item.ItemDefinitionId == "THICK_LEATHER"));
     }
 

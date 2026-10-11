@@ -202,7 +202,7 @@ public static partial class GameContentPackageValidator
                         effectIds);
                 bool invalidTypeShape = item.Type switch
                 {
-                    ItemType.Material => !item.Stackable || item.MaxStack < 2 || item.Slot is not null
+                    ItemType.Material or ItemType.Recipe => !item.Stackable || item.MaxStack < 2 || item.Slot is not null
                         || HasEquipmentModifiers(item)
                         || hasConsumableData
                         || hasLootContainerData,

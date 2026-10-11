@@ -22,6 +22,7 @@ public static class ProfessionEndpoints
         group.MapPost("/craft", CraftAsync);
         group.MapPost("/gather", GatherAsync);
         group.MapPost("/forget", ForgetAsync);
+        group.MapPost("/study", StudyAsync);
         return endpoints;
     }
 
@@ -99,6 +100,16 @@ public static class ProfessionEndpoints
             return Results.Unauthorized();
         ProfessionMutationResult result = await service.CraftAsync(accountId, request.RecipeId, request.MutationId, cancellationToken);
         return ToResult(result, httpContext);
+    }
+
+    private static async Task<IResult> StudyAsync(CraftProfessionRequest request, ClaimsPrincipal user,
+        HttpContext httpContext, ProfessionRecipeLearningService service, CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(accountId, async () =>
+            ToResult(await service.LearnAsync(accountId, request.RecipeId, request.MutationId, cancellationToken), httpContext),
+            () => Problem("combat_active", StatusCodes.Status409Conflict, httpContext), cancellationToken);
     }
 
     private static async Task<IResult> ForgetAsync(LearnProfessionRequest request, ClaimsPrincipal user,

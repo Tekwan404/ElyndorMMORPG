@@ -209,6 +209,64 @@ test('alchemy workshop crafts existing potions on a phone', async ({ page }) => 
   await expect(recipe).toContainText('Лесная мята: 0 / 2')
 })
 
+for (const { profession, professionName, outputName } of [
+  { profession: 'ALCHEMY', professionName: 'Алхимия', outputName: 'Малое зелье исцеления' },
+  { profession: 'LEATHERWORKING', professionName: 'Кожевничество', outputName: 'Кожаный капюшон' },
+]) {
+  test(`${profession} scroll can be studied and crafted on a phone`, async ({ page }) => {
+    test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses deterministic scroll and inventory inputs.')
+    const inventory = [
+      { id: 'scroll', definitionId: 'RECIPE_SCROLL', name: 'Свиток рецепта', type: 'Recipe', rarity: 'Uncommon', quantity: 1, isLocked: false, equippedSlot: null, slot: null },
+      { id: 'material', definitionId: 'MATERIAL', name: 'Материал', type: 'Material', rarity: 'Common', quantity: 4, isLocked: false, equippedSlot: null, slot: null },
+    ]
+    await installMockApiUnlessReal(page, inventory)
+    const recipe = { id: 'SCROLL_RECIPE', name: outputName,
+      professionId: profession, requiredSkill: 1, skillUpUntil: 16, outputItemId: 'OUTPUT', outputQuantity: 1,
+      requiredLocationId: 'STARTER_TOWN', ingredients: [{ itemId: 'MATERIAL', quantity: 4 }],
+      isLearned: false, learningScrollItemId: 'RECIPE_SCROLL', learningScrollName: 'Свиток рецепта' }
+    const state = { learned: [{ id: profession, name: professionName, category: 'Production', skill: 1, maxSkill: 300 }],
+      available: [{ id: profession, name: professionName, category: 'Production', maxSkill: 300 }],
+      recipes: [recipe], skinnableCorpses: [], materials: [{ id: 'MATERIAL', name: 'Материал' }] }
+    await page.route('**/api/v1/professions/', route => route.fulfill({ json: state }))
+    await page.route('**/api/v1/professions/study', route => {
+      const intent = route.request().postDataJSON()
+      expect(Object.keys(intent).sort()).toEqual(['mutationId', 'recipeId'])
+      expect(intent.recipeId).toBe(recipe.id)
+      recipe.isLearned = true
+      inventory[0]!.quantity = 0
+      return route.fulfill({ json: { isSuccess: true, state, quantity: 0, skillIncreased: false } })
+    })
+    await page.route('**/api/v1/professions/craft', route => {
+      expect(recipe.isLearned).toBe(true)
+      expect(route.request().postDataJSON().recipeId).toBe(recipe.id)
+      inventory[1]!.quantity = 0
+      return route.fulfill({ json: { isSuccess: true, state, itemId: 'OUTPUT', quantity: 1, skillIncreased: false } })
+    })
+    await page.setViewportSize({ width: 320, height: 568 })
+    await page.goto('/')
+    await page.getByLabel('Имя').fill('ScrollArtisan')
+    await page.getByLabel('Лучник').check()
+    await page.getByRole('button', { name: 'Войти в мир' }).click()
+    await page.locator('[data-city-marker="craft"]').click()
+    await page.locator('[data-city-professions]').click()
+    const row = page.locator('[data-profession-recipe="SCROLL_RECIPE"]')
+    await expect(row.getByRole('button', { name: 'Создать', exact: true })).toBeDisabled()
+    await row.getByRole('button', { name: 'Изучить рецепт' }).click()
+    await expect(row).toContainText('Рецепт изучен')
+    await expect(row.getByRole('button', { name: 'Изучить рецепт' })).toHaveCount(0)
+    await row.scrollIntoViewIfNeeded()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320)
+    await page.screenshot({ path: `../../output/playwright/recipe-scroll-${profession}-320.png` })
+    await row.getByRole('button', { name: 'Создать', exact: true }).click()
+    await expect(page.locator('.profession-message--success')).toContainText('Создано')
+    await expect(row).toContainText('Материал: 0 / 4')
+    await page.reload()
+    await page.locator('[data-city-marker="craft"]').click()
+    await page.locator('[data-city-professions]').click()
+    await expect(row).toContainText('Рецепт изучен')
+  })
+}
+
 test('city signs remain readable and reachable across phone sizes', async ({ page }) => {
   test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Visual layout uses deterministic local content.')
   await installMockApiUnlessReal(page)

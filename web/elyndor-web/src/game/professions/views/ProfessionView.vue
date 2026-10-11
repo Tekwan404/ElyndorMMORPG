@@ -6,12 +6,17 @@ import { locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UILoadingState } from '@/ui/components'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
-import { recipeBlockReason, usableMaterialQuantities } from '../professionWorkshop'
+import {
+  recipeBlockReason,
+  studyRecipeBlockReason,
+  usableMaterialQuantities,
+} from '../professionWorkshop'
 import {
   craftProfessionRecipe,
   getProfessionState,
   learnProfession,
   forgetProfession,
+  studyProfessionRecipe,
   type ProfessionMutationResult,
   type ProfessionRecipeState,
   type ProfessionStateSnapshot,
@@ -140,6 +145,24 @@ async function forget(id: string): Promise<void> {
   )
 }
 
+function studyBlockReason(recipe: ProfessionRecipeState): string | null {
+  return studyRecipeBlockReason(
+    recipe,
+    state.value?.learned.find((item) => item.id === recipe.professionId)?.skill ?? null,
+    currentLocationId.value,
+    inventoryQuantities.value,
+  )
+}
+
+async function study(recipe: ProfessionRecipeState): Promise<void> {
+  await mutate(
+    `study:${recipe.id}`,
+    () => studyProfessionRecipe(recipe.id),
+    () => `Изучен рецепт: ${recipe.name}. Свиток израсходован.`,
+    true,
+  )
+}
+
 async function craft(recipe: ProfessionRecipeState): Promise<void> {
   await mutate(
     `craft:${recipe.id}`,
@@ -241,6 +264,11 @@ function errorMessage(caught: unknown): string {
         skinning_corpse_expired: 'Время для снятия шкуры истекло.',
         skinning_corpse_already_skinned: 'Шкура с этой туши уже снята.',
         profession_skill_too_low: 'Навык профессии пока слишком низкий.',
+        profession_recipe_not_learned: 'Сначала изучите рецепт по свитку.',
+        profession_recipe_already_learned: 'Рецепт уже изучен.',
+        profession_recipe_scroll_missing: 'Нужен незапертый свиток рецепта в инвентаре.',
+        combat_active: 'Сначала завершите бой.',
+        resource_travelling: 'Сначала завершите переход.',
         profession_wrong_workshop: 'Для изготовления нужна городская мастерская.',
         profession_missing_ingredients: 'Не хватает материалов.',
         inventory_full: 'В инвентаре нет свободного места.',
@@ -488,7 +516,26 @@ onMounted(load)
               </li>
             </ul>
             <span v-if="blockReason(recipe)" class="recipe-blocked">{{ blockReason(recipe) }}</span>
+            <template v-if="recipe.learningScrollItemId">
+              <span
+                >{{ recipe.isLearned === false ? 'Не изучен' : 'Рецепт изучен' }} ·
+                {{ recipe.learningScrollName }}</span
+              >
+              <span
+                v-if="recipe.isLearned === false && studyBlockReason(recipe)"
+                class="recipe-blocked"
+                >{{ studyBlockReason(recipe) }}</span
+              >
+            </template>
           </div>
+          <UIButton
+            v-if="recipe.isLearned === false"
+            :data-study-recipe="recipe.id"
+            :disabled="studyBlockReason(recipe) !== null || pendingKey !== null"
+            :loading="pendingKey === `study:${recipe.id}`"
+            @click="study(recipe)"
+            >Изучить рецепт</UIButton
+          >
           <UIButton
             :disabled="!canCraft(recipe) || pendingKey !== null"
             :loading="pendingKey === `craft:${recipe.id}`"
@@ -500,8 +547,9 @@ onMounted(load)
           В этой категории пока нет рецептов.
         </p>
         <p class="profession-empty">
-          Для изготовления учитываются только незапертые материалы в инвентаре. Новые рецепты
-          открываются навыком автоматически.
+          Для изготовления учитываются только незапертые материалы в инвентаре. Базовые рецепты
+          доступны по навыку; особые рецепты изучаются по свиткам из добычи. При отказе от профессии
+          изученные рецепты теряются.
         </p>
       </section>
 

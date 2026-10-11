@@ -33,6 +33,7 @@ const rarity = computed<Rarity | undefined>(() => {
 })
 const fallbackGlyph = computed<GlyphName>(() => {
   if (props.type === 'SpatialArtifact') return 'ring'
+  if (props.type === 'Recipe') return 'scroll'
   if (props.type === 'Material') return 'ore'
   if (props.type === 'Consumable') return 'potion'
   if (props.equipmentSlot === 'MainHand') return 'sword'
