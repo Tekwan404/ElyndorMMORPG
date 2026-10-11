@@ -115,6 +115,7 @@ public static class DependencyInjection
             .ValidateOnStart();
         builder.Services.AddHostedService<CommerceExpiryWorker>();
         builder.Services.AddScoped<ProfessionService>();
+        builder.Services.AddScoped<ResourceGatheringService>();
         builder.Services.AddScoped<ProfessionCorpseService>();
         builder.Services.AddScoped<ContentRevisionStore>();
         builder.Services.AddScoped<ContentRevisionImporter>();

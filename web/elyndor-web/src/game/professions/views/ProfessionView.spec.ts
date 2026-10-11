@@ -7,6 +7,7 @@ import ProfessionView from './ProfessionView.vue'
 vi.mock('../professionApi', () => ({
   getProfessionState: vi.fn<typeof api.getProfessionState>(),
   learnProfession: vi.fn<typeof api.learnProfession>(),
+  forgetProfession: vi.fn<typeof api.forgetProfession>(),
   craftProfessionRecipe: vi.fn<typeof api.craftProfessionRecipe>(),
 }))
 vi.mock('@/stores/gameSession', () => ({ useGameSessionStore: () => ({ snapshot: null }) }))
@@ -18,9 +19,65 @@ async function open() {
   return wrapper
 }
 describe('ProfessionView mutations', () => {
+  it('opens the authored alchemy workshop and offers its gathering partner', async () => {
+    vi.mocked(api.getProfessionState).mockResolvedValue({
+      ...state,
+      maxPrimaryProfessions: 2,
+      available: [
+        { id: 'HERBALISM', name: 'Травничество', category: 'Gathering', maxSkill: 300 },
+        {
+          id: 'ALCHEMY',
+          name: 'Алхимия',
+          category: 'Production',
+          maxSkill: 300,
+          relatedProfessionId: 'HERBALISM',
+        },
+        {
+          id: 'LEATHERWORKING',
+          name: 'Кожевничество',
+          category: 'Production',
+          maxSkill: 300,
+          relatedProfessionId: 'SKINNING',
+        },
+      ],
+    })
+    vi.mocked(api.learnProfession).mockResolvedValue({
+      isSuccess: true,
+      errorCode: null,
+      state: null,
+      itemId: null,
+      quantity: 0,
+      skillIncreased: false,
+      replayed: false,
+    })
+    const wrapper = await open()
+    await wrapper.get('[data-production="ALCHEMY"]').trigger('click')
+    expect(wrapper.text()).toContain('Алхимическая лаборатория')
+    expect(wrapper.text()).toContain('Травничество')
+    await wrapper.get('[data-learn-profession="HERBALISM"]').trigger('click')
+    await flushPromises()
+    expect(api.learnProfession).toHaveBeenCalledWith('HERBALISM')
+    wrapper.unmount()
+  })
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(api.getProfessionState).mockResolvedValue(state)
+  })
+  it('requires explicit confirmation before losing profession skill', async () => {
+    vi.mocked(api.getProfessionState).mockResolvedValue({ ...state, learned: [
+      { id: 'SKINNING', name: 'Снятие шкур', category: 'Gathering', skill: 42, maxSkill: 300 },
+    ] })
+    vi.mocked(api.forgetProfession).mockResolvedValue({ isSuccess: true, errorCode: null,
+      state, itemId: null, quantity: 0, skillIncreased: false, replayed: false })
+    const wrapper = await open()
+    await wrapper.get('[data-forget-profession="SKINNING"]').trigger('click')
+    expect(api.forgetProfession).not.toHaveBeenCalled()
+    expect(wrapper.text()).toContain('Восстановить его нельзя')
+    await wrapper.get('[data-confirm-forget="SKINNING"]').trigger('click')
+    await flushPromises()
+    expect(api.forgetProfession).toHaveBeenCalledWith('SKINNING')
+    expect(wrapper.text()).toContain('При повторном изучении навык начнётся с 1')
+    wrapper.unmount()
   })
   it('does not promise another location after the highest available gathering step', async () => {
     vi.mocked(api.getProfessionState).mockResolvedValue({

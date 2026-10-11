@@ -7,6 +7,7 @@ export interface ProfessionStateItem {
   category: string | number
   skill: number
   maxSkill: number
+  relatedProfessionId?: string | null
 }
 
 export interface SkinnableCorpseState {
@@ -42,6 +43,8 @@ export interface ProfessionRecipeState {
 }
 
 export interface ProfessionStateSnapshot {
+  available?: Omit<ProfessionStateItem, 'skill'>[]
+  maxPrimaryProfessions?: number
   learned: ProfessionStateItem[]
   skinnableCorpses: SkinnableCorpseState[]
   recipes: ProfessionRecipeState[]
@@ -54,6 +57,7 @@ export interface ProfessionStateSnapshot {
     locationName: string
     requiredSkill: number
     skillUpUntil?: number
+    professionId?: string | null
   }[]
 }
 
@@ -69,6 +73,24 @@ export interface ProfessionMutationResult {
 
 export async function getProfessionState(): Promise<ProfessionStateSnapshot> {
   return await apiClient.request<ProfessionStateSnapshot>('/api/v1/professions/')
+}
+
+export async function gatherResource(nodeId: string): Promise<ProfessionMutationResult> {
+  return await runReplaySafeGameMutation<ProfessionMutationResult>({
+    key: `profession:gather:${nodeId}`,
+    path: '/api/v1/professions/gather',
+    idField: 'mutationId',
+    intent: { nodeId },
+  })
+}
+
+export async function forgetProfession(professionId: string): Promise<ProfessionMutationResult> {
+  return await runReplaySafeGameMutation<ProfessionMutationResult>({
+    key: `profession:forget:${professionId}`,
+    path: '/api/v1/professions/forget',
+    idField: 'mutationId',
+    intent: { professionId },
+  })
 }
 
 export async function learnProfession(professionId: string): Promise<ProfessionMutationResult> {

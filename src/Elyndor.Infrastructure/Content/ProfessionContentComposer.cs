@@ -47,7 +47,9 @@ internal static class ProfessionContentComposer
                 ProfessionRecipes = ContentCompositionRules.MergeOptionalByKey(
                     package.ProfessionRecipes,
                     fragment.ProfessionRecipes,
-                    item => item.Id)
+                    item => item.Id),
+                ResourceSources = ContentCompositionRules.MergeOptionalByKey(
+                    package.ResourceSources, fragment.ResourceSources, item => item.Id)
             };
         }
 
@@ -60,5 +62,6 @@ internal static class ProfessionContentComposer
         DateTimeOffset? PublishedAtUtc = null,
         IReadOnlyList<ProfessionDefinition>? Professions = null,
         IReadOnlyList<SkinningSourceDefinition>? SkinningSources = null,
-        IReadOnlyList<ProfessionRecipeDefinition>? ProfessionRecipes = null);
+        IReadOnlyList<ProfessionRecipeDefinition>? ProfessionRecipes = null,
+        IReadOnlyList<ResourceSourceDefinition>? ResourceSources = null);
 }

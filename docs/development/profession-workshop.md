@@ -1,6 +1,6 @@
-# Skinning and leatherworking workshop
+# Profession workshops
 
-The production slice contains Skinning and Leatherworking, not the three proposed professions in the original crafting foundation. Skill capacity remains 300; current active gathering and processing steps are:
+The production slice contains Skinning, Leatherworking, Herbalism and Alchemy. Skill capacity remains 300; current active gathering and processing steps are:
 
 | Location | Practice range | Entry skill | Next-step skill | Hide |
 | --- | --- | --- | --- | --- |
@@ -26,4 +26,14 @@ Crafting still uses the existing serializable transaction and mutation fingerpri
 
 Regression coverage checks live-source reachability from skill 1, uniform location steps, ordinary equipment outputs for processed tiers, canonical Russian names, protected ingredient availability, disabled reasons, recipe filters and the highest-step message. PostgreSQL coverage verifies a thick-leather craft and replay; mobile Playwright covers city entry, processing, resource refresh and restored profession state.
 
-New professions and further gathering tiers are separate future slices. Raising current gathering/recipe ceilings to 300 without new meaningful sources and products is not part of this release.
+## Herbalism and alchemy
+
+Herbalism and Alchemy extend the same profession service and city workshop. Their active skill steps are 1–15, 16–30 and 31–60, with capacity 300. Whispering Forest has forest mint and silverleaf, Flower Meadow has dewy blossom and honey grass, and Deep Forest has shadow moss and hushroot. Each herb has three shared collection points. Existing profession progress is preserved; the two-profession limit remains unchanged.
+
+The location scene exposes resource markers from composed `resourceSources` content. `POST /api/v1/professions/gather` accepts only a node ID and mutation ID. PostgreSQL stores global availability and durable harvest receipts. Serializable transactions lock the character and node, validate location, travel, AFK, skill and capacity, then atomically grant material, increase skill and set a 30-second respawn. The endpoint uses the existing combat operation guard. Competing players cannot harvest one spawn twice; replay after restart or respawn returns the original result. Inventory-full failures leave availability and skill unchanged.
+
+Alchemy offers twelve recipes across the three steps, using ordinary healing, mana, focus and rage potions with their existing effects and cooldowns. Later recipes yield multiple small utility potions; stronger healing potions retain existing character-level requirements. No new consumable or combat engine is introduced. Herbs and alchemy skill progression use the injectable server RNG; mutation IDs cannot select their rolls. Legacy skinning/leatherworking randomness is unchanged.
+
+Migration `AddResourceGathering` adds only node availability and receipt tables. Existing characters, inventory and professions are not rewritten. The durable receipt table grows with successful collections; a future retention policy must preserve replay protection before deleting receipts. Higher skill content beyond 61 and rare herbs remain separate work.
+
+The player may explicitly forget a profession in the city workshop after a warning and confirmation. `POST /api/v1/professions/forget` deletes its learned skill in an idempotent transaction; learning again starts at 1. Inventory and previous mutation/harvest receipts remain intact. Replaying an old forget request cannot delete a subsequently relearned profession. Forgetting uses the same account advisory lock as learning, plus the character row lock and combat guard.

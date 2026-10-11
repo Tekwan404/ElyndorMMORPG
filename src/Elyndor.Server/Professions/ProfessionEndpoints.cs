@@ -3,6 +3,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Professions;
+using Elyndor.Infrastructure.Characters;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Server.Professions;
@@ -19,6 +20,8 @@ public static class ProfessionEndpoints
         group.MapPost("/learn", LearnAsync);
         group.MapPost("/skinning", SkinAsync);
         group.MapPost("/craft", CraftAsync);
+        group.MapPost("/gather", GatherAsync);
+        group.MapPost("/forget", ForgetAsync);
         return endpoints;
     }
 
@@ -98,14 +101,35 @@ public static class ProfessionEndpoints
         return ToResult(result, httpContext);
     }
 
+    private static async Task<IResult> ForgetAsync(LearnProfessionRequest request, ClaimsPrincipal user,
+        HttpContext httpContext, ProfessionService service, CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(accountId, async () =>
+            ToResult(await service.ForgetAsync(accountId, request.ProfessionId, request.MutationId, cancellationToken), httpContext),
+            () => Problem("combat_active", StatusCodes.Status409Conflict, httpContext), cancellationToken);
+    }
+
+    private static async Task<IResult> GatherAsync(GatherResourceRequest request, ClaimsPrincipal user,
+        HttpContext httpContext, ResourceGatheringService service, CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(accountId, async () =>
+            ToResult(await service.GatherAsync(accountId, request.NodeId, request.MutationId, cancellationToken), httpContext),
+            () => Problem("combat_active", StatusCodes.Status409Conflict, httpContext),
+            cancellationToken);
+    }
+
     private static IResult ToResult(ProfessionMutationResult result, HttpContext httpContext)
     {
         if (result.IsSuccess)
             return Results.Ok(result);
         int status = result.ErrorCode switch
         {
-            ProfessionErrorCodes.CharacterNotFound or ProfessionErrorCodes.CorpseNotFound or ProfessionErrorCodes.RecipeNotFound => StatusCodes.Status404NotFound,
-            ProfessionErrorCodes.ProfessionAlreadyLearned or ProfessionErrorCodes.ProfessionLimitReached or ProfessionErrorCodes.CorpseAlreadySkinned or ProfessionErrorCodes.IdempotencyConflict => StatusCodes.Status409Conflict,
+            ProfessionErrorCodes.CharacterNotFound or ProfessionErrorCodes.CorpseNotFound or ProfessionErrorCodes.RecipeNotFound or "resource_not_found" => StatusCodes.Status404NotFound,
+            ProfessionErrorCodes.ProfessionAlreadyLearned or ProfessionErrorCodes.ProfessionLimitReached or ProfessionErrorCodes.CorpseAlreadySkinned or ProfessionErrorCodes.IdempotencyConflict or "resource_unavailable" or "resource_travelling" or "resource_afk_active" => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status422UnprocessableEntity
         };
         return Problem(result.ErrorCode ?? "profession_operation_failed", status, httpContext);
@@ -127,4 +151,5 @@ public static class ProfessionEndpoints
     public sealed record LearnProfessionRequest(string ProfessionId, Guid MutationId);
     public sealed record SkinCorpseRequest(Guid CombatSessionId, Guid EnemyActorId, Guid MutationId);
     public sealed record CraftProfessionRequest(string RecipeId, Guid MutationId);
+    public sealed record GatherResourceRequest(string NodeId, Guid MutationId);
 }

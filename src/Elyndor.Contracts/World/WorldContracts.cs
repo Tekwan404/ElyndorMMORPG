@@ -26,7 +26,11 @@ public sealed record WorldSceneObjectResponse(
     WorldLocationResidentResponse? Resident = null,
     bool IsRare = false,
     DateTimeOffset? AvailableUntilUtc = null,
-    string? QuestId = null);
+    string? QuestId = null,
+    WorldResourceResponse? Resource = null);
+
+public sealed record WorldResourceResponse(string NodeId, string ItemId, string ItemName, string? IconId,
+    int MinQuantity, int MaxQuantity, int RequiredSkill, int LearnedSkill, bool CanGather, DateTimeOffset AvailableAtUtc);
 
 public sealed record WorldLocationSceneResponse(
     string LocationId,

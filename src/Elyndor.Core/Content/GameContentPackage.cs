@@ -54,7 +54,8 @@ public sealed record GameContentPackage(
     IReadOnlyList<WorldBossRewardProfileDefinition>? WorldBossRewardProfiles = null,
     CombatBalanceProfile? CombatBalance = null,
     ProgressionBalanceProfile? ProgressionBalance = null,
-    IReadOnlyList<ItemSpecialEffectDefinition>? ItemSpecialEffects = null);
+    IReadOnlyList<ItemSpecialEffectDefinition>? ItemSpecialEffects = null,
+    IReadOnlyList<ResourceSourceDefinition>? ResourceSources = null);
 
 public sealed record AfkFarmRewardProfile(
     int ProcessingIntervalSeconds,

@@ -1863,6 +1863,57 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.ToTable("character_professions", "game");
                 });
 
+            modelBuilder.Entity("Elyndor.Core.Professions.ResourceGatheringReceipt", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MutationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("GatheredAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ItemId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("NodeId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("SkillIncreased")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("CharacterId", "MutationId");
+
+                    b.ToTable("resource_gathering_receipts", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_resource_gathering_quantity", "\"Quantity\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Professions.ResourceNodeState", b =>
+                {
+                    b.Property<string>("NodeId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("node_id");
+
+                    b.Property<DateTimeOffset>("AvailableAtUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("available_at_utc");
+
+                    b.HasKey("NodeId");
+
+                    b.ToTable("resource_nodes", "game");
+                });
+
             modelBuilder.Entity("Elyndor.Core.Professions.SkinnableCorpse", b =>
                 {
                     b.Property<Guid>("CharacterId")
@@ -3391,6 +3442,15 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("Elyndor.Core.Professions.CharacterProfession", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Elyndor.Core.Professions.ResourceGatheringReceipt", b =>
                 {
                     b.HasOne("Elyndor.Core.Characters.Character", null)
                         .WithMany()

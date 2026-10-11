@@ -9,6 +9,7 @@ using Elyndor.Core.Monsters;
 using Elyndor.Core.Progression;
 using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Characters;
+using Elyndor.Infrastructure.Professions;
 using Elyndor.Server.Items;
 
 namespace Elyndor.Server.World;
@@ -109,6 +110,7 @@ public static class WorldEndpoints
 
     private static async Task<IResult> GetSceneAsync(
         ClaimsPrincipal user, HttpContext httpContext, WorldEncounterService encounterService,
+        ResourceGatheringService gatheringService,
         CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId))
@@ -117,7 +119,8 @@ public static class WorldEndpoints
         (WorldSceneSnapshot? scene, string? error) = await encounterService.GetSceneAsync(accountId, cancellationToken);
         return scene is null
             ? EncounterProblem(httpContext, error)
-            : Results.Ok(WorldSceneMapper.ToResponse(scene));
+              : Results.Ok(WorldSceneMapper.ToResponse(scene,
+                  await gatheringService.GetSceneAsync(scene.CharacterId, scene.Location.Id, cancellationToken)));
     }
 
     private static async Task<IResult> SelectEncounterAsync(

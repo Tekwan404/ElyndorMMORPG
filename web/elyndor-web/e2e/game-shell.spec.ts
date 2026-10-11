@@ -69,6 +69,46 @@ test('living location markers and interaction panels fit phone screens', async (
   expect(errors).toEqual([])
 })
 
+test('herb gathering uses a compact scene panel and server availability', async ({ page }) => {
+  test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses deterministic resource content for layout coverage.')
+  await installMockApiUnlessReal(page)
+  let gathered = false
+  await page.route('**/api/v1/world/scene', route => route.fulfill({ json: {
+    locationId: 'WHISPERING_FOREST', contentVersion: '0.52.0', state: 'Calm',
+    serverTimeUtc: new Date().toISOString(), nextChangeAtUtc: null,
+    objects: [{ id: 'FOREST_MINT_1', kind: 'Resource', displayName: 'Лесная мята',
+      description: 'Душистое растение у лесной тропы.', x: 50, y: 45, isRare: false,
+      resource: { nodeId: 'FOREST_MINT_1', itemId: 'FOREST_MINT', itemName: 'Лесная мята',
+        iconId: 'materials_for_professions/gathering_early/gathering_early_01_forest_mint',
+        minQuantity: 1, maxQuantity: 2, requiredSkill: 1, learnedSkill: 1,
+        canGather: !gathered, availableAtUtc: gathered ? new Date(Date.now() + 30_000).toISOString() : '1970-01-01T00:00:00Z' } }],
+  } }))
+  await page.route('**/api/v1/professions/gather', route => {
+    const intent = route.request().postDataJSON() as { nodeId: string; mutationId: string }
+    expect(Object.keys(intent).sort()).toEqual(['mutationId', 'nodeId'])
+    expect(intent.nodeId).toBe('FOREST_MINT_1')
+    expect(intent.mutationId).toMatch(/^[0-9a-f-]{36}$/i)
+    gathered = true
+    return route.fulfill({ json: { isSuccess: true, itemId: 'FOREST_MINT', quantity: 2, skillIncreased: true } })
+  })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await page.getByLabel('Имя').fill('Herbalist')
+  await page.getByLabel('Лучник').check()
+  await page.getByRole('button', { name: 'Войти в мир' }).click()
+  await page.locator('[data-nav="world"]').click()
+  await page.locator('[data-location-id="WHISPERING_FOREST"]').click()
+  await page.locator('[data-map-travel]').click()
+  await page.locator('[data-nav="location"]').click()
+  await page.locator('[data-scene-marker="FOREST_MINT_1"]').click()
+  await expect(page.locator('[data-scene-gather]')).toBeEnabled()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
+  await page.screenshot({ path: '../../output/playwright/herbalism-390.png' })
+  await page.locator('[data-scene-gather]').click()
+  await expect(page.locator('.location-scene__notice')).toContainText('Лесная мята')
+  await expect(page.locator('[data-scene-gather]')).toBeDisabled()
+})
+
 test('city workshop explains materials, crafts and restores the profession state', async ({ page }) => {
   test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses deterministic profession content.')
   const materials = [{ id: 'hide-stack', definitionId: 'ROUGH_HIDE', name: 'Грубая шкура',
@@ -123,6 +163,50 @@ test('city workshop explains materials, crafts and restores the profession state
   await page.locator('[data-city-marker="craft"]').click()
   await page.locator('[data-city-professions]').click()
   await expect(page.locator('.profession-card').filter({ hasText: 'Кожевничество' })).toContainText('Навык 2 / 300')
+})
+
+test('alchemy workshop crafts existing potions on a phone', async ({ page }) => {
+  test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses deterministic workshop content for layout coverage.')
+  const herbs = ['FOREST_MINT', 'SILVERLEAF'].map((id, index) => ({ id: `herb-${index}`, definitionId: id,
+    name: index === 0 ? 'Лесная мята' : 'Сребролист', type: 'Material', rarity: 'Common',
+    quantity: 2, isLocked: false, equippedSlot: null, slot: null }))
+  await installMockApiUnlessReal(page, herbs)
+  const available = [
+    { id: 'LEATHERWORKING', name: 'Кожевничество', category: 'Production', maxSkill: 300, relatedProfessionId: 'SKINNING' },
+    { id: 'HERBALISM', name: 'Травничество', category: 'Gathering', maxSkill: 300 },
+    { id: 'ALCHEMY', name: 'Алхимия', category: 'Production', maxSkill: 300, relatedProfessionId: 'HERBALISM' },
+  ]
+  const state = { available, maxPrimaryProfessions: 2,
+    learned: available.filter(item => item.id !== 'LEATHERWORKING').map(item => ({ ...item, skill: 1 })),
+    skinnableCorpses: [], materials: herbs.map(item => ({ id: item.definitionId, name: item.name })),
+    recipes: [{ id: 'ALCHEMY_T1_SMALL_HEALING_POTION', name: 'Малое зелье лечения', professionId: 'ALCHEMY',
+      requiredSkill: 1, skillUpUntil: 16, outputItemId: 'SMALL_HEALING_POTION', outputQuantity: 1,
+      requiredLocationId: 'STARTER_TOWN', ingredients: herbs.map(item => ({ itemId: item.definitionId, quantity: 2 })) }],
+  }
+  await page.route('**/api/v1/professions/', route => route.fulfill({ json: state }))
+  await page.route('**/api/v1/professions/craft', route => {
+    expect(route.request().postDataJSON().recipeId).toBe('ALCHEMY_T1_SMALL_HEALING_POTION')
+    herbs.forEach(item => { item.quantity = 0 })
+    state.learned[1]!.skill = 2
+    return route.fulfill({ json: { isSuccess: true, quantity: 1, skillIncreased: true, state } })
+  })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await page.getByLabel('Имя').fill('Alchemist')
+  await page.getByLabel('Лучник').check()
+  await page.getByRole('button', { name: 'Войти в мир' }).click()
+  await page.locator('[data-city-marker="craft"]').click()
+  await page.locator('[data-city-professions]').click()
+  await page.locator('[data-production="ALCHEMY"]').click()
+  await expect(page.getByRole('heading', { name: 'Алхимическая лаборатория' })).toBeVisible()
+  const recipe = page.locator('[data-profession-recipe="ALCHEMY_T1_SMALL_HEALING_POTION"]')
+  await expect(recipe).toContainText('Лесная мята: 2 / 2')
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
+  await recipe.scrollIntoViewIfNeeded()
+  await page.screenshot({ path: '../../output/playwright/alchemy-390.png' })
+  await recipe.getByRole('button', { name: 'Создать' }).click()
+  await expect(page.locator('.profession-message--success')).toContainText('навык +1')
+  await expect(recipe).toContainText('Лесная мята: 0 / 2')
 })
 
 test('city signs remain readable and reachable across phone sizes', async ({ page }) => {
