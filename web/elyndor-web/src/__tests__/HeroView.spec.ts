@@ -80,6 +80,25 @@ describe('HeroView', () => {
     expect(wrapper.find('[data-companion-view]').exists()).toBe(true)
   })
 
+  it.each(['MAGE', 'WARRIOR', 'PALADIN'])('hides the companion tab for %s', (classId) => {
+    const session = useGameSessionStore()
+    session.snapshot = snapshot([], classId)
+
+    const wrapper = mount(HeroView, {
+      global: {
+        stubs: {
+          CharacterOverviewView: true,
+          CharacterStatsView: true,
+          InventoryView: true,
+          TalentTreeView: true,
+        },
+      },
+    })
+
+    expect(wrapper.find('[data-hero-tab="companion"]').exists()).toBe(false)
+    expect(wrapper.find('[data-companion-view]').exists()).toBe(false)
+  })
+
   it('opens the skins tab from the hero screen', async () => {
     const session = useGameSessionStore()
     session.snapshot = snapshot([], 'MAGE')
