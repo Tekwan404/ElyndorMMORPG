@@ -3,7 +3,8 @@ namespace Elyndor.Core.World;
 public sealed record LocationEncounterDefinition(
     string MonsterId,
     decimal Weight = 1,
-    EncounterAvailabilityDefinition? Availability = null);
+    EncounterAvailabilityDefinition? Availability = null,
+    int RespawnSeconds = 0);
 
 public sealed record LocationDefinition(
     string Id,

@@ -27,9 +27,12 @@ internal static class WorldSceneMapper
                 if (!LocationEncounterAvailability.IsAvailable(encounter, scene.ServerTimeUtc)
                     || !residents.TryGetValue(encounter.MonsterId, out var resident))
                     continue;
+                DateTimeOffset? respawn = scene.EliteRespawns is not null
+                    && scene.EliteRespawns.TryGetValue(encounter.MonsterId, out var deadline) ? deadline : null;
+                if (respawn is not null && (nextChange is null || respawn < nextChange)) nextChange = respawn;
                 objects.Add(new WorldSceneObjectResponse($"ENEMY_{resident.MonsterId}", "Enemy",
                     resident.DisplayName, resident.Description, 0, 0, resident,
-                    encounter.Availability is not null, encounter.Availability is null ? null : change));
+                    encounter.Availability is not null, encounter.Availability is null ? null : change, RespawnAtUtc: respawn));
             }
         }
 
@@ -51,7 +54,7 @@ internal static class WorldSceneMapper
 
         // Existing quest definitions own NPC names, offers and game rules.
         foreach (var quest in (scene.Content.Package.Quests ?? [])
-            .Where(quest => quest.OfferLocationId == location.Id)
+            .Where(quest => quest.OfferLocationId == location.Id && scene.CompletedQuestIds?.Contains(quest.Id) != true)
             .OrderBy(quest => quest.RequiredLevel).ThenBy(quest => quest.Id, StringComparer.Ordinal))
             objects.Add(new WorldSceneObjectResponse($"QUEST_{quest.Id}", "Npc",
                 quest.IssuerName ?? quest.DisplayName, quest.Description, 0, 0, QuestId: quest.Id));

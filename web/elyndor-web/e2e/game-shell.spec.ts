@@ -11,6 +11,7 @@ test('living location markers and interaction panels fit phone screens', async (
     description: 'Хищник охраняет лесную тропу.', x: 18 + index % 8 % 3 * 32,
     y: 30 + Math.floor(index % 8 / 3) * 23, isRare: index === 1,
     availableUntilUtc: null, questId: null,
+    respawnAtUtc: index === 1 ? '2026-10-11T00:05:00Z' : null,
     resident: { monsterId: `WOLF_${index}`, displayName: 'Лесной волк', level: 3,
       rank: index === 1 ? 'Elite' : 'Normal', artId: 'wolf', description: 'Хищник.',
       xpReward: 123, goldRewardMin: 7, goldRewardMax: 10,
@@ -62,6 +63,12 @@ test('living location markers and interaction panels fit phone screens', async (
     await expect(page.locator('[data-scene-attack]')).toBeVisible()
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(viewport.width)
     await page.screenshot({ path: `../../output/playwright/selected-enemy-${viewport.width}.png` })
+    await page.getByRole('button', { name: 'Закрыть взаимодействие' }).click()
+    await page.locator('[data-scene-marker="ENEMY_1"]').click()
+    await expect(page.locator('[data-scene-attack]')).toBeDisabled()
+    await expect(page.locator('[data-scene-panel]')).toContainText('общий таймер для всех игроков')
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(viewport.width)
+    await page.screenshot({ path: `../../output/playwright/elite-respawn-${viewport.width}.png` })
     await page.getByRole('button', { name: 'Закрыть взаимодействие' }).click()
   }
   await page.locator('[data-scene-next]').click()

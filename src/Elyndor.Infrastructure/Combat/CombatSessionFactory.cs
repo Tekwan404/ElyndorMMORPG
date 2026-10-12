@@ -35,7 +35,8 @@ public sealed class CombatSessionFactory(
     TimeProvider timeProvider,
     CharacterAbilityCooldownStore? cooldownStore = null,
     PartyService? partyService = null,
-    CharacterBuildSnapshotService? buildSnapshots = null)
+    CharacterBuildSnapshotService? buildSnapshots = null,
+    WorldEncounterService? worldEncounters = null)
 {
     public CombatSessionFactory(
         BootstrapService bootstrapService,
@@ -132,6 +133,12 @@ public sealed class CombatSessionFactory(
         {
             return Failure(CombatErrorCodes.InvalidLocation, character.Id);
         }
+
+        if (!isTraining && !allowUnlistedEncounter && worldEncounters is not null
+            && currentLocation.Encounters?.Any(item => item.MonsterId == monster.Id) == true
+            && !indexes.DungeonsById.Values.Any(dungeon => dungeon.Id == currentLocation.Id || dungeon.EntryLocationId == currentLocation.Id)
+            && !await worldEncounters.IsTargetAvailableAsync(currentLocation.Id, monster.Id, cancellationToken))
+            return Failure(WorldEncounterErrorCodes.TargetUnavailable, character.Id);
 
         if (character.Vitals.CurrentHp <= 0)
             return Failure(CombatErrorCodes.InvalidLocation, character.Id);

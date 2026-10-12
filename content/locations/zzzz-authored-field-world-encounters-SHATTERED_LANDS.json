@@ -10,6 +10,7 @@
     },
     {
       "monsterId": "SHATTERED_LANDS_ZERKALNYI_CHASOVOI_L31",
+      "respawnSeconds": 300,
       "weight": 0.28
     },
     {
@@ -22,6 +23,7 @@
     },
     {
       "monsterId": "SHATTERED_LANDS_KHRANITEL_RAZLOMA_L32",
+      "respawnSeconds": 300,
       "weight": 0.18
     },
     {

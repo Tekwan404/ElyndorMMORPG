@@ -186,6 +186,106 @@ public sealed class LocationSceneTests(PostgresFixture postgres) : IAsyncLifetim
         await combat.LeaveAsync(bootstrap.AccountId, "scene-travel-cleanup", CancellationToken.None);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CompletedQuestWithoutModernStateDisappearsFromScene(bool legacyCompletion)
+    {
+        await using var factory = CreateFactory();
+        using var client = await CreatePlayerAsync(factory);
+        var bootstrap = (await client.GetFromJsonAsync<BootstrapResponse>("/api/v1/bootstrap"))!;
+        var before = (await client.GetFromJsonAsync<WorldLocationSceneResponse>("/api/v1/world/scene"))!;
+        var questId = before.Objects.First(item => item.QuestId is not null).QuestId!;
+        await using (var db = postgres.CreateDbContext())
+        {
+            if (legacyCompletion)
+                db.CharacterContractCompletions.Add(new CharacterContractCompletion(
+                    bootstrap.Character!.Id, questId, Wolf, Guid.CreateVersion7(), Now));
+            else
+                db.QuestRewardGrants.Add(new Elyndor.Core.Quests.QuestRewardGrant(
+                    bootstrap.Character!.Id, questId, Guid.CreateVersion7(), 0, 0, "[]", Now));
+            await db.SaveChangesAsync();
+        }
+        var after = (await client.GetFromJsonAsync<WorldLocationSceneResponse>("/api/v1/world/scene"))!;
+        Assert.DoesNotContain(after.Objects, item => item.QuestId == questId);
+    }
+
+    [Fact]
+    public async Task CompletedQuestDisappearsButReadyRewardRemainsInScene()
+    {
+        await using var factory = CreateFactory();
+        using var client = await CreatePlayerAsync(factory);
+        var bootstrap = (await client.GetFromJsonAsync<BootstrapResponse>("/api/v1/bootstrap"))!;
+        var before = (await client.GetFromJsonAsync<WorldLocationSceneResponse>("/api/v1/world/scene"))!;
+        var quests = before.Objects.Where(item => item.QuestId is not null).Take(2).ToArray();
+        Assert.Equal(2, quests.Length);
+        await using (var db = postgres.CreateDbContext())
+        {
+            var completed = new Elyndor.Core.Quests.CharacterQuestState(bootstrap.Character!.Id, quests[0].QuestId!, Now);
+            completed.MarkCompleted(Now);
+            var ready = new Elyndor.Core.Quests.CharacterQuestState(bootstrap.Character.Id, quests[1].QuestId!, Now);
+            ready.UpdateProgress("{}", true, Now);
+            db.CharacterQuestStates.AddRange(completed, ready);
+            await db.SaveChangesAsync();
+        }
+        var after = (await client.GetFromJsonAsync<WorldLocationSceneResponse>("/api/v1/world/scene"))!;
+        Assert.DoesNotContain(after.Objects, item => item.QuestId == quests[0].QuestId);
+        Assert.Contains(after.Objects, item => item.QuestId == quests[1].QuestId);
+    }
+
+    [Fact]
+    public async Task EliteVictoryStartsSharedFiveMinuteRespawnAndStaleEncounterCannotStart()
+    {
+        const string elite = "WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4";
+        var at = DateTimeOffset.FromUnixTimeSeconds(Now.ToUnixTimeSeconds() / 3600 * 3600 + 60);
+        await using var factory = CreateFactory(at);
+        using var first = await CreatePlayerAsync(factory);
+        using var second = await CreatePlayerAsync(factory, "OtherHunter");
+        var firstBootstrap = (await first.GetFromJsonAsync<BootstrapResponse>("/api/v1/bootstrap"))!;
+        var secondBootstrap = (await second.GetFromJsonAsync<BootstrapResponse>("/api/v1/bootstrap"))!;
+        var prepared = await first.PostAsJsonAsync("/api/v1/world/select-encounter", new SelectWorldEncounterRequest(Forest, elite));
+        prepared.EnsureSuccessStatusCode();
+        var encounter = (await prepared.Content.ReadFromJsonAsync<WorldEncounterResponse>())!;
+        await using (var db = postgres.CreateDbContext())
+        {
+            db.CombatRewardGrants.Add(new Elyndor.Core.Progression.CombatRewardGrant(Guid.NewGuid(), secondBootstrap.Character!.Id, elite, 0, 0, at));
+            await db.SaveChangesAsync();
+        }
+        var denied = await first.PostAsJsonAsync("/api/v1/world/select-encounter", new SelectWorldEncounterRequest(Forest, elite));
+        Assert.False(denied.IsSuccessStatusCode);
+        using (var scope = factory.Services.CreateScope())
+        {
+            var combat = scope.ServiceProvider.GetRequiredService<CombatApplicationService>();
+            var stale = await combat.StartAsync(firstBootstrap.AccountId, encounter.EncounterId, CancellationToken.None);
+            Assert.False(stale.Succeeded);
+            Assert.Equal(WorldEncounterErrorCodes.TargetUnavailable, stale.ErrorCode);
+        }
+        var sceneJson = await first.GetStringAsync("/api/v1/world/scene");
+        using var document = global::System.Text.Json.JsonDocument.Parse(sceneJson);
+        var marker = document.RootElement.GetProperty("objects").EnumerateArray().Single(item => item.GetProperty("id").GetString() == $"ENEMY_{elite}");
+        Assert.Equal(at.AddMinutes(5), marker.GetProperty("respawnAtUtc").GetDateTimeOffset());
+        await using (var restartedFactory = CreateFactory(at))
+        {
+            using var restarted = restartedFactory.CreateClient();
+            restarted.DefaultRequestHeaders.Authorization = first.DefaultRequestHeaders.Authorization;
+            Assert.False((await restarted.PostAsJsonAsync("/api/v1/world/select-encounter", new SelectWorldEncounterRequest(Forest, elite))).IsSuccessStatusCode);
+        }
+        ((SceneTimeProvider)factory.Services.GetRequiredService<TimeProvider>()).Now = at.AddMinutes(5);
+        Assert.True((await first.PostAsJsonAsync("/api/v1/world/select-encounter", new SelectWorldEncounterRequest(Forest, elite))).IsSuccessStatusCode);
+        Assert.True((await second.PostAsJsonAsync("/api/v1/world/select-encounter", new SelectWorldEncounterRequest(Forest, elite))).IsSuccessStatusCode);
+    }
+
+    [Fact]
+    public async Task EveryOpenWorldEliteHasFiveMinuteRespawnContent()
+    {
+        var content = await Elyndor.Infrastructure.Content.GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
+        var monsters = content.Monsters!.ToDictionary(item => item.Id);
+        var elites = content.Locations.Where(location => !(content.Dungeons ?? []).Any(dungeon => dungeon.Id == location.Id || dungeon.EntryLocationId == location.Id))
+            .SelectMany(location => location.Encounters ?? []).Where(encounter => monsters[encounter.MonsterId].Rank == Elyndor.Core.Monsters.MonsterRank.Elite).ToArray();
+        Assert.NotEmpty(elites);
+        Assert.All(elites, encounter => Assert.Equal(300, encounter.RespawnSeconds));
+    }
+
     private WebApplicationFactory<Program> CreateFactory(DateTimeOffset? at = null) =>
         new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
@@ -231,6 +331,7 @@ public sealed class LocationSceneTests(PostgresFixture postgres) : IAsyncLifetim
 
     private sealed class SceneTimeProvider(DateTimeOffset now) : TimeProvider
     {
-        public override DateTimeOffset GetUtcNow() => now;
+        public DateTimeOffset Now { get; set; } = now;
+        public override DateTimeOffset GetUtcNow() => Now;
     }
 }

@@ -26,6 +26,7 @@
     },
     {
       "monsterId": "ECLIPSE_OUTSKIRTS_CHASOVOI_UMBRY_L29",
+      "respawnSeconds": 300,
       "weight": 0.28
     }
   ]

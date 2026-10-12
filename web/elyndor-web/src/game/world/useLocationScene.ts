@@ -13,6 +13,10 @@ export function useLocationScene(locationId: Ref<string>, contentVersion: Ref<st
   let controller: AbortController | null = null
   let refreshTimer: ReturnType<typeof setTimeout> | null = null
   let disposed = false
+  let observedAt = performance.now()
+  const elapsed = ref(0)
+  let clockTimer: ReturnType<typeof setInterval> | null = null
+  const serverNow = computed(() => Date.parse(scene.value?.serverTimeUtc ?? '') + elapsed.value)
 
   const selected = computed(
     () => scene.value?.objects.find((object) => object.id === selectedId.value) ?? null,
@@ -38,6 +42,8 @@ export function useLocationScene(locationId: Ref<string>, contentVersion: Ref<st
       if (disposed || request !== generation) return
       if (result.locationId !== locationId.value || !Array.isArray(result.objects))
         throw new Error('Scene no longer matches the current location')
+      observedAt = performance.now()
+      elapsed.value = 0
       scene.value = result
       page.value = Math.min(page.value, pageCount.value - 1)
       if (!result.objects.some((object) => object.id === selectedId.value)) selectedId.value = null
@@ -85,6 +91,9 @@ export function useLocationScene(locationId: Ref<string>, contentVersion: Ref<st
     { immediate: true },
   )
   onMounted(() => {
+    clockTimer = setInterval(() => {
+      elapsed.value = performance.now() - observedAt
+    }, 1000)
     document.addEventListener('visibilitychange', onVisible)
     window.addEventListener('focus', onOnline)
     window.addEventListener('online', onOnline)
@@ -94,12 +103,14 @@ export function useLocationScene(locationId: Ref<string>, contentVersion: Ref<st
     generation++
     controller?.abort()
     if (refreshTimer) clearTimeout(refreshTimer)
+    if (clockTimer) clearInterval(clockTimer)
     document.removeEventListener('visibilitychange', onVisible)
     window.removeEventListener('focus', onOnline)
     window.removeEventListener('online', onOnline)
   })
   return {
     scene,
+    serverNow,
     selected,
     selectedId,
     page,

@@ -18,6 +18,7 @@
     },
     {
       "monsterId": "BLACKSTONE_HIGHLANDS_RUNNYI_GOLEM_L34",
+      "respawnSeconds": 300,
       "weight": 0.28
     },
     {

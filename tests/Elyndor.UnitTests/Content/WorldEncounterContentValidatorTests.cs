@@ -7,6 +7,24 @@ namespace Elyndor.UnitTests.Content;
 
 public sealed class WorldEncounterContentValidatorTests
 {
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(86401)]
+    public void ValidateRejectsInvalidEliteRespawnDuration(int seconds)
+    {
+        var package = Package(new LocationDefinition("FIELD", "Field", "ADVENTURE", 1, [],
+            [new LocationEncounterDefinition("ELITE", RespawnSeconds: seconds)]), Monster("ELITE") with { Rank = MonsterRank.Elite });
+        Assert.Contains(WorldEncounterContentValidator.Validate(package), error => error.Code == "INVALID_ENCOUNTER_RESPAWN");
+    }
+
+    [Fact]
+    public void ValidateRejectsRespawnOnOrdinaryMonster()
+    {
+        var package = Package(new LocationDefinition("FIELD", "Field", "ADVENTURE", 1, [],
+            [new LocationEncounterDefinition("WOLF", RespawnSeconds: 300)]), Monster("WOLF"));
+        Assert.Contains(WorldEncounterContentValidator.Validate(package), error => error.Code == "INVALID_ENCOUNTER_RESPAWN");
+    }
+
     [Fact]
     public void ValidateAcceptsNormalEncounterWithPresentation()
     {

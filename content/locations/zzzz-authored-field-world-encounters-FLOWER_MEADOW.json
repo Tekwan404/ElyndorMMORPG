@@ -26,6 +26,7 @@
     },
     {
       "monsterId": "FLOWER_MEADOW_MATKA_ROEVIKOV_L7",
+      "respawnSeconds": 300,
       "weight": 0.28,
       "availability": { "periodSeconds": 3600, "durationSeconds": 600, "offsetSeconds": 1200 }
     }

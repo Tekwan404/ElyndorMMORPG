@@ -26,10 +26,12 @@
     },
     {
       "monsterId": "OBSIDIAN_EDGE_MAGISTR_BASTIONA_L39",
+      "respawnSeconds": 300,
       "weight": 0.28
     },
     {
       "monsterId": "OBSIDIAN_EDGE_PREDVESTNIK_PERVOGO_STRAZHA_L39",
+      "respawnSeconds": 300,
       "weight": 0.18
     }
   ]

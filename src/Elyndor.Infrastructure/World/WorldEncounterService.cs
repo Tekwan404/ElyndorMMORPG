@@ -24,7 +24,9 @@ public sealed record WorldSceneSnapshot(
     Guid CharacterId,
     LocationDefinition Location,
     GameContentSnapshot Content,
-    DateTimeOffset ServerTimeUtc);
+    DateTimeOffset ServerTimeUtc,
+    IReadOnlySet<string>? CompletedQuestIds = null,
+    IReadOnlyDictionary<string, DateTimeOffset>? EliteRespawns = null);
 
 public sealed record WorldEncounterSnapshot(
     Guid EncounterId,
@@ -216,7 +218,51 @@ public sealed class WorldEncounterService(
         if (!content.Indexes.LocationsById.TryGetValue(characterLocation.LocationId, out var location))
             return (null, WorldEncounterErrorCodes.LocationUnavailable);
 
-        return (new WorldSceneSnapshot(character.Id, location, content, timeProvider.GetUtcNow()), null);
+        var localQuestIds = (content.Package.Quests ?? []).Where(quest => quest.OfferLocationId == location.Id)
+            .Select(quest => quest.Id).ToArray();
+        var completedQuests = await dbContext.CharacterQuestStates.AsNoTracking()
+            .Where(quest => quest.CharacterId == character.Id && quest.Status == Elyndor.Core.Quests.QuestStateStatuses.Completed
+                && localQuestIds.Contains(quest.QuestId))
+            .Select(quest => quest.QuestId)
+            .Union(dbContext.CharacterContractCompletions.AsNoTracking()
+                .Where(quest => quest.CharacterId == character.Id && localQuestIds.Contains(quest.ContractId))
+                .Select(quest => quest.ContractId))
+            .Union(dbContext.QuestRewardGrants.AsNoTracking()
+                .Where(quest => quest.CharacterId == character.Id && localQuestIds.Contains(quest.QuestId))
+                .Select(quest => quest.QuestId))
+            .ToArrayAsync(cancellationToken);
+        var now = timeProvider.GetUtcNow();
+        var respawns = await GetEliteRespawnsAsync(location, now, cancellationToken);
+        return (new WorldSceneSnapshot(character.Id, location, content, now, completedQuests.ToHashSet(StringComparer.Ordinal), respawns), null);
+    }
+
+    public async Task<bool> IsTargetAvailableAsync(string locationId, string monsterId, CancellationToken cancellationToken)
+    {
+        var content = contentProvider.GetCurrent();
+        if (!content.Indexes.LocationsById.TryGetValue(locationId, out var location)) return false;
+        var encounter = location.Encounters?.SingleOrDefault(item => item.MonsterId == monsterId);
+        if (encounter is null) return false;
+        var now = timeProvider.GetUtcNow();
+        return LocationEncounterAvailability.IsAvailable(encounter, now)
+            && (encounter.RespawnSeconds == 0
+                || !(await GetEliteRespawnsAsync(location, now, cancellationToken)).ContainsKey(monsterId));
+    }
+
+    private async Task<IReadOnlyDictionary<string, DateTimeOffset>> GetEliteRespawnsAsync(
+        LocationDefinition location, DateTimeOffset now, CancellationToken cancellationToken)
+    {
+        var encounters = (location.Encounters ?? []).Where(item => item.RespawnSeconds > 0)
+            .ToDictionary(item => item.MonsterId, StringComparer.Ordinal);
+        if (encounters.Count == 0) return new Dictionary<string, DateTimeOffset>();
+        var ids = encounters.Keys.ToArray();
+        var cutoff = now.AddSeconds(-encounters.Values.Max(item => item.RespawnSeconds));
+        var kills = await dbContext.CombatRewardGrants.AsNoTracking()
+            .Where(grant => ids.Contains(grant.PrimaryMonsterId) && grant.GrantedAtUtc > cutoff)
+            .GroupBy(grant => grant.PrimaryMonsterId)
+            .Select(group => new { MonsterId = group.Key, KilledAt = group.Max(grant => grant.GrantedAtUtc) })
+            .ToArrayAsync(cancellationToken);
+        return kills.Select(kill => new { kill.MonsterId, RespawnAt = kill.KilledAt.AddSeconds(encounters[kill.MonsterId].RespawnSeconds) })
+            .Where(kill => kill.RespawnAt > now).ToDictionary(kill => kill.MonsterId, kill => kill.RespawnAt, StringComparer.Ordinal);
     }
 
     private async Task<(WorldEncounterSnapshot? Encounter, string? ErrorCode)> PrepareAsync(
@@ -237,7 +283,8 @@ public sealed class WorldEncounterService(
             return (null, WorldEncounterErrorCodes.InvalidSelection);
 
         LocationEncounterDefinition[] encounters = (location.Encounters ?? [])
-            .Where(encounter => LocationEncounterAvailability.IsAvailable(encounter, scene.ServerTimeUtc))
+            .Where(encounter => LocationEncounterAvailability.IsAvailable(encounter, scene.ServerTimeUtc)
+                && scene.EliteRespawns?.ContainsKey(encounter.MonsterId) != true)
             .ToArray();
         if (encounters.Length == 0)
         {

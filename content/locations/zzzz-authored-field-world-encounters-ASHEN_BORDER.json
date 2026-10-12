@@ -14,6 +14,7 @@
     },
     {
       "monsterId": "ASHEN_BORDER_PALACH_GRANITSY_L22",
+      "respawnSeconds": 300,
       "weight": 0.28
     },
     {

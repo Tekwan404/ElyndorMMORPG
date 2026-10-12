@@ -2046,6 +2046,9 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.HasIndex("CharacterId")
                         .HasDatabaseName("ix_combat_reward_grants_character_id");
 
+                    b.HasIndex("PrimaryMonsterId", "GrantedAtUtc")
+                        .HasDatabaseName("ix_combat_reward_grants_monster_granted_at");
+
                     b.ToTable("combat_reward_grants", "game", t =>
                         {
                             t.HasCheckConstraint("ck_combat_reward_grants_gold_non_negative", "\"GoldEarned\" >= 0");

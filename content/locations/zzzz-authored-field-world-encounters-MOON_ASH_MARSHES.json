@@ -10,6 +10,7 @@
     },
     {
       "monsterId": "MOON_ASH_MARSHES_POZHIRATEL_SVETA_L25",
+      "respawnSeconds": 300,
       "weight": 0.28
     },
     {
@@ -26,6 +27,7 @@
     },
     {
       "monsterId": "MOON_ASH_MARSHES_BOLOTNAIA_MAT_L26",
+      "respawnSeconds": 300,
       "weight": 0.28
     },
     {

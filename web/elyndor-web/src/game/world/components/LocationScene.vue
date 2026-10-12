@@ -30,6 +30,7 @@ const actionError = ref<string | null>(null)
 const actionNotice = ref<string | null>(null)
 const {
   scene,
+  serverNow,
   selected,
   selectedId,
   page,
@@ -76,6 +77,14 @@ const questStatusLabel = computed(() => {
       return 'Не удалось получить задание'
   }
 })
+
+function respawnLabel(object: WorldSceneObject): string {
+  if (!object.respawnAtUtc) return ''
+  const seconds = Math.max(0, Math.ceil((Date.parse(object.respawnAtUtc) - serverNow.value) / 1000))
+  return seconds > 0
+    ? `Возрождение через ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
+    : 'Проверяем появление…'
+}
 
 function rankLabel(object: WorldSceneObject): string {
   const rank = object.resident?.rank
@@ -142,7 +151,7 @@ async function gather(): Promise<void> {
 
 async function attack(): Promise<void> {
   const object = selected.value
-  if (!props.canAttack || locked.value || !object?.resident) return
+  if (!props.canAttack || locked.value || !object?.resident || object.respawnAtUtc) return
   busy.value = true
   actionError.value = null
   const locationId = props.locationId
@@ -158,9 +167,13 @@ async function attack(): Promise<void> {
       return
     }
     if (await combat.startCombat(encounter)) selectedId.value = null
-    else
+    else {
       actionError.value =
-        'Не удалось войти в бой. Повторите нападение или восстановите текущий бой.'
+        combat.errorCode === 'world_target_unavailable'
+          ? 'Элитный противник ещё не возродился. Обновляем локацию.'
+          : 'Не удалось войти в бой. Повторите нападение или восстановите текущий бой.'
+      await refresh()
+    }
   } finally {
     busy.value = false
   }
@@ -174,6 +187,7 @@ async function interactWithQuest(): Promise<void> {
   try {
     if (quest.status === 'AVAILABLE') await session.acceptQuest(quest.id)
     else if (quest.status === 'READY_TO_CLAIM') await session.claimQuest(quest.id)
+    if (!session.errorCode) await refresh()
     if (session.errorCode)
       actionError.value = 'Не удалось выполнить действие. Проверьте условия задания и повторите.'
   } finally {
@@ -264,7 +278,10 @@ async function interactWithQuest(): Promise<void> {
               ? 'Поручение'
               : 'Осмотреть'
       }}</small>
-      <em v-if="object.isRare">Редкий</em>
+      <em v-if="object.respawnAtUtc">{{
+        respawnLabel(object).replace('Возрождение через ', '⏳ ')
+      }}</em>
+      <em v-else-if="object.isRare">Редкий</em>
     </button>
 
     <nav v-if="pageCount > 1" class="location-scene__pages" aria-label="Точки локации">
@@ -335,6 +352,9 @@ async function interactWithQuest(): Promise<void> {
             }}</template
           >
         </p>
+        <p v-if="selected.respawnAtUtc" role="status">
+          {{ respawnLabel(selected) }} · общий таймер для всех игроков
+        </p>
         <details class="location-scene__loot">
           <summary>Возможная добыча · {{ selected.resident.loot?.length ?? 0 }}</summary>
           <ul v-if="selected.resident.loot?.length">
@@ -352,7 +372,11 @@ async function interactWithQuest(): Promise<void> {
           <p v-else>Предметы не предусмотрены.</p>
           <small>Добыча не гарантирована. Награду рассчитывает сервер.</small>
         </details>
-        <UIButton data-scene-attack :loading="busy" :disabled="!canAttack || locked" @click="attack"
+        <UIButton
+          data-scene-attack
+          :loading="busy"
+          :disabled="!canAttack || locked || !!selected.respawnAtUtc"
+          @click="attack"
           >Напасть</UIButton
         >
         <small v-if="!canAttack"

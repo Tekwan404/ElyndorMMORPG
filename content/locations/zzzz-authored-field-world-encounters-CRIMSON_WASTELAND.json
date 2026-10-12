@@ -26,10 +26,12 @@
     },
     {
       "monsterId": "CRIMSON_WASTELAND_POGREBALNAIA_BANSHI_L38",
+      "respawnSeconds": 300,
       "weight": 0.28
     },
     {
       "monsterId": "CRIMSON_WASTELAND_VLADYKA_SKLEPA_L38",
+      "respawnSeconds": 300,
       "weight": 0.18
     }
   ]

@@ -22,6 +22,7 @@
     },
     {
       "monsterId": "STONE_SPURS_KHOZIAIN_ZHIL_L16",
+      "respawnSeconds": 300,
       "weight": 0.28
     },
     {
