@@ -91,7 +91,7 @@ const canStart = computed(() =>
     isInsideDungeon.value &&
     current.value.state === 'Active' &&
     currentEncounter.value &&
-    currentEncounter.value.state !== 'Active',
+    (currentEncounter.value.state === 'Pending' || currentEncounter.value.state === 'Wiped'),
   ),
 )
 const minimumLevel = computed(() => preview.value?.minimumLevel ?? 1)
@@ -191,15 +191,31 @@ async function enterRun(): Promise<void> {
 async function startEncounter(): Promise<void> {
   if (!current.value || !canStart.value) return
   const runId = current.value.runId
+  const encounterIndex = current.value.currentEncounterIndex
   await act(
     'start',
     async () => {
       await combat.connect()
       const started = await combat.startDungeonEncounter(runId)
-      if (!started) {
-        startEncounterError.value = 'Не удалось начать бой. Забег обновлён — попробуйте ещё раз.'
-      }
+      // Reconciliation may have completed the previous encounter during the start request.
+      // Read the authoritative state before describing the result to the player.
       await dungeon.refresh()
+      if (started) return
+
+      const refreshed = dungeon.errorCode ? null : dungeon.current
+      if (refreshed?.runId === runId && refreshed.state === 'Completed') {
+        feedback.value = 'Подземелье уже пройдено. Прогресс обновлён.'
+      } else if (refreshed?.runId === runId
+        && refreshed.state === 'Active'
+        && refreshed.currentEncounterIndex > encounterIndex) {
+        feedback.value = 'Этап завершён. Следующий бой доступен.'
+      } else if (dungeon.errorCode) {
+        startEncounterError.value = 'Не удалось проверить состояние забега. Повторите обновление.'
+      } else if (combat.errorCode?.startsWith('dungeon_')) {
+        startEncounterError.value = socialErrorMessage(combat.errorCode)
+      } else {
+        startEncounterError.value = 'Бой не начался. Прогресс сохранён, попробуйте ещё раз.'
+      }
     },
     'Бой начат.',
   )
@@ -275,7 +291,6 @@ async function leaveRun(): Promise<void> {
 
         <div class="dungeon-expedition__meta">
           <span>{{ encounterCount }} боёв</span>
-          <span>Один игрок или группа до {{ preview.maximumPartySize }}</span>
           <span>{{ runStateLabel }}</span>
         </div>
 
@@ -290,11 +305,7 @@ async function leaveRun(): Promise<void> {
         <template v-if="current">
           <div class="dungeon-run">
             <div class="dungeon-run__heading">
-              <div>
-                <small>ТЕКУЩИЙ ЗАБЕГ</small>
-                <strong>{{ current.displayName }}</strong>
-              </div>
-              <span>{{ runStateLabel }}</span>
+              <small>ТЕКУЩИЙ ЗАБЕГ</small>
             </div>
 
             <div class="dungeon-status" data-dungeon-status>
