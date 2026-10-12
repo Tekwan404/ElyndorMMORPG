@@ -63,6 +63,7 @@
         },
         {
           "monsterId": "BLACK_CRAGS_BLACK_FORGE_SMITH_L44",
+          "respawnSeconds": 300,
           "weight": 0.25
         }
       ],
@@ -111,6 +112,7 @@
         },
         {
           "monsterId": "PLAGUEWOOD_MOTHER_OF_BLIGHT_L48",
+          "respawnSeconds": 300,
           "weight": 0.25
         }
       ],
@@ -159,6 +161,7 @@
         },
         {
           "monsterId": "GLASS_DESERT_GLASS_COLOSSUS_L52",
+          "respawnSeconds": 300,
           "weight": 0.25
         }
       ],
@@ -207,6 +210,7 @@
         },
         {
           "monsterId": "FROZEN_EDGE_WHITE_PASS_GUARD_L56",
+          "respawnSeconds": 300,
           "weight": 0.25
         }
       ],
@@ -259,6 +263,7 @@
         },
         {
           "monsterId": "DOOMED_LANDS_VICEROY_OF_BLIGHT_L60",
+          "respawnSeconds": 300,
           "weight": 0.22
         }
       ],
@@ -282,54 +287,67 @@
       "encounters": [
         {
           "monsterId": "DEAD_REACHES_CURSED_KNIGHT_L60",
+          "respawnSeconds": 300,
           "weight": 1
         },
         {
           "monsterId": "DEAD_REACHES_BONE_DESTROYER_L60",
+          "respawnSeconds": 300,
           "weight": 1
         },
         {
           "monsterId": "DEAD_REACHES_GRAVE_COLOSSUS_L60",
+          "respawnSeconds": 300,
           "weight": 1
         },
         {
           "monsterId": "DEAD_REACHES_WARLOCK_L60",
+          "respawnSeconds": 300,
           "weight": 1
         },
         {
           "monsterId": "DEAD_REACHES_SOUL_EATER_L60",
+          "respawnSeconds": 300,
           "weight": 1
         },
         {
           "monsterId": "DEAD_REACHES_DEAD_GATE_GUARD_L60",
+          "respawnSeconds": 300,
           "weight": 1
         },
         {
           "monsterId": "DEAD_REACHES_BANSHEE_L60",
+          "respawnSeconds": 300,
           "weight": 1
         },
         {
           "monsterId": "DEAD_REACHES_VARGHIM_HEADLESS_L60",
+          "respawnSeconds": 300,
           "weight": 0.14
         },
         {
           "monsterId": "DEAD_REACHES_MORANA_PALE_L60",
+          "respawnSeconds": 300,
           "weight": 0.14
         },
         {
           "monsterId": "DEAD_REACHES_GOR_KAR_DEVOURER_L60",
+          "respawnSeconds": 300,
           "weight": 0.14
         },
         {
           "monsterId": "DEAD_REACHES_MORDREK_LAST_GATE_L60",
+          "respawnSeconds": 300,
           "weight": 0.05
         },
         {
           "monsterId": "DEAD_REACHES_NAMELESS_KING_L60",
+          "respawnSeconds": 300,
           "weight": 0.05
         },
         {
           "monsterId": "DEAD_REACHES_NERZAR_L60",
+          "respawnSeconds": 300,
           "weight": 0.05
         }
       ],

@@ -24,6 +24,7 @@ export interface WorldSceneObject {
   resident: WorldLocationResident | null
   isRare: boolean
   availableUntilUtc: string | null
+  respawnAtUtc?: string | null
   questId: string | null
   resource?: {
     nodeId: string

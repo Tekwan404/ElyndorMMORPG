@@ -14,6 +14,7 @@
     },
     {
       "monsterId": "OLD_ROAD_KAPITAN_PYLNOI_DOROGI_L13",
+      "respawnSeconds": 300,
       "weight": 0.28,
       "availability": { "periodSeconds": 3600, "durationSeconds": 600, "offsetSeconds": 2400 }
     },

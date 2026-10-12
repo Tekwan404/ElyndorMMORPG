@@ -43,6 +43,9 @@ public sealed class CombatRewardGrantConfiguration : IEntityTypeConfiguration<Co
             .OnDelete(DeleteBehavior.Cascade)
             .HasConstraintName("fk_combat_reward_grants_characters_character_id");
 
+        builder.HasIndex(grant => new { grant.PrimaryMonsterId, grant.GrantedAtUtc })
+            .HasDatabaseName("ix_combat_reward_grants_monster_granted_at");
+
         builder.HasIndex(grant => grant.CharacterId)
             .HasDatabaseName("ix_combat_reward_grants_character_id");
     }

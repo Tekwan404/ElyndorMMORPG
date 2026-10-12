@@ -82,6 +82,11 @@ public static class WorldEncounterContentValidator
                     continue;
                 }
 
+                if (encounter.RespawnSeconds < 0 || encounter.RespawnSeconds > 86400
+                    || encounter.RespawnSeconds > 0 && monster.Rank != MonsterRank.Elite)
+                    errors.Add(new("INVALID_ENCOUNTER_RESPAWN", path,
+                        $"Encounter '{monster.Id}' has an invalid elite respawn duration."));
+
                 if (monster.Rank == MonsterRank.Boss && encounters.Count != 1)
                 {
                     errors.Add(new(

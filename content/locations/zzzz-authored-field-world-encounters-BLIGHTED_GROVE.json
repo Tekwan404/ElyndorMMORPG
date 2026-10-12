@@ -30,6 +30,7 @@
     },
     {
       "monsterId": "BLIGHTED_GROVE_LESNAIA_VEDMA_L19",
+      "respawnSeconds": 300,
       "weight": 0.28
     },
     {
@@ -54,6 +55,7 @@
     },
     {
       "monsterId": "BLIGHTED_GROVE_GLASHATAI_PORCHI_L20",
+      "respawnSeconds": 300,
       "weight": 0.28
     }
   ]

@@ -27,7 +27,8 @@ public sealed record WorldSceneObjectResponse(
     bool IsRare = false,
     DateTimeOffset? AvailableUntilUtc = null,
     string? QuestId = null,
-    WorldResourceResponse? Resource = null);
+    WorldResourceResponse? Resource = null,
+    DateTimeOffset? RespawnAtUtc = null);
 
 public sealed record WorldResourceResponse(string NodeId, string ItemId, string ItemName, string? IconId,
     int MinQuantity, int MaxQuantity, int RequiredSkill, int LearnedSkill, bool CanGather, DateTimeOffset AvailableAtUtc);

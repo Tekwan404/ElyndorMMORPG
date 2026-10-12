@@ -143,6 +143,52 @@ describe('LocationScene', () => {
     expect(wrapper.text()).toContain('Изучите травничество')
     wrapper.unmount()
   })
+  it('shows the shared elite respawn and blocks attack until a fresh server scene allows it', async () => {
+    const cooling = {
+      ...enemy,
+      respawnAtUtc: '2026-10-11T00:05:00Z',
+      resident: { ...enemy.resident, rank: 'Elite' },
+    }
+    const request = vi
+      .spyOn(apiClient, 'request')
+      .mockResolvedValue({ ...scene, objects: [cooling] })
+    const wrapper = mount(LocationScene, { props })
+    await flushPromises()
+    await wrapper.get('[data-scene-marker="ENEMY_WOLF"]').trigger('click')
+    expect(wrapper.get('[data-scene-attack]').attributes('disabled')).toBeDefined()
+    expect(wrapper.text()).toContain('Возрождение через 5:00')
+    await wrapper.get('[data-scene-attack]').trigger('click')
+    expect(request).toHaveBeenCalledTimes(1)
+    wrapper.unmount()
+  })
+
+  it('refreshes the scene after claiming a reward and removes the completed quest marker', async () => {
+    const quest = {
+      id: 'Q1',
+      displayName: 'Поручение',
+      status: 'READY_TO_CLAIM',
+      requiredLevel: 1,
+      rewardXp: 0,
+      rewardGold: 0,
+    }
+    const marker = { ...enemy, id: 'QUEST_Q1', kind: 'Npc', resident: null, questId: 'Q1' }
+    vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce({ ...scene, objects: [marker] })
+      .mockResolvedValueOnce({ ...scene, objects: [] })
+    const session = useGameSessionStore()
+    Object.assign(session, { questJournal: { quests: [quest] } })
+    vi.spyOn(session, 'refreshQuestJournal').mockResolvedValue(null)
+    const claim = vi.spyOn(session, 'claimQuest').mockResolvedValue(null)
+    const wrapper = mount(LocationScene, { props })
+    await flushPromises()
+    await wrapper.get('[data-scene-marker="QUEST_Q1"]').trigger('click')
+    await wrapper.get('[data-scene-quest]').trigger('click')
+    await flushPromises()
+    expect(claim).toHaveBeenCalledWith('Q1')
+    expect(wrapper.find('[data-scene-marker="QUEST_Q1"]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.restoreAllMocks()

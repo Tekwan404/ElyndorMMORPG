@@ -418,6 +418,12 @@ Monster AI не определяет world spawn schedule.
 
 World System/Spawn profile создаёт новый MonsterInstance.
 
+Current open-world implementation: elite encounter content specifies `respawnSeconds: 300`.
+A committed victory starts a five-minute cooldown shared by all characters for that monster template.
+World selection, random exploration and combat startup check the latest persisted combat reward grant;
+the timer survives process restart. Already admitted parallel battles may finish.
+Rare hourly availability windows remain additional restrictions. Dungeon and raid lifecycles are unchanged.
+
 29. Resource
 
 Monster может использовать:

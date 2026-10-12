@@ -1579,3 +1579,15 @@ Hero interview must determine:
 - quick actions;
 - class-specific Companion tab;
 - how much character animation is used.
+
+
+## Current location scene: elite cooldown and completed quests
+
+Open-world elite pins remain visible during their shared five-minute respawn cooldown and show a countdown.
+The interaction panel explains that the timer is shared by all players; attack stays disabled until a fresh
+server snapshot confirms availability. Countdown display uses server UTC plus monotonic elapsed time.
+A stale prepared encounter cannot bypass the server check. Rare hourly windows still apply.
+
+Completed quest pins disappear after successful reward claim and scene refresh. READY_TO_CLAIM remains
+visible so the player can collect the reward. Modern quest states, legacy contract completions and existing
+quest reward grants use the same completion semantics as the quest journal.
