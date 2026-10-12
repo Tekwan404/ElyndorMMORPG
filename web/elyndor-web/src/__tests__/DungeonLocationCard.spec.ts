@@ -174,6 +174,60 @@ describe('DungeonLocationCard', () => {
     wrapper.unmount()
   })
 
+  it('recognizes an already-completed boss stage instead of showing a start failure', async () => {
+    const { dungeon, combat } = prepareCard('ECLIPSED_CITADEL')
+    const initial = bossCitadelRun()
+    dungeon.current = initial
+    vi.spyOn(combat, 'startDungeonEncounter').mockImplementation(async () => {
+      dungeon.current = { ...initial, state: 'Completed', currentEncounterIndex: 5 }
+      return false
+    })
+
+    const wrapper = mount(DungeonLocationCard, { props: { dungeonId: 'ECLIPSED_CITADEL' } })
+    await flushPromises()
+    await wrapper.get('[data-start-dungeon]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('Подземелье уже пройдено. Прогресс обновлён.')
+    expect(wrapper.text()).not.toContain('Не удалось начать бой')
+    expect(wrapper.find('[data-start-dungeon]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('keeps a pending boss stage playable and explains a rejected start', async () => {
+    const { dungeon, combat } = prepareCard('ECLIPSED_CITADEL')
+    dungeon.current = bossCitadelRun()
+    vi.spyOn(combat, 'startDungeonEncounter').mockImplementation(async () => {
+      combat.errorCode = 'dungeon_member_cannot_enter'
+      return false
+    })
+
+    const wrapper = mount(DungeonLocationCard, { props: { dungeonId: 'ECLIPSED_CITADEL' } })
+    await flushPromises()
+    await wrapper.get('[data-start-dungeon]').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.get('[data-dungeon-status]').text()).toContain('5 / 5')
+    expect(wrapper.find('[data-start-dungeon]').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Проверьте уровень, здоровье и текущую активность.')
+    wrapper.unmount()
+  })
+
+  it('does not offer to launch an already completed current encounter', async () => {
+    const { dungeon } = prepareCard('ECLIPSED_CITADEL')
+    const boss = bossCitadelRun()
+    dungeon.current = {
+      ...boss,
+      encounters: boss.encounters.map((encounter) => ({ ...encounter, state: 'Completed' as const })),
+    }
+
+    const wrapper = mount(DungeonLocationCard, { props: { dungeonId: 'ECLIPSED_CITADEL' } })
+    await flushPromises()
+
+    expect(wrapper.find('[data-start-dungeon]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   it('preserves known run progress during reconciliation', async () => {
     const { dungeon } = prepareCard('ECLIPSED_CITADEL')
     dungeon.current = activeCitadelRun()

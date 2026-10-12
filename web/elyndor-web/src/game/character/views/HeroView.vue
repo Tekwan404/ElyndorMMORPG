@@ -34,6 +34,8 @@ function isAvailable(tab: (typeof tabs)[number]): boolean {
     || (tab.available === 'companion' && hasCompanion.value)
 }
 
+const visibleTabs = computed(() => tabs.filter(isAvailable))
+
 function clearRequestedSlot(): void {
   requestedSlot.value = null
   requestedSlotInitialItemId.value = null
@@ -90,7 +92,7 @@ function openStats(): void {
   <section class="hero-view">
     <nav class="hero-tabs" :class="{ 'hero-tabs--with-companion': hasCompanion }" aria-label="Разделы героя">
       <button
-        v-for="tab in tabs"
+        v-for="tab in visibleTabs"
         :key="tab.id"
         :data-hero-tab="tab.id"
         type="button"
