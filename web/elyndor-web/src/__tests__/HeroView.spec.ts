@@ -80,7 +80,7 @@ describe('HeroView', () => {
     expect(wrapper.find('[data-companion-view]').exists()).toBe(true)
   })
 
-  it.each(['MAGE', 'WARRIOR', 'PALADIN'])('hides the companion tab for %s', (classId) => {
+  it.each(['MAGE', 'WARRIOR', 'PALADIN'] as const)('hides the companion tab for %s', (classId) => {
     const session = useGameSessionStore()
     session.snapshot = snapshot([], classId)
 
