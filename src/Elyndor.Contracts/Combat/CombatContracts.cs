@@ -19,7 +19,9 @@ public sealed record CombatAbilityResponse(
     decimal ResourceCost,
     double CooldownSeconds,
     bool IsUnblockable = false,
-    string TargetType = "SingleEnemy");
+    string TargetType = "SingleEnemy",
+    bool UsesGlobalCooldown = true,
+    bool CanUseWhileCasting = false);
 
 public sealed record CombatActorResponse(
     Guid ActorId,
@@ -45,7 +47,8 @@ public sealed record CombatActorResponse(
     Guid? CurrentAggroTargetActorId = null,
     string? GenderId = null,
     string? MonsterRank = null,
-    string? SkinId = null);
+    string? SkinId = null,
+    DateTimeOffset? GlobalCooldownEndsAtUtc = null);
 
 public sealed record CombatContributionResponse(
     Guid CharacterId,

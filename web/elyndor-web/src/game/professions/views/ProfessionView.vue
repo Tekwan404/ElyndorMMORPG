@@ -6,14 +6,20 @@ import { locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UILoadingState } from '@/ui/components'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
-import professionAtlas from '@/assets/professions/workshop-atlas.png'
-import { recipeBlockReason, usableMaterialQuantities } from '../professionWorkshop'
+import professionAtlas from '@/assets/professions/workshop-atlas.webp'
+import herbAlchemyAtlas from '@/assets/professions/herbalism-alchemy-atlas.webp'
+import {
+  recipeBlockReason,
+  studyRecipeBlockReason,
+  usableMaterialQuantities,
+} from '../professionWorkshop'
 import {
   craftProfessionRecipe,
   gatherProfessionNode,
   disenchantProfessionItem,
   enchantProfessionItem,
   forgetProfession,
+  studyProfessionRecipe,
   type ProfessionGatheringNode,
   getProfessionState,
   learnProfession,
@@ -40,7 +46,22 @@ const clockTimer = setInterval(() => {
   now.value = Date.now()
 }, 1000)
 onUnmounted(() => clearInterval(clockTimer))
-const presentation: Record<string, { description: string; art: number; category: string }> = {
+const presentation: Record<
+  string,
+  { description: string; art: number; category: string; herbal?: boolean }
+> = {
+  HERBALISM: {
+    description: 'Собирайте целебные растения в локациях. Сырьё для зелий и настоев.',
+    art: 0,
+    category: 'СОБИРАТЕЛЬСТВО',
+    herbal: true,
+  },
+  ALCHEMY: {
+    description: 'Готовьте лечебные зелья и боевые настои из собранных трав.',
+    art: 1,
+    category: 'РЕМЕСЛО',
+    herbal: true,
+  },
   SKINNING: {
     description: 'Снимайте шкуры с поверженных зверей. Сырьё для кожевничества.',
     art: 0,
@@ -75,6 +96,8 @@ const professionCatalog = computed(() =>
       { id: 'MINING', name: 'Горное дело', maxSkill: 300 },
       { id: 'BLACKSMITHING', name: 'Кузнечное дело', maxSkill: 300 },
       { id: 'ENCHANTING', name: 'Наложение чар', maxSkill: 300 },
+      { id: 'HERBALISM', name: 'Травничество', maxSkill: 300 },
+      { id: 'ALCHEMY', name: 'Алхимия', maxSkill: 300 },
     ]
   )
     .map((profession) => ({
@@ -91,7 +114,9 @@ const activeProfession = computed(() => {
   if (selectedProfessionId.value)
     return state.value?.learned.find((item) => item.id === selectedProfessionId.value) ?? null
   return (
-    state.value?.learned.find((item) => item.id !== 'SKINNING') ?? state.value?.learned[0] ?? null
+    state.value?.learned.find((item) => !['SKINNING', 'HERBALISM'].includes(item.id)) ??
+    state.value?.learned[0] ??
+    null
   )
 })
 const enchantingItems = computed(() =>
@@ -141,6 +166,10 @@ const gatheringRoutes = computed(() => {
     { itemName: string; locationName: string; requiredSkill: number; skillUpUntil?: number }
   >()
   for (const source of state.value?.materialSources ?? []) {
+    const gatheringId = ['HERBALISM', 'ALCHEMY'].includes(activeProfession.value?.id ?? '')
+      ? 'HERBALISM'
+      : 'SKINNING'
+    if ((source.professionId ?? 'SKINNING') !== gatheringId) continue
     if (state.value?.gatheringNodes?.some((node) => node.itemId === source.itemId)) continue
     const key = `${source.itemId}:${source.locationId}`
     const previous = routes.get(key)
@@ -173,6 +202,24 @@ async function learn(id: string): Promise<void> {
       const name = professionCatalog.value.find((item) => item.id === id)?.name ?? 'Профессия'
       return `${name} изучено.`
     },
+  )
+}
+
+function studyBlockReason(recipe: ProfessionRecipeState): string | null {
+  return studyRecipeBlockReason(
+    recipe,
+    state.value?.learned.find((item) => item.id === recipe.professionId)?.skill ?? null,
+    currentLocationId.value,
+    inventoryQuantities.value,
+  )
+}
+
+async function study(recipe: ProfessionRecipeState): Promise<void> {
+  await mutate(
+    `study:${recipe.id}`,
+    () => studyProfessionRecipe(recipe.id),
+    () => `Изучен рецепт: ${recipe.name}. Свиток израсходован.`,
+    true,
   )
 }
 
@@ -283,6 +330,11 @@ function errorMessage(caught: unknown): string {
         skinning_corpse_expired: 'Время для снятия шкуры истекло.',
         skinning_corpse_already_skinned: 'Шкура с этой туши уже снята.',
         profession_skill_too_low: 'Навык профессии пока слишком низкий.',
+        profession_recipe_not_learned: 'Сначала изучите рецепт по свитку.',
+        profession_recipe_already_learned: 'Рецепт уже изучен.',
+        profession_recipe_scroll_missing: 'Нужен незапертый свиток рецепта в инвентаре.',
+        combat_active: 'Сначала завершите бой.',
+        resource_travelling: 'Сначала завершите переход.',
         profession_wrong_workshop: 'Для изготовления нужна городская мастерская.',
         profession_missing_ingredients: 'Не хватает материалов.',
         inventory_full: 'В инвентаре нет свободного места.',
@@ -362,7 +414,7 @@ onMounted(load)
         <h2>Профессии</h2>
         <p>От рудной жилы до зачарованных доспехов. Выберите своё ремесло.</p>
       </div>
-      <span>{{ state?.learned.length ?? 0 }} / 2</span>
+      <span>{{ state?.learned.length ?? 0 }} / {{ state?.maxPrimaryProfessions ?? 2 }}</span>
     </header>
 
     <UILoadingState v-if="loading && !state" state="loading" title="Загружаем профессии" />
@@ -400,8 +452,9 @@ onMounted(load)
           <div
             class="profession-art"
             :style="{
-              backgroundImage: `url(${professionAtlas})`,
-              backgroundPosition: `${(profession.art ?? 0) * 25}% center`,
+              backgroundImage: `url(${profession.herbal ? herbAlchemyAtlas : professionAtlas})`,
+              backgroundSize: profession.herbal ? '200% 100%' : '500% 100%',
+              backgroundPosition: `${(profession.art ?? 0) * (profession.herbal ? 100 : 25)}% center`,
             }"
             aria-hidden="true"
           />
@@ -432,6 +485,7 @@ onMounted(load)
                 ><button
                   type="button"
                   class="forget-link"
+                  :data-forget-profession="profession.id"
                   :disabled="pendingKey !== null"
                   @click="forgetId = profession.id"
                 >
@@ -441,8 +495,11 @@ onMounted(load)
             </template>
             <UIButton
               v-else
+              :data-learn-profession="profession.id"
               variant="secondary"
-              :disabled="state.learned.length >= 2 || pendingKey !== null"
+              :disabled="
+                state.learned.length >= (state.maxPrimaryProfessions ?? 2) || pendingKey !== null
+              "
               :loading="pendingKey === `learn:${profession.id}`"
               @click="learn(profession.id)"
               >Изучить профессию</UIButton
@@ -453,17 +510,45 @@ onMounted(load)
       <div v-if="forgetId" class="profession-message profession-message--error" role="alert">
         <p>
           Забыть {{ professionCatalog.find((item) => item.id === forgetId)?.name }}? Весь навык этой
-          профессии будет потерян. Предметы останутся.
+          профессии будет потерян. Восстановить его нельзя. Изученные рецепты тоже будут потеряны.
+          Предметы останутся.
         </p>
-        <UIButton :disabled="pendingKey !== null" @click="forget(forgetId)"
+        <UIButton
+          :data-confirm-forget="forgetId"
+          :disabled="pendingKey !== null"
+          @click="forget(forgetId)"
           >Забыть и сбросить навык</UIButton
         >
         <UIButton variant="secondary" @click="forgetId = null">Отмена</UIButton>
       </div>
-      <p v-if="state.learned.length >= 2" class="profession-intro">
+      <p v-if="state.learned.length >= (state.maxPrimaryProfessions ?? 2)" class="profession-intro">
         Оба места заняты. Чтобы выбрать другое ремесло, сначала забудьте одну из изученных
         профессий.
       </p>
+      <section
+        v-if="['HERBALISM', 'ALCHEMY'].includes(activeProfession?.id ?? '')"
+        class="profession-panel"
+        data-herbalism-guide
+      >
+        <header>
+          <div>
+            <small>ТРАВНИЧЕСТВО</small>
+            <h3>Целебные растения</h3>
+          </div>
+        </header>
+        <p class="profession-empty">
+          Собирайте травы через маркеры ресурсов в локациях. Затем возвращайтесь в город для
+          приготовления зелий.
+        </p>
+        <div
+          v-for="route in gatheringRoutes"
+          :key="route.itemName + route.locationName"
+          class="gathering-route"
+        >
+          <strong>{{ route.itemName }}</strong
+          ><span>{{ route.locationName }} · требуется навык {{ route.requiredSkill }}</span>
+        </div>
+      </section>
       <section v-if="activeProfession?.id === 'MINING'" class="profession-panel">
         <header>
           <div>
@@ -607,7 +692,7 @@ onMounted(load)
       </details>
 
       <section
-        v-if="activeProfession && activeProfession.id !== 'SKINNING'"
+        v-if="activeProfession && !['SKINNING', 'HERBALISM'].includes(activeProfession.id)"
         class="profession-panel"
       >
         <header>
@@ -661,7 +746,13 @@ onMounted(load)
               :icon-id="recipe.outputIconId"
               :item-id="recipe.outputItemId"
               :name="recipe.outputName ?? recipe.name"
-              :type="materialIds.has(recipe.outputItemId) ? 'Material' : 'Equipment'"
+              :type="
+                materialIds.has(recipe.outputItemId)
+                  ? 'Material'
+                  : activeProfession?.id === 'ALCHEMY'
+                    ? 'Consumable'
+                    : 'Equipment'
+              "
               decorative
             />
             <strong
@@ -673,7 +764,12 @@ onMounted(load)
               {{ locationLabel(recipe.requiredLocationId) }}</span
             >
             <span v-if="recipe.outputRequiredLevel && !materialIds.has(recipe.outputItemId)"
-              >Экипировка для уровня {{ recipe.outputRequiredLevel }}</span
+              >{{
+                activeProfession?.id === 'ALCHEMY'
+                  ? 'Использование с уровня'
+                  : 'Экипировка для уровня'
+              }}
+              {{ recipe.outputRequiredLevel }}</span
             >
             <span v-if="recipe.skillUpUntil" class="recipe-growth">{{
               (activeProfession?.skill ?? 0) < recipe.skillUpUntil
@@ -696,7 +792,26 @@ onMounted(load)
               </li>
             </ul>
             <span v-if="blockReason(recipe)" class="recipe-blocked">{{ blockReason(recipe) }}</span>
+            <template v-if="recipe.learningScrollItemId">
+              <span
+                >{{ recipe.isLearned === false ? 'Не изучен' : 'Рецепт изучен' }} ·
+                {{ recipe.learningScrollName }}</span
+              >
+              <span
+                v-if="recipe.isLearned === false && studyBlockReason(recipe)"
+                class="recipe-blocked"
+                >{{ studyBlockReason(recipe) }}</span
+              >
+            </template>
           </div>
+          <UIButton
+            v-if="recipe.isLearned === false"
+            :data-study-recipe="recipe.id"
+            :disabled="studyBlockReason(recipe) !== null || pendingKey !== null"
+            :loading="pendingKey === `study:${recipe.id}`"
+            @click="study(recipe)"
+            >Изучить рецепт</UIButton
+          >
           <UIButton
             :disabled="!canCraft(recipe) || pendingKey !== null"
             :loading="pendingKey === `craft:${recipe.id}`"
@@ -708,7 +823,8 @@ onMounted(load)
           В этой категории пока нет рецептов.
         </p>
         <p class="profession-empty">
-          Для изготовления учитываются только незапертые материалы в инвентаре. Новые рецепты
+          Для изготовления учитываются только незапертые материалы в инвентаре. Особые рецепты
+          изучаются по свиткам из добычи; при отказе от профессии они теряются. Новые рецепты
           открываются навыком автоматически.
         </p>
       </section>
@@ -1057,7 +1173,7 @@ onMounted(load)
 .professions-hero {
   background:
     linear-gradient(100deg, #15120ff2, #15120fa8),
-    url('@/assets/professions/workshop-atlas.png') center 57% / cover;
+    url('@/assets/professions/workshop-atlas.webp') center 57% / cover;
   min-height: 105px;
   border-color: #796244;
 }

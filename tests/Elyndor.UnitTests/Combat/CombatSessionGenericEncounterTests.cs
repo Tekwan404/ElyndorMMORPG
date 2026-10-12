@@ -6,6 +6,8 @@ using Elyndor.Core.Combat.Encounters;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.World;
+using Elyndor.Infrastructure.Combat;
 using Elyndor.Core.Talents;
 
 namespace Elyndor.UnitTests.Combat;
@@ -18,6 +20,92 @@ public sealed class CombatSessionGenericEncounterTests
         Guid.Parse("91000000-0000-0000-0000-000000000001");
     private static readonly Guid BossId =
         Guid.Parse("92000000-0000-0000-0000-000000000001");
+
+    [Fact]
+    public void AmbientAggroSelectorChoosesOnlyNearbyNormalMonsterWithinLevelRange()
+    {
+        MonsterDefinition wolf = Monster("FIELD_WOLF", [], "WOLF_AI", TimeSpan.FromSeconds(3));
+        MonsterDefinition boar = Monster("FIELD_BOAR", [], "BOAR_AI", TimeSpan.FromSeconds(3))
+            with { Level = 12 };
+        MonsterDefinition elite = Monster("FIELD_ELITE", [], "ELITE_AI", TimeSpan.FromSeconds(3))
+            with { Rank = MonsterRank.Elite };
+        MonsterDefinition far = Monster("FIELD_FAR", [], "FAR_AI", TimeSpan.FromSeconds(3))
+            with { Level = 20 };
+        LocationDefinition location = new(
+            "FIELD", "Field", "ADVENTURE", 10, [],
+            [new(wolf.Id), new(elite.Id), new(far.Id), new(boar.Id)]);
+        Dictionary<string, MonsterDefinition> monsters = new(StringComparer.Ordinal)
+        {
+            [wolf.Id] = wolf, [elite.Id] = elite, [far.Id] = far, [boar.Id] = boar
+        };
+
+        Assert.Equal(boar.Id,
+            OpenWorldAggroConfigurator.SelectNearbyMonster(
+                location, wolf, monsters, 0.1m, 0.5m));
+        Assert.Null(OpenWorldAggroConfigurator.SelectNearbyMonster(
+            location, wolf, monsters, 0.3m, 0.5m));
+        Assert.Null(OpenWorldAggroConfigurator.SelectNearbyMonster(
+            location with { DangerLevel = "SAFE" }, wolf, monsters, 0.1m, 0.5m));
+        Assert.Null(OpenWorldAggroConfigurator.SelectNearbyMonster(
+            location, wolf with { Rank = MonsterRank.Boss }, monsters, 0.01m, 0.5m));
+        Assert.Null(OpenWorldAggroConfigurator.SelectNearbyMonster(
+            location, elite, monsters, 0.2m, 0.5m));
+    }
+
+    [Fact]
+    public void AmbientReinforcementJoinsExistingCombatOnceAndGivesNoRewards()
+    {
+        MonsterDefinition add = Monster(
+            "FIELD_NEARBY_BOAR", [], "ADD_PASSIVE", TimeSpan.FromHours(1));
+        EncounterDefinition encounter = new(
+            "OPEN_WORLD_AGGRO_TEST_BOSS",
+            "TEST_BOSS",
+            [
+                new EncounterPhaseDefinition(
+                    "NEARBY_ENEMY_JOINS",
+                    new EncounterTriggerDefinition(
+                        EncounterTriggerType.ElapsedTime,
+                        Elapsed: TimeSpan.FromSeconds(6)),
+                    [
+                        new EncounterActionDefinition(
+                            EncounterActionType.Summon,
+                            Summon: new SummonDefinition(
+                                add.Id, 1, MaxActive: 1, NoReward: true,
+                                DespawnOnBossDeath: false, IsAmbientAggro: true))
+                    ])
+            ]);
+        CombatSession session = Session(
+            bossAbilityIds: new HashSet<string>(StringComparer.Ordinal),
+            abilities: new Dictionary<string, AbilityDefinition>(StringComparer.Ordinal),
+            bossAi: new MonsterAiProfile("BOSS_PASSIVE", []),
+            bossAutoAttackInterval: TimeSpan.FromHours(1));
+
+        session.ConfigureGenericEncounter(
+            encounter,
+            new Dictionary<string, EncounterEnemyProfile>(StringComparer.Ordinal)
+            {
+                [add.Id] = new(add, new MonsterAiProfile("ADD_PASSIVE", []))
+            },
+            new Dictionary<string, EffectDefinition>(StringComparer.Ordinal));
+
+        Assert.DoesNotContain(session.Snapshot().Enemies!,
+            enemy => enemy.DefinitionId == add.Id);
+
+        session.AdvanceTo(Now.AddSeconds(5));
+        Assert.DoesNotContain(session.Snapshot().Enemies!,
+            enemy => enemy.DefinitionId == add.Id);
+
+        session.AdvanceTo(Now.AddSeconds(6));
+        CombatActorSnapshot joined = Assert.Single(session.Snapshot().Enemies!,
+            enemy => enemy.DefinitionId == add.Id);
+        Assert.False(joined.RewardEligible);
+        Assert.Contains(session.GetEventsAfter(0), e =>
+            e.Type == CombatEventType.ActorJoined && e.TargetActorId == joined.ActorId);
+
+        session.AdvanceTo(Now.AddSeconds(30));
+        Assert.Single(session.Snapshot().Enemies!,
+            enemy => enemy.DefinitionId == add.Id);
+    }
 
     [Fact]
     public void CombatStartSummonUsesExactLifetimeAsSchedulerDeadline()

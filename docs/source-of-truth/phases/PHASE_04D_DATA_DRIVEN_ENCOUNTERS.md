@@ -23,7 +23,7 @@ Character is in a non-safe location
 → normal CombatSession starts
 ```
 
-The client never sends a MonsterId to select a normal encounter.
+The original random encounter flow does not accept a client MonsterId. The living-location extension also accepts `POST /api/v1/world/select-encounter` with a location and monster identifier as intent. The server validates the persisted location, authored roster and shared availability before issuing the same encounter token. SignalR still accepts only that token. See [living locations](../../development/living-locations.md) for the current contract.
 
 ## Content ownership
 

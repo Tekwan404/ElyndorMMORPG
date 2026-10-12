@@ -1,0 +1,120 @@
+{
+  "contentVersion": "0.52.0",
+  "balanceVersion": "0.42.0",
+  "items": [
+    {
+      "id": "FOREST_MINT",
+      "name": "Лесная мята",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Растение для приготовления алхимических зелий.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_early/gathering_early_01_forest_mint"
+    },
+    {
+      "id": "SILVERLEAF",
+      "name": "Сребролист",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Растение для приготовления алхимических зелий.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_early/gathering_early_02_silverleaf"
+    },
+    {
+      "id": "DEWY_BLOSSOM",
+      "name": "Росоцвет",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Растение для приготовления алхимических зелий.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_early/gathering_early_03_dewy_blossom"
+    },
+    {
+      "id": "HONEY_GRASS",
+      "name": "Медовая трава",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Растение для приготовления алхимических зелий.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_early/gathering_early_05_honey_grass"
+    },
+    {
+      "id": "SHADOW_MOSS",
+      "name": "Теневой мох",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Растение для приготовления алхимических зелий.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_early/gathering_early_08_shadow_moss"
+    },
+    {
+      "id": "HUSHROOT",
+      "name": "Тихокорень",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Растение для приготовления алхимических зелий.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_early/gathering_early_09_hushroot"
+    }
+  ]
+}

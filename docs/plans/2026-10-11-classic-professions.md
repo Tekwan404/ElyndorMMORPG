@@ -7,3 +7,5 @@ Server transactions must reject wrong location, active travel, insufficient skil
 Implementation: extend composed content and validation; add profession actions and additive EF migration; apply enchants through the existing inventory/equipment projection; generalize workshop selection and add confirmation for destructive actions; verify PostgreSQL concurrency/replay, unit rules, frontend typecheck/build and mobile browser layouts.
 
 City integration: add an illustrated craft courtyard and real station navigation, targeted learning, return-to-district behavior, and retain equipment enhancement/reforging. Verify all four station routes and actual crafting at 320px in the browser.
+
+Final UI: one portrait district artwork with city-style pins for all stations, forge services and learning. Remove the HUD location row above XP. Preserve herbalism/alchemy and recipe-scroll knowledge from current main.

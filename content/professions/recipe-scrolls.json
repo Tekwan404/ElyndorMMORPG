@@ -1,0 +1,244 @@
+{
+  "contentVersion": "0.53.0",
+  "balanceVersion": "0.43.0",
+  "publishedAtUtc": "2026-10-11T08:00:00+00:00",
+  "professionRecipes": [
+    {
+      "id": "LW_WHISPER_TRACKER_HEAD",
+      "professionId": "LEATHERWORKING",
+      "name": "Капюшон Шепчущего Леса",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "ARCHER_COMMON_WHISPER_TRACKER_HEAD",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "ROUGH_LEATHER",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN",
+      "learningScrollItemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_HEAD"
+    },
+    {
+      "id": "LW_WHISPER_TRACKER_SHOULDERS",
+      "professionId": "LEATHERWORKING",
+      "name": "Наплечники Шепчущего Леса",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "ARCHER_COMMON_WHISPER_TRACKER_SHOULDERS",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "ROUGH_LEATHER",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN",
+      "learningScrollItemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_SHOULDERS"
+    },
+    {
+      "id": "LW_WHISPER_TRACKER_LEGS",
+      "professionId": "LEATHERWORKING",
+      "name": "Поножи Шепчущего Леса",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "ARCHER_COMMON_WHISPER_TRACKER_LEGS",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "ROUGH_LEATHER",
+          "quantity": 5
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN",
+      "learningScrollItemId": "RECIPE_SCROLL_LW_WHISPER_TRACKER_LEGS"
+    },
+    {
+      "id": "LW_LIGHT_HEAD",
+      "professionId": "LEATHERWORKING",
+      "name": "Капюшон Серой Тропы",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "ARCHER_UNCOMMON_GREY_TRAIL_HEAD",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "LIGHT_LEATHER",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN",
+      "learningScrollItemId": "RECIPE_SCROLL_LW_LIGHT_HEAD"
+    },
+    {
+      "id": "LW_LIGHT_SHOULDERS",
+      "professionId": "LEATHERWORKING",
+      "name": "Наплечники Серой Тропы",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "ARCHER_UNCOMMON_GREY_TRAIL_SHOULDERS",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "LIGHT_LEATHER",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN",
+      "learningScrollItemId": "RECIPE_SCROLL_LW_LIGHT_SHOULDERS"
+    },
+    {
+      "id": "LW_LIGHT_LEGS",
+      "professionId": "LEATHERWORKING",
+      "name": "Поножи Серой Тропы",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "ARCHER_UNCOMMON_GREY_TRAIL_LEGS",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "LIGHT_LEATHER",
+          "quantity": 5
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN",
+      "learningScrollItemId": "RECIPE_SCROLL_LW_LIGHT_LEGS"
+    },
+    {
+      "id": "LW_THICK_HEAD",
+      "professionId": "LEATHERWORKING",
+      "name": "Капюшон плотной кожи",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "ARCHER_CRAFTED_DENSE_LEATHER_HEAD",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "THICK_LEATHER",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN",
+      "learningScrollItemId": "RECIPE_SCROLL_LW_THICK_HEAD"
+    },
+    {
+      "id": "LW_THICK_SHOULDERS",
+      "professionId": "LEATHERWORKING",
+      "name": "Наплечники плотной кожи",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "ARCHER_CRAFTED_DENSE_LEATHER_SHOULDERS",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "THICK_LEATHER",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN",
+      "learningScrollItemId": "RECIPE_SCROLL_LW_THICK_SHOULDERS"
+    },
+    {
+      "id": "LW_THICK_LEGS",
+      "professionId": "LEATHERWORKING",
+      "name": "Поножи плотной кожи",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "ARCHER_CRAFTED_DENSE_LEATHER_LEGS",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "THICK_LEATHER",
+          "quantity": 5
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN",
+      "learningScrollItemId": "RECIPE_SCROLL_LW_THICK_LEGS"
+    },
+    {
+      "id": "ALCHEMY_SCROLL_MINOR_HEALING_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Зелье лечения",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "MINOR_HEALING_POTION",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "FOREST_MINT",
+          "quantity": 3
+        },
+        {
+          "itemId": "SILVERLEAF",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN",
+      "learningScrollItemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_HEALING_POTION"
+    },
+    {
+      "id": "ALCHEMY_SCROLL_MINOR_BATTLE_TONIC",
+      "professionId": "ALCHEMY",
+      "name": "Малый боевой тоник",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "MINOR_BATTLE_TONIC",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "FOREST_MINT",
+          "quantity": 3
+        },
+        {
+          "itemId": "SILVERLEAF",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN",
+      "learningScrollItemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_BATTLE_TONIC"
+    },
+    {
+      "id": "ALCHEMY_SCROLL_MINOR_ANTIDOTE",
+      "professionId": "ALCHEMY",
+      "name": "Малое противоядие",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "MINOR_ANTIDOTE",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "DEWY_BLOSSOM",
+          "quantity": 3
+        },
+        {
+          "itemId": "HONEY_GRASS",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN",
+      "learningScrollItemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_MINOR_ANTIDOTE"
+    },
+    {
+      "id": "ALCHEMY_SCROLL_SUPERIOR_HEALING_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Превосходное зелье лечения",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "SUPERIOR_HEALING_POTION",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "SHADOW_MOSS",
+          "quantity": 6
+        },
+        {
+          "itemId": "HUSHROOT",
+          "quantity": 6
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN",
+      "learningScrollItemId": "RECIPE_SCROLL_ALCHEMY_SCROLL_SUPERIOR_HEALING_POTION"
+    }
+  ]
+}

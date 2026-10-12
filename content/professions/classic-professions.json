@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.52.0",
-  "balanceVersion": "0.42.0",
-  "publishedAtUtc": "2026-10-11T19:00:00+00:00",
+  "contentVersion": "0.54.0",
+  "balanceVersion": "0.44.0",
+  "publishedAtUtc": "2026-10-12T07:00:00+00:00",
   "professions": [
     {
       "id": "MINING",

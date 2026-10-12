@@ -32,6 +32,8 @@ public sealed class ContentValidationPipeline
             new ProgressionBalanceValidator(),
             new EncounterContentValidator(),
             new WorldValidator(),
+            new Elyndor.Core.Professions.ResourceContentValidator(),
+            new Elyndor.Core.Professions.RecipeScrollContentValidator(),
             new DungeonValidator()
         ]);
 

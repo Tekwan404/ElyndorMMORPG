@@ -3,6 +3,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.Professions;
+using Elyndor.Infrastructure.Characters;
+using Elyndor.Core.Content;
 using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Server.Professions;
@@ -20,9 +22,10 @@ public static class ProfessionEndpoints
         group.MapPost("/skinning", SkinAsync);
         group.MapPost("/craft", CraftAsync);
         group.MapPost("/gather", GatherAsync);
+        group.MapPost("/forget", ForgetAsync);
+        group.MapPost("/study", StudyAsync);
         group.MapPost("/disenchant", DisenchantAsync);
         group.MapPost("/enchant", EnchantAsync);
-        group.MapPost("/forget", ForgetAsync);
         return endpoints;
     }
 
@@ -102,25 +105,37 @@ public static class ProfessionEndpoints
         return ToResult(result, httpContext);
     }
 
-    private static async Task<IResult> GatherAsync(GatherProfessionRequest request, ClaimsPrincipal user, HttpContext httpContext, ProfessionService service, CancellationToken cancellationToken)
+    private static async Task<IResult> StudyAsync(CraftProfessionRequest request, ClaimsPrincipal user,
+        HttpContext httpContext, ProfessionRecipeLearningService service, CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
-        return ToResult(await service.GatherAsync(accountId, request.NodeId, request.MutationId, cancellationToken), httpContext);
+        return await operationGuard.ExecuteOutOfCombatAsync(accountId, async () =>
+            ToResult(await service.LearnAsync(accountId, request.RecipeId, request.MutationId, cancellationToken), httpContext),
+            () => Problem("combat_active", StatusCodes.Status409Conflict, httpContext), cancellationToken);
     }
-    private static async Task<IResult> DisenchantAsync(DisenchantProfessionRequest request, ClaimsPrincipal user, HttpContext httpContext, ProfessionService service, CancellationToken cancellationToken)
+
+    private static async Task<IResult> ForgetAsync(LearnProfessionRequest request, ClaimsPrincipal user,
+        HttpContext httpContext, ProfessionService service, CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
-        return ToResult(await service.DisenchantAsync(accountId, request.ItemId, request.MutationId, cancellationToken), httpContext);
+        return await operationGuard.ExecuteOutOfCombatAsync(accountId, async () =>
+            ToResult(await service.ForgetAsync(accountId, request.ProfessionId, request.MutationId, cancellationToken), httpContext),
+            () => Problem("combat_active", StatusCodes.Status409Conflict, httpContext), cancellationToken);
     }
-    private static async Task<IResult> EnchantAsync(EnchantProfessionRequest request, ClaimsPrincipal user, HttpContext httpContext, ProfessionService service, CancellationToken cancellationToken)
+
+    private static async Task<IResult> GatherAsync(GatherResourceRequest request, ClaimsPrincipal user,
+        HttpContext httpContext, ResourceGatheringService service, ProfessionService professions, IContentSnapshotProvider contentProvider, CharacterOperationGuard operationGuard,
+        CancellationToken cancellationToken)
     {
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
-        return ToResult(await service.EnchantAsync(accountId, request.ItemId, request.EnchantmentId, request.MutationId, cancellationToken), httpContext);
-    }
-    private static async Task<IResult> ForgetAsync(LearnProfessionRequest request, ClaimsPrincipal user, HttpContext httpContext, ProfessionService service, CancellationToken cancellationToken)
-    {
-        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
-        return ToResult(await service.ForgetAsync(accountId, request.ProfessionId, request.MutationId, cancellationToken), httpContext);
+        return await operationGuard.ExecuteOutOfCombatAsync(accountId, async () =>
+            ToResult(contentProvider.GetCurrent().Package.ProfessionGatheringNodes?.Any(node => node.Id == request.NodeId) == true
+                ? await professions.GatherAsync(accountId, request.NodeId, request.MutationId, cancellationToken)
+                : await service.GatherAsync(accountId, request.NodeId, request.MutationId, cancellationToken), httpContext),
+            () => Problem("combat_active", StatusCodes.Status409Conflict, httpContext),
+            cancellationToken);
     }
 
     private static IResult ToResult(ProfessionMutationResult result, HttpContext httpContext)
@@ -129,11 +144,29 @@ public static class ProfessionEndpoints
             return Results.Ok(result);
         int status = result.ErrorCode switch
         {
-            ProfessionErrorCodes.CharacterNotFound or ProfessionErrorCodes.CorpseNotFound or ProfessionErrorCodes.RecipeNotFound => StatusCodes.Status404NotFound,
-            ProfessionErrorCodes.ProfessionAlreadyLearned or ProfessionErrorCodes.ProfessionLimitReached or ProfessionErrorCodes.CorpseAlreadySkinned or ProfessionErrorCodes.IdempotencyConflict => StatusCodes.Status409Conflict,
+            ProfessionErrorCodes.CharacterNotFound or ProfessionErrorCodes.CorpseNotFound or ProfessionErrorCodes.RecipeNotFound or "resource_not_found" => StatusCodes.Status404NotFound,
+            ProfessionErrorCodes.ProfessionAlreadyLearned or ProfessionErrorCodes.ProfessionLimitReached or ProfessionErrorCodes.CorpseAlreadySkinned or ProfessionErrorCodes.IdempotencyConflict or "resource_unavailable" or "resource_travelling" or "resource_afk_active" => StatusCodes.Status409Conflict,
             _ => StatusCodes.Status422UnprocessableEntity
         };
         return Problem(result.ErrorCode ?? "profession_operation_failed", status, httpContext);
+    }
+
+    private static async Task<IResult> DisenchantAsync(DisenchantProfessionRequest request, ClaimsPrincipal user,
+        HttpContext httpContext, ProfessionService service, CharacterOperationGuard operationGuard, CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(accountId, async () =>
+            ToResult(await service.DisenchantAsync(accountId, request.ItemId, request.MutationId, cancellationToken), httpContext),
+            () => Problem("combat_active", StatusCodes.Status409Conflict, httpContext), cancellationToken);
+    }
+
+    private static async Task<IResult> EnchantAsync(EnchantProfessionRequest request, ClaimsPrincipal user,
+        HttpContext httpContext, ProfessionService service, CharacterOperationGuard operationGuard, CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(accountId, async () =>
+            ToResult(await service.EnchantAsync(accountId, request.ItemId, request.EnchantmentId, request.MutationId, cancellationToken), httpContext),
+            () => Problem("combat_active", StatusCodes.Status409Conflict, httpContext), cancellationToken);
     }
 
     private static bool TryGetAccountId(ClaimsPrincipal user, out Guid accountId) =>
@@ -149,10 +182,10 @@ public static class ProfessionEndpoints
                 ["correlationId"] = httpContext.TraceIdentifier
             });
 
-    public sealed record GatherProfessionRequest(string NodeId, Guid MutationId);
-    public sealed record DisenchantProfessionRequest(Guid ItemId, Guid MutationId);
-    public sealed record EnchantProfessionRequest(Guid ItemId, string EnchantmentId, Guid MutationId);
     public sealed record LearnProfessionRequest(string ProfessionId, Guid MutationId);
     public sealed record SkinCorpseRequest(Guid CombatSessionId, Guid EnemyActorId, Guid MutationId);
     public sealed record CraftProfessionRequest(string RecipeId, Guid MutationId);
+    public sealed record DisenchantProfessionRequest(Guid ItemId, Guid MutationId);
+    public sealed record EnchantProfessionRequest(Guid ItemId, string EnchantmentId, Guid MutationId);
+    public sealed record GatherResourceRequest(string NodeId, Guid MutationId);
 }

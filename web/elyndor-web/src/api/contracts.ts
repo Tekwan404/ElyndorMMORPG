@@ -420,7 +420,7 @@ export const EQUIPMENT_SLOT_TO_EQUIPPED_KEY = {
 
 export type EquippedInventoryKey =
   (typeof EQUIPMENT_SLOT_TO_EQUIPPED_KEY)[EquipmentSlot]
-export type ItemType = 'Equipment' | 'Material' | 'Consumable' | 'LootContainer'
+export type ItemType = 'Equipment' | 'Material' | 'Consumable' | 'LootContainer' | 'Recipe'
 export type ItemRarity = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary' | 'Unique'
 
 export interface ConsumableAction {
@@ -839,6 +839,8 @@ export interface CombatAbility {
   cooldownSeconds: number
   isUnblockable?: boolean
   targetType?: CombatAbilityTargetType
+  usesGlobalCooldown?: boolean
+  canUseWhileCasting?: boolean
 }
 
 export type CombatAbilityTargetType =
@@ -875,6 +877,7 @@ export interface CombatActorSnapshot {
   autoAttackIntervalSeconds?: number | null
   nextAutoAttackAtUtc?: string | null
   cooldowns: Record<string, string>
+  globalCooldownEndsAtUtc?: string | null
   knownAbilityIds: string[]
   abilities: CombatAbility[]
   effects: CombatEffectSnapshot[]

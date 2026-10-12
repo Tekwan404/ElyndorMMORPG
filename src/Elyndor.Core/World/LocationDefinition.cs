@@ -2,7 +2,8 @@ namespace Elyndor.Core.World;
 
 public sealed record LocationEncounterDefinition(
     string MonsterId,
-    decimal Weight = 1);
+    decimal Weight = 1,
+    EncounterAvailabilityDefinition? Availability = null);
 
 public sealed record LocationDefinition(
     string Id,
@@ -18,4 +19,5 @@ public sealed record LocationDefinition(
     string Description = "",
     decimal TravelDurationSeconds = 0,
     bool AllowAfk = false,
-    string MapId = "BORDERLANDS");
+    string MapId = "BORDERLANDS",
+    IReadOnlyList<LocationPointDefinition>? Points = null);

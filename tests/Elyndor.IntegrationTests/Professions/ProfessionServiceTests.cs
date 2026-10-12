@@ -116,8 +116,15 @@ public sealed class ProfessionServiceTests(PostgresFixture postgres) : IAsyncLif
         Assert.True((await service.GatherAsync(accountId, "COPPER_VEIN", mutation, CancellationToken.None)).IsSuccess);
         Assert.True((await service.GatherAsync(accountId, "COPPER_VEIN", mutation, CancellationToken.None)).Replayed);
         Assert.Equal("profession_gathering_cooldown", (await service.GatherAsync(accountId, "COPPER_VEIN", Guid.NewGuid(), CancellationToken.None)).ErrorCode);
+        var location = await context.CharacterLocations.SingleAsync(item => item.CharacterId == characterId);
+        context.CharacterLocations.Remove(location);
+        context.CharacterLocations.Add(new Elyndor.Core.World.CharacterLocation(characterId, "STARTER_TOWN", 1, Now));
+        await context.SaveChangesAsync();
         Assert.True((await service.ForgetAsync(accountId, ProfessionIds.Mining, Guid.NewGuid(), CancellationToken.None)).IsSuccess);
         Assert.True((await service.LearnAsync(accountId, ProfessionIds.Mining, Guid.NewGuid(), CancellationToken.None)).IsSuccess);
+        context.CharacterLocations.Remove(await context.CharacterLocations.SingleAsync(item => item.CharacterId == characterId));
+        context.CharacterLocations.Add(new Elyndor.Core.World.CharacterLocation(characterId, "WHISPERING_FOREST", 1, Now));
+        await context.SaveChangesAsync();
         Assert.Equal("profession_gathering_cooldown", (await service.GatherAsync(accountId, "COPPER_VEIN", Guid.NewGuid(), CancellationToken.None)).ErrorCode);
         await using var verify = postgres.CreateDbContext();
         Assert.Equal(2, await verify.CharacterItems.Where(item => item.CharacterId == characterId && item.ItemDefinitionId == "COPPER_ORE").SumAsync(item => item.Quantity));

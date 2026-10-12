@@ -56,7 +56,8 @@ public sealed record SummonDefinition(
     bool IsCombatObject = false,
     string? AuraEffectId = null,
     string? AuraTargetSelector = null,
-    decimal InitialHpPercent = 100);
+    decimal InitialHpPercent = 100,
+    bool IsAmbientAggro = false);
 
 public sealed record EncounterTriggerDefinition(
     EncounterTriggerType Type,

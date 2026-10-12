@@ -8,8 +8,9 @@ import auctionArt from '@/assets/world/city-auction.webp'
 import marketArt from '@/assets/world/city-market.webp'
 import bankArt from '@/assets/world/city-bank.webp'
 import craftArt from '@/assets/world/city-craft.webp'
-import districtArt from '@/assets/world/city-craft-district.png'
-import professionAtlas from '@/assets/professions/workshop-atlas.png'
+import districtArt from '@/assets/world/city-craft-map.webp'
+import professionAtlas from '@/assets/professions/workshop-atlas.webp'
+import herbAlchemyAtlas from '@/assets/professions/herbalism-alchemy-atlas.webp'
 import arenaArt from '@/assets/world/city-arena.webp'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { useCombatSessionStore } from '@/stores/combatSession'
@@ -64,31 +65,30 @@ const workshops = [
   {
     id: 'LEATHERWORKING',
     name: 'Кожевенная мастерская',
-    profession: 'Кожевничество',
-    detail: 'Выделка кожи · лёгкие доспехи',
+    label: 'Кожевничество',
     art: 1,
+    x: 23,
+    y: 23,
   },
   {
-    id: 'MINING',
-    name: 'Плавильня',
-    profession: 'Горное дело',
-    detail: 'Руда в слитки · маршруты добычи',
-    art: 2,
+    id: 'ALCHEMY',
+    name: 'Алхимическая лаборатория',
+    label: 'Алхимия',
+    art: 1,
+    herbal: true,
+    x: 77,
+    y: 23,
   },
+  { id: 'MINING', name: 'Плавильня', label: 'Плавильня', art: 2, x: 23, y: 46 },
   {
     id: 'BLACKSMITHING',
     name: 'Кузнечная мастерская',
-    profession: 'Кузнечное дело',
-    detail: 'Оружие · металлические доспехи',
+    label: 'Кузнечное дело',
     art: 3,
+    x: 77,
+    y: 46,
   },
-  {
-    id: 'ENCHANTING',
-    name: 'Стол наложения чар',
-    profession: 'Наложение чар',
-    detail: 'Распыление · свитки · чары',
-    art: 4,
-  },
+  { id: 'ENCHANTING', name: 'Стол наложения чар', label: 'Наложение чар', art: 4, x: 23, y: 69 },
 ]
 function openProfessionWorkshop(id: string | null): void {
   workshopProfessionId.value = id
@@ -216,8 +216,13 @@ async function startTraining(): Promise<void> {
       </button>
     </div>
 
-    <div v-else class="city-interior" data-city-interior>
-      <header class="city-interior__header">
+    <div
+      v-else
+      class="city-interior"
+      :class="{ 'city-interior--craft': activeDestination === 'craft' }"
+      data-city-interior
+    >
+      <header v-if="activeDestination !== 'craft'" class="city-interior__header">
         <UIButton variant="ghost" data-city-back @click="returnToCity">{{
           activeDestination === 'professions' ? '‹ Квартал' : '‹ Город'
         }}</UIButton>
@@ -263,55 +268,71 @@ async function startTraining(): Promise<void> {
 
       <section
         v-else-if="activeDestination === 'craft'"
-        class="craft-district"
+        class="craft-district city-map"
         data-city-craft-district
       >
-        <div class="craft-district__scene">
-          <img
-            :src="districtArt"
-            alt="Каменный двор ремесленников: кожевенная мастерская, кузница и стол магических чар"
+        <img
+          class="city-map__art"
+          :src="districtArt"
+          alt="Ремесленный квартал — мастерские вокруг каменной площади"
+        />
+        <div class="city-map__top-shade" aria-hidden="true" />
+        <UIButton variant="ghost" class="craft-district__back" data-city-back @click="returnToCity"
+          >‹ Город</UIButton
+        >
+        <div class="city-map__heading craft-district__heading">
+          <small>МАСТЕРСКИЕ ЭЛИНДОРА</small>
+          <h1>Ремесленный квартал</h1>
+        </div>
+        <button
+          v-for="workshop in workshops"
+          :key="workshop.id"
+          type="button"
+          class="city-marker city-marker--wide"
+          :data-city-workshop="workshop.id"
+          :style="{ left: workshop.x + '%', top: workshop.y + '%' }"
+          :aria-label="'Открыть: ' + workshop.name"
+          @click="openProfessionWorkshop(workshop.id)"
+        >
+          <span
+            class="craft-district__medallion"
+            :style="{
+              backgroundImage: `url(${'herbal' in workshop ? herbAlchemyAtlas : professionAtlas})`,
+              backgroundSize: 'herbal' in workshop ? '200% 100%' : '500% 100%',
+              backgroundPosition: `${'herbal' in workshop ? 100 : workshop.art * 25}% center`,
+            }"
+            aria-hidden="true"
           />
-          <div>
-            <small>МАСТЕРСКИЕ ЭЛИНДОРА</small>
-            <h3>Огонь, сталь и магия</h3>
-            <p>Принесите добытое сырьё — создайте снаряжение для следующей охоты.</p>
-          </div>
-        </div>
-        <div class="craft-district__workshops">
-          <button
-            v-for="workshop in workshops"
-            :key="workshop.id"
-            type="button"
-            class="craft-workshop"
-            :data-city-workshop="workshop.id"
-            @click="openProfessionWorkshop(workshop.id)"
-          >
-            <span
-              class="craft-workshop__art"
-              :style="{
-                backgroundImage: `url(${professionAtlas})`,
-                backgroundPosition: `${workshop.art * 25}% center`,
-              }"
-              aria-hidden="true"
-            />
-            <span class="craft-workshop__body"
-              ><small>{{ workshop.profession }}</small
-              ><strong>{{ workshop.name }}</strong
-              ><span>{{ workshop.detail }}</span></span
-            >
-            <span class="craft-workshop__arrow" aria-hidden="true">›</span>
-          </button>
-        </div>
-        <p class="craft-district__hint">
-          Мастерские доступны в городе. Для работы изучите нужную профессию. Руду и шкуры добывают
-          за городскими воротами.
-        </p>
-        <div class="craft-district__services">
-          <UIButton data-city-forge @click="forgeOpen = true">Улучшение и перековка</UIButton>
-          <UIButton variant="secondary" data-city-professions @click="openProfessionWorkshop(null)"
-            >Все профессии · обучение</UIButton
-          >
-        </div>
+          <span class="city-marker__name">{{ workshop.label }}</span
+          ><span class="city-marker__arrow" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          class="city-marker city-marker--wide"
+          style="left: 77%; top: 69%"
+          data-city-forge
+          aria-label="Открыть улучшение и перековку"
+          @click="forgeOpen = true"
+        >
+          <span class="city-marker__seal" aria-hidden="true"
+            ><IconGenerator
+              :config="{ id: 'craft-reforge', glyph: 'axe', category: 'utility' }" /></span
+          ><span class="city-marker__name">Улучшение и перековка</span
+          ><span class="city-marker__arrow" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          class="city-marker city-marker--wide"
+          style="left: 50%; top: 90%"
+          data-city-professions
+          @click="openProfessionWorkshop(null)"
+        >
+          <span class="city-marker__seal" aria-hidden="true"
+            ><IconGenerator
+              :config="{ id: 'craft-training', glyph: 'scroll', category: 'utility' }" /></span
+          ><span class="city-marker__name">Обучение профессиям</span
+          ><span class="city-marker__arrow" aria-hidden="true" />
+        </button>
       </section>
 
       <div v-else-if="activeDestination === 'bank'" class="city-interior__choices">
@@ -571,123 +592,52 @@ async function startTraining(): Promise<void> {
     transition: none;
   }
 }
-.craft-district {
-  display: grid;
-  gap: 12px;
-}
-.craft-district__scene {
-  position: relative;
-  min-height: 220px;
-  overflow: hidden;
-  border: 1px solid #816239;
-  background: #15110e;
-}
-.craft-district__scene img {
-  position: absolute;
-  width: 100%;
+.city-interior--craft {
   height: 100%;
-  object-fit: cover;
+  padding: 0;
+}
+.craft-district {
+  min-height: 470px;
+}
+.craft-district .city-map__art {
   object-position: center;
 }
-.craft-district__scene > div {
-  position: relative;
-  padding: 125px 16px 16px;
-  background: linear-gradient(transparent, #090a10ef);
+.craft-district__back {
+  position: absolute;
+  top: 10px;
+  left: 8px;
+  z-index: 3;
+  background: #11131bda;
 }
-.craft-district__scene small,
-.craft-workshop small {
-  color: #d0a862;
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.craft-district__heading {
+  top: 16px;
+  left: auto;
+  right: 12px;
+  width: calc(100% - 110px);
+  transform: none;
 }
-.craft-district__scene h3 {
-  margin: 5px 0;
-  font:
-    700 1.3rem Georgia,
-    serif;
-  color: #fff0cf;
+.craft-district__heading h1 {
+  font-size: clamp(0.9rem, 3.5vw, 1.2rem);
 }
-.craft-district__scene p {
-  margin: 0;
-  max-width: 420px;
-  font-size: 0.78rem;
-  line-height: 1.5;
-  color: #d3c7b3;
+.craft-district__heading small {
+  font-size: 0.48rem;
 }
-.craft-district__workshops {
-  display: grid;
-  gap: 8px;
+.craft-district .city-marker__seal {
+  width: 43px;
+  height: 43px;
+  margin: 2px 0 5px;
 }
-.craft-workshop {
-  display: flex;
-  align-items: stretch;
-  min-height: 94px;
-  padding: 0;
-  border: 1px solid #6a5336;
-  background: linear-gradient(110deg, #241a12, #11121a);
-  color: #eee2c9;
-  text-align: left;
-  cursor: pointer;
-}
-.craft-workshop__art {
-  flex: 0 0 88px;
-  background-size: 500% 100%;
-}
-.craft-workshop__body {
-  display: grid;
-  align-content: center;
-  gap: 5px;
-  min-width: 0;
-  padding: 12px;
-}
-.craft-workshop strong {
-  font:
-    700 0.95rem Georgia,
-    serif;
-}
-.craft-workshop__body > span {
-  font-size: 0.7rem;
-  color: #b8ad99;
-}
-.craft-workshop__arrow {
-  align-self: center;
-  margin-left: auto;
-  padding: 8px;
-  font-size: 1.7rem;
-  color: #c5a366;
-}
-.craft-workshop:hover {
-  border-color: #c5a366;
-}
-.craft-workshop:focus-visible {
-  outline: 2px solid #edc677;
-  outline-offset: 2px;
-}
-.craft-district__hint {
-  margin: 0;
-  font-size: 0.74rem;
-  line-height: 1.5;
-  color: #b8ad99;
-}
-.craft-district__services {
-  display: grid;
-  gap: 8px;
-}
-@media (min-width: 640px) {
-  .craft-district__workshops {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 340px) {
-  .craft-workshop__art {
-    flex-basis: 68px;
-  }
-  .craft-workshop__body {
-    padding: 9px;
-  }
-  .craft-workshop strong {
-    font-size: 0.85rem;
-  }
+.craft-district__medallion {
+  display: block;
+  width: 49px;
+  height: 49px;
+  margin: 3px 0 5px;
+  border: 2px solid #b68b45;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 2px #f0c16b,
+    0 0 0 2px #241813,
+    0 0 12px #000b;
+  background-repeat: no-repeat;
 }
 </style>

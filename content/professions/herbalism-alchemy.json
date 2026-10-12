@@ -1,0 +1,264 @@
+{
+  "contentVersion": "0.52.0",
+  "balanceVersion": "0.42.0",
+  "publishedAtUtc": "2026-10-11T06:00:00+00:00",
+  "professions": [
+    {
+      "id": "HERBALISM",
+      "name": "Травничество",
+      "category": "Gathering",
+      "maxSkill": 300,
+      "requiredLocationId": null
+    },
+    {
+      "id": "ALCHEMY",
+      "relatedProfessionId": "HERBALISM",
+      "name": "Алхимия",
+      "category": "Production",
+      "maxSkill": 300,
+      "requiredLocationId": "STARTER_TOWN"
+    }
+  ],
+  "professionRecipes": [
+    {
+      "id": "ALCHEMY_T1_SMALL_HEALING_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Малое зелье лечения",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "SMALL_HEALING_POTION",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "FOREST_MINT",
+          "quantity": 2
+        },
+        {
+          "itemId": "SILVERLEAF",
+          "quantity": 2
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_T1_SMALL_MANA_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Зелье маны",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "SMALL_MANA_POTION",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "FOREST_MINT",
+          "quantity": 2
+        },
+        {
+          "itemId": "SILVERLEAF",
+          "quantity": 2
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_T1_SMALL_FOCUS_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Зелье концентрации",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "SMALL_FOCUS_POTION",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "FOREST_MINT",
+          "quantity": 2
+        },
+        {
+          "itemId": "SILVERLEAF",
+          "quantity": 2
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_T1_SMALL_RAGE_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Зелье ярости",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "SMALL_RAGE_POTION",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "FOREST_MINT",
+          "quantity": 2
+        },
+        {
+          "itemId": "SILVERLEAF",
+          "quantity": 2
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_T2_HEALING_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Крепкое зелье лечения",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "HEALING_POTION",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "DEWY_BLOSSOM",
+          "quantity": 3
+        },
+        {
+          "itemId": "HONEY_GRASS",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_T2_SMALL_MANA_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Зелье маны · партия 2",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "SMALL_MANA_POTION",
+      "outputQuantity": 2,
+      "ingredients": [
+        {
+          "itemId": "DEWY_BLOSSOM",
+          "quantity": 3
+        },
+        {
+          "itemId": "HONEY_GRASS",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_T2_SMALL_FOCUS_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Зелье концентрации · партия 2",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "SMALL_FOCUS_POTION",
+      "outputQuantity": 2,
+      "ingredients": [
+        {
+          "itemId": "DEWY_BLOSSOM",
+          "quantity": 3
+        },
+        {
+          "itemId": "HONEY_GRASS",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_T2_SMALL_RAGE_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Зелье ярости · партия 2",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "SMALL_RAGE_POTION",
+      "outputQuantity": 2,
+      "ingredients": [
+        {
+          "itemId": "DEWY_BLOSSOM",
+          "quantity": 3
+        },
+        {
+          "itemId": "HONEY_GRASS",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_T3_MAJOR_HEALING_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Большое зелье лечения",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "MAJOR_HEALING_POTION",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "SHADOW_MOSS",
+          "quantity": 4
+        },
+        {
+          "itemId": "HUSHROOT",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_T3_SMALL_MANA_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Зелье маны · партия 3",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "SMALL_MANA_POTION",
+      "outputQuantity": 3,
+      "ingredients": [
+        {
+          "itemId": "SHADOW_MOSS",
+          "quantity": 4
+        },
+        {
+          "itemId": "HUSHROOT",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_T3_SMALL_FOCUS_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Зелье концентрации · партия 3",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "SMALL_FOCUS_POTION",
+      "outputQuantity": 3,
+      "ingredients": [
+        {
+          "itemId": "SHADOW_MOSS",
+          "quantity": 4
+        },
+        {
+          "itemId": "HUSHROOT",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_T3_SMALL_RAGE_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Зелье ярости · партия 3",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "SMALL_RAGE_POTION",
+      "outputQuantity": 3,
+      "ingredients": [
+        {
+          "itemId": "SHADOW_MOSS",
+          "quantity": 4
+        },
+        {
+          "itemId": "HUSHROOT",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    }
+  ]
+}

@@ -15,7 +15,7 @@ import QuestView from '@/game/quests/views/QuestView.vue'
 import WorldBossView from '@/game/worldBoss/views/WorldBossView.vue'
 import WorldMapView from '@/game/world/views/WorldMapView.vue'
 import WorldView from '@/game/world/views/WorldView.vue'
-import { locationKind, locationPresentation } from '@/game/world/locationPresentation'
+import { locationKind } from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
 import { useTradeStore } from '@/game/economy/tradeStore'
@@ -40,7 +40,9 @@ const heroInitialTab = ref<'character' | 'inventory'>('character')
 const character = computed(() => session.snapshot?.character)
 const currentLocation = computed(() => session.snapshot?.world?.currentLocation ?? null)
 const activeTravel = computed(() => session.snapshot?.world?.travel ?? null)
-const isCityLocation = computed(() => locationKind(currentLocation.value?.id) === 'city' && !activeTravel.value)
+const isCityLocation = computed(
+  () => locationKind(currentLocation.value?.id) === 'city' && !activeTravel.value,
+)
 const releaseUpdate = computed(() => session.snapshot?.releaseUpdate ?? null)
 const acknowledgingRelease = ref(false)
 const portraitArt = computed(() =>
@@ -53,20 +55,6 @@ const portraitArt = computed(() =>
       )
     : null,
 )
-function worldLocationName(locationId: string): string {
-  return locationPresentation(locationId).label
-}
-
-const locationName = computed(() => {
-  if (activeTravel.value) {
-    return `В пути → ${worldLocationName(activeTravel.value.targetLocationId)}`
-  }
-  const location = currentLocation.value
-  if (!location) return 'Неизвестная область'
-  return worldLocationName(location.id) === location.id
-    ? location.displayName
-    : worldLocationName(location.id)
-})
 const resourceTone = computed<'rage' | 'focus' | 'mana'>(() => {
   const value = character.value?.vitals.resourceType.toLowerCase()
   return value === 'rage' || value === 'mana' ? value : 'focus'
@@ -220,8 +208,16 @@ watch(
     } catch {
       // The combat store retains the connection error and supports retry/reconnect.
     }
-    try { await trade.connect() } catch { /* Trade actions surface connection errors in their own panel. */ }
-    try { await worldBoss.start() } catch { /* World boss view exposes its own retryable state. */ }
+    try {
+      await trade.connect()
+    } catch {
+      /* Trade actions surface connection errors in their own panel. */
+    }
+    try {
+      await worldBoss.start()
+    } catch {
+      /* World boss view exposes its own retryable state. */
+    }
   },
   { immediate: true },
 )
@@ -237,12 +233,9 @@ watch(
   },
 )
 
-watch(
-  [() => worldBoss.resultUnseen, () => combat.isActive],
-  ([resultUnseen, combatActive]) => {
-    if (resultUnseen && !combatActive) openWorldBoss()
-  },
-)
+watch([() => worldBoss.resultUnseen, () => combat.isActive], ([resultUnseen, combatActive]) => {
+  if (resultUnseen && !combatActive) openWorldBoss()
+})
 
 onMounted(() => {
   initializeTelegramWebApp()
@@ -254,12 +247,23 @@ onMounted(() => {
 <template>
   <div class="game-shell">
     <BossCombatLogReporter />
-    <button v-if="session.state === 'world' && trade.current?.state === 'OPEN' && !trade.joined && !combat.isActive"
-      class="trade-notice" type="button" @click="openMenu('trade')">
+    <button
+      v-if="
+        session.state === 'world' &&
+        trade.current?.state === 'OPEN' &&
+        !trade.joined &&
+        !combat.isActive
+      "
+      class="trade-notice"
+      type="button"
+      @click="openMenu('trade')"
+    >
       Вам предложили обмен · Открыть
     </button>
     <section
-      v-if="session.state === 'world' && character && !combat.isActive && activeView !== 'world-boss'"
+      v-if="
+        session.state === 'world' && character && !combat.isActive && activeView !== 'world-boss'
+      "
       class="hud"
       :class="{ 'hud--combat': combat.isActive }"
       aria-label="Состояние героя"
@@ -301,10 +305,6 @@ onMounted(() => {
       </div>
 
       <div class="hud__context">
-        <button type="button" data-hud-location @click="openLocation()">
-          <img :src="gameArt.navigation.location" alt="" aria-hidden="true" />
-          <span>{{ locationName }}</span>
-        </button>
         <div
           class="xp"
           role="progressbar"
@@ -335,9 +335,11 @@ onMounted(() => {
         title="Связь с миром потеряна"
         :message="sessionErrorMessage"
       >
-        <UIButton data-retry-session variant="secondary" @click="retrySession"
-          >{{ session.errorCode === 'telegram_web_session_invalid' ? 'Войти через Telegram' : 'Повторить вход' }}</UIButton
-        >
+        <UIButton data-retry-session variant="secondary" @click="retrySession">{{
+          session.errorCode === 'telegram_web_session_invalid'
+            ? 'Войти через Telegram'
+            : 'Повторить вход'
+        }}</UIButton>
       </UILoadingState>
       <CharacterCreationView v-else-if="session.state === 'needs-character'" />
       <BattleScreen
@@ -370,7 +372,10 @@ onMounted(() => {
         <UIButton variant="ghost" @click="openLocation()">‹ Назад</UIButton>
         <ArenaView />
       </section>
-      <HeroView v-else-if="session.state === 'world' && activeView === 'hero'" :initial-tab="heroInitialTab" />
+      <HeroView
+        v-else-if="session.state === 'world' && activeView === 'hero'"
+        :initial-tab="heroInitialTab"
+      />
       <QuestView
         v-else-if="session.state === 'world' && activeView === 'quests'"
         @open-world="openWorld()"
@@ -448,7 +453,22 @@ onMounted(() => {
   padding: var(--ui-space-3);
 }
 
-.trade-notice { position:fixed; z-index:50; top:calc(env(safe-area-inset-top, 0px) + 8px); left:50%; transform:translateX(-50%); max-width:calc(100vw - 24px); min-height:44px; padding:8px 14px; border:1px solid var(--ui-color-gold); border-radius:var(--ui-radius-md); background:#16130f; color:var(--ui-color-gold); font:700 .8rem var(--ui-font-display); box-shadow:0 6px 24px #0009; }
+.trade-notice {
+  position: fixed;
+  z-index: 50;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 24px);
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--ui-color-gold);
+  border-radius: var(--ui-radius-md);
+  background: #16130f;
+  color: var(--ui-color-gold);
+  font: 700 0.8rem var(--ui-font-display);
+  box-shadow: 0 6px 24px #0009;
+}
 .game-shell {
   position: relative;
   display: grid;
@@ -629,7 +649,7 @@ onMounted(() => {
 
 .hud__context {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: 8px;
 }

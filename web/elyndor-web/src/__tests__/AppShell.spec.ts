@@ -156,7 +156,8 @@ describe('AppShell', () => {
     expect(wrapper.get('[data-nav="location"]').attributes('aria-current')).toBe('page')
     expect(wrapper.find('[data-nav="inventory"]').exists()).toBe(false)
     expect(wrapper.get('[data-nav="location"]').attributes('disabled')).toBeUndefined()
-    expect(wrapper.get('[data-hud-location]').text()).toContain('Стартовый город')
+    expect(wrapper.find('[data-hud-location]').exists()).toBe(false)
+    expect(wrapper.find('[aria-label="Опыт"]').exists()).toBe(true)
     expect(wrapper.find('.game-shell__header').exists()).toBe(false)
     expect(wrapper.get('.hud').text()).toContain('ELYNDOR')
 

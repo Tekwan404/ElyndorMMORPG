@@ -149,7 +149,9 @@ internal static class CombatContractMapper
                     ability.ResourceCost,
                     ability.Cooldown.TotalSeconds,
                     definition?.Actions?.Any(action => action.IsUnblockable) == true,
-                    ability.TargetType.ToString());
+                    ability.TargetType.ToString(),
+                    ability.UsesGlobalCooldown,
+                    ability.CanUseWhileCasting);
             }).ToArray(),
             actor.Effects.Select(effect => new CombatEffectResponse(
                 effect.Id,
@@ -172,7 +174,8 @@ internal static class CombatContractMapper
             actor.CurrentAggroTargetActorId,
             actor.GenderId,
             actor.MonsterRank?.ToString(),
-            actor.SkinId);
+            actor.SkinId,
+            actor.GlobalCooldownEndsAtUtc);
     }
 
     private static string ResolveAbilityDescription(

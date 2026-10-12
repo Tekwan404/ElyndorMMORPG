@@ -7,6 +7,8 @@ public static class ProfessionIds
     public const string Mining = "MINING";
     public const string Blacksmithing = "BLACKSMITHING";
     public const string Enchanting = "ENCHANTING";
+    public const string Herbalism = "HERBALISM";
+    public const string Alchemy = "ALCHEMY";
 }
 
 public enum ProfessionCategory
@@ -20,7 +22,8 @@ public sealed record ProfessionDefinition(
     string Name,
     ProfessionCategory Category,
     int MaxSkill = 300,
-    string? RequiredLocationId = null);
+    string? RequiredLocationId = null,
+    string? RelatedProfessionId = null);
 
 public sealed record SkinningSourceDefinition(
     string Id,
@@ -55,7 +58,8 @@ public sealed record ProfessionRecipeDefinition(
     string OutputItemId,
     int OutputQuantity,
     IReadOnlyList<ProfessionRecipeIngredient> Ingredients,
-    string? RequiredLocationId = null);
+    string? RequiredLocationId = null,
+    string? LearningScrollItemId = null);
 
 public sealed class CharacterProfession
 {

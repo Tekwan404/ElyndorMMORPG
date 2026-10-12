@@ -22,7 +22,8 @@
     },
     {
       "monsterId": "WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4",
-      "weight": 0.28
+      "weight": 0.28,
+      "availability": { "periodSeconds": 3600, "durationSeconds": 600, "offsetSeconds": 0 }
     },
     {
       "monsterId": "WHISPERING_FOREST_GIGANTSKII_PAUK_L5",
@@ -31,6 +32,13 @@
     {
       "monsterId": "WHISPERING_FOREST_LESNOI_RAZBOINIK_L5",
       "weight": 1
+    }
+  ],
+  "points": [
+    {
+      "id": "OLD_WATCH_POST",
+      "displayName": "Старый дозор",
+      "description": "На коре вырезан знак городского дозора. Свежие кабаньи следы уходят от тропы в чащу, а над заброшенной вышкой дрожит паутина."
     }
   ]
 }

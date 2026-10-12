@@ -51,6 +51,7 @@ public sealed class PostgresFixture : IAsyncLifetime
     public async Task ResetAsync()
     {
         await using GameDbContext context = CreateDbContext();
+        await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE game.resource_nodes, game.resource_gathering_receipts");
         await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE game.release_admin_notifications");
         await context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE game.training_build_references, game.character_build_archives");
         await context.Database.ExecuteSqlRawAsync(

@@ -35,7 +35,8 @@ public sealed partial class CombatSession
         Guid sourceActorId,
         DateTimeOffset now,
         bool isCombatObject = false,
-        bool rewardEligible = true)
+        bool rewardEligible = true,
+        bool isAmbientAggro = false)
     {
         ArgumentNullException.ThrowIfNull(profile);
         ArgumentNullException.ThrowIfNull(profile.Monster);
@@ -86,7 +87,7 @@ public sealed partial class CombatSession
         _enemyForcedTargets.Add(summoned.Actor.ActorId, new ForcedTargetState());
 
         Append(new CombatEvent(
-            CombatEventType.ActorSummoned,
+            isAmbientAggro ? CombatEventType.ActorJoined : CombatEventType.ActorSummoned,
             now,
             summoned.Actor.ActorId,
             summoned.DefinitionId,

@@ -105,25 +105,6 @@ public sealed partial class ProfessionService
             return new(true, null, ItemId: outputId, Quantity: quantity);
         }, _ => Task.FromResult(false), IsolationLevel.Serializable, cancellationToken);
 
-    public Task<ProfessionMutationResult> ForgetAsync(Guid accountId, string professionId, Guid mutationId, CancellationToken cancellationToken) =>
-        dbContext.Database.CreateExecutionStrategy().ExecuteInTransactionAsync(async _ =>
-        {
-            dbContext.ChangeTracker.Clear();
-            var character = await dbContext.Characters.SingleOrDefaultAsync(item => item.AccountId == accountId, cancellationToken);
-            if (character is null) return new(false, ProfessionErrorCodes.CharacterNotFound);
-            if (mutationId == Guid.Empty) return new(false, ProfessionErrorCodes.IdempotencyConflict);
-            string fingerprint = Fingerprint($"FORGET|{professionId}");
-            var replay = await ReplayAsync(character.Id, mutationId, "PROFESSION_FORGET", fingerprint, cancellationToken);
-            if (replay is not null) return replay;
-            var profession = await dbContext.CharacterProfessions.SingleOrDefaultAsync(
-                item => item.CharacterId == character.Id && item.ProfessionId == professionId, cancellationToken);
-            if (profession is null) return new(false, ProfessionErrorCodes.ProfessionNotLearned);
-            dbContext.CharacterProfessions.Remove(profession);
-            dbContext.CharacterMutations.Add(new(character.Id, mutationId, "PROFESSION_FORGET", fingerprint, timeProvider.GetUtcNow()));
-            await dbContext.SaveChangesAsync(cancellationToken);
-            return new(true, null);
-        }, _ => Task.FromResult(false), IsolationLevel.Serializable, cancellationToken);
-
     private async Task<DateTimeOffset?> MiningCooldownUntilAsync(Guid characterId, CancellationToken cancellationToken)
     {
         int cooldown = (contentProvider.GetCurrent().Package.ProfessionGatheringNodes ?? []).Select(node => node.CooldownSeconds).DefaultIfEmpty(0).Max();
@@ -135,8 +116,7 @@ public sealed partial class ProfessionService
     }
 
     private bool ShouldIncreaseProfessionSkill(int currentSkill, int requiredSkill, int skillUpUntil) =>
-        currentSkill < skillUpUntil && (currentSkill <= requiredSkill
-            || professionRandom.NextUnit() < (decimal)(skillUpUntil - currentSkill) / Math.Max(1, skillUpUntil - requiredSkill));
+        ProfessionSkillRules.ShouldIncrease(professionRandom, currentSkill, requiredSkill, skillUpUntil);
 
     private async Task<bool> IsAtLocationAsync(Guid characterId, string locationId, CancellationToken cancellationToken) =>
         await dbContext.CharacterLocations.AnyAsync(item => item.CharacterId == characterId && item.LocationId == locationId, cancellationToken)

@@ -12,6 +12,8 @@ const props = defineProps<{
   resource: number
   queuedAbilityIds: readonly string[]
   now: number
+  globalCooldownEndsAtUtc?: string | null
+  activeCastResolvesAtUtc?: string | null
   disabled: boolean
 }>()
 const emit = defineEmits<{ use: [ability: CombatAbility] }>()
@@ -27,9 +29,16 @@ function remaining(abilityId: string): number {
   return readyAt ? Math.max(0, (Date.parse(readyAt) - props.now) / 1_000) : 0
 }
 
+function globalRemaining(ability: CombatAbility): number {
+  if (ability.usesGlobalCooldown === false || !props.globalCooldownEndsAtUtc) return 0
+  return Math.max(0, (Date.parse(props.globalCooldownEndsAtUtc) - props.now) / 1000)
+}
+
 function state(ability: CombatAbility): 'ready' | 'cooldown' | 'resource' | 'disabled' {
   if (props.disabled) return 'disabled'
-  if (remaining(ability.id) > 0) return 'cooldown'
+  if (remaining(ability.id) > 0 || globalRemaining(ability) > 0.25) return 'cooldown'
+  if (ability.canUseWhileCasting !== true && props.activeCastResolvesAtUtc
+    && Date.parse(props.activeCastResolvesAtUtc) - props.now > 250) return 'cooldown'
   if (props.resource < ability.resourceCost) return 'resource'
   return 'ready'
 }
@@ -37,7 +46,7 @@ function state(ability: CombatAbility): 'ready' | 'cooldown' | 'resource' | 'dis
 function accessibleLabel(ability: CombatAbility): string {
   const currentState = state(ability)
   if (currentState === 'cooldown')
-    return `${ability.displayName}, восстановление ${Math.ceil(remaining(ability.id))} секунд`
+    return `${ability.displayName}, восстановление ${Math.ceil(Math.max(remaining(ability.id), globalRemaining(ability)))} секунд`
   if (currentState === 'resource') return `${ability.displayName}, недостаточно ресурса`
   if (currentState === 'disabled') return `${ability.displayName}, недоступно`
   return `${ability.displayName}, готово`
@@ -136,8 +145,8 @@ onUnmounted(cancelInspection)
           Math.round(ability.resourceCost)
         }}</small>
         <span v-if="queuedAbilityIds.includes(ability.id)" class="skill-panel__queued">ГОТОВО</span>
-        <span v-if="remaining(ability.id) > 0" class="skill-panel__cooldown" data-cooldown-overlay>
-          <b>{{ Math.ceil(remaining(ability.id)) }}</b>
+        <span v-if="remaining(ability.id) > 0 || globalRemaining(ability) > 0.25" class="skill-panel__cooldown" data-cooldown-overlay>
+          <b>{{ Math.ceil(Math.max(remaining(ability.id), globalRemaining(ability))) }}</b>
         </span>
       </button>
     </div>

@@ -8,7 +8,8 @@ public enum ItemType
     Material,
     Consumable,
     LootContainer,
-    SpatialArtifact
+    SpatialArtifact,
+    Recipe
 }
 
 public enum ItemRarity

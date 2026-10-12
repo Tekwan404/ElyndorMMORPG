@@ -95,6 +95,30 @@ public sealed class WorldEncounterContentValidatorTests
         Assert.Contains(errors, error => error.Code == "INVALID_LOCATION_ENCOUNTER");
     }
 
+    [Theory]
+    [InlineData(0, 10, 0)]
+    [InlineData(60, 0, 0)]
+    [InlineData(60, 60, 0)]
+    [InlineData(60, 10, -1)]
+    [InlineData(60, 10, 60)]
+    public void ValidateRejectsInvalidRareSchedules(int period, int duration, int offset)
+    {
+        var location = new LocationDefinition("FOREST", "Лес", "ADVENTURE", 1, [],
+            [new LocationEncounterDefinition("WOLF",
+                Availability: new EncounterAvailabilityDefinition(period, duration, offset))]);
+        Assert.Contains(WorldEncounterContentValidator.Validate(Package(location, Monster("WOLF"))),
+            error => error.Code == "INVALID_ENCOUNTER_AVAILABILITY");
+    }
+
+    [Fact]
+    public void ValidateRejectsDuplicateOrEmptyInspectionPoints()
+    {
+        var location = new LocationDefinition("TOWN", "Город", "SAFE", 1, [],
+            Points: [new("GATE", "Ворота", ""), new("GATE", "Ворота", "История ворот.")]);
+        Assert.Contains(WorldEncounterContentValidator.Validate(Package(location)),
+            error => error.Code == "INVALID_LOCATION_POINT");
+    }
+
     private static GameContentPackage Package(
         LocationDefinition location,
         params MonsterDefinition[] monsters) => new(
