@@ -1,9 +1,9 @@
-using System.Buffers.Binary;
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Combat.Sessions;
+using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Core.Professions;
@@ -37,15 +37,17 @@ public sealed record SkinnableCorpseState(Guid CombatSessionId, Guid EnemyActorI
 public sealed record ProfessionRecipeState(string Id, string Name, string ProfessionId, int RequiredSkill, string OutputItemId, int OutputQuantity, IReadOnlyList<ProfessionRecipeIngredient> Ingredients, string? RequiredLocationId, int SkillUpUntil = 0, string? OutputName = null, string? OutputIconId = null, int OutputRequiredLevel = 1, bool IsLearned = true, string? LearningScrollItemId = null, string? LearningScrollName = null);
 public sealed record ProfessionMaterialSourceState(string ItemId, string ItemName, string MonsterName, string LocationId, string LocationName, int RequiredSkill, int SkillUpUntil = 0, string? ProfessionId = null);
 public sealed record ProfessionMaterialState(string Id, string Name);
-public sealed record ProfessionStateSnapshot(IReadOnlyList<ProfessionStateItem> Learned, IReadOnlyList<SkinnableCorpseState> SkinnableCorpses, IReadOnlyList<ProfessionRecipeState> Recipes, IReadOnlyList<ProfessionMaterialSourceState>? MaterialSources = null, IReadOnlyList<ProfessionMaterialState>? Materials = null, IReadOnlyList<ProfessionDefinition>? Available = null, int MaxPrimaryProfessions = 2);
+public sealed record ProfessionEnchantmentState(string Id, string Name, string ScrollItemId, string StatId, decimal Value, IReadOnlyList<string> Slots);
+public sealed record ProfessionStateSnapshot(IReadOnlyList<ProfessionStateItem> Learned, IReadOnlyList<SkinnableCorpseState> SkinnableCorpses, IReadOnlyList<ProfessionRecipeState> Recipes, IReadOnlyList<ProfessionMaterialSourceState>? MaterialSources = null, IReadOnlyList<ProfessionMaterialState>? Materials = null, IReadOnlyList<ProfessionDefinition>? Available = null, IReadOnlyList<ProfessionGatheringNodeDefinition>? GatheringNodes = null, IReadOnlyList<ProfessionEnchantmentState>? Enchantments = null, DateTimeOffset? NextGatherAtUtc = null, int MaxPrimaryProfessions = 2);
 public sealed record ProfessionMutationResult(bool IsSuccess, string? ErrorCode, ProfessionStateSnapshot? State = null, string? ItemId = null, int Quantity = 0, bool SkillIncreased = false, bool Replayed = false);
 
-public sealed class ProfessionService(
+public sealed partial class ProfessionService(
     GameDbContext dbContext,
     IContentSnapshotProvider contentProvider,
     TimeProvider timeProvider,
-    Elyndor.Core.Combat.Randomness.IGameRandomFactory? randomFactory = null)
+    IGameRandomFactory? randomFactory = null)
 {
+    private readonly IGameRandom professionRandom = (randomFactory ?? new SystemGameRandomFactory()).Create();
     private const int MaxPrimaryProfessions = 2;
     private const int MaxProfessionSkill = 300;
     private static readonly TimeSpan CorpseLifetime = TimeSpan.FromMinutes(30);
@@ -132,7 +134,10 @@ public sealed class ProfessionService(
                 .ToArray(),
             ProfessionWorkshopCatalog.MaterialSources(package),
             (package.Items ?? []).Where(item => item.Type == ItemType.Material)
-                .Select(item => new ProfessionMaterialState(item.Id, item.Name)).ToArray(), definitions, MaxPrimaryProfessions);
+                .Select(item => new ProfessionMaterialState(item.Id, item.Name)).ToArray(),
+            definitions, package.ProfessionGatheringNodes ?? [], (package.ProfessionEnchantments ?? []).Select(item =>
+                new ProfessionEnchantmentState(item.Id, item.Name, item.ScrollItemId, item.StatId, item.Value, item.Slots.Select(slot => slot.ToString()).ToArray())).ToArray(),
+            await MiningCooldownUntilAsync(character.Id, cancellationToken), MaxPrimaryProfessions);
     }
 
     public async Task<ProfessionMutationResult> ForgetAsync(Guid accountId, string professionId, Guid mutationId, CancellationToken cancellationToken)
@@ -267,12 +272,12 @@ public sealed class ProfessionService(
             if (itemDefinition is null)
                 throw new InvalidDataException($"Skinning source '{source.Id}' references missing item '{source.ItemId}'.");
 
-            int quantity = DeterministicRange(mutationId, $"SKIN|{combatSessionId}|{enemyActorId}", source.MinQuantity, source.MaxQuantity);
+            int quantity = source.MinQuantity + (int)(professionRandom.NextUnit() * (source.MaxQuantity - source.MinQuantity + 1));
             ProfessionMutationResult? inventoryFailure = await AddStackableAsync(character.Id, itemDefinition, quantity, now, contentSnapshot, cancellationToken);
             if (inventoryFailure is not null)
                 return inventoryFailure;
 
-            bool skillIncreased = ShouldIncreaseSkill(mutationId, $"SKIN_SKILL|{source.Id}", profession.Skill, source.RequiredSkill, source.SkillUpUntil)
+            bool skillIncreased = ShouldIncreaseProfessionSkill(profession.Skill, source.RequiredSkill, source.SkillUpUntil)
                 && profession.TryIncreaseSkill(MaxProfessionSkill, now);
             corpse.MarkSkinned(mutationId, itemDefinition.Id, quantity, skillIncreased, now);
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -291,6 +296,9 @@ public sealed class ProfessionService(
     {
         if (mutationId == Guid.Empty || string.IsNullOrWhiteSpace(recipeId))
             return new ProfessionMutationResult(false, ProfessionErrorCodes.RecipeNotFound);
+
+        // Keep generation independent of the client mutation ID and stable within transaction retries.
+        Guid generationOperationId = Guid.NewGuid();
 
         return await dbContext.Database.CreateExecutionStrategy().ExecuteInTransactionAsync(
             async _ =>
@@ -330,11 +338,7 @@ public sealed class ProfessionService(
 
             if (!string.IsNullOrWhiteSpace(recipe.RequiredLocationId))
             {
-                string? locationId = await dbContext.CharacterLocations.AsNoTracking()
-                    .Where(item => item.CharacterId == character.Id)
-                    .Select(item => item.LocationId)
-                    .SingleOrDefaultAsync(cancellationToken);
-                if (!string.Equals(locationId, recipe.RequiredLocationId, StringComparison.Ordinal))
+                if (!await IsAtLocationAsync(character.Id, recipe.RequiredLocationId, cancellationToken))
                     return new ProfessionMutationResult(false, ProfessionErrorCodes.WrongWorkshop);
             }
 
@@ -395,16 +399,14 @@ public sealed class ProfessionService(
             }
             else
             {
-                int capacity = await InventoryCapacity.ResolveAsync(
+                InventoryCapacityState capacity = await InventoryCapacity.GetStateAsync(
                     dbContext,
                     character.Id,
                     contentSnapshot,
                     cancellationToken);
-                int occupiedAfterConsumption = inventory.Count(item => item.Quantity > 0 && !equippedItemIds.Contains(item.Id));
-                if (occupiedAfterConsumption + recipe.OutputQuantity > capacity)
+                if (capacity.UsedSlots + recipe.OutputQuantity > capacity.Capacity)
                     return new ProfessionMutationResult(false, ProfessionErrorCodes.InventoryFull);
                 DateTimeOffset now = timeProvider.GetUtcNow();
-                Guid generationOperationId = Guid.NewGuid();
                 for (int ordinal = 0; ordinal < recipe.OutputQuantity; ordinal++)
                 {
                     CharacterItem crafted = ItemInstancePersistenceFactory.CreateCharacterItem(
@@ -421,10 +423,7 @@ public sealed class ProfessionService(
             }
 
             DateTimeOffset committedAt = timeProvider.GetUtcNow();
-            bool shouldIncrease = ProfessionSkillRules.ShouldIncrease(
-                    (randomFactory ?? new Elyndor.Core.Combat.Randomness.SystemGameRandomFactory()).Create(),
-                    profession.Skill, recipe.RequiredSkill, recipe.SkillUpUntil);
-            bool skillIncreased = shouldIncrease
+            bool skillIncreased = ShouldIncreaseProfessionSkill(profession.Skill, recipe.RequiredSkill, recipe.SkillUpUntil)
                 && profession.TryIncreaseSkill(MaxProfessionSkill, committedAt);
             dbContext.CharacterMutations.Add(new CharacterMutation(character.Id, mutationId, "PROFESSION_CRAFT", fingerprint, committedAt));
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -488,33 +487,6 @@ public sealed class ProfessionService(
             remaining -= stackQuantity;
         }
         return null;
-    }
-
-    private static bool ShouldIncreaseSkill(Guid mutationId, string salt, int currentSkill, int requiredSkill, int skillUpUntil)
-    {
-        if (currentSkill >= skillUpUntil)
-            return false;
-        if (currentSkill <= requiredSkill)
-            return true;
-        int range = Math.Max(1, skillUpUntil - requiredSkill);
-        decimal chance = (decimal)(skillUpUntil - currentSkill) / range;
-        uint roll = DeterministicUInt32(mutationId, salt);
-        decimal normalized = roll / (decimal)uint.MaxValue;
-        return normalized < chance;
-    }
-
-    private static int DeterministicRange(Guid mutationId, string salt, int min, int max)
-    {
-        if (min < 1 || max < min)
-            throw new InvalidDataException("Profession yield range is invalid.");
-        uint value = DeterministicUInt32(mutationId, salt);
-        return min + (int)(value % (uint)(max - min + 1));
-    }
-
-    private static uint DeterministicUInt32(Guid mutationId, string salt)
-    {
-        byte[] digest = SHA256.HashData(Encoding.UTF8.GetBytes($"{mutationId:N}|{salt}"));
-        return BinaryPrimitives.ReadUInt32LittleEndian(digest);
     }
 
     private static string Fingerprint(string value) =>

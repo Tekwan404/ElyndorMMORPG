@@ -19,6 +19,8 @@ public static class ProfessionWorkshopCatalog
                     return new ProfessionMaterialSourceState(source.ItemId, items[source.ItemId].Name,
                         monsters[encounter.MonsterId].Name, location.Id, location.DisplayName, source.RequiredSkill, source.SkillUpUntil);
                 }))
+            .Concat((package.ProfessionGatheringNodes ?? []).Select(node => new ProfessionMaterialSourceState(
+                node.ItemId, items[node.ItemId].Name, node.Name, node.LocationId, package.Locations.Single(location => location.Id == node.LocationId).DisplayName, node.RequiredSkill, node.SkillUpUntil)))
             .Concat((package.ResourceSources ?? []).Select(source => new ProfessionMaterialSourceState(
                 source.ItemId, items[source.ItemId].Name, source.DisplayName, source.LocationId,
                 package.Locations.Single(location => location.Id == source.LocationId).DisplayName,

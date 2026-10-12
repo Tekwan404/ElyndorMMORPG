@@ -146,7 +146,7 @@ public sealed class ProfessionInventoryCapacityTests(PostgresFixture postgres) :
                 4,
                 Now.AddTicks(1)));
 
-            for (int index = 0; index < InventoryCapacity.DefaultCapacity; index++)
+            for (int index = 0; index < InventoryCapacity.DefaultCapacity + 14; index++)
             {
                 setup.CharacterItems.Add(new CharacterItem(
                     Guid.CreateVersion7(),
@@ -177,7 +177,7 @@ public sealed class ProfessionInventoryCapacityTests(PostgresFixture postgres) :
 
         await using GameDbContext verify = postgres.CreateDbContext();
         Assert.Equal(
-            InventoryCapacity.DefaultCapacity + 1,
+            InventoryCapacity.DefaultCapacity + 15,
             await InventoryCapacity.CountUsedSlotsAsync(
                 verify,
                 characterId,

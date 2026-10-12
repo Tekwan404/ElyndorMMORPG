@@ -143,8 +143,33 @@ test('city workshop explains materials, crafts and restores the profession state
   await page.getByLabel('Лучник').check()
   await page.getByRole('button', { name: 'Войти в мир' }).click()
   await page.locator('[data-city-marker="craft"]').click()
-  await page.locator('[data-city-professions]').click()
-  await expect(page.getByRole('heading', { name: 'Кожевенная мастерская' })).toBeVisible()
+  await expect(page.locator('[data-city-workshop]')).toHaveCount(5)
+  await expect(page.locator('[data-hud-location]')).toHaveCount(0)
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: width === 320 ? 568 : 844 })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width)
+    const boxes = await page.locator('.craft-district .city-marker').evaluateAll(elements => elements.map(element => {
+      const box = element.getBoundingClientRect(); return { x: box.x, y: box.y, width: box.width, height: box.height }
+    }))
+    expect(boxes).toHaveLength(7)
+    for (const box of boxes) { expect(box.width).toBeGreaterThanOrEqual(44); expect(box.height).toBeGreaterThanOrEqual(44) }
+    for (let i = 0; i < boxes.length; i++) for (let j = i + 1; j < boxes.length; j++) {
+      const a = boxes[i]!; const b = boxes[j]!
+      expect(a.x + a.width <= b.x || b.x + b.width <= a.x || a.y + a.height <= b.y || b.y + b.height <= a.y).toBe(true)
+    }
+  }
+  await page.locator('.craft-district > img').evaluate(async element => { const image = element as HTMLImageElement; if (!image.complete) await new Promise(resolve => image.addEventListener('load', resolve, { once: true })) })
+  await page.screenshot({ path: '../../output/playwright/craft-district-390.png', fullPage: true })
+  for (const profession of ['MINING', 'BLACKSMITHING', 'ENCHANTING', 'ALCHEMY']) {
+    await page.locator(`[data-city-workshop="${profession}"]`).click()
+    await expect(page.locator('[data-workshop-unlearned]')).toBeVisible()
+    await expect(page.locator('[data-profession]').first()).toHaveAttribute('data-profession', profession)
+    await expect(page.locator('[data-profession-recipe]')).toHaveCount(0)
+    await page.locator('[data-city-back]').click()
+    await expect(page.locator('[data-city-craft-district]')).toBeVisible()
+  }
+  await page.locator('[data-city-workshop="LEATHERWORKING"]').click()
+  await expect(page.getByRole('heading', { name: 'Профессии' })).toBeVisible()
   const processingCard = page.locator('[data-profession-recipe="LW_PROCESS_ROUGH_HIDE"]')
   await expect(processingCard).toContainText('Грубая шкура: 2 / 1')
   await expect(processingCard).toContainText('Шепчущий лес')
@@ -165,49 +190,126 @@ test('city workshop explains materials, crafts and restores the profession state
   await expect(page.locator('.profession-card').filter({ hasText: 'Кожевничество' })).toContainText('Навык 2 / 300')
 })
 
-test('alchemy workshop crafts existing potions on a phone', async ({ page }) => {
-  test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses deterministic workshop content for layout coverage.')
-  const herbs = ['FOREST_MINT', 'SILVERLEAF'].map((id, index) => ({ id: `herb-${index}`, definitionId: id,
-    name: index === 0 ? 'Лесная мята' : 'Сребролист', type: 'Material', rarity: 'Common',
-    quantity: 2, isLocked: false, equippedSlot: null, slot: null }))
-  await installMockApiUnlessReal(page, herbs)
-  const available = [
-    { id: 'LEATHERWORKING', name: 'Кожевничество', category: 'Production', maxSkill: 300, relatedProfessionId: 'SKINNING' },
-    { id: 'HERBALISM', name: 'Травничество', category: 'Gathering', maxSkill: 300 },
-    { id: 'ALCHEMY', name: 'Алхимия', category: 'Production', maxSkill: 300, relatedProfessionId: 'HERBALISM' },
-  ]
-  const state = { available, maxPrimaryProfessions: 2,
-    learned: available.filter(item => item.id !== 'LEATHERWORKING').map(item => ({ ...item, skill: 1 })),
-    skinnableCorpses: [], materials: herbs.map(item => ({ id: item.definitionId, name: item.name })),
-    recipes: [{ id: 'ALCHEMY_T1_SMALL_HEALING_POTION', name: 'Малое зелье лечения', professionId: 'ALCHEMY',
-      requiredSkill: 1, skillUpUntil: 16, outputItemId: 'SMALL_HEALING_POTION', outputQuantity: 1,
-      requiredLocationId: 'STARTER_TOWN', ingredients: herbs.map(item => ({ itemId: item.definitionId, quantity: 2 })) }],
-  }
-  await page.route('**/api/v1/professions/', route => route.fulfill({ json: state }))
-  await page.route('**/api/v1/professions/craft', route => {
-    expect(route.request().postDataJSON().recipeId).toBe('ALCHEMY_T1_SMALL_HEALING_POTION')
-    herbs.forEach(item => { item.quantity = 0 })
-    state.learned[1]!.skill = 2
-    return route.fulfill({ json: { isSuccess: true, quantity: 1, skillIncreased: true, state } })
+for (const {
+  recipeId,
+  outputItemId,
+  potionName,
+  herbIds,
+  herbNames,
+  ingredientQuantity,
+  requiredSkill,
+  skillUpUntil,
+} of [
+  {
+    recipeId: 'ALCHEMY_T1_SMALL_HEALING_POTION',
+    outputItemId: 'SMALL_HEALING_POTION',
+    potionName: 'Малое зелье лечения',
+    herbIds: ['FOREST_MINT', 'SILVERLEAF'],
+    herbNames: ['Лесная мята', 'Сребролист'],
+    ingredientQuantity: 2,
+    requiredSkill: 1,
+    skillUpUntil: 16,
+  },
+  {
+    recipeId: 'ALCHEMY_MAJOR_FOCUS_POTION',
+    outputItemId: 'MAJOR_FOCUS_POTION',
+    potionName: 'Большое зелье концентрации',
+    herbIds: ['SHADOW_MOSS', 'HUSHROOT'],
+    herbNames: ['Теневой мох', 'Тихокорень'],
+    ingredientQuantity: 4,
+    requiredSkill: 31,
+    skillUpUntil: 61,
+  },
+]) {
+  test(`alchemy workshop crafts ${recipeId} on a phone`, async ({ page }) => {
+    test.skip(
+      process.env.ELYNDOR_E2E_REAL === 'true',
+      'Uses deterministic workshop content for layout coverage.',
+    )
+    const herbs = herbIds.map((id, index) => ({
+      id: `herb-${index}`,
+      definitionId: id,
+      name: herbNames[index],
+      type: 'Material',
+      rarity: 'Common',
+      quantity: ingredientQuantity,
+      isLocked: false,
+      equippedSlot: null,
+      slot: null,
+    }))
+    await installMockApiUnlessReal(page, herbs)
+    const available = [
+      {
+        id: 'LEATHERWORKING',
+        name: 'Кожевничество',
+        category: 'Production',
+        maxSkill: 300,
+        relatedProfessionId: 'SKINNING',
+      },
+      { id: 'HERBALISM', name: 'Травничество', category: 'Gathering', maxSkill: 300 },
+      {
+        id: 'ALCHEMY',
+        name: 'Алхимия',
+        category: 'Production',
+        maxSkill: 300,
+        relatedProfessionId: 'HERBALISM',
+      },
+    ]
+    const state = {
+      available,
+      maxPrimaryProfessions: 2,
+      learned: available
+        .filter((item) => item.id !== 'LEATHERWORKING')
+        .map((item) => ({ ...item, skill: requiredSkill })),
+      skinnableCorpses: [],
+      materials: herbs.map((item) => ({ id: item.definitionId, name: item.name })),
+      recipes: [
+        {
+          id: recipeId,
+          name: potionName,
+          professionId: 'ALCHEMY',
+          requiredSkill,
+          skillUpUntil,
+          outputItemId: outputItemId,
+          outputQuantity: 1,
+          requiredLocationId: 'STARTER_TOWN',
+          ingredients: herbs.map((item) => ({
+            itemId: item.definitionId,
+            quantity: ingredientQuantity,
+          })),
+        },
+      ],
+    }
+    await page.route('**/api/v1/professions/', (route) => route.fulfill({ json: state }))
+    await page.route('**/api/v1/professions/craft', (route) => {
+      expect(route.request().postDataJSON().recipeId).toBe(recipeId)
+      herbs.forEach((item) => {
+        item.quantity = 0
+      })
+      state.learned[1]!.skill = requiredSkill + 1
+      return route.fulfill({ json: { isSuccess: true, quantity: 1, skillIncreased: true, state } })
+    })
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/')
+    await page.getByLabel('Имя').fill('Alchemist')
+    await page.getByLabel('Лучник').check()
+    await page.getByRole('button', { name: 'Войти в мир' }).click()
+    await page.locator('[data-city-marker="craft"]').click()
+    await page.locator('[data-city-workshop="ALCHEMY"]').click()
+    await expect(page.getByRole('heading', { name: 'Алхимическая лаборатория' })).toBeVisible()
+    await page.getByRole('button', { name: 'Зелья', exact: true }).click()
+    const recipe = page.locator(`[data-profession-recipe="${recipeId}"]`)
+    await expect(recipe).toContainText(
+      `${herbNames[0]}: ${ingredientQuantity} / ${ingredientQuantity}`,
+    )
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
+    await recipe.scrollIntoViewIfNeeded()
+    await page.screenshot({ path: `../../output/playwright/${recipeId}-390.png` })
+    await recipe.getByRole('button', { name: 'Создать' }).click()
+    await expect(page.locator('.profession-message--success')).toContainText('навык +1')
+    await expect(recipe).toContainText(`${herbNames[0]}: 0 / ${ingredientQuantity}`)
   })
-  await page.setViewportSize({ width: 390, height: 844 })
-  await page.goto('/')
-  await page.getByLabel('Имя').fill('Alchemist')
-  await page.getByLabel('Лучник').check()
-  await page.getByRole('button', { name: 'Войти в мир' }).click()
-  await page.locator('[data-city-marker="craft"]').click()
-  await page.locator('[data-city-professions]').click()
-  await page.locator('[data-production="ALCHEMY"]').click()
-  await expect(page.getByRole('heading', { name: 'Алхимическая лаборатория' })).toBeVisible()
-  const recipe = page.locator('[data-profession-recipe="ALCHEMY_T1_SMALL_HEALING_POTION"]')
-  await expect(recipe).toContainText('Лесная мята: 2 / 2')
-  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false)
-  await recipe.scrollIntoViewIfNeeded()
-  await page.screenshot({ path: '../../output/playwright/alchemy-390.png' })
-  await recipe.getByRole('button', { name: 'Создать' }).click()
-  await expect(page.locator('.profession-message--success')).toContainText('навык +1')
-  await expect(recipe).toContainText('Лесная мята: 0 / 2')
-})
+}
 
 for (const { profession, professionName, outputName } of [
   { profession: 'ALCHEMY', professionName: 'Алхимия', outputName: 'Малое зелье исцеления' },

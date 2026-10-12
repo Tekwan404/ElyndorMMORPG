@@ -7,6 +7,35 @@ namespace Elyndor.UnitTests.Content;
 public sealed class ProfessionWorkshopContentTests
 {
     [Fact]
+    public async Task NewRecipeIngredientsAreReachableFromGatheringAndDisenchanting()
+    {
+        var content = await GameContentPackageLoader.LoadAsync(ContentPath());
+        var available = content.ProfessionGatheringNodes!.Select(item => item.ItemId)
+            .Concat(content.ProfessionDisenchanting!.Select(item => item.ItemId)).ToHashSet();
+        var recipes = content.ProfessionRecipes!.Where(recipe => recipe.ProfessionId is "MINING" or "BLACKSMITHING" or "ENCHANTING").ToArray();
+        for (int step = 0; step < recipes.Length; step++)
+            foreach (var recipe in recipes.Where(recipe => recipe.Ingredients.All(item => available.Contains(item.ItemId))))
+                available.Add(recipe.OutputItemId);
+        Assert.Equal(7, content.Professions!.Count);
+        Assert.All(recipes, recipe => Assert.Contains(recipe.OutputItemId, available));
+        Assert.All(content.ProfessionEnchantments!, enchantment => Assert.Contains(enchantment.ScrollItemId, available));
+    }
+
+    [Fact]
+    public async Task InvalidMiningYieldAndEnchantmentStatsAreRejected()
+    {
+        var content = await GameContentPackageLoader.LoadAsync(ContentPath());
+        var invalid = content with
+        {
+            ProfessionGatheringNodes = [content.ProfessionGatheringNodes![0] with { Quantity = 0 }],
+            ProfessionEnchantments = [content.ProfessionEnchantments![0] with { StatId = "GOLD" }]
+        };
+        var errors = Elyndor.Core.Content.GameContentPackageValidator.Validate(invalid);
+        Assert.Contains(errors, error => error.Code == "PROFESSION_INVALID_NODE");
+        Assert.Contains(errors, error => error.Code == "PROFESSION_INVALID_ENCHANTMENT");
+    }
+
+    [Fact]
     public async Task MaterialGuideUsesActualEncountersAndCanonicalNames()
     {
         var content = await GameContentPackageLoader.LoadAsync(ContentPath());

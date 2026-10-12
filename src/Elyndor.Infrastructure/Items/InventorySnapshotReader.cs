@@ -87,6 +87,12 @@ internal static class InventorySnapshotReader
                     generated.Affixes,
                     generated.DisplayName);
 
+            effectiveDefinition = effectiveDefinition with
+            {
+                Stats = item.ApplyEnchantment(item.RolledPrimaryStats ?? effectiveDefinition.Stats),
+                Description = item.EnchantmentId is null ? effectiveDefinition.Description
+                    : effectiveDefinition.Description + $" Чары: +{item.EnchantmentValue} " + (item.EnchantmentStatId switch { "STRENGTH" => "к силе", "AGILITY" => "к ловкости", "INTELLECT" => "к интеллекту", "STAMINA" => "к выносливости", _ => "" }) + "."
+            };
             return new InventoryItemSnapshot(
                 item.Id,
                 effectiveDefinition,
@@ -94,7 +100,7 @@ internal static class InventorySnapshotReader
                 item.AcquiredAtUtc,
                 equippedSlot,
                 item.IsLocked,
-                item.RolledPrimaryStats,
+                item.RolledPrimaryStats is null ? null : item.ApplyEnchantment(item.RolledPrimaryStats),
                 generated,
                 item.ReforgeCount,
                 item.ReforgeSlotKey,

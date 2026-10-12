@@ -45,7 +45,28 @@ export interface ProfessionRecipeState {
   learningScrollName?: string | null
 }
 
+export interface ProfessionGatheringNode {
+  id: string
+  name: string
+  locationId: string
+  requiredSkill: number
+  skillUpUntil: number
+  itemId: string
+  quantity: number
+  cooldownSeconds: number
+}
+export interface ProfessionEnchantment {
+  id: string
+  name: string
+  scrollItemId: string
+  statId: string
+  value: number
+  slots: (string | number)[]
+}
 export interface ProfessionStateSnapshot {
+  gatheringNodes?: ProfessionGatheringNode[]
+  enchantments?: ProfessionEnchantment[]
+  nextGatherAtUtc?: string | null
   available?: Omit<ProfessionStateItem, 'skill'>[]
   maxPrimaryProfessions?: number
   learned: ProfessionStateItem[]
@@ -132,5 +153,33 @@ export async function craftProfessionRecipe(recipeId: string): Promise<Professio
     path: '/api/v1/professions/craft',
     idField: 'mutationId',
     intent: { recipeId },
+  })
+}
+
+export async function gatherProfessionNode(nodeId: string): Promise<ProfessionMutationResult> {
+  return await runReplaySafeGameMutation<ProfessionMutationResult>({
+    key: `profession:gather:${nodeId}`,
+    path: '/api/v1/professions/gather',
+    idField: 'mutationId',
+    intent: { nodeId },
+  })
+}
+export async function disenchantProfessionItem(itemId: string): Promise<ProfessionMutationResult> {
+  return await runReplaySafeGameMutation<ProfessionMutationResult>({
+    key: `profession:disenchant:${itemId}`,
+    path: '/api/v1/professions/disenchant',
+    idField: 'mutationId',
+    intent: { itemId },
+  })
+}
+export async function enchantProfessionItem(
+  itemId: string,
+  enchantmentId: string,
+): Promise<ProfessionMutationResult> {
+  return await runReplaySafeGameMutation<ProfessionMutationResult>({
+    key: `profession:enchant:${itemId}:${enchantmentId}`,
+    path: '/api/v1/professions/enchant',
+    idField: 'mutationId',
+    intent: { itemId, enchantmentId },
   })
 }

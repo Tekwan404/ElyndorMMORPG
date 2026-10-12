@@ -5,15 +5,18 @@
 **Status:** Foundation / Source of Truth  
 **Version:** 1.0
 
-## Current implementation (2026-10-11)
+## Current implementation (2026-10-12)
 
-The approved current slice is **Skinning + Leatherworking**, with skill capacity **300** and location-based practice steps: Whispering Forest **1–15**, Flower Meadow **16–30**, Deep Forest **31–60**. All eligible creatures within a location share its skill threshold. Completing a step grants the entry skill for the next (16/31/61). Current available progression ends at 61; further tiers require their own content slice. See [current runtime and recipe contract](../../development/profession-workshop.md).
+The approved current slice includes **Skinning, Leatherworking, Herbalism, Alchemy, Mining, Blacksmithing and Enchanting**, with skill capacity **300** and location-based practice steps: Whispering Forest **1–15**, Flower Meadow **16–30**, Deep Forest **31–60**. All eligible creatures within a location share its skill threshold. Completing a step grants the entry skill for the next (16/31/61). Current available progression ends at 61; further tiers require their own content slice. See [current runtime and recipe contract](../../development/profession-workshop.md).
 
-Herbalism + Alchemy now use the same capacity and progression steps: six herbs in eighteen shared resource points and twelve recipes for existing healing/mana/focus/rage potions. Gathering availability and rewards are authoritative and persisted in PostgreSQL. City workshops select the production profession; existing skinning/leatherworking progress and the two-profession limit are preserved. See the runtime contract above for concurrency, replay and balance details.
+The three-profession/level-60 model below is the older foundation proposal, not a claim that Cooking or timed production are currently implemented. Mining, blacksmithing and enchanting use the current skill/recipe model; see the implementation contract for cooldown, scrolls and transaction boundaries.
+Herbalism + Alchemy now use the same capacity and progression steps: six herbs in eighteen shared resource points and eighteen baseline recipes for healing/mana/focus/rage potions. Gathering availability and rewards are authoritative and persisted in PostgreSQL. City workshops select the production profession; existing skinning/leatherworking progress and the two-profession limit are preserved. See the runtime contract above for concurrency, replay and balance details.
+
+Current content contains 68 recipes, including six stronger resource potions, twelve blacksmith recipes and eight enchantment recipes. Skinning RNG is server-controlled; Mining rejects active AFK; crafting capacity uses projected inventory state. See the runtime contract for exact costs, potion amounts and replay rules.
 
 Thirteen additional recipes are learned through matching scrolls from encounter loot: four potion recipes and nine leather armor recipes. Baseline recipes remain automatically available at their skill requirements. Studying consumes one available inventory scroll atomically; crafting requires persisted knowledge. Forgetting a profession resets both skill and recipe knowledge. Server-generated crafting randomness prevents client retry IDs from selecting equipment rolls or production skill gains.
 
-The three-profession/level-60 model below is the older foundation proposal, not a claim that Blacksmithing, Cooking or timed production are currently implemented. Preserve the existing runtime until those features are separately approved.
+The three-profession/level-60 model below is the older foundation proposal, not a claim that Cooking or timed production are currently implemented.
 
 ---
 

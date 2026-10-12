@@ -72,6 +72,31 @@ public sealed class CharacterItem
     public string BindState { get; private set; } = ItemBindStates.Unbound;
     public Guid? TransactionLockId { get; private set; }
     public string Storage { get; private set; } = "INVENTORY";
+    public string? EnchantmentId { get; private set; }
+    public string? EnchantmentStatId { get; private set; }
+    public decimal EnchantmentValue { get; private set; }
+
+    public void SetEnchantment(string id, string statId, decimal value)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        if (statId is not ("STRENGTH" or "AGILITY" or "INTELLECT" or "STAMINA"))
+            throw new ArgumentException("Unsupported enchantment stat.", nameof(statId));
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(value, 0);
+        if (IsLocked || TransactionLockId.HasValue)
+            throw new InvalidOperationException("Item is protected.");
+        EnchantmentId = id;
+        EnchantmentStatId = statId;
+        EnchantmentValue = value;
+    }
+
+    public PrimaryStats ApplyEnchantment(PrimaryStats stats) => EnchantmentStatId switch
+    {
+        "STRENGTH" => stats with { Strength = stats.Strength + EnchantmentValue },
+        "AGILITY" => stats with { Agility = stats.Agility + EnchantmentValue },
+        "INTELLECT" => stats with { Intellect = stats.Intellect + EnchantmentValue },
+        "STAMINA" => stats with { Stamina = stats.Stamina + EnchantmentValue },
+        _ => stats
+    };
 
     public void Transfer(Guid operationId, Guid owner, string storage)
     {

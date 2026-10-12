@@ -4,6 +4,9 @@ public static class ProfessionIds
 {
     public const string Skinning = "SKINNING";
     public const string Leatherworking = "LEATHERWORKING";
+    public const string Mining = "MINING";
+    public const string Blacksmithing = "BLACKSMITHING";
+    public const string Enchanting = "ENCHANTING";
     public const string Herbalism = "HERBALISM";
     public const string Alchemy = "ALCHEMY";
 }
@@ -34,6 +37,17 @@ public sealed record SkinningSourceDefinition(
 public sealed record ProfessionRecipeIngredient(
     string ItemId,
     int Quantity);
+
+public sealed record ProfessionGatheringNodeDefinition(
+    string Id, string Name, string LocationId, int RequiredSkill, int SkillUpUntil,
+    string ItemId, int Quantity, int CooldownSeconds);
+
+public sealed record ProfessionEnchantmentDefinition(
+    string Id, string Name, string ScrollItemId, string StatId, decimal Value,
+    IReadOnlyList<Elyndor.Core.Items.EquipmentSlot> Slots);
+
+public sealed record ProfessionDisenchantingDefinition(
+    Elyndor.Core.Items.ItemRarity Rarity, string ItemId, int Quantity);
 
 public sealed record ProfessionRecipeDefinition(
     string Id,
@@ -77,6 +91,16 @@ public sealed class CharacterProfession
     public int Skill { get; private set; }
     public DateTimeOffset LearnedAtUtc { get; private set; }
     public DateTimeOffset UpdatedAtUtc { get; private set; }
+    public DateTimeOffset? NextGatherAtUtc { get; private set; }
+
+    public void CompleteGathering(DateTimeOffset now, int cooldownSeconds)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(cooldownSeconds, 1);
+        if (now.Offset != TimeSpan.Zero) throw new ArgumentException("Gathering timestamps must be UTC.");
+        if (NextGatherAtUtc > now) throw new InvalidOperationException("Gathering is on cooldown.");
+        NextGatherAtUtc = now.AddSeconds(cooldownSeconds);
+        UpdatedAtUtc = now;
+    }
 
     public bool TryIncreaseSkill(int maximumSkill, DateTimeOffset now)
     {

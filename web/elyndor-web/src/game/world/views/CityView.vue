@@ -8,6 +8,9 @@ import auctionArt from '@/assets/world/city-auction.webp'
 import marketArt from '@/assets/world/city-market.webp'
 import bankArt from '@/assets/world/city-bank.webp'
 import craftArt from '@/assets/world/city-craft.webp'
+import districtArt from '@/assets/world/city-craft-map.webp'
+import professionAtlas from '@/assets/professions/workshop-atlas.webp'
+import herbAlchemyAtlas from '@/assets/professions/herbalism-alchemy-atlas.webp'
 import arenaArt from '@/assets/world/city-arena.webp'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { useCombatSessionStore } from '@/stores/combatSession'
@@ -19,15 +22,30 @@ import { UIButton } from '@/ui/components'
 const ForgeView = defineAsyncComponent(() => import('@/game/character/views/ForgeView.vue'))
 const AuctionView = defineAsyncComponent(() => import('@/game/economy/views/AuctionView.vue'))
 const MailboxView = defineAsyncComponent(() => import('@/game/economy/views/MailboxView.vue'))
-const PremiumStoreView = defineAsyncComponent(() => import('@/game/economy/views/PremiumStoreView.vue'))
+const PremiumStoreView = defineAsyncComponent(
+  () => import('@/game/economy/views/PremiumStoreView.vue'),
+)
 const MerchantShop = defineAsyncComponent(() => import('@/game/world/components/MerchantShop.vue'))
-const AdventurerGuildBoard = defineAsyncComponent(() => import('@/game/world/components/AdventurerGuildBoard.vue'))
+const AdventurerGuildBoard = defineAsyncComponent(
+  () => import('@/game/world/components/AdventurerGuildBoard.vue'),
+)
 const ArenaView = defineAsyncComponent(() => import('@/game/pvp/views/ArenaView.vue'))
-const ProfessionView = defineAsyncComponent(() => import('@/game/professions/views/ProfessionView.vue'))
+const ProfessionView = defineAsyncComponent(
+  () => import('@/game/professions/views/ProfessionView.vue'),
+)
 
 type CityDestination =
-  | 'guild' | 'adventurers' | 'auction' | 'market'
-  | 'teleport' | 'bank' | 'craft' | 'arena' | 'professions' | 'store' | 'mailbox'
+  | 'guild'
+  | 'adventurers'
+  | 'auction'
+  | 'market'
+  | 'teleport'
+  | 'bank'
+  | 'craft'
+  | 'arena'
+  | 'professions'
+  | 'store'
+  | 'mailbox'
 
 const props = withDefaults(defineProps<{ openAdventurers?: boolean }>(), { openAdventurers: false })
 const emit = defineEmits<{
@@ -42,10 +60,48 @@ const worldBoss = useWorldBossStore()
 const activeDestination = ref<CityDestination | null>(null)
 const merchantOpen = ref(false)
 const forgeOpen = ref(false)
+const workshopProfessionId = ref<string | null>(null)
+const workshops = [
+  {
+    id: 'LEATHERWORKING',
+    name: 'Кожевенная мастерская',
+    label: 'Кожевничество',
+    art: 1,
+    x: 23,
+    y: 23,
+  },
+  {
+    id: 'ALCHEMY',
+    name: 'Алхимическая лаборатория',
+    label: 'Алхимия',
+    art: 1,
+    herbal: true,
+    x: 77,
+    y: 23,
+  },
+  { id: 'MINING', name: 'Плавильня', label: 'Плавильня', art: 2, x: 23, y: 46 },
+  {
+    id: 'BLACKSMITHING',
+    name: 'Кузнечная мастерская',
+    label: 'Кузнечное дело',
+    art: 3,
+    x: 77,
+    y: 46,
+  },
+  { id: 'ENCHANTING', name: 'Стол наложения чар', label: 'Наложение чар', art: 4, x: 23, y: 69 },
+]
+function openProfessionWorkshop(id: string | null): void {
+  workshopProfessionId.value = id
+  activeDestination.value = 'professions'
+}
 const adventurersOpen = ref(false)
-watch(() => props.openAdventurers, (open) => {
-  if (open) adventurersOpen.value = true
-}, { immediate: true })
+watch(
+  () => props.openAdventurers,
+  (open) => {
+    if (open) adventurersOpen.value = true
+  },
+  { immediate: true },
+)
 
 // Original medallions are decorative; destination names stay readable DOM text.
 const cityMarkers: readonly {
@@ -57,7 +113,14 @@ const cityMarkers: readonly {
   art: string | null
 }[] = [
   { id: 'guild', label: 'Гильдия', glyph: 'shield', x: 50, y: 27, art: guildArt },
-  { id: 'adventurers', label: 'Гильдия авантюристов', glyph: 'star', x: 19, y: 35, art: adventurersArt },
+  {
+    id: 'adventurers',
+    label: 'Гильдия авантюристов',
+    glyph: 'star',
+    x: 19,
+    y: 35,
+    art: adventurersArt,
+  },
   { id: 'auction', label: 'Аукцион', glyph: 'ring', x: 81, y: 35, art: auctionArt },
   { id: 'market', label: 'Рынок', glyph: 'chest', x: 20, y: 60, art: marketArt },
   { id: 'teleport', label: 'Телепорт', glyph: 'staff', x: 50, y: 66, art: null },
@@ -91,18 +154,29 @@ function openDestination(id: CityDestination): void {
 }
 
 function returnToCity(): void {
-  activeDestination.value = null
+  activeDestination.value = activeDestination.value === 'professions' ? 'craft' : null
 }
 
 async function startTraining(): Promise<void> {
-  if (session.snapshot?.world?.travel || session.mutationPending || combat.isActive || combat.pending) return
+  if (
+    session.snapshot?.world?.travel ||
+    session.mutationPending ||
+    combat.isActive ||
+    combat.pending
+  )
+    return
   await combat.startTraining()
 }
 </script>
 
 <template>
   <section class="city-hub" aria-label="Город" data-city-hub>
-    <div v-if="!activeDestination" class="city-map" :class="{ 'city-map--boss-active': worldBoss.active && worldBoss.active.currentHealth > 0 }" data-city-map>
+    <div
+      v-if="!activeDestination"
+      class="city-map"
+      :class="{ 'city-map--boss-active': worldBoss.active && worldBoss.active.currentHealth > 0 }"
+      data-city-map
+    >
       <img class="city-map__art" :src="cityArt" alt="Стартовый город — улицы, здания и площади" />
       <div class="city-map__top-shade" aria-hidden="true" />
       <div class="city-map__heading">
@@ -115,7 +189,9 @@ async function startTraining(): Promise<void> {
         class="city-map__boss"
         data-city-world-boss
         @click="emit('open-world-boss')"
-      >Мировой босс</button>
+      >
+        Мировой босс
+      </button>
       <button
         v-for="marker in cityMarkers"
         :key="marker.id"
@@ -131,43 +207,139 @@ async function startTraining(): Promise<void> {
           <img :src="marker.art" alt="" draggable="false" />
         </span>
         <span v-else class="city-marker__seal" aria-hidden="true">
-          <IconGenerator :config="{ id: 'city-' + marker.id, glyph: marker.glyph, category: 'utility' }" />
+          <IconGenerator
+            :config="{ id: 'city-' + marker.id, glyph: marker.glyph, category: 'utility' }"
+          />
         </span>
         <span class="city-marker__name">{{ marker.label }}</span>
         <span class="city-marker__arrow" aria-hidden="true" />
       </button>
     </div>
 
-    <div v-else class="city-interior" data-city-interior>
-      <header class="city-interior__header">
-        <UIButton variant="ghost" data-city-back @click="returnToCity">‹ Город</UIButton>
-        <h2>{{ destinationNames[activeDestination] }}</h2>
+    <div
+      v-else
+      class="city-interior"
+      :class="{ 'city-interior--craft': activeDestination === 'craft' }"
+      data-city-interior
+    >
+      <header v-if="activeDestination !== 'craft'" class="city-interior__header">
+        <UIButton variant="ghost" data-city-back @click="returnToCity">{{
+          activeDestination === 'professions' ? '‹ Квартал' : '‹ Город'
+        }}</UIButton>
+        <h2>
+          {{
+            activeDestination === 'professions'
+              ? (workshops.find((workshop) => workshop.id === workshopProfessionId)?.name ??
+                'Обучение ремёслам')
+              : destinationNames[activeDestination]
+          }}
+        </h2>
       </header>
 
       <AuctionView v-if="activeDestination === 'auction'" />
       <div v-else-if="activeDestination === 'arena'" class="city-interior__arena">
-        <UIButton data-city-training :loading="combat.lifecyclePending" :disabled="session.mutationPending || combat.pending || combat.isActive" @click="startTraining">Тренировка на манекене</UIButton>
+        <UIButton
+          data-city-training
+          :loading="combat.lifecyclePending"
+          :disabled="session.mutationPending || combat.pending || combat.isActive"
+          @click="startTraining"
+          >Тренировка на манекене</UIButton
+        >
         <ArenaView />
       </div>
       <PremiumStoreView v-else-if="activeDestination === 'store'" />
       <MailboxView v-else-if="activeDestination === 'mailbox'" />
-      <ProfessionView v-else-if="activeDestination === 'professions'" />
+      <ProfessionView
+        v-else-if="activeDestination === 'professions'"
+        :key="workshopProfessionId ?? 'all'"
+        :initial-profession-id="workshopProfessionId ?? undefined"
+      />
 
       <div v-else-if="activeDestination === 'market'" class="city-interior__choices">
         <p>Торговые ряды. Припасы, товары за кристаллы и доставка покупок.</p>
         <UIButton data-city-merchant @click="merchantOpen = true">Лавка Маркуса</UIButton>
-        <UIButton variant="secondary" data-city-store @click="activeDestination = 'store'">Магазин за кристаллы</UIButton>
-        <UIButton variant="secondary" data-city-mailbox @click="activeDestination = 'mailbox'">Почта</UIButton>
+        <UIButton variant="secondary" data-city-store @click="activeDestination = 'store'"
+          >Магазин за кристаллы</UIButton
+        >
+        <UIButton variant="secondary" data-city-mailbox @click="activeDestination = 'mailbox'"
+          >Почта</UIButton
+        >
       </div>
 
-      <div v-else-if="activeDestination === 'craft'" class="city-interior__choices">
-        <p>Кожевничество и алхимия — в мастерских профессий. Улучшение и перековка готовых вещей — в кузнице.</p>
-        <UIButton data-city-forge @click="forgeOpen = true">Кузница</UIButton>
-        <UIButton variant="secondary" data-city-professions @click="activeDestination = 'professions'">Мастерские профессий</UIButton>
-      </div>
+      <section
+        v-else-if="activeDestination === 'craft'"
+        class="craft-district city-map"
+        data-city-craft-district
+      >
+        <img
+          class="city-map__art"
+          :src="districtArt"
+          alt="Ремесленный квартал — мастерские вокруг каменной площади"
+        />
+        <div class="city-map__top-shade" aria-hidden="true" />
+        <UIButton variant="ghost" class="craft-district__back" data-city-back @click="returnToCity"
+          >‹ Город</UIButton
+        >
+        <div class="city-map__heading craft-district__heading">
+          <small>МАСТЕРСКИЕ ЭЛИНДОРА</small>
+          <h1>Ремесленный квартал</h1>
+        </div>
+        <button
+          v-for="workshop in workshops"
+          :key="workshop.id"
+          type="button"
+          class="city-marker city-marker--wide"
+          :data-city-workshop="workshop.id"
+          :style="{ left: workshop.x + '%', top: workshop.y + '%' }"
+          :aria-label="'Открыть: ' + workshop.name"
+          @click="openProfessionWorkshop(workshop.id)"
+        >
+          <span
+            class="craft-district__medallion"
+            :style="{
+              backgroundImage: `url(${'herbal' in workshop ? herbAlchemyAtlas : professionAtlas})`,
+              backgroundSize: 'herbal' in workshop ? '200% 100%' : '500% 100%',
+              backgroundPosition: `${'herbal' in workshop ? 100 : workshop.art * 25}% center`,
+            }"
+            aria-hidden="true"
+          />
+          <span class="city-marker__name">{{ workshop.label }}</span
+          ><span class="city-marker__arrow" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          class="city-marker city-marker--wide"
+          style="left: 77%; top: 69%"
+          data-city-forge
+          aria-label="Открыть улучшение и перековку"
+          @click="forgeOpen = true"
+        >
+          <span class="city-marker__seal" aria-hidden="true"
+            ><IconGenerator
+              :config="{ id: 'craft-reforge', glyph: 'axe', category: 'utility' }" /></span
+          ><span class="city-marker__name">Улучшение и перековка</span
+          ><span class="city-marker__arrow" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          class="city-marker city-marker--wide"
+          style="left: 50%; top: 90%"
+          data-city-professions
+          @click="openProfessionWorkshop(null)"
+        >
+          <span class="city-marker__seal" aria-hidden="true"
+            ><IconGenerator
+              :config="{ id: 'craft-training', glyph: 'scroll', category: 'utility' }" /></span
+          ><span class="city-marker__name">Обучение профессиям</span
+          ><span class="city-marker__arrow" aria-hidden="true" />
+        </button>
+      </section>
 
       <div v-else-if="activeDestination === 'bank'" class="city-interior__choices">
-        <p>Банковское хранилище ещё не открыто. Пространственные артефакты и доступные слоты сейчас находятся в инвентаре.</p>
+        <p>
+          Банковское хранилище ещё не открыто. Пространственные артефакты и доступные слоты сейчас
+          находятся в инвентаре.
+        </p>
         <UIButton data-city-inventory @click="emit('open-inventory')">Открыть инвентарь</UIButton>
       </div>
 
@@ -215,7 +387,8 @@ async function startTraining(): Promise<void> {
 .city-map__top-shade {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, #080b15d9, transparent 20%, transparent 85%, #080b1570),
+  background:
+    linear-gradient(180deg, #080b15d9, transparent 20%, transparent 85%, #080b1570),
     linear-gradient(90deg, #080b1533, transparent 30%, transparent 70%, #080b1533);
   pointer-events: none;
 }
@@ -259,11 +432,15 @@ async function startTraining(): Promise<void> {
   border-radius: 6px;
   background: #1a1010ee;
   color: #f8ca8f;
-  font: 700 0.7rem Georgia, serif;
+  font:
+    700 0.7rem Georgia,
+    serif;
 }
 .city-map__heading h1 {
   margin: 0;
-  font: 700 clamp(1rem, 4vw, 1.3rem) Georgia, serif;
+  font:
+    700 clamp(1rem, 4vw, 1.3rem) Georgia,
+    serif;
 }
 .city-marker {
   position: absolute;
@@ -317,7 +494,10 @@ async function startTraining(): Promise<void> {
   border: 2px solid #b68b45;
   border-radius: 50%;
   background: radial-gradient(circle at 45% 32%, #6d2918, #1d0910 75%);
-  box-shadow: inset 0 0 0 2px #f0c16b, 0 0 0 2px #241813, 0 0 16px #f0ae4c66;
+  box-shadow:
+    inset 0 0 0 2px #f0c16b,
+    0 0 0 2px #241813,
+    0 0 16px #f0ae4c66;
 }
 .city-marker__seal :deep(.icon-generator) {
   width: 72%;
@@ -343,9 +523,13 @@ async function startTraining(): Promise<void> {
   border: 1px solid #b68b45;
   border-radius: 2px;
   background: linear-gradient(#28201b, #090a10);
-  box-shadow: inset 0 1px #e1bd7299, 0 2px 5px #000b;
+  box-shadow:
+    inset 0 1px #e1bd7299,
+    0 2px 5px #000b;
   color: #fff2d3;
-  font: 600 clamp(0.68rem, 2.6vw, 0.8rem)/1.1 Georgia, serif;
+  font:
+    600 clamp(0.68rem, 2.6vw, 0.8rem)/1.1 Georgia,
+    serif;
   text-align: center;
   text-wrap: balance;
 }
@@ -358,7 +542,9 @@ async function startTraining(): Promise<void> {
   filter: drop-shadow(0 0 4px #ffab38);
 }
 @media (hover: hover) {
-  .city-marker:hover { filter: drop-shadow(0 0 7px #e7b65499); }
+  .city-marker:hover {
+    filter: drop-shadow(0 0 7px #e7b65499);
+  }
 }
 .city-marker:active {
   transform: translate(-50%, -50%) scale(0.96);
@@ -379,7 +565,9 @@ async function startTraining(): Promise<void> {
 .city-interior__header h2 {
   margin: 0;
   color: var(--ui-color-gold);
-  font: 700 1.1rem Georgia, serif;
+  font:
+    700 1.1rem Georgia,
+    serif;
 }
 .city-interior__arena {
   display: grid;
@@ -400,6 +588,56 @@ async function startTraining(): Promise<void> {
   line-height: 1.5;
 }
 @media (prefers-reduced-motion: reduce) {
-  .city-marker { transition: none; }
+  .city-marker {
+    transition: none;
+  }
+}
+.city-interior--craft {
+  height: 100%;
+  padding: 0;
+}
+.craft-district {
+  min-height: 470px;
+}
+.craft-district .city-map__art {
+  object-position: center;
+}
+.craft-district__back {
+  position: absolute;
+  top: 10px;
+  left: 8px;
+  z-index: 3;
+  background: #11131bda;
+}
+.craft-district__heading {
+  top: 16px;
+  left: auto;
+  right: 12px;
+  width: calc(100% - 110px);
+  transform: none;
+}
+.craft-district__heading h1 {
+  font-size: clamp(0.9rem, 3.5vw, 1.2rem);
+}
+.craft-district__heading small {
+  font-size: 0.48rem;
+}
+.craft-district .city-marker__seal {
+  width: 43px;
+  height: 43px;
+  margin: 2px 0 5px;
+}
+.craft-district__medallion {
+  display: block;
+  width: 49px;
+  height: 49px;
+  margin: 3px 0 5px;
+  border: 2px solid #b68b45;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 2px #f0c16b,
+    0 0 0 2px #241813,
+    0 0 12px #000b;
+  background-repeat: no-repeat;
 }
 </style>

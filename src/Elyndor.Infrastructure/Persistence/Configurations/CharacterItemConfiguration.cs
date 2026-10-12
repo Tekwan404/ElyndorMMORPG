@@ -19,6 +19,9 @@ public sealed class CharacterItemConfiguration : IEntityTypeConfiguration<Charac
         builder.HasQueryFilter(item => item.Storage == "INVENTORY");
         builder.Property(item => item.ItemDefinitionId).HasMaxLength(64).IsRequired();
         builder.Property(item => item.DefinitionVersion).HasDefaultValue(1).IsRequired();
+        builder.Property(item => item.EnchantmentId).HasMaxLength(64);
+        builder.Property(item => item.EnchantmentStatId).HasMaxLength(16);
+        builder.Property(item => item.EnchantmentValue).HasPrecision(18, 4).HasDefaultValue(0m);
         builder.Property(item => item.RolledStrength).HasPrecision(18, 4);
         builder.Property(item => item.RolledAgility).HasPrecision(18, 4);
         builder.Property(item => item.RolledIntellect).HasPrecision(18, 4);
