@@ -1,4 +1,3 @@
-using System.Buffers.Binary;
 using System.Data;
 using System.Security.Cryptography;
 using System.Text;
@@ -273,12 +272,12 @@ public sealed partial class ProfessionService(
             if (itemDefinition is null)
                 throw new InvalidDataException($"Skinning source '{source.Id}' references missing item '{source.ItemId}'.");
 
-            int quantity = DeterministicRange(mutationId, $"SKIN|{combatSessionId}|{enemyActorId}", source.MinQuantity, source.MaxQuantity);
+            int quantity = source.MinQuantity + (int)(professionRandom.NextUnit() * (source.MaxQuantity - source.MinQuantity + 1));
             ProfessionMutationResult? inventoryFailure = await AddStackableAsync(character.Id, itemDefinition, quantity, now, contentSnapshot, cancellationToken);
             if (inventoryFailure is not null)
                 return inventoryFailure;
 
-            bool skillIncreased = ShouldIncreaseSkill(mutationId, $"SKIN_SKILL|{source.Id}", profession.Skill, source.RequiredSkill, source.SkillUpUntil)
+            bool skillIncreased = ShouldIncreaseProfessionSkill(profession.Skill, source.RequiredSkill, source.SkillUpUntil)
                 && profession.TryIncreaseSkill(MaxProfessionSkill, now);
             corpse.MarkSkinned(mutationId, itemDefinition.Id, quantity, skillIncreased, now);
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -400,13 +399,12 @@ public sealed partial class ProfessionService(
             }
             else
             {
-                int capacity = await InventoryCapacity.ResolveAsync(
+                InventoryCapacityState capacity = await InventoryCapacity.GetStateAsync(
                     dbContext,
                     character.Id,
                     contentSnapshot,
                     cancellationToken);
-                int occupiedAfterConsumption = inventory.Count(item => item.Quantity > 0 && !equippedItemIds.Contains(item.Id));
-                if (occupiedAfterConsumption + recipe.OutputQuantity > capacity)
+                if (capacity.UsedSlots + recipe.OutputQuantity > capacity.Capacity)
                     return new ProfessionMutationResult(false, ProfessionErrorCodes.InventoryFull);
                 DateTimeOffset now = timeProvider.GetUtcNow();
                 for (int ordinal = 0; ordinal < recipe.OutputQuantity; ordinal++)
@@ -489,33 +487,6 @@ public sealed partial class ProfessionService(
             remaining -= stackQuantity;
         }
         return null;
-    }
-
-    private static bool ShouldIncreaseSkill(Guid mutationId, string salt, int currentSkill, int requiredSkill, int skillUpUntil)
-    {
-        if (currentSkill >= skillUpUntil)
-            return false;
-        if (currentSkill <= requiredSkill)
-            return true;
-        int range = Math.Max(1, skillUpUntil - requiredSkill);
-        decimal chance = (decimal)(skillUpUntil - currentSkill) / range;
-        uint roll = DeterministicUInt32(mutationId, salt);
-        decimal normalized = roll / (decimal)uint.MaxValue;
-        return normalized < chance;
-    }
-
-    private static int DeterministicRange(Guid mutationId, string salt, int min, int max)
-    {
-        if (min < 1 || max < min)
-            throw new InvalidDataException("Profession yield range is invalid.");
-        uint value = DeterministicUInt32(mutationId, salt);
-        return min + (int)(value % (uint)(max - min + 1));
-    }
-
-    private static uint DeterministicUInt32(Guid mutationId, string salt)
-    {
-        byte[] digest = SHA256.HashData(Encoding.UTF8.GetBytes($"{mutationId:N}|{salt}"));
-        return BinaryPrimitives.ReadUInt32LittleEndian(digest);
     }
 
     private static string Fingerprint(string value) =>

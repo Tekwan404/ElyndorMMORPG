@@ -335,6 +335,7 @@ function errorMessage(caught: unknown): string {
         profession_recipe_scroll_missing: 'Нужен незапертый свиток рецепта в инвентаре.',
         combat_active: 'Сначала завершите бой.',
         resource_travelling: 'Сначала завершите переход.',
+        resource_afk_active: 'Сначала завершите AFK-охоту.',
         profession_wrong_workshop: 'Для изготовления нужна городская мастерская.',
         profession_missing_ingredients: 'Не хватает материалов.',
         inventory_full: 'В инвентаре нет свободного места.',
@@ -730,7 +731,7 @@ onMounted(load)
             :aria-pressed="category === 'equipment'"
             @click="category = 'equipment'"
           >
-            Экипировка
+            {{ activeProfession?.id === 'ALCHEMY' ? 'Зелья' : 'Экипировка' }}
           </button>
         </div>
         <article

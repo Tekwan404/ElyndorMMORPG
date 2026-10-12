@@ -13,7 +13,7 @@
 
 # 1. Назначение
 
-Current runtime: the unified city workshop supports Skinning/Leatherworking, Mining/Blacksmithing and Enchanting, material-source guidance, processing/equipment filters and explicit disabled requirements. Profession skill follows location steps 1–15 / 16–30 / 31–60. See [implementation contract](../../development/profession-workshop.md). The remaining foundation describes future Alchemy/Cooking and timed crafting.
+Current runtime: the unified city workshop supports Skinning/Leatherworking, Herbalism/Alchemy, Mining/Blacksmithing and Enchanting, material-source guidance, processing/equipment filters (Alchemy labels its product filter "Зелья") and explicit disabled requirements. Profession skill follows location steps 1–15 / 16–30 / 31–60. See [implementation contract](../../development/profession-workshop.md). The craft district is one illustrated map with working workshop pins. Current Alchemy and other production are instant; the remaining foundation describes future Cooking and timed crafting.
 
 Crafting UI supports Blacksmithing, Alchemy and Cooking, profession progression, recipe discovery and instant/timed craft.
 

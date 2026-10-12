@@ -27,6 +27,9 @@ public sealed partial class ProfessionService
             if (profession.Skill < node.RequiredSkill) return new(false, ProfessionErrorCodes.SkillTooLow);
             if (!await IsAtLocationAsync(character.Id, node.LocationId, cancellationToken))
                 return new(false, "profession_wrong_location");
+            if (await dbContext.AfkFarmSessions.AnyAsync(farm => farm.CharacterId == character.Id
+                    && farm.Status == Elyndor.Core.Afk.AfkFarmStatus.Active, cancellationToken))
+                return new(false, "resource_afk_active");
             var now = timeProvider.GetUtcNow();
             if (await MiningCooldownUntilAsync(character.Id, cancellationToken) > now) return new(false, "profession_gathering_cooldown");
             var definition = content.Package.Items!.Single(item => item.Id == node.ItemId);

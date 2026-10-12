@@ -259,6 +259,126 @@
         }
       ],
       "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_MANA_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Крепкое зелье маны",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "MANA_POTION",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "DEWY_BLOSSOM",
+          "quantity": 3
+        },
+        {
+          "itemId": "HONEY_GRASS",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_FOCUS_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Крепкое зелье концентрации",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "FOCUS_POTION",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "DEWY_BLOSSOM",
+          "quantity": 3
+        },
+        {
+          "itemId": "HONEY_GRASS",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_RAGE_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Крепкое зелье ярости",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "RAGE_POTION",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "DEWY_BLOSSOM",
+          "quantity": 3
+        },
+        {
+          "itemId": "HONEY_GRASS",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_MAJOR_MANA_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Большое зелье маны",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "MAJOR_MANA_POTION",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "SHADOW_MOSS",
+          "quantity": 4
+        },
+        {
+          "itemId": "HUSHROOT",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_MAJOR_FOCUS_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Большое зелье концентрации",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "MAJOR_FOCUS_POTION",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "SHADOW_MOSS",
+          "quantity": 4
+        },
+        {
+          "itemId": "HUSHROOT",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ALCHEMY_MAJOR_RAGE_POTION",
+      "professionId": "ALCHEMY",
+      "name": "Большое зелье ярости",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "MAJOR_RAGE_POTION",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "SHADOW_MOSS",
+          "quantity": 4
+        },
+        {
+          "itemId": "HUSHROOT",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
     }
   ]
 }

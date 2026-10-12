@@ -8,7 +8,7 @@ The production slice contains Skinning, Leatherworking, Herbalism, Alchemy, Mini
 | Flower Meadow | 16–30 | 16 | 31 | Light |
 | Deep Forest | 31–60 | 31 | 61 | Thick |
 
-All current skinnable creatures within a location share its entry and skill-up ceiling. Spiders still give chitin. Reaching 15 alone does not unlock the next zone: a final successful skill increase to 16 completes the step. Skill-up chance follows the existing deterministic declining curve. At 16/31/61 the previous step no longer gives skill, but still yields materials. At 61 the UI explicitly says that the current available ladder is complete; no nonexistent next zone is promised. This is profession skill, not character level or a change to combat encounters.
+All current skinnable creatures within a location share its entry and skill-up ceiling. Spiders still give chitin. Reaching 15 alone does not unlock the next zone: a final successful skill increase to 16 completes the step. Skill-up chance follows the existing declining probability curve with injectable server randomness. At 16/31/61 the previous step no longer gives skill, but still yields materials. At 61 the UI explicitly says that the current available ladder is complete; no nonexistent next zone is promised. This is profession skill, not character level or a change to combat encounters.
 
 Legacy/off-roster skinning entries and IDs remain compatible. Material guides derive from effective location encounters, not from unused monster definitions. The moved encounter roster had no source learnable at skill 1: the existing Whispering Forest wolf now starts the rough-hide step.
 
@@ -30,9 +30,9 @@ Further gathering tiers and additional professions are separate future slices. R
 
 ## Mining, blacksmithing and enchanting (2026-10-11)
 
-Mining offers copper in Whispering Forest (skill 1), tin in Flower Meadow (16) and iron in Deep Forest (31), following the existing 16/31/61 practice ceilings. Each gathering action yields two ore with a shared 60-second server cooldown. Cooldown is derived from committed mutations as well as profession state, so forgetting/relearning cannot bypass it. The serializable transaction checks the actual location, travel state, skill and inventory capacity before granting materials. Smelting produces copper, bronze and iron bars. Four blacksmith recipes use ordinary level-1/6 equipment budgets and existing item artwork; there are no set bonuses or mass-produced Rare+ items.
+Mining offers copper in Whispering Forest (skill 1), tin in Flower Meadow (16) and iron in Deep Forest (31), following the existing 16/31/61 practice ceilings. Each gathering action yields two ore with a shared 60-second server cooldown. Cooldown is derived from committed mutations as well as profession state, so forgetting/relearning cannot bypass it. The serializable transaction checks the actual location, travel state, skill and inventory capacity and active AFK before granting materials. Smelting produces copper, bronze and iron bars. Twelve blacksmith recipes use ordinary Common/Uncommon level-1/2/6/10 equipment budgets and existing item artwork; there are no set bonuses or mass-produced Rare+ items.
 
-Enchanting destroys an unequipped, unlocked Common item for one Strange Dust, or an Uncommon item for one Magic Essence. Other rarities are deliberately unavailable. Three recipes at skills 1/16/31 produce scrolls for +1 Stamina/Strength/Intellect. Applying a scroll requires Enchanting, the city workshop and unequipped chest/gloves/boots; it consumes one scroll and replaces the existing enchantment. Persisted enchantment values are separate from rolled stats, affixes, stars and enhancement. InventorySnapshotReader applies the bonus after structural enhancement and affixes, so the ordinary equipment/combat projection uses it without changing the item's birth roll.
+Enchanting destroys an unequipped, unlocked Common item for one Strange Dust, or an Uncommon item for one Magic Essence. Other rarities are deliberately unavailable. Eight recipes at skills 1/16/31 produce scrolls for +1 Stamina/Strength/Agility/Intellect and +2 versions of those stats at skill 31. Applying a scroll requires Enchanting, the city workshop and unequipped chest/gloves/boots; it consumes one scroll and replaces the existing enchantment. Persisted enchantment values are separate from rolled stats, affixes, stars and enhancement. InventorySnapshotReader applies the bonus after structural enhancement and affixes, so the ordinary equipment/combat projection uses it without changing the item's birth roll.
 
 All new mutations use character-scoped intent fingerprints and serializable transactions. Replays return success without granting or consuming anything again. Forgetting a profession requires UI confirmation and resets only its learned skill; items and existing enchantments remain. The two-primary-profession limit is unchanged.
 
@@ -53,7 +53,7 @@ Herbalism and Alchemy extend the same profession service and city workshop. Thei
 
 The location scene exposes resource markers from composed `resourceSources` content. `POST /api/v1/professions/gather` accepts only a node ID and mutation ID. PostgreSQL stores global availability and durable harvest receipts. Serializable transactions lock the character and node, validate location, travel, AFK, skill and capacity, then atomically grant material, increase skill and set a 30-second respawn. The endpoint uses the existing combat operation guard. Competing players cannot harvest one spawn twice; replay after restart or respawn returns the original result. Inventory-full failures leave availability and skill unchanged.
 
-Alchemy offers twelve recipes across the three steps, using ordinary healing, mana, focus and rage potions with their existing effects and cooldowns. Later recipes yield multiple small utility potions; stronger healing potions retain existing character-level requirements. No new consumable or combat engine is introduced. Herbs and alchemy skill progression use the injectable server RNG; mutation IDs cannot select their rolls. Legacy skinning/leatherworking randomness is unchanged.
+Alchemy offers eighteen baseline recipes across the three steps, using ordinary healing, mana, focus and rage potions with their existing effects and cooldowns. Later recipes yield multiple small utility potions; stronger healing potions retain existing character-level requirements. No new consumable or combat engine is introduced. Herbs and alchemy skill progression use the injectable server RNG; mutation IDs cannot select their rolls. Skinning yield and skill now also use server RNG; corpse receipts preserve the committed result on replay.
 
 Migration `AddResourceGathering` adds only node availability and receipt tables. Existing characters, inventory and professions are not rewritten. The durable receipt table grows with successful collections; a future retention policy must preserve replay protection before deleting receipts. Higher skill content beyond 61 and rare herbs remain separate work.
 
@@ -70,3 +70,18 @@ Scrolls are stackable Recipe items. The first three locations append them to the
 Crafted equipment now uses a server-generated operation ID for item generation; the client mutation ID only identifies a retry. All production profession skill rolls use injectable server RNG with the existing probability curve. Committed items and mutation records preserve replay protection; rerolling cannot be requested through a repeated mutation ID.
 
 The character HUD no longer duplicates the current location above experience. Location and travel remain visible through the world/location screens.
+
+## Profession audit and recipe expansion (2026-10-12)
+
+Content/balance versions are 0.55.0 / 0.45.0. There are 68 recipes: Leatherworking 23, Alchemy 22, Blacksmithing 12, Enchanting 8 and Mining 3. Skinning and Herbalism produce materials through gathering rather than artificial crafting recipes. The existing thirteen loot-scroll recipes retain their knowledge gates.
+
+Six new resource potions use the existing RestoreResource action and the shared 30-second RESOURCE_POTION cooldown:
+
+| Skill / character level | Mana | Focus | Rage | Ingredients per potion |
+| --- | --- | --- | --- | --- |
+| 16 / 5 | 120 | 50 | 45 | Dewy Blossom 3 + Honey Grass 3 |
+| 31 / 8 | 160 | 70 | 60 | Shadow Moss 4 + Hushroot 4 |
+
+They restore more resource in a single use, cost higher-tier herbs and retain resource-type matching and caps. Existing batch recipes and healing potions are preserved. Battle tonic and antidote remain scroll-learned and combat-only. No new combat effect or persistence migration is introduced by this expansion.
+
+The audit fixed client-selectable Skinning randomness, a full-backpack crafting rejection caused by counting the equipped spatial artifact, Mining during active AFK, and the Alchemy filter label. Crafting now delegates projected capacity to InventoryCapacity, including ingredient slots released before output creation. Regression tests reproduce all three server defects. Real PostgreSQL tests exercise all nineteen new recipes, potion use/replay, enchantment application and concurrent crafting from one ingredient stack. Full Release verification passed 1497 unit and 710 integration tests. Frontend verification passed 562 tests, build/typecheck and three mobile workshop scenarios; browser layout scenarios use the mock API while mutation persistence is covered by PostgreSQL tests.

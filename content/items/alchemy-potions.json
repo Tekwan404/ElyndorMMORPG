@@ -1,0 +1,172 @@
+{
+  "items": [
+    {
+      "id": "MANA_POTION",
+      "name": "Крепкое зелье маны",
+      "type": "Consumable",
+      "rarity": "Common",
+      "requiredLevel": 5,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 120 маны. Делит общий кулдаун с другими зельями ресурса.",
+      "version": 1,
+      "consumableCooldownSeconds": 30,
+      "consumableCooldownCategoryId": "RESOURCE_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreResource",
+          "amount": 120,
+          "resourceType": "MANA"
+        }
+      ],
+      "buyPriceGold": 36
+    },
+    {
+      "id": "FOCUS_POTION",
+      "name": "Крепкое зелье концентрации",
+      "type": "Consumable",
+      "rarity": "Common",
+      "requiredLevel": 5,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 50 концентрации. Делит общий кулдаун с другими зельями ресурса.",
+      "version": 1,
+      "consumableCooldownSeconds": 30,
+      "consumableCooldownCategoryId": "RESOURCE_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreResource",
+          "amount": 50,
+          "resourceType": "FOCUS"
+        }
+      ],
+      "buyPriceGold": 36
+    },
+    {
+      "id": "RAGE_POTION",
+      "name": "Крепкое зелье ярости",
+      "type": "Consumable",
+      "rarity": "Common",
+      "requiredLevel": 5,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 45 ярости. Делит общий кулдаун с другими зельями ресурса.",
+      "version": 1,
+      "consumableCooldownSeconds": 30,
+      "consumableCooldownCategoryId": "RESOURCE_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreResource",
+          "amount": 45,
+          "resourceType": "RAGE"
+        }
+      ],
+      "buyPriceGold": 36
+    },
+    {
+      "id": "MAJOR_MANA_POTION",
+      "name": "Большое зелье маны",
+      "type": "Consumable",
+      "rarity": "Common",
+      "requiredLevel": 8,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 160 маны. Делит общий кулдаун с другими зельями ресурса.",
+      "version": 1,
+      "consumableCooldownSeconds": 30,
+      "consumableCooldownCategoryId": "RESOURCE_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreResource",
+          "amount": 160,
+          "resourceType": "MANA"
+        }
+      ],
+      "buyPriceGold": 48
+    },
+    {
+      "id": "MAJOR_FOCUS_POTION",
+      "name": "Большое зелье концентрации",
+      "type": "Consumable",
+      "rarity": "Common",
+      "requiredLevel": 8,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 70 концентрации. Делит общий кулдаун с другими зельями ресурса.",
+      "version": 1,
+      "consumableCooldownSeconds": 30,
+      "consumableCooldownCategoryId": "RESOURCE_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreResource",
+          "amount": 70,
+          "resourceType": "FOCUS"
+        }
+      ],
+      "buyPriceGold": 48
+    },
+    {
+      "id": "MAJOR_RAGE_POTION",
+      "name": "Большое зелье ярости",
+      "type": "Consumable",
+      "rarity": "Common",
+      "requiredLevel": 8,
+      "stackable": true,
+      "maxStack": 20,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Мгновенно восстанавливает 60 ярости. Делит общий кулдаун с другими зельями ресурса.",
+      "version": 1,
+      "consumableCooldownSeconds": 30,
+      "consumableCooldownCategoryId": "RESOURCE_POTION",
+      "consumableActions": [
+        {
+          "type": "RestoreResource",
+          "amount": 60,
+          "resourceType": "RAGE"
+        }
+      ],
+      "buyPriceGold": 48
+    }
+  ]
+}

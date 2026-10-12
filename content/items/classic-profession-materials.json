@@ -208,6 +208,101 @@
       "description": "Зачарователь накладывает чары на снятое снаряжение в городской мастерской. Новые чары заменяют предыдущие.",
       "version": 1,
       "iconId": "materials_for_professions/gathering_late/gathering_late_11_essence_shard"
+    },
+    {
+      "id": "MINOR_AGILITY_SCROLL",
+      "name": "Свиток чар: малая ловкость",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Зачарователь накладывает чары на снятое снаряжение в городской мастерской. Новые чары заменяют предыдущие.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_late/gathering_late_11_essence_shard"
+    },
+    {
+      "id": "LESSER_STAMINA_SCROLL",
+      "name": "Свиток чар: выносливость",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Зачарователь накладывает чары на снятое снаряжение в городской мастерской. Новые чары заменяют предыдущие.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_late/gathering_late_11_essence_shard"
+    },
+    {
+      "id": "LESSER_STRENGTH_SCROLL",
+      "name": "Свиток чар: сила",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Зачарователь накладывает чары на снятое снаряжение в городской мастерской. Новые чары заменяют предыдущие.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_late/gathering_late_11_essence_shard"
+    },
+    {
+      "id": "LESSER_AGILITY_SCROLL",
+      "name": "Свиток чар: ловкость",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Зачарователь накладывает чары на снятое снаряжение в городской мастерской. Новые чары заменяют предыдущие.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_late/gathering_late_11_essence_shard"
+    },
+    {
+      "id": "LESSER_INTELLECT_SCROLL",
+      "name": "Свиток чар: интеллект",
+      "type": "Material",
+      "rarity": "Common",
+      "requiredLevel": 1,
+      "stackable": true,
+      "maxStack": 99,
+      "slot": null,
+      "stats": {
+        "strength": 0,
+        "agility": 0,
+        "intellect": 0,
+        "stamina": 0
+      },
+      "description": "Зачарователь накладывает чары на снятое снаряжение в городской мастерской. Новые чары заменяют предыдущие.",
+      "version": 1,
+      "iconId": "materials_for_professions/gathering_late/gathering_late_11_essence_shard"
     }
   ]
 }

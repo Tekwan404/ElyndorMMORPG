@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.54.0",
-  "balanceVersion": "0.44.0",
-  "publishedAtUtc": "2026-10-12T07:00:00+00:00",
+  "contentVersion": "0.55.0",
+  "balanceVersion": "0.45.0",
+  "publishedAtUtc": "2026-10-12T12:00:00+00:00",
   "professions": [
     {
       "id": "MINING",
@@ -197,6 +197,234 @@
         }
       ],
       "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "BS_COPPER_HANDS",
+      "professionId": "BLACKSMITHING",
+      "name": "Медные рукавицы",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "CRAFT_COPPER_HANDS",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "COPPER_BAR",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "BS_COPPER_FEET",
+      "professionId": "BLACKSMITHING",
+      "name": "Медные сапоги",
+      "requiredSkill": 1,
+      "skillUpUntil": 16,
+      "outputItemId": "CRAFT_COPPER_FEET",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "COPPER_BAR",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "BS_BRONZE_SWORD",
+      "professionId": "BLACKSMITHING",
+      "name": "Бронзовый меч",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "CRAFT_BRONZE_SWORD",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "BRONZE_BAR",
+          "quantity": 5
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "BS_BRONZE_CHEST",
+      "professionId": "BLACKSMITHING",
+      "name": "Бронзовая кираса",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "CRAFT_BRONZE_CHEST",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "BRONZE_BAR",
+          "quantity": 7
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "BS_BRONZE_HANDS",
+      "professionId": "BLACKSMITHING",
+      "name": "Бронзовые рукавицы",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "CRAFT_BRONZE_HANDS",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "BRONZE_BAR",
+          "quantity": 4
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "BS_IRON_SWORD",
+      "professionId": "BLACKSMITHING",
+      "name": "Железный меч",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "CRAFT_IRON_SWORD",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "IRON_BAR",
+          "quantity": 6
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "BS_IRON_HANDS",
+      "professionId": "BLACKSMITHING",
+      "name": "Железные рукавицы",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "CRAFT_IRON_HANDS",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "IRON_BAR",
+          "quantity": 5
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "BS_IRON_FEET",
+      "professionId": "BLACKSMITHING",
+      "name": "Железные сапоги",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "CRAFT_IRON_FEET",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "IRON_BAR",
+          "quantity": 6
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ENCHANT_MINOR_AGILITY",
+      "professionId": "ENCHANTING",
+      "name": "Чары: малая ловкость",
+      "requiredSkill": 16,
+      "skillUpUntil": 31,
+      "outputItemId": "MINOR_AGILITY_SCROLL",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "STRANGE_DUST",
+          "quantity": 4
+        },
+        {
+          "itemId": "MAGIC_ESSENCE",
+          "quantity": 1
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ENCHANT_LESSER_STAMINA",
+      "professionId": "ENCHANTING",
+      "name": "Чары: выносливость",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "LESSER_STAMINA_SCROLL",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "STRANGE_DUST",
+          "quantity": 8
+        },
+        {
+          "itemId": "MAGIC_ESSENCE",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ENCHANT_LESSER_STRENGTH",
+      "professionId": "ENCHANTING",
+      "name": "Чары: сила",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "LESSER_STRENGTH_SCROLL",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "STRANGE_DUST",
+          "quantity": 8
+        },
+        {
+          "itemId": "MAGIC_ESSENCE",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ENCHANT_LESSER_AGILITY",
+      "professionId": "ENCHANTING",
+      "name": "Чары: ловкость",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "LESSER_AGILITY_SCROLL",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "STRANGE_DUST",
+          "quantity": 8
+        },
+        {
+          "itemId": "MAGIC_ESSENCE",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
+    },
+    {
+      "id": "ENCHANT_LESSER_INTELLECT",
+      "professionId": "ENCHANTING",
+      "name": "Чары: интеллект",
+      "requiredSkill": 31,
+      "skillUpUntil": 61,
+      "outputItemId": "LESSER_INTELLECT_SCROLL",
+      "outputQuantity": 1,
+      "ingredients": [
+        {
+          "itemId": "STRANGE_DUST",
+          "quantity": 8
+        },
+        {
+          "itemId": "MAGIC_ESSENCE",
+          "quantity": 3
+        }
+      ],
+      "requiredLocationId": "STARTER_TOWN"
     }
   ],
   "professionGatheringNodes": [
@@ -262,6 +490,66 @@
       "scrollItemId": "MINOR_INTELLECT_SCROLL",
       "statId": "INTELLECT",
       "value": 1,
+      "slots": [
+        "Chest",
+        "Hands",
+        "Feet"
+      ]
+    },
+    {
+      "id": "MINOR_AGILITY",
+      "name": "Малая ловкость",
+      "scrollItemId": "MINOR_AGILITY_SCROLL",
+      "statId": "AGILITY",
+      "value": 1,
+      "slots": [
+        "Chest",
+        "Hands",
+        "Feet"
+      ]
+    },
+    {
+      "id": "LESSER_STAMINA",
+      "name": "Выносливость",
+      "scrollItemId": "LESSER_STAMINA_SCROLL",
+      "statId": "STAMINA",
+      "value": 2,
+      "slots": [
+        "Chest",
+        "Hands",
+        "Feet"
+      ]
+    },
+    {
+      "id": "LESSER_STRENGTH",
+      "name": "Сила",
+      "scrollItemId": "LESSER_STRENGTH_SCROLL",
+      "statId": "STRENGTH",
+      "value": 2,
+      "slots": [
+        "Chest",
+        "Hands",
+        "Feet"
+      ]
+    },
+    {
+      "id": "LESSER_AGILITY",
+      "name": "Ловкость",
+      "scrollItemId": "LESSER_AGILITY_SCROLL",
+      "statId": "AGILITY",
+      "value": 2,
+      "slots": [
+        "Chest",
+        "Hands",
+        "Feet"
+      ]
+    },
+    {
+      "id": "LESSER_INTELLECT",
+      "name": "Интеллект",
+      "scrollItemId": "LESSER_INTELLECT_SCROLL",
+      "statId": "INTELLECT",
+      "value": 2,
       "slots": [
         "Chest",
         "Hands",
