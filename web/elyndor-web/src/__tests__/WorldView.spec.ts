@@ -64,7 +64,7 @@ describe('WorldView', () => {
     expect(wrapper.find('[data-open-world-map]').exists()).toBe(false)
   })
 
-  it('places dungeon actions above location residents without rendering a duplicate card', () => {
+  it('shows a single dungeon card instead of repeating the location hero', () => {
     const store = useGameSessionStore()
     store.snapshot = snapshot()
     store.snapshot.world!.currentLocation.id = 'ANCIENT_MINE'
@@ -91,15 +91,8 @@ describe('WorldView', () => {
 
     expect(wrapper.findAll('[data-dungeon-location-card]')).toHaveLength(1)
     expect(wrapper.get('[data-world-systems]').attributes('data-show-dungeon-card')).toBe('false')
-    const overview = wrapper.get('[data-location-overview]').element
-    const actions = wrapper.get('[data-dungeon-location-card]').element
-    const residents = wrapper.get('[data-location-residents]').element
-    expect(
-      overview.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_CONTAINED_BY,
-    ).not.toBe(0)
-    expect(actions.compareDocumentPosition(residents) & Node.DOCUMENT_POSITION_FOLLOWING).not.toBe(
-      0,
-    )
+    expect(wrapper.find('[data-location-overview]').exists()).toBe(false)
+    expect(wrapper.find('[data-location-hero]').exists()).toBe(false)
   })
 
   it('offers automatic hunting only from the eligible current location', async () => {
