@@ -173,7 +173,7 @@ async function act(key: string, action: () => Promise<void>, message: string): P
   try {
     await action()
     if (dungeon.errorCode || startEncounterError.value) return false
-    feedback.value = message
+    feedback.value ??= message
     return true
   } catch {
     startEncounterError.value = 'Не удалось выполнить действие. Попробуйте ещё раз.'
