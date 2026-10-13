@@ -13,10 +13,11 @@ async function openPreview(page: Page, party: number, width = 390, height = 844)
         .locator('[data-character-figure] img, [data-allies-strip] img')
         .evaluateAll(
           (images) =>
-            images.length > 0 && images.every((image) => image.complete && image.naturalWidth > 0),
+            images.length > 0 && images.every((image) => image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0),
         ),
+      { timeout: 15_000 },
     )
-    .toBe(true, { timeout: 15_000 })
+    .toBe(true)
 }
 
 test('three-player baseline fits without scroll and protects the arena', async ({ page }) => {

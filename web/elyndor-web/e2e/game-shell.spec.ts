@@ -4,9 +4,9 @@ test('dungeon floors and loot follow run progress on a phone', async ({ page }) 
   test.setTimeout(90_000)
   test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses a deterministic dungeon progress fixture.')
   await installMockApiUnlessReal(page)
-  const bootstrap = snapshot(true, 'STARTER_TOWN')
-  bootstrap.character!.level = 25
-  bootstrap.world!.currentLocation = { ...bootstrap.world!.currentLocation, id: 'BLACK_BASTION', displayName: 'Чёрный бастион' }
+  const initial = snapshot(true, 'STARTER_TOWN')
+  const bootstrap = { ...initial, character: { ...initial.character!, level: 25 },
+    world: { ...initial.world!, currentLocation: { ...initial.world!.currentLocation, id: 'BLACK_BASTION', displayName: 'Чёрный бастион' } } }
   await page.route('**/api/v1/bootstrap', route => route.fulfill({ json: bootstrap }))
   const characterId = bootstrap.character!.id
   const loot = { itemId: 'SMALL_HEALING_POTION', name: 'Малое зелье лечения', type: 'Consumable', rarity: 'Common', requiredLevel: 1, description: 'Восстанавливает здоровье.', iconId: null }
