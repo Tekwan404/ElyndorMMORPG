@@ -136,28 +136,11 @@ public sealed class CombatApplicationService(
             preparation.MonsterId,
             preparation.LocationId,
             cancellationToken,
-            preparation.Participants);
-        if (!result.Succeeded || result.Snapshot is null)
-            return result;
-
-        bool bound = await dungeonService.BindCombatAsync(
-            preparation.RunId,
-            preparation.EncounterId,
-            result.Snapshot.SessionId,
-            cancellationToken);
-        if (!bound)
-        {
-            await registry.DiscardAsync(accountId, cancellationToken);
-            if (durability is not null)
-                await durability.CompleteAsync(result.Snapshot.SessionId, cancellationToken);
-        }
-        else
-        {
+            preparation.Participants,
+            dungeonPreparation: preparation);
+        if (result.Succeeded)
             await registry.PublishCurrentAsync(accountId, cancellationToken);
-        }
-        return bound
-            ? result
-            : CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);
+        return result;
     }
 
     private async Task<CombatOperationResult> ResetTrainingCoreAsync(
@@ -484,7 +467,8 @@ public sealed class CombatApplicationService(
         string locationId,
         CancellationToken cancellationToken,
         IReadOnlyList<PartyCombatMember>? partyMembersOverride = null,
-        bool admissionLeaseHeld = false)
+        bool admissionLeaseHeld = false,
+        DungeonPreparation? dungeonPreparation = null)
     {
         CombatSessionCreationResult created = await factory.CreateAsync(
             accountId,
@@ -510,6 +494,8 @@ public sealed class CombatApplicationService(
                 cancellationToken);
         }
 
+        bool dungeonBound = false;
+        bool admitted = false;
         try
         {
             if (!isTraining
@@ -556,6 +542,20 @@ public sealed class CombatApplicationService(
                 }
             }
 
+            if (dungeonPreparation is not null)
+            {
+                dungeonBound = await dungeonService!.BindCombatAsync(
+                    dungeonPreparation.RunId, dungeonPreparation.EncounterId,
+                    created.Session!.SessionId, cancellationToken,
+                    participants.Select(participant => participant.CharacterId).ToArray());
+                if (!dungeonBound)
+                {
+                    if (durability is not null)
+                        await durability.CompleteAsync(created.Session!.SessionId, cancellationToken);
+                    return CombatOperationResult.Failure(CombatErrorCodes.CommandRejected);
+                }
+            }
+
             CombatParticipantBinding[] additionalParticipants = participants
                 .Where(participant => participant.CharacterId != created.CharacterId)
                 .Select(participant => new CombatParticipantBinding(
@@ -571,6 +571,9 @@ public sealed class CombatApplicationService(
                     additionalParticipants,
                     locationId))
             {
+                if (dungeonBound)
+                    await dungeonService!.HandleCombatFinishedAsync(
+                        created.Session!.Snapshot() with { Status = CombatSessionStatus.Cancelled }, cancellationToken);
                 if (!isTraining && durability is not null)
                 {
                     await durability.CompleteAsync(
@@ -580,12 +583,23 @@ public sealed class CombatApplicationService(
                 return CombatOperationResult.Failure(CombatErrorCodes.AlreadyActive);
             }
 
+            admitted = true;
             return CombatOperationResult.FromSnapshot(
                 created.Session!.Snapshot(),
                 created.ContentSnapshot) with
             {
                 Events = created.Session.GetEventsAfter(0)
             };
+        }
+        catch when (!admitted)
+        {
+            using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            if (dungeonBound)
+                await dungeonService!.HandleCombatFinishedAsync(
+                    created.Session!.Snapshot() with { Status = CombatSessionStatus.Cancelled }, cleanup.Token);
+            if (!isTraining && durability is not null)
+                await durability.CompleteAsync(created.Session!.SessionId, cleanup.Token);
+            throw;
         }
         finally
         {

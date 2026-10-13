@@ -1,4 +1,5 @@
 const messages: Record<string, string> = {
+  character_in_combat: 'Сначала завершите текущий бой. Откройте экран боя, чтобы продолжить.',
   party_request_invalid: 'Действие уже недоступно. Обновите группу.',
   party_character_not_found: 'Персонаж больше недоступен.',
   party_invite_not_found: 'Приглашение больше недоступно.',
@@ -20,13 +21,15 @@ const messages: Record<string, string> = {
   dungeon_level_required: 'Для этого подземелья нужен более высокий уровень.',
   dungeon_travel_in_progress: 'Сначала завершите путешествие.',
   dungeon_invalid_location: 'Всем участникам нужно быть у входа в подземелье.',
-  dungeon_member_cannot_enter: 'Один из участников пока не может войти. Проверьте уровень, здоровье и текущую активность.',
+  dungeon_member_cannot_enter:
+    'Один из участников пока не может войти. Проверьте уровень, здоровье и текущую активность.',
   dungeon_encounter_active: 'Сначала завершите текущий бой.',
   dungeon_encounter_not_ready: 'Группа пока не готова к следующему бою. Обновите забег.',
   dungeon_member_not_in_party: 'Для этого действия нужно состоять в группе забега.',
   dungeon_member_not_in_run: 'Сначала войдите в забег.',
   dungeon_run_not_found: 'Забег больше недоступен.',
-  dungeon_run_already_active: 'У группы уже есть другой активный забег. Сначала завершите или покиньте его.',
+  dungeon_run_already_active:
+    'У группы уже есть другой активный забег. Сначала завершите или покиньте его.',
   friend_request_pending: 'Заявка уже отправлена.',
   friend_request_already_decided: 'Эта заявка уже обработана. Обновите список друзей.',
   friend_request_not_found: 'Заявка больше недоступна.',

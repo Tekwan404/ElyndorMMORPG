@@ -9,6 +9,7 @@ public static partial class AbilityEngine
 {
     private static readonly TimeSpan StandardGcd = TimeSpan.FromSeconds(1.5);
     private static readonly TimeSpan ShortGcd = TimeSpan.FromSeconds(0.75);
+    private static readonly TimeSpan PlayerGcd = TimeSpan.FromSeconds(0.5);
 
     public static AbilityExecutionResult Execute(
         CombatRuntimeState runtime,
@@ -724,6 +725,7 @@ public static partial class AbilityEngine
         if (!ability.UsesGlobalCooldown) return;
         TimeSpan duration = ability.GlobalCooldownCategory switch
         {
+            GlobalCooldownCategory.Player => PlayerGcd,
             GlobalCooldownCategory.Reduced => ShortGcd,
             GlobalCooldownCategory.Standard => StandardGcd,
             _ => TimeSpan.Zero

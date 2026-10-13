@@ -1,5 +1,49 @@
 import { expect, test, type Page } from '@playwright/test'
 
+test('dungeon floors and loot follow run progress on a phone', async ({ page }) => {
+  test.setTimeout(90_000)
+  test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses a deterministic dungeon progress fixture.')
+  await installMockApiUnlessReal(page)
+  const bootstrap = snapshot(true, 'STARTER_TOWN')
+  bootstrap.character!.level = 25
+  bootstrap.world!.currentLocation = { ...bootstrap.world!.currentLocation, id: 'BLACK_BASTION', displayName: 'Чёрный бастион' }
+  await page.route('**/api/v1/bootstrap', route => route.fulfill({ json: bootstrap }))
+  const characterId = bootstrap.character!.id
+  const loot = { itemId: 'SMALL_HEALING_POTION', name: 'Малое зелье лечения', type: 'Consumable', rarity: 'Common', requiredLevel: 1, description: 'Восстанавливает здоровье.', iconId: null }
+  const encounters = Array.from({ length: 12 }, (_, index) => ({ id: `STAGE_${index}`, monsterId: `M_${index}`, checkpointId: `P_${index}`, isBoss: index > 5 }))
+  const preview = { id: 'BLACK_BASTION', displayName: 'Чёрный бастион', description: 'Двенадцать испытаний бастиона.', minimumLevel: 25, maximumLevel: 25, entryLocationId: 'BLACK_BASTION', minimumPartySize: 1, maximumPartySize: 5,
+    encounters, possibleLoot: [loot, { ...loot, itemId: 'SMALL_MANA_POTION', name: 'Малое зелье маны' }],
+    floors: [
+      { number: 1, firstEncounterIndex: 0, lastEncounterIndex: 0, bossName: 'Первый страж', possibleLoot: [loot] },
+      { number: 2, firstEncounterIndex: 1, lastEncounterIndex: 1, bossName: 'Второй страж', possibleLoot: [] },
+      { number: 3, firstEncounterIndex: 2, lastEncounterIndex: 11, bossName: 'Владыка бастиона', possibleLoot: [] },
+    ] }
+  await page.route('**/api/v1/dungeons', route => route.fulfill({ json: [preview] }))
+  await page.route('**/api/v1/dungeons/current', route => route.fulfill({ json: {
+    runId: 'run-bastion', dungeonId: preview.id, displayName: preview.displayName, description: preview.description,
+    state: 'Active', currentEncounterIndex: 1, currentCheckpointId: 'P_0', encounterCount: 12, partyId: characterId,
+    members: [{ characterId, state: 'Active', joinedAtUtc: '2026-10-13T00:00:00Z' }],
+    encounters: [{ encounterId: 'encounter-2', encounterIndex: 1, monsterId: 'M_1', state: 'Pending', wipeCount: 0, characterIds: [characterId] }],
+  } }))
+  await page.goto('/')
+  await expect(page.locator('[data-dungeon-location-card]')).toBeVisible({ timeout: 20_000 })
+  await expect(page.locator('[data-dungeon-floor="3"]')).toBeDisabled()
+  await expect(page.locator('[data-start-dungeon]')).toBeVisible()
+  await page.locator('[data-dungeon-floor="1"]').click()
+  await expect(page.locator('[data-start-dungeon]')).toHaveCount(0)
+  await page.locator('[data-dungeon-loot] summary').click()
+  await expect(page.locator('[data-dungeon-loot] summary')).toContainText('2')
+  await page.locator('[data-floor-loot-filter]').check()
+  await expect(page.locator('[data-dungeon-loot] summary')).toContainText('1')
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 844 })
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width)
+    await page.screenshot({ path: `../../output/playwright/dungeon-floors-loot-${width}.png`, fullPage: true })
+  }
+  await page.locator('[data-dungeon-floor="2"]').click()
+  await expect(page.locator('[data-start-dungeon]')).toBeVisible()
+})
+
 test('living location markers and interaction panels fit phone screens', async ({ page }) => {
   test.setTimeout(90_000)
   test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses deterministic scene data for layout coverage.')
@@ -170,13 +214,14 @@ test('city workshop explains materials, crafts and restores the profession state
   for (const profession of ['MINING', 'BLACKSMITHING', 'ENCHANTING', 'ALCHEMY']) {
     await page.locator(`[data-city-workshop="${profession}"]`).click()
     await expect(page.locator('[data-workshop-unlearned]')).toBeVisible()
+    await expect(page.locator('[data-profession]')).toHaveCount(1)
     await expect(page.locator('[data-profession]').first()).toHaveAttribute('data-profession', profession)
     await expect(page.locator('[data-profession-recipe]')).toHaveCount(0)
     await page.locator('[data-city-back]').click()
     await expect(page.locator('[data-city-craft-district]')).toBeVisible()
   }
   await page.locator('[data-city-workshop="LEATHERWORKING"]').click()
-  await expect(page.getByRole('heading', { name: 'Профессии' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Кожевничество', exact: true })).toBeVisible()
   const processingCard = page.locator('[data-profession-recipe="LW_PROCESS_ROUGH_HIDE"]')
   await expect(processingCard).toContainText('Грубая шкура: 2 / 1')
   await expect(processingCard).toContainText('Шепчущий лес')
@@ -497,10 +542,11 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
     await expect(page.getByRole('button', { name: 'Мои лоты' })).toBeVisible()
     await page.screenshot({ path: '../../output/playwright/commerce-auction-mobile.png', fullPage: true })
     await page.locator('[data-city-back]').click()
-    await page.locator('[data-city-marker="market"]').click()
-    await page.locator('[data-city-mailbox]').click()
+    await page.locator('[data-nav="menu"]').click()
+    await page.locator('[data-menu-mailbox]').click()
     await expect(page.locator('[data-mailbox-view]')).toBeVisible()
     await page.screenshot({ path: '../../output/playwright/commerce-mailbox-mobile.png', fullPage: true })
+    await page.getByRole('button', { name: 'Назад в меню', exact: true }).click()
   }
   await page.locator('[data-nav="menu"]').click()
   await page.getByRole('button', { name: 'Группа Состав и поход' }).click()

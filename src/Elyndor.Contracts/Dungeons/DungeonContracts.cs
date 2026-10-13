@@ -1,3 +1,5 @@
+using Elyndor.Contracts.World;
+
 namespace Elyndor.Contracts.Dungeons;
 
 public sealed record DungeonPreviewResponse(
@@ -9,13 +11,23 @@ public sealed record DungeonPreviewResponse(
     string EntryLocationId,
     int MinimumPartySize,
     int MaximumPartySize,
-    IReadOnlyList<DungeonEncounterPreviewResponse> Encounters);
+    IReadOnlyList<DungeonEncounterPreviewResponse> Encounters,
+    IReadOnlyList<DungeonFloorPreviewResponse>? Floors = null,
+    IReadOnlyList<WorldLocationLootResponse>? PossibleLoot = null);
+
+public sealed record DungeonFloorPreviewResponse(
+    int Number,
+    int FirstEncounterIndex,
+    int LastEncounterIndex,
+    string? BossName,
+    IReadOnlyList<WorldLocationLootResponse> PossibleLoot);
 
 public sealed record DungeonEncounterPreviewResponse(
     string Id,
     string MonsterId,
     string CheckpointId,
-    bool IsBoss);
+    bool IsBoss,
+    string? DisplayName = null);
 
 public sealed record CreateDungeonRunRequest(Guid RequestId, string DungeonId);
 

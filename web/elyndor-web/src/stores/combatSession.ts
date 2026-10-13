@@ -532,6 +532,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     try {
       const update = await invokeHub<CombatUpdate>('ResumeCombatFromSequence', lastSeenSequence)
       if (update.errorCode === 'combat_not_found') {
+        if (snapshot.value) retiredSessionIds.add(snapshot.value.sessionId)
         snapshot.value = null
         selectedFriendlyTargetActorId.value = null
         events.value = []
@@ -586,6 +587,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       commandId => invokeWithOutcome('lifecycle', 'LeaveCombat', commandId),
     )
     if (succeeded || errorCode.value === 'combat_not_found') {
+      if (snapshot.value) retiredSessionIds.add(snapshot.value.sessionId)
       snapshot.value = null
       selectedFriendlyTargetActorId.value = null
       events.value = []
@@ -794,7 +796,10 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     return outcome.succeeded
   }
 
+  const retiredSessionIds = new Set<string>()
+
   function applyUpdate(update: CombatUpdate): boolean {
+    if (update.snapshot && retiredSessionIds.has(update.snapshot.sessionId)) return false
     const requiresRecovery = !update.succeeded && update.errorCode === 'combat_recovery_required'
     // Rejected commands can still carry a newer authoritative snapshot.
     // Apply it without losing the rejection reason or awarding unconfirmed loot.
@@ -835,6 +840,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     diagnostic.value = null
 
     if (newSession && incomingSnapshot) {
+      if (currentSnapshot) retiredSessionIds.add(currentSnapshot.sessionId)
       retryCommandIds.clear()
       clearAbilityQueue()
       snapshot.value = null

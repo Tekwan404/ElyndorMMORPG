@@ -22,6 +22,14 @@ public sealed partial class CombatSession
         ResolveMageTargetAbilityModifier,
         ResolveArcherTargetAbilityModifier));
 
-    private AbilityDefinition ComposePlayerAbility(AbilityDefinition baseAbility, DateTimeOffset now) =>
-        AbilityComposer.Compose(baseAbility, new AbilityModifierContext(_playerTalents, _player.DefinitionId, now, _player.Actor.Stats.Level));
+    private AbilityDefinition ComposePlayerAbility(AbilityDefinition baseAbility, DateTimeOffset now)
+    {
+        AbilityDefinition ability = AbilityComposer.Compose(baseAbility,
+            new AbilityModifierContext(_playerTalents, _player.DefinitionId, now, _player.Actor.Stats.Level));
+        return ability with
+        {
+            GlobalCooldownCategory = ability.UsesGlobalCooldown
+                ? GlobalCooldownCategory.Player : GlobalCooldownCategory.None
+        };
+    }
 }

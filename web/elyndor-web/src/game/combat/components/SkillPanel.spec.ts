@@ -17,6 +17,20 @@ function ability(index: number): CombatAbility {
 }
 
 describe('SkillPanel', () => {
+  it('shows effective cast time and individual cooldown when inspecting an ability', async () => {
+    const wrapper = mount(SkillPanel, {
+      props: {
+        abilities: [{ ...ability(1), castTimeSeconds: 1.1 }], cooldowns: {}, resource: 100,
+        queuedAbilityIds: [], now: Date.parse('2026-09-25T12:00:00Z'), disabled: false,
+      },
+    })
+    expect(wrapper.get('[data-ability-slot]').attributes('aria-label')).toContain('каст 1.1')
+    await wrapper.get('[data-ability-slot]').trigger('keydown', { key: 'F1' })
+    expect(wrapper.get('[data-ability-timing]').text()).toContain('Каст: 1.1 с')
+    expect(wrapper.get('[data-ability-timing]').text()).toContain('Перезарядка: 6 с')
+    wrapper.unmount()
+  })
+
   it('renders four mobile skill columns and forwards ready ability use', async () => {
     const wrapper = mount(SkillPanel, {
       props: {

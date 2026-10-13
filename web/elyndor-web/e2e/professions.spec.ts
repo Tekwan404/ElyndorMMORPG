@@ -39,6 +39,7 @@ test('learns and restores Skinning and Leatherworking against the real database'
     await expectLearnedProfession(response, 'SKINNING')
   }
   await expect(skinningCard).toContainText('Навык 1 / 300')
+  await page.getByRole('button', { name: 'Все профессии', exact: true }).click()
 
   if (await leatherworkingCard.getByRole('button', { name: 'Изучить профессию' }).isVisible()) {
     await expect(leatherworkingCard.getByRole('button', { name: 'Изучить профессию' })).toBeEnabled()
@@ -51,6 +52,7 @@ test('learns and restores Skinning and Leatherworking against the real database'
     await expectLearnedProfession(response, 'LEATHERWORKING')
   }
   await expect(leatherworkingCard).toContainText('Навык 1 / 300')
+  await page.getByRole('button', { name: 'Все профессии', exact: true }).click()
   await expect(page.locator('.professions-hero > span')).toHaveText('2 / 2')
 
   await page.reload()

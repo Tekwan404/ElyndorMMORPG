@@ -151,7 +151,8 @@ internal static class CombatContractMapper
                     definition?.Actions?.Any(action => action.IsUnblockable) == true,
                     ability.TargetType.ToString(),
                     ability.UsesGlobalCooldown,
-                    ability.CanUseWhileCasting);
+                    ability.CanUseWhileCasting,
+                    ability.CastTime.TotalSeconds);
             }).ToArray(),
             actor.Effects.Select(effect => new CombatEffectResponse(
                 effect.Id,

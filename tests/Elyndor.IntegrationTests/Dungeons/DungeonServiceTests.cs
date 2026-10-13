@@ -26,6 +26,65 @@ public sealed class DungeonServiceTests(PostgresFixture postgres) : IAsyncLifeti
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
+    public async Task PendingRetryRefreshesRosterAfterParticipantLeavesEntry()
+    {
+        (Guid leader, Guid memberAccount, _) = await SeedPartyCharactersAsync();
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
+        await using GameDbContext context = postgres.CreateDbContext();
+        FixedTimeProvider time = new(Now);
+        PartyService parties = new(context, time);
+        DungeonService dungeons = new(context, parties, new StaticContentSnapshotProvider(content), time);
+        Assert.True((await parties.CreateAsync(leader, Guid.NewGuid(), CancellationToken.None)).IsSuccess);
+        Character member = await context.Characters.SingleAsync(item => item.AccountId == memberAccount);
+        Assert.True((await parties.InviteAsync(leader, Guid.NewGuid(), member.Id, PartyInviteMode.Direct, CancellationToken.None)).IsSuccess);
+        PartyInvite invite = await context.PartyInvites.SingleAsync();
+        Assert.True((await parties.AcceptInviteAsync(memberAccount, invite.Id, CancellationToken.None)).IsSuccess);
+        DungeonOperationResult created = await dungeons.CreateAsync(leader, "ANCIENT_MINE", Guid.NewGuid(), CancellationToken.None);
+        Assert.True(created.Succeeded);
+        var (first, firstError) = await dungeons.PrepareEncounterAsync(leader, created.Run!.RunId, CancellationToken.None);
+        Assert.Null(firstError);
+        Assert.Equal(2, first!.Participants.Count);
+        var location = await context.CharacterLocations.SingleAsync(item => item.CharacterId == member.Id);
+        location.Relocate("STARTER_TOWN", Now);
+        await context.SaveChangesAsync();
+        var (retry, retryError) = await dungeons.PrepareEncounterAsync(leader, created.Run.RunId, CancellationToken.None);
+        Assert.Null(retryError);
+        Assert.Single(retry!.Participants);
+        Assert.True(await dungeons.BindCombatAsync(retry.RunId, retry.EncounterId, Guid.NewGuid(), CancellationToken.None,
+            retry.Participants.Select(participant => participant.CharacterId).ToArray()));
+        context.ChangeTracker.Clear();
+        Assert.Single(await context.DungeonEncounterMembers.ToArrayAsync());
+        Assert.DoesNotContain(await context.DungeonEncounterMembers.ToArrayAsync(), item => item.CharacterId == member.Id);
+    }
+
+    [Fact]
+    public async Task ParticipantLeavingEntryDuringPreparationCannotBindCombat()
+    {
+        (Guid leader, _, _) = await SeedPartyCharactersAsync();
+        GameContentPackage content = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
+        await using GameDbContext context = postgres.CreateDbContext();
+        FixedTimeProvider time = new(Now);
+        PartyService parties = new(context, time);
+        DungeonService dungeons = new(context, parties, new StaticContentSnapshotProvider(content), time);
+        Assert.True((await parties.CreateAsync(leader, Guid.NewGuid(), CancellationToken.None)).IsSuccess);
+        DungeonOperationResult created = await dungeons.CreateAsync(leader, "ANCIENT_MINE", Guid.NewGuid(), CancellationToken.None);
+        Assert.True(created.Succeeded);
+        var (prepared, error) = await dungeons.PrepareEncounterAsync(leader, created.Run!.RunId, CancellationToken.None);
+        Assert.Null(error);
+        Assert.NotNull(prepared);
+        Character character = await context.Characters.SingleAsync(item => item.AccountId == leader);
+        CharacterLocation location = await context.CharacterLocations.SingleAsync(item => item.CharacterId == character.Id);
+        location.Relocate("STARTER_TOWN", Now);
+        await context.SaveChangesAsync();
+
+        Assert.False(await dungeons.BindCombatAsync(prepared.RunId, prepared.EncounterId, Guid.NewGuid(), CancellationToken.None));
+        context.ChangeTracker.Clear();
+        DungeonEncounter encounter = await context.DungeonEncounters.SingleAsync();
+        Assert.Equal(DungeonEncounterState.Pending, encounter.State);
+        Assert.Null(encounter.CombatSessionId);
+    }
+
+    [Fact]
     public async Task OverleveledCharacterCanTeleportAndCreateAncientMineRun()
     {
         (Guid leaderAccountId, _, _) = await SeedPartyCharactersAsync();

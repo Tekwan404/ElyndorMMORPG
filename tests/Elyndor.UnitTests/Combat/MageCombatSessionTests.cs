@@ -21,6 +21,24 @@ public sealed class MageCombatSessionTests
         Guid.Parse("72000000-0000-0000-0000-000000000002");
 
     [Fact]
+    public void PlayerGlobalCooldownIsHalfASecondAndExpiresDuringCast()
+    {
+        var talents = Talents(new HashSet<string>(StringComparer.Ordinal));
+        var session = CreateSession(talents, new HashSet<string>(["MAGE_ARCANE_SPARK", "MAGE_ICE_SHARD"], StringComparer.Ordinal));
+        var first = session.Handle(new UseAbilityCommand("first", "MAGE_ARCANE_SPARK", EnemyId), Now.AddMilliseconds(1));
+        Assert.True(first.Succeeded);
+        Assert.Equal(Now.AddMilliseconds(501), first.Snapshot.Player.GlobalCooldownEndsAtUtc);
+        var second = session.Handle(new UseAbilityCommand("second", "MAGE_ICE_SHARD", EnemyId), Now.AddMilliseconds(501));
+        Assert.True(second.Succeeded, second.ErrorCode);
+        var cast = Assert.IsType<CombatCastSnapshot>(second.Snapshot.Player.ActiveCast);
+        Assert.True(cast.ResolvesAtUtc > second.Snapshot.Player.GlobalCooldownEndsAtUtc);
+        Assert.True(second.Snapshot.Player.Abilities.Single(ability => ability.Id == "MAGE_ICE_SHARD").CastTime > TimeSpan.Zero);
+        session.AdvanceTo(cast.ResolvesAtUtc);
+        var next = session.Handle(new UseAbilityCommand("next", "MAGE_ICE_SHARD", EnemyId), cast.ResolvesAtUtc);
+        Assert.True(next.Succeeded, next.ErrorCode);
+    }
+
+    [Fact]
     public void ClearcastingMakesNextManaSpellFreeAndConsumesItsCharge()
     {
         ResolvedTalentModifiers talents = Talents(

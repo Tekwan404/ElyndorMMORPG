@@ -6,21 +6,27 @@ namespace Elyndor.UnitTests.Combat;
 public sealed class MageManaEconomyTests
 {
     [Theory]
-    [InlineData(1, 45)]
-    [InlineData(18, 90)]
-    [InlineData(35, 120)]
-    [InlineData(55, 150)]
-    [InlineData(60, 180)]
-    public async Task SustainedBuildsStayWithinTheirLevelBudget(int level, decimal targetSeconds)
+    [InlineData(1, "FIRE", 46)]
+    [InlineData(1, "ARCANE", 10.5)]
+    [InlineData(1, "FROST", 45)]
+    [InlineData(18, "FIRE", 72)]
+    [InlineData(18, "ARCANE", 23.5)]
+    [InlineData(18, "FROST", 72)]
+    [InlineData(35, "FIRE", 99)]
+    [InlineData(35, "ARCANE", 124)]
+    [InlineData(35, "FROST", 103)]
+    [InlineData(55, "FIRE", 97)]
+    [InlineData(55, "ARCANE", 156)]
+    [InlineData(55, "FROST", 112)]
+    [InlineData(60, "FIRE", 125)]
+    [InlineData(60, "ARCANE", 188)]
+    [InlineData(60, "FROST", 136)]
+    public async Task ContinuousRotationWithHalfSecondGlobalCooldownStaysWithinItsBranchBudget(int level, string branch, decimal targetSeconds)
     {
         var content = await GameContentPackageLoader.LoadAsync(ContentPath());
-        var runner = new CombatSimulationRunner(content);
-        foreach (string branch in new[] { "FIRE", "ARCANE", "FROST" })
-        {
-            var result = runner.RunMageManaEconomy(level, branch);
-            Assert.NotNull(result.SecondsToOom);
-            Assert.InRange(result.SecondsToOom.Value, targetSeconds * .8m, targetSeconds * 1.2m);
-        }
+        var result = new CombatSimulationRunner(content).RunMageManaEconomy(level, branch);
+        Assert.NotNull(result.SecondsToOom);
+        Assert.InRange(result.SecondsToOom.Value, targetSeconds * .8m, targetSeconds * 1.2m);
     }
 
     [Fact]

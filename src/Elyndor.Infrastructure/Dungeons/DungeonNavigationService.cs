@@ -165,6 +165,12 @@ public sealed class DungeonNavigationService(
             return validation;
         }
 
+        if (run!.Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active))
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return DungeonNavigationResult.Failure(DungeonErrorCodes.EncounterActive);
+        }
+
         if (member!.State != DungeonRunMemberState.Left)
         {
             member.MarkLeft();

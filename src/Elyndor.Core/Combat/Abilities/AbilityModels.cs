@@ -16,7 +16,7 @@ public enum AbilityTargetType
     Owner,
     SingleDeadAlly
 }
-public enum GlobalCooldownCategory { None, Reduced, Standard }
+public enum GlobalCooldownCategory { None, Reduced, Standard, Player }
 public enum AbilityTargetSelectorProfile
 {
     EncounterOrder,

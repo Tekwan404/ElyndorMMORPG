@@ -101,6 +101,7 @@ const professionCatalog = computed(() =>
     ]
   )
     .map((profession) => ({
+      relatedProfessionId: undefined as string | null | undefined,
       ...profession,
       ...presentation[profession.id],
       learned: state.value?.learned.find((item) => item.id === profession.id),
@@ -110,6 +111,21 @@ const professionCatalog = computed(() =>
         Number(b.id === props.initialProfessionId) - Number(a.id === props.initialProfessionId),
     ),
 )
+const workshopProfession = computed(
+  () =>
+    professionCatalog.value.find(
+      (item) => item.id === (props.initialProfessionId ?? selectedProfessionId.value),
+    ) ?? null,
+)
+const visibleProfessions = computed(() =>
+  workshopProfession.value ? [workshopProfession.value] : professionCatalog.value,
+)
+const gatheringPartner = computed(() => {
+  const partnerId = workshopProfession.value?.relatedProfessionId
+  return partnerId
+    ? (professionCatalog.value.find((item) => item.id === partnerId && !item.learned) ?? null)
+    : null
+})
 const activeProfession = computed(() => {
   if (selectedProfessionId.value)
     return state.value?.learned.find((item) => item.id === selectedProfessionId.value) ?? null
@@ -198,7 +214,7 @@ async function learn(id: string): Promise<void> {
     `learn:${id}`,
     () => learnProfession(id),
     () => {
-      selectedProfessionId.value = id
+      selectedProfessionId.value = props.initialProfessionId ?? id
       const name = professionCatalog.value.find((item) => item.id === id)?.name ?? 'Профессия'
       return `${name} изучено.`
     },
@@ -402,7 +418,7 @@ async function forget(id: string): Promise<void> {
     () => forgetProfession(id),
     () => 'Профессия забыта. При повторном изучении навык начнётся с 1.',
   )
-  selectedProfessionId.value = null
+  selectedProfessionId.value = props.initialProfessionId ?? null
 }
 onMounted(load)
 </script>
@@ -412,8 +428,13 @@ onMounted(load)
     <header class="professions-hero">
       <div>
         <small>РЕМЁСЛА ЭЛИНДОРА</small>
-        <h2>Профессии</h2>
-        <p>От рудной жилы до зачарованных доспехов. Выберите своё ремесло.</p>
+        <h2>{{ workshopProfession?.name ?? 'Профессии' }}</h2>
+        <p>
+          {{
+            workshopProfession?.description ??
+            'От рудной жилы до зачарованных доспехов. Выберите своё ремесло.'
+          }}
+        </p>
       </div>
       <span>{{ state?.learned.length ?? 0 }} / {{ state?.maxPrimaryProfessions ?? 2 }}</span>
     </header>
@@ -440,7 +461,7 @@ onMounted(load)
       </p>
       <section class="profession-slots" aria-label="Профессии Элиндора">
         <article
-          v-for="profession in professionCatalog"
+          v-for="profession in visibleProfessions"
           :key="profession.id"
           class="profession-card"
           :class="{
@@ -508,6 +529,24 @@ onMounted(load)
           </div>
         </article>
       </section>
+      <section v-if="gatheringPartner" class="profession-panel" data-workshop-partner>
+        <p>Сырьё для этого ремесла даёт профессия «{{ gatheringPartner.name }}».</p>
+        <UIButton
+          :data-learn-profession="gatheringPartner.id"
+          variant="secondary"
+          :disabled="
+            state.learned.length >= (state.maxPrimaryProfessions ?? 2) || pendingKey !== null
+          "
+          @click="learn(gatheringPartner.id)"
+          >Изучить {{ gatheringPartner.name }}</UIButton
+        >
+      </section>
+      <UIButton
+        v-if="!props.initialProfessionId && selectedProfessionId"
+        variant="ghost"
+        @click="selectedProfessionId = null"
+        >Все профессии</UIButton
+      >
       <div v-if="forgetId" class="profession-message profession-message--error" role="alert">
         <p>
           Забыть {{ professionCatalog.find((item) => item.id === forgetId)?.name }}? Весь навык этой

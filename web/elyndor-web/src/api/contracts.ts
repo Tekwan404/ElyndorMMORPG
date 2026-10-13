@@ -164,6 +164,16 @@ export interface PartyInvite {
   expiresAtUtc: string
 }
 
+export interface WorldLocationLoot {
+  itemId: string
+  name: string
+  type: string
+  rarity: string
+  requiredLevel: number
+  description: string
+  iconId: string | null
+}
+
 export interface DungeonPreview {
   id: string
   displayName: string
@@ -174,6 +184,16 @@ export interface DungeonPreview {
   minimumPartySize: number
   maximumPartySize: number
   encounters: DungeonEncounterPreview[]
+  floors?: DungeonFloorPreview[]
+  possibleLoot?: WorldLocationLoot[]
+}
+
+export interface DungeonFloorPreview {
+  number: number
+  firstEncounterIndex: number
+  lastEncounterIndex: number
+  bossName: string | null
+  possibleLoot: WorldLocationLoot[]
 }
 
 export interface DungeonTeleportResponse {
@@ -187,6 +207,7 @@ export interface DungeonEncounterPreview {
   monsterId: string
   checkpointId: string
   isBoss: boolean
+  displayName?: string | null
 }
 
 export interface DungeonRun {
@@ -837,6 +858,7 @@ export interface CombatAbility {
   iconId: string | null
   resourceCost: number
   cooldownSeconds: number
+  castTimeSeconds?: number
   isUnblockable?: boolean
   targetType?: CombatAbilityTargetType
   usesGlobalCooldown?: boolean
