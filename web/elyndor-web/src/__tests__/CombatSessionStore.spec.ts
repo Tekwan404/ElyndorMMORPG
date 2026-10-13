@@ -70,6 +70,25 @@ describe('combatSession realtime authentication', () => {
     vi.restoreAllMocks()
   })
 
+  it('keeps victory and its reward when the initial start response arrives later', async () => {
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    const store = useCombatSessionStore()
+    await store.connect()
+    const reward = { xpEarned: 10, goldEarned: 2, leveledUp: false, previousLevel: 1, currentLevel: 1, items: [] }
+    const update = (status: string, sequence: number, receivedReward: unknown) => ({
+      succeeded: true, errorCode: null, events: [], reward: receivedReward,
+      fullResyncRequired: true,
+      snapshot: { sessionId: 'quick-victory', status, sequence,
+        serverTimeUtc: new Date().toISOString(),
+        player: { actorId: 'player', hp: 100, abilities: [], cooldowns: {} },
+        enemy: { actorId: 'enemy', definitionId: 'WOLF' } },
+    })
+    signalRMock.handlers.get('CombatEnded')!(update('Victory', 2, reward))
+    signalRMock.handlers.get('CombatUpdated')!(update('Active', 1, null))
+    expect(store.snapshot?.status).toBe('Victory')
+    expect(store.reward).toEqual(reward)
+  })
+
   it('ignores a delayed ended update from a retired dungeon combat session', async () => {
     vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
     const store = useCombatSessionStore()

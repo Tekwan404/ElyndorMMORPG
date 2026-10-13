@@ -8,7 +8,9 @@ The ability inspection displays effective cast time, including talent modifiers.
 Mana costs are unchanged; continuous rotation budgets account for the faster cadence.
 
 Dungeon encounter binding and participant validation happen under admission leases,
-before the registry starts gameplay timers. A participant that left the entry during
+before the registry starts gameplay timers. Start responses capture their snapshot
+and events before admission, so a zero-delay tick cannot race response enumeration.
+Clients retain a newer terminal update when that initial response arrives later. A participant that left the entry during
 preparation cannot be admitted. Pending encounter rosters are refreshed on retries.
 A failed admission cleans its journal and bound encounter; publication failure after
 admission retains the running combat for resume.

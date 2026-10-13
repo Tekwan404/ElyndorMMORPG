@@ -91,6 +91,8 @@ public sealed class DungeonCombatAdmissionTests(PostgresFixture postgres) : IAsy
         time.RunId = run.Run!.RunId;
         CombatOperationResult started = await combat.StartDungeonEncounterAsync(accountId, run.Run.RunId, CancellationToken.None);
         Assert.True(started.Succeeded, started.ErrorCode);
+        Assert.Equal(CombatSessionStatus.Active, started.Snapshot!.Status);
+        Assert.Equal(1, started.Snapshot.Enemy.Hp);
         Assert.True(time.CheckedBinding);
         Assert.True(time.WasBoundBeforeTimer);
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
@@ -102,6 +104,8 @@ public sealed class DungeonCombatAdmissionTests(PostgresFixture postgres) : IAsy
             persisted = await db.DungeonRuns.AsNoTracking().SingleAsync(item => item.Id == run.Run.RunId, timeout.Token);
         } while (persisted.CurrentEncounterIndex == 0);
         Assert.Equal(1, persisted.CurrentEncounterIndex);
+        Assert.Equal(CombatSessionStatus.Active, started.Snapshot.Status);
+        Assert.Equal(1, started.Snapshot.Enemy.Hp);
         await dungeon.GetCurrentAsync(accountId, CancellationToken.None);
         await dungeon.GetCurrentAsync(accountId, CancellationToken.None);
         await using var verification = postgres.CreateDbContext();

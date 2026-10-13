@@ -563,6 +563,9 @@ public sealed class CombatApplicationService(
                     participant.CharacterId))
                 .ToArray();
 
+            // Capture the response before timer admission transfers session writes to the registry.
+            CombatSessionSnapshot initialSnapshot = created.Session!.Snapshot();
+            var initialEvents = created.Session.GetEventsAfter(0);
             if (!registry.TryAdd(
                     accountId,
                     created.CharacterId,
@@ -585,10 +588,10 @@ public sealed class CombatApplicationService(
 
             admitted = true;
             return CombatOperationResult.FromSnapshot(
-                created.Session!.Snapshot(),
+                initialSnapshot,
                 created.ContentSnapshot) with
             {
-                Events = created.Session.GetEventsAfter(0)
+                Events = initialEvents
             };
         }
         catch when (!admitted)
