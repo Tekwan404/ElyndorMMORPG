@@ -71,6 +71,19 @@ public sealed class CombatSessionRegistry(
     private ITimer? _watchdogTimer;
     private bool _disposed;
 
+    public bool TryGetFinalizedStatus(Guid sessionId, out CombatSessionStatus status)
+    {
+        status = CombatSessionStatus.Active;
+        if (!_bySession.TryGetValue(sessionId, out var entry) || !entry.Gate.Wait(0)) return false;
+        try
+        {
+            if (!entry.Finalized || entry.PendingResult is not null) return false;
+            status = entry.Session.Status;
+            return status != CombatSessionStatus.Active;
+        }
+        finally { entry.Gate.Release(); }
+    }
+
     public bool TryAdd(
         Guid accountId,
         Guid characterId,
@@ -118,8 +131,18 @@ public sealed class CombatSessionRegistry(
                 return false;
             }
 
-            ScheduleGameplay(entry);
-            return true;
+            entry.Gate.Wait();
+            try
+            {
+                ScheduleGameplay(entry);
+                return true;
+            }
+            catch
+            {
+                Remove(entry);
+                throw;
+            }
+            finally { entry.Gate.Release(); }
         }
     }
 

@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Dungeons;
 using Elyndor.Core.Dungeons;
+using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Dungeons;
@@ -31,21 +32,12 @@ public static class DungeonEndpoints
         return endpoints;
     }
 
-    private static IResult GetPreviews(DungeonService service) =>
-        Results.Ok(service.GetDefinitions().Select(definition => new DungeonPreviewResponse(
-            definition.Id,
-            definition.DisplayName,
-            definition.Description,
-            definition.MinimumLevel,
-            definition.MaximumLevel,
-            definition.EntryLocationId,
-            definition.MinimumPartySize,
-            definition.MaximumPartySize,
-            definition.Encounters.Select(encounter => new DungeonEncounterPreviewResponse(
-                encounter.Id,
-                encounter.MonsterId,
-                encounter.CheckpointId,
-                encounter.IsBoss)).ToArray())).ToArray());
+    private static IResult GetPreviews(IContentSnapshotProvider contentProvider)
+    {
+        GameContentSnapshot content = contentProvider.GetCurrent();
+        return Results.Ok((content.Package.Dungeons ?? []).Select(definition =>
+            DungeonPreviewMapper.ToResponse(definition, content)).ToArray());
+    }
 
     private static async Task<IResult> GetCurrentAsync(
         ClaimsPrincipal user,
@@ -303,6 +295,7 @@ public static class DungeonEndpoints
         Guid runId,
         ClaimsPrincipal user,
         DungeonNavigationService navigationService,
+        DungeonService dungeonService,
         CharacterOperationGuard operationGuard,
         HttpContext httpContext,
         CancellationToken cancellationToken)
@@ -310,10 +303,11 @@ public static class DungeonEndpoints
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
         return await operationGuard.ExecuteOutOfCombatAsync(
             accountId,
-            async () => ToNavigationResult(await navigationService.ExitToCityAsync(
-                accountId,
-                runId,
-                cancellationToken)),
+            async () =>
+            {
+                await dungeonService.GetCurrentAsync(accountId, cancellationToken);
+                return ToNavigationResult(await navigationService.ExitToCityAsync(accountId, runId, cancellationToken));
+            },
             () => InCombat(httpContext),
             cancellationToken);
     }
@@ -357,6 +351,7 @@ public static class DungeonEndpoints
         Guid runId,
         ClaimsPrincipal user,
         DungeonNavigationService navigationService,
+        DungeonService service,
         CharacterOperationGuard operationGuard,
         HttpContext httpContext,
         CancellationToken cancellationToken)
@@ -364,10 +359,11 @@ public static class DungeonEndpoints
         if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
         return await operationGuard.ExecuteOutOfCombatAsync(
             accountId,
-            async () => ToNavigationResult(await navigationService.LeaveRunAsync(
-                accountId,
-                runId,
-                cancellationToken)),
+            async () =>
+            {
+                await service.GetCurrentAsync(accountId, cancellationToken);
+                return ToNavigationResult(await navigationService.LeaveRunAsync(accountId, runId, cancellationToken));
+            },
             () => InCombat(httpContext),
             cancellationToken);
     }

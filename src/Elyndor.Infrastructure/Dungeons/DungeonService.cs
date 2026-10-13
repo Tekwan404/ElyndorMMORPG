@@ -623,6 +623,8 @@ public sealed class DungeonService(
             participantList.Add(new PartyCombatMember(member.AccountId, member.Id, member.Id == leader.Id));
         }
         PartyCombatMember[] participants = participantList.ToArray();
+        HashSet<Guid> participantIds = participants.Select(participant => participant.CharacterId).ToHashSet();
+        encounter.Members.RemoveAll(member => !participantIds.Contains(member.CharacterId));
         if (participants.Length == 0)
             return (null, DungeonErrorCodes.MemberCannotEnter);
 
@@ -641,14 +643,16 @@ public sealed class DungeonService(
         Guid runId,
         Guid encounterId,
         Guid combatSessionId,
-        CancellationToken cancellationToken) =>
+        CancellationToken cancellationToken,
+        IReadOnlyCollection<Guid>? expectedCharacterIds = null) =>
         dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
-            () => BindCombatCoreAsync(runId, encounterId, combatSessionId, cancellationToken));
+            () => BindCombatCoreAsync(runId, encounterId, combatSessionId, expectedCharacterIds, cancellationToken));
 
     private async Task<bool> BindCombatCoreAsync(
         Guid runId,
         Guid encounterId,
         Guid combatSessionId,
+        IReadOnlyCollection<Guid>? expectedCharacterIds,
         CancellationToken cancellationToken)
     {
         dbContext.ChangeTracker.Clear();
@@ -659,6 +663,22 @@ public sealed class DungeonService(
                 && candidate.RunId == runId && candidate.Run!.State == DungeonRunState.Active, cancellationToken);
         if (encounter is null || encounter.State != DungeonEncounterState.Pending)
             return false;
+        if (expectedCharacterIds is not null)
+        {
+            Guid[] capturedIds = await dbContext.DungeonEncounterMembers.Where(member => member.EncounterId == encounterId)
+                .Select(member => member.CharacterId).ToArrayAsync(cancellationToken);
+            if (!capturedIds.ToHashSet().SetEquals(expectedCharacterIds)) return false;
+        }
+        var dungeonId = await dbContext.DungeonRuns.Where(run => run.Id == runId)
+            .Select(run => run.DungeonId).SingleAsync(cancellationToken);
+        var entryLocationId = contentProvider.GetCurrent().Indexes.DungeonsById[dungeonId].EntryLocationId;
+        bool invalidParticipant = await dbContext.DungeonEncounterMembers
+            .Where(member => member.EncounterId == encounterId)
+            .AnyAsync(member => !dbContext.CharacterLocations.Any(location => location.CharacterId == member.CharacterId
+                    && location.LocationId == entryLocationId)
+                || !dbContext.DungeonRunMembers.Any(runMember => runMember.RunId == runId
+                    && runMember.CharacterId == member.CharacterId && runMember.State == DungeonRunMemberState.Active), cancellationToken);
+        if (invalidParticipant) return false;
         encounter.Activate(combatSessionId);
         await dbContext.SaveChangesAsync(cancellationToken);
         await CommitAsync(transaction, cancellationToken);
@@ -733,12 +753,15 @@ public sealed class DungeonService(
             if (run.State != DungeonRunState.Active)
                 return true;
             DungeonDefinition definition = contentProvider.GetCurrent().Indexes.DungeonsById[run.DungeonId];
-            run.AdvanceEncounter(now);
+            if (run.CurrentEncounterIndex == encounter.EncounterIndex)
+                run.AdvanceEncounter(now);
             if (run.CurrentEncounterIndex >= definition.Encounters.Count)
             {
                 run.Complete(now);
             }
-            else
+            else if (!await dbContext.DungeonEncounters.AnyAsync(
+                         candidate => candidate.RunId == run.Id && candidate.EncounterIndex == run.CurrentEncounterIndex,
+                         cancellationToken))
             {
                 DungeonEncounterDefinition next = definition.Encounters[run.CurrentEncounterIndex];
                 dbContext.DungeonEncounters.Add(DungeonEncounter.Create(
@@ -767,7 +790,7 @@ public sealed class DungeonService(
     public async Task<int> ReconcileOrphanedEncountersAtStartupAsync(CancellationToken cancellationToken)
     {
         // Absence from the registry is only conclusive before request admission. A new start
-        // writes its journal before registry admission and binds the encounter afterwards.
+        // writes its journal and binds the encounter before registry admission.
         CombatStartupRecovery.EnsureBeforeAdmission(applicationLifetime);
         Guid[] runIds = await dbContext.DungeonEncounters.AsNoTracking()
             .Where(encounter => encounter.State == DungeonEncounterState.Active)
@@ -808,6 +831,7 @@ public sealed class DungeonService(
             if (await dbContext.ActiveCombatSessions.AsNoTracking()
                 .AnyAsync(state => state.SessionId == sessionId, cancellationToken))
                 continue;
+            CombatSessionStatus? finalizedStatus = null;
             if (registry is not null)
             {
                 Guid[] characterIds = run.Members.Select(member => member.CharacterId)
@@ -817,20 +841,24 @@ public sealed class DungeonService(
                     .Select(character => character.AccountId)
                     .ToArrayAsync(cancellationToken);
                 if (accountIds.Any(accountId => registry.Resume(accountId).Snapshot?.SessionId == sessionId))
-                    continue;
+                {
+                    if (!registry.TryGetFinalizedStatus(sessionId, out var status)) continue;
+                    finalizedStatus = status;
+                }
             }
             bool rewardCommitted = await dbContext.CombatRewardGrants.AsNoTracking()
                 .AnyAsync(grant => grant.CombatSessionId == sessionId, cancellationToken);
             CombatRuntimeMissing(logger ?? NullLogger<DungeonService>.Instance,
                 encounter.RunId, encounter.Id, sessionId, null);
-            if (rewardCommitted)
+            if (rewardCommitted || finalizedStatus == CombatSessionStatus.Victory)
             {
                 if (!await ApplyCombatOutcomeAsync(encounter, CombatSessionStatus.Victory, cancellationToken))
                     continue;
             }
             else
                 encounter.MarkWiped();
-            transitions.Add((encounter, rewardCommitted ? "committed_reward" : "orphaned_without_journal"));
+            transitions.Add((encounter, rewardCommitted ? "committed_reward"
+                : finalizedStatus == CombatSessionStatus.Victory ? "finalized_runtime" : "orphaned_without_journal"));
         }
         return transitions;
     }

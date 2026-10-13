@@ -518,29 +518,32 @@ public static class WorldEndpoints
     }
 
     private static WorldLocationLootResponse[] BuildLoot(
-        WorldLocationResidentResponse[] residents,
-        GameContentIndexes indexes)
+        WorldLocationResidentResponse[] residents, GameContentIndexes indexes) =>
+        BuildMonsterLoot(residents.Select(resident => resident.MonsterId), indexes);
+
+    internal static WorldLocationLootResponse[] BuildMonsterLoot(
+        IEnumerable<string> monsterIds, GameContentIndexes indexes)
     {
         HashSet<string> itemIds = new(StringComparer.Ordinal);
 
-        foreach (WorldLocationResidentResponse resident in residents)
+        foreach (string monsterId in monsterIds)
         {
-            if (!indexes.MonstersById.TryGetValue(resident.MonsterId, out MonsterDefinition? monster)
+            if (!indexes.MonstersById.TryGetValue(monsterId, out MonsterDefinition? monster)
                 || string.IsNullOrWhiteSpace(monster.LootTableId)
                 || !indexes.LootTablesById.TryGetValue(monster.LootTableId, out LootTableDefinition? lootTable))
             {
                 continue;
             }
 
-            foreach (LootTableEntry entry in lootTable.Entries)
+            foreach (LootTableEntry entry in lootTable.Entries.Where(entry => entry.DropChance > 0))
                 itemIds.Add(entry.ItemId);
 
             if (lootTable.SelectionGroups is null)
                 continue;
 
-            foreach (LootSelectionGroup group in lootTable.SelectionGroups)
+            foreach (LootSelectionGroup group in lootTable.SelectionGroups.Where(group => group.Rolls > 0))
             {
-                foreach (LootSelectionEntry entry in group.Entries)
+                foreach (LootSelectionEntry entry in group.Entries.Where(entry => entry.Weight > 0))
                     itemIds.Add(entry.ItemId);
             }
         }

@@ -21,6 +21,20 @@ public sealed class DungeonNavigationServiceTests(PostgresFixture postgres) : IA
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
+    public async Task LeaveRunRejectsAnActiveEncounterWithoutMovingOrAbandoning()
+    {
+        (Guid accountId, Guid characterId, _, Guid runId) = await SeedRunAsync(activeEncounter: true);
+        await using var context = postgres.CreateDbContext();
+        var service = new DungeonNavigationService(context, new FixedTimeProvider(Now));
+        var result = await service.LeaveRunAsync(accountId, runId, CancellationToken.None);
+        Assert.False(result.Succeeded);
+        Assert.Equal(DungeonErrorCodes.EncounterActive, result.ErrorCode);
+        context.ChangeTracker.Clear();
+        Assert.Equal("ECLIPSED_CITADEL", (await context.CharacterLocations.SingleAsync(item => item.CharacterId == characterId)).LocationId);
+        Assert.Equal(DungeonRunState.Active, (await context.DungeonRuns.SingleAsync(item => item.Id == runId)).State);
+    }
+
+    [Fact]
     public async Task ExitToCityKeepsMembershipActiveAndPartyIntact()
     {
         (Guid accountId, Guid characterId, Guid partyId, Guid runId) =

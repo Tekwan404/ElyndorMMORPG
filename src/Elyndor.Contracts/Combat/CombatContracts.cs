@@ -21,7 +21,8 @@ public sealed record CombatAbilityResponse(
     bool IsUnblockable = false,
     string TargetType = "SingleEnemy",
     bool UsesGlobalCooldown = true,
-    bool CanUseWhileCasting = false);
+    bool CanUseWhileCasting = false,
+    double CastTimeSeconds = 0);
 
 public sealed record CombatActorResponse(
     Guid ActorId,

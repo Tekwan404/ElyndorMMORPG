@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
+import type { DungeonFloorPreview } from '@/api/contracts'
+import ItemIcon from '@/game/items/components/ItemIcon.vue'
+
 import { locationPresentation } from '@/game/world/locationPresentation'
 import { socialErrorMessage } from '@/game/social/socialPresentation'
 import { useDungeonStore } from '@/game/party/dungeonStore'
@@ -22,6 +25,8 @@ const loadError = ref<string | null>(null)
 const pending = ref<string | null>(null)
 const feedback = ref<string | null>(null)
 const leaveConfirmation = ref(false)
+const selectedFloorNumber = ref<number | null>(null)
+const showFloorLoot = ref(false)
 
 const currentCharacterId = computed(() => session.snapshot?.character?.id ?? '')
 const preview = computed(() => dungeon.previews.find((item) => item.id === props.dungeonId) ?? null)
@@ -93,6 +98,35 @@ const canStart = computed(() =>
     currentEncounter.value &&
     (currentEncounter.value.state === 'Pending' || currentEncounter.value.state === 'Wiped'),
   ),
+)
+const floors = computed(() => preview.value?.floors ?? [])
+const currentFloor = computed(
+  () =>
+    floors.value.find(
+      (floor) =>
+        (current.value?.currentEncounterIndex ?? 0) >= floor.firstEncounterIndex &&
+        (current.value?.currentEncounterIndex ?? 0) <= floor.lastEncounterIndex,
+    ) ??
+    floors.value[floors.value.length - 1] ??
+    null,
+)
+function isFloorUnlocked(floor: DungeonFloorPreview): boolean {
+  return floor.firstEncounterIndex <= (current.value?.currentEncounterIndex ?? 0)
+}
+const selectedFloor = computed(
+  () =>
+    floors.value.find(
+      (floor) => floor.number === selectedFloorNumber.value && isFloorUnlocked(floor),
+    ) ?? currentFloor.value,
+)
+const selectedLoot = computed(
+  () =>
+    (showFloorLoot.value ? selectedFloor.value?.possibleLoot : preview.value?.possibleLoot) ?? [],
+)
+const canStartSelectedFloor = computed(
+  () =>
+    canStart.value &&
+    (!selectedFloor.value || selectedFloor.value.number === currentFloor.value?.number),
 )
 const minimumLevel = computed(() => preview.value?.minimumLevel ?? 1)
 const encounterCount = computed(
@@ -189,7 +223,7 @@ async function enterRun(): Promise<void> {
 }
 
 async function startEncounter(): Promise<void> {
-  if (!current.value || !canStart.value) return
+  if (!current.value || !canStartSelectedFloor.value) return
   const runId = current.value.runId
   const encounterIndex = current.value.currentEncounterIndex
   await act(
@@ -205,9 +239,11 @@ async function startEncounter(): Promise<void> {
       const refreshed = dungeon.errorCode ? null : dungeon.current
       if (refreshed?.runId === runId && refreshed.state === 'Completed') {
         feedback.value = 'Подземелье уже пройдено. Прогресс обновлён.'
-      } else if (refreshed?.runId === runId
-        && refreshed.state === 'Active'
-        && refreshed.currentEncounterIndex > encounterIndex) {
+      } else if (
+        refreshed?.runId === runId &&
+        refreshed.state === 'Active' &&
+        refreshed.currentEncounterIndex > encounterIndex
+      ) {
         feedback.value = 'Этап завершён. Следующий бой доступен.'
       } else if (dungeon.errorCode) {
         startEncounterError.value = 'Не удалось проверить состояние забега. Повторите обновление.'
@@ -263,9 +299,7 @@ async function leaveRun(): Promise<void> {
       <template v-else>
         <strong>Подземелье временно недоступно</strong>
         <p>Не удалось загрузить данные. Попробуйте ещё раз.</p>
-        <UIToast v-if="loadError" tone="danger">{{
-          socialErrorMessage(loadError)
-        }}</UIToast>
+        <UIToast v-if="loadError" tone="danger">{{ socialErrorMessage(loadError) }}</UIToast>
         <div class="dungeon-actions">
           <UIButton variant="secondary" :loading="dungeon.loading" @click="refreshCard"
             >Повторить</UIButton
@@ -293,6 +327,66 @@ async function leaveRun(): Promise<void> {
           <span>{{ encounterCount }} боёв</span>
           <span>{{ runStateLabel }}</span>
         </div>
+
+        <nav v-if="floors.length > 1" class="dungeon-floors" aria-label="Этажи подземелья">
+          <button
+            v-for="floor in floors"
+            :key="floor.number"
+            type="button"
+            :data-dungeon-floor="floor.number"
+            :aria-pressed="selectedFloor?.number === floor.number"
+            :disabled="!isFloorUnlocked(floor) || pending !== null"
+            @click="selectedFloorNumber = floor.number"
+          >
+            <strong>Этаж {{ floor.number }}</strong>
+            <small>{{
+              !isFloorUnlocked(floor)
+                ? 'Закрыт'
+                : current && current.currentEncounterIndex > floor.lastEncounterIndex
+                  ? 'Пройден'
+                  : 'Доступен'
+            }}</small>
+          </button>
+        </nav>
+        <div v-if="selectedFloor" class="dungeon-floor-detail" data-selected-dungeon-floor>
+          <strong
+            >Этаж {{ selectedFloor.number }} · этапы {{ selectedFloor.firstEncounterIndex + 1 }}–{{
+              selectedFloor.lastEncounterIndex + 1
+            }}</strong
+          >
+          <span v-if="selectedFloor.bossName">Босс: {{ selectedFloor.bossName }}</span>
+          <small v-if="current && selectedFloor.lastEncounterIndex < current.currentEncounterIndex"
+            >Этаж пройден. Продолжите забег на текущем этаже.</small
+          >
+        </div>
+        <details class="dungeon-loot" data-dungeon-loot>
+          <summary>Что может выпасть · {{ selectedLoot.length }}</summary>
+          <p>
+            Возможная добыча
+            {{ showFloorLoot && selectedFloor ? `этажа ${selectedFloor.number}` : 'подземелья' }}.
+            Выпадение определяется сервером после победы.
+          </p>
+          <label v-if="selectedFloor"
+            ><input v-model="showFloorLoot" type="checkbox" data-floor-loot-filter /> Только
+            выбранный этаж</label
+          >
+          <ul v-if="selectedLoot.length">
+            <li v-for="item in selectedLoot" :key="item.itemId">
+              <ItemIcon
+                :item-id="item.itemId"
+                :name="item.name"
+                :type="item.type"
+                :icon-id="item.iconId"
+                :rarity="item.rarity"
+              />
+              <span
+                ><strong>{{ item.name }}</strong
+                ><small>Ур. {{ item.requiredLevel }}</small></span
+              >
+            </li>
+          </ul>
+          <p v-else>Для этого этажа отдельная добыча не указана.</p>
+        </details>
 
         <UIToast v-if="dungeon.errorCode" tone="danger">
           {{ socialErrorMessage(dungeon.errorCode) }}
@@ -383,7 +477,7 @@ async function leaveRun(): Promise<void> {
               >Новый забег</UIButton
             >
             <UIButton
-              v-else-if="canStart"
+              v-else-if="canStartSelectedFloor"
               :loading="pending === 'start'"
               :disabled="pending !== null || combat.pending"
               data-start-dungeon
@@ -768,5 +862,81 @@ async function leaveRun(): Promise<void> {
   .dungeon-actions :deep(.ui-button) {
     flex: 1 1 10rem;
   }
+}
+</style>
+
+<style scoped>
+.dungeon-floors {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.dungeon-floors button {
+  flex: 0 0 86px;
+  min-height: 48px;
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgb(190 153 80 / 35%);
+  border-radius: 7px;
+  background: rgb(9 14 24 / 88%);
+  color: var(--ui-color-text);
+}
+.dungeon-floors button[aria-pressed='true'] {
+  border-color: var(--ui-color-gold);
+}
+.dungeon-floors button:disabled {
+  opacity: 0.45;
+}
+.dungeon-floors small,
+.dungeon-floor-detail span,
+.dungeon-floor-detail small {
+  color: var(--ui-color-text-muted);
+  font-size: 0.7rem;
+}
+.dungeon-floor-detail {
+  display: grid;
+  gap: 5px;
+  font-size: 0.82rem;
+}
+.dungeon-loot {
+  padding: 10px;
+  border: 1px solid rgb(190 153 80 / 25%);
+  border-radius: 7px;
+  background: rgb(6 10 18 / 75%);
+}
+.dungeon-loot summary {
+  cursor: pointer;
+  color: var(--ui-color-gold);
+  font-size: 0.85rem;
+}
+.dungeon-loot p {
+  font-size: 0.75rem;
+  color: var(--ui-color-text-muted);
+}
+.dungeon-loot ul {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  display: grid;
+  gap: 8px;
+  max-height: 240px;
+  overflow: auto;
+}
+.dungeon-loot li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+}
+.dungeon-loot li > :first-child {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+}
+.dungeon-loot li span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
 }
 </style>

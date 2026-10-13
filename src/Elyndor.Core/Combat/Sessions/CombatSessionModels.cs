@@ -88,7 +88,8 @@ public sealed record CombatAbilitySnapshot(
     TimeSpan Cooldown,
     AbilityTargetType TargetType = AbilityTargetType.SingleEnemy,
     bool UsesGlobalCooldown = true,
-    bool CanUseWhileCasting = false);
+    bool CanUseWhileCasting = false,
+    TimeSpan CastTime = default);
 public sealed record CombatCastSnapshot(
     string AbilityId,
     DateTimeOffset StartedAtUtc,

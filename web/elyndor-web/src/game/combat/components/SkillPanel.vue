@@ -37,8 +37,12 @@ function globalRemaining(ability: CombatAbility): number {
 function state(ability: CombatAbility): 'ready' | 'cooldown' | 'resource' | 'disabled' {
   if (props.disabled) return 'disabled'
   if (remaining(ability.id) > 0 || globalRemaining(ability) > 0.25) return 'cooldown'
-  if (ability.canUseWhileCasting !== true && props.activeCastResolvesAtUtc
-    && Date.parse(props.activeCastResolvesAtUtc) - props.now > 250) return 'cooldown'
+  if (
+    ability.canUseWhileCasting !== true &&
+    props.activeCastResolvesAtUtc &&
+    Date.parse(props.activeCastResolvesAtUtc) - props.now > 250
+  )
+    return 'cooldown'
   if (props.resource < ability.resourceCost) return 'resource'
   return 'ready'
 }
@@ -49,7 +53,7 @@ function accessibleLabel(ability: CombatAbility): string {
     return `${ability.displayName}, восстановление ${Math.ceil(Math.max(remaining(ability.id), globalRemaining(ability)))} секунд`
   if (currentState === 'resource') return `${ability.displayName}, недостаточно ресурса`
   if (currentState === 'disabled') return `${ability.displayName}, недоступно`
-  return `${ability.displayName}, готово`
+  return `${ability.displayName}, готово${(ability.castTimeSeconds ?? 0) > 0 ? `, каст ${ability.castTimeSeconds} секунд` : ', мгновенно'}`
 }
 
 function activate(ability: CombatAbility): void {
@@ -145,7 +149,11 @@ onUnmounted(cancelInspection)
           Math.round(ability.resourceCost)
         }}</small>
         <span v-if="queuedAbilityIds.includes(ability.id)" class="skill-panel__queued">ГОТОВО</span>
-        <span v-if="remaining(ability.id) > 0 || globalRemaining(ability) > 0.25" class="skill-panel__cooldown" data-cooldown-overlay>
+        <span
+          v-if="remaining(ability.id) > 0 || globalRemaining(ability) > 0.25"
+          class="skill-panel__cooldown"
+          data-cooldown-overlay
+        >
           <b>{{ Math.ceil(Math.max(remaining(ability.id), globalRemaining(ability))) }}</b>
         </span>
       </button>
@@ -171,6 +179,19 @@ onUnmounted(cancelInspection)
         <strong>{{ inspectedAbility.displayName }}</strong>
         <p>
           {{ inspectedAbility.description || 'Описание способности пока не добавлено.' }}
+        </p>
+        <p data-ability-timing>
+          {{
+            (inspectedAbility.castTimeSeconds ?? 0) > 0
+              ? `Каст: ${inspectedAbility.castTimeSeconds} с`
+              : 'Мгновенно'
+          }}
+          ·
+          {{
+            inspectedAbility.cooldownSeconds > 0
+              ? `Перезарядка: ${inspectedAbility.cooldownSeconds} с`
+              : 'Без перезарядки'
+          }}
         </p>
       </div>
       <button type="button" aria-label="Закрыть описание" @click="inspectedAbility = null">

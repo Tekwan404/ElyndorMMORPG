@@ -21,7 +21,6 @@ import { UIButton } from '@/ui/components'
 
 const ForgeView = defineAsyncComponent(() => import('@/game/character/views/ForgeView.vue'))
 const AuctionView = defineAsyncComponent(() => import('@/game/economy/views/AuctionView.vue'))
-const MailboxView = defineAsyncComponent(() => import('@/game/economy/views/MailboxView.vue'))
 const PremiumStoreView = defineAsyncComponent(
   () => import('@/game/economy/views/PremiumStoreView.vue'),
 )
@@ -45,7 +44,6 @@ type CityDestination =
   | 'arena'
   | 'professions'
   | 'store'
-  | 'mailbox'
 
 const props = withDefaults(defineProps<{ openAdventurers?: boolean }>(), { openAdventurers: false })
 const emit = defineEmits<{
@@ -140,7 +138,6 @@ const destinationNames: Record<CityDestination, string> = {
   arena: 'Арена',
   professions: 'Профессии',
   store: 'Магазин',
-  mailbox: 'Почта',
 }
 
 function openDestination(id: CityDestination): void {
@@ -248,7 +245,6 @@ async function startTraining(): Promise<void> {
         <ArenaView />
       </div>
       <PremiumStoreView v-else-if="activeDestination === 'store'" />
-      <MailboxView v-else-if="activeDestination === 'mailbox'" />
       <ProfessionView
         v-else-if="activeDestination === 'professions'"
         :key="workshopProfessionId ?? 'all'"
@@ -256,13 +252,10 @@ async function startTraining(): Promise<void> {
       />
 
       <div v-else-if="activeDestination === 'market'" class="city-interior__choices">
-        <p>Торговые ряды. Припасы, товары за кристаллы и доставка покупок.</p>
+        <p>Торговые ряды. Припасы и товары за кристаллы.</p>
         <UIButton data-city-merchant @click="merchantOpen = true">Лавка Маркуса</UIButton>
         <UIButton variant="secondary" data-city-store @click="activeDestination = 'store'"
           >Магазин за кристаллы</UIButton
-        >
-        <UIButton variant="secondary" data-city-mailbox @click="activeDestination = 'mailbox'"
-          >Почта</UIButton
         >
       </div>
 

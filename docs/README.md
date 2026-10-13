@@ -11,7 +11,8 @@
 
 - World: [living locations and manual encounters](development/living-locations.md).
 
-- Combat: [event routing](development/combat-event-routing.md),
+- Combat: [combat cadence and dungeon recovery](development/combat-dungeon-recovery.md),
+  [event routing](development/combat-event-routing.md),
   [ability composition](development/ability-modifier-composition.md),
   [resource orchestration](development/combat-resource-runtime.md),
   [Mage Core, channels and Mana economy](development/mage-core-mana-channels.md),

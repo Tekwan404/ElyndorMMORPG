@@ -2716,7 +2716,8 @@ public sealed partial class CombatSession
                 ability.Cooldown,
                 ability.TargetType,
                 ability.UsesGlobalCooldown,
-                ability.CanUseWhileCasting))
+                ability.CanUseWhileCasting,
+                ability.CastTime))
             .ToArray();
         return new(
             definition.Actor.ActorId,

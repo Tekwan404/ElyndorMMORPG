@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { formatMoney } from '@/shared/money'
-import { computed, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import { resolveCharacterArt } from '@/assets/characterArt'
@@ -18,7 +18,10 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import { UIButton } from '@/ui/components'
 
-export type MenuSection = 'profile' | 'friends' | 'party' | 'hotbar' | 'updates' | 'trade'
+const MailboxView = defineAsyncComponent(() => import('@/game/economy/views/MailboxView.vue'))
+
+export type MenuSection =
+  'profile' | 'friends' | 'party' | 'hotbar' | 'updates' | 'trade' | 'mailbox'
 
 const props = defineProps<{ initialSection: MenuSection }>()
 const emit = defineEmits<{ 'open-world': [] }>()
@@ -109,6 +112,18 @@ function updateTrainingDummyCombatLogPreference(): void {
         <span><strong>Новости игры</strong><small>Что изменилось в Elyndor</small></span>
         <b aria-hidden="true">›</b>
       </button>
+      <button
+        class="menu-tile menu-tile--gold"
+        type="button"
+        data-menu-mailbox
+        @click="activeSection = 'mailbox'"
+      >
+        <span class="menu-tile__icon" aria-hidden="true"
+          ><IconGenerator :config="{ id: 'menu-mailbox', glyph: 'scroll', category: 'utility' }"
+        /></span>
+        <span><strong>Почта</strong><small>Письма и вложения</small></span
+        ><b aria-hidden="true">›</b>
+      </button>
       <RouterLink v-if="session.isAdmin" class="menu-tile menu-tile--admin" to="/admin">
         <span class="menu-tile__icon" aria-hidden="true">
           <IconGenerator :config="{ id: 'menu-admin', glyph: 'shield', category: 'utility' }" />
@@ -154,6 +169,7 @@ function updateTrainingDummyCombatLogPreference(): void {
         :character-id="character.id"
         :abilities="character.knownAbilities"
       />
+      <MailboxView v-else-if="activeSection === 'mailbox'" />
       <ReleaseNotesView v-else-if="activeSection === 'updates'" />
     </section>
   </section>

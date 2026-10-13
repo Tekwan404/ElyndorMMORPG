@@ -1,5 +1,6 @@
 import { apiClient } from '@/api/apiClient'
-import type { WorldLocation } from '@/api/contracts'
+import type { WorldLocation, WorldLocationLoot } from '@/api/contracts'
+export type { WorldLocationLoot } from '@/api/contracts'
 
 export interface WorldLocationResident {
   monsterId: string
@@ -47,16 +48,6 @@ export interface WorldLocationScene {
   serverTimeUtc: string
   nextChangeAtUtc: string | null
   objects: WorldSceneObject[]
-}
-
-export interface WorldLocationLoot {
-  itemId: string
-  name: string
-  type: string
-  rarity: string
-  requiredLevel: number
-  description: string
-  iconId: string | null
 }
 
 export interface DetailedWorldLocation extends WorldLocation {

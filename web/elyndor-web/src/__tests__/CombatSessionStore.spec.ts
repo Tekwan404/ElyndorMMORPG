@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 const signalRMock = vi.hoisted(() => ({
   accessTokenFactory: null as null | (() => string | Promise<string>),
   calls: [] as string[],
+  handlers: new Map<string, (update: unknown) => void>(),
   transport: null as number | null,
   startError: null as Error | null,
   startGate: null as Promise<void> | null,
@@ -28,7 +29,9 @@ vi.mock('@microsoft/signalr', () => ({
     build() {
       const connection = {
         state: 'Disconnected',
-        on: vi.fn<(...args: unknown[]) => void>(),
+        on: vi.fn<(event: string, handler: (update: unknown) => void) => void>((event, handler) =>
+          signalRMock.handlers.set(event, handler),
+        ),
         onreconnecting: vi.fn<(...args: unknown[]) => void>(),
         onreconnected: vi.fn<(...args: unknown[]) => void>(),
         onclose: vi.fn<(...args: unknown[]) => void>(),
@@ -58,12 +61,58 @@ describe('combatSession realtime authentication', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     signalRMock.calls.length = 0
+    signalRMock.handlers.clear()
     signalRMock.accessTokenFactory = null
     signalRMock.transport = null
     signalRMock.startError = null
     signalRMock.startGate = null
     signalRMock.invoke.mockReset()
     vi.restoreAllMocks()
+  })
+
+  it('keeps victory and its reward when the initial start response arrives later', async () => {
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    const store = useCombatSessionStore()
+    await store.connect()
+    const reward = { xpEarned: 10, goldEarned: 2, leveledUp: false, previousLevel: 1, currentLevel: 1, items: [] }
+    const update = (status: string, sequence: number, receivedReward: unknown) => ({
+      succeeded: true, errorCode: null, events: [], reward: receivedReward,
+      fullResyncRequired: true,
+      snapshot: { sessionId: 'quick-victory', status, sequence,
+        serverTimeUtc: new Date().toISOString(),
+        player: { actorId: 'player', hp: 100, abilities: [], cooldowns: {} },
+        enemy: { actorId: 'enemy', definitionId: 'WOLF' } },
+    })
+    signalRMock.handlers.get('CombatEnded')!(update('Victory', 2, reward))
+    signalRMock.handlers.get('CombatUpdated')!(update('Active', 1, null))
+    expect(store.snapshot?.status).toBe('Victory')
+    expect(store.reward).toEqual(reward)
+  })
+
+  it('ignores a delayed ended update from a retired dungeon combat session', async () => {
+    vi.spyOn(apiClient, 'ensureFreshAccessToken').mockResolvedValue('fresh-token')
+    const store = useCombatSessionStore()
+    await store.connect()
+    const update = (sessionId: string, status: string) => ({
+      succeeded: true,
+      errorCode: null,
+      events: [],
+      reward: null,
+      fullResyncRequired: true,
+      snapshot: {
+        sessionId,
+        status,
+        sequence: 1,
+        serverTimeUtc: new Date().toISOString(),
+        player: { actorId: 'player', hp: 100, abilities: [], cooldowns: {} },
+        enemy: { actorId: 'enemy', definitionId: 'WOLF' },
+      },
+    })
+    signalRMock.handlers.get('CombatEnded')!(update('previous', 'Victory'))
+    signalRMock.handlers.get('CombatUpdated')!(update('current', 'Active'))
+    signalRMock.handlers.get('CombatEnded')!(update('previous', 'Victory'))
+    expect(store.snapshot?.sessionId).toBe('current')
+    expect(store.isActive).toBe(true)
   })
 
   it('refreshes JWT and lets SignalR negotiate the fastest available transport', async () => {

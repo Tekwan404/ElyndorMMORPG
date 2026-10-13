@@ -1748,11 +1748,14 @@ public sealed class CombatSessionTests
                 new UseAbilityCommand("terminal-finalizer-retry", "STRIKE", EnemyId), now),
             CancellationToken.None));
 
+        Assert.False(registry.TryGetFinalizedStatus(session.SessionId, out _));
         registry.ClearFinished(accountId);
         Assert.True(registry.Resume(accountId).Succeeded);
         time.FireLatest();
         await finalizer.Completed.Task.WaitAsync(TimeSpan.FromSeconds(2));
 
+        Assert.True(registry.TryGetFinalizedStatus(session.SessionId, out var finalizedStatus));
+        Assert.Equal(CombatSessionStatus.Victory, finalizedStatus);
         Assert.Equal(2, finalizer.CallCount);
         Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.EnemyKilled);
         Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.CombatEnded);

@@ -63,12 +63,15 @@ describe('ProfessionView mutations', () => {
       replayed: false,
     })
     const wrapper = await open('ALCHEMY')
+    expect(wrapper.findAll('[data-profession]')).toHaveLength(1)
     expect(wrapper.get('[data-profession]').attributes('data-profession')).toBe('ALCHEMY')
     expect(wrapper.get('[data-workshop-unlearned]').text()).toContain('Алхимия')
     expect(wrapper.text()).toContain('Травничество')
     await wrapper.get('[data-learn-profession="HERBALISM"]').trigger('click')
     await flushPromises()
     expect(api.learnProfession).toHaveBeenCalledWith('HERBALISM')
+    expect(wrapper.get('[data-profession]').attributes('data-profession')).toBe('ALCHEMY')
+    expect(wrapper.get('[data-workshop-unlearned]').text()).toContain('Алхимия')
     wrapper.unmount()
   })
   beforeEach(() => {

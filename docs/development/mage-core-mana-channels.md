@@ -1,3 +1,8 @@
+Current player cadence changed in balance 0.47.0: player abilities use a 0.5-second global
+cooldown overlapping cast time. The original level-wide mana targets below are historical; current
+continuous rotation regression budgets are branch-specific. See
+[combat cadence and dungeon recovery](combat-dungeon-recovery.md).
+
 # Mage Core, channels and Mana economy
 
 Gameplay release 0.45.0 / balance 0.35.0 completes the Mage Core/channel/runtime
