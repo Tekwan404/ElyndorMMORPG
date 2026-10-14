@@ -77,12 +77,9 @@ public sealed class DungeonCombatAdmissionTests(PostgresFixture postgres) : IAsy
         }
         var previews = (await client.GetFromJsonAsync<DungeonPreviewResponse[]>("/api/v1/dungeons"))!;
         var bastion = Assert.Single(previews, preview => preview.Id == "BLACK_BASTION");
-        Assert.Equal(6, bastion.Floors!.Count);
+        Assert.Empty(bastion.Floors!);
         Assert.Equal(12, bastion.Encounters.Count);
         Assert.NotEmpty(bastion.PossibleLoot!);
-        Assert.Equal(Enumerable.Range(0, 12), bastion.Floors.SelectMany(floor =>
-            Enumerable.Range(floor.FirstEncounterIndex, floor.LastEncounterIndex - floor.FirstEncounterIndex + 1)));
-        Assert.All(bastion.Floors, floor => Assert.False(string.IsNullOrWhiteSpace(floor.BossName)));
         using var scope = factory.Services.CreateScope();
         var dungeon = scope.ServiceProvider.GetRequiredService<DungeonService>();
         var combat = scope.ServiceProvider.GetRequiredService<CombatApplicationService>();

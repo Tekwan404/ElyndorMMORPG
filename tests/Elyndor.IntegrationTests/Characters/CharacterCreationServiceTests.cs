@@ -26,12 +26,13 @@ public sealed class CharacterCreationServiceTests(PostgresFixture postgres) : IA
     {
         Guid accountId = await CreateAccountAsync(100);
         Guid requestId = Guid.CreateVersion7();
-        CreateCharacterCommand command = CreateCommand(requestId, "Arthas");
+        CreateCharacterCommand command = CreateCommand(requestId, "Arthas99");
 
         CharacterCreationResult first = await CreateAsync(accountId, command);
         CharacterCreationResult retry = await CreateAsync(accountId, command);
 
         Assert.True(first.IsSuccess);
+        Assert.Equal("Arthas99", first.Character!.Name);
         Assert.True(retry.IsSuccess);
         Assert.Equal(first.Character!.Id, retry.Character!.Id);
 

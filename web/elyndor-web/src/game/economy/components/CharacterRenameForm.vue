@@ -33,7 +33,7 @@ async function rename(): Promise<void> {
     <form @submit.prevent="canSubmit && !pending && (confirm = true)">
       <label for="rename-character">Новое имя</label>
       <input id="rename-character" v-model="name" data-rename-input maxlength="16" autocomplete="off" :disabled="pending" />
-      <small>3–16 букв. Кириллица или латиница, без смешивания. Между словами допустим пробел или дефис.</small>
+      <small>3–16 символов: буквы и цифры 0–9. Кириллица или латиница, без смешивания. Допустим пробел или дефис.</small>
       <UIButton type="submit" :disabled="!canSubmit || pending" data-rename-open>Изменить имя · {{ price }} кристаллов</UIButton>
       <p v-if="balance < price" class="rename-service__error">Не хватает кристаллов.</p>
     </form>

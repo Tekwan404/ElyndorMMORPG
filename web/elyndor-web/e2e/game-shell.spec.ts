@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
-test('dungeon floors and loot follow run progress on a phone', async ({ page }) => {
+test('dungeon stages and all loot remain available without floor selection on a phone', async ({ page }) => {
   test.setTimeout(90_000)
   test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses a deterministic dungeon progress fixture.')
   await installMockApiUnlessReal(page)
@@ -27,20 +27,16 @@ test('dungeon floors and loot follow run progress on a phone', async ({ page }) 
   } }))
   await page.goto('/')
   await expect(page.locator('[data-dungeon-location-card]')).toBeVisible({ timeout: 20_000 })
-  await expect(page.locator('[data-dungeon-floor="3"]')).toBeDisabled()
+  await expect(page.locator('[data-dungeon-floor]')).toHaveCount(0)
   await expect(page.locator('[data-start-dungeon]')).toBeVisible()
-  await page.locator('[data-dungeon-floor="1"]').click()
-  await expect(page.locator('[data-start-dungeon]')).toHaveCount(0)
   await page.locator('[data-dungeon-loot] summary').click()
   await expect(page.locator('[data-dungeon-loot] summary')).toContainText('2')
-  await page.locator('[data-floor-loot-filter]').check()
-  await expect(page.locator('[data-dungeon-loot] summary')).toContainText('1')
+  await expect(page.locator('[data-floor-loot-filter]')).toHaveCount(0)
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 844 })
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width)
-    await page.screenshot({ path: `../../output/playwright/dungeon-floors-loot-${width}.png`, fullPage: true })
+    await page.screenshot({ path: `../../output/playwright/dungeon-stages-loot-${width}.png`, fullPage: true })
   }
-  await page.locator('[data-dungeon-floor="2"]').click()
   await expect(page.locator('[data-start-dungeon]')).toBeVisible()
 })
 

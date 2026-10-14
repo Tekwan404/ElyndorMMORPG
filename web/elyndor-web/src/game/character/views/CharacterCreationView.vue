@@ -73,7 +73,7 @@ const classes: readonly {
 
 const valid = computed(
   () =>
-    /^[\p{Script=Latin} -]+$|^[\p{Script=Cyrillic} -]+$/u.test(name.value) &&
+    /^[\p{Script=Latin}0-9 -]+$|^[\p{Script=Cyrillic}0-9 -]+$/u.test(name.value) &&
     [...name.value].length >= 3 &&
     [...name.value].length <= 16 &&
     !/^[ -]|[ -]$|[ -]{2}/.test(name.value),
@@ -82,9 +82,9 @@ const valid = computed(
 const selectedClass = computed(() => classes.find((option) => option.value === classId.value) ?? classes[0]!)
 const characterArt = computed(() => resolveCharacterArt(classId.value, genderId.value, 'transparent'))
 const nameFeedback = computed(() => {
-  if (!name.value) return '3–16 букв · кириллица или латиница'
+  if (!name.value) return '3–16 символов · буквы и цифры 0–9'
   if (valid.value) return 'Имя подходит'
-  if (!nameTouched.value && [...name.value].length < 3) return 'Минимум 3 буквы'
+  if (!nameTouched.value && [...name.value].length < 3) return 'Минимум 3 символа'
   return 'Проверьте длину, алфавит и пробелы в имени'
 })
 

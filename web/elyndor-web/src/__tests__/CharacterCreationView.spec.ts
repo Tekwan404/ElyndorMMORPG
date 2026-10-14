@@ -30,7 +30,7 @@ describe('CharacterCreationView', () => {
     expect(submit.attributes('disabled')).toBeDefined()
     await name.setValue('Ar-тас')
     expect(submit.attributes('disabled')).toBeDefined()
-    await name.setValue('Arthas')
+    await name.setValue('Arthas99')
     expect(submit.attributes('disabled')).toBeUndefined()
     expect(wrapper.text()).toContain('Имя подходит')
   })

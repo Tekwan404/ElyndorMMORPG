@@ -76,6 +76,7 @@ public static class CharacterNamePolicy
             }
 
             previousWasSeparator = false;
+            if (rune.Value is >= '0' and <= '9') continue;
             if (!IsLetter(rune))
             {
                 return CharacterNameValidationResult.Failure(
