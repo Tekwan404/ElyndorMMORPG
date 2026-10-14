@@ -3,12 +3,32 @@ import { afterEach, describe, expect, it } from 'vitest'
 enableAutoUnmount(afterEach)
 
 import UIButton from '../UIButton.vue'
+import UIHealthBar from '../UIHealthBar.vue'
 import UIItemSlot from '../UIItemSlot.vue'
 import UIModal from '../UIModal.vue'
 import UITabs from '../UITabs.vue'
 import UIToast from '../UIToast.vue'
 
 describe('Arcane Minimal UI primitives', () => {
+  it('keeps standard bar labels above the track and updates accessible values', async () => {
+    const wrapper = mount(UIHealthBar, { props: { value: 50, max: 100, label: 'Здоровье' } })
+    expect(wrapper.get('.ui-bar__meta').text()).toContain('50 / 100')
+    expect(wrapper.get('[role="progressbar"]').text()).toBe('')
+    await wrapper.setProps({ value: 150 })
+    expect(wrapper.get('[role="progressbar"]').attributes('aria-valuenow')).toBe('100')
+    expect(wrapper.get('.ui-bar__meta').text()).toContain('100 / 100')
+  })
+
+  it('puts decimal resource values inside compact bars without losing the accessible label', async () => {
+    const wrapper = mount(UIHealthBar, { props: { value: 16251.8, max: 16251.8, label: 'Мана', valuePlacement: 'inside' } })
+    expect(wrapper.find('.ui-bar__meta').exists()).toBe(false)
+    expect(wrapper.get('[role="progressbar"]').attributes('aria-label')).toBe('Мана')
+    expect(wrapper.get('[role="progressbar"]').text()).toBe('16251.8 / 16251.8')
+    await wrapper.setProps({ max: 0 })
+    expect(wrapper.get('[role="progressbar"]').attributes('aria-valuenow')).toBe('0')
+    expect(wrapper.get('[role="progressbar"]').text()).toBe('0 / 0')
+  })
+
   it('stacks overlays by opening order rather than component DOM order', async () => {
     const confirmation = mount(UIModal, { props: { open: false, title: 'Подтверждение' }, attachTo: document.body })
     const item = mount(UIModal, { props: { open: true, title: 'Предмет' }, attachTo: document.body })
