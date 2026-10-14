@@ -129,3 +129,10 @@ Expanded result:
 5. Restart resets active encounter, keeps instance.
 6. Personal loot.
 7. Rewards participation-based.
+
+
+## Current dungeon navigation (2026-10-15)
+
+Encounters are completed in authored order. There is no floor grouping, floor selector
+or floor-based loot filter. The card shows current encounter progress and all possible
+dungeon loot. Existing run state, encounter retries and rewards remain authoritative.

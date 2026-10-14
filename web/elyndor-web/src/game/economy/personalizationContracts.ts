@@ -38,7 +38,7 @@ export const personalizationError: Record<string, string> = {
   character_name_invalid_length: 'Имя должно содержать от 3 до 16 символов.',
   character_name_invalid_display_form: 'Уберите пробелы по краям и необычные символы.',
   character_name_invalid_separator: 'Пробел или дефис допустимы только между словами.',
-  character_name_invalid_character: 'В имени допустимы только буквы, пробел и дефис.',
+  character_name_invalid_character: 'В имени допустимы буквы, цифры 0–9, пробел и дефис.',
   character_name_invalid_script: 'Используйте кириллицу или латиницу.',
   character_name_mixed_scripts: 'Нельзя смешивать кириллицу и латиницу в одном имени.',
 }

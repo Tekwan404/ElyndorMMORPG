@@ -14,49 +14,24 @@ const CHARACTER_ID = 'character-1'
 describe('DungeonLocationCard', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
-  it('unlocks floors by progress and previews all loot with an optional floor filter', async () => {
+  it('keeps sequential encounters and the whole loot list without floor controls', async () => {
     const { dungeon } = prepareCard('ECLIPSED_CITADEL')
     const preview = dungeon.previews.find((item) => item.id === 'ECLIPSED_CITADEL')!
-    const loot = {
-      itemId: 'HEALING_POTION',
-      name: 'Лечебное зелье',
-      rarity: 'Common',
-      type: 'Consumable',
-      requiredLevel: 1,
-      description: '',
-      iconId: null,
-    }
+    const loot = { itemId: 'HEALING_POTION', name: 'Лечебное зелье', rarity: 'Common', type: 'Consumable', requiredLevel: 1, description: '', iconId: null }
     preview.possibleLoot = [loot, { ...loot, itemId: 'MANA_POTION', name: 'Зелье маны' }]
-    preview.floors = [
-      {
-        number: 1,
-        firstEncounterIndex: 0,
-        lastEncounterIndex: 1,
-        bossName: 'Страж',
-        possibleLoot: [loot],
-      },
-      {
-        number: 2,
-        firstEncounterIndex: 2,
-        lastEncounterIndex: 4,
-        bossName: 'Хозяин',
-        possibleLoot: [],
-      },
-    ]
+    // Older API responses must not restore the removed floor navigation.
+    preview.floors = [{ number: 1, firstEncounterIndex: 0, lastEncounterIndex: 4, bossName: 'Страж', possibleLoot: [loot] }]
     dungeon.current = activeCitadelRun()
     const wrapper = mount(DungeonLocationCard, { props: { dungeonId: 'ECLIPSED_CITADEL' } })
     await flushPromises()
-    expect(wrapper.get('[data-dungeon-floor="2"]').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('[data-dungeon-floor]').exists()).toBe(false)
+    expect(wrapper.find('[data-floor-loot-filter]').exists()).toBe(false)
     expect(wrapper.get('[data-dungeon-loot] summary').text()).toContain('2')
-    await wrapper.get('[data-floor-loot-filter]').setValue(true)
-    expect(wrapper.get('[data-dungeon-loot] summary').text()).toContain('1')
+    expect(wrapper.find('[data-start-dungeon]').exists()).toBe(true)
     dungeon.current = { ...activeCitadelRun(), currentEncounterIndex: 2, encounters: activeCitadelRun().encounters.map(encounter => ({ ...encounter, encounterIndex: 2 })) }
     await flushPromises()
-    expect(wrapper.get('[data-dungeon-floor="2"]').attributes('disabled')).toBeUndefined()
-    await wrapper.get('[data-dungeon-floor="1"]').trigger('click')
-    expect(wrapper.find('[data-start-dungeon]').exists()).toBe(false)
-    await wrapper.get('[data-dungeon-floor="2"]').trigger('click')
     expect(wrapper.find('[data-start-dungeon]').exists()).toBe(true)
+    expect(wrapper.get('[data-dungeon-loot] summary').text()).toContain('2')
     wrapper.unmount()
   })
 

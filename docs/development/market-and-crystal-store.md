@@ -29,7 +29,9 @@ three titles (80/120/150 crystals). The services tab offers a rename for 150 cry
 Definitions and prices live in content/economy/profile-personalization.json, content
 version 0.60.0. These products grant no combat stats. Preview is local; purchase does
 not equip automatically. Owned frames and titles can be equipped or removed for free.
-Frames share the existing gold/violet palette and native SVG ornament system.
+Frames share the existing gold/violet palette with thin borders and fixed-size
+corner ornaments. They do not stretch decorations across the character artwork.
+The HUD crystal shortcut is a compact single line with the exact balance.
 
 Ownership and the two independent active selections are durable PostgreSQL state.
 Bootstrap and friend profiles resolve the selected IDs through the current content
@@ -42,7 +44,8 @@ repeat charges and rejects a different payload reusing an operation ID. Replayin
 old rename does not restore an old name. Global normalized-name uniqueness also
 protects simultaneous claims; the losing transaction rolls back its debit.
 
-Rename uses the existing character-name policy and is blocked during PvE, hosted
+Rename uses the shared creation name policy (3–16 characters, Latin or Cyrillic
+letters without mixing, ASCII digits 0–9, internal spaces/hyphens) and is blocked during PvE, hosted
 arena and test arena. Test-arena admission now takes the existing character-operation
 lock, matching hosted-arena admission, so captured fighter names cannot race rename.
 The migration StorePersonalization adds only two nullable character columns and an

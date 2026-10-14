@@ -72,10 +72,10 @@ public sealed class PersonalizationStoreTests(PostgresFixture postgres) : IAsync
         Assert.Equal("rename_name_taken", (await service.RenameAsync(account, "TakenHero", Guid.NewGuid(), CancellationToken.None)).ErrorCode);
         Assert.Equal("rename_same_name", (await service.RenameAsync(account, "FirstHero", Guid.NewGuid(), CancellationToken.None)).ErrorCode);
         Guid operation = Guid.NewGuid();
-        Assert.True((await service.RenameAsync(account, "SecondHero", operation, CancellationToken.None)).Succeeded);
+        Assert.True((await service.RenameAsync(account, "SecondHero99", operation, CancellationToken.None)).Succeeded);
         Assert.Equal("personalization_operation_conflict", (await service.RenameAsync(account, "OtherHero", operation, CancellationToken.None)).ErrorCode);
         Assert.True((await service.RenameAsync(account, "ThirdHero", Guid.NewGuid(), CancellationToken.None)).Succeeded);
-        Assert.True((await service.RenameAsync(account, "SecondHero", operation, CancellationToken.None)).Succeeded);
+        Assert.True((await service.RenameAsync(account, "SecondHero99", operation, CancellationToken.None)).Succeeded);
         db.ChangeTracker.Clear();
         Assert.Equal("ThirdHero", (await db.Characters.SingleAsync(item => item.AccountId == account)).Name);
         Assert.Equal(700, (await db.CrystalWallets.SingleAsync(item => item.AccountId == account)).Balance);

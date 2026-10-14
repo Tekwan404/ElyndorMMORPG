@@ -22,12 +22,11 @@ evidence becomes Wiped and may be retried. No character progression or inventory
 is required. Deploy the fix, refresh the run, and retry or leave it. A specific account
 investigation still requires its character name or public hero code.
 
-Dungeon floors follow authored encounter order and end at each boss. No saved encounter
-indexes are reordered. The current run unlocks floors by encounter progress; completed
-floors can be inspected but cannot grant rewards again. New runs start at floor one.
-Dungeon loot previews include positive-chance loot from encounters and adds, without
-claiming guaranteed drops or calculated probabilities. An optional filter shows only
-the selected floor.
+Dungeon encounters follow their authored sequence. Floor grouping and selection were
+removed at the user's request on 2026-10-15. Existing saved encounter indexes and
+reward rules remain unchanged. Dungeon loot previews show all positive-chance loot
+from encounters and adds, without claiming guaranteed drops or calculated probabilities.
+The optional legacy floors API field remains empty for older clients.
 
 Profession workshop links open only that profession, with an optional gathering partner
 learning shortcut. Mail is available from the main menu.
