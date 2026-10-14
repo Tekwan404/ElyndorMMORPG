@@ -4,6 +4,13 @@ import { describe, expect, it } from 'vitest'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
 
 describe('ItemIcon', () => {
+  it.each(['SPATIAL_CRACKED_RING', 'SPATIAL_MINOR_RING', 'SPATIAL_EXPANDED_RING', 'SPATIAL_SEAL',
+    'SPATIAL_BOTTOMLESS_RING', 'SPATIAL_POCKET_SHARD', 'SPATIAL_VOID_SEAL'])('renders authored spatial artwork for %s', itemId => {
+    const wrapper = mount(ItemIcon, { props: { itemId, name: 'Артефакт', type: 'SpatialArtifact',
+      iconId: itemId.toLowerCase() } })
+    expect(wrapper.find('[data-spatial-art]').exists()).toBe(true)
+    expect(wrapper.find('.icon-generator').exists()).toBe(false)
+  })
   const props = {
     itemId: 'RECRUIT_IRON_SWORD',
     name: 'Recruit iron sword',

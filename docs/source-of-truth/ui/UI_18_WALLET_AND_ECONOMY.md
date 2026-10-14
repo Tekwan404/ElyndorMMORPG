@@ -92,3 +92,15 @@ Telegram Stars are not displayed as wallet currency.
 4. Crystal non-tradeable.
 5. Telegram Stars external only.
 6. No paywall-only mandatory combat power.
+
+
+## Implemented crystal-store personalization (2026-10-14)
+
+The crystal store provides permanent profile frames and titles, plus a paid character
+rename. Preview never mutates player state. Purchase requires explicit confirmation;
+owned cosmetic equip and removal are free. Frames and titles appear in the global
+HUD, hero screen, menu and friends list. Rename shows the before/after name and exact
+cost, follows the creation name policy, and is unavailable during combat or arena.
+Ownership, current selections and rename are authoritative server state. Prices and
+availability are defined by versioned economy content. External top-up remains UI-only.
+See `docs/development/market-and-crystal-store.md` for the delivered scope and validation.

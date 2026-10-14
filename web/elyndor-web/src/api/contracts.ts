@@ -118,6 +118,8 @@ export interface FriendProfile {
   classId: string
   publicCode: string
   telegramUsername: string | null
+  profileFrameStyle?: string | null
+  profileTitle?: string | null
 }
 
 export interface FriendRequest {
@@ -354,6 +356,8 @@ export interface CharacterSnapshot {
   publicCode?: string
   raceId: 'HUMAN' | 'UNDEAD'
   genderId: 'MALE' | 'FEMALE'
+  profileFrameStyle?: string | null
+  profileTitle?: string | null
   activeSkinId?: string | null
   classId: 'WARRIOR' | 'ARCHER' | 'MAGE' | 'PALADIN'
   level: number

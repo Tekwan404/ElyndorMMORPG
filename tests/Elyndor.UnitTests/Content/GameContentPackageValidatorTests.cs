@@ -16,6 +16,34 @@ public sealed class GameContentPackageValidatorTests
         new(2026, 8, 29, 0, 0, 0, TimeSpan.Zero);
 
     [Theory]
+    [InlineData("Frame", "ash", 120, false)]
+    [InlineData("Title", "ether", 80, false)]
+    [InlineData("Frame", "unknown", 120, true)]
+    [InlineData("Effect", "ash", 120, true)]
+    [InlineData("Frame", "ash", 0, true)]
+    [InlineData("Frame", "ash", -1, true)]
+    public void PersonalizationValidatesSupportedSlotsStylesAndPositivePrices(string kind, string style, long price, bool invalid)
+    {
+        var cosmetic = new Elyndor.Core.Characters.ProfileCosmeticDefinition("FRAME_TEST", "Test", "Description", kind, style, price);
+        GameContentPackage package = CreatePackage() with { ProfileCosmetics = [cosmetic] };
+        Assert.Equal(invalid, GameContentPackageValidator.Validate(package).Any(error => error.Code == "INVALID_PROFILE_COSMETIC"));
+    }
+
+    [Fact]
+    public void PersonalizationRejectsDuplicateIdentifiersAndFreeRename()
+    {
+        var cosmetic = new Elyndor.Core.Characters.ProfileCosmeticDefinition("FRAME_TEST", "Test", "Description", "Frame", "ash", 120);
+        GameContentPackage package = CreatePackage() with
+        {
+            ProfileCosmetics = [cosmetic, cosmetic],
+            CharacterRename = new Elyndor.Core.Characters.CharacterRenameOffer(0),
+        };
+        var errors = GameContentPackageValidator.Validate(package);
+        Assert.Contains(errors, error => error.Code == "INVALID_PROFILE_COSMETIC");
+        Assert.Contains(errors, error => error.Code == "INVALID_RENAME_OFFER");
+    }
+
+    [Theory]
     [InlineData(128, false)]
     [InlineData(129, true)]
     public void CanonicalIdentifiersRespectThePersistenceLengthLimit(int length, bool invalid)

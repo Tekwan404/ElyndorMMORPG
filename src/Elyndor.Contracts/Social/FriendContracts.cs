@@ -16,7 +16,9 @@ public sealed record FriendProfileResponse(
     int Level,
     string ClassId,
     string PublicCode,
-    string? TelegramUsername);
+    string? TelegramUsername,
+    string? ProfileFrameStyle = null,
+    string? ProfileTitle = null);
 
 public sealed record FriendRequestResponse(
     Guid Id,

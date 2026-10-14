@@ -69,6 +69,14 @@ public sealed class Character
     public string? ActiveCompanionProfileId { get; private set; }
 
     public string? ActiveSkinId { get; private set; }
+    public string? ActiveProfileFrameId { get; private set; }
+    public string? ActiveTitleId { get; private set; }
+    public void SelectProfileCosmetic(string kind, string? cosmeticId)
+    {
+        if (kind == "Frame") ActiveProfileFrameId = cosmeticId;
+        else if (kind == "Title") ActiveTitleId = cosmeticId;
+        else throw new ArgumentException("Unknown cosmetic slot.", nameof(kind));
+    }
 
     public int Level { get; private set; }
 

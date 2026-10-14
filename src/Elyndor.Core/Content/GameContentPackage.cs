@@ -58,7 +58,9 @@ public sealed record GameContentPackage(
     IReadOnlyList<ProfessionGatheringNodeDefinition>? ProfessionGatheringNodes = null,
     IReadOnlyList<ProfessionEnchantmentDefinition>? ProfessionEnchantments = null,
     IReadOnlyList<ProfessionDisenchantingDefinition>? ProfessionDisenchanting = null,
-    IReadOnlyList<ResourceSourceDefinition>? ResourceSources = null);
+    IReadOnlyList<ResourceSourceDefinition>? ResourceSources = null,
+    IReadOnlyList<ProfileCosmeticDefinition>? ProfileCosmetics = null,
+    CharacterRenameOffer? CharacterRename = null);
 
 public sealed record AfkFarmRewardProfile(
     int ProcessingIntervalSeconds,

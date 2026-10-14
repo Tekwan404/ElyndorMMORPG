@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import ProfileFrame from '@/game/character/components/ProfileFrame.vue'
+import CrystalBalanceButton from '@/game/economy/components/CrystalBalanceButton.vue'
 import MoneyAmount from '@/ui/components/MoneyAmount.vue'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 
@@ -24,9 +26,10 @@ import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { beginTelegramWebLogin } from '@/telegram/telegramWebLogin'
 import { UIButton, UIHealthBar, UILoadingState, UIModal } from '@/ui/components'
 
+const PremiumStoreView = defineAsyncComponent(() => import('@/game/economy/views/PremiumStoreView.vue'))
 const ArenaView = defineAsyncComponent(() => import('@/game/pvp/views/ArenaView.vue'))
 
-type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu' | 'arena' | 'world-boss'
+type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu' | 'arena' | 'world-boss' | 'store'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
@@ -270,17 +273,21 @@ onMounted(() => {
     >
       <div class="hud__main">
         <button class="hud__portrait" type="button" aria-label="Открыть героя" @click="openHero">
+          <ProfileFrame :style-id="character.profileFrameStyle" class="hud__profile-frame">
           <img v-if="portraitArt" :src="portraitArt" alt="" aria-hidden="true" />
           <span v-else>{{ character.name.slice(0, 1).toUpperCase() }}</span>
+          </ProfileFrame>
         </button>
 
         <button class="hud__identity" type="button" @click="openHero">
           <small class="hud__brand">ELYNDOR</small>
           <b>{{ character.name }}</b>
+          <span v-if="character.profileTitle" class="hud__profile-title">{{ character.profileTitle }}</span>
           <span>ур. {{ character.level }} · {{ classLabel(character.classId) }}</span>
         </button>
 
         <div class="hud__meta">
+          <CrystalBalanceButton @open="showView('store')" />
           <div class="hud__wallet" aria-label="Кошелёк">
             <strong><MoneyAmount :amount="character.gold" /></strong>
           </div>
@@ -354,6 +361,10 @@ onMounted(() => {
         v-else-if="session.state === 'world' && activeView === 'world'"
         @open-location="openLocation()"
       />
+      <section v-else-if="session.state === 'world' && activeView === 'store'" class="premium-entry">
+        <UIButton variant="ghost" @click="openLocation()">‹ В игру</UIButton>
+        <PremiumStoreView />
+      </section>
       <CityView
         v-else-if="session.state === 'world' && activeView === 'location' && isCityLocation"
         :open-adventurers="openGuildOnLocation"
@@ -385,6 +396,7 @@ onMounted(() => {
         v-else-if="session.state === 'world' && activeView === 'menu'"
         :initial-section="menuSection"
         @open-world="openWorld()"
+        @open-store="showView('store')"
       />
     </main>
 
@@ -447,6 +459,10 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.hud__profile-frame { width: 100%; height: 100%; }
+.hud__profile-title { color: #d1b2e9 !important; font-size: 10px !important; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.premium-entry { padding: 0 10px 24px; }
+.hud__meta { min-width: 0; }
 .arena-entry {
   display: grid;
   gap: var(--ui-space-3);

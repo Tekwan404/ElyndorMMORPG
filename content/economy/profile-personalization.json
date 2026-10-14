@@ -1,0 +1,55 @@
+{
+  "characterRename": {
+    "crystalPrice": 150
+  },
+  "profileCosmetics": [
+    {
+      "id": "FRAME_ASH",
+      "name": "Пепельный рубеж",
+      "description": "Старинная бронза и тлеющий янтарь вокруг портрета.",
+      "kind": "Frame",
+      "styleId": "ash",
+      "crystalPrice": 120
+    },
+    {
+      "id": "FRAME_ETHER",
+      "name": "Сияние Эфира",
+      "description": "Грани эфирного кристалла и серебряные руны.",
+      "kind": "Frame",
+      "styleId": "ether",
+      "crystalPrice": 180
+    },
+    {
+      "id": "FRAME_IRON",
+      "name": "Железная клятва",
+      "description": "Кованая сталь, золотые уголки и знак защитника.",
+      "kind": "Frame",
+      "styleId": "iron",
+      "crystalPrice": 250
+    },
+    {
+      "id": "TITLE_WANDERER",
+      "name": "Странник",
+      "description": "Титул под именем вашего героя.",
+      "kind": "Title",
+      "styleId": "ash",
+      "crystalPrice": 80
+    },
+    {
+      "id": "TITLE_ETHER_KEEPER",
+      "name": "Хранитель Эфира",
+      "description": "Титул под именем вашего героя.",
+      "kind": "Title",
+      "styleId": "ether",
+      "crystalPrice": 120
+    },
+    {
+      "id": "TITLE_IRON_OATH",
+      "name": "Верный клятве",
+      "description": "Титул под именем вашего героя.",
+      "kind": "Title",
+      "styleId": "iron",
+      "crystalPrice": 150
+    }
+  ]
+}
