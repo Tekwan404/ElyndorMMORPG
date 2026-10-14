@@ -63,11 +63,6 @@ const resourceTone = computed<'rage' | 'focus' | 'mana'>(() => {
   return value === 'rage' || value === 'mana' ? value : 'focus'
 })
 const resourceName = computed(() => resourceLabel(character.value?.vitals.resourceType ?? ''))
-const connectionLabel = computed(() => {
-  if (session.state === 'world') return 'Онлайн'
-  if (session.state === 'offline' || session.state === 'error') return 'Нет связи'
-  return 'Синхронизация'
-})
 const sessionErrorMessage = computed(() => {
   const code = session.errorCode
   if (!code) return 'Не удалось восстановить состояние мира.'
@@ -279,11 +274,12 @@ onMounted(() => {
           </ProfileFrame>
         </button>
 
-        <button class="hud__identity" type="button" @click="openHero">
-          <small class="hud__brand">ELYNDOR</small>
-          <b>{{ character.name }}</b>
+        <button class="hud__identity" type="button" :title="character.name" @click="openHero">
+          <span class="hud__identity-line">
+            <b>{{ character.name }}</b>
+            <small class="hud__level">{{ character.level }} · {{ classLabel(character.classId) }}</small>
+          </span>
           <span v-if="character.profileTitle" class="hud__profile-title">{{ character.profileTitle }}</span>
-          <span>ур. {{ character.level }} · {{ classLabel(character.classId) }}</span>
         </button>
 
         <div class="hud__meta">
@@ -291,20 +287,19 @@ onMounted(() => {
           <div class="hud__wallet" aria-label="Кошелёк">
             <strong><MoneyAmount :amount="character.gold" /></strong>
           </div>
-          <div class="server-state" :data-state="session.state" aria-live="polite">
-            <i aria-hidden="true" /><span>{{ connectionLabel }}</span>
-          </div>
         </div>
       </div>
 
       <div class="hud__bars">
         <UIHealthBar
           label="Здоровье"
+          value-placement="inside"
           :value="character.vitals.currentHp"
           :max="character.vitals.maxHp"
         />
         <UIHealthBar
           :label="resourceName"
+          value-placement="inside"
           :tone="resourceTone"
           :value="character.vitals.currentResource"
           :max="character.vitals.maxResource"
@@ -515,9 +510,9 @@ onMounted(() => {
   position: relative;
   z-index: 3;
   display: grid;
-  gap: 6px;
-  padding: calc(7px + var(--ui-safe-area-top)) calc(var(--ui-space-3) + var(--ui-safe-area-right))
-    7px calc(var(--ui-space-3) + var(--ui-safe-area-left));
+  gap: 4px;
+  padding: calc(5px + var(--ui-safe-area-top)) calc(var(--ui-space-3) + var(--ui-safe-area-right))
+    5px calc(var(--ui-space-3) + var(--ui-safe-area-left));
   border-bottom: 1px solid rgb(205 177 113 / 24%);
   background:
     radial-gradient(circle at 18% 22%, rgb(209 170 98 / 8%), transparent 11rem),
@@ -544,16 +539,16 @@ onMounted(() => {
 
 .hud__main {
   display: grid;
-  grid-template-columns: 46px minmax(0, 1fr) auto;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
 }
 
 .hud__portrait {
   position: relative;
   display: grid;
-  width: 46px;
-  height: 46px;
+  width: 38px;
+  height: 38px;
   place-items: center;
   overflow: hidden;
   padding: 0;
@@ -588,12 +583,18 @@ onMounted(() => {
   text-align: left;
 }
 
-.hud__brand {
-  margin-bottom: 1px;
-  color: var(--ui-color-gold);
-  font-size: var(--ui-font-size-xs);
-  font-weight: 800;
-  letter-spacing: 0.17em;
+.hud__identity-line {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 1.15;
+}
+.hud__level {
+  flex: 0 0 auto;
+  color: var(--ui-color-text-muted);
+  font-size: 10px;
+  white-space: nowrap;
 }
 
 .hud__identity b {
@@ -605,24 +606,29 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-.hud__identity > span {
+.hud__identity > .hud__profile-title {
   margin-top: 2px;
   color: var(--ui-color-text-muted);
   font-size: var(--ui-font-size-xs);
+  line-height: 1.2;
 }
 
 .hud__meta {
-  display: grid;
-  justify-items: end;
-  gap: 3px;
+  display: flex;
+  max-width: min(100%, 280px);
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
 }
 
 .hud__wallet {
   display: flex;
+  min-width: 0;
+  max-width: 180px;
   align-items: center;
   gap: 4px;
-  min-height: 24px;
-  padding: 3px 7px;
+  min-height: 28px;
+  padding: 3px 6px;
   border: 1px solid rgb(232 200 102 / 18%);
   border-radius: var(--ui-radius-round);
   background: rgb(232 200 102 / 5%);
@@ -631,31 +637,15 @@ onMounted(() => {
   font-variant-numeric: tabular-nums;
 }
 
-.server-state {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--ui-color-text-muted);
-  font-size: var(--ui-font-size-xs);
+.hud__meta :deep(.crystal-wallet) { flex: 0 0 auto; }
+.hud__wallet strong { display: block; min-width: 0; }
+.hud__wallet :deep(.money-amount) {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-.server-state i {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--ui-color-warning);
-}
-
-.server-state[data-state='world'] i {
-  background: var(--ui-color-success);
-  box-shadow: 0 0 8px rgb(79 185 150 / 45%);
-}
-
-.server-state[data-state='offline'] i,
-.server-state[data-state='error'] i {
-  background: var(--ui-color-danger);
-}
+.hud__wallet :deep(.money-amount > span + span) { margin-inline-start: 0.4em; }
 
 .hud__bars {
   display: grid;
@@ -670,36 +660,10 @@ onMounted(() => {
   gap: 8px;
 }
 
-.hud__context > button {
-  display: flex;
-  min-width: 0;
-  max-width: 9.5rem;
-  align-items: center;
-  gap: 4px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  color: var(--ui-color-text-muted);
-  font: inherit;
-  font-size: var(--ui-font-size-xs);
-}
-
-.hud__context > button img {
-  width: 15px;
-  height: 15px;
-  object-fit: contain;
-  opacity: 0.78;
-}
-
-.hud__context > button span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .xp {
   position: relative;
-  min-height: 8px;
+  min-width: 0;
+  height: 12px;
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 5%);
   border-radius: var(--ui-radius-round);
@@ -712,17 +676,22 @@ onMounted(() => {
   inset-block: 0;
   left: 0;
   background: linear-gradient(90deg, #5b55bd, var(--ui-color-primary), #72b7c9);
+  opacity: 0.78;
 }
 
 .xp small {
-  position: relative;
+  position: absolute;
   z-index: 1;
-  display: block;
-  color: rgb(242 244 255 / 80%);
-  font-size: var(--ui-font-size-xs);
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding-inline: 4px;
+  overflow: hidden;
+  color: rgb(242 244 255 / 85%);
+  font-size: 8px;
   font-weight: 700;
-  line-height: 6px;
-  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
   text-shadow: 0 1px 2px black;
 }
 
@@ -885,7 +854,7 @@ onMounted(() => {
 }
 .release-update ul {
   display: grid;
-  gap: 9px;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -912,18 +881,18 @@ onMounted(() => {
   line-height: 1.4;
 }
 
+@media (max-width: 480px) {
+  .hud__main { grid-template-columns: 38px minmax(0, 1fr); row-gap: 3px; }
+  .hud__portrait { grid-column: 1; grid-row: 1 / span 2; }
+  .hud__identity { grid-column: 2; grid-row: 1; }
+  .hud__meta { grid-column: 2; grid-row: 2; justify-content: flex-start; }
+}
+
 @media (max-width: 360px) {
   .hud {
     padding-inline: var(--ui-space-2);
   }
 
-  .server-state span {
-    display: none;
-  }
-
-  .hud__context > button {
-    max-width: 7.5rem;
-  }
 }
 
 @media (min-width: 582px) {
