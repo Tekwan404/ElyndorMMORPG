@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { computed, onUnmounted, shallowRef } from 'vue'
 
-import type { CombatAbility, CombatCastSnapshot, CombatEvent, CombatSnapshot } from '@/api/contracts'
+import type {
+  CombatAbility,
+  CombatCastSnapshot,
+  CombatEvent,
+  CombatSnapshot,
+} from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
 import { isAuraAbility } from '@/game/combat/combatAbilityGroups'
 import { orderCombatAbilities } from '@/game/combat/combatHotbarSettings'
 import { projectBattleEvents } from '@/game/combat/battleEventPresentation'
 import BattleControls from '@/game/combat/components/BattleControls.vue'
-import BattleHeader from '@/game/combat/components/BattleHeader.vue'
 import CharacterFigure from '@/game/combat/components/CharacterFigure.vue'
 import CombatLog from '@/game/combat/components/CombatLog.vue'
 import CombatNumbers from '@/game/combat/components/CombatNumbers.vue'
@@ -50,14 +54,16 @@ const activeAbilities = computed(() => {
   return orderCombatAbilities(session.snapshot?.character?.id ?? '', abilities)
 })
 const actorNames = computed(
-  () => new Map([
-    [localActor.value.actorId, localActor.value.name],
-    [enemyActor.value.actorId, enemyActor.value.name],
-  ]),
+  () =>
+    new Map([
+      [localActor.value.actorId, localActor.value.name],
+      [enemyActor.value.actorId, enemyActor.value.name],
+    ]),
 )
 const abilityNames = computed(() => {
-  const entries = [...localActor.value.abilities, ...enemyActor.value.abilities]
-    .map((ability) => [ability.id, ability.displayName] as const)
+  const entries = [...localActor.value.abilities, ...enemyActor.value.abilities].map(
+    (ability) => [ability.id, ability.displayName] as const,
+  )
   return new Map(entries)
 })
 const eventProjection = computed(() =>
@@ -72,8 +78,9 @@ const playerCast = computed(() => localActor.value.activeCast ?? null)
 const enemyCast = computed(() => enemyActor.value.activeCast ?? null)
 
 function abilityName(abilityId: string): string {
-  const ability = [...localActor.value.abilities, ...enemyActor.value.abilities]
-    .find((candidate) => candidate.id === abilityId)
+  const ability = [...localActor.value.abilities, ...enemyActor.value.abilities].find(
+    (candidate) => candidate.id === abilityId,
+  )
   if (ability) return ability.displayName
   if (abilityId === 'AUTO_ATTACK') return 'Автоатака'
   return 'Способность'
@@ -115,24 +122,19 @@ onUnmounted(() => window.clearInterval(timer))
     <div class="arena-battle-overlay">
       <p v-if="errorMessage" class="arena-battle-error" role="alert">{{ errorMessage }}</p>
       <section class="arena-battle-screen" data-arena-battle-screen data-battle-screen>
-        <BattleHeader
-          :local-actor="localActor"
-          :enemy="enemyActor"
-          :allies="[]"
-          :selected-friendly-actor-id="null"
-          :aggro-actor-ids="[]"
-          :disabled="!active"
-        />
-
         <div class="arena-battle-screen__field-wrap">
           <section
             class="arena-battlefield"
-            :style="{ backgroundImage: `linear-gradient(180deg, rgb(5 7 13 / 8%), rgb(4 6 10 / 58%)), url(${gameArt.world.combatWhispering})` }"
+            :style="{
+              backgroundImage: `linear-gradient(180deg, rgb(5 7 13 / 8%), rgb(4 6 10 / 58%)), url(${gameArt.world.combatWhispering})`,
+            }"
             aria-label="Поле боя арены"
             data-arena-battlefield
           >
             <div class="arena-battlefield__vignette" aria-hidden="true" />
-            <div class="arena-battlefield__duel" aria-hidden="true"><span>Арена</span><b>⚔</b><span>1 на 1</span></div>
+            <div class="arena-battlefield__duel" aria-hidden="true">
+              <span>Арена</span><b>⚔</b><span>1 на 1</span>
+            </div>
 
             <div class="arena-battlefield__fighter arena-battlefield__fighter--player">
               <CharacterFigure
@@ -173,12 +175,18 @@ onUnmounted(() => window.clearInterval(timer))
             </div>
 
             <div v-if="playerCast" class="arena-cast arena-cast--player" data-arena-player-cast>
-              <div><strong>{{ abilityName(playerCast.abilityId) }}</strong><small>{{ castRemaining(playerCast).toFixed(1) }}с</small></div>
+              <div>
+                <strong>{{ abilityName(playerCast.abilityId) }}</strong
+                ><small>{{ castRemaining(playerCast).toFixed(1) }}с</small>
+              </div>
               <i><span :style="{ width: `${castProgress(playerCast)}%` }" /></i>
             </div>
 
             <div v-if="enemyCast" class="arena-cast arena-cast--enemy" data-arena-enemy-cast>
-              <div><strong>{{ abilityName(enemyCast.abilityId) }}</strong><small>{{ castRemaining(enemyCast).toFixed(1) }}с</small></div>
+              <div>
+                <strong>{{ abilityName(enemyCast.abilityId) }}</strong
+                ><small>{{ castRemaining(enemyCast).toFixed(1) }}с</small>
+              </div>
               <i><span :style="{ width: `${castProgress(enemyCast)}%` }" /></i>
             </div>
           </section>
@@ -212,13 +220,25 @@ onUnmounted(() => window.clearInterval(timer))
         <section v-else class="arena-battle-screen__result" :data-result="resultLabel">
           <small>Бой завершён</small>
           <strong>{{ resultLabel ?? 'Результат матча' }}</strong>
-          <div v-if="rating != null || ratingDelta != null || honorDelta != null" class="arena-battle-screen__rewards">
-            <span v-if="rating != null"><small>Рейтинг</small><b>{{ rating }}</b><em v-if="ratingDelta">{{ ratingDelta > 0 ? '+' : '' }}{{ ratingDelta }}</em></span>
-            <span v-if="honorDelta != null"><small>Честь</small><b>{{ honorDelta > 0 ? '+' : '' }}{{ honorDelta }}</b></span>
+          <div
+            v-if="rating != null || ratingDelta != null || honorDelta != null"
+            class="arena-battle-screen__rewards"
+          >
+            <span v-if="rating != null"
+              ><small>Рейтинг</small><b>{{ rating }}</b
+              ><em v-if="ratingDelta">{{ ratingDelta > 0 ? '+' : '' }}{{ ratingDelta }}</em></span
+            >
+            <span v-if="honorDelta != null"
+              ><small>Честь</small><b>{{ honorDelta > 0 ? '+' : '' }}{{ honorDelta }}</b></span
+            >
           </div>
           <div class="arena-battle-screen__result-actions">
-            <UIButton :disabled="Boolean(pending)" @click="emit('nextOpponent')">Следующий соперник</UIButton>
-            <UIButton :disabled="Boolean(pending)" variant="ghost" @click="emit('dismiss')">К арене</UIButton>
+            <UIButton :disabled="Boolean(pending)" @click="emit('nextOpponent')"
+              >Следующий соперник</UIButton
+            >
+            <UIButton :disabled="Boolean(pending)" variant="ghost" @click="emit('dismiss')"
+              >К арене</UIButton
+            >
           </div>
         </section>
 
@@ -260,9 +280,10 @@ onUnmounted(() => window.clearInterval(timer))
   width: min(100%, var(--ui-content-width));
   height: var(--tg-viewport-stable-height, 100dvh);
   min-height: 0;
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-rows: minmax(0, 1fr) auto auto;
   gap: var(--arena-gap);
-  padding: max(0.35rem, env(safe-area-inset-top)) max(0.4rem, env(safe-area-inset-right)) max(0.35rem, env(safe-area-inset-bottom)) max(0.4rem, env(safe-area-inset-left));
+  padding: max(0.35rem, env(safe-area-inset-top)) max(0.4rem, env(safe-area-inset-right))
+    max(0.35rem, env(safe-area-inset-bottom)) max(0.4rem, env(safe-area-inset-left));
   overflow: hidden;
   border-inline: 1px solid var(--ui-color-frame);
   background: radial-gradient(circle at 50% 18%, rgb(116 45 65 / 16%), transparent 25rem), #05070c;
@@ -284,13 +305,17 @@ onUnmounted(() => window.clearInterval(timer))
   background-color: #090c13;
   background-position: center;
   background-size: cover;
-  box-shadow: inset 0 0 38px rgb(0 0 0 / 48%), 0 8px 24px rgb(0 0 0 / 28%);
+  box-shadow:
+    inset 0 0 38px rgb(0 0 0 / 48%),
+    0 8px 24px rgb(0 0 0 / 28%);
 }
 .arena-battlefield__vignette {
   position: absolute;
   z-index: 0;
   inset: 0;
-  background: linear-gradient(90deg, rgb(14 17 25 / 20%), transparent 42% 58%, rgb(70 18 30 / 20%)), linear-gradient(0deg, rgb(2 4 7 / 68%), transparent 38%);
+  background:
+    linear-gradient(90deg, rgb(14 17 25 / 20%), transparent 42% 58%, rgb(70 18 30 / 20%)),
+    linear-gradient(0deg, rgb(2 4 7 / 68%), transparent 38%);
   pointer-events: none;
 }
 .arena-battlefield__fighter {
@@ -300,11 +325,21 @@ onUnmounted(() => window.clearInterval(timer))
   width: 43%;
   height: 88%;
 }
-.arena-battlefield__fighter--player { left: 2%; }
-.arena-battlefield__fighter--enemy { right: 2%; }
-.arena-battlefield__fighter--enemy :deep(.character-figure__art img) { transform: scaleX(-1); }
-.arena-battlefield__fighter--enemy :deep(.character-figure__aura) { background: radial-gradient(ellipse, rgb(170 53 73 / 28%), transparent 70%); }
-.arena-battlefield__fighter--enemy :deep(.character-figure__caption) { border-color: rgb(197 70 91 / 36%); }
+.arena-battlefield__fighter--player {
+  left: 2%;
+}
+.arena-battlefield__fighter--enemy {
+  right: 2%;
+}
+.arena-battlefield__fighter--enemy :deep(.character-figure__art img) {
+  transform: scaleX(-1);
+}
+.arena-battlefield__fighter--enemy :deep(.character-figure__aura) {
+  background: radial-gradient(ellipse, rgb(170 53 73 / 28%), transparent 70%);
+}
+.arena-battlefield__fighter--enemy :deep(.character-figure__caption) {
+  border-color: rgb(197 70 91 / 36%);
+}
 .arena-battlefield__effects {
   position: absolute;
   z-index: 30;
@@ -325,14 +360,44 @@ onUnmounted(() => window.clearInterval(timer))
   border-radius: 7px;
   background: rgb(7 9 16 / 94%);
 }
-.arena-cast--player { left: 2%; }
-.arena-cast--enemy { right: 2%; border-color: rgb(213 78 99 / 50%); }
-.arena-cast div { display: flex; justify-content: space-between; gap: 0.35rem; }
-.arena-cast strong { overflow: hidden; font-size: 0.7rem; text-overflow: ellipsis; white-space: nowrap; }
-.arena-cast small { color: #d1c7b5; font-size: 0.7rem; font-variant-numeric: tabular-nums; }
-.arena-cast > i { display: block; height: 4px; overflow: hidden; border-radius: 999px; background: #08090d; }
-.arena-cast > i span { display: block; height: 100%; background: linear-gradient(90deg, #6553ba, #b497f0); }
-.arena-cast--enemy > i span { background: linear-gradient(90deg, #9d3148, #eb7182); }
+.arena-cast--player {
+  left: 2%;
+}
+.arena-cast--enemy {
+  right: 2%;
+  border-color: rgb(213 78 99 / 50%);
+}
+.arena-cast div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+.arena-cast strong {
+  overflow: hidden;
+  font-size: 0.7rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.arena-cast small {
+  color: #d1c7b5;
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+}
+.arena-cast > i {
+  display: block;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #08090d;
+}
+.arena-cast > i span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #6553ba, #b497f0);
+}
+.arena-cast--enemy > i span {
+  background: linear-gradient(90deg, #9d3148, #eb7182);
+}
 .arena-battle-screen__actions {
   display: grid;
   gap: 0.3rem;
@@ -347,17 +412,39 @@ onUnmounted(() => window.clearInterval(timer))
   background: #0c1018;
   text-align: center;
 }
-.arena-battle-screen__result > small { color: #9b927e; font-size: 0.46rem; letter-spacing: 0.12em; }
-.arena-battle-screen__result > strong { color: #e9d49d; font-family: var(--ui-font-display); font-size: 1rem; }
+.arena-battle-screen__result > small {
+  color: #9b927e;
+  font-size: 0.46rem;
+  letter-spacing: 0.12em;
+}
+.arena-battle-screen__result > strong {
+  color: #e9d49d;
+  font-family: var(--ui-font-display);
+  font-size: 1rem;
+}
 .arena-battle-screen__rewards {
   display: flex;
   justify-content: center;
   gap: 1rem;
 }
-.arena-battle-screen__rewards span { display: flex; align-items: baseline; gap: 0.25rem; }
-.arena-battle-screen__rewards small { color: #8f887d; font-size: 0.46rem; }
-.arena-battle-screen__rewards b { color: #ead089; font-size: 0.72rem; }
-.arena-battle-screen__rewards em { color: #80c992; font-size: 0.55rem; font-style: normal; }
+.arena-battle-screen__rewards span {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+.arena-battle-screen__rewards small {
+  color: #8f887d;
+  font-size: 0.46rem;
+}
+.arena-battle-screen__rewards b {
+  color: #ead089;
+  font-size: 0.72rem;
+}
+.arena-battle-screen__rewards em {
+  color: #80c992;
+  font-size: 0.55rem;
+  font-style: normal;
+}
 .arena-battle-screen__result-actions {
   display: grid;
   width: min(100%, 20rem);
@@ -380,30 +467,59 @@ onUnmounted(() => window.clearInterval(timer))
   text-shadow: 0 2px 5px #000;
   pointer-events: none;
 }
-.arena-battlefield__duel b { font-size: 1.25rem; color: #d5b86f; }
-.arena-battlefield__fighter :deep(.character-figure__caption small) { font-size: 0.65rem; }
-.arena-battlefield__fighter :deep(.character-figure__caption strong) { font-size: 0.8rem; }
-.arena-battle-screen :deep(.battle-header__status label),
-.arena-battle-screen :deep(.battle-header__identity small) { font-size: 0.7rem; }
-.arena-battle-screen :deep(.battle-header__bar) { height: 6px; }
-.arena-battlefield__effects { top: 0; }
+.arena-battlefield__duel b {
+  font-size: 1.25rem;
+  color: #d5b86f;
+}
+.arena-battlefield__fighter :deep(.character-figure__caption small) {
+  font-size: 0.65rem;
+}
+.arena-battlefield__fighter :deep(.character-figure__caption strong) {
+  font-size: 0.8rem;
+}
+.arena-battlefield__effects {
+  top: 0;
+}
 .arena-battle-screen__result > small,
 .arena-battle-screen__rewards small,
-.arena-battle-screen__rewards em { font-size: 0.7rem; }
-.arena-battle-screen__result > strong { font-size: 1.4rem; }
-.arena-battle-screen__rewards b { font-size: 0.95rem; }
-.arena-battle-screen__result { background: linear-gradient(135deg, #292116, #0c1018 65%); }
-.arena-battle-screen__result-actions :deep(button) { min-height: 44px; }
+.arena-battle-screen__rewards em {
+  font-size: 0.7rem;
+}
+.arena-battle-screen__result > strong {
+  font-size: 1.4rem;
+}
+.arena-battle-screen__rewards b {
+  font-size: 0.95rem;
+}
+.arena-battle-screen__result {
+  background: linear-gradient(135deg, #292116, #0c1018 65%);
+}
+.arena-battle-screen__result-actions :deep(button) {
+  min-height: 44px;
+}
 
 @media (max-width: 480px) {
-  .arena-battlefield__fighter { width: 48%; height: 86%; }
-  .arena-battlefield__fighter--player { left: -1%; }
-  .arena-battlefield__fighter--enemy { right: -1%; }
-  .arena-battle-screen__result-actions { width: 100%; }
+  .arena-battlefield__fighter {
+    width: 48%;
+    height: 86%;
+  }
+  .arena-battlefield__fighter--player {
+    left: -1%;
+  }
+  .arena-battlefield__fighter--enemy {
+    right: -1%;
+  }
+  .arena-battle-screen__result-actions {
+    width: 100%;
+  }
 }
 
 @media (max-height: 680px) {
-  .arena-battle-screen { min-height: 0; }
-  .arena-battlefield__fighter { height: 84%; }
+  .arena-battle-screen {
+    min-height: 0;
+  }
+  .arena-battlefield__fighter {
+    height: 84%;
+  }
 }
 </style>

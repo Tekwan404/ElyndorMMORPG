@@ -26,6 +26,27 @@ const actor: CombatActorSnapshot = {
 describe('CharacterFigure', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
+  it('keeps one HP/resource display next to the actor and follows snapshot updates', async () => {
+    const wrapper = mount(CharacterFigure, {
+      props: {
+        actor,
+        selected: false,
+        aggro: false,
+        local: true,
+        disabled: false,
+        frontline: true,
+      },
+    })
+    expect(wrapper.findAll('[data-actor-status="ally"]')).toHaveLength(1)
+    expect(wrapper.get('[aria-label="HP Мира"]').attributes('aria-valuenow')).toBe('75')
+    expect(wrapper.get('[aria-label="Мана Мира"]').text()).toContain('60 / 100')
+    expect(wrapper.get('button').attributes('aria-label')).toContain('Мана 60 / 100')
+    await wrapper.setProps({ actor: { ...actor, hp: 50, resource: 20 } })
+    expect(wrapper.get('[aria-label="HP Мира"]').text()).toContain('50 / 100')
+    expect(wrapper.get('[aria-label="Мана Мира"]').attributes('aria-valuenow')).toBe('20')
+    wrapper.unmount()
+  })
+
   it('renders selected and aggro as two states on one actor', () => {
     const wrapper = mount(CharacterFigure, {
       props: {
@@ -96,9 +117,11 @@ describe('CharacterFigure', () => {
       },
     })
 
-    expect(wrapper.get('.character-figure__health').attributes('data-health-state')).toBe('low')
+    expect(wrapper.get('.combat-actor-status__bar--hp').attributes('data-health-state')).toBe('low')
     await wrapper.setProps({ actor: { ...actor, hp: 20 } })
-    expect(wrapper.get('.character-figure__health').attributes('data-health-state')).toBe('critical')
+    expect(wrapper.get('.combat-actor-status__bar--hp').attributes('data-health-state')).toBe(
+      'critical',
+    )
   })
 
   it('marks a dead actor unavailable without hiding its identity', () => {

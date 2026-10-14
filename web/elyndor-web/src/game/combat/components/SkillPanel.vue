@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onUnmounted, shallowRef } from 'vue'
+import { computed, onUnmounted, shallowRef, watch } from 'vue'
 
 import type { CombatAbility } from '@/api/contracts'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
@@ -19,8 +19,20 @@ const props = defineProps<{
 const emit = defineEmits<{ use: [ability: CombatAbility] }>()
 
 const inspectedAbility = shallowRef<CombatAbility | null>(null)
-const abilitiesExpanded = shallowRef(false)
-const overflowAbilityCount = computed(() => Math.max(0, props.abilities.length - 8))
+const page = shallowRef(0)
+const pageCount = computed(() => Math.max(1, Math.ceil(props.abilities.length / 10)))
+const visibleAbilities = computed(() =>
+  props.abilities.slice(page.value * 10, page.value * 10 + 10),
+)
+watch(pageCount, (count) => {
+  page.value = Math.min(page.value, count - 1)
+})
+function changePage(next: number): void {
+  cancelInspection()
+  inspectedAbility.value = null
+  suppressedAbilityId = null
+  page.value = Math.max(0, Math.min(pageCount.value - 1, next))
+}
 let inspectionTimer: ReturnType<typeof setTimeout> | undefined
 let suppressedAbilityId: string | null = null
 
@@ -98,26 +110,22 @@ onUnmounted(cancelInspection)
     data-skill-panel
     data-combat-hotbar
   >
-    <header class="skill-panel__header">
-      <h2 id="battle-skills-title">Умения</h2>
-      <small>Удерживайте для описания</small>
-    </header>
-    <div
-      id="battle-skill-grid"
-      class="skill-panel__grid"
-      data-skill-grid
-      data-columns="4"
-      :data-expanded="abilitiesExpanded"
-    >
+    <h2 id="battle-skills-title" class="skill-panel__heading">Умения</h2>
+    <div id="battle-skill-grid" class="skill-panel__grid" data-skill-grid data-columns="5">
       <button
-        v-for="ability in abilities"
+        v-for="ability in visibleAbilities"
         :key="ability.id"
         type="button"
         class="skill-panel__ability"
         :data-ability-slot="ability.id"
         :data-state="state(ability)"
         :data-queued="queuedAbilityIds.includes(ability.id)"
-        :aria-label="accessibleLabel(ability)"
+        :aria-describedby="
+          inspectedAbility?.id === ability.id ? 'battle-skill-inspection' : undefined
+        "
+        :aria-label="
+          accessibleLabel(ability) + (queuedAbilityIds.includes(ability.id) ? ', в очереди' : '')
+        "
         :aria-disabled="state(ability) !== 'ready'"
         @pointerdown="inspect(ability)"
         @pointerup="cancelInspection"
@@ -144,11 +152,6 @@ onUnmounted(cancelInspection)
             }"
           />
         </span>
-        <strong>{{ ability.displayName }}</strong>
-        <small v-if="ability.resourceCost > 0" class="skill-panel__cost">{{
-          Math.round(ability.resourceCost)
-        }}</small>
-        <span v-if="queuedAbilityIds.includes(ability.id)" class="skill-panel__queued">ГОТОВО</span>
         <span
           v-if="remaining(ability.id) > 0 || globalRemaining(ability) > 0.25"
           class="skill-panel__cooldown"
@@ -158,19 +161,30 @@ onUnmounted(cancelInspection)
         </span>
       </button>
     </div>
-    <button
-      v-if="overflowAbilityCount > 0"
-      type="button"
-      class="skill-panel__overflow-toggle"
-      data-skill-overflow-toggle
-      aria-controls="battle-skill-grid"
-      :aria-expanded="abilitiesExpanded"
-      @click="abilitiesExpanded = !abilitiesExpanded"
-    >
-      {{ abilitiesExpanded ? 'Свернуть' : `Ещё ${overflowAbilityCount}` }}
-    </button>
+    <nav v-if="pageCount > 1" class="skill-panel__pager" aria-label="Страницы умений">
+      <button
+        type="button"
+        data-skill-prev
+        :disabled="page === 0"
+        aria-label="Предыдущие умения"
+        @click="changePage(page - 1)"
+      >
+        ‹
+      </button>
+      <span role="status">{{ page + 1 }} / {{ pageCount }}</span>
+      <button
+        type="button"
+        data-skill-next
+        :disabled="page >= pageCount - 1"
+        aria-label="Следующие умения"
+        @click="changePage(page + 1)"
+      >
+        ›
+      </button>
+    </nav>
     <aside
       v-if="inspectedAbility"
+      id="battle-skill-inspection"
       class="skill-panel__inspection"
       data-ability-inspection
       aria-live="polite"
@@ -180,6 +194,7 @@ onUnmounted(cancelInspection)
         <p>
           {{ inspectedAbility.description || 'Описание способности пока не добавлено.' }}
         </p>
+        <p>Стоимость: {{ inspectedAbility.resourceCost }}</p>
         <p data-ability-timing>
           {{
             (inspectedAbility.castTimeSeconds ?? 0) > 0
@@ -203,62 +218,66 @@ onUnmounted(cancelInspection)
 
 <style scoped>
 .skill-panel {
+  position: relative;
   display: grid;
-  gap: 0.35rem;
-  padding: 0.48rem;
-  border: 1px solid rgb(177 151 91 / 35%);
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid rgb(177 151 91 / 28%);
   border-radius: 10px;
-  background: linear-gradient(180deg, rgb(10 13 20 / 94%), rgb(5 7 12 / 96%));
+  background: linear-gradient(180deg, #0a0d14ef, #05070cf5);
 }
-.skill-panel__header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-}
-.skill-panel__header h2 {
-  margin: 0;
-  color: #e7d8b3;
-  font-family: var(--ui-font-display);
-  font-size: 0.74rem;
-  letter-spacing: 0.03em;
-}
-.skill-panel__header small {
-  color: #8f8a84;
-  font-size: 0.48rem;
+.skill-panel__heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .skill-panel__grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(64px, 1fr));
-  gap: 0.32rem;
+  grid-template-columns: repeat(5, minmax(44px, 1fr));
+  grid-template-rows: repeat(2, 52px);
+  gap: 6px;
+  justify-items: center;
+  align-items: center;
+  width: min(100%, 340px);
+  margin-inline: auto;
 }
 .skill-panel__ability {
   position: relative;
   display: grid;
-  min-width: 64px;
-  min-height: 64px;
-  grid-template-columns: 42px minmax(0, 1fr);
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.3rem;
+  place-items: center;
+  width: min(100%, 52px);
+  aspect-ratio: 1;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 2px;
   overflow: hidden;
-  border: 1px solid rgb(117 103 173 / 38%);
-  border-radius: 8px;
-  background: linear-gradient(145deg, rgb(20 21 33 / 92%), rgb(7 9 15 / 94%));
-  color: #e9e1d5;
-  font: inherit;
-  text-align: left;
+  border: 1px solid #796a9d;
+  border-radius: 50%;
+  background: #090c14;
+  color: #f4e8d1;
   cursor: pointer;
   touch-action: manipulation;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 .skill-panel__ability[data-state='ready'] {
-  border-color: rgb(143 119 212 / 58%);
-  box-shadow: inset 0 0 14px rgb(111 74 178 / 10%);
+  border-color: #b49b60;
+  box-shadow:
+    inset 0 0 0 1px #070910,
+    0 2px 5px #0009;
 }
 .skill-panel__ability[data-state='cooldown'],
 .skill-panel__ability[data-state='resource'],
 .skill-panel__ability[data-state='disabled'] {
-  filter: saturate(0.32) brightness(0.64);
+  filter: saturate(0.35) brightness(0.66);
+}
+.skill-panel__ability[data-queued='true'] {
+  border-color: #83deb9;
+  box-shadow: 0 0 0 2px #83deb944;
 }
 .skill-panel__ability:focus-visible {
   outline: 2px solid #e5ca79;
@@ -266,11 +285,10 @@ onUnmounted(cancelInspection)
 }
 .skill-panel__icon {
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 100%;
+  height: 100%;
   place-items: center;
   overflow: hidden;
-  border: 1px solid rgb(132 104 203 / 35%);
   border-radius: 50%;
   background: #060810;
 }
@@ -278,132 +296,76 @@ onUnmounted(cancelInspection)
 .skill-panel__icon :deep(.icon-generator) {
   width: 100%;
   height: 100%;
+  border-radius: inherit;
   object-fit: cover;
-}
-.skill-panel__ability > strong {
-  display: -webkit-box;
-  overflow: hidden;
-  font-size: clamp(0.48rem, 2vw, 0.6rem);
-  line-height: 1.15;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-.skill-panel__cost {
-  position: absolute;
-  right: 0.22rem;
-  bottom: 0.18rem;
-  padding: 0.06rem 0.18rem;
-  border-radius: 4px;
-  background: rgb(1 3 7 / 84%);
-  color: #b9a4f0;
-  font-size: 0.46rem;
-}
-.skill-panel__queued {
-  position: absolute;
-  top: 0.12rem;
-  left: 0.2rem;
-  color: #83deb9;
-  font-size: 0.38rem;
-  font-weight: 900;
 }
 .skill-panel__cooldown {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgb(3 5 10 / 52%);
+  background: #03050a88;
 }
 .skill-panel__cooldown b {
-  display: grid;
-  width: 2rem;
-  height: 2rem;
-  place-items: center;
-  border: 1px solid rgb(255 255 255 / 25%);
-  border-radius: 50%;
-  background: rgb(2 4 8 / 82%);
   color: #fff;
-  font-size: 0.82rem;
+  font: 800 16px/1 var(--ui-font-body);
+  text-shadow: 0 1px 3px #000;
+}
+.skill-panel__pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #bfb098;
+  font-size: 11px;
+}
+.skill-panel__pager button {
+  width: 44px;
+  min-height: 32px;
+  border: 1px solid #b1975b55;
+  border-radius: 6px;
+  background: #0b0e17;
+  color: #e4d1a8;
+  font: 700 22px/1 var(--ui-font-body);
+}
+.skill-panel__pager button:disabled {
+  opacity: 0.35;
 }
 .skill-panel__inspection {
   display: flex;
   align-items: start;
   justify-content: space-between;
-  gap: 0.65rem;
-  padding: 0.55rem;
-  border: 1px solid rgb(135 111 204 / 40%);
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid #876fcc66;
   border-radius: 7px;
   background: #0b0d17;
 }
 .skill-panel__inspection strong {
-  font-size: 0.68rem;
+  font-size: 13px;
 }
 .skill-panel__inspection p {
-  margin: 0.18rem 0 0;
-  color: #aaa4a0;
-  font-size: 0.58rem;
+  margin: 4px 0 0;
+  color: #bcb4a9;
+  font-size: 11px;
   line-height: 1.4;
 }
 .skill-panel__inspection button {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   flex: none;
-  border: 1px solid rgb(255 255 255 / 18%);
+  border: 1px solid #ffffff33;
   border-radius: 6px;
   background: transparent;
   color: #e7dfd2;
 }
-.skill-panel__overflow-toggle {
-  display: none;
-}
-
-@media (max-width: 480px) {
+@media (max-width: 360px) {
   .skill-panel__grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.24rem;
-    overflow-x: hidden;
-  }
-  .skill-panel__grid[data-expanded='false'] .skill-panel__ability:nth-child(n + 9) {
-    display: none;
-  }
-  .skill-panel__grid[data-expanded='true'] {
-    max-height: calc(128px + 0.24rem);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    scrollbar-width: thin;
+    grid-template-rows: repeat(2, 46px);
+    gap: 4px;
   }
   .skill-panel__ability {
-    min-width: 0;
-    min-height: 64px;
-    grid-template-columns: 1fr;
-    place-items: center;
-    padding: 0.2rem;
-    text-align: center;
-  }
-  .skill-panel__icon {
-    width: 38px;
-    height: 38px;
-  }
-  .skill-panel__ability > strong {
-    width: 100%;
-    font-size: 0.44rem;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-  .skill-panel__overflow-toggle {
-    display: inline-flex;
-    min-height: 44px;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgb(177 151 91 / 32%);
-    border-radius: 7px;
-    background: rgb(12 15 23 / 92%);
-    color: #d8c89f;
-    font: 700 0.54rem/1 var(--ui-font-body);
-    touch-action: manipulation;
-  }
-  .skill-panel__overflow-toggle:focus-visible {
-    outline: 2px solid #e5ca79;
-    outline-offset: 2px;
+    max-width: 46px;
   }
 }
 </style>

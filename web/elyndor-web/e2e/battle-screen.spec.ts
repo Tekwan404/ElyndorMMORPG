@@ -8,13 +8,18 @@ async function openPreview(page: Page, party: number, width = 390, height = 844)
   await expect(page.locator('[data-battle-screen]')).toBeVisible({ timeout: 15_000 })
   await expect(page.locator('[data-character-figure]')).toHaveCount(party)
   await expect
-    .poll(() =>
-      page
-        .locator('[data-character-figure] img, [data-allies-strip] img')
-        .evaluateAll(
-          (images) =>
-            images.length > 0 && images.every((image) => image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0),
-        ),
+    .poll(
+      () =>
+        page
+          .locator('[data-character-figure] img, [data-allies-strip] img')
+          .evaluateAll(
+            (images) =>
+              images.length > 0 &&
+              images.every(
+                (image) =>
+                  image instanceof HTMLImageElement && image.complete && image.naturalWidth > 0,
+              ),
+          ),
       { timeout: 15_000 },
     )
     .toBe(true)
@@ -45,7 +50,8 @@ test('three-player baseline fits without scroll and protects the arena', async (
   expect(metrics.pageScrollWidth).toBeLessThanOrEqual(metrics.viewportWidth)
   expect(metrics.arenaRatio).toBeGreaterThanOrEqual(0.58)
   expect(metrics.arenaRatio).toBeLessThanOrEqual(0.62)
-  expect(metrics.smallestAbility).toBeGreaterThanOrEqual(64)
+  expect(metrics.smallestAbility).toBeGreaterThanOrEqual(44)
+  expect(metrics.smallestAbility).toBeLessThanOrEqual(54)
   await page.screenshot({
     path: '../../output/playwright/battle-screen-party-3-390x844.png',
     fullPage: true,
@@ -70,15 +76,19 @@ test('solo character remains prominent on mobile and desktop', async ({ page }) 
         actorHeightRatio: actorRect.height / arenaRect.height,
         enemyWidthRatio: enemyRect.width / arenaRect.width,
         enemyHeightRatio: enemyRect.height / arenaRect.height,
-        actorsOverlap: actorRect.right > enemyRect.left,
+        enemyCenterOffset: Math.abs(
+          enemyRect.x + enemyRect.width / 2 - (arenaRect.x + arenaRect.width / 2),
+        ),
+        depthOrdered: actorRect.top > enemyRect.top && actorRect.bottom > enemyRect.bottom,
       }
     })
 
     expect(geometry.actorWidthRatio).toBeGreaterThanOrEqual(0.37)
-    expect(geometry.actorHeightRatio).toBeGreaterThanOrEqual(0.77)
-    expect(geometry.enemyWidthRatio).toBeGreaterThanOrEqual(viewport.width <= 480 ? 0.55 : 0.44)
-    expect(geometry.enemyHeightRatio).toBeGreaterThanOrEqual(viewport.width <= 480 ? 0.87 : 0.83)
-    expect(geometry.actorsOverlap).toBe(false)
+    expect(geometry.actorHeightRatio).toBeGreaterThanOrEqual(0.5)
+    expect(geometry.enemyWidthRatio).toBeGreaterThanOrEqual(0.44)
+    expect(geometry.enemyHeightRatio).toBeLessThanOrEqual(0.5)
+    expect(geometry.enemyCenterOffset).toBeLessThan(2)
+    expect(geometry.depthOrdered).toBe(true)
     await page.screenshot({
       path: `../../output/playwright/battle-screen-solo-${viewport.name}.png`,
       fullPage: true,
@@ -95,7 +105,7 @@ test('five-player formation stays readable and selection does not follow aggro',
     'data-formation-mode',
     'all-visible',
   )
-  await page.locator('[data-ally-strip-actor="ally-2"]').click()
+  await page.locator('[data-ally-status="ally-2"]').click()
   await page.locator('[data-preview-transfer-aggro]').dispatchEvent('click')
 
   await expect(page.locator('[data-preview-aggro-target]')).toHaveAttribute(
@@ -150,7 +160,7 @@ test('narrow and reduced-motion layouts keep controls inside the viewport', asyn
   })
 })
 
-test('mobile hotbar uses four columns and bounds large ability kits without layout shift', async ({
+test('mobile hotbar uses five columns and pages large ability kits without layout shift', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 390, height: 844 })
@@ -160,10 +170,9 @@ test('mobile hotbar uses four columns and bounds large ability kits without layo
   const grid = page.locator('[data-skill-grid]')
   const slots = page.locator('[data-ability-slot]')
   const toast = page.locator('[data-combat-error-toast]')
-  await expect(screen).toBeVisible()
-  await expect(slots).toHaveCount(16)
-  await expect(slots.nth(7)).toBeVisible()
-  await expect(slots.nth(8)).toBeHidden()
+  await expect(screen).toBeVisible({ timeout: 15_000 })
+  await expect(slots).toHaveCount(10)
+  await expect(slots.nth(9)).toBeVisible()
   await expect(toast).toBeVisible()
 
   const collapsed = await grid.evaluate((element) => ({
@@ -171,7 +180,7 @@ test('mobile hotbar uses four columns and bounds large ability kits without layo
     horizontalOverflow: element.scrollWidth > element.clientWidth,
     position: getComputedStyle(document.querySelector('[data-combat-error-toast]')!).position,
   }))
-  expect(collapsed.columns).toBe(4)
+  expect(collapsed.columns).toBe(5)
   expect(collapsed.horizontalOverflow).toBe(false)
   expect(collapsed.position).toBe('fixed')
   await page.screenshot({
@@ -179,17 +188,55 @@ test('mobile hotbar uses four columns and bounds large ability kits without layo
     fullPage: true,
   })
 
-  await page.locator('[data-skill-overflow-toggle]').click()
-  await expect(slots.nth(8)).toBeVisible()
-  const expanded = await grid.evaluate((element) => ({
-    verticalOverflow: element.scrollHeight > element.clientHeight,
-    horizontalOverflow: element.scrollWidth > element.clientWidth,
-  }))
-  expect(expanded.verticalOverflow).toBe(true)
-  expect(expanded.horizontalOverflow).toBe(false)
-
-  await page.setViewportSize({ width: 820, height: 900 })
-  await expect(slots.nth(15)).toBeVisible()
-  await expect(page.locator('[data-skill-overflow-toggle]')).toBeHidden()
+  await page.locator('[data-skill-next]').click()
+  await expect(slots).toHaveCount(6)
+  await expect(page.locator('[data-ability-slot="PREVIEW_ABILITY_16"]')).toBeVisible()
   expect(await grid.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(false)
+  await page.setViewportSize({ width: 820, height: 900 })
+  await expect(slots).toHaveCount(6)
+  await page.locator('[data-skill-prev]').click()
+  await expect(slots).toHaveCount(10)
+})
+
+test('party, companion and multiple enemies keep distinct readable targets', async ({ page }) => {
+  for (const viewport of [
+    { width: 320, height: 740 },
+    { width: 390, height: 844 },
+  ]) {
+    await page.setViewportSize(viewport)
+    await page.goto('/dev/battle?party=5&abilities=10&enemies=3&companion=true')
+    await expect(page.locator('[data-ally-status]')).toHaveCount(5, { timeout: 15_000 })
+    const geometry = await page.locator('[data-battle-arena]').evaluate((arena) => {
+      const enemy = arena.querySelector<HTMLElement>('.battle-arena__enemy')!
+      const caption = arena.querySelector<HTMLElement>('.battle-arena__enemy-caption')!
+      const strip = arena.querySelector<HTMLElement>('.battle-arena__enemy-strip')!
+      const companion = arena.querySelector<HTMLElement>('[data-combat-companion]')!
+      const status = [...arena.querySelectorAll<HTMLElement>('[data-ally-status]')]
+      const rects = [caption, strip, companion, ...status].map((element) =>
+        element.getBoundingClientRect(),
+      )
+      const overlap = rects.some((a, i) =>
+        rects
+          .slice(i + 1)
+          .some(
+            (b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top,
+          ),
+      )
+      const rect = caption.getBoundingClientRect()
+      const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)
+      return {
+        overlap,
+        enemyClickable: hit !== null && enemy.contains(hit),
+        overflow: document.documentElement.scrollWidth > window.innerWidth,
+      }
+    })
+    expect(geometry).toEqual({ overlap: false, enemyClickable: true, overflow: false })
+    for (const target of ['local', 'ally-1', 'ally-2', 'ally-3', 'ally-4']) {
+      await page.locator(`[data-ally-status="${target}"]`).click()
+      await expect(page.locator(`[data-ally-status="${target}"]`)).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      )
+    }
+  }
 })

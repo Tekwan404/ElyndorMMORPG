@@ -66,11 +66,22 @@ function ability(index: number): CombatAbility {
 describe('BattleScreen', () => {
   it('keeps a failed Victory in manual recovery instead of presenting completed rewards', async () => {
     const store = useCombatSessionStore()
-    store.snapshot = { sessionId: 'session', sequence: 2, status: 'Victory', serverTimeUtc: '2026-10-05T12:00:00Z', contentVersion: 'test', balanceVersion: 'test', player: actor('local', 'Player'), enemy: actor('enemy', 'Monster') }
+    store.snapshot = {
+      sessionId: 'session',
+      sequence: 2,
+      status: 'Victory',
+      serverTimeUtc: '2026-10-05T12:00:00Z',
+      contentVersion: 'test',
+      balanceVersion: 'test',
+      player: actor('local', 'Player'),
+      enemy: actor('enemy', 'Monster'),
+    }
     store.recoveryRequired = true
     store.errorCode = 'combat_recovery_required'
     store.connectionState = 'disconnected'
-    const getPendingLoot = vi.spyOn(useGameSessionStore(), 'getPendingLoot').mockResolvedValue({ items: [] } as never)
+    const getPendingLoot = vi
+      .spyOn(useGameSessionStore(), 'getPendingLoot')
+      .mockResolvedValue({ items: [] } as never)
     vi.spyOn(store, 'connect').mockResolvedValue(undefined)
     const resume = vi.spyOn(store, 'resume').mockResolvedValue(false)
     const wrapper = mount(BattleScreen)
@@ -97,11 +108,25 @@ describe('BattleScreen', () => {
   })
   it('retains the flee confirmation and shows the failed action in the dialog', async () => {
     const store = useCombatSessionStore()
-    store.snapshot = { sessionId: 'session', sequence: 1, status: 'Active', serverTimeUtc: '2026-09-25T12:00:00Z', contentVersion: 'test', balanceVersion: 'test', player: actor('local', 'Player'), enemy: actor('enemy', 'Monster') }
-    vi.spyOn(store, 'flee').mockImplementation(async () => { store.errorCode = 'combat_action_failed'; return false })
+    store.snapshot = {
+      sessionId: 'session',
+      sequence: 1,
+      status: 'Active',
+      serverTimeUtc: '2026-09-25T12:00:00Z',
+      contentVersion: 'test',
+      balanceVersion: 'test',
+      player: actor('local', 'Player'),
+      enemy: actor('enemy', 'Monster'),
+    }
+    vi.spyOn(store, 'flee').mockImplementation(async () => {
+      store.errorCode = 'combat_action_failed'
+      return false
+    })
     const wrapper = mount(BattleScreen)
     await wrapper.get('[data-combat-exit]').trigger('click')
-    const submit = [...document.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')].find(button => button.textContent?.trim() === 'Сбежать')!
+    const submit = [...document.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')].find(
+      (button) => button.textContent?.trim() === 'Сбежать',
+    )!
     submit.click()
     await flushPromises()
     expect(document.querySelector('[role="dialog"]')).not.toBeNull()
@@ -110,11 +135,27 @@ describe('BattleScreen', () => {
   })
   it('keeps commands blocked until resume succeeds and retains retry on sync failure', async () => {
     const store = useCombatSessionStore()
-    store.snapshot = { sessionId: 'session', sequence: 1, status: 'Active', serverTimeUtc: '2026-09-25T12:00:00Z', contentVersion: 'test', balanceVersion: 'test', player: actor('local', 'Player', [ability(1)]), enemy: actor('enemy', 'Monster') }
+    store.snapshot = {
+      sessionId: 'session',
+      sequence: 1,
+      status: 'Active',
+      serverTimeUtc: '2026-09-25T12:00:00Z',
+      contentVersion: 'test',
+      balanceVersion: 'test',
+      player: actor('local', 'Player', [ability(1)]),
+      enemy: actor('enemy', 'Monster'),
+    }
     store.connectionState = 'disconnected'
-    vi.spyOn(store, 'connect').mockImplementation(async () => { store.connectionState = 'connected' })
+    vi.spyOn(store, 'connect').mockImplementation(async () => {
+      store.connectionState = 'connected'
+    })
     let complete!: (success: boolean) => void
-    vi.spyOn(store, 'resume').mockImplementation(() => new Promise<boolean>(resolve => { complete = resolve }))
+    vi.spyOn(store, 'resume').mockImplementation(
+      () =>
+        new Promise<boolean>((resolve) => {
+          complete = resolve
+        }),
+    )
     const wrapper = mount(BattleScreen)
     await wrapper.get('[data-combat-connection] button').trigger('click')
     await flushPromises()
@@ -128,7 +169,16 @@ describe('BattleScreen', () => {
   })
   it('offers explicit reconnect after transport closes', () => {
     const store = useCombatSessionStore()
-    store.snapshot = { sessionId: 'session', sequence: 1, status: 'Active', serverTimeUtc: '2026-09-25T12:00:00Z', contentVersion: 'test', balanceVersion: 'test', player: actor('local', 'Player', [ability(1)]), enemy: actor('enemy', 'Monster') }
+    store.snapshot = {
+      sessionId: 'session',
+      sequence: 1,
+      status: 'Active',
+      serverTimeUtc: '2026-09-25T12:00:00Z',
+      contentVersion: 'test',
+      balanceVersion: 'test',
+      player: actor('local', 'Player', [ability(1)]),
+      enemy: actor('enemy', 'Monster'),
+    }
     store.connectionState = 'disconnected'
     const wrapper = mount(BattleScreen)
     expect(wrapper.get('[data-combat-connection]').text()).toContain('Повторить подключение')
@@ -137,7 +187,16 @@ describe('BattleScreen', () => {
   })
   it('announces reconnect and prevents sending abilities until sync completes', async () => {
     const store = useCombatSessionStore()
-    store.snapshot = { sessionId: 'session', sequence: 1, status: 'Active', serverTimeUtc: '2026-09-25T12:00:00Z', contentVersion: 'test', balanceVersion: 'test', player: actor('local', 'Player', [ability(1)]), enemy: actor('enemy', 'Monster') }
+    store.snapshot = {
+      sessionId: 'session',
+      sequence: 1,
+      status: 'Active',
+      serverTimeUtc: '2026-09-25T12:00:00Z',
+      contentVersion: 'test',
+      balanceVersion: 'test',
+      player: actor('local', 'Player', [ability(1)]),
+      enemy: actor('enemy', 'Monster'),
+    }
     store.connectionState = 'reconnecting'
     const wrapper = mount(BattleScreen)
     expect(wrapper.get('[data-combat-connection]').text()).toContain('Восстанавливаем')
@@ -151,7 +210,16 @@ describe('BattleScreen', () => {
 
   it('lets keyboard users inspect an ability without activating it', async () => {
     const store = useCombatSessionStore()
-    store.snapshot = { sessionId: 'session', sequence: 1, status: 'Active', serverTimeUtc: '2026-09-25T12:00:00Z', contentVersion: 'test', balanceVersion: 'test', player: actor('local', 'Player', [ability(1)]), enemy: actor('enemy', 'Monster') }
+    store.snapshot = {
+      sessionId: 'session',
+      sequence: 1,
+      status: 'Active',
+      serverTimeUtc: '2026-09-25T12:00:00Z',
+      contentVersion: 'test',
+      balanceVersion: 'test',
+      player: actor('local', 'Player', [ability(1)]),
+      enemy: actor('enemy', 'Monster'),
+    }
     const wrapper = mount(BattleScreen)
     await wrapper.get('[data-ability-slot]').trigger('keydown', { key: 'F1' })
     expect(wrapper.get('[data-ability-inspection]').text()).toContain(ability(1).displayName)
@@ -186,8 +254,11 @@ describe('BattleScreen', () => {
 
     expect(wrapper.get('[data-battle-screen]').attributes('data-party-size')).toBe('2')
     expect(wrapper.findAll('[data-character-figure]')).toHaveLength(2)
+    expect(wrapper.find('.battle-header').exists()).toBe(false)
+    expect(wrapper.findAll('[data-actor-status="local"]')).toHaveLength(1)
+    expect(wrapper.get('[data-actor-status="local"]').text()).toContain('70 / 100')
     expect(wrapper.findAll('[data-ability-slot]')).toHaveLength(4)
-    expect(wrapper.get('[data-skill-grid]').attributes('data-columns')).toBe('4')
+    expect(wrapper.get('[data-skill-grid]').attributes('data-columns')).toBe('5')
     expect(wrapper.get('[data-combat-log-toggle]').attributes('aria-expanded')).toBe('false')
   })
 
@@ -213,7 +284,7 @@ describe('BattleScreen', () => {
     expect(wrapper.get('[data-battle-screen]').attributes('data-skill-rows')).toBe('2')
   })
 
-  it('does not truncate large ability kits and renders combat errors as a toast', () => {
+  it('pages large ability kits and renders combat errors as a toast', async () => {
     const store = useCombatSessionStore()
     const local = actor(
       'local',
@@ -234,18 +305,24 @@ describe('BattleScreen', () => {
 
     const wrapper = mount(BattleScreen)
 
-    expect(wrapper.findAll('[data-ability-slot]')).toHaveLength(16)
+    expect(wrapper.findAll('[data-ability-slot]')).toHaveLength(10)
+    await wrapper.get('[data-skill-next]').trigger('click')
+    expect(wrapper.find('[data-ability-slot="ABILITY_16"]').exists()).toBe(true)
     expect(wrapper.get('[data-combat-error-toast]').attributes('role')).toBe('alert')
     expect(wrapper.get('[data-combat-error-toast]').attributes('aria-live')).toBe('assertive')
   })
 
   it.each(['ability_on_cooldown', 'insufficient_resource', 'invalid_target', 'rate_limited'])(
-    'keeps ordinary %s errors out of the red network toast', code => {
+    'keeps ordinary %s errors out of the red network toast',
+    (code) => {
       const store = useCombatSessionStore()
       store.snapshot = {
-        sessionId: 'session', sequence: 1, status: 'Active',
+        sessionId: 'session',
+        sequence: 1,
+        status: 'Active',
         serverTimeUtc: '2026-09-25T12:00:00Z',
-        contentVersion: 'test', balanceVersion: 'test',
+        contentVersion: 'test',
+        balanceVersion: 'test',
         player: actor('local', 'Player', [ability(1)]),
         enemy: actor('enemy', 'Monster'),
       }
@@ -277,7 +354,7 @@ describe('BattleScreen', () => {
     }
     const wrapper = mount(BattleScreen)
 
-    await wrapper.get('[data-ally-strip-actor="ally"]').trigger('click')
+    await wrapper.get('[data-character-figure="ally"] button').trigger('click')
     store.snapshot.enemy.currentAggroTargetActorId = 'ally'
     await wrapper.vm.$nextTick()
 
@@ -456,16 +533,16 @@ describe('BattleScreen', () => {
     await flushPromises()
     expect(refresh).toHaveBeenCalledTimes(1)
     expect(wrapper.get('[data-combat-threat-meter]').text()).toContain('Ожидание угрозы')
-    expect(JSON.parse(window.localStorage.getItem('elyndor:combat-numbers:v1') ?? '{}').showThreatTable).toBe(true)
+    expect(
+      JSON.parse(window.localStorage.getItem('elyndor:combat-numbers:v1') ?? '{}').showThreatTable,
+    ).toBe(true)
 
     store.threat = {
       enemyActorId: 'enemy',
       enemyName: 'Волк',
       currentTargetActorId: 'local',
       forcedTargetActorId: null,
-      entries: [
-        { actorId: 'local', name: 'Герой', threat: 240, isCurrentTarget: true },
-      ],
+      entries: [{ actorId: 'local', name: 'Герой', threat: 240, isCurrentTarget: true }],
     }
     await wrapper.vm.$nextTick()
     expect(wrapper.get('[data-combat-threat-meter]').text()).toContain('Герой')
@@ -475,7 +552,6 @@ describe('BattleScreen', () => {
     wrapper.unmount()
     window.localStorage.removeItem('elyndor:combat-numbers:v1')
   })
-
 })
 
 function consumable(): InventoryItem {
