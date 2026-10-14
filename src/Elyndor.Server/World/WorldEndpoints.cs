@@ -343,7 +343,9 @@ public static class WorldEndpoints
                         snapshot.Character.Vitals.MaxResource,
                         snapshot.Character.Vitals.CheckpointedAtUtc),
                     InventoryEndpoints.ToResponse(snapshot.Character.Inventory),
-                    snapshot.Character.ActiveSkinId),
+                    snapshot.Character.ActiveSkinId,
+                    snapshot.Character.ProfileFrameStyle,
+                    snapshot.Character.ProfileTitle),
             snapshot.World is null
                 ? null
                 : new BootstrapWorldResponse(

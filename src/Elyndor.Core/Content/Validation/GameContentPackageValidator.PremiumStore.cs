@@ -6,6 +6,7 @@ public static partial class GameContentPackageValidator
 {
     internal static void ValidatePremiumStore(GameContentPackage package, List<ContentValidationError> errors)
     {
+        ValidatePersonalization(package, errors);
         IReadOnlyList<PremiumStoreOfferDefinition> offers = package.PremiumStoreOffers ?? [];
         HashSet<string> skus = new(StringComparer.Ordinal);
         Dictionary<string, ItemDefinition> items = new(StringComparer.Ordinal);

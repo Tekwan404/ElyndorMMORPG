@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ProfileFrame from '@/game/character/components/ProfileFrame.vue'
 import CrystalBalanceButton from '@/game/economy/components/CrystalBalanceButton.vue'
 import MoneyAmount from '@/ui/components/MoneyAmount.vue'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
@@ -272,13 +273,16 @@ onMounted(() => {
     >
       <div class="hud__main">
         <button class="hud__portrait" type="button" aria-label="Открыть героя" @click="openHero">
+          <ProfileFrame :style-id="character.profileFrameStyle" class="hud__profile-frame">
           <img v-if="portraitArt" :src="portraitArt" alt="" aria-hidden="true" />
           <span v-else>{{ character.name.slice(0, 1).toUpperCase() }}</span>
+          </ProfileFrame>
         </button>
 
         <button class="hud__identity" type="button" @click="openHero">
           <small class="hud__brand">ELYNDOR</small>
           <b>{{ character.name }}</b>
+          <span v-if="character.profileTitle" class="hud__profile-title">{{ character.profileTitle }}</span>
           <span>ур. {{ character.level }} · {{ classLabel(character.classId) }}</span>
         </button>
 
@@ -455,6 +459,8 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.hud__profile-frame { width: 100%; height: 100%; }
+.hud__profile-title { color: #d1b2e9 !important; font-size: 10px !important; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .premium-entry { padding: 0 10px 24px; }
 .hud__meta { min-width: 0; }
 .arena-entry {

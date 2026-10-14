@@ -561,8 +561,8 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.screenshot({ path: '../../output/playwright/session-2a-city.png', fullPage: true })
 
   await page.locator('[data-city-marker="market"]').click()
-  await page.locator('[data-city-merchant]').click()
-  const merchantDialog = page.getByRole('dialog', { name: 'Лавка Маркуса' })
+  await page.locator('[data-market-merchant="MARCUS_SUPPLIES"]').click()
+  const merchantDialog = page.getByRole('dialog', { name: 'Торговец Маркус' })
   await expect(merchantDialog).toBeVisible()
   await expect(merchantDialog.locator('.merchant__identity h2')).toContainText('Маркус')
   // Mocked merchant inventory is deterministic; production E2E may have no public offers.

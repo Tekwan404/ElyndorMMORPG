@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ProfileFrame from '@/game/character/components/ProfileFrame.vue'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 import { usePartyStore } from '@/game/party/partyStore'
@@ -179,8 +180,10 @@ onUnmounted(() => {
       </template>
       <p v-if="!social.friends.length" class="empty-state">Здесь пока пусто. Найдите первого товарища.</p>
       <article v-for="friend in social.friends" :key="friend.characterId" class="player-row">
+        <ProfileFrame v-if="friend.profileFrameStyle" class="friend-profile-frame" :style-id="friend.profileFrameStyle"><span>{{ friend.name[0] }}</span></ProfileFrame>
         <div>
           <strong>{{ friend.name }}</strong>
+          <small v-if="friend.profileTitle" class="profile-title">{{ friend.profileTitle }}</small>
           <small>ур. {{ friend.level }} · {{ classLabel(friend.classId) }}</small>
         </div>
         <div class="actions">
@@ -199,6 +202,8 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.friend-profile-frame { flex-shrink: 0; width: 42px; height: 48px; border-radius: 6px; color: #e9d3a9; background: #202032; font: 700 24px Georgia,serif; }
+.profile-title { color: #c4a3e6; }
 .social-view { display: grid; gap: 12px; padding: 14px; }
 .social-view__header { display: flex; align-items: end; justify-content: space-between; gap: 12px; }
 .social-view__header small { color: var(--ui-color-primary); font-size: .55rem; letter-spacing: .14em; }

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ProfileFrame from '@/game/character/components/ProfileFrame.vue'
 import { computed, ref } from 'vue'
 
 import type { CharacterStats, EquipmentSlot, InventoryItem } from '@/api/contracts'
@@ -392,6 +393,7 @@ function affixValue(statId: string, value: number): string {
         <div>
           <p class="eyebrow">Персонаж</p>
           <h1>{{ character.name }}</h1>
+          <p v-if="character.profileTitle" class="profile-title">{{ character.profileTitle }}</p>
           <p>{{ raceLabel(character.raceId) }} · {{ classLabel(character.classId) }} · ур. {{ character.level }}</p>
         </div>
         <div class="hero-card__status" aria-label="Заполненные слоты экипировки">
@@ -426,10 +428,10 @@ function affixValue(statId: string, value: number): string {
         </div>
 
         <div class="hero-figure">
-          <div class="hero-figure__art">
+          <ProfileFrame class="hero-figure__art" :style-id="character.profileFrameStyle">
             <img v-if="characterArt" :src="characterArt" :alt="classLabel(character.classId)" />
             <div v-else class="hero-figure__fallback">{{ character.name.slice(0, 1).toUpperCase() }}</div>
-          </div>
+          </ProfileFrame>
           <strong>{{ classLabel(character.classId) }}</strong>
           <small>Уровень {{ character.level }}</small>
         </div>
@@ -600,6 +602,7 @@ function affixValue(statId: string, value: number): string {
 </template>
 
 <style scoped>
+.profile-title { color: #d1b2e9 !important; }
 .overview-v2 {
   display: grid;
   width: min(100%, var(--ui-content-width));

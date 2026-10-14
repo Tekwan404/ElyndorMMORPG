@@ -104,41 +104,7 @@ const STORE_PRESENTATION: readonly Presentation[] = [
     repeatable: true,
     unitPriceLabel: '1 шт. = 1 ✦',
   },
-  {
-    id: 'rename-character',
-    category: 'services',
-    type: 'service',
-    title: 'Смена имени',
-    description: 'Позволяет изменить имя персонажа.',
-    artwork: 'service',
-    fallbackPrice: 150,
-    repeatable: true,
-    serviceType: 'rename-character',
-  },
-  {
-    id: 'profile-frame',
-    category: 'cosmetics',
-    type: 'cosmetic',
-    title: 'Рамка профиля',
-    description: 'Косметическая рамка профиля. Не влияет на характеристики.',
-    artwork: 'profile-frame',
-    fallbackPrice: 120,
-    repeatable: false,
-    cosmeticId: 'COSMETIC_PROFILE_FRAME_ASH',
-    previewable: true,
-  },
-  {
-    id: 'battle-entry-effect',
-    category: 'cosmetics',
-    type: 'cosmetic',
-    title: 'Эффект входа в бой',
-    description: 'Косметический battlefield-эффект появления персонажа.',
-    artwork: 'battle-entry',
-    fallbackPrice: 200,
-    repeatable: false,
-    cosmeticId: 'COSMETIC_BATTLE_ENTRY_ASH',
-    previewable: true,
-  },
+
 ]
 
 const SPATIAL_CAPACITY_BY_ITEM: Readonly<Record<string, number>> = {
@@ -212,7 +178,7 @@ export function purchaseLabel(product: PremiumStoreProduct): string {
 export const PREMIUM_STORE_TABS: ReadonlyArray<{ id: PremiumStoreCategory; label: string }> = [
   { id: 'recommended', label: 'Рекомендуем' },
   { id: 'skins', label: 'Облики' },
-  { id: 'cosmetics', label: 'Украшения' },
+  { id: 'cosmetics', label: 'Рамки и титулы' },
   { id: 'artifacts', label: 'Артефакты' },
   { id: 'convenience', label: 'Удобства' },
   { id: 'services', label: 'Услуги' },

@@ -22,6 +22,33 @@ Unavailable future presentation entries do not fill the storefront. Top-up is de
 UI-only, as requested: its accessible modal explains that replenishment is unavailable.
 There are no payment packs, invoices, real-money prices or client currency grants.
 
+## Permanent personalization
+
+The cosmetics tab sells three permanent profile frames (120/180/250 crystals) and
+three titles (80/120/150 crystals). The services tab offers a rename for 150 crystals.
+Definitions and prices live in content/economy/profile-personalization.json, content
+version 0.60.0. These products grant no combat stats. Preview is local; purchase does
+not equip automatically. Owned frames and titles can be equipped or removed for free.
+Frames share the existing gold/violet palette and native SVG ornament system.
+
+Ownership and the two independent active selections are durable PostgreSQL state.
+Bootstrap and friend profiles resolve the selected IDs through the current content
+package; the HUD, character sheet, menu and friend list display the presentation.
+Disabling sales preserves use of owned products; keep their definitions in content.
+
+Purchase and rename lock the character then the account wallet, and commit debit,
+ledger receipt and ownership/name together. The account/operation receipt prevents
+repeat charges and rejects a different payload reusing an operation ID. Replaying an
+old rename does not restore an old name. Global normalized-name uniqueness also
+protects simultaneous claims; the losing transaction rolls back its debit.
+
+Rename uses the existing character-name policy and is blocked during PvE, hosted
+arena and test arena. Test-arena admission now takes the existing character-operation
+lock, matching hosted-arena admission, so captured fighter names cannot race rename.
+The migration StorePersonalization adds only two nullable character columns and an
+ownership table. Apply through the normal deployment migration process; no live
+database migration or payment integration is performed by this change.
+
 ## Art
 
 Generated with the built-in image_gen tool on 2026-10-14. Final assets are saved under

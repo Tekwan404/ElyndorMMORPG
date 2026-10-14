@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
+import PersonalizationStoreView from '@/game/economy/views/PersonalizationStoreView.vue'
 import EtherStoreHeader from '@/game/economy/components/EtherStoreHeader.vue'
 import CrystalInfoModal from '@/game/economy/components/CrystalInfoModal.vue'
 import type { PremiumStoreSnapshot } from '@/api/contracts'
-import { createAppearancePreviewController } from '@/game/character/appearancePreviewController'
 import PremiumStoreProductCard from '@/game/economy/components/PremiumStoreProductCard.vue'
 import CharacterSkinStoreView from '@/game/economy/views/CharacterSkinStoreView.vue'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
@@ -34,14 +34,12 @@ const validPackCount = computed(() => Number.isInteger(Number(packCount.value)) 
 const selectedTotalQuantity = computed(() => (selectedProduct.value?.quantity ?? 1) * (validPackCount.value ? Number(packCount.value) : 0))
 const selectedTotalPrice = computed(() => (selectedProduct.value?.price ?? 0) * (validPackCount.value ? Number(packCount.value) : 0))
 const currencySheetOpen = ref(false)
-const previewCosmeticId = ref<string | null>(null)
-const equippedCosmeticId = ref<string | null>(null)
 const promoPending = computed(() => session.isMutationDomainPending('premium:promo:'))
 const selectedProductPending = computed(() => Boolean(
   selectedProduct.value?.sku
   && session.isMutationPending(`premium:buy:${selectedProduct.value.sku}`),
 ))
-const currentBalance = computed(() => skinBalance.value ?? store.value?.crystalBalance ?? 0)
+const currentBalance = computed(() => session.crystalBalance ?? skinBalance.value ?? store.value?.crystalBalance ?? 0)
 const selectedCanAfford = computed(() => !selectedProduct.value || currentBalance.value >= selectedTotalPrice.value)
 const selectedCanSubmit = computed(() => {
   const product = selectedProduct.value
@@ -62,18 +60,9 @@ const storeErrorText: Record<string, string> = {
   premium_store_invalid_quantity: 'Укажите допустимое целое количество пачек.',
 }
 
-const previewController = createAppearancePreviewController({
-  capture: () => previewCosmeticId.value,
-  applyPreview: (cosmeticId) => { previewCosmeticId.value = cosmeticId },
-  restore: (snapshot) => { previewCosmeticId.value = snapshot },
-})
+const products = computed(() => store.value ? buildPremiumStoreProducts(store.value).filter(product => product.backendBacked) : [])
 
-const products = computed(() => store.value ? buildPremiumStoreProducts(store.value).filter(product => product.backendBacked).map((product) => ({
-  ...product,
-  equipped: Boolean(product.cosmeticId && equippedCosmeticId.value === product.cosmeticId),
-})) : [])
-
-const visibleTabs = computed(() => PREMIUM_STORE_TABS.filter(tab => ['recommended', 'skins'].includes(tab.id) || products.value.some(product => product.category === tab.id)))
+const visibleTabs = computed(() => PREMIUM_STORE_TABS.filter(tab => ['recommended', 'skins', 'cosmetics', 'services'].includes(tab.id) || products.value.some(product => product.category === tab.id)))
 const featured = computed(() => products.value.find((product) => product.featured))
 const spatialFeatured = computed(() => products.value.find((product) => product.id === 'wanderer-spatial-ring'))
 const forgeSupplies = computed(() => products.value.filter((product) => ['enhancement-ore-20', 'reforge-stones-10', 'forge-scrap-20'].includes(product.id)))
@@ -101,7 +90,6 @@ async function load(): Promise<void> {
 }
 
 function openProduct(product: PremiumStoreProduct): void {
-  previewController.close()
   error.value = null
   selectedProduct.value = product
   packCount.value = 1
@@ -109,28 +97,12 @@ function openProduct(product: PremiumStoreProduct): void {
 
 function closeProduct(): void {
   if (selectedProductPending.value) return
-  previewController.close()
   selectedProduct.value = null
-}
-
-function preview(product: PremiumStoreProduct): void {
-  if (!product.previewable || !product.cosmeticId) return
-  previewController.preview(product.cosmeticId)
-}
-
-function equipOwned(product: PremiumStoreProduct): void {
-  if (!product.owned || !product.cosmeticId) return
-  equippedCosmeticId.value = product.cosmeticId
-  previewController.close()
 }
 
 async function purchase(product: PremiumStoreProduct): Promise<void> {
   success.value = null
   error.value = null
-  if (product.owned && !product.repeatable) {
-    equipOwned(product)
-    return
-  }
   if (!product.backendBacked || !product.sku) return
   if (product.canPurchase === false || !validPackCount.value) return
   const count = Number(packCount.value)
@@ -149,7 +121,6 @@ async function purchase(product: PremiumStoreProduct): Promise<void> {
   await load()
   const refreshed = products.value.find((item) => item.id === product.id || item.sku === product.sku)
   selectedProduct.value = refreshed ?? null
-  if (refreshed?.cosmeticId && refreshed.owned) equippedCosmeticId.value = refreshed.cosmeticId
 }
 
 async function redeem(): Promise<void> {
@@ -168,7 +139,6 @@ function selectCategory(category: PremiumStoreCategory): void {
 }
 
 onMounted(load)
-onBeforeUnmount(() => previewController.close())
 </script>
 
 <template>
@@ -193,7 +163,8 @@ onBeforeUnmount(() => previewController.close())
       <button type="button" aria-label="Скрыть сообщение" @click="success = null">×</button>
     </div>
 
-    <CharacterSkinStoreView v-if="activeCategory === 'skins'" @balance="updateSkinBalance" />
+    <PersonalizationStoreView v-if="activeCategory === 'cosmetics' || activeCategory === 'services'" :key="activeCategory" :mode="activeCategory" @balance="updateSkinBalance" />
+    <CharacterSkinStoreView v-else-if="activeCategory === 'skins'" @balance="updateSkinBalance" />
     <UILoadingState v-else-if="!store && !error" state="loading" title="Открываем лавку" />
     <div v-else-if="error && !store" class="store-error">
       <strong>{{ error }}</strong>
@@ -239,6 +210,7 @@ onBeforeUnmount(() => previewController.close())
           <PremiumStoreProductCard v-for="product in bundles" :key="product.id" :product="product" layout="bundle" @open="openProduct" />
         </section>
 
+        <div class="personalization-links"><button type="button" @click="selectCategory('cosmetics')">Рамки и титулы <span>Узнаваемый герой</span></button><button type="button" @click="selectCategory('services')">Смена имени <span>Новая глава вашей истории</span></button></div>
         <button class="skin-discovery" type="button" data-discover-skins @click="selectCategory('skins')">
           <span><strong>Новый образ вашего героя</strong><small>Облики остаются навсегда и не меняют характеристики.</small></span><b>Выбрать облик ›</b>
         </button>
@@ -253,15 +225,15 @@ onBeforeUnmount(() => previewController.close())
 
       <main v-else class="category-view">
         <div class="category-title">
-          <small>{{ activeCategory === 'cosmetics' ? 'ВНЕШНИЙ ВИД БЕЗ ХАРАКТЕРИСТИК' : activeCategory === 'artifacts' ? 'ПОЛЕЗНЫЕ АРТЕФАКТЫ' : activeCategory === 'convenience' ? 'ПРИПАСЫ В ДОРОГУ' : 'ПЕРСОНАЛЬНЫЕ УСЛУГИ' }}</small>
+          <small>{{ activeCategory === 'artifacts' ? 'ПОЛЕЗНЫЕ АРТЕФАКТЫ' : 'ПРИПАСЫ В ДОРОГУ' }}</small>
           <h2>{{ PREMIUM_STORE_TABS.find((tab) => tab.id === activeCategory)?.label }}</h2>
         </div>
-        <div class="category-grid" :class="{ 'category-grid--cosmetics': activeCategory === 'cosmetics' }">
+        <div class="category-grid">
           <PremiumStoreProductCard
             v-for="product in categoryProducts"
             :key="product.id"
             :product="product"
-            :layout="activeCategory === 'cosmetics' ? 'hero' : 'card'"
+            layout="card"
             @open="openProduct"
           />
         </div>
@@ -277,7 +249,7 @@ onBeforeUnmount(() => previewController.close())
         class="product-sheet"
         :class="{ 'product-sheet--consumable': selectedProduct.type === 'consumable' }"
       >
-        <div class="product-preview" :class="[`product-preview--${selectedProduct.artwork}`, { 'is-previewing': previewCosmeticId === selectedProduct.cosmeticId }]">
+        <div class="product-preview" :class="`product-preview--${selectedProduct.artwork}`">
           <span v-if="selectedProduct.badge" class="detail-badge">{{ selectedProduct.badge === 'new' ? 'НОВОЕ' : selectedProduct.badge === 'popular' ? 'ПОПУЛЯРНО' : 'ЛИМИТИРОВАННО' }}</span>
           <ItemIcon
             v-if="selectedProduct.iconId && selectedProduct.itemDefinitionId"
@@ -290,7 +262,6 @@ onBeforeUnmount(() => previewController.close())
             decorative
           />
           <div v-else class="preview-figure" aria-hidden="true" />
-          <small v-if="previewCosmeticId === selectedProduct.cosmeticId">РЕЖИМ ПРИМЕРКИ</small>
         </div>
         <div class="product-detail">
           <small>{{ selectedProduct.subtitle }}</small>
@@ -325,7 +296,6 @@ onBeforeUnmount(() => previewController.close())
       </section>
       <template #actions>
           <div v-if="selectedProduct" class="detail-actions">
-            <UIButton v-if="selectedProduct.previewable && selectedProduct.cosmeticId" variant="secondary" @click="preview(selectedProduct)">ПРИМЕРИТЬ</UIButton>
             <UIButton
               data-purchase-cta
               :disabled="(!selectedProduct.backendBacked && !selectedProduct.owned) || (!selectedCanSubmit && !selectedProduct.owned) || selectedProductPending"
@@ -343,6 +313,9 @@ onBeforeUnmount(() => previewController.close())
 </template>
 
 <style scoped>
+.personalization-links { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
+.personalization-links button { display: grid; gap: 8px; min-height: 88px; padding: 14px; border: 1px solid #74603c; border-radius: 8px; background: #1a1b27; color: #e8d1a2; text-align: left; font: 700 17px Georgia,serif; cursor: pointer; }
+.personalization-links span { font: 12px/1.4 system-ui,sans-serif; color: #b3a5b8; }
 .skin-discovery { display: flex; align-items: center; gap: 14px; padding: 18px 15px; border: 1px solid #80655e; border-radius: 8px; background: linear-gradient(110deg, #2b2330, #151b25); color: #e6d8be; text-align: left; cursor: pointer; }
 .skin-discovery span { display: grid; gap: 7px; min-width: 0; }
 .skin-discovery strong { font: 700 20px Georgia, serif; }

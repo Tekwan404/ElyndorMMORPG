@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ProfileFrame from '@/game/character/components/ProfileFrame.vue'
 import crystalArt from '@/assets/store/ether-crystal.webp'
 import { formatMoney } from '@/shared/money'
 import { computed, defineAsyncComponent, ref, watch } from 'vue'
@@ -63,13 +64,14 @@ function updateTrainingDummyCombatLogPreference(): void {
     </header>
 
     <section v-if="character && activeSection === 'profile'" class="menu-profile" aria-label="Профиль героя">
-      <div class="menu-profile__portrait">
+      <ProfileFrame class="menu-profile__portrait" :style-id="character.profileFrameStyle">
         <img v-if="portraitArt" :src="portraitArt" alt="" aria-hidden="true" />
         <span v-else>{{ character.name.slice(0, 1).toUpperCase() }}</span>
-      </div>
+      </ProfileFrame>
       <div class="menu-profile__identity">
         <small>ГЕРОЙ · УР. {{ character.level }}</small>
         <strong>{{ character.name }}</strong>
+        <small v-if="character.profileTitle" class="profile-title">{{ character.profileTitle }}</small>
         <span>{{ classLabel(character.classId) }} · {{ formatMoney(character.gold) }}</span>
       </div>
       <div class="menu-profile__code">
@@ -181,6 +183,7 @@ function updateTrainingDummyCombatLogPreference(): void {
 </template>
 
 <style scoped>
+.profile-title { color: #d1b2e9; font-size: 12px; }
 .menu-view {
   display: grid;
   width: min(100%, var(--ui-content-width));

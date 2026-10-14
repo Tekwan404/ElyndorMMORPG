@@ -30,6 +30,8 @@ internal static class PremiumStoreContentComposer
 
             package = package with
             {
+                ProfileCosmetics = ContentCompositionRules.MergeOptionalByKey(package.ProfileCosmetics, fragment.ProfileCosmetics, item => item.Id),
+                CharacterRename = fragment.CharacterRename ?? package.CharacterRename,
                 CharacterSkins = ContentCompositionRules.MergeOptionalByKey(
                     package.CharacterSkins,
                     fragment.CharacterSkins,
@@ -46,5 +48,7 @@ internal static class PremiumStoreContentComposer
 
     private sealed record PremiumStoreContentFragment(
         IReadOnlyList<PremiumStoreOfferDefinition>? PremiumStoreOffers = null,
-        IReadOnlyList<CharacterSkinDefinition>? CharacterSkins = null);
+        IReadOnlyList<CharacterSkinDefinition>? CharacterSkins = null,
+        IReadOnlyList<ProfileCosmeticDefinition>? ProfileCosmetics = null,
+        CharacterRenameOffer? CharacterRename = null);
 }

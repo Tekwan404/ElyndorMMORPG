@@ -130,7 +130,9 @@ public sealed record BootstrapCharacterResponse(
     IReadOnlyDictionary<string, CharacterStatBreakdownResponse> StatBreakdown,
     CharacterVitalsResponse Vitals,
     InventoryResponse Inventory,
-    string? ActiveSkinId = null);
+    string? ActiveSkinId = null,
+    string? ProfileFrameStyle = null,
+    string? ProfileTitle = null);
 
 public sealed record CharacterStatsResponse(
     decimal Strength,

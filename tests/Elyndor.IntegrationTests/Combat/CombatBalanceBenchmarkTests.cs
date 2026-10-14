@@ -13,7 +13,7 @@ public sealed class CombatBalanceBenchmarkTests
         var content = await GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
 
-        Assert.Equal("0.59.0", content.ContentVersion);
+        Assert.Equal("0.60.0", content.ContentVersion);
         Assert.Equal("0.47.0", content.BalanceVersion);
         Assert.NotNull(content.CombatBalance);
         Assert.Equal(

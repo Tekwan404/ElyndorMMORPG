@@ -24,6 +24,7 @@ public static class EconomyEndpoints
         endpoints.MapPost("/api/v1/economy/promo/redeem", RedeemPromoAsync)
             .RequireAuthorization()
             .WithTags("Economy");
+        endpoints.MapPersonalizationEndpoints();
         return endpoints;
     }
 
