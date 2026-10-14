@@ -194,6 +194,15 @@ export interface DungeonFloorPreview {
   lastEncounterIndex: number
   bossName: string | null
   possibleLoot: WorldLocationLoot[]
+  displayName?: string | null
+  requiredEncounterId?: string | null
+}
+
+export interface DungeonFloorState {
+  number: number
+  isUnlocked: boolean
+  isCompleted: boolean
+  nextEncounterIndex: number | null
 }
 
 export interface DungeonTeleportResponse {
@@ -222,6 +231,7 @@ export interface DungeonRun {
   partyId: string
   members: DungeonRunMember[]
   encounters: DungeonEncounter[]
+  floors?: DungeonFloorState[] | null
 }
 
 export interface DungeonRunMember {

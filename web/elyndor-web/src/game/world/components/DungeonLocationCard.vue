@@ -111,7 +111,35 @@ const currentFloor = computed(
     null,
 )
 function isFloorUnlocked(floor: DungeonFloorPreview): boolean {
+  const state = current.value?.floors?.find((item) => item.number === floor.number)
+  if (state) return state.isUnlocked
   return floor.firstEncounterIndex <= (current.value?.currentEncounterIndex ?? 0)
+}
+function isFloorCompleted(floor: DungeonFloorPreview): boolean {
+  return (
+    current.value?.floors?.find((item) => item.number === floor.number)?.isCompleted ??
+    Boolean(current.value && current.value.currentEncounterIndex > floor.lastEncounterIndex)
+  )
+}
+function floorRequirement(floor: DungeonFloorPreview): string {
+  if (!floor.requiredEncounterId) return ''
+  const encounter = preview.value?.encounters.find((item) => item.id === floor.requiredEncounterId)
+  return encounter?.displayName ? `Победите: ${encounter.displayName}` : 'Победите стража прохода'
+}
+async function selectFloor(floor: DungeonFloorPreview): Promise<void> {
+  if (!isFloorUnlocked(floor) || pending.value || hasActiveEncounter.value) return
+  const run = current.value
+  if (run?.floors && run.state === 'Active' && canManageRun.value && isInsideDungeon.value) {
+    if (
+      !(await act(
+        `floor-${floor.number}`,
+        () => dungeon.selectFloor(run.runId, floor.number),
+        `Вы перешли на этаж ${floor.number}.`,
+      ))
+    )
+      return
+  }
+  selectedFloorNumber.value = floor.number
 }
 const selectedFloor = computed(
   () =>
@@ -165,6 +193,7 @@ const objectiveLabel = computed(() => {
   if (!current.value) return 'Начать забег'
   if (current.value.state === 'Completed') return 'Подземелье пройдено'
   if (current.value.state === 'Abandoned') return 'Забег завершён'
+  if (currentFloor.value && isFloorCompleted(currentFloor.value)) return 'Выбрать другой этаж'
   if (currentEncounterPreview.value?.isBoss) return 'Победить босса'
   if (currentEncounter.value?.state === 'Wiped') return 'Повторить бой'
   return 'Завершить текущий бой'
@@ -335,28 +364,21 @@ async function leaveRun(): Promise<void> {
             type="button"
             :data-dungeon-floor="floor.number"
             :aria-pressed="selectedFloor?.number === floor.number"
-            :disabled="!isFloorUnlocked(floor) || pending !== null"
-            @click="selectedFloorNumber = floor.number"
+            :disabled="!isFloorUnlocked(floor) || pending !== null || hasActiveEncounter"
+            :title="!isFloorUnlocked(floor) ? floorRequirement(floor) : undefined"
+            @click="selectFloor(floor)"
           >
             <strong>Этаж {{ floor.number }}</strong>
             <small>{{
-              !isFloorUnlocked(floor)
-                ? 'Закрыт'
-                : current && current.currentEncounterIndex > floor.lastEncounterIndex
-                  ? 'Пройден'
-                  : 'Доступен'
+              !isFloorUnlocked(floor) ? 'Закрыт' : isFloorCompleted(floor) ? 'Пройден' : 'Доступен'
             }}</small>
           </button>
         </nav>
         <div v-if="selectedFloor" class="dungeon-floor-detail" data-selected-dungeon-floor>
-          <strong
-            >Этаж {{ selectedFloor.number }} · этапы {{ selectedFloor.firstEncounterIndex + 1 }}–{{
-              selectedFloor.lastEncounterIndex + 1
-            }}</strong
-          >
+          <strong>{{ selectedFloor.displayName || `Этаж ${selectedFloor.number}` }}</strong>
           <span v-if="selectedFloor.bossName">Босс: {{ selectedFloor.bossName }}</span>
-          <small v-if="current && selectedFloor.lastEncounterIndex < current.currentEncounterIndex"
-            >Этаж пройден. Продолжите забег на текущем этаже.</small
+          <small v-if="isFloorCompleted(selectedFloor)"
+            >Этаж пройден. Выберите другой доступный этаж.</small
           >
         </div>
         <details class="dungeon-loot" data-dungeon-loot>

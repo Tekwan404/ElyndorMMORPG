@@ -26,6 +26,62 @@ public sealed class DungeonServiceTests(PostgresFixture postgres) : IAsyncLifeti
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
+    public async Task FloorsKeepIndependentProgressAndRejectLockedOrActiveTransitions()
+    {
+        (Guid leader, Guid memberAccount, _) = await SeedPartyCharactersAsync();
+        GameContentPackage package = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
+        DungeonDefinition mine = package.Dungeons!.Single(definition => definition.Id == "ANCIENT_MINE");
+        mine = mine with { Floors = [new("ENTRY", "Вход", 0, 0), new("HALL", "Залы", 1, 2),
+            new("DEPTHS", "Глубины", 3, 4, mine.Encounters[1].Id)] };
+        package = package with { Dungeons = package.Dungeons!.Select(definition => definition.Id == mine.Id ? mine : definition).ToArray() };
+        await using GameDbContext context = postgres.CreateDbContext();
+        FixedTimeProvider time = new(Now);
+        PartyService parties = new(context, time);
+        DungeonService dungeons = new(context, parties, new StaticContentSnapshotProvider(package), time);
+        Assert.True((await parties.CreateAsync(leader, Guid.NewGuid(), CancellationToken.None)).IsSuccess);
+        Guid memberId = await context.Characters.Where(character => character.AccountId == memberAccount)
+            .Select(character => character.Id).SingleAsync();
+        Assert.True((await parties.InviteAsync(leader, Guid.NewGuid(), memberId, PartyInviteMode.Direct, CancellationToken.None)).IsSuccess);
+        Assert.True((await parties.AcceptInviteAsync(memberAccount, (await context.PartyInvites.SingleAsync()).Id, CancellationToken.None)).IsSuccess);
+        DungeonOperationResult created = await dungeons.CreateAsync(leader, mine.Id, Guid.NewGuid(), CancellationToken.None);
+        Guid runId = created.Run!.RunId;
+        Assert.Equal(DungeonErrorCodes.NotLeader, (await dungeons.SelectFloorAsync(memberAccount, runId, 2, CancellationToken.None)).ErrorCode);
+        Assert.Equal(DungeonErrorCodes.FloorNotFound, (await dungeons.SelectFloorAsync(leader, runId, 0, CancellationToken.None)).ErrorCode);
+        var (stalePreparation, _) = await dungeons.PrepareEncounterAsync(leader, runId, CancellationToken.None);
+        Assert.Equal(DungeonErrorCodes.FloorLocked, (await dungeons.SelectFloorAsync(leader, runId, 3, CancellationToken.None)).ErrorCode);
+        Assert.Equal(1, (await dungeons.SelectFloorAsync(leader, runId, 2, CancellationToken.None)).Run!.CurrentEncounterIndex);
+        Assert.False(await dungeons.BindCombatAsync(runId, stalePreparation!.EncounterId, Guid.NewGuid(), CancellationToken.None));
+        await CompleteCurrentAsync();
+        Assert.Equal(0, (await dungeons.SelectFloorAsync(leader, runId, 1, CancellationToken.None)).Run!.CurrentEncounterIndex);
+        Assert.Equal(2, (await dungeons.SelectFloorAsync(leader, runId, 2, CancellationToken.None)).Run!.CurrentEncounterIndex);
+        await CompleteCurrentAsync();
+        Assert.Equal(DungeonErrorCodes.EncounterNotReady,
+            (await dungeons.PrepareEncounterAsync(leader, runId, CancellationToken.None)).ErrorCode);
+        Assert.True((await dungeons.SelectFloorAsync(leader, runId, 3, CancellationToken.None)).Succeeded);
+        await CompleteCurrentAsync();
+        await CompleteCurrentAsync();
+        context.ChangeTracker.Clear();
+        Assert.Equal(DungeonRunState.Active, (await context.DungeonRuns.SingleAsync()).State);
+        Assert.Equal(0, (await dungeons.SelectFloorAsync(leader, runId, 1, CancellationToken.None)).Run!.CurrentEncounterIndex);
+        await CompleteCurrentAsync();
+        context.ChangeTracker.Clear();
+        Assert.Equal(DungeonRunState.Completed, (await context.DungeonRuns.SingleAsync()).State);
+        Assert.Equal(5, await context.DungeonEncounters.CountAsync(encounter => encounter.State == DungeonEncounterState.Completed));
+
+        async Task CompleteCurrentAsync()
+        {
+            var (preparation, error) = await dungeons.PrepareEncounterAsync(leader, runId, CancellationToken.None);
+            Assert.Null(error);
+            Guid sessionId = Guid.NewGuid();
+            Assert.True(await dungeons.BindCombatAsync(runId, preparation!.EncounterId, sessionId, CancellationToken.None));
+            Assert.Equal(DungeonErrorCodes.EncounterActive,
+                (await dungeons.SelectFloorAsync(leader, runId, 1, CancellationToken.None)).ErrorCode);
+            await dungeons.HandleCombatFinishedAsync(VictorySnapshot(sessionId), CancellationToken.None);
+            await dungeons.HandleCombatFinishedAsync(VictorySnapshot(sessionId), CancellationToken.None);
+        }
+    }
+
+    [Fact]
     public async Task PendingRetryRefreshesRosterAfterParticipantLeavesEntry()
     {
         (Guid leader, Guid memberAccount, _) = await SeedPartyCharactersAsync();

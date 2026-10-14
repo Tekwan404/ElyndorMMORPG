@@ -35,6 +35,8 @@ public static class DungeonErrorCodes
     public const string TeleportIdempotencyConflict = "dungeon_teleport_idempotency_conflict";
     public const string TravelInProgress = "dungeon_travel_in_progress";
     public const string AfkFarmActive = "dungeon_afk_farm_active";
+    public const string FloorLocked = "dungeon_floor_locked";
+    public const string FloorNotFound = "dungeon_floor_not_found";
 }
 
 public sealed record DungeonOperationResult(
@@ -69,7 +71,10 @@ public sealed record DungeonRunView(
     int EncounterCount,
     Guid PartyId,
     IReadOnlyList<DungeonRunMemberView> Members,
-    IReadOnlyList<DungeonEncounterView> Encounters);
+    IReadOnlyList<DungeonEncounterView> Encounters,
+    IReadOnlyList<DungeonFloorStateView>? Floors = null);
+
+public sealed record DungeonFloorStateView(int Number, bool IsUnlocked, bool IsCompleted, int? NextEncounterIndex);
 
 public sealed record DungeonTeleportResult(
     bool Succeeded,
@@ -94,7 +99,7 @@ public sealed record DungeonPreparation(
     string LocationId,
     IReadOnlyList<PartyCombatMember> Participants);
 
-public sealed class DungeonService(
+public sealed partial class DungeonService(
     GameDbContext dbContext,
     PartyService partyService,
     IContentSnapshotProvider contentProvider,
@@ -571,6 +576,15 @@ public sealed class DungeonService(
             return (null, DungeonErrorCodes.EncounterActive);
         }
 
+        if (run.Encounters.Any(candidate => candidate.EncounterIndex == run.CurrentEncounterIndex
+                && candidate.State == DungeonEncounterState.Completed))
+            return (null, DungeonErrorCodes.EncounterNotReady);
+        DungeonFloorRange? selectedFloor = DungeonFloorLayout.Build(definition).FirstOrDefault(floor =>
+            run.CurrentEncounterIndex >= floor.FirstEncounterIndex && run.CurrentEncounterIndex <= floor.LastEncounterIndex);
+        if (selectedFloor is null || definition.Floors is { Count: > 0 }
+            && !DungeonFloorLayout.IsUnlocked(definition, selectedFloor, CompletedIndexes(run)))
+            return (null, DungeonErrorCodes.FloorLocked);
+
         DungeonEncounter? encounter = run.Encounters
             .SingleOrDefault(candidate => candidate.EncounterIndex == run.CurrentEncounterIndex
                 && candidate.State is DungeonEncounterState.Pending or DungeonEncounterState.Wiped);
@@ -660,7 +674,8 @@ public sealed class DungeonService(
             await BeginAdvisoryLockAsync($"dungeon-run:{runId:N}", cancellationToken);
         DungeonEncounter? encounter = await dbContext.DungeonEncounters
             .SingleOrDefaultAsync(candidate => candidate.Id == encounterId
-                && candidate.RunId == runId && candidate.Run!.State == DungeonRunState.Active, cancellationToken);
+                && candidate.RunId == runId && candidate.Run!.State == DungeonRunState.Active
+                && candidate.EncounterIndex == candidate.Run.CurrentEncounterIndex, cancellationToken);
         if (encounter is null || encounter.State != DungeonEncounterState.Pending)
             return false;
         if (expectedCharacterIds is not null)
@@ -687,9 +702,11 @@ public sealed class DungeonService(
 
     public Task HandleCombatFinishedAsync(
         CombatSessionSnapshot snapshot,
-        CancellationToken cancellationToken) =>
+        CancellationToken cancellationToken,
+        GameContentSnapshot? contentSnapshot = null) =>
         dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
-            () => HandleCombatFinishedCoreAsync(snapshot.SessionId, snapshot.Status, cancellationToken));
+            () => HandleCombatFinishedCoreAsync(snapshot.SessionId, snapshot.Status, cancellationToken,
+                contentSnapshot: contentSnapshot));
 
     public async Task ReconcileCommittedVictoryAtStartupAsync(Guid sessionId, CancellationToken cancellationToken)
     {
@@ -705,7 +722,8 @@ public sealed class DungeonService(
         Guid sessionId,
         CombatSessionStatus status,
         CancellationToken cancellationToken,
-        string? reconciliationReason = null)
+        string? reconciliationReason = null,
+        GameContentSnapshot? contentSnapshot = null)
     {
         dbContext.ChangeTracker.Clear();
         await using IDbContextTransaction? transaction =
@@ -723,7 +741,7 @@ public sealed class DungeonService(
                 $"SELECT pg_advisory_xact_lock(hashtext({runLock}))", cancellationToken);
         }
 
-        bool transitioned = await ApplyCombatOutcomeAsync(encounter, status, cancellationToken);
+        bool transitioned = await ApplyCombatOutcomeAsync(encounter, status, cancellationToken, contentSnapshot);
         await CommitAsync(transaction, cancellationToken);
         if (transitioned && reconciliationReason is not null)
             LogCombatReconciled(logger ?? NullLogger<DungeonService>.Instance, encounter, reconciliationReason);
@@ -732,7 +750,8 @@ public sealed class DungeonService(
     private async Task<bool> ApplyCombatOutcomeAsync(
         DungeonEncounter encounter,
         CombatSessionStatus status,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        GameContentSnapshot? contentSnapshot = null)
     {
         DateTimeOffset now = timeProvider.GetUtcNow();
         if (status == CombatSessionStatus.Victory)
@@ -752,7 +771,29 @@ public sealed class DungeonService(
                 .SingleAsync(candidate => candidate.Id == encounter.RunId, cancellationToken);
             if (run.State != DungeonRunState.Active)
                 return true;
-            DungeonDefinition definition = contentProvider.GetCurrent().Indexes.DungeonsById[run.DungeonId];
+            DungeonDefinition definition = (contentSnapshot ?? contentProvider.GetCurrent()).Indexes.DungeonsById[run.DungeonId];
+            if (definition.Floors is { Count: > 0 })
+            {
+                HashSet<int> completedIndexes = (await dbContext.DungeonEncounters.AsNoTracking()
+                    .Where(candidate => candidate.RunId == run.Id && candidate.State == DungeonEncounterState.Completed)
+                    .Select(candidate => candidate.EncounterIndex).ToArrayAsync(cancellationToken)).ToHashSet();
+                if (completedIndexes.Count == definition.Encounters.Count)
+                {
+                    run.SelectEncounter(definition.Encounters.Count);
+                    run.Complete(now);
+                }
+                else
+                {
+                    DungeonFloorRange floor = DungeonFloorLayout.Build(definition).Single(candidate =>
+                        encounter.EncounterIndex >= candidate.FirstEncounterIndex && encounter.EncounterIndex <= candidate.LastEncounterIndex);
+                    int? nextIndex = DungeonFloorLayout.NextEncounterIndex(floor, completedIndexes);
+                    run.SelectEncounter(nextIndex ?? floor.LastEncounterIndex);
+                    if (nextIndex.HasValue)
+                        await EnsurePendingEncounterAsync(run, definition, nextIndex.Value, cancellationToken);
+                }
+                await dbContext.SaveChangesAsync(cancellationToken);
+                return true;
+            }
             if (run.CurrentEncounterIndex == encounter.EncounterIndex)
                 run.AdvanceEncounter(now);
             if (run.CurrentEncounterIndex >= definition.Encounters.Count)
@@ -997,7 +1038,8 @@ public sealed class DungeonService(
                     encounter.State,
                     encounter.WipeCount,
                     encounter.Members.Select(member => member.CharacterId).ToArray()))
-                .ToArray());
+                .ToArray(),
+            FloorStates(run, definition));
 
     private static string ResolveCurrentCheckpointId(
         DungeonRun run,

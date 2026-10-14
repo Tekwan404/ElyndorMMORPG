@@ -29,6 +29,7 @@ public static class DungeonEndpoints
         group.MapPost("/runs/{runId:guid}/city-exit", ExitToCityAsync);
         group.MapPost("/runs/{runId:guid}/return", ReturnToRunAsync);
         group.MapPost("/runs/{runId:guid}/leave", LeaveRunAsync);
+        group.MapPost("/runs/{runId:guid}/floor", SelectFloorAsync);
         return endpoints;
     }
 
@@ -37,6 +38,16 @@ public static class DungeonEndpoints
         GameContentSnapshot content = contentProvider.GetCurrent();
         return Results.Ok((content.Package.Dungeons ?? []).Select(definition =>
             DungeonPreviewMapper.ToResponse(definition, content)).ToArray());
+    }
+
+    private static async Task<IResult> SelectFloorAsync(Guid runId, SelectDungeonFloorRequest request,
+        ClaimsPrincipal user, DungeonService service, CharacterOperationGuard operationGuard,
+        HttpContext httpContext, CancellationToken cancellationToken)
+    {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        return await operationGuard.ExecuteOutOfCombatAsync(accountId,
+            async () => ToResult(await service.SelectFloorAsync(accountId, runId, request.FloorNumber, cancellationToken)),
+            () => InCombat(httpContext), cancellationToken);
     }
 
     private static async Task<IResult> GetCurrentAsync(
@@ -450,7 +461,9 @@ public static class DungeonEndpoints
                 encounter.MonsterId,
                 encounter.State.ToString(),
                 encounter.WipeCount,
-                encounter.CharacterIds)).ToArray());
+                encounter.CharacterIds)).ToArray(),
+            run.Floors?.Select(floor => new DungeonFloorStateResponse(floor.Number, floor.IsUnlocked,
+                floor.IsCompleted, floor.NextEncounterIndex)).ToArray());
 
     private static bool TryGetAccountId(ClaimsPrincipal user, out Guid accountId) =>
         Guid.TryParse(user.FindFirstValue(JwtRegisteredClaimNames.Sub), out accountId)

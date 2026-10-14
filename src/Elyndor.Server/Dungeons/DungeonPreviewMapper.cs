@@ -9,14 +9,15 @@ internal static class DungeonPreviewMapper
 {
     public static DungeonPreviewResponse ToResponse(DungeonDefinition definition, GameContentSnapshot content)
     {
-        var floors = DungeonFloorLayout.Build(definition.Encounters).Select(floor =>
+        var floors = DungeonFloorLayout.Build(definition).Select(floor =>
         {
             var encounters = definition.Encounters.Skip(floor.FirstEncounterIndex)
                 .Take(floor.LastEncounterIndex - floor.FirstEncounterIndex + 1).ToArray();
             var boss = encounters.LastOrDefault(encounter => encounter.IsBoss);
             string? bossName = boss is null ? null : MonsterName(boss.MonsterId, content);
             return new DungeonFloorPreviewResponse(floor.Number, floor.FirstEncounterIndex, floor.LastEncounterIndex,
-                bossName, WorldEndpoints.BuildMonsterLoot(MonsterIds(encounters), content.Indexes));
+                bossName, WorldEndpoints.BuildMonsterLoot(MonsterIds(encounters), content.Indexes),
+                floor.DisplayName, floor.RequiredEncounterId);
         }).ToArray();
         return new DungeonPreviewResponse(definition.Id, definition.DisplayName, definition.Description,
             definition.MinimumLevel, definition.MaximumLevel, definition.EntryLocationId,

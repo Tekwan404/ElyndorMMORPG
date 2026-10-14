@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.22.0",
+  "contentVersion": "0.58.0",
   "balanceVersion": "0.18.0",
-  "publishedAtUtc": "2026-09-16T00:00:00+00:00",
+  "publishedAtUtc": "2026-10-14T00:00:00+00:00",
   "dungeons": [
     {
       "id": "SHATTERED_ORDER_CITADEL_TEST",
@@ -59,6 +59,32 @@
             { "role": "FROST", "monsterId": "SHATTERED_ORDER_AZRAEL_FROST_L25" },
             { "role": "VOID", "monsterId": "SHATTERED_ORDER_AZRAEL_VOID_L25" }
           ]
+        }
+      ],
+      "floors": [
+        {
+          "id": "SHATTERED_ORDER_CITADEL_TEST_FLOOR_1",
+          "displayName": "Этаж 1",
+          "firstEncounterIndex": 0,
+          "lastEncounterIndex": 0
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_TEST_FLOOR_2",
+          "displayName": "Этаж 2",
+          "firstEncounterIndex": 1,
+          "lastEncounterIndex": 1
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_TEST_FLOOR_3",
+          "displayName": "Этаж 3",
+          "firstEncounterIndex": 2,
+          "lastEncounterIndex": 2
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_TEST_FLOOR_4",
+          "displayName": "Этаж 4",
+          "firstEncounterIndex": 3,
+          "lastEncounterIndex": 3
         }
       ]
     }

@@ -1352,23 +1352,7 @@ public sealed partial class CombatSession
                 && !_companion.Actor.IsDead
                 && _nextCompanionAutoAttackAtUtc <= due)
             {
-                CombatParticipantDefinition? companionTarget = _enemiesById
-                    .GetValueOrDefault(_selectedTargetActorId);
-                if (companionTarget is null
-                    || companionTarget.Actor.IsDead
-                    || !companionTarget.Actor.IsTargetable(due))
-                {
-                    companionTarget = _enemies.FirstOrDefault(enemy =>
-                        !enemy.Actor.IsDead && enemy.Actor.IsTargetable(due));
-                }
-
-                if (companionTarget is not null)
-                    ResolveAutoAttack(_companion, companionTarget, due);
-
-                _nextCompanionAutoAttackAtUtc =
-                    Status == CombatSessionStatus.Active && !_companion.Actor.IsDead
-                        ? NextCompanionActionAfter(_companion, due)
-                        : null;
+                ResolveReadyCompanionAutoAttack(due);
             }
 
             if (Status == CombatSessionStatus.Active
@@ -1437,6 +1421,27 @@ public sealed partial class CombatSession
             _nextPlayerOffHandAutoAttackAtUtc = nextAfterCast;
         else
             _nextPlayerMainHandAutoAttackAtUtc = nextAfterCast;
+    }
+
+    private void ResolveReadyCompanionAutoAttack(DateTimeOffset due)
+    {
+        CombatPlayerRuntimeState previous = _activePlayerState;
+        try
+        {
+            ActivatePlayer(_companionOwnerActorId);
+            CombatParticipantDefinition? target = _enemiesById.GetValueOrDefault(_selectedTargetActorId);
+            if (target is null || target.Actor.IsDead || !target.Actor.IsTargetable(due))
+                target = _enemies.FirstOrDefault(enemy => !enemy.Actor.IsDead && enemy.Actor.IsTargetable(due));
+            if (target is not null)
+                ResolveAutoAttack(_companion!, target, due);
+            _nextCompanionAutoAttackAtUtc = Status == CombatSessionStatus.Active && !_companion!.Actor.IsDead
+                ? NextCompanionActionAfter(_companion, due)
+                : null;
+        }
+        finally
+        {
+            _activePlayerState = previous;
+        }
     }
 
     private void ResolveSummon(DateTimeOffset now)
@@ -2055,6 +2060,8 @@ public sealed partial class CombatSession
 
     private bool TryActivatePlayerForActor(Guid? actorId)
     {
+        if (_companion is not null && actorId == _companion.Actor.ActorId)
+            actorId = _companionOwnerActorId;
         if (actorId is null
             || !_playerStatesByActorId.ContainsKey(actorId.Value))
             return false;
@@ -2855,6 +2862,10 @@ public sealed partial class CombatSession
         public Dictionary<string, DateTimeOffset> ConsumableCooldowns { get; } = new(StringComparer.Ordinal);
         public DateTimeOffset LastResourceRegenAtUtc { get; set; }
         public int ArcherShotSequence { get; set; }
+        public int MarkedShotSequence { get; set; }
+        public DateTimeOffset? NextSpiritBondAtUtc { get; set; }
+        public bool DeathsEmbraceArmed { get; set; }
+        public bool DeathsEmbraceConsumed { get; set; }
         public Mage.MageCombatRuntime? MageRuntime { get; set; }
         public bool SurvivalPreparationArmed { get; set; }
         public bool AutoAttackEnabled { get; set; }

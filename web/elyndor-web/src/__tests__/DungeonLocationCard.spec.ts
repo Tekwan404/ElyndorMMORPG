@@ -3,6 +3,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { BootstrapSnapshot, DungeonPreview, DungeonRun } from '@/api/contracts'
+import { apiClient } from '@/api/apiClient'
 import DungeonLocationCard from '@/game/world/components/DungeonLocationCard.vue'
 import { useDungeonStore } from '@/game/party/dungeonStore'
 import { usePartyStore } from '@/game/party/partyStore'
@@ -13,6 +14,57 @@ const CHARACTER_ID = 'character-1'
 
 describe('DungeonLocationCard', () => {
   beforeEach(() => setActivePinia(createPinia()))
+
+  it('moves to an open floor through the server and uses its saved encounter cursor', async () => {
+    const { dungeon } = prepareCard('ECLIPSED_CITADEL')
+    const preview = dungeon.previews.find((item) => item.id === 'ECLIPSED_CITADEL')!
+    preview.floors = [
+      {
+        number: 1,
+        firstEncounterIndex: 0,
+        lastEncounterIndex: 1,
+        bossName: null,
+        possibleLoot: [],
+      },
+      {
+        number: 2,
+        firstEncounterIndex: 2,
+        lastEncounterIndex: 4,
+        bossName: 'Хозяин',
+        possibleLoot: [],
+      },
+    ]
+    dungeon.current = {
+      ...activeCitadelRun(),
+      floors: [
+        { number: 1, isUnlocked: true, isCompleted: false, nextEncounterIndex: 0 },
+        { number: 2, isUnlocked: true, isCompleted: false, nextEncounterIndex: 2 },
+      ],
+    }
+    const moved = {
+      ...dungeon.current,
+      currentEncounterIndex: 2,
+      encounters: dungeon.current.encounters.map((encounter) => ({
+        ...encounter,
+        encounterIndex: 2,
+      })),
+    }
+    const request = vi.spyOn(apiClient, 'request').mockResolvedValue(moved)
+    const wrapper = mount(DungeonLocationCard, { props: { dungeonId: 'ECLIPSED_CITADEL' } })
+    await flushPromises()
+    expect(wrapper.get('[data-dungeon-floor="2"]').attributes('disabled')).toBeUndefined()
+    await wrapper.get('[data-dungeon-floor="2"]').trigger('click')
+    await flushPromises()
+    expect(request).toHaveBeenCalledWith(`/api/v1/dungeons/runs/${moved.runId}/floor`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ floorNumber: 2 }),
+    })
+    expect(dungeon.current?.currentEncounterIndex).toBe(2)
+    expect(wrapper.find('[data-start-dungeon]').exists()).toBe(true)
+    wrapper.unmount()
+    request.mockRestore()
+  })
 
   it('unlocks floors by progress and previews all loot with an optional floor filter', async () => {
     const { dungeon } = prepareCard('ECLIPSED_CITADEL')
@@ -50,7 +102,14 @@ describe('DungeonLocationCard', () => {
     expect(wrapper.get('[data-dungeon-loot] summary').text()).toContain('2')
     await wrapper.get('[data-floor-loot-filter]').setValue(true)
     expect(wrapper.get('[data-dungeon-loot] summary').text()).toContain('1')
-    dungeon.current = { ...activeCitadelRun(), currentEncounterIndex: 2, encounters: activeCitadelRun().encounters.map(encounter => ({ ...encounter, encounterIndex: 2 })) }
+    dungeon.current = {
+      ...activeCitadelRun(),
+      currentEncounterIndex: 2,
+      encounters: activeCitadelRun().encounters.map((encounter) => ({
+        ...encounter,
+        encounterIndex: 2,
+      })),
+    }
     await flushPromises()
     expect(wrapper.get('[data-dungeon-floor="2"]').attributes('disabled')).toBeUndefined()
     await wrapper.get('[data-dungeon-floor="1"]').trigger('click')

@@ -41,7 +41,15 @@ public sealed record DungeonDefinition(
     string EntryLocationId,
     IReadOnlyList<DungeonEncounterDefinition> Encounters,
     int MinimumPartySize = 1,
-    int MaximumPartySize = 5);
+    int MaximumPartySize = 5,
+    IReadOnlyList<DungeonFloorDefinition>? Floors = null);
+
+public sealed record DungeonFloorDefinition(
+    string Id,
+    string DisplayName,
+    int FirstEncounterIndex,
+    int LastEncounterIndex,
+    string? RequiredEncounterId = null);
 
 public sealed record DungeonEncounterDefinition(
     string Id,
@@ -138,6 +146,13 @@ public sealed class DungeonRun
         EnsureActive();
         EnsureUtc(completedAtUtc);
         CurrentEncounterIndex++;
+    }
+
+    public void SelectEncounter(int encounterIndex)
+    {
+        EnsureActive();
+        ArgumentOutOfRangeException.ThrowIfNegative(encounterIndex);
+        CurrentEncounterIndex = encounterIndex;
     }
 
     public void Complete(DateTimeOffset completedAtUtc)

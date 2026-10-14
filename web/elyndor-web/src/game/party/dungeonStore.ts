@@ -51,6 +51,16 @@ export const useDungeonStore = defineStore('dungeon', () => {
     ))
   }
 
+  async function selectFloor(runId: string, floorNumber: number): Promise<void> {
+    await mutate('dungeon_floor_change_failed', () =>
+      apiClient.request<DungeonRun>(`/api/v1/dungeons/runs/${runId}/floor`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ floorNumber }),
+      }),
+    )
+  }
+
   async function exitToCity(runId: string): Promise<void> {
     await navigate(
       'dungeon_city_exit_failed',
@@ -142,6 +152,7 @@ export const useDungeonStore = defineStore('dungeon', () => {
     create,
     enter,
     restart,
+    selectFloor,
     exitToCity,
     returnToRun,
     leaveRun,

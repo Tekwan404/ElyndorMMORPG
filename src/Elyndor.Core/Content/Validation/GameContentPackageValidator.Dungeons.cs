@@ -71,6 +71,7 @@ public static partial class GameContentPackageValidator
                     monsterIds,
                     errors);
             }
+            ValidateDungeonFloors(dungeon, path, errors);
         }
     }
 
