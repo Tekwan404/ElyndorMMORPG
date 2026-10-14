@@ -21,6 +21,7 @@
   [PvP player mechanics](development/pvp-player-mechanics-parity.md),
   [arena invitations](development/arena-friend-invitations.md).
 - Items/economy: [itemization](development/itemization-v2-enhancement.md),
+  [market merchants and crystal storefront](development/market-and-crystal-store.md),
   [profession workshop and location skill ladder](development/profession-workshop.md),
   [Affix V2 and canonical item catalog](development/affix-v2.md),
   [equipment sets and budgets](development/equipment-set-progression.md),

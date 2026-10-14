@@ -52,6 +52,13 @@ export type GameSessionState =
   | 'error'
 
 export const useGameSessionStore = defineStore('gameSession', () => {
+  const crystalBalance = ref<number | null>(null)
+  let crystalMutationVersion = 0
+  let crystalReadSequence = 0
+  function applyCrystalMutation(balance: number): void {
+    crystalMutationVersion++
+    crystalBalance.value = balance
+  }
   const state = ref<GameSessionState>('idle')
   const snapshot = ref<BootstrapSnapshot | null>(null)
   const questJournal = ref<QuestJournalResponse | null>(null)
@@ -728,11 +735,21 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   }
 
   async function getPremiumStore(): Promise<PremiumStoreSnapshot> {
-    return await apiClient.request<PremiumStoreSnapshot>('/api/v1/economy/store')
+    const mutationVersion = crystalMutationVersion
+    const sequence = ++crystalReadSequence
+    const result = await apiClient.request<PremiumStoreSnapshot>('/api/v1/economy/store')
+    if (mutationVersion === crystalMutationVersion && sequence === crystalReadSequence)
+      crystalBalance.value = result.crystalBalance
+    return result
   }
 
   async function getCharacterSkins(): Promise<CharacterSkinStoreSnapshot> {
-    return await apiClient.request<CharacterSkinStoreSnapshot>('/api/v1/economy/skins')
+    const mutationVersion = crystalMutationVersion
+    const sequence = ++crystalReadSequence
+    const result = await apiClient.request<CharacterSkinStoreSnapshot>('/api/v1/economy/skins')
+    if (mutationVersion === crystalMutationVersion && sequence === crystalReadSequence)
+      crystalBalance.value = result.crystalBalance
+    return result
   }
 
   async function buyCharacterSkin(skinId: string): Promise<CharacterSkinMutationResponse | null> {
@@ -746,6 +763,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
         idField: 'mutationId',
         intent: { skinId },
       })
+      applyCrystalMutation(response.crystalBalance)
       await refreshSnapshot()
       return response
     } catch (error) {
@@ -767,6 +785,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
         body: JSON.stringify({ skinId }),
       })
       applyActiveSkin(response.activeSkinId)
+      applyCrystalMutation(response.crystalBalance)
       await refreshSnapshot()
       return response
     } catch (error) {
@@ -788,6 +807,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
         idField: 'mutationId',
         intent: { sku, packCount },
       })
+      applyCrystalMutation(response.crystalBalance)
       await refreshSnapshot()
       return response
     } catch (error) {
@@ -809,6 +829,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
         idField: 'mutationId',
         intent: { code },
       })
+      applyCrystalMutation(response.crystalBalance)
       await refreshSnapshot()
       return response
     } catch (error) {
@@ -1000,6 +1021,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   }
 
   return {
+    crystalBalance,
     state,
     snapshot,
     questJournal,

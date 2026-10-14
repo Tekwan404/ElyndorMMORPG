@@ -22,6 +22,22 @@ public sealed class MerchantServiceTests(PostgresFixture postgres) : IAsyncLifet
     public Task InitializeAsync() => postgres.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
 
+    [Theory]
+    [InlineData("BORIN_ARMORY", "WARRIOR_COMMON_BORDER_STEEL_CHEST")]
+    [InlineData("LIORA_HUNTING", "ARCHER_COMMON_WHISPER_TRACKER_BOW")]
+    [InlineData("ELARA_ARCANA", "MAGE_COMMON_BLUE_CANDLE_STAFF")]
+    public async Task ClassEquipmentMustBeBoughtFromItsOwnMerchant(string merchantId, string itemId)
+    {
+        (Guid accountId, Guid characterId) = await CreateCharacterAsync(10000);
+        await using GameDbContext context = postgres.CreateDbContext();
+        MerchantService service = await CreateServiceAsync(context);
+        Assert.Equal(MerchantErrorCodes.ItemNotSold,
+            (await service.BuyAsync(accountId, MerchantId, itemId, 1, Guid.CreateVersion7(), CancellationToken.None)).ErrorCode);
+        Assert.True((await service.BuyAsync(accountId, merchantId, itemId, 1, Guid.CreateVersion7(), CancellationToken.None)).IsSuccess);
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Single(await verify.CharacterItems.Where(item => item.CharacterId == characterId && item.ItemDefinitionId == itemId).ToArrayAsync());
+    }
+
     [Fact]
     public async Task SameBuyMutationIsAppliedOnlyOnce()
     {

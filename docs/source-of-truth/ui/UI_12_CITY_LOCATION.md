@@ -13,6 +13,13 @@
 
 # 1. Назначение
 
+The current city market groups class equipment merchants (Borin, Liora, Elara),
+Marcus supplies and the honor quartermaster. The honor shop is reached through the
+market, not the arena panel. All merchant portraits share one authored illustrated set.
+The premium crystal store also has a global HUD/menu entry; this does not expose
+ordinary NPC or auction services outside the city. Crystal top-up currently presents
+information only and does not process payments.
+
 City is not a global root. It is a special `ЛОКАЦИЯ` state exposing safe services only when the character is physically inside that city.
 
 ---

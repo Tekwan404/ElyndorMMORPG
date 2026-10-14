@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import CrystalBalanceButton from '@/game/economy/components/CrystalBalanceButton.vue'
 import MoneyAmount from '@/ui/components/MoneyAmount.vue'
 import { computed, defineAsyncComponent, onMounted, ref, watch } from 'vue'
 
@@ -24,9 +25,10 @@ import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { beginTelegramWebLogin } from '@/telegram/telegramWebLogin'
 import { UIButton, UIHealthBar, UILoadingState, UIModal } from '@/ui/components'
 
+const PremiumStoreView = defineAsyncComponent(() => import('@/game/economy/views/PremiumStoreView.vue'))
 const ArenaView = defineAsyncComponent(() => import('@/game/pvp/views/ArenaView.vue'))
 
-type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu' | 'arena' | 'world-boss'
+type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu' | 'arena' | 'world-boss' | 'store'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
@@ -281,6 +283,7 @@ onMounted(() => {
         </button>
 
         <div class="hud__meta">
+          <CrystalBalanceButton @open="showView('store')" />
           <div class="hud__wallet" aria-label="Кошелёк">
             <strong><MoneyAmount :amount="character.gold" /></strong>
           </div>
@@ -354,6 +357,10 @@ onMounted(() => {
         v-else-if="session.state === 'world' && activeView === 'world'"
         @open-location="openLocation()"
       />
+      <section v-else-if="session.state === 'world' && activeView === 'store'" class="premium-entry">
+        <UIButton variant="ghost" @click="openLocation()">‹ В игру</UIButton>
+        <PremiumStoreView />
+      </section>
       <CityView
         v-else-if="session.state === 'world' && activeView === 'location' && isCityLocation"
         :open-adventurers="openGuildOnLocation"
@@ -385,6 +392,7 @@ onMounted(() => {
         v-else-if="session.state === 'world' && activeView === 'menu'"
         :initial-section="menuSection"
         @open-world="openWorld()"
+        @open-store="showView('store')"
       />
     </main>
 
@@ -447,6 +455,8 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.premium-entry { padding: 0 10px 24px; }
+.hud__meta { min-width: 0; }
 .arena-entry {
   display: grid;
   gap: var(--ui-space-3);

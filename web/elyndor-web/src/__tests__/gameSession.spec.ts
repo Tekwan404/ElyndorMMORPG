@@ -22,6 +22,20 @@ vi.mock('@/telegram/telegramWebApp', () => ({
 }))
 
 describe('gameSession', () => {
+  it('does not restore an older wallet GET after a purchase has completed', async () => {
+    let completeRead!: (result: { crystalBalance: number; offers: [] }) => void
+    vi.spyOn(apiClient, 'request')
+      .mockReturnValueOnce(new Promise(resolve => { completeRead = resolve }))
+      .mockResolvedValueOnce({ crystalBalance: 75 })
+      .mockResolvedValueOnce({ accountId: 'account', character: null, world: null,
+        contentVersion: '0.59.0', balanceVersion: '0.47.0', serverTimeUtc: '2026-10-14T00:00:00Z' })
+    const session = useGameSessionStore()
+    const oldRead = session.getPremiumStore()
+    await session.buyPremiumStoreOffer('REFORGE_STONES_SMALL')
+    completeRead({ crystalBalance: 100, offers: [] })
+    await oldRead
+    expect(session.crystalBalance).toBe(75)
+  })
   it('sends bulk packs and mutation identity in one purchase API call', async () => {
     const request = vi.spyOn(apiClient, 'request')
       .mockResolvedValueOnce({ crystalBalance: 3725 })
@@ -32,6 +46,7 @@ describe('gameSession', () => {
     expect(purchases).toHaveLength(1)
     const body = JSON.parse(purchases[0]![1]!.body as string)
     expect(body).toEqual({ sku: 'REFORGE_STONES_SMALL', packCount: 51, mutationId: expect.any(String) })
+    expect(useGameSessionStore().crystalBalance).toBe(3725)
   })
 
   beforeEach(() => {

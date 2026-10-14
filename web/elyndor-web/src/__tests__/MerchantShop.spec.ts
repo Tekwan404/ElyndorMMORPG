@@ -167,7 +167,7 @@ describe('MerchantShop', () => {
     await wrapper.setProps({ open: true })
     await flushPromises()
 
-    expect(wrapper.find('img[alt="Торговец Маркус"]').exists()).toBe(true)
+    expect(wrapper.find('[role="img"][aria-label="Торговец Маркус"]').exists()).toBe(true)
     expect(wrapper.find('[data-merchant-offer="WARRIOR_STARTER_CHEST"]').exists()).toBe(true)
 
     await wrapper.get('[data-merchant-filter="Equipment"]').trigger('click')

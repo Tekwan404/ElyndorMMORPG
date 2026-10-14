@@ -17,6 +17,7 @@ import { useCombatSessionStore } from '@/stores/combatSession'
 import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName } from '@/ui/icons/icon.types'
+import MarketDistrict from '@/game/world/components/MarketDistrict.vue'
 import { UIButton } from '@/ui/components'
 
 const ForgeView = defineAsyncComponent(() => import('@/game/character/views/ForgeView.vue'))
@@ -24,6 +25,7 @@ const AuctionView = defineAsyncComponent(() => import('@/game/economy/views/Auct
 const PremiumStoreView = defineAsyncComponent(
   () => import('@/game/economy/views/PremiumStoreView.vue'),
 )
+const HonorShopView = defineAsyncComponent(() => import('@/game/economy/views/HonorShopView.vue'))
 const MerchantShop = defineAsyncComponent(() => import('@/game/world/components/MerchantShop.vue'))
 const AdventurerGuildBoard = defineAsyncComponent(
   () => import('@/game/world/components/AdventurerGuildBoard.vue'),
@@ -44,6 +46,7 @@ type CityDestination =
   | 'arena'
   | 'professions'
   | 'store'
+  | 'honor'
 
 const props = withDefaults(defineProps<{ openAdventurers?: boolean }>(), { openAdventurers: false })
 const emit = defineEmits<{
@@ -57,6 +60,8 @@ const combat = useCombatSessionStore()
 const worldBoss = useWorldBossStore()
 const activeDestination = ref<CityDestination | null>(null)
 const merchantOpen = ref(false)
+const selectedMerchantId = ref('MARCUS_SUPPLIES')
+function openMerchant(id: string): void { selectedMerchantId.value = id; merchantOpen.value = true }
 const forgeOpen = ref(false)
 const workshopProfessionId = ref<string | null>(null)
 const workshops = [
@@ -137,7 +142,8 @@ const destinationNames: Record<CityDestination, string> = {
   craft: 'Ремесленный квартал',
   arena: 'Арена',
   professions: 'Профессии',
-  store: 'Магазин',
+  store: 'Магазин за кристаллы',
+  honor: 'Магазин чести',
 }
 
 function openDestination(id: CityDestination): void {
@@ -151,7 +157,7 @@ function openDestination(id: CityDestination): void {
 }
 
 function returnToCity(): void {
-  activeDestination.value = activeDestination.value === 'professions' ? 'craft' : null
+  activeDestination.value = activeDestination.value === 'professions' ? 'craft' : ['store', 'honor'].includes(activeDestination.value ?? '') ? 'market' : null
 }
 
 async function startTraining(): Promise<void> {
@@ -221,7 +227,7 @@ async function startTraining(): Promise<void> {
     >
       <header v-if="activeDestination !== 'craft'" class="city-interior__header">
         <UIButton variant="ghost" data-city-back @click="returnToCity">{{
-          activeDestination === 'professions' ? '‹ Квартал' : '‹ Город'
+          activeDestination === 'professions' ? '‹ Квартал' : ['store', 'honor'].includes(activeDestination) ? '‹ Рынок' : '‹ Город'
         }}</UIButton>
         <h2>
           {{
@@ -251,13 +257,10 @@ async function startTraining(): Promise<void> {
         :initial-profession-id="workshopProfessionId ?? undefined"
       />
 
-      <div v-else-if="activeDestination === 'market'" class="city-interior__choices">
-        <p>Торговые ряды. Припасы и товары за кристаллы.</p>
-        <UIButton data-city-merchant @click="merchantOpen = true">Лавка Маркуса</UIButton>
-        <UIButton variant="secondary" data-city-store @click="activeDestination = 'store'"
-          >Магазин за кристаллы</UIButton
-        >
-      </div>
+      <MarketDistrict v-else-if="activeDestination === 'market'"
+        @open-merchant="openMerchant" @open-honor="activeDestination = 'honor'"
+        @open-store="activeDestination = 'store'" />
+      <HonorShopView v-else-if="activeDestination === 'honor'" />
 
       <section
         v-else-if="activeDestination === 'craft'"
@@ -342,7 +345,7 @@ async function startTraining(): Promise<void> {
       </div>
     </div>
 
-    <MerchantShop v-if="merchantOpen" :open="merchantOpen" @close="merchantOpen = false" />
+    <MerchantShop v-if="merchantOpen" :key="selectedMerchantId" :merchant-id="selectedMerchantId" :open="merchantOpen" @close="merchantOpen = false" />
     <ForgeView v-if="forgeOpen" @close="forgeOpen = false" />
     <AdventurerGuildBoard
       v-if="adventurersOpen"
