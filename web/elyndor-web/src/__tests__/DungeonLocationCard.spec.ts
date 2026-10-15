@@ -14,13 +14,49 @@ const CHARACTER_ID = 'character-1'
 describe('DungeonLocationCard', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
+  it('refreshes the retired dungeon after reconnect finds no battle', async () => {
+    const { dungeon, combat, party } = prepareCard('ECLIPSED_CITADEL')
+    dungeon.current = activeCitadelRun()
+    combat.connectionState = 'connected'
+    const wrapper = mount(DungeonLocationCard, { props: { dungeonId: 'ECLIPSED_CITADEL' } })
+    await flushPromises()
+    expect(wrapper.find('[data-create-dungeon]').exists()).toBe(false)
+    vi.mocked(dungeon.refresh).mockImplementation(async () => {
+      dungeon.current = null
+    })
+    combat.connectionState = 'syncing'
+    await flushPromises()
+    combat.connectionState = 'connected'
+    await flushPromises()
+    expect(dungeon.refresh).toHaveBeenCalledTimes(2)
+    expect(party.refresh).toHaveBeenCalledTimes(2)
+    expect(wrapper.find('[data-create-dungeon]').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
   it('keeps sequential encounters and the whole loot list without floor controls', async () => {
     const { dungeon } = prepareCard('ECLIPSED_CITADEL')
     const preview = dungeon.previews.find((item) => item.id === 'ECLIPSED_CITADEL')!
-    const loot = { itemId: 'HEALING_POTION', name: 'Лечебное зелье', rarity: 'Common', type: 'Consumable', requiredLevel: 1, description: '', iconId: null }
+    const loot = {
+      itemId: 'HEALING_POTION',
+      name: 'Лечебное зелье',
+      rarity: 'Common',
+      type: 'Consumable',
+      requiredLevel: 1,
+      description: '',
+      iconId: null,
+    }
     preview.possibleLoot = [loot, { ...loot, itemId: 'MANA_POTION', name: 'Зелье маны' }]
     // Older API responses must not restore the removed floor navigation.
-    preview.floors = [{ number: 1, firstEncounterIndex: 0, lastEncounterIndex: 4, bossName: 'Страж', possibleLoot: [loot] }]
+    preview.floors = [
+      {
+        number: 1,
+        firstEncounterIndex: 0,
+        lastEncounterIndex: 4,
+        bossName: 'Страж',
+        possibleLoot: [loot],
+      },
+    ]
     dungeon.current = activeCitadelRun()
     const wrapper = mount(DungeonLocationCard, { props: { dungeonId: 'ECLIPSED_CITADEL' } })
     await flushPromises()
@@ -28,7 +64,14 @@ describe('DungeonLocationCard', () => {
     expect(wrapper.find('[data-floor-loot-filter]').exists()).toBe(false)
     expect(wrapper.get('[data-dungeon-loot] summary').text()).toContain('2')
     expect(wrapper.find('[data-start-dungeon]').exists()).toBe(true)
-    dungeon.current = { ...activeCitadelRun(), currentEncounterIndex: 2, encounters: activeCitadelRun().encounters.map(encounter => ({ ...encounter, encounterIndex: 2 })) }
+    dungeon.current = {
+      ...activeCitadelRun(),
+      currentEncounterIndex: 2,
+      encounters: activeCitadelRun().encounters.map((encounter) => ({
+        ...encounter,
+        encounterIndex: 2,
+      })),
+    }
     await flushPromises()
     expect(wrapper.find('[data-start-dungeon]').exists()).toBe(true)
     expect(wrapper.get('[data-dungeon-loot] summary').text()).toContain('2')

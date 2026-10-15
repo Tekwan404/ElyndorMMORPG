@@ -1340,3 +1340,13 @@ ACTIVE normal CombatSession
 Boss/World Event использует более конкретную policy из `18_BOSS_AND_WORLD_EVENT_SYSTEM`, которая также завершает активный encounter через FAILED без награды.
 
 Logout/disconnect без server restart по-прежнему **не** прерывает бой: работает Offline Combat Controller.
+
+
+### Restart reset scope (2026-10-15)
+
+Every server restart also closes unfinished dungeon runs after terminal result
+recovery. Completed character progress and earned rewards remain saved. Terminal
+journals are finalized once before closing unfinished runs; unconfirmed evidence
+is never discarded to force a reset. PvP orphan matches retain their existing
+cancellation without rating/Honor changes; in-memory queues and training sessions
+start empty. Disconnect alone does not trigger this startup policy.

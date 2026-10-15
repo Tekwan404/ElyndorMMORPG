@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
 
@@ -153,6 +153,15 @@ async function refreshCard(): Promise<void> {
     hasLoaded.value = true
   }
 }
+
+watch(
+  () => combat.connectionState,
+  (state, previous) => {
+    if (state === 'connected' && previous === 'syncing' && !combat.snapshot) {
+      void refreshCard()
+    }
+  },
+)
 
 onMounted(() => {
   void refreshCard()

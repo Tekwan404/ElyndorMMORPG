@@ -11,6 +11,10 @@ public static class CombatStartupRecovery
         LoggerMessage.Define<int>(LogLevel.Warning, new EventId(2103, nameof(RecoveryAttemptFailed)),
             "Combat startup recovery attempt {Attempt} failed; durable evidence remains pending for retry.");
 
+    private static readonly Action<ILogger, int, Exception?> InterruptedRunsClosed =
+        LoggerMessage.Define<int>(LogLevel.Information, new EventId(2104, nameof(InterruptedRunsClosed)),
+            "Closed {Count} unfinished dungeon runs after server restart.");
+
     public static async Task RecoverAsync(
         IServiceScopeFactory scopeFactory,
         CancellationToken cancellationToken)
@@ -27,6 +31,13 @@ public static class CombatStartupRecovery
                 await durability.RecoverInterruptedAsync(cancellationToken);
                 DungeonService dungeons = scope.ServiceProvider.GetRequiredService<DungeonService>();
                 await dungeons.ReconcileOrphanedEncountersAtStartupAsync(cancellationToken);
+                int closed = await dungeons.CloseInterruptedRunsAtStartupAsync(cancellationToken);
+                if (closed > 0)
+                {
+                    ILogger logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>()
+                        .CreateLogger("Elyndor.CombatStartupRecovery");
+                    InterruptedRunsClosed(logger, closed, null);
+                }
                 return;
             }
             catch (Exception exception) when (attempt < maximumAttempts && exception is not OperationCanceledException)

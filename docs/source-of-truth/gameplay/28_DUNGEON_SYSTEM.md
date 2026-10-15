@@ -645,39 +645,35 @@ ACTIVE → ABANDONED
 
 # 35. Server Restart
 
-DungeonInstance сохраняется.
-
-Если restart произошёл **вне encounter**:
-
-- instance восстанавливается;
-- members могут rejoin.
-
-Если restart произошёл **во время CombatSession/encounter**:
+Approved restart policy (2026-10-15): every process restart, including a crash,
+closes unfinished dungeon runs before players are admitted. Idle runs also close.
 
 ```text
-CombatSession → INTERRUPTED
-no encounter reward
-current encounter → RESET
-DungeonInstance remains ACTIVE
-members return/rejoin at CurrentCheckpoint
+recover terminal journals / already committed rewards exactly once
+interrupt unfinished CombatSession without new rewards
+reconcile orphaned encounters
+unfinished DungeonRun → Abandoned
+active run members → Left
+next entry → fresh run from encounter 0
 ```
 
-Не реконструировать бой посередине.
+Completed runs, completed encounter history, character progress, items, currencies,
+party membership and reward receipts remain durable. Already earned rewards are not
+revoked or reissued. Ordinary encounter wipes during a running process still allow
+retrying that encounter within the same run.
+
+Recovery failure retains durable evidence and prevents admission; it must not wipe
+unconfirmed terminal results. Repeated startup does not repeat rewards or mutate
+already closed/completed runs. Existing live-registry safeguards remain in place.
 
 ---
 
 # 36. Boss Restart Inside Dungeon
 
-Если server restart произошёл во время dungeon boss:
-
-```text
-Boss ACTIVE → FAILED
-no reward
-encounter reset
-DungeonInstance remains ACTIVE
-```
-
-После recovery boss может быть запущен снова.
+An unfinished dungeon boss fight is interrupted without a new reward on restart.
+Its unfinished run closes under the same policy as other dungeon encounters. The
+party can create a fresh run after reconnecting. A terminal victory already recorded
+before the interruption is settled once before unfinished runs are closed.
 
 ---
 
