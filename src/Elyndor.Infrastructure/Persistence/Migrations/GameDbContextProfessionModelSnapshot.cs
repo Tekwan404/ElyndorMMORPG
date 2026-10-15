@@ -2493,6 +2493,9 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("JoinedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("ReadyState")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Role")
                         .HasColumnType("integer");
 
