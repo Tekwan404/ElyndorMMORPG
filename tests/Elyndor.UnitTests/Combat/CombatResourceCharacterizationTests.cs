@@ -33,7 +33,7 @@ public sealed class CombatResourceCharacterizationTests
         Assert.Equal(-20, Assert.Single(fight.Events(), e => e.Type == CombatEventType.ResourceChanged && e.Amount < 0).Amount);
         Assert.True(Array.FindIndex(fight.Events().ToArray(), e => e.Type == CombatEventType.ResourceChanged)
             < Array.FindIndex(fight.Events().ToArray(), e => e.Type == CombatEventType.AbilityStarted));
-        Assert.False(fight.Cast("first", Now));
+        Assert.Equal(!hosted, fight.Cast("first", Now));
         Assert.Equal(80, fight.Player.CurrentResource);
         fight.Advance(Now.AddSeconds(1));
         Assert.Equal(80 + regen, fight.Player.CurrentResource);
@@ -149,7 +149,7 @@ public sealed class CombatResourceCharacterizationTests
         Assert.True(fight.Cast("crit", Now));
         Assert.Equal(90, fight.Player.CurrentResource);
         Assert.Equal(10, Assert.Single(fight.Events(), e => e.DefinitionId == "F-3-3").Amount);
-        Assert.False(fight.Cast("crit", Now));
+        Assert.Equal(!hosted, fight.Cast("crit", Now));
         Assert.Equal(90, fight.Player.CurrentResource);
     }
 

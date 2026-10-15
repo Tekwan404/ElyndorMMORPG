@@ -18,7 +18,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Elyndor.IntegrationTests.Combat;
 
 [Collection(PostgresFixtureDefinition.Name)]
-public sealed class CombatDurabilityServiceTests(PostgresFixture postgres) : IAsyncLifetime
+public sealed partial class CombatDurabilityServiceTests(PostgresFixture postgres) : IAsyncLifetime
 {
     private static readonly DateTimeOffset Now =
         new(2026, 9, 7, 9, 30, 0, TimeSpan.Zero);

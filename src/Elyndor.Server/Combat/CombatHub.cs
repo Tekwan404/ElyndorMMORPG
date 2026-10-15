@@ -20,21 +20,19 @@ public sealed class CombatHub(
     CombatCommandRateLimiter commandRateLimiter,
     CombatSessionRegistry registry) : Hub
 {
-    public async Task<CombatUpdateResponse> StartCombat(string encounterId)
+    public async Task<CombatUpdateResponse> StartCombat(Guid encounterId)
     {
         Guid accountId = GetCommandAccountId();
         CancellationToken cancellationToken = Context.ConnectionAborted;
         await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
-        if (!Guid.TryParse(encounterId, out Guid parsedEncounterId) || parsedEncounterId == Guid.Empty)
+        if (encounterId == Guid.Empty)
         {
             return CombatContractMapper.ToResponse(
                 CombatOperationResult.Failure(CombatErrorCodes.InvalidEncounter),
                 contentProvider.GetCurrent().Package);
         }
 
-        return CombatContractMapper.ToResponse(
-            await combat.StartAsync(accountId, parsedEncounterId, cancellationToken),
-            contentProvider.GetCurrent().Package);
+        return await ToResponseAsync(combat.StartAsync(accountId, encounterId, cancellationToken));
     }
 
     public async Task<CombatUpdateResponse> StartTraining()
@@ -42,9 +40,7 @@ public sealed class CombatHub(
         Guid accountId = GetCommandAccountId();
         CancellationToken cancellationToken = Context.ConnectionAborted;
         await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
-        return CombatContractMapper.ToResponse(
-            await combat.StartTrainingAsync(accountId, cancellationToken),
-            contentProvider.GetCurrent().Package);
+        return await ToResponseAsync(combat.StartTrainingAsync(accountId, cancellationToken));
     }
 
     public async Task<CombatUpdateResponse> StartDungeonEncounter(Guid runId)
@@ -52,9 +48,7 @@ public sealed class CombatHub(
         Guid accountId = GetCommandAccountId();
         CancellationToken cancellationToken = Context.ConnectionAborted;
         await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
-        return CombatContractMapper.ToResponse(
-            await combat.StartDungeonEncounterAsync(accountId, runId, cancellationToken),
-            contentProvider.GetCurrent().Package);
+        return await ToResponseAsync(combat.StartDungeonEncounterAsync(accountId, runId, cancellationToken));
     }
 
     public Task<CombatUpdateResponse> ResetTraining() => ToResponseAsync(
@@ -64,29 +58,8 @@ public sealed class CombatHub(
         Guid sessionId,
         string abilityId,
         Guid targetActorId,
-        string commandId)
-    {
-        Guid accountId = GetCommandAccountId();
-        return ToResponseAsync(registry.ExecuteParticipantAsync(
-            accountId,
-            (session, characterId, _, now) =>
-            {
-                if (session.SessionId != sessionId)
-                {
-                    return new CombatCommandResult(
-                        false,
-                        CombatErrorCodes.NotFound,
-                        session.Snapshot(characterId),
-                        []);
-                }
-
-                return session.HandleAbilityInterruptingAutoAttack(
-                    characterId,
-                    new UseAbilityCommand(commandId, abilityId, targetActorId),
-                    now);
-            },
-            Context.ConnectionAborted));
-    }
+        string commandId) => ToResponseAsync(combat.UseAbilityAsync(
+            GetCommandAccountId(), sessionId, commandId, abilityId, targetActorId, Context.ConnectionAborted));
 
     public Task<CombatUpdateResponse> UseConsumable(
         Guid sessionId,
@@ -128,10 +101,9 @@ public sealed class CombatHub(
         Guid accountId = GetAccountId();
         CancellationToken cancellationToken = Context.ConnectionAborted;
         await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
-        CombatOperationResult result = lastSeenSequence is { } sequence
-            ? await registry.ResumeAsync(accountId, sequence, cancellationToken)
-            : registry.Resume(accountId);
-        return CombatContractMapper.ToResponse(result, contentProvider.GetCurrent().Package);
+        return await ToResponseAsync(lastSeenSequence is { } sequence
+            ? registry.ResumeAsync(accountId, sequence, cancellationToken)
+            : Task.FromResult(registry.Resume(accountId)));
     }
 
     public async Task<CombatUpdateResponse> AttachCombat(Guid sessionId)
@@ -139,9 +111,7 @@ public sealed class CombatHub(
         Guid accountId = GetCommandAccountId();
         CancellationToken cancellationToken = Context.ConnectionAborted;
         await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(accountId), cancellationToken);
-        return CombatContractMapper.ToResponse(
-            await combat.AttachAsync(accountId, sessionId, cancellationToken),
-            contentProvider.GetCurrent().Package);
+        return await ToResponseAsync(combat.AttachAsync(accountId, sessionId, cancellationToken));
     }
 
     public Task<CombatUpdateResponse> LeaveCombat(string commandId) => ToResponseAsync(
@@ -163,9 +133,9 @@ public sealed class CombatHub(
 
     public async Task<CombatThreatResponse?> GetThreatSnapshot()
     {
-        CombatThreatSnapshot? snapshot = await registry.GetThreatSnapshotAsync(
+        CombatThreatSnapshot? snapshot = await WithBusyErrorAsync(registry.GetThreatSnapshotAsync(
             GetAccountId(),
-            Context.ConnectionAborted);
+            Context.ConnectionAborted));
         if (snapshot is null)
             return null;
 
@@ -218,7 +188,13 @@ public sealed class CombatHub(
     internal static string GroupName(Guid accountId) => $"combat:{accountId:N}";
 
     private async Task<CombatUpdateResponse> ToResponseAsync(Task<CombatOperationResult> operation) =>
-        CombatContractMapper.ToResponse(await operation, contentProvider.GetCurrent().Package);
+        CombatContractMapper.ToResponse(await WithBusyErrorAsync(operation), contentProvider.GetCurrent().Package);
+
+    private static async Task<T> WithBusyErrorAsync<T>(Task<T> operation)
+    {
+        try { return await operation; }
+        catch (CombatGateBusyException) { throw new HubException("combat_busy"); }
+    }
 
     private Guid GetCommandAccountId()
     {

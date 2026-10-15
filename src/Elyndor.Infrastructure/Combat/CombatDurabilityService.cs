@@ -179,7 +179,7 @@ public sealed class CombatDurabilityService(
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(commandId)
-            || commandId.Length > 128)
+            || commandId.Length > CombatSession.MaximumCommandIdLength)
         {
             return InventoryErrorCodes.Conflict;
         }
@@ -222,7 +222,7 @@ public sealed class CombatDurabilityService(
             if (existing is not null)
             {
                 await transaction.CommitAsync(cancellationToken);
-                return string.Equals(
+                return existing.CharacterId == character.Id && string.Equals(
                     existing.ItemDefinitionId,
                     itemDefinitionId,
                     StringComparison.Ordinal)
@@ -275,6 +275,7 @@ public sealed class CombatDurabilityService(
     public async Task RollbackConsumableAsync(
         Guid sessionId,
         string commandId,
+        Guid characterId,
         CancellationToken cancellationToken)
     {
         IExecutionStrategy strategy = dbContext.Database.CreateExecutionStrategy();
@@ -286,7 +287,8 @@ public sealed class CombatDurabilityService(
             CombatConsumableUse? use = await dbContext.CombatConsumableUses
                 .SingleOrDefaultAsync(
                     candidate => candidate.SessionId == sessionId
-                        && candidate.CommandId == commandId,
+                        && candidate.CommandId == commandId
+                        && candidate.CharacterId == characterId,
                     cancellationToken);
             if (use is not null)
             {

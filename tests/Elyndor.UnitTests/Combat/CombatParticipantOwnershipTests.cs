@@ -4,6 +4,7 @@ using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Combat.Sessions;
 using Elyndor.Core.Monsters;
+using Elyndor.Core.Items;
 using Elyndor.Core.Talents;
 
 namespace Elyndor.UnitTests.Combat;
@@ -11,6 +12,79 @@ namespace Elyndor.UnitTests.Combat;
 public sealed class CombatParticipantOwnershipTests
 {
     private static readonly DateTimeOffset Now = DateTimeOffset.UnixEpoch;
+
+    [Fact]
+    public void ConsumableValidationUsesRequestingMembersHealthAndCooldowns()
+    {
+        Fight fight = Create([], []);
+        fight.Member!.ApplyDamage(500);
+        ResolvedConsumableAction[] actions = [new(ConsumableActionType.RestoreHp, 100)];
+        Assert.Null(fight.Session.ValidateConsumableUse(fight.Member.ActorId, Now, actions, "HEAL", TimeSpan.FromSeconds(30)));
+        Assert.Equal(CombatErrorCodes.ConsumableNotNeeded,
+            fight.Session.ValidateConsumableUse(fight.Owner.ActorId, Now, actions, "HEAL", TimeSpan.FromSeconds(30)));
+        Assert.True(fight.Session.Handle(fight.Member.ActorId,
+            new UseConsumableCommand("member-heal", "TEST_POTION", actions, "HEAL", TimeSpan.FromSeconds(30)), Now).Succeeded);
+        fight.Owner.ApplyDamage(100);
+        Assert.Null(fight.Session.ValidateConsumableUse(fight.Owner.ActorId, Now, actions, "HEAL", TimeSpan.FromSeconds(30)));
+        Assert.Equal(CombatErrorCodes.ConsumableOnCooldown,
+            fight.Session.ValidateConsumableUse(fight.Member.ActorId, Now, actions, "HEAL", TimeSpan.FromSeconds(30)));
+    }
+
+    [Fact]
+    public void ReplayedCommandReturnsOriginalOutcomeWithoutApplyingDamageAgain()
+    {
+        Fight fight = Create([], []);
+        UseAbilityCommand command = new("replay", "SHOT", fight.Enemies[0].ActorId);
+        CombatCommandResult first = fight.Session.Handle(fight.Owner.ActorId, command, Now);
+        decimal hp = fight.Enemies[0].CurrentHp;
+        CombatCommandResult replay = fight.Session.Handle(fight.Owner.ActorId, command, Now);
+        Assert.True(first.Succeeded);
+        Assert.True(replay.Succeeded);
+        Assert.Equal(hp, fight.Enemies[0].CurrentHp);
+        Assert.Empty(replay.Events);
+        Assert.Equal(fight.Owner.ActorId, replay.Snapshot.Player.ActorId);
+    }
+
+    [Fact]
+    public void RejectedCommandReplaysItsOriginalReason()
+    {
+        Fight fight = Create([], []);
+        UseAbilityCommand command = new("rejected", "UNKNOWN", fight.Enemies[0].ActorId);
+        CombatCommandResult first = fight.Session.Handle(fight.Owner.ActorId, command, Now);
+        CombatCommandResult replay = fight.Session.Handle(fight.Owner.ActorId, command, Now);
+        Assert.Equal(CombatErrorCodes.AbilityNotKnown, first.ErrorCode);
+        Assert.Equal(first.ErrorCode, replay.ErrorCode);
+    }
+
+    [Fact]
+    public void CommandHistoryIsBoundedPerParticipantAndKeepsOldReplaySafe()
+    {
+        Fight fight = Create([], []);
+        for (int index = 0; index < 16384; index++)
+            Assert.True(fight.Session.Handle(fight.Owner.ActorId, new StopAutoAttackCommand($"stop-{index}"), Now).Succeeded);
+        CombatCommandResult full = fight.Session.Handle(fight.Owner.ActorId, new StopAutoAttackCommand("over-limit"), Now);
+        Assert.Equal("combat_command_limit", full.ErrorCode);
+        Assert.True(fight.Session.Handle(fight.Owner.ActorId, new StopAutoAttackCommand("stop-0"), Now).Succeeded);
+        Assert.True(fight.Session.Handle(fight.Member!.ActorId, new StopAutoAttackCommand("member-stop"), Now).Succeeded);
+        Assert.Equal(CombatErrorCodes.DuplicateCommand,
+            fight.Session.Handle(fight.Member.ActorId, new StopAutoAttackCommand("stop-0"), Now).ErrorCode);
+        Assert.True(fight.Session.Handle(fight.Owner.ActorId, new FleeCommand("escape"), Now).Succeeded);
+        Assert.True(fight.Session.Handle(fight.Owner.ActorId, new FleeCommand("escape"), Now).Succeeded);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData("01234567890123456789012345678901234567890123456789012345678901234")]
+    public void InvalidCommandIdsAreRejectedBeforeMutation(string commandId)
+    {
+        Fight fight = Create([], []);
+        decimal hp = fight.Enemies[0].CurrentHp;
+        CombatCommandResult result = fight.Session.Handle(fight.Owner.ActorId,
+            new UseAbilityCommand(commandId, "SHOT", fight.Enemies[0].ActorId), Now);
+        Assert.Equal("combat_command_id_invalid", result.ErrorCode);
+        Assert.Equal(hp, fight.Enemies[0].CurrentHp);
+    }
 
     [Theory]
     [InlineData(false)]

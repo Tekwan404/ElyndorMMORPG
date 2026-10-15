@@ -648,7 +648,10 @@ public sealed class WarriorProductionContractTests
         Assert.Equal(50 + rage, owner.CurrentResource);
         Assert.Contains(result.Snapshot.Player.Abilities, a => a.Id == id && a.ResourceCost == abilities[id].ResourceCost);
         Assert.Contains(result.Events, e => e.Type == CombatEventType.AbilityCompleted && e.DefinitionId == id);
-        Assert.False(session.Handle(new UseAbilityCommand("baseline", id, enemy.ActorId), DateTimeOffset.UnixEpoch).Succeeded);
+        var replay = session.Handle(new UseAbilityCommand("baseline", id, enemy.ActorId), DateTimeOffset.UnixEpoch);
+        Assert.True(replay.Succeeded);
+        Assert.Empty(replay.Events);
+        Assert.Equal(2000 - damage, enemy.CurrentHp);
         Assert.Equal(50 + rage, owner.CurrentResource);
     }
 

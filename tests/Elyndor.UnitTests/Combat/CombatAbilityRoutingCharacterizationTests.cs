@@ -67,7 +67,7 @@ public sealed class CombatAbilityRoutingCharacterizationTests
         Assert.Equal(type == AbilityType.Casted ? Now.AddSeconds(2) : Now,
             Assert.Single(fight.Events(), e => e.DefinitionId == "MAGE_FIRE_VULNERABILITY").OccurredAtUtc);
         long count = fight.Events().Count;
-        Assert.False(fight.Cast("cast", type == AbilityType.Casted ? Now.AddSeconds(2) : Now));
+        Assert.Equal(!hosted, fight.Cast("cast", type == AbilityType.Casted ? Now.AddSeconds(2) : Now));
         Assert.Equal(count, fight.Events().Count);
     }
 

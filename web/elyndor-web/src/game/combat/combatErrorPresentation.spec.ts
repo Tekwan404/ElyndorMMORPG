@@ -14,6 +14,13 @@ describe('combat wire error presentation', () => {
     expect(combatErrorPresentation(code).showToast).toBe(false)
   })
 
+  it('explains combat contention as a retryable action', () => {
+    expect(combatErrorPresentation('combat_busy')).toEqual({
+      message: 'Бой занят обработкой действия. Повторите попытку.',
+      showToast: true,
+    })
+  })
+
   it('only describes a realtime failure as a connection problem', () => {
     expect(combatErrorPresentation('combat_hub_use_ability_failed')).toEqual({
       message: 'Не удалось связаться с боем. Повторите подключение.',

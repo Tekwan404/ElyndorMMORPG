@@ -1350,3 +1350,24 @@ journals are finalized once before closing unfinished runs; unconfirmed evidence
 is never discarded to force a reset. PvP orphan matches retain their existing
 cancellation without rating/Honor changes; in-memory queues and training sessions
 start empty. Disconnect alone does not trigger this startup policy.
+
+
+### Command retry contract (2026-10-15)
+
+Combat command IDs are session-unique, nonblank and at most 64 characters.
+A repeat by the same participant returns the original success/error with a current
+participant-specific snapshot, without applying effects again. Reuse by another
+participant is rejected. The session retains compact outcomes rather than snapshot
+copies, with 16384 commands per participant and one reserved escape command at
+capacity. Old IDs are not evicted into becoming executable again.
+
+A gate admission timeout is `combat_busy`: the request has not executed and may be
+retried. A timeout after admission can have an applied outcome; clients preserve
+its command ID and resynchronize. Consumable compensation runs independently of
+connection cancellation and is scoped to the character owning the reservation.
+
+The server publishes `CombatUpdated` for both active and terminal states. Clients
+retain the legacy `CombatEnded` listener for compatibility and deduplicate sequenced
+events and loot IDs. Equal-sequence reward finalization updates remain valid.
+The `Elyndor.Combat` meter exports gate wait/hold duration in milliseconds, without
+player/session identity tags. Reservation I/O remains inside the single-writer gate.

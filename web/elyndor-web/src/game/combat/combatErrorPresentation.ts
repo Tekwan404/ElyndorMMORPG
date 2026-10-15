@@ -29,6 +29,12 @@ const expectedRejections = new Set<string>([
 
 export function combatErrorPresentation(code: string | null): { message: string; showToast: boolean } {
   if (code === null) return { message: '', showToast: false }
+  if (code === 'combat_busy') {
+    return { message: 'Бой занят обработкой действия. Повторите попытку.', showToast: true }
+  }
+  if (code === 'combat_command_limit') {
+    return { message: 'Достигнут лимит команд этого боя. Завершите бой.', showToast: true }
+  }
   if (expectedRejections.has(code) || code === COMBAT_ERRORS.duplicateCommand) {
     return { message: '', showToast: false }
   }

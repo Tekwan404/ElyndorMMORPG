@@ -192,8 +192,8 @@ public sealed class CombatApplicationService(
                     return new CombatCommandResult(false, CombatErrorCodes.NotFound, session.Snapshot(characterId), []);
                 if (IsTraining(session.Snapshot(characterId)))
                     return new CombatCommandResult(false, CombatErrorCodes.CommandRejected, session.Snapshot(characterId), []);
-                if (session.HasProcessedCommand(commandId))
-                    return new CombatCommandResult(false, CombatErrorCodes.DuplicateCommand, session.Snapshot(characterId), []);
+                if (session.GetCommandPreflightResult(characterId, commandId) is { } replay)
+                    return replay;
 
                 GameContentSnapshot contentSnapshot =
                     pinnedContent ?? contentProvider.GetCurrent();
@@ -226,6 +226,7 @@ public sealed class CombatApplicationService(
                 TimeSpan cooldown = TimeSpan.FromSeconds(
                     (double)definition.ConsumableCooldownSeconds);
                 string? validationError = session.ValidateConsumableUse(
+                    characterId,
                     now,
                     actions,
                     definition.ConsumableCooldownCategoryId,
@@ -239,31 +240,31 @@ public sealed class CombatApplicationService(
                         []);
                 }
 
-                string? inventoryError = durability is null
-                    ? await inventoryService.ConsumeOneForCombatAsync(
-                        accountId,
-                        itemDefinitionId,
-                        contentSnapshot,
-                        cancellationToken)
-                    : await durability.ReserveConsumableAsync(
-                        accountId,
-                        sessionId,
-                        commandId,
-                        itemDefinitionId,
-                        contentSnapshot,
-                        now,
-                        cancellationToken);
-                if (inventoryError is not null)
-                {
-                    return new CombatCommandResult(
-                        false,
-                        CombatErrorCodes.CommandRejected,
-                        session.Snapshot(),
-                        []);
-                }
-
                 try
                 {
+                    string? inventoryError = durability is null
+                        ? await inventoryService.ConsumeOneForCombatAsync(
+                            accountId,
+                            itemDefinitionId,
+                            contentSnapshot,
+                            cancellationToken)
+                        : await durability.ReserveConsumableAsync(
+                            accountId,
+                            sessionId,
+                            commandId,
+                            itemDefinitionId,
+                            contentSnapshot,
+                            now,
+                            cancellationToken);
+                    if (inventoryError is not null)
+                    {
+                        return new CombatCommandResult(
+                            false,
+                            CombatErrorCodes.CommandRejected,
+                            session.Snapshot(characterId),
+                            []);
+                    }
+
                     CombatCommandResult applied = session.Handle(
                         characterId,
                         new UseConsumableCommand(
@@ -278,7 +279,8 @@ public sealed class CombatApplicationService(
                         await durability.RollbackConsumableAsync(
                             sessionId,
                             commandId,
-                            cancellationToken);
+                            characterId,
+                            CancellationToken.None);
                     }
 
                     return applied;
@@ -290,7 +292,8 @@ public sealed class CombatApplicationService(
                         await durability.RollbackConsumableAsync(
                             sessionId,
                             commandId,
-                            cancellationToken);
+                            characterId,
+                            CancellationToken.None);
                     }
 
                     throw;

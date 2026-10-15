@@ -20,7 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Elyndor.IntegrationTests.Combat;
 
 [Collection(PostgresFixtureDefinition.Name)]
-public sealed class AutoAttackFlowTests(PostgresFixture postgres) : IAsyncLifetime
+public sealed partial class AutoAttackFlowTests(PostgresFixture postgres) : IAsyncLifetime
 {
     public Task InitializeAsync() => postgres.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
