@@ -44,7 +44,9 @@ public sealed record FriendProfile(
     int Level,
     string ClassId,
     string PublicCode,
-    string? TelegramUsername);
+    string? TelegramUsername,
+    string? ActiveFrameId = null,
+    string? ActiveTitleId = null);
 
 public sealed record FriendSnapshot(
     IReadOnlyList<FriendProfile> Friends,
@@ -535,7 +537,9 @@ public sealed class FriendService(
                 character.PublicCode,
                 account.TelegramUsername == null
                     ? null
-                    : "@" + account.TelegramUsername.TrimStart('@')))
+                    : "@" + account.TelegramUsername.TrimStart('@'),
+                character.ActiveProfileFrameId,
+                character.ActiveTitleId))
             .ToArrayAsync(cancellationToken);
     }
 

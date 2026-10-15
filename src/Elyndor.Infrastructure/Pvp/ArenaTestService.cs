@@ -1,5 +1,6 @@
 using Elyndor.Core.Pvp;
 using Elyndor.Infrastructure.Combat;
+using Elyndor.Infrastructure.Characters;
 
 namespace Elyndor.Infrastructure.Pvp;
 
@@ -14,14 +15,19 @@ public sealed class ArenaTestService(
     ArenaTestRegistry registry,
     ArenaFighterFactory fighters,
     ICombatActivityReader pveActivity,
-    Microsoft.Extensions.Options.IOptions<ArenaTestOptions> options)
+    Microsoft.Extensions.Options.IOptions<ArenaTestOptions> options,
+    CharacterOperationGuard? operationGuard = null)
 {
     public bool Enabled => options.Value.Enabled;
 
     public ArenaTestState? Status(Guid accountId, long afterSequence = 0) =>
         Enabled ? registry.Get(accountId, afterSequence) : null;
 
-    public async Task<ArenaTestOperationResult> JoinAsync(Guid accountId, CancellationToken cancellationToken)
+    public Task<ArenaTestOperationResult> JoinAsync(Guid accountId, CancellationToken cancellationToken) =>
+        operationGuard is null ? JoinCoreAsync(accountId, cancellationToken)
+            : operationGuard.ExecuteExclusiveAsync(accountId, () => JoinCoreAsync(accountId, cancellationToken), cancellationToken);
+
+    private async Task<ArenaTestOperationResult> JoinCoreAsync(Guid accountId, CancellationToken cancellationToken)
     {
         if (!Enabled) return Failure("arena_test_disabled");
         if (registry.Get(accountId) is { } existing)

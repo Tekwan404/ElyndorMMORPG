@@ -118,6 +118,8 @@ export interface FriendProfile {
   classId: string
   publicCode: string
   telegramUsername: string | null
+  profileFrameStyle?: string | null
+  profileTitle?: string | null
 }
 
 export interface FriendRequest {
@@ -194,15 +196,6 @@ export interface DungeonFloorPreview {
   lastEncounterIndex: number
   bossName: string | null
   possibleLoot: WorldLocationLoot[]
-  displayName?: string | null
-  requiredEncounterId?: string | null
-}
-
-export interface DungeonFloorState {
-  number: number
-  isUnlocked: boolean
-  isCompleted: boolean
-  nextEncounterIndex: number | null
 }
 
 export interface DungeonTeleportResponse {
@@ -231,7 +224,6 @@ export interface DungeonRun {
   partyId: string
   members: DungeonRunMember[]
   encounters: DungeonEncounter[]
-  floors?: DungeonFloorState[] | null
 }
 
 export interface DungeonRunMember {
@@ -364,6 +356,8 @@ export interface CharacterSnapshot {
   publicCode?: string
   raceId: 'HUMAN' | 'UNDEAD'
   genderId: 'MALE' | 'FEMALE'
+  profileFrameStyle?: string | null
+  profileTitle?: string | null
   activeSkinId?: string | null
   classId: 'WARRIOR' | 'ARCHER' | 'MAGE' | 'PALADIN'
   level: number

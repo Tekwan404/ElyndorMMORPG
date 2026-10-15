@@ -105,6 +105,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<CrystalWalletService>();
         builder.Services.AddScoped<PremiumStoreService>();
         builder.Services.AddScoped<CharacterSkinService>();
+        builder.Services.AddScoped<PersonalizationStoreService>();
         builder.Services.AddScoped<PromoCodeService>();
         builder.Services.AddScoped<MerchantService>();
         builder.Services.AddScoped<CommerceTransaction>();

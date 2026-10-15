@@ -7,6 +7,20 @@ import PremiumStoreView from '@/game/economy/views/PremiumStoreView.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 
 describe('PremiumStoreView', () => {
+  it('makes crystals explicit and explains that top-up is unavailable without a fake checkout', async () => {
+    const session = useGameSessionStore()
+    vi.spyOn(session, 'getPremiumStore').mockResolvedValue(snapshot())
+    const purchase = vi.spyOn(session, 'buyPremiumStoreOffer')
+    const wrapper = mount(PremiumStoreView, { global: { stubs: { Teleport: true } } })
+    await flushPromises()
+    expect(wrapper.get('[data-ether-store]').text()).toContain('за кристаллы')
+    expect(wrapper.find('[data-product-id="rename-character"]').exists()).toBe(false)
+    await wrapper.get('[data-open-crystals]').trigger('click')
+    expect(wrapper.get('[role="dialog"]').text()).toContain('Пополнение пока недоступно')
+    expect(wrapper.get('[role="dialog"]').text()).not.toContain('billing')
+    expect(purchase).not.toHaveBeenCalled()
+    wrapper.unmount()
+  })
   it('accepts 51 packs, previews totals and submits one purchase', async () => {
     const session = useGameSessionStore()
     const rich = snapshot()
@@ -67,7 +81,7 @@ describe('PremiumStoreView', () => {
     await flushPromises()
 
     expect(wrapper.get('[data-forge-supplies]').text()).toContain('Кузнечные припасы')
-    expect(wrapper.get('[data-forge-supplies]').text()).toContain('БЕЗ ЛИМИТА')
+    expect(wrapper.get('[data-forge-supplies]').text()).toContain('ПОВТОРЯЕМАЯ ПОКУПКА')
     expect(wrapper.get('[data-product-id="enhancement-ore-20"]').text()).toContain('Закалочная руда')
     expect(wrapper.get('[data-product-id="enhancement-ore-20"]').text()).toContain('×20')
 

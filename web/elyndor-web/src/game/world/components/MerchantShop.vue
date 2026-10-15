@@ -11,15 +11,19 @@ import {
   type MerchantSnapshot,
 } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
+import MerchantPortrait from '@/game/world/components/MerchantPortrait.vue'
+import { marketMerchant } from '@/game/world/marketMerchants'
 import { consumableActionLabel } from '@/game/items/consumablePresentation'
 import ItemIcon from '@/game/items/components/ItemIcon.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
-const props = defineProps<{ open: boolean }>()
+const props = withDefaults(defineProps<{ open: boolean; merchantId?: string }>(), { merchantId: 'MARCUS_SUPPLIES' })
 const emit = defineEmits<{ close: [] }>()
-const MERCHANT_ID = 'MARCUS_SUPPLIES'
+const merchantPresentation = computed(() => marketMerchant(props.merchantId))
+const loadError = ref(false)
+let loadSequence = 0
 
 type MerchantFilter = 'all' | MerchantItem['type']
 type SortMode = 'recommended' | 'price-asc' | 'price-desc' | 'rarity'
@@ -128,7 +132,7 @@ const selectedSellValue = computed(() =>
   selectedSellItems.value.reduce((sum, item) => sum + item.sellPriceGold * item.quantity, 0),
 )
 
-watch(() => props.open, open => {
+watch([() => props.open, () => props.merchantId], ([open]) => {
   if (!open) return
   activeTab.value = 'buy'
   searchQuery.value = ''
@@ -152,17 +156,21 @@ onBeforeUnmount(() => {
 })
 
 async function loadMerchant(): Promise<void> {
+  const sequence = ++loadSequence
+  const merchantId = props.merchantId
   loading.value = true
+  loadError.value = false
+  merchant.value = null
   try {
-    merchant.value = await session.getMerchant(MERCHANT_ID)
-    if (
-      merchant.value
-      && !merchant.value.items.some(item => item.definitionId === selectedOfferId.value)
-    ) {
-      selectedOfferId.value = merchant.value.items[0]?.definitionId ?? null
-    }
+    const loaded = await session.getMerchant(merchantId)
+    if (sequence !== loadSequence || props.merchantId !== merchantId) return
+    merchant.value = loaded
+    if (!loaded.items.some(item => item.definitionId === selectedOfferId.value))
+      selectedOfferId.value = loaded.items[0]?.definitionId ?? null
+  } catch {
+    if (sequence === loadSequence) loadError.value = true
   } finally {
-    loading.value = false
+    if (sequence === loadSequence) loading.value = false
   }
 }
 
@@ -315,7 +323,7 @@ function pulse(itemId: string): void {
 }
 
 async function buy(item: MerchantItem, quantity = 1): Promise<void> {
-  const updated = await session.buyMerchantItem(MERCHANT_ID, item.definitionId, quantity)
+  const updated = await session.buyMerchantItem(props.merchantId, item.definitionId, quantity)
   if (!updated) return
   merchant.value = updated
   reaction.value = quantity > 1
@@ -343,7 +351,7 @@ function isValuable(item: InventoryItem): boolean {
 }
 
 async function performSell(item: InventoryItem, quantity: number): Promise<boolean> {
-  const updated = await session.sellMerchantItem(MERCHANT_ID, item.id, quantity)
+  const updated = await session.sellMerchantItem(props.merchantId, item.id, quantity)
   if (!updated) return false
   merchant.value = updated
   return true
@@ -394,7 +402,7 @@ async function sellSelected(): Promise<void> {
 }
 
 async function buyback(item: MerchantBuybackItem): Promise<void> {
-  const updated = await session.buybackMerchantItem(MERCHANT_ID, item.characterItemId)
+  const updated = await session.buybackMerchantItem(props.merchantId, item.characterItemId)
   if (!updated) return
   merchant.value = updated
   reaction.value = 'Передумал? Бывает. Забирай — вещь всё ещё твоя.'
@@ -402,7 +410,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 </script>
 
 <template>
-  <UIModal :open="open" title="Лавка Маркуса" @close="emit('close')">
+  <UIModal :open="open" :title="merchantPresentation.name" :busy="buyPending || sellPending || buybackPending" @close="emit('close')">
     <section class="merchant">
       <header
         class="merchant__npc"
@@ -410,12 +418,12 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
       >
         <div class="merchant__npc-shade" />
         <div class="merchant__portrait">
-          <img :src="gameArt.npc.marcus" alt="Торговец Маркус" />
+          <MerchantPortrait :merchant-id="merchantId" :name="merchantPresentation.name" />
         </div>
 
         <div class="merchant__identity">
-          <span class="merchant__eyebrow">СТАРТОВЫЙ ГОРОД · ЛАВКА ПРИПАСОВ</span>
-          <h2>{{ merchant?.name ?? 'Торговец Маркус' }}</h2>
+          <span class="merchant__eyebrow">{{ merchantPresentation.role }}</span>
+          <h2>{{ merchant?.name ?? merchantPresentation.name }}</h2>
           <p>{{ merchant?.description ?? 'Припасы, снаряжение и полезные мелочи перед дорогой.' }}</p>
           <div class="merchant__service">
             <span>⚒ Проверенный товар</span>
@@ -433,9 +441,10 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
       <div class="merchant-reaction" data-merchant-reaction>
         <span aria-hidden="true">“</span>
         <p>{{ reaction }}</p>
-        <small>— Маркус</small>
+        <small>— {{ merchantPresentation.name }}</small>
       </div>
 
+      <p v-if="loadError" role="alert">Не удалось загрузить товары. <UIButton variant="ghost" @click="loadMerchant">Повторить</UIButton></p>
       <nav class="merchant-tabs" aria-label="Разделы торговца">
         <button
           type="button"
@@ -688,7 +697,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
             <div class="merchant-detail__quote">
               <span aria-hidden="true">“</span>
               <p>{{ reaction }}</p>
-              <small>— Маркус</small>
+              <small>— {{ merchantPresentation.name }}</small>
             </div>
 
             <div v-if="selectedOffer.type !== 'Equipment'" class="merchant-quantity">
@@ -736,7 +745,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
         <div v-if="loading" class="merchant-empty">
           <span class="merchant-empty__mark">◆</span>
-          <p>Маркус раскладывает товар…</p>
+          <p>Торговец раскладывает товар…</p>
         </div>
         <div v-else-if="merchant && merchant.items.length === 0" class="merchant-empty">
           <span class="merchant-empty__mark">◇</span>
@@ -833,7 +842,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
         <div v-else class="merchant-empty">
           <span class="merchant-empty__mark">◇</span>
-          <p>В сумке пока нет вещей, которые Маркус готов купить.</p>
+          <p>В сумке пока нет вещей, которые торговец готов купить.</p>
         </div>
       </section>
 
@@ -889,7 +898,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
         <div v-else class="merchant-empty">
           <span class="merchant-empty__mark">↶</span>
-          <p>Выкуп пуст. Здесь появятся последние проданные Маркусу вещи.</p>
+          <p>Выкуп пуст. Здесь появятся последние проданные торговцу вещи.</p>
         </div>
       </section>
     </section>

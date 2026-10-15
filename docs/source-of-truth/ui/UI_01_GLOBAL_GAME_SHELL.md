@@ -787,3 +787,13 @@ docs/source-of-truth/ui/UI_02_WORLD_AND_LOCATION.md
 - zone quests;
 - event markers;
 - danger/threat presentation.
+
+
+## Compact player HUD (2026-10-15)
+
+The persistent HUD omits the ELYNDOR brand and online label. Name, level and class
+share one line; an equipped title remains below. Gold and crystals share one row,
+placed beneath identity on narrow phones. Health/resource values sit inside 20px
+tracks, retaining accessible resource names. XP uses a separate thin 12px track.
+Resource-bar inside placement is optional; other consumers retain their default
+above-track labels. HUD spacing belongs to AppShell, without global polish overrides.

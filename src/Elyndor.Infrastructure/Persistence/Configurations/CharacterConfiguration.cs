@@ -30,6 +30,8 @@ public sealed class CharacterConfiguration : IEntityTypeConfiguration<Character>
         builder.Property(character => character.ClassId).HasMaxLength(16).IsRequired();
         builder.Property(character => character.ActiveCompanionProfileId).HasMaxLength(64);
         builder.Property(character => character.ActiveSkinId).HasMaxLength(64);
+        builder.Property(character => character.ActiveProfileFrameId).HasMaxLength(64);
+        builder.Property(character => character.ActiveTitleId).HasMaxLength(64);
         builder.Property(character => character.Level).IsRequired();
         builder.Property(character => character.Experience).HasDefaultValue(0L).IsRequired();
         builder.Property(character => character.Gold).HasDefaultValue(0L).IsRequired();

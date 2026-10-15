@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 
 import { itemArtUrl } from '@/assets/itemArt'
+import { spatialArtifactArt } from '@/assets/spatialArtifactArt'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName, IconCategory, Rarity } from '@/ui/icons/icon.types'
 
@@ -24,6 +25,7 @@ const props = withDefaults(defineProps<{
 
 const failedToLoad = ref(false)
 const source = computed(() => failedToLoad.value ? undefined : itemArtUrl(props.iconId))
+const spatialArt = computed(() => spatialArtifactArt(props.itemId, props.iconId))
 const rarity = computed<Rarity | undefined>(() => {
   const value = props.rarity?.toLowerCase()
   return value === 'common' || value === 'uncommon' || value === 'rare'
@@ -66,6 +68,9 @@ watch(() => props.iconId, () => { failedToLoad.value = false })
       decoding="async"
       @error="failedToLoad = true"
     />
+    <span v-else-if="spatialArt" class="item-icon__spatial" data-spatial-art
+      :role="decorative ? 'presentation' : 'img'" :aria-label="decorative ? undefined : name"
+      :style="spatialArt" />
     <IconGenerator
       v-else
       class="item-icon__fallback"
@@ -82,6 +87,7 @@ watch(() => props.iconId, () => { failedToLoad.value = false })
 
 <style scoped>
 .item-icon { position: relative; display: inline-grid; width: 100%; height: 100%; }
+.item-icon__spatial { display: block; width: 100%; height: 100%; background-size: 300% 300%; background-repeat: no-repeat; border-radius: 8px; }
 .item-icon__image, .item-icon__fallback { width: 100%; height: 100%; min-width: 0; min-height: 0; object-fit: contain; }
 .item-icon__slot-badge { display: none; }
 </style>

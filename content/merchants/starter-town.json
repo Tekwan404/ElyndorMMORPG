@@ -1,13 +1,13 @@
 {
-  "contentVersion": "0.19.0",
+  "contentVersion": "0.60.0",
   "balanceVersion": "0.14.1",
-  "publishedAtUtc": "2026-09-20T08:00:00+00:00",
+  "publishedAtUtc": "2026-10-14T00:00:00+00:00",
   "merchants": [
     {
       "id": "MARCUS_SUPPLIES",
       "name": "Торговец Маркус",
       "locationId": "STARTER_TOWN",
-      "description": "Маркус снабжает искателей расходниками, материалами для базового усиления и гарантированным Common-снаряжением 2 уровня. Более редкая экипировка добывается в мире и подземельях.",
+      "description": "Зелья для восстановления сил, материалы для усиления и украшения в дорогу. Снаряжение ищите в соседних классовых лавках.",
       "itemIds": [
         "SMALL_HEALING_POTION",
         "MINOR_HEALING_POTION",
@@ -20,6 +20,17 @@
         "MINOR_BATTLE_TONIC",
         "MINOR_ANTIDOTE",
         "ENHANCEMENT_ORE",
+        "ACC_COMMON_2_CLOAK",
+        "ACC_COMMON_2_AMULET",
+        "ACC_COMMON_2_RING"
+      ]
+    },
+    {
+      "id": "BORIN_ARMORY",
+      "name": "Оружейник Борин",
+      "locationId": "STARTER_TOWN",
+      "description": "Стальное снаряжение для воинов и паладинов. Щиты, оружие и доспехи перед первым походом.",
+      "itemIds": [
         "WARRIOR_COMMON_BORDER_STEEL_CHEST",
         "WARRIOR_COMMON_BORDER_STEEL_FEET",
         "WARRIOR_COMMON_BORDER_STEEL_HANDS",
@@ -27,7 +38,31 @@
         "WARRIOR_COMMON_BORDER_STEEL_LEGS",
         "WARRIOR_COMMON_BORDER_STEEL_SHIELD",
         "WARRIOR_COMMON_BORDER_STEEL_SHOULDERS",
-        "WARRIOR_COMMON_BORDER_STEEL_WEAPON",
+        "WARRIOR_COMMON_BORDER_STEEL_WEAPON"
+      ]
+    },
+    {
+      "id": "LIORA_HUNTING",
+      "name": "Следопыт Лиора",
+      "locationId": "STARTER_TOWN",
+      "description": "Луки, колчаны и лёгкое снаряжение для лучников.",
+      "itemIds": [
+        "ARCHER_COMMON_WHISPER_TRACKER_BOW",
+        "ARCHER_COMMON_WHISPER_TRACKER_CHEST",
+        "ARCHER_COMMON_WHISPER_TRACKER_FEET",
+        "ARCHER_COMMON_WHISPER_TRACKER_HANDS",
+        "ARCHER_COMMON_WHISPER_TRACKER_HEAD",
+        "ARCHER_COMMON_WHISPER_TRACKER_LEGS",
+        "ARCHER_COMMON_WHISPER_TRACKER_SHOULDERS",
+        "ARCHER_COMMON_WHISPER_TRACKER_QUIVER"
+      ]
+    },
+    {
+      "id": "ELARA_ARCANA",
+      "name": "Чародейка Элара",
+      "locationId": "STARTER_TOWN",
+      "description": "Посохи, жезлы, фокусы и облачения для магов.",
+      "itemIds": [
         "MAGE_COMMON_BLUE_CANDLE_CHEST",
         "MAGE_COMMON_BLUE_CANDLE_FEET",
         "MAGE_COMMON_BLUE_CANDLE_HANDS",
@@ -36,18 +71,7 @@
         "MAGE_COMMON_BLUE_CANDLE_SHOULDERS",
         "MAGE_COMMON_BLUE_CANDLE_STAFF",
         "MAGE_COMMON_BLUE_CANDLE_WAND",
-        "ARCHER_COMMON_WHISPER_TRACKER_BOW",
-        "ARCHER_COMMON_WHISPER_TRACKER_CHEST",
-        "ARCHER_COMMON_WHISPER_TRACKER_FEET",
-        "ARCHER_COMMON_WHISPER_TRACKER_HANDS",
-        "ARCHER_COMMON_WHISPER_TRACKER_HEAD",
-        "ARCHER_COMMON_WHISPER_TRACKER_LEGS",
-        "ARCHER_COMMON_WHISPER_TRACKER_SHOULDERS",
-        "MAGE_COMMON_BLUE_CANDLE_FOCUS",
-        "ARCHER_COMMON_WHISPER_TRACKER_QUIVER",
-        "ACC_COMMON_2_CLOAK",
-        "ACC_COMMON_2_AMULET",
-        "ACC_COMMON_2_RING"
+        "MAGE_COMMON_BLUE_CANDLE_FOCUS"
       ]
     }
   ]

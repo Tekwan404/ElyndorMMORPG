@@ -1,3 +1,5 @@
+using Elyndor.Core.Characters;
+using Elyndor.Core.Content;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Contracts.Social;
@@ -44,6 +46,7 @@ public static class SocialEndpoints
     private static async Task<IResult> GetSnapshotAsync(
         ClaimsPrincipal user,
         FriendService friendService,
+        IContentSnapshotProvider contentProvider,
         HttpContext httpContext,
         CancellationToken cancellationToken)
     {
@@ -55,7 +58,7 @@ public static class SocialEndpoints
             cancellationToken);
         return snapshot is null
             ? Problem("friend_character_not_found", StatusCodes.Status404NotFound, httpContext)
-            : Results.Ok(ToResponse(snapshot));
+            : Results.Ok(ToResponse(snapshot, contentProvider.GetCurrent().Package));
     }
 
     private static Task<IResult> SendRequestAsync(
@@ -165,7 +168,7 @@ public static class SocialEndpoints
             result.Relationship,
             result.PendingRequestId);
 
-    private static FriendsSnapshotResponse ToResponse(FriendSnapshot snapshot) =>
+    private static FriendsSnapshotResponse ToResponse(FriendSnapshot snapshot, GameContentPackage content) =>
         new(
             snapshot.Friends.Select(friend => new FriendProfileResponse(
                 friend.CharacterId,
@@ -173,7 +176,9 @@ public static class SocialEndpoints
                 friend.Level,
                 friend.ClassId,
                 friend.PublicCode,
-                friend.TelegramUsername)).ToArray(),
+                friend.TelegramUsername,
+                CharacterProfilePresentation.FrameStyle(friend.ActiveFrameId, content),
+                CharacterProfilePresentation.TitleName(friend.ActiveTitleId, content))).ToArray(),
             snapshot.IncomingRequests.Select(ToResponse).ToArray(),
             snapshot.OutgoingRequests.Select(ToResponse).ToArray());
 

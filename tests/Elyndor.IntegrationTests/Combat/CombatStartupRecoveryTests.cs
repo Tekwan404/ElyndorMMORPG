@@ -291,7 +291,7 @@ public sealed class CombatStartupRecoveryTests(PostgresFixture postgres) : IAsyn
         string defeatedBossId = nextEncounter ? precedingBossId : bossId;
         Seed seed = await SeedAsync(journal: true, monsterId: defeatedBossId, dungeonId: "HEART_OF_BLIGHTED_GROVE",
             encounterIndex: nextEncounter ? 6 : 7);
-        await using ServiceProvider provider = await CreateProviderAsync(legacyFloors: true);
+        await using ServiceProvider provider = await CreateProviderAsync();
         CombatSessionSnapshot baseSnapshot = CreateSession(seed.SessionId, seed.CharacterId).Snapshot();
         CombatActorSnapshot boss = baseSnapshot.Enemy with { DefinitionId = defeatedBossId, Hp = 0 };
         ContributionSnapshot contribution = new(seed.CharacterId, Now.AddSeconds(-10), null, null, 1, 100, 0, 0, 0);
@@ -394,11 +394,9 @@ public sealed class CombatStartupRecoveryTests(PostgresFixture postgres) : IAsyn
 
     private async Task<ServiceProvider> CreateProviderAsync(
         int failures = 0, CombatSessionRegistry? registry = null, IHostApplicationLifetime? lifetime = null,
-        IInterceptor? interceptor = null, bool legacyFloors = false)
+        IInterceptor? interceptor = null)
     {
         GameContentPackage content = await GameContentPackageLoader.LoadAsync(Path.GetFullPath("content/package.json"));
-        if (legacyFloors)
-            content = content with { Dungeons = content.Dungeons!.Select(dungeon => dungeon with { Floors = null }).ToArray() };
         ServiceCollection services = new();
         services.AddLogging();
         services.AddScoped<GameDbContext>(_ => interceptor is null ? postgres.CreateDbContext() : new GameDbContext(

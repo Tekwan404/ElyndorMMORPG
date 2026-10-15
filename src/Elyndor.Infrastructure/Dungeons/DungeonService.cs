@@ -35,8 +35,6 @@ public static class DungeonErrorCodes
     public const string TeleportIdempotencyConflict = "dungeon_teleport_idempotency_conflict";
     public const string TravelInProgress = "dungeon_travel_in_progress";
     public const string AfkFarmActive = "dungeon_afk_farm_active";
-    public const string FloorLocked = "dungeon_floor_locked";
-    public const string FloorNotFound = "dungeon_floor_not_found";
 }
 
 public sealed record DungeonOperationResult(
@@ -71,10 +69,7 @@ public sealed record DungeonRunView(
     int EncounterCount,
     Guid PartyId,
     IReadOnlyList<DungeonRunMemberView> Members,
-    IReadOnlyList<DungeonEncounterView> Encounters,
-    IReadOnlyList<DungeonFloorStateView>? Floors = null);
-
-public sealed record DungeonFloorStateView(int Number, bool IsUnlocked, bool IsCompleted, int? NextEncounterIndex);
+    IReadOnlyList<DungeonEncounterView> Encounters);
 
 public sealed record DungeonTeleportResult(
     bool Succeeded,
@@ -99,7 +94,7 @@ public sealed record DungeonPreparation(
     string LocationId,
     IReadOnlyList<PartyCombatMember> Participants);
 
-public sealed partial class DungeonService(
+public sealed class DungeonService(
     GameDbContext dbContext,
     PartyService partyService,
     IContentSnapshotProvider contentProvider,
@@ -576,15 +571,6 @@ public sealed partial class DungeonService(
             return (null, DungeonErrorCodes.EncounterActive);
         }
 
-        if (run.Encounters.Any(candidate => candidate.EncounterIndex == run.CurrentEncounterIndex
-                && candidate.State == DungeonEncounterState.Completed))
-            return (null, DungeonErrorCodes.EncounterNotReady);
-        DungeonFloorRange? selectedFloor = DungeonFloorLayout.Build(definition).FirstOrDefault(floor =>
-            run.CurrentEncounterIndex >= floor.FirstEncounterIndex && run.CurrentEncounterIndex <= floor.LastEncounterIndex);
-        if (selectedFloor is null || definition.Floors is { Count: > 0 }
-            && !DungeonFloorLayout.IsUnlocked(definition, selectedFloor, CompletedIndexes(run)))
-            return (null, DungeonErrorCodes.FloorLocked);
-
         DungeonEncounter? encounter = run.Encounters
             .SingleOrDefault(candidate => candidate.EncounterIndex == run.CurrentEncounterIndex
                 && candidate.State is DungeonEncounterState.Pending or DungeonEncounterState.Wiped);
@@ -674,8 +660,7 @@ public sealed partial class DungeonService(
             await BeginAdvisoryLockAsync($"dungeon-run:{runId:N}", cancellationToken);
         DungeonEncounter? encounter = await dbContext.DungeonEncounters
             .SingleOrDefaultAsync(candidate => candidate.Id == encounterId
-                && candidate.RunId == runId && candidate.Run!.State == DungeonRunState.Active
-                && candidate.EncounterIndex == candidate.Run.CurrentEncounterIndex, cancellationToken);
+                && candidate.RunId == runId && candidate.Run!.State == DungeonRunState.Active, cancellationToken);
         if (encounter is null || encounter.State != DungeonEncounterState.Pending)
             return false;
         if (expectedCharacterIds is not null)
@@ -772,28 +757,6 @@ public sealed partial class DungeonService(
             if (run.State != DungeonRunState.Active)
                 return true;
             DungeonDefinition definition = (contentSnapshot ?? contentProvider.GetCurrent()).Indexes.DungeonsById[run.DungeonId];
-            if (definition.Floors is { Count: > 0 })
-            {
-                HashSet<int> completedIndexes = (await dbContext.DungeonEncounters.AsNoTracking()
-                    .Where(candidate => candidate.RunId == run.Id && candidate.State == DungeonEncounterState.Completed)
-                    .Select(candidate => candidate.EncounterIndex).ToArrayAsync(cancellationToken)).ToHashSet();
-                if (completedIndexes.Count == definition.Encounters.Count)
-                {
-                    run.SelectEncounter(definition.Encounters.Count);
-                    run.Complete(now);
-                }
-                else
-                {
-                    DungeonFloorRange floor = DungeonFloorLayout.Build(definition).Single(candidate =>
-                        encounter.EncounterIndex >= candidate.FirstEncounterIndex && encounter.EncounterIndex <= candidate.LastEncounterIndex);
-                    int? nextIndex = DungeonFloorLayout.NextEncounterIndex(floor, completedIndexes);
-                    run.SelectEncounter(nextIndex ?? floor.LastEncounterIndex);
-                    if (nextIndex.HasValue)
-                        await EnsurePendingEncounterAsync(run, definition, nextIndex.Value, cancellationToken);
-                }
-                await dbContext.SaveChangesAsync(cancellationToken);
-                return true;
-            }
             if (run.CurrentEncounterIndex == encounter.EncounterIndex)
                 run.AdvanceEncounter(now);
             if (run.CurrentEncounterIndex >= definition.Encounters.Count)
@@ -1038,8 +1001,7 @@ public sealed partial class DungeonService(
                     encounter.State,
                     encounter.WipeCount,
                     encounter.Members.Select(member => member.CharacterId).ToArray()))
-                .ToArray(),
-            FloorStates(run, definition));
+                .ToArray());
 
     private static string ResolveCurrentCheckpointId(
         DungeonRun run,

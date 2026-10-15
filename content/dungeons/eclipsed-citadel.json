@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.58.0",
+  "contentVersion": "0.19.0",
   "balanceVersion": "0.14.0",
-  "publishedAtUtc": "2026-10-14T00:00:00+00:00",
+  "publishedAtUtc": "2026-09-11T06:30:00+00:00",
   "dungeons": [
     {
       "id": "ECLIPSED_CITADEL",
@@ -38,14 +38,6 @@
           "monsterId": "ECLIPSED_CITADEL_ARCHON_L25",
           "checkpointId": "DEAD_STAR_THRONE",
           "isBoss": true
-        }
-      ],
-      "floors": [
-        {
-          "id": "ECLIPSED_CITADEL_FLOOR_1",
-          "displayName": "Этаж 1",
-          "firstEncounterIndex": 0,
-          "lastEncounterIndex": 4
         }
       ]
     }

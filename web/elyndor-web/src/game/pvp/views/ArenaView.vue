@@ -3,7 +3,6 @@ import { computed, onMounted, onUnmounted } from 'vue'
 
 import ArenaBattlefield from '@/game/pvp/components/ArenaBattlefield.vue'
 import ArenaInvitations from '@/game/pvp/components/ArenaInvitations.vue'
-import ArenaHonorShop from '@/game/pvp/components/ArenaHonorShop.vue'
 import { useArenaStore } from '@/game/pvp/arenaStore'
 import { arenaErrorMessage, arenaResultLabel } from '@/game/pvp/arenaPresentation'
 import { UIButton } from '@/ui/components'
@@ -19,7 +18,6 @@ onMounted(async () => {
   await arena.refresh()
   await arena.loadLeaderboard()
   if (arena.enabled) {
-    await arena.loadShop()
     try {
       await arena.connect()
       await arena.loadInvites()
@@ -107,14 +105,7 @@ onUnmounted(() => {
         <UIButton v-if="match.status === 'Completed'" @click="arena.dismissMatch()">К арене</UIButton>
       </section>
 
-      <ArenaHonorShop
-        :shop="arena.shop"
-        :loading="arena.shopPending"
-        :pending-item-id="arena.shopPurchasePendingId"
-        :error-message="arena.shopErrorCode ? arenaErrorMessage(arena.shopErrorCode) : null"
-        @refresh="arena.loadShop"
-        @buy="arena.buyHonorItem"
-      />
+      <p class="arena__note">Снаряжение за честь доступно у интенданта на городском рынке.</p>
 
       <section class="arena__leaderboard">
         <header>

@@ -8,8 +8,9 @@ const props = withDefaults(
     label?: string
     tone?: 'hp' | 'rage' | 'focus' | 'mana'
     showValue?: boolean
+    valuePlacement?: 'above' | 'inside'
   }>(),
-  { tone: 'hp', showValue: true },
+  { tone: 'hp', showValue: true, valuePlacement: 'above' },
 )
 
 const safeMax = computed(() => Math.max(0, props.max))
@@ -25,8 +26,8 @@ function formatBarValue(value: number): string {
 </script>
 
 <template>
-  <div class="ui-bar" :class="`ui-bar--${tone}`">
-    <div v-if="label || showValue" class="ui-bar__meta">
+  <div class="ui-bar" :class="[`ui-bar--${tone}`, { 'ui-bar--inside': valuePlacement === 'inside' }]">
+    <div v-if="valuePlacement === 'above' && (label || showValue)" class="ui-bar__meta">
       <span>{{ label }}</span
       ><span v-if="showValue">{{ formatBarValue(safeValue) }} / {{ formatBarValue(safeMax) }}</span>
     </div>
@@ -34,11 +35,15 @@ function formatBarValue(value: number): string {
       class="ui-bar__track"
       role="progressbar"
       :aria-label="label"
+      :title="label"
       :aria-valuemin="0"
       :aria-valuemax="safeMax"
       :aria-valuenow="safeValue"
     >
       <span class="ui-bar__fill" :style="{ width: `${percentage}%` }" />
+      <span v-if="valuePlacement === 'inside' && showValue" class="ui-bar__value" aria-hidden="true">
+        {{ formatBarValue(safeValue) }} / {{ formatBarValue(safeMax) }}
+      </span>
     </div>
   </div>
 </template>
@@ -73,6 +78,7 @@ function formatBarValue(value: number): string {
 }
 
 .ui-bar__track {
+  position: relative;
   height: 9px;
   overflow: hidden;
   border: 1px solid rgb(255 255 255 / 7%);
@@ -99,5 +105,29 @@ function formatBarValue(value: number): string {
   background: linear-gradient(90deg, transparent, rgb(255 255 255 / 14%), transparent);
   content: '';
   opacity: .45;
+}
+.ui-bar--inside .ui-bar__track {
+  display: grid;
+  height: 20px;
+  place-items: center;
+}
+.ui-bar--inside .ui-bar__fill {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+}
+.ui-bar__value {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+  padding-inline: 4px;
+  color: #fff4e7;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px #000, 0 0 3px #000;
+  pointer-events: none;
 }
 </style>

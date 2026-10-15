@@ -22,29 +22,21 @@ evidence becomes Wiped and may be retried. No character progression or inventory
 is required. Deploy the fix, refresh the run, and retry or leave it. A specific account
 investigation still requires its character name or public hero code.
 
-Dungeon floors are explicit content ranges, independent of boss positions. A floor is
-open by default or uses `requiredEncounterId` to require a particular encounter victory.
-The solo player or party leader selects an unlocked floor through
-`POST /api/v1/dungeons/runs/{runId}/floor`; encounters inside that floor remain sequential.
-Each floor resumes at its first unfinished encounter. Selection is blocked during combat;
-completed floors can be inspected but cannot grant rewards again. All encounters must be
-completed to finish the run. Existing encounter indexes and rewards remain unchanged.
-Bundled content 0.58.0 starts with every floor open. Definitions without explicit floors
-retain the legacy sequential layout for compatibility.
-Dungeon loot previews include positive-chance loot from encounters and adds, without
-claiming guaranteed drops or calculated probabilities. An optional filter shows only
-the selected floor.
-
-Terminal combat journals reference an immutable, hash-checked `ContentRevision` archived
-before rewards are applied. Restart recovery uses that content for rewards, derived state,
-corpses and dungeon advancement, even after content changes. Versioned legacy journals
-require an unambiguous matching revision or the exact current versions; otherwise startup
-fails with the journal preserved. Explicitly unversioned compatibility snapshots retain
-their existing fallback. Recovery does not resume unfinished live combat.
-
-Warrior Death's Embrace, Archer Marked Shot counters and Spirit Bond timers belong to the
-individual participant. Companion attacks and healing hooks execute with their owner's
-target and talent state, independent of participant ordering.
+Dungeon encounters follow their authored sequence. Floor grouping and selection were
+removed at the user's request on 2026-10-15. Existing saved encounter indexes and
+reward rules remain unchanged. Dungeon loot previews show all positive-chance loot
+from encounters and adds, without claiming guaranteed drops or calculated probabilities.
+The optional legacy floors API field remains empty for older clients.
 
 Profession workshop links open only that profession, with an optional gathering partner
 learning shortcut. Mail is available from the main menu.
+
+Terminal combat journals pin an immutable, hashed content revision. Recovery uses
+that revision for rewards, dungeon progress and defeat respawn even after current
+content changes or removes the encounter. Missing or ambiguous versioned legacy
+content preserves the journal and stops recovery instead of substituting a newer
+package. Explicitly unversioned compatibility snapshots retain their legacy fallback.
+
+Participant runtime state isolates Death's Embrace, Marked Shot and Spirit Bond.
+Companion attacks resolve in their owner's context, independent of participant order.
+These fixes do not restore floor grouping or floor selection.

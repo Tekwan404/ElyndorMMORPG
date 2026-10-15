@@ -24,9 +24,6 @@ const messages: Record<string, string> = {
   dungeon_member_cannot_enter:
     'Один из участников пока не может войти. Проверьте уровень, здоровье и текущую активность.',
   dungeon_encounter_active: 'Сначала завершите текущий бой.',
-  dungeon_floor_locked: 'Проход закрыт. Сначала победите стража, открывающего этот этаж.',
-  dungeon_floor_not_found: 'Этот этаж недоступен.',
-  dungeon_floor_change_failed: 'Не удалось перейти на этаж. Обновите забег и попробуйте снова.',
   dungeon_encounter_not_ready: 'Группа пока не готова к следующему бою. Обновите забег.',
   dungeon_member_not_in_party: 'Для этого действия нужно состоять в группе забега.',
   dungeon_member_not_in_run: 'Сначала войдите в забег.',

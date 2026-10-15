@@ -43,8 +43,7 @@ public sealed class CombatRecoveryContentTests(PostgresFixture postgres) : IAsyn
         };
         DungeonDefinition dungeon = oldContent.Dungeons![0] with
         {
-            Encounters = [oldContent.Dungeons![0].Encounters[0] with { MonsterId = "FOREST_WOLF_L1" }],
-            Floors = [new("ENTRY", "Entry", 0, 0)]
+            Encounters = [oldContent.Dungeons![0].Encounters[0] with { MonsterId = "FOREST_WOLF_L1" }]
         };
         oldContent = oldContent with { Dungeons = [dungeon] };
         GameContentPackage newContent = oldContent with

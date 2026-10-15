@@ -1,3 +1,4 @@
+import type { PersonalizationStore, PersonalizationMutation } from '@/game/economy/personalizationContracts'
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 
@@ -52,6 +53,13 @@ export type GameSessionState =
   | 'error'
 
 export const useGameSessionStore = defineStore('gameSession', () => {
+  const crystalBalance = ref<number | null>(null)
+  let crystalMutationVersion = 0
+  let crystalReadSequence = 0
+  function applyCrystalMutation(balance: number): void {
+    crystalMutationVersion++
+    crystalBalance.value = balance
+  }
   const state = ref<GameSessionState>('idle')
   const snapshot = ref<BootstrapSnapshot | null>(null)
   const questJournal = ref<QuestJournalResponse | null>(null)
@@ -727,12 +735,49 @@ export const useGameSessionStore = defineStore('gameSession', () => {
     return await apiClient.request<MerchantSnapshot>(`/api/v1/inventory/merchant/${merchantId}`)
   }
 
+  async function getPersonalizationStore(): Promise<PersonalizationStore> {
+    const version = crystalMutationVersion
+    const sequence = ++crystalReadSequence
+    const result = await apiClient.request<PersonalizationStore>('/api/v1/economy/personalization')
+    if (version === crystalMutationVersion && sequence === crystalReadSequence) crystalBalance.value = result.crystalBalance
+    return result
+  }
+
+  async function mutatePersonalization(operation: 'purchase' | 'equip' | 'rename', intent: Record<string, string | null>): Promise<PersonalizationMutation | null> {
+    const pendingKey = `personalization:${operation}`
+    if (!beginMutation(pendingKey)) return null
+    errorCode.value = null
+    try {
+      const path = `/api/v1/economy/personalization/${operation}`
+      const response = operation === 'equip'
+        ? await apiClient.request<PersonalizationMutation>(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(intent) })
+        : await runReplaySafeGameMutation<PersonalizationMutation>({ key: pendingKey + ':' + JSON.stringify(intent), path, idField: 'mutationId', intent })
+      applyCrystalMutation(response.crystalBalance)
+      try { await refreshSnapshot() } catch (error) { handleError(error) }
+      return response
+    } catch (error) { handleError(error); return null }
+    finally { endMutation(pendingKey) }
+  }
+  const purchaseCosmetic = (cosmeticId: string) => mutatePersonalization('purchase', { cosmeticId })
+  const equipCosmetic = (kind: 'Frame' | 'Title', cosmeticId: string | null) => mutatePersonalization('equip', { kind, cosmeticId })
+  const renameCharacter = (name: string) => mutatePersonalization('rename', { name })
+
   async function getPremiumStore(): Promise<PremiumStoreSnapshot> {
-    return await apiClient.request<PremiumStoreSnapshot>('/api/v1/economy/store')
+    const mutationVersion = crystalMutationVersion
+    const sequence = ++crystalReadSequence
+    const result = await apiClient.request<PremiumStoreSnapshot>('/api/v1/economy/store')
+    if (mutationVersion === crystalMutationVersion && sequence === crystalReadSequence)
+      crystalBalance.value = result.crystalBalance
+    return result
   }
 
   async function getCharacterSkins(): Promise<CharacterSkinStoreSnapshot> {
-    return await apiClient.request<CharacterSkinStoreSnapshot>('/api/v1/economy/skins')
+    const mutationVersion = crystalMutationVersion
+    const sequence = ++crystalReadSequence
+    const result = await apiClient.request<CharacterSkinStoreSnapshot>('/api/v1/economy/skins')
+    if (mutationVersion === crystalMutationVersion && sequence === crystalReadSequence)
+      crystalBalance.value = result.crystalBalance
+    return result
   }
 
   async function buyCharacterSkin(skinId: string): Promise<CharacterSkinMutationResponse | null> {
@@ -746,6 +791,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
         idField: 'mutationId',
         intent: { skinId },
       })
+      applyCrystalMutation(response.crystalBalance)
       await refreshSnapshot()
       return response
     } catch (error) {
@@ -767,6 +813,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
         body: JSON.stringify({ skinId }),
       })
       applyActiveSkin(response.activeSkinId)
+      applyCrystalMutation(response.crystalBalance)
       await refreshSnapshot()
       return response
     } catch (error) {
@@ -788,6 +835,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
         idField: 'mutationId',
         intent: { sku, packCount },
       })
+      applyCrystalMutation(response.crystalBalance)
       await refreshSnapshot()
       return response
     } catch (error) {
@@ -809,6 +857,7 @@ export const useGameSessionStore = defineStore('gameSession', () => {
         idField: 'mutationId',
         intent: { code },
       })
+      applyCrystalMutation(response.crystalBalance)
       await refreshSnapshot()
       return response
     } catch (error) {
@@ -1000,6 +1049,8 @@ export const useGameSessionStore = defineStore('gameSession', () => {
   }
 
   return {
+    getPersonalizationStore, purchaseCosmetic, equipCosmetic, renameCharacter,
+    crystalBalance,
     state,
     snapshot,
     questJournal,

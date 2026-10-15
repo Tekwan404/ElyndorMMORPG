@@ -20,9 +20,7 @@ public sealed record DungeonFloorPreviewResponse(
     int FirstEncounterIndex,
     int LastEncounterIndex,
     string? BossName,
-    IReadOnlyList<WorldLocationLootResponse> PossibleLoot,
-    string? DisplayName = null,
-    string? RequiredEncounterId = null);
+    IReadOnlyList<WorldLocationLootResponse> PossibleLoot);
 
 public sealed record DungeonEncounterPreviewResponse(
     string Id,
@@ -32,8 +30,6 @@ public sealed record DungeonEncounterPreviewResponse(
     string? DisplayName = null);
 
 public sealed record CreateDungeonRunRequest(Guid RequestId, string DungeonId);
-public sealed record SelectDungeonFloorRequest(int FloorNumber);
-public sealed record DungeonFloorStateResponse(int Number, bool IsUnlocked, bool IsCompleted, int? NextEncounterIndex);
 
 public sealed record TeleportToDungeonRequest(Guid RequestId, string DungeonId);
 
@@ -53,8 +49,7 @@ public sealed record DungeonRunResponse(
     int EncounterCount,
     Guid PartyId,
     IReadOnlyList<DungeonRunMemberResponse> Members,
-    IReadOnlyList<DungeonEncounterResponse> Encounters,
-    IReadOnlyList<DungeonFloorStateResponse>? Floors = null);
+    IReadOnlyList<DungeonEncounterResponse> Encounters);
 
 public sealed record DungeonRunMemberResponse(
     Guid CharacterId,

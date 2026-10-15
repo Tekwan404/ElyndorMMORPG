@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.58.0",
+  "contentVersion": "0.23.0",
   "balanceVersion": "0.19.0",
-  "publishedAtUtc": "2026-10-14T00:00:00+00:00",
+  "publishedAtUtc": "2026-09-17T00:00:00+00:00",
   "dungeons": [
     {
       "id": "HEART_OF_BLIGHTED_GROVE",
@@ -21,32 +21,6 @@
         { "id": "HEART_OF_BLIGHTED_GROVE_BOSS_MATRONA_IADOVITYKH_LOZ_L20", "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_MATRONA_IADOVITYKH_LOZ_L20", "checkpointId": "DUNGEON_06", "isBoss": true },
         { "id": "HEART_OF_BLIGHTED_GROVE_BOSS_PROPOVEDNIK_GNILI_SAL_VER_L20", "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_PROPOVEDNIK_GNILI_SAL_VER_L20", "checkpointId": "DUNGEON_07", "isBoss": true },
         { "id": "HEART_OF_BLIGHTED_GROVE_BOSS_SERDTSE_CHASHCHI_OSKVERNIONNYI_DUKH_L20", "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_SERDTSE_CHASHCHI_OSKVERNIONNYI_DUKH_L20", "checkpointId": "DUNGEON_08", "isBoss": true }
-      ],
-      "floors": [
-        {
-          "id": "HEART_OF_BLIGHTED_GROVE_FLOOR_1",
-          "displayName": "Этаж 1",
-          "firstEncounterIndex": 0,
-          "lastEncounterIndex": 4
-        },
-        {
-          "id": "HEART_OF_BLIGHTED_GROVE_FLOOR_2",
-          "displayName": "Этаж 2",
-          "firstEncounterIndex": 5,
-          "lastEncounterIndex": 5
-        },
-        {
-          "id": "HEART_OF_BLIGHTED_GROVE_FLOOR_3",
-          "displayName": "Этаж 3",
-          "firstEncounterIndex": 6,
-          "lastEncounterIndex": 6
-        },
-        {
-          "id": "HEART_OF_BLIGHTED_GROVE_FLOOR_4",
-          "displayName": "Этаж 4",
-          "firstEncounterIndex": 7,
-          "lastEncounterIndex": 7
-        }
       ]
     },
     {
@@ -74,32 +48,6 @@
           { "role": "TRIAL_DEFENDER", "monsterId": "SHATTERED_ORDER_TRIAL_DEFENDER" },
           { "role": "TRIAL_CASTER", "monsterId": "SHATTERED_ORDER_TRIAL_CASTER" }
         ] }
-      ],
-      "floors": [
-        {
-          "id": "SHATTERED_ORDER_CITADEL_FLOOR_1",
-          "displayName": "Этаж 1",
-          "firstEncounterIndex": 0,
-          "lastEncounterIndex": 2
-        },
-        {
-          "id": "SHATTERED_ORDER_CITADEL_FLOOR_2",
-          "displayName": "Этаж 2",
-          "firstEncounterIndex": 3,
-          "lastEncounterIndex": 5
-        },
-        {
-          "id": "SHATTERED_ORDER_CITADEL_FLOOR_3",
-          "displayName": "Этаж 3",
-          "firstEncounterIndex": 6,
-          "lastEncounterIndex": 9
-        },
-        {
-          "id": "SHATTERED_ORDER_CITADEL_FLOOR_4",
-          "displayName": "Этаж 4",
-          "firstEncounterIndex": 10,
-          "lastEncounterIndex": 11
-        }
       ]
     },
     {
@@ -124,44 +72,6 @@
         { "id": "BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40", "monsterId": "BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40", "checkpointId": "DUNGEON_10", "isBoss": true },
         { "id": "BLACK_BASTION_BOSS_MAGISTR_CHIORNOI_ZVEZDY_L40", "monsterId": "BLACK_BASTION_BOSS_MAGISTR_CHIORNOI_ZVEZDY_L40", "checkpointId": "DUNGEON_11", "isBoss": true },
         { "id": "BLACK_BASTION_BOSS_PERVYI_STRAZH_MOR_KAR_L40", "monsterId": "BLACK_BASTION_BOSS_PERVYI_STRAZH_MOR_KAR_L40", "checkpointId": "DUNGEON_12", "isBoss": true }
-      ],
-      "floors": [
-        {
-          "id": "BLACK_BASTION_FLOOR_1",
-          "displayName": "Этаж 1",
-          "firstEncounterIndex": 0,
-          "lastEncounterIndex": 6
-        },
-        {
-          "id": "BLACK_BASTION_FLOOR_2",
-          "displayName": "Этаж 2",
-          "firstEncounterIndex": 7,
-          "lastEncounterIndex": 7
-        },
-        {
-          "id": "BLACK_BASTION_FLOOR_3",
-          "displayName": "Этаж 3",
-          "firstEncounterIndex": 8,
-          "lastEncounterIndex": 8
-        },
-        {
-          "id": "BLACK_BASTION_FLOOR_4",
-          "displayName": "Этаж 4",
-          "firstEncounterIndex": 9,
-          "lastEncounterIndex": 9
-        },
-        {
-          "id": "BLACK_BASTION_FLOOR_5",
-          "displayName": "Этаж 5",
-          "firstEncounterIndex": 10,
-          "lastEncounterIndex": 10
-        },
-        {
-          "id": "BLACK_BASTION_FLOOR_6",
-          "displayName": "Этаж 6",
-          "firstEncounterIndex": 11,
-          "lastEncounterIndex": 11
-        }
       ]
     }
   ]
