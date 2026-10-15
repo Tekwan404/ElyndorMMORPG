@@ -30,3 +30,13 @@ The optional legacy floors API field remains empty for older clients.
 
 Profession workshop links open only that profession, with an optional gathering partner
 learning shortcut. Mail is available from the main menu.
+
+Terminal combat journals pin an immutable, hashed content revision. Recovery uses
+that revision for rewards, dungeon progress and defeat respawn even after current
+content changes or removes the encounter. Missing or ambiguous versioned legacy
+content preserves the journal and stops recovery instead of substituting a newer
+package. Explicitly unversioned compatibility snapshots retain their legacy fallback.
+
+Participant runtime state isolates Death's Embrace, Marked Shot and Spirit Bond.
+Companion attacks resolve in their owner's context, independent of participant order.
+These fixes do not restore floor grouping or floor selection.

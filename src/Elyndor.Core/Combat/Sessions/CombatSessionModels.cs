@@ -188,7 +188,8 @@ public sealed record CombatSessionSnapshot(
     IReadOnlyList<CombatParticipantSnapshot>? ParticipantRoster = null,
     bool? PlayerContributionEligible = null,
     IReadOnlyList<ContributionEligibilityResult>? ParticipantContributions = null,
-    CombatSessionStatisticsSnapshot? Statistics = null);
+    CombatSessionStatisticsSnapshot? Statistics = null,
+    Guid? ContentRevisionId = null);
 
 public static class CombatErrorCodes
 {

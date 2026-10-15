@@ -100,6 +100,8 @@ now);
 }
 private void SyncSpiritBond(DateTimeOffset now)
 {
+if (!IsCompanionOwner)
+return;
 if (_companion is null
 || _companion.Actor.IsDead
 || !TryGetArcherHook(
@@ -127,6 +129,8 @@ _nextSpiritBondAtUtc = now + TimeSpan.FromSeconds(10);
 }
 private void SyncBestialWrathControlImmunity(DateTimeOffset now)
 {
+if (!IsCompanionOwner)
+return;
 if (_companion is null || _companion.Actor.IsDead)
 return;
 if (!HasArcherEffect(

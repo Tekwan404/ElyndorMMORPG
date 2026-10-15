@@ -20,8 +20,16 @@ public sealed partial class CombatSession
     private const string RendingRampageEffectId = "BERSERKER_RENDING_RAMPAGE";
     private static readonly TimeSpan ConditionalEffectDuration = TimeSpan.FromHours(12);
 
-    private bool _deathsEmbraceArmed;
-    private bool _deathsEmbraceConsumed;
+    private bool _deathsEmbraceArmed
+    {
+        get => _activePlayerState.DeathsEmbraceArmed;
+        set => _activePlayerState.DeathsEmbraceArmed = value;
+    }
+    private bool _deathsEmbraceConsumed
+    {
+        get => _activePlayerState.DeathsEmbraceConsumed;
+        set => _activePlayerState.DeathsEmbraceConsumed = value;
+    }
 
     private AbilityDefinition ResolveBerserkerAbility(
         AbilityDefinition ability,

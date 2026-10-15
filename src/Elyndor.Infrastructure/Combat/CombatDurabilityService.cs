@@ -26,7 +26,8 @@ public sealed class CombatDurabilityService(
     ILogger<CombatDurabilityService> logger,
     IServiceScopeFactory? scopeFactory = null,
     CombatSessionRegistry? registry = null,
-    IHostApplicationLifetime? applicationLifetime = null)
+    IHostApplicationLifetime? applicationLifetime = null,
+    IContentSnapshotProvider? contentProvider = null)
 {
     private static readonly JsonSerializerOptions TerminalSnapshotJsonOptions = new()
     {
@@ -134,13 +135,27 @@ public sealed class CombatDurabilityService(
     public async Task RecordTerminalSnapshotAsync(
         Guid sessionId,
         CombatSessionSnapshot snapshot,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        GameContentSnapshot? contentSnapshot = null)
     {
         if (snapshot.Status == CombatSessionStatus.Active)
             throw new ArgumentException(
                 "Only terminal combat snapshots can be persisted.",
                 nameof(snapshot));
 
+        if (!await dbContext.ActiveCombatSessions.AsNoTracking().AnyAsync(
+                state => state.SessionId == sessionId && state.TerminalSnapshotJson == null,
+                cancellationToken))
+            return;
+        if (contentSnapshot is not null)
+        {
+            if (contentSnapshot.ContentVersion != snapshot.ContentVersion
+                || contentSnapshot.BalanceVersion != snapshot.BalanceVersion)
+                throw new InvalidDataException("Terminal combat snapshot does not match its pinned content.");
+            Guid revisionId = await CombatRecoveryContent.ArchiveAsync(
+                dbContext, contentSnapshot, snapshot.ServerTimeUtc, cancellationToken);
+            snapshot = snapshot with { ContentRevisionId = revisionId };
+        }
         string snapshotJson = JsonSerializer.Serialize(
             snapshot,
             TerminalSnapshotJsonOptions);
@@ -341,11 +356,14 @@ public sealed class CombatDurabilityService(
                     ICombatSessionFinalizer finalizer = recoveryScope?.ServiceProvider
                         .GetService<ICombatSessionFinalizer>()
                         ?? throw new InvalidOperationException("Terminal combat recovery requires a finalizer.");
+                    GameContentSnapshot? recoveryContent = await ResolveRecoveryContentAsync(
+                        terminalSnapshot, cancellationToken);
                     foreach (ActiveCombatSession participant in participantStates)
                     {
                         CombatSessionSnapshot participantSnapshot = ProjectSnapshotForCharacter(
                             terminalSnapshot, participant.CharacterId);
-                        await finalizer.FinalizeAsync(participant.CharacterId, participantSnapshot, cancellationToken);
+                        await finalizer.FinalizeAsync(participant.CharacterId, participantSnapshot,
+                            recoveryContent, cancellationToken);
                     }
                     if (await dbContext.ActiveCombatSessions.AsNoTracking()
                         .AnyAsync(state => state.SessionId == session.SessionId, cancellationToken))
@@ -399,6 +417,34 @@ public sealed class CombatDurabilityService(
         if (failures.Count != 0)
             throw new AggregateException("Combat recovery left durable evidence pending; startup must retry.", failures);
         return recovered;
+    }
+
+    private async Task<GameContentSnapshot?> ResolveRecoveryContentAsync(
+        CombatSessionSnapshot snapshot, CancellationToken cancellationToken)
+    {
+        if (snapshot.ContentRevisionId is Guid revisionId)
+            return await CombatRecoveryContent.LoadAsync(dbContext, revisionId,
+                snapshot.ContentVersion, snapshot.BalanceVersion, cancellationToken);
+
+        // Legacy journals have only version identity. Never silently substitute a newer package.
+        GameContentSnapshot? current = contentProvider?.GetCurrent();
+        if (current is null)
+            return null;
+        // Old compatibility snapshots explicitly carried no content identity.
+        if (snapshot.ContentVersion == "UNVERSIONED" && snapshot.BalanceVersion == "UNVERSIONED")
+            return current;
+        var revisions = await dbContext.ContentRevisions.AsNoTracking()
+            .Where(revision => revision.ContentVersion == snapshot.ContentVersion
+                && revision.BalanceVersion == snapshot.BalanceVersion)
+            .Select(revision => new { revision.Id, revision.PayloadSha256 })
+            .ToArrayAsync(cancellationToken);
+        if (revisions.Select(revision => revision.PayloadSha256).Distinct(StringComparer.Ordinal).Count() == 1)
+            return await CombatRecoveryContent.LoadAsync(dbContext, revisions[0].Id,
+                snapshot.ContentVersion, snapshot.BalanceVersion, cancellationToken);
+        if (revisions.Length == 0 && current.ContentVersion == snapshot.ContentVersion
+            && current.BalanceVersion == snapshot.BalanceVersion)
+            return current;
+        throw new InvalidDataException($"Combat '{snapshot.SessionId}' requires unavailable or ambiguous legacy content.");
     }
 
     private async Task RecoverUnfinishedSessionAsync(Guid sessionId, CancellationToken cancellationToken)

@@ -50,12 +50,20 @@ private int _archerShotSequence
 get => _activePlayerState.ArcherShotSequence;
 set => _activePlayerState.ArcherShotSequence = value;
 }
-private int _markedShotSequence;
+private int _markedShotSequence
+{
+get => _activePlayerState.MarkedShotSequence;
+set => _activePlayerState.MarkedShotSequence = value;
+}
 private Guid? _lastOwnerHitTargetId;
 private DateTimeOffset? _lastOwnerHitAtUtc;
 private Guid? _lastCompanionHitTargetId;
 private DateTimeOffset? _lastCompanionHitAtUtc;
-private DateTimeOffset? _nextSpiritBondAtUtc;
+private DateTimeOffset? _nextSpiritBondAtUtc
+{
+get => _activePlayerState.NextSpiritBondAtUtc;
+set => _activePlayerState.NextSpiritBondAtUtc = value;
+}
 private bool _bestialWrathFirstCommandAvailable;
 private bool _survivalPreparationArmed
 {
@@ -65,6 +73,7 @@ set => _activePlayerState.SurvivalPreparationArmed = value;
 private bool IsArcher =>
 string.Equals(_player.DefinitionId, "ARCHER", StringComparison.Ordinal);
 private bool IsPhysicalCompanion => _companion is not null;
+private bool IsCompanionOwner => _companion is not null && _player.Actor.ActorId == _companionOwnerActorId;
 private string? CompanionArchetype => _companion?.DefinitionId switch
 {
 "ARCHER_STARTER_PREDATOR" => "PREDATOR",

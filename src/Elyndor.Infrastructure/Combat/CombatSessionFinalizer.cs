@@ -78,7 +78,8 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
             await durability.RecordTerminalSnapshotAsync(
                 snapshot.SessionId,
                 snapshot,
-                cancellationToken);
+                cancellationToken,
+                contentSnapshot);
         }
 
         DungeonService? dungeonService = scope.ServiceProvider.GetService<DungeonService>();
@@ -101,7 +102,8 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
             {
                 await dungeonService.HandleCombatFinishedAsync(
                     snapshot,
-                    cancellationToken);
+                    cancellationToken,
+                    contentSnapshot);
             }
 
             if (durability is not null)
@@ -158,7 +160,8 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                 {
                     await dungeonService.HandleCombatFinishedAsync(
                         snapshot,
-                        cancellationToken);
+                        cancellationToken,
+                        contentSnapshot);
                 }
                 if (durability is not null)
                 {
@@ -216,7 +219,10 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                 {
                     string respawnLocation = dungeonId is null
                         ? WorldLocationIds.StarterTown
-                        : dungeonService?.GetDefinition(dungeonId)?.EntryLocationId ?? location.LocationId;
+                        : (contentSnapshot is null
+                            ? dungeonService?.GetDefinition(dungeonId)?.EntryLocationId
+                            : contentSnapshot.Indexes.DungeonsById.GetValueOrDefault(dungeonId)?.EntryLocationId)
+                            ?? location.LocationId;
                     DateTimeOffset relocateAt = checkpointAt < location.UpdatedAtUtc
                         ? location.UpdatedAtUtc
                         : checkpointAt;
@@ -270,7 +276,8 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         {
             await dungeonService.HandleCombatFinishedAsync(
                 snapshot,
-                cancellationToken);
+                cancellationToken,
+                contentSnapshot);
         }
         if (durability is not null)
         {

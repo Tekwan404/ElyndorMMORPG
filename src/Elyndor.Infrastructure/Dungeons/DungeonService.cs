@@ -687,9 +687,11 @@ public sealed class DungeonService(
 
     public Task HandleCombatFinishedAsync(
         CombatSessionSnapshot snapshot,
-        CancellationToken cancellationToken) =>
+        CancellationToken cancellationToken,
+        GameContentSnapshot? contentSnapshot = null) =>
         dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
-            () => HandleCombatFinishedCoreAsync(snapshot.SessionId, snapshot.Status, cancellationToken));
+            () => HandleCombatFinishedCoreAsync(snapshot.SessionId, snapshot.Status, cancellationToken,
+                contentSnapshot: contentSnapshot));
 
     public async Task ReconcileCommittedVictoryAtStartupAsync(Guid sessionId, CancellationToken cancellationToken)
     {
@@ -705,7 +707,8 @@ public sealed class DungeonService(
         Guid sessionId,
         CombatSessionStatus status,
         CancellationToken cancellationToken,
-        string? reconciliationReason = null)
+        string? reconciliationReason = null,
+        GameContentSnapshot? contentSnapshot = null)
     {
         dbContext.ChangeTracker.Clear();
         await using IDbContextTransaction? transaction =
@@ -723,7 +726,7 @@ public sealed class DungeonService(
                 $"SELECT pg_advisory_xact_lock(hashtext({runLock}))", cancellationToken);
         }
 
-        bool transitioned = await ApplyCombatOutcomeAsync(encounter, status, cancellationToken);
+        bool transitioned = await ApplyCombatOutcomeAsync(encounter, status, cancellationToken, contentSnapshot);
         await CommitAsync(transaction, cancellationToken);
         if (transitioned && reconciliationReason is not null)
             LogCombatReconciled(logger ?? NullLogger<DungeonService>.Instance, encounter, reconciliationReason);
@@ -732,7 +735,8 @@ public sealed class DungeonService(
     private async Task<bool> ApplyCombatOutcomeAsync(
         DungeonEncounter encounter,
         CombatSessionStatus status,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        GameContentSnapshot? contentSnapshot = null)
     {
         DateTimeOffset now = timeProvider.GetUtcNow();
         if (status == CombatSessionStatus.Victory)
@@ -752,7 +756,7 @@ public sealed class DungeonService(
                 .SingleAsync(candidate => candidate.Id == encounter.RunId, cancellationToken);
             if (run.State != DungeonRunState.Active)
                 return true;
-            DungeonDefinition definition = contentProvider.GetCurrent().Indexes.DungeonsById[run.DungeonId];
+            DungeonDefinition definition = (contentSnapshot ?? contentProvider.GetCurrent()).Indexes.DungeonsById[run.DungeonId];
             if (run.CurrentEncounterIndex == encounter.EncounterIndex)
                 run.AdvanceEncounter(now);
             if (run.CurrentEncounterIndex >= definition.Encounters.Count)
