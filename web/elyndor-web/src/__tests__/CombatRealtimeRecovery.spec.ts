@@ -591,10 +591,10 @@ describe('combat realtime recovery', () => {
     expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'ResumeCombatFromSequence')).toHaveLength(0)
   })
 
-  it('does not treat the server rate limit as a broken SignalR connection', async () => {
+  it.each(['rate_limited', 'combat_busy'])('does not treat %s as a broken SignalR connection', async code => {
     vi.useFakeTimers()
     realtimeMock.invoke.mockImplementation(method => method === 'UseAbility'
-      ? Promise.reject(new Error('HubException: rate_limited'))
+      ? Promise.reject(new Error(`HubException: ${code}`))
       : Promise.resolve(method === 'ResumeCombatFromSequence' ? abilityUpdate(2) : []))
     const store = useCombatSessionStore()
     await store.connect()
@@ -602,10 +602,46 @@ describe('combat realtime recovery', () => {
     await store.useAbility('HEROIC_STRIKE')
     await vi.advanceTimersByTimeAsync(0)
 
-    expect(store.errorCode).toBe('rate_limited')
+    expect(store.errorCode).toBe(code)
     expect(store.connectionState).toBe('connected')
     expect(store.abilityPending).toBe(false)
     expect(realtimeMock.invoke.mock.calls.filter(([method]) => method === 'ResumeCombatFromSequence')).toHaveLength(0)
+  })
+
+  it.each(['combat_busy', 'rate_limited'])('retains the original ID across a lost response then %s', async rejection => {
+    vi.useFakeTimers()
+    let attempts = 0
+    realtimeMock.invoke.mockImplementation(method => {
+      if (method === 'UseAbility') {
+        attempts++
+        if (attempts === 1) return Promise.reject(new Error('Publication timed out after applying damage'))
+        if (attempts === 2) return Promise.reject(new Error(`HubException: ${rejection}`))
+        return Promise.resolve(abilityUpdate(3))
+      }
+      return Promise.resolve(method === 'ResumeCombatFromSequence' ? abilityUpdate(2) : [])
+    })
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(abilityUpdate())
+    for (let attempt = 0; attempt < 3; attempt++) {
+      await store.useAbility('HEROIC_STRIKE')
+      await vi.advanceTimersByTimeAsync(400)
+    }
+    const sent = realtimeMock.invoke.mock.calls.filter(([method]) => method === 'UseAbility')
+    expect(sent).toHaveLength(3)
+    expect(new Set(sent.map(call => call[4])).size).toBe(1)
+    expect(store.connectionState).toBe('connected')
+    expect(store.errorCode).toBeNull()
+  })
+
+  it('presents a busy resume without replacing it with a generic network error', async () => {
+    realtimeMock.invoke.mockRejectedValue(new Error('HubException: combat_busy'))
+    const store = useCombatSessionStore()
+    await store.connect()
+    realtimeMock.handlers.get('CombatUpdated')?.(abilityUpdate())
+    expect(await store.resume()).toBe(false)
+    expect(store.errorCode).toBe('combat_busy')
+    expect(store.diagnostic).toBeNull()
   })
 
   it.each(['duplicate_command', 'combat_not_found'])('still resyncs after %s', async errorCode => {

@@ -154,7 +154,9 @@ public sealed class GuardianWarlordCombatSessionTests
         Assert.Contains(gains, e => e.ActorId == player.ActorId && e.Amount == 15);
         Assert.Contains(gains, e => e.ActorId == companion.ActorId && e.Amount == 30);
         Assert.All(gains, e => { Assert.True(e.IsProc); Assert.Equal(1, e.ProcDepth); });
-        Assert.False(session.Handle(new UseAbilityCommand("cry", cry.Id, player.ActorId), Now).Succeeded);
+        var replay = session.Handle(new UseAbilityCommand("cry", cry.Id, player.ActorId), Now);
+        Assert.True(replay.Succeeded);
+        Assert.Empty(replay.Events);
         Assert.Equal(65, player.CurrentResource);
         Assert.Equal(80, companion.CurrentResource);
     }

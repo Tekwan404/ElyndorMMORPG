@@ -568,6 +568,11 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
         return false
       }
       connectionState.value = 'disconnected'
+      if (/\bcombat_busy\b/i.test(getErrorMessage(error))) {
+        errorCode.value = 'combat_busy'
+        diagnostic.value = null
+        return false
+      }
       recordFailure('resume', 'ResumeCombat', error)
       return false
     }
@@ -649,12 +654,19 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
       if (error instanceof ObsoleteCombatInvocationError) return { succeeded: false, receivedResponse: false }
       // The server deliberately rejected this command before execution. It is
       // not a SignalR transport failure and must not close the ability bar.
+      // Keep the ID: an earlier attempt may have executed before its response was lost.
       if (connected && connection?.state === HubConnectionState.Connected
         && /\brate_limited\b/i.test(getErrorMessage(error))) {
         errorCode.value = 'rate_limited'
         commandBackoffUntil = Date.now() + 350
         diagnostic.value = null
-        return { succeeded: false, receivedResponse: true }
+        return { succeeded: false, receivedResponse: false }
+      }
+      if (connected && connection?.state === HubConnectionState.Connected
+        && /\bcombat_busy\b/i.test(getErrorMessage(error))) {
+        errorCode.value = 'combat_busy'
+        diagnostic.value = null
+        return { succeeded: false, receivedResponse: false }
       }
       if (connected || diagnostic.value === null) {
         recordFailure('hub_invoke', method, error)

@@ -49,7 +49,9 @@ public sealed partial class CombatSession
     private readonly DateTimeOffset _combatStartedAtUtc;
     private readonly CombatSummonProfile? _summonProfile;
     private DateTimeOffset? _nextSummonAtUtc;
-    private readonly HashSet<string> _processedCommandIds = new(StringComparer.Ordinal);
+    public const int MaximumCommandIdLength = 64;
+    public const int MaximumCommandsPerParticipant = 16_384;
+    private readonly Dictionary<string, CommandOutcome> _commandOutcomes = new(StringComparer.Ordinal);
     private readonly HashSet<Guid> _deadActors = [];
     private readonly List<CombatEvent> _events = [];
     private readonly Dictionary<Guid, CombatSessionStatisticsState> _statisticsByActorId = [];
@@ -530,8 +532,42 @@ public sealed partial class CombatSession
         }
     }
 
-    public bool HasProcessedCommand(string commandId) =>
-        !string.IsNullOrWhiteSpace(commandId) && _processedCommandIds.Contains(commandId);
+    private sealed record CommandOutcome(Guid ActorId, bool Succeeded, string? ErrorCode);
+
+    public CombatCommandResult? GetCommandPreflightResult(Guid characterId, string commandId) =>
+        GetCommandPreflightResult(characterId, commandId, allowEscape: false);
+
+    private CombatCommandResult? GetCommandPreflightResult(Guid characterId, string commandId, bool allowEscape)
+    {
+        if (string.IsNullOrWhiteSpace(commandId) || commandId.Length > MaximumCommandIdLength)
+            return new(false, CombatErrorCodes.InvalidCommandId, Snapshot(characterId), []);
+        if (_commandOutcomes.TryGetValue(commandId, out CommandOutcome? outcome))
+            return outcome.ActorId == characterId
+                ? new(outcome.Succeeded, outcome.ErrorCode, Snapshot(characterId), [])
+                : new(false, CombatErrorCodes.DuplicateCommand, Snapshot(characterId), []);
+        if (_playerStatesByActorId.TryGetValue(characterId, out CombatPlayerRuntimeState? state)
+            && state.CommandCount >= MaximumCommandsPerParticipant
+            && !(allowEscape && state.CommandCount == MaximumCommandsPerParticipant))
+            return new(false, CombatErrorCodes.CommandLimit, Snapshot(characterId), []);
+        return null;
+    }
+
+    public string? ValidateConsumableUse(
+        Guid characterId,
+        DateTimeOffset now,
+        IReadOnlyList<ResolvedConsumableAction> actions,
+        string cooldownCategoryId,
+        TimeSpan cooldown)
+    {
+        if (!IsActiveParticipant(characterId)) return CombatErrorCodes.ParticipantNotActive;
+        CombatPlayerRuntimeState previous = _activePlayerState;
+        try
+        {
+            ActivatePlayer(characterId);
+            return ValidateConsumableUse(now, actions, cooldownCategoryId, cooldown);
+        }
+        finally { _activePlayerState = previous; }
+    }
 
     public string? ValidateConsumableUse(
         DateTimeOffset now,
@@ -605,64 +641,41 @@ public sealed partial class CombatSession
         return changesState ? null : CombatErrorCodes.ConsumableNotNeeded;
     }
 
-    public CombatCommandResult Handle(CombatCommand command, DateTimeOffset now)
-    {
-        ArgumentNullException.ThrowIfNull(command);
-        long before = Sequence;
-        AdvanceCore(now);
-        if (Status != CombatSessionStatus.Active)
-            return Result(false, CombatErrorCodes.Ended, before);
-        if (string.IsNullOrWhiteSpace(command.CommandId)
-            || !_processedCommandIds.Add(command.CommandId))
-            return Result(false, CombatErrorCodes.DuplicateCommand, before);
-
-        return HandleActiveCommand(command, now, before);
-    }
+    public CombatCommandResult Handle(CombatCommand command, DateTimeOffset now) =>
+        Handle(_activePlayerState.Definition.Actor.ActorId, command, now);
 
     public CombatCommandResult Handle(
         Guid participantCharacterId,
         CombatCommand command,
         DateTimeOffset now)
     {
+        ArgumentNullException.ThrowIfNull(command);
+        CombatCommandResult? preflight = GetCommandPreflightResult(
+            participantCharacterId, command.CommandId, allowEscape: command is FleeCommand);
+        if (preflight is not null) return preflight;
         if (!IsActiveParticipant(participantCharacterId))
         {
-            if (command is FleeCommand
-                && _participantRoster.GetStatus(participantCharacterId)
-                    == CombatParticipantStatus.Fled)
-            {
-                return new CombatCommandResult(
-                    true,
-                    null,
-                    Snapshot(participantCharacterId),
-                    []);
-            }
-
-            return new CombatCommandResult(
-                false,
-                CombatErrorCodes.ParticipantNotActive,
-                Snapshot(participantCharacterId),
-                []);
+            bool alreadyFled = command is FleeCommand
+                && _participantRoster.GetStatus(participantCharacterId) == CombatParticipantStatus.Fled;
+            return new(alreadyFled, alreadyFled ? null : CombatErrorCodes.ParticipantNotActive,
+                Snapshot(participantCharacterId), []);
         }
 
         long before = Sequence;
         AdvanceCore(now);
         if (Status != CombatSessionStatus.Active)
-            return Result(false, CombatErrorCodes.Ended, before);
+            return new(false, CombatErrorCodes.Ended, Snapshot(participantCharacterId), GetEventsAfter(before));
         if (!IsActiveParticipant(participantCharacterId))
-        {
-            return new CombatCommandResult(
-                false,
-                CombatErrorCodes.ParticipantNotActive,
-                Snapshot(participantCharacterId),
-                GetEventsAfter(before));
-        }
+            return new(false, CombatErrorCodes.ParticipantNotActive, Snapshot(participantCharacterId), GetEventsAfter(before));
 
         ActivatePlayer(participantCharacterId);
-        if (string.IsNullOrWhiteSpace(command.CommandId)
-            || !_processedCommandIds.Add(command.CommandId))
-            return Result(false, CombatErrorCodes.DuplicateCommand, before);
-
-        return HandleActiveCommand(command, now, before);
+        // Keep a rejection marker if execution throws after partially mutating state.
+        // IDs are never evicted: an old retry must not become a fresh mutation.
+        _commandOutcomes.Add(command.CommandId, new(participantCharacterId, false, CombatErrorCodes.CommandRejected));
+        _activePlayerState.CommandCount++;
+        CombatCommandResult result = HandleActiveCommand(command, now, before);
+        _commandOutcomes[command.CommandId] = new(participantCharacterId, result.Succeeded, result.ErrorCode);
+        return result with { Snapshot = Snapshot(participantCharacterId) };
     }
 
     private bool IsActiveParticipant(Guid participantCharacterId) =>
@@ -2861,6 +2874,7 @@ public sealed partial class CombatSession
         public DateTimeOffset? NextOffHandAutoAttackAtUtc { get; set; }
         public Dictionary<string, DateTimeOffset> ConsumableCooldowns { get; } = new(StringComparer.Ordinal);
         public DateTimeOffset LastResourceRegenAtUtc { get; set; }
+        public int CommandCount { get; set; }
         public int ArcherShotSequence { get; set; }
         public int MarkedShotSequence { get; set; }
         public DateTimeOffset? NextSpiritBondAtUtc { get; set; }

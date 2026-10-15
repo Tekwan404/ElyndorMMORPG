@@ -10,6 +10,20 @@ namespace Elyndor.IntegrationTests.Combat;
 public sealed class CombatRealtimeEventFilteringTests
 {
     [Fact]
+    public async Task OnlyGateTimeoutIsMappedToADefiniteBusyRejection()
+    {
+        MethodInfo mapping = typeof(CombatHub).GetMethod("WithBusyErrorAsync",
+            BindingFlags.NonPublic | BindingFlags.Static)!.MakeGenericMethod(typeof(int));
+        Task<int> busy = (Task<int>)mapping.Invoke(null,
+            [Task.FromException<int>(new CombatGateBusyException())])!;
+        var busyError = await Assert.ThrowsAsync<Microsoft.AspNetCore.SignalR.HubException>(() => busy);
+        Assert.Equal("combat_busy", busyError.Message);
+        TimeoutException ambiguous = new("Publication timed out after applying damage");
+        Task<int> uncertain = (Task<int>)mapping.Invoke(null, [Task.FromException<int>(ambiguous)])!;
+        Assert.Same(ambiguous, await Assert.ThrowsAsync<TimeoutException>(() => uncertain));
+    }
+
+    [Fact]
     public void RealtimePayloadKeepsCompleteSequencedEventStream()
     {
         DateTimeOffset now = DateTimeOffset.UtcNow;

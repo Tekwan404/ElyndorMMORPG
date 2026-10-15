@@ -193,6 +193,8 @@ public sealed record CombatSessionSnapshot(
 
 public static class CombatErrorCodes
 {
+    public const string InvalidCommandId = "combat_command_id_invalid";
+    public const string CommandLimit = "combat_command_limit";
     public const string NotFound = "combat_not_found";
     public const string Ended = "combat_ended";
     public const string DuplicateCommand = "duplicate_command";

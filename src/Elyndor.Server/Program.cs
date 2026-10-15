@@ -1,3 +1,4 @@
+using OpenTelemetry.Metrics;
 using Elyndor.Server.Pvp;
 using System.Text;
 using Elyndor.Contracts.System;
@@ -74,6 +75,7 @@ PhysicalFileProvider? adminFrontendFileProvider = File.Exists(Path.Combine(admin
     : null;
 
 builder.AddServiceDefaults();
+builder.Services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddMeter(CombatSessionMetrics.MeterName));
 builder.AddElyndorInfrastructure();
 
 builder.Services.AddOpenApi();

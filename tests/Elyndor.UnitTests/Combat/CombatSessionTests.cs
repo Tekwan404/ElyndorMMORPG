@@ -1725,8 +1725,7 @@ public sealed class CombatSessionTests
             .ToArray();
         CombatOperationResult[] results = await Task.WhenAll(commands);
 
-        Assert.Single(results, result => result.Succeeded);
-        Assert.Single(results, result => result.ErrorCode == CombatErrorCodes.DuplicateCommand);
+        Assert.All(results, result => Assert.True(result.Succeeded, result.ErrorCode));
         Assert.Single(session.GetEventsAfter(0), item => item.Type == CombatEventType.AutoAttackStopped);
     }
 

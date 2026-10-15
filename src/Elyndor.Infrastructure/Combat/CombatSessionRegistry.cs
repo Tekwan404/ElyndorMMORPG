@@ -843,7 +843,7 @@ public sealed class CombatSessionRegistry(
     {
         if (await entry.Gate.WaitAsync(_ioTimeout, cancellationToken)) return;
         OperationStalled(logger, entry.Session.SessionId, "gate", _ioTimeout.TotalMilliseconds, null);
-        throw new TimeoutException("Combat is recovering an unfinished operation.");
+        throw new CombatGateBusyException();
     }
 
     private async Task CompletePendingAsync(SessionEntry entry)
@@ -918,7 +918,7 @@ public sealed class CombatSessionRegistry(
         public CombatSession Session { get; } = session;
         public GameContentSnapshot? ContentSnapshot { get; } = contentSnapshot;
         public string? LocationId { get; } = locationId;
-        public SemaphoreSlim Gate { get; } = new(1, 1);
+        public CombatSessionGate Gate { get; } = new();
         public string? IoStage;
         public long IoStarted;
         public long LastStallLog;
