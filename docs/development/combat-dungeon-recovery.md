@@ -19,8 +19,8 @@ An active encounter without a durable journal is reconciled on run refresh. A ru
 that is still active or finalizing is preserved. Committed victory evidence or a
 successfully finalized Victory advances the encounter once; an orphan without victory
 evidence becomes Wiped and may be retried. No character progression or inventory reset
-is required. Deploy the fix, refresh the run, and retry or leave it. A specific account
-investigation still requires its character name or public hero code.
+is required. During a running process, refresh the run and retry or leave it. A
+process restart now closes unfinished runs under the policy below.
 
 Dungeon encounters follow their authored sequence. Floor grouping and selection were
 removed at the user's request on 2026-10-15. Existing saved encounter indexes and
@@ -40,3 +40,12 @@ package. Explicitly unversioned compatibility snapshots retain their legacy fall
 Participant runtime state isolates Death's Embrace, Marked Shot and Spirit Bond.
 Companion attacks resolve in their owner's context, independent of participant order.
 These fixes do not restore floor grouping or floor selection.
+
+
+On every process restart (including crashes), startup finishes terminal journal
+recovery and orphan reconciliation before closing remaining unfinished dungeon runs.
+The run state changes to Abandoned and its active members to Left in one transaction.
+The next entry creates a fresh run. Completed history, progression, inventory,
+currencies, reward receipts and pending loot remain saved. A failed terminal recovery
+prevents this reset and player admission. Live registry/evidence guards remain intact.
+No deployment marker, migration or manual database reset is needed.

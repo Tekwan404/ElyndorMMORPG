@@ -791,6 +791,31 @@ public sealed class DungeonService(
         return true;
     }
 
+    public Task<int> CloseInterruptedRunsAtStartupAsync(CancellationToken cancellationToken)
+    {
+        CombatStartupRecovery.EnsureBeforeAdmission(applicationLifetime);
+        return dbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        {
+            dbContext.ChangeTracker.Clear();
+            await using IDbContextTransaction? transaction =
+                await BeginAdvisoryLockAsync("dungeon-startup-reset", cancellationToken);
+            IQueryable<DungeonRun> interruptedRuns = dbContext.DungeonRuns.Where(run =>
+                run.State == DungeonRunState.Active
+                && !run.Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active)
+                && !dbContext.ActiveCombatSessions.Any(session =>
+                    run.Members.Any(member => member.CharacterId == session.CharacterId)));
+            await dbContext.DungeonRunMembers
+                .Where(member => member.State == DungeonRunMemberState.Active
+                    && interruptedRuns.Any(run => run.Id == member.RunId))
+                .ExecuteUpdateAsync(setters => setters.SetProperty(member => member.State,
+                    DungeonRunMemberState.Left), cancellationToken);
+            int closed = await interruptedRuns.ExecuteUpdateAsync(setters =>
+                setters.SetProperty(run => run.State, DungeonRunState.Abandoned), cancellationToken);
+            await CommitAsync(transaction, cancellationToken);
+            return closed;
+        });
+    }
+
     public async Task<int> ReconcileOrphanedEncountersAtStartupAsync(CancellationToken cancellationToken)
     {
         // Absence from the registry is only conclusive before request admission. A new start

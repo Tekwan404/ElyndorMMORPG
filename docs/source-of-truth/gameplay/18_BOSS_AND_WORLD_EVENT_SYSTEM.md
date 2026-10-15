@@ -742,4 +742,7 @@ DungeonEncounterId, optional
 - World Boss participation remains open-world policy.
 - Dungeon Boss eligibility is additionally limited by Dungeon MemberSnapshot.
 - Restart during a dungeon boss follows:
-  `Boss ACTIVE → FAILED`, no reward, Dungeon encounter resets, DungeonInstance remains ACTIVE.
+  `Boss ACTIVE → FAILED`, no new reward, and the unfinished dungeon run becomes
+  `Abandoned` before admission. Every server restart, including crashes, requires a
+  fresh dungeon run (approved 2026-10-15). Terminal results already recorded before
+  restart are settled once; earned rewards and completed history remain saved.

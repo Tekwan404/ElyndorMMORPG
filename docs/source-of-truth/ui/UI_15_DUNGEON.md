@@ -126,7 +126,7 @@ Expanded result:
 2. MemberSnapshot separate from Party.
 3. Checkpoints.
 4. Wipe resets current encounter.
-5. Restart resets active encounter, keeps instance.
+5. Every server restart closes unfinished runs; the next entry starts a fresh run. Completed history and earned rewards remain saved.
 6. Personal loot.
 7. Rewards participation-based.
 
@@ -136,3 +136,10 @@ Expanded result:
 Encounters are completed in authored order. There is no floor grouping, floor selector
 or floor-based loot filter. The card shows current encounter progress and all possible
 dungeon loot. Existing run state, encounter retries and rewards remain authoritative.
+
+
+## Restart behavior (2026-10-15)
+
+After any server restart, including crashes, resume clears the retired battle and
+current-run refresh returns no active run. The player may start a new dungeon run.
+A normal wipe without a server restart continues to reset only the current encounter.

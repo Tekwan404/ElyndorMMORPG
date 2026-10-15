@@ -42,6 +42,55 @@ public sealed class CombatStartupRecoveryTests(PostgresFixture postgres) : IAsyn
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
+    public async Task RestartAbandonsUnfinishedDungeonOnceWithoutResettingCharacter(bool journal)
+    {
+        Seed seed = await SeedAsync(journal: journal);
+        await using ServiceProvider provider = await CreateProviderAsync();
+        await CombatStartupRecovery.RecoverAsync(provider.GetRequiredService<IServiceScopeFactory>(), CancellationToken.None);
+        await CombatStartupRecovery.RecoverAsync(provider.GetRequiredService<IServiceScopeFactory>(), CancellationToken.None);
+
+        await using GameDbContext verify = postgres.CreateDbContext();
+        DungeonRun run = await verify.DungeonRuns.SingleAsync();
+        Assert.Equal(DungeonRunState.Abandoned, run.State);
+        Assert.Equal(DungeonRunMemberState.Left, (await verify.DungeonRunMembers.SingleAsync()).State);
+        DungeonEncounter encounter = await verify.DungeonEncounters.SingleAsync();
+        Assert.Equal(DungeonEncounterState.Wiped, encounter.State);
+        Assert.Equal(1, encounter.WipeCount);
+        Assert.Empty(await verify.ActiveCombatSessions.ToArrayAsync());
+        Character character = await verify.Characters.SingleAsync();
+        Assert.Equal(15, character.Level);
+        Assert.Equal(seed.CharacterId, character.Id);
+        Assert.Empty(await verify.CombatRewardGrants.ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task RestartClosesPendingRunButKeepsCompletedHistoryAndRewards()
+    {
+        Seed seed = await SeedAsync(journal: false, reward: true);
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.DungeonEncounters.RemoveRange(await setup.DungeonEncounters.ToArrayAsync());
+            DungeonRun completed = DungeonRun.Create(Guid.CreateVersion7(), Guid.CreateVersion7(),
+                Guid.CreateVersion7(), "ANCIENT_MINE", Now);
+            completed.AddMember(seed.CharacterId, Now);
+            completed.Complete(Now);
+            setup.DungeonRuns.Add(completed);
+            await setup.SaveChangesAsync();
+        }
+        await using ServiceProvider provider = await CreateProviderAsync();
+        await CombatStartupRecovery.RecoverAsync(provider.GetRequiredService<IServiceScopeFactory>(), CancellationToken.None);
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(1, await verify.DungeonRuns.CountAsync(run => run.State == DungeonRunState.Abandoned));
+        DungeonRun finished = await verify.DungeonRuns.Include(run => run.Members)
+            .SingleAsync(run => run.State == DungeonRunState.Completed);
+        Assert.Equal(DungeonRunMemberState.Active, Assert.Single(finished.Members).State);
+        Assert.Single(await verify.CombatRewardGrants.ToArrayAsync());
+        Assert.Single(await verify.Characters.ToArrayAsync());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
     public async Task OrphanReconciliationUsesCommittedVictoryOtherwiseWipesOnlyOnce(bool victory)
     {
         Seed seed = await SeedAsync(journal: false, reward: victory);
@@ -56,7 +105,7 @@ public sealed class CombatStartupRecoveryTests(PostgresFixture postgres) : IAsyn
         Assert.Equal(victory ? 0 : 1, encounter.WipeCount);
         Assert.Equal(victory ? 1 : 0, run.CurrentEncounterIndex);
         Assert.Equal(victory ? 2 : 1, await verify.DungeonEncounters.CountAsync());
-        Assert.Equal(DungeonRunState.Active, run.State);
+        Assert.Equal(DungeonRunState.Abandoned, run.State);
         Assert.Equal(victory ? 1 : 0, await verify.CombatRewardGrants.CountAsync());
         Assert.Equal(0, (await verify.Characters.SingleAsync()).Experience);
     }
@@ -111,6 +160,8 @@ public sealed class CombatStartupRecoveryTests(PostgresFixture postgres) : IAsyn
 
         await using GameDbContext verify = postgres.CreateDbContext();
         Assert.NotNull((await verify.ActiveCombatSessions.SingleAsync()).TerminalSnapshotJson);
+        Assert.Equal(DungeonRunState.Active, (await verify.DungeonRuns.SingleAsync()).State);
+        Assert.Equal(DungeonRunMemberState.Active, (await verify.DungeonRunMembers.SingleAsync()).State);
         Assert.Single(await verify.CombatRewardGrants.ToArrayAsync());
         Assert.Equal(DungeonEncounterState.Active,
             (await verify.DungeonEncounters.SingleAsync(candidate => candidate.Id == seed.EncounterId)).State);
@@ -350,6 +401,47 @@ public sealed class CombatStartupRecoveryTests(PostgresFixture postgres) : IAsyn
             DungeonEncounter pending = await replay.DungeonEncounters.SingleAsync(candidate => candidate.EncounterIndex == 7);
             Assert.Equal(bossId, pending.MonsterId);
             Assert.Equal(DungeonEncounterState.Pending, pending.State);
+        }
+    }
+
+    [Fact]
+    public async Task RunResetRollsBackMembershipIfRunUpdateFails()
+    {
+        await SeedAsync(journal: false);
+        await using (GameDbContext setup = postgres.CreateDbContext())
+        {
+            setup.DungeonEncounters.RemoveRange(await setup.DungeonEncounters.ToArrayAsync());
+            await setup.SaveChangesAsync();
+        }
+        await using ServiceProvider provider = await CreateProviderAsync(interceptor: new RejectRunResetInterceptor());
+        using IServiceScope scope = provider.CreateScope();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => scope.ServiceProvider.GetRequiredService<DungeonService>()
+            .CloseInterruptedRunsAtStartupAsync(CancellationToken.None));
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(DungeonRunState.Active, (await verify.DungeonRuns.SingleAsync()).State);
+        Assert.Equal(DungeonRunMemberState.Active, (await verify.DungeonRunMembers.SingleAsync()).State);
+    }
+
+    [Fact]
+    public async Task RunResetIsForbiddenAfterAdmission()
+    {
+        await SeedAsync(journal: false);
+        await using ServiceProvider provider = await CreateProviderAsync(lifetime: new StartedLifetime());
+        using IServiceScope scope = provider.CreateScope();
+        await Assert.ThrowsAsync<InvalidOperationException>(() => scope.ServiceProvider.GetRequiredService<DungeonService>()
+            .CloseInterruptedRunsAtStartupAsync(CancellationToken.None));
+        await using GameDbContext verify = postgres.CreateDbContext();
+        Assert.Equal(DungeonRunState.Active, (await verify.DungeonRuns.SingleAsync()).State);
+    }
+
+    private sealed class RejectRunResetInterceptor : DbCommandInterceptor
+    {
+        public override ValueTask<InterceptionResult<int>> NonQueryExecutingAsync(DbCommand command,
+            CommandEventData eventData, InterceptionResult<int> result, CancellationToken cancellationToken = default)
+        {
+            if (command.CommandText.StartsWith("UPDATE game.dungeon_runs", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Injected run reset failure.");
+            return ValueTask.FromResult(result);
         }
     }
 
