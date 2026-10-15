@@ -2,10 +2,16 @@
 import { computed } from 'vue'
 
 import type { CombatActorSnapshot } from '@/api/contracts'
+import { combatActorVitalsLabel } from '@/game/combat/combatActorPresentation'
 import { monsterArtUrl } from '@/assets/monsterArt'
 import type { CombatNumberPresentation } from '@/game/combat/battleEventPresentation'
-import { DEFAULT_COMBAT_NUMBER_SETTINGS, type CombatNumberSettings } from '@/game/combat/combatNumberSettings'
+import {
+  DEFAULT_COMBAT_NUMBER_SETTINGS,
+  type CombatNumberSettings,
+} from '@/game/combat/combatNumberSettings'
 import { buildBattleFormation } from '@/game/combat/composables/useBattleFormation'
+import CombatActorStatus from './CombatActorStatus.vue'
+import AlliesStrip from './AlliesStrip.vue'
 import CharacterFigure from './CharacterFigure.vue'
 import CombatNumbers from './CombatNumbers.vue'
 
@@ -81,11 +87,19 @@ const enemyScale = computed(() => {
   if (primaryEnemy.value?.monsterRank === 'Elite') return 'elite'
   return 'normal'
 })
-const enemyHealthRatio = computed(() =>
-  primaryEnemy.value && primaryEnemy.value.maxHp > 0
-    ? Math.max(0, Math.min(100, (primaryEnemy.value.hp / primaryEnemy.value.maxHp) * 100))
-    : 0,
+const canSelectDead = computed(
+  () =>
+    actorById.value
+      .get(props.localActorId)
+      ?.abilities.some((ability) => ability.targetType === 'SingleDeadAlly') ?? false,
 )
+function statusStyle(slot: (typeof visibleSlots.value)[number]) {
+  return {
+    left: `${(slot.bounds.x + (slot.bounds.width * (1 - slot.scale)) / 2) * 100}%`,
+    bottom: `${(1 - slot.bounds.y - slot.bounds.height) * 100}%`,
+    width: `max(80px, ${slot.bounds.width * slot.scale * 100}%)`,
+  }
+}
 
 function slotStyle(slot: (typeof visibleSlots.value)[number]) {
   return {
@@ -104,6 +118,7 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
     class="battle-arena"
     :style="backgroundStyle"
     :data-formation-mode="formation.mode"
+    :data-multi-enemy="enemies.length > 1"
     data-battle-arena
     data-combat-battlefield
     aria-label="Поле боя"
@@ -145,7 +160,8 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
           :aggro="aggroActorIds.includes(slot.actorId)"
           :local="localActorId === slot.actorId"
           :disabled="disabled"
-          :can-select-dead="actorById.get(localActorId)?.abilities?.some(ability => ability.targetType === 'SingleDeadAlly') ?? false"
+          :can-select-dead="canSelectDead"
+          :show-status="false"
           :frontline="slot.isFrontline"
           @select="emit('selectFriendly', $event)"
         />
@@ -154,11 +170,28 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
     </div>
 
     <button
+      v-for="slot in visibleSlots"
+      :key="`status-${slot.actorId}`"
+      type="button"
+      class="battle-arena__ally-status"
+      :data-ally-status="slot.actorId"
+      :style="statusStyle(slot)"
+      :data-selected="selectedFriendlyActorId === slot.actorId"
+      :data-aggro="aggroActorIds.includes(slot.actorId)"
+      :aria-label="combatActorVitalsLabel(actorById.get(slot.actorId)!)"
+      :aria-pressed="selectedFriendlyActorId === slot.actorId"
+      :disabled="disabled || (actorById.get(slot.actorId)!.hp <= 0 && !canSelectDead)"
+      @click="emit('selectFriendly', slot.actorId)"
+    >
+      <CombatActorStatus :actor="actorById.get(slot.actorId)!" />
+    </button>
+
+    <button
       v-if="primaryEnemy"
       type="button"
       class="battle-arena__enemy enemy-figure"
       :data-enemy-scale="enemyScale"
-      :aria-label="`${primaryEnemy.name}, ${Math.round(enemyHealthRatio)}% HP`"
+      :aria-label="combatActorVitalsLabel(primaryEnemy)"
       :disabled="disabled || enemyDisabled || primaryEnemy.hp <= 0"
       @click="emit('selectEnemy', primaryEnemy.actorId)"
     >
@@ -173,11 +206,13 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
         <b v-else>{{ primaryEnemy.name.slice(0, 1) }}</b>
       </span>
       <span class="battle-arena__enemy-caption">
-        <strong>{{ primaryEnemy.name }}</strong>
-        <i><b :style="{ width: `${enemyHealthRatio}%` }" /></i>
-        <small>Ур. {{ primaryEnemy.level ?? 1 }}</small>
+        <CombatActorStatus :actor="primaryEnemy" />
       </span>
-      <CombatNumbers :actor-id="primaryEnemy.actorId" :entries="numbers" :settings="numberSettings" />
+      <CombatNumbers
+        :actor-id="primaryEnemy.actorId"
+        :entries="numbers"
+        :settings="numberSettings"
+      />
     </button>
 
     <aside
@@ -202,9 +237,17 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
       </div>
     </aside>
 
-    <p v-if="formation.overflowActorIds.length" class="battle-arena__overflow">
-      Ещё {{ formation.overflowActorIds.length }} в полоске группы
-    </p>
+    <AlliesStrip
+      v-if="formation.overflowActorIds.length"
+      class="battle-arena__reserve"
+      :allies="allies"
+      :visible-actor-ids="formation.overflowActorIds"
+      :local-actor-id="localActorId"
+      :selected-actor-id="selectedFriendlyActorId"
+      :aggro-actor-ids="aggroActorIds"
+      :disabled="disabled"
+      @select="emit('selectFriendly', $event)"
+    />
   </section>
 </template>
 
@@ -236,9 +279,11 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
   position: absolute;
   z-index: 2;
   inset: 0;
+  pointer-events: none;
 }
 .battle-arena__ally-slot {
   position: absolute;
+  pointer-events: auto;
   transform: scale(var(--actor-scale));
   transform-origin: center bottom;
   transition:
@@ -250,16 +295,17 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
 }
 .battle-arena__enemy {
   position: absolute;
-  z-index: 40;
-  right: 1.5%;
-  bottom: 4%;
+  z-index: 1;
+  top: 3%;
+  left: 50%;
+  transform: translateX(-50%);
   display: grid;
-  width: 45%;
-  height: 84%;
+  width: 46%;
+  height: 42%;
   min-width: 44px;
   min-height: 44px;
-  grid-template-rows: minmax(0, 1fr) auto;
-  padding: 0;
+  grid-template-rows: minmax(0, 1fr);
+  padding: 44px 0 0;
   border: 0;
   background: transparent;
   color: #f6eee2;
@@ -268,12 +314,16 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
   touch-action: manipulation;
 }
 .battle-arena__enemy[data-enemy-scale='elite'] {
-  width: 48%;
-  height: 88%;
+  width: 50%;
+  height: 44%;
 }
 .battle-arena__enemy[data-enemy-scale='boss'] {
-  width: 51%;
-  height: 92%;
+  width: 54%;
+  height: 46%;
+}
+.battle-arena[data-multi-enemy='true'] .battle-arena__enemy {
+  top: 60px;
+  height: 36%;
 }
 .battle-arena__enemy:focus-visible {
   outline: 2px solid #df7182;
@@ -299,6 +349,13 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
   font-size: 4rem;
 }
 .battle-arena__enemy-caption {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 180px;
+  justify-self: end;
   display: grid;
   gap: 2px;
   padding: 0.28rem 0.45rem;
@@ -336,8 +393,9 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
   z-index: 70;
   top: 0.45rem;
   right: 0.45rem;
+  left: 3.8rem;
   display: flex;
-  max-width: 52%;
+  overflow-x: auto;
   gap: 0.3rem;
 }
 .battle-arena__enemy-strip button {
@@ -357,26 +415,14 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
   border-color: #df7182;
   box-shadow: 0 0 10px rgb(210 69 91 / 25%);
 }
-.battle-arena__overflow {
-  position: absolute;
-  z-index: 80;
-  bottom: 0.45rem;
-  left: 0.5rem;
-  margin: 0;
-  padding: 0.2rem 0.38rem;
-  border-radius: 999px;
-  background: rgb(5 7 12 / 78%);
-  color: #cabf9e;
-  font-size: 0.5rem;
-}
 .battle-arena__companion {
   position: absolute;
   z-index: 65;
-  bottom: 0.45rem;
+  top: 3.8rem;
   left: 0.45rem;
   display: grid;
-  width: min(7.5rem, 30%);
-  grid-template-columns: 2rem minmax(0, 1fr);
+  width: min(7.5rem, 21%);
+  grid-template-columns: 1.5rem minmax(0, 1fr);
   align-items: center;
   gap: 0.3rem;
   padding: 0.25rem;
@@ -390,8 +436,8 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
 }
 .battle-arena__companion > span {
   display: grid;
-  width: 2rem;
-  height: 2rem;
+  width: 1.5rem;
+  height: 1.5rem;
   place-items: center;
   overflow: hidden;
   border-radius: 50%;
@@ -430,23 +476,46 @@ function slotStyle(slot: (typeof visibleSlots.value)[number]) {
     min-height: 25.5rem;
   }
 }
-@media (max-width: 480px) {
-  .battle-arena__enemy {
-    width: 56%;
-    height: 88%;
-  }
-  .battle-arena__enemy[data-enemy-scale='elite'] {
-    width: 58%;
-    height: 91%;
-  }
-  .battle-arena__enemy[data-enemy-scale='boss'] {
-    width: 60%;
-    height: 94%;
-  }
-}
 @media (prefers-reduced-motion: reduce) {
   .battle-arena__ally-slot {
     transition-duration: 1ms;
   }
+}
+.battle-arena__reserve {
+  position: absolute;
+  z-index: 85;
+  top: 3rem;
+  left: 0.4rem;
+  max-width: 45%;
+}
+.battle-arena__ally-status {
+  position: absolute;
+  z-index: 90;
+  min-width: 80px;
+  min-height: 44px;
+  padding: 4px;
+  border: 1px solid #b8a06666;
+  border-radius: 6px;
+  background: #070a11f2;
+  color: #f5eee1;
+  box-shadow: 0 2px 8px #0008;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.battle-arena__ally-status[data-selected='true'] {
+  border-color: #e4c66f;
+}
+.battle-arena__ally-status[data-aggro='true'] {
+  box-shadow:
+    0 0 0 1px #c9576d88,
+    0 2px 8px #0008;
+}
+.battle-arena__ally-status:focus-visible {
+  outline: 2px solid #e4c66f;
+  outline-offset: 2px;
+}
+.battle-arena__ally-status:disabled {
+  opacity: 0.75;
+  cursor: default;
 }
 </style>

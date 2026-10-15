@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { computed, onUnmounted, shallowRef, watch } from 'vue'
 
-import type { CombatAbility, CombatCastSnapshot, InventoryItem, PendingLootItem } from '@/api/contracts'
+import type {
+  CombatAbility,
+  CombatCastSnapshot,
+  InventoryItem,
+  PendingLootItem,
+} from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
 import { isAuraAbility } from '@/game/combat/combatAbilityGroups'
 import { combatErrorPresentation } from '@/game/combat/combatErrorPresentation'
@@ -14,7 +19,6 @@ import {
 } from '@/game/combat/combatNumberSettings'
 import BattleArena from '@/game/combat/components/BattleArena.vue'
 import BattleControls from '@/game/combat/components/BattleControls.vue'
-import BattleHeader from '@/game/combat/components/BattleHeader.vue'
 import CombatLog from '@/game/combat/components/CombatLog.vue'
 import ConsumableBar from '@/game/combat/components/ConsumableBar.vue'
 import SkillPanel from '@/game/combat/components/SkillPanel.vue'
@@ -52,17 +56,28 @@ function onNumberSettingChange(
 }
 const reconnectPending = shallowRef(false)
 const reconnectFailed = shallowRef(false)
-const connectionRecovering = computed(() => battle.connectionState.value !== 'connected' || reconnectPending.value || reconnectFailed.value)
+const connectionRecovering = computed(
+  () =>
+    battle.connectionState.value !== 'connected' || reconnectPending.value || reconnectFailed.value,
+)
 async function retryConnection(): Promise<void> {
   if (reconnectPending.value) return
   reconnectPending.value = true
   reconnectFailed.value = false
-  try { reconnectFailed.value = !(await battle.reconnect()) } finally { reconnectPending.value = false }
+  try {
+    reconnectFailed.value = !(await battle.reconnect())
+  } finally {
+    reconnectPending.value = false
+  }
 }
 const session = useGameSessionStore()
 const now = shallowRef(Date.now())
 const fleeConfirmationOpen = shallowRef(false)
 const fleeActionFailed = shallowRef(false)
+function openFleeConfirmation(): void {
+  fleeActionFailed.value = false
+  fleeConfirmationOpen.value = true
+}
 const pendingLoot = shallowRef<PendingLootItem[]>([])
 const pendingLootLoading = shallowRef(false)
 const pendingLootError = shallowRef<string | null>(null)
@@ -111,20 +126,23 @@ const enemyCastUnblockable = computed(() => {
   )
 })
 const isActive = computed(() => snapshot.value?.status === 'Active')
-const resultReady = computed(() => !isActive.value && !battle.recoveryRequired.value && !connectionRecovering.value)
+const resultReady = computed(
+  () => !isActive.value && !battle.recoveryRequired.value && !connectionRecovering.value,
+)
 const victoryReady = computed(() => snapshot.value?.status === 'Victory' && resultReady.value)
 const currentPendingLoot = computed(() => {
   const sessionId = snapshot.value?.sessionId
   if (!sessionId) return []
-  return pendingLoot.value.filter(item =>
-    item.rewardResolutionId === sessionId && item.sourceType === 'COMBAT',
+  return pendingLoot.value.filter(
+    (item) => item.rewardResolutionId === sessionId && item.sourceType === 'COMBAT',
   )
 })
 const combatError = computed(() => combatErrorPresentation(battle.errorCode.value))
-const combatErrorMessage = computed(() => battle.recoveryRequired.value
-  || battle.errorCode.value === 'combat_recovery_required'
-  ? 'Не удалось сохранить результат боя. Награды ещё не подтверждены. Повторите синхронизацию.'
-  : combatError.value.message)
+const combatErrorMessage = computed(() =>
+  battle.recoveryRequired.value || battle.errorCode.value === 'combat_recovery_required'
+    ? 'Не удалось сохранить результат боя. Награды ещё не подтверждены. Повторите синхронизацию.'
+    : combatError.value.message,
+)
 
 const trainingElapsedSeconds = computed(() => {
   const startedAt = battle.trainingStats.value.startedAtUtc
@@ -211,11 +229,12 @@ async function claimLoot(items: PendingLootItem[]): Promise<void> {
   pendingLootLoading.value = true
   pendingLootError.value = null
   try {
-    const succeeded = await session.claimPendingLoot(items.map(item => item.id))
+    const succeeded = await session.claimPendingLoot(items.map((item) => item.id))
     if (!succeeded) {
-      pendingLootError.value = session.errorCode === 'inventory_full'
-        ? 'Инвентарь заполнен. Освободите место или оставьте эту добычу.'
-        : 'Не удалось забрать добычу.'
+      pendingLootError.value =
+        session.errorCode === 'inventory_full'
+          ? 'Инвентарь заполнен. Освободите место или оставьте эту добычу.'
+          : 'Не удалось забрать добычу.'
       return
     }
     await refreshPendingLoot()
@@ -229,13 +248,13 @@ async function discardLoot(items: PendingLootItem[]): Promise<boolean> {
   pendingLootLoading.value = true
   pendingLootError.value = null
   try {
-    const succeeded = await session.discardPendingLoot(items.map(item => item.id))
+    const succeeded = await session.discardPendingLoot(items.map((item) => item.id))
     if (!succeeded) {
       pendingLootError.value = 'Не удалось оставить добычу. Повторите попытку.'
       return false
     }
     pendingLoot.value = pendingLoot.value.filter(
-      item => !items.some(discarded => discarded.id === item.id),
+      (item) => !items.some((discarded) => discarded.id === item.id),
     )
     return true
   } finally {
@@ -287,13 +306,18 @@ watch(
 // Only poll the authoritative threat table when the player explicitly enables it.
 let threatRefreshTimer: number | null = null
 const threatPollingEnabled = computed(
-  () => numberSettings.value.showThreatTable
-    && isActive.value
-    && !connectionRecovering.value
-    && !battle.isAwaitingAttachment.value,
+  () =>
+    numberSettings.value.showThreatTable &&
+    isActive.value &&
+    !connectionRecovering.value &&
+    !battle.isAwaitingAttachment.value,
 )
 watch(
-  () => [threatPollingEnabled.value, snapshot.value?.sessionId ?? '', selectedEnemy.value?.actorId ?? ''],
+  () => [
+    threatPollingEnabled.value,
+    snapshot.value?.sessionId ?? '',
+    selectedEnemy.value?.actorId ?? '',
+  ],
   () => {
     if (threatRefreshTimer !== null) {
       window.clearInterval(threatRefreshTimer)
@@ -318,20 +342,10 @@ onUnmounted(() => {
   <section
     class="battle-screen"
     :data-party-size="battle.allies.value.length || undefined"
-    :data-skill-rows="Math.max(1, Math.ceil(activeAbilities.length / 4))"
+    data-skill-rows="2"
     data-battle-screen
   >
     <template v-if="snapshot && localActor && selectedEnemy">
-      <BattleHeader
-        :local-actor="localActor"
-        :enemy="selectedEnemy"
-        :allies="battle.allies.value"
-        :selected-friendly-actor-id="battle.selectedFriendlyActorId.value"
-        :aggro-actor-ids="battle.aggroActorIds.value"
-        :disabled="battle.targetPending.value || !isActive"
-        @select-friendly="battle.selectFriendlyActor"
-      />
-
       <section
         v-if="battle.isAwaitingAttachment.value"
         class="battle-screen__join"
@@ -367,9 +381,7 @@ onUnmounted(() => {
         />
 
         <details class="battle-screen__number-settings" data-combat-number-settings>
-          <summary aria-label="Настройки боя" title="Настройки боя">
-            ⚙ <span>Бой</span>
-          </summary>
+          <summary aria-label="Настройки боя" title="Настройки боя">⚙ <span>Бой</span></summary>
           <div class="battle-screen__number-settings-panel">
             <strong>Числа урона</strong>
             <label>
@@ -512,7 +524,7 @@ onUnmounted(() => {
           :flee-disabled="battle.fleePending.value || connectionRecovering"
           :training="battle.isTraining.value"
           @toggle-auto-attack="battle.toggleAutoAttack"
-          @flee="fleeActionFailed = false; fleeConfirmationOpen = true"
+          @flee="openFleeConfirmation"
           @reset-training="battle.resetTraining"
           @leave="leaveBattle"
         />
@@ -529,7 +541,10 @@ onUnmounted(() => {
         <span v-if="battle.reward.value">Опыт и золото начислены</span>
 
         <section
-          v-if="snapshot.status === 'Victory' && (pendingLootLoading || currentPendingLoot.length || pendingLootError)"
+          v-if="
+            snapshot.status === 'Victory' &&
+            (pendingLootLoading || currentPendingLoot.length || pendingLootError)
+          "
           class="battle-screen__personal-loot"
           data-personal-loot
           aria-label="Добыча после боя"
@@ -557,21 +572,16 @@ onUnmounted(() => {
               />
               <div>
                 <small>{{ rarityLabel(item.rarity) }}</small>
-                <strong>{{ item.name }}<span v-if="item.quantity > 1"> ×{{ item.quantity }}</span></strong>
+                <strong
+                  >{{ item.name
+                  }}<span v-if="item.quantity > 1"> ×{{ item.quantity }}</span></strong
+                >
               </div>
               <div class="personal-loot-list__actions">
-                <button
-                  type="button"
-                  :disabled="pendingLootLoading"
-                  @click="claimLoot([item])"
-                >
+                <button type="button" :disabled="pendingLootLoading" @click="claimLoot([item])">
                   Забрать
                 </button>
-                <button
-                  type="button"
-                  :disabled="pendingLootLoading"
-                  @click="discardLoot([item])"
-                >
+                <button type="button" :disabled="pendingLootLoading" @click="discardLoot([item])">
                   Оставить
                 </button>
               </div>
@@ -579,10 +589,7 @@ onUnmounted(() => {
           </div>
 
           <footer v-if="currentPendingLoot.length">
-            <UIButton
-              :disabled="pendingLootLoading"
-              @click="claimLoot([...currentPendingLoot])"
-            >
+            <UIButton :disabled="pendingLootLoading" @click="claimLoot([...currentPendingLoot])">
               Забрать всё
             </UIButton>
             <UIButton
@@ -649,12 +656,34 @@ onUnmounted(() => {
       </section>
 
       <CombatLog :entries="battle.eventProjection.value.logEntries" />
-      <UIToast v-if="connectionRecovering && (isActive || battle.recoveryRequired.value || reconnectFailed || reconnectPending)" :tone="battle.recoveryRequired.value ? 'danger' : 'info'" placement="overlay" data-combat-connection>
+      <UIToast
+        v-if="
+          connectionRecovering &&
+          (isActive || battle.recoveryRequired.value || reconnectFailed || reconnectPending)
+        "
+        :tone="battle.recoveryRequired.value ? 'danger' : 'info'"
+        placement="overlay"
+        data-combat-connection
+      >
         <template v-if="battle.recoveryRequired.value">{{ combatErrorMessage }}</template>
-        <template v-else-if="reconnectFailed">Не удалось синхронизировать бой. Повторите подключение.</template>
-        <template v-else-if="battle.connectionState.value === 'disconnected'">Соединение с боем потеряно.</template>
-        <template v-else>Восстанавливаем соединение с боем. Дождитесь актуального состояния.</template>
-        <UIButton v-if="battle.connectionState.value === 'disconnected' || reconnectFailed || reconnectPending" :loading="reconnectPending" loading-label="Подключаем…" @click="retryConnection">Повторить подключение</UIButton>
+        <template v-else-if="reconnectFailed"
+          >Не удалось синхронизировать бой. Повторите подключение.</template
+        >
+        <template v-else-if="battle.connectionState.value === 'disconnected'"
+          >Соединение с боем потеряно.</template
+        >
+        <template v-else
+          >Восстанавливаем соединение с боем. Дождитесь актуального состояния.</template
+        >
+        <UIButton
+          v-if="
+            battle.connectionState.value === 'disconnected' || reconnectFailed || reconnectPending
+          "
+          :loading="reconnectPending"
+          loading-label="Подключаем…"
+          @click="retryConnection"
+          >Повторить подключение</UIButton
+        >
       </UIToast>
       <UIToast
         v-else-if="battle.errorCode.value && combatError.showToast"
@@ -673,8 +702,15 @@ onUnmounted(() => {
       >
         <p>После выхода вернуться в этот бой нельзя.</p>
         <template #actions>
-          <UIToast v-if="fleeActionFailed" tone="danger">Не удалось выйти из боя. Повторите попытку.</UIToast>
-          <UIButton variant="ghost" :disabled="battle.fleePending.value" @click="fleeConfirmationOpen = false">Остаться</UIButton>
+          <UIToast v-if="fleeActionFailed" tone="danger"
+            >Не удалось выйти из боя. Повторите попытку.</UIToast
+          >
+          <UIButton
+            variant="ghost"
+            :disabled="battle.fleePending.value"
+            @click="fleeConfirmationOpen = false"
+            >Остаться</UIButton
+          >
           <UIButton variant="danger" :loading="battle.fleePending.value" @click="fleeBattle"
             >Сбежать</UIButton
           >
@@ -692,11 +728,11 @@ onUnmounted(() => {
 <style scoped>
 .battle-screen {
   --battle-gap: clamp(0.28rem, 1vw, 0.46rem);
-  display: grid;
+  display: flex;
+  flex-direction: column;
   width: min(100%, 62rem);
   height: 100svh;
   min-height: 40rem;
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
   gap: var(--battle-gap);
   margin-inline: auto;
   padding: max(0.35rem, env(safe-area-inset-top)) max(0.4rem, env(safe-area-inset-right))
@@ -706,6 +742,7 @@ onUnmounted(() => {
   color: #eee6da;
 }
 .battle-screen__arena-wrap {
+  flex: 1 1 0;
   position: relative;
   min-height: 0;
   max-height: 61.8svh;
@@ -892,11 +929,11 @@ onUnmounted(() => {
 }
 .battle-screen__personal-loot {
   display: grid;
-  gap: .65rem;
+  gap: 0.65rem;
   width: min(100%, 32rem);
-  padding: .75rem;
+  padding: 0.75rem;
   border: 1px solid rgb(215 173 98 / 28%);
-  border-radius: .8rem;
+  border-radius: 0.8rem;
   background: rgb(8 10 14 / 82%);
 }
 
@@ -911,30 +948,30 @@ onUnmounted(() => {
 .battle-screen__personal-loot > header,
 .battle-screen__personal-loot > footer {
   justify-content: space-between;
-  gap: .6rem;
+  gap: 0.6rem;
 }
 
 .battle-screen__personal-loot > header > div {
   display: grid;
-  gap: .1rem;
+  gap: 0.1rem;
 }
 
 .battle-screen__personal-loot > header small,
 .personal-loot-list small {
   color: var(--ui-color-text-muted);
-  font-size: .58rem;
+  font-size: 0.58rem;
 }
 
 .personal-loot-list {
   display: grid;
-  gap: .4rem;
+  gap: 0.4rem;
 }
 
 .personal-loot-list article {
-  gap: .55rem;
-  padding: .45rem;
+  gap: 0.55rem;
+  padding: 0.45rem;
   border: 1px solid rgb(255 255 255 / 7%);
-  border-radius: .65rem;
+  border-radius: 0.65rem;
   background: rgb(255 255 255 / 2%);
 }
 
@@ -950,25 +987,25 @@ onUnmounted(() => {
 }
 
 .personal-loot-list__actions {
-  gap: .35rem;
+  gap: 0.35rem;
 }
 
 .personal-loot-list__actions button {
   min-height: 2rem;
-  padding: 0 .55rem;
+  padding: 0 0.55rem;
   border: 1px solid rgb(215 173 98 / 30%);
   border-radius: 999px;
   background: rgb(255 255 255 / 4%);
   color: inherit;
   font: inherit;
-  font-size: .62rem;
+  font-size: 0.62rem;
   font-weight: 700;
 }
 
 .battle-screen__loot-error {
   margin: 0;
   color: var(--ui-color-danger, #d77979);
-  font-size: .7rem;
+  font-size: 0.7rem;
 }
 
 .battle-screen__loot {
@@ -1033,11 +1070,13 @@ onUnmounted(() => {
   .battle-screen :deep(.skill-panel) {
     padding: 0.3rem;
   }
-  .battle-screen :deep(.skill-panel__ability) {
-    min-height: 64px;
-  }
 }
 @media (max-height: 740px) {
+  .battle-screen__arena-wrap {
+    flex: none;
+    height: 48svh;
+    min-height: 240px;
+  }
   .battle-screen {
     height: auto;
     min-height: 100svh;

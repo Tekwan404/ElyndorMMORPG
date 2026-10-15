@@ -22,9 +22,9 @@ Normal Combat UI — основной moment-to-moment gameplay экран. Во
 # 2. Screen Structure
 
 ```text
-PLAYER / ENEMY HUD
+BATTLEFIELD: ENEMY BACK CENTER / PARTY IN TWO PLANES
 
-ENEMY ART
+HP / RESOURCES ATTACHED TO EACH ACTOR
 
 BUFFS / DEBUFFS
 
@@ -32,9 +32,7 @@ CAST BAR
 
 PLAYER / COMPANION PRESENTATION
 
-MAIN ABILITY ROW (6)
-
-UTILITY / ITEM ROW (2–4)
+CIRCULAR ABILITIES (5 COLUMNS × 2 ROWS, PAGED IF MORE THAN 10)
 
 [ ПОКИНУТЬ БОЙ ]
 ```
@@ -63,13 +61,13 @@ UTILITY / ITEM ROW (2–4)
 - relevant buffs;
 - combat status.
 
-Party members are compact strip when applicable.
+У каждого участника одна панель имени, HP и ресурса рядом с фигурой; числа находятся внутри полос. Отдельный верхний HUD не дублирует эти данные. Локальный герой расположен по центру переднего плана, союзники — по бокам в два плана, противник — выше по центру. Агро меняет подсветку, но не переставляет участников. Это визуальная композиция без distance/facing mechanics. Резервные участники доступны через компактную полосу.
 
 ---
 
 # 5. Ability Row
 
-Main row = 6 abilities.
+Панель содержит 5 столбцов и 2 строки круглых кнопок с иконками, без постоянных подписей имени и стоимости. Минимальная область нажатия — 44px. Если умений больше 10, доступны страницы; никакое умение не скрывается окончательно. Название, стоимость и описание доступны удержанием или клавиатурной инспекцией.
 
 States:
 ```text
@@ -121,7 +119,7 @@ When multiple enemies exist:
 horizontal target strip
 ```
 
-Tap target switches target.
+Tap target switches target. Полоса занимает отдельный верхний ряд и не перекрывает панель выбранного врага.
 
 No spatial battlefield/closest-target assumptions.
 

@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 
 import type { CombatActorSnapshot } from '@/api/contracts'
+import { combatActorVitalsLabel } from '@/game/combat/combatActorPresentation'
 import { resolveCharacterArt } from '@/assets/characterArt'
 import { useGameSessionStore } from '@/stores/gameSession'
 
@@ -11,6 +12,7 @@ const props = defineProps<{
   selectedActorId: string | null
   aggroActorIds: readonly string[]
   disabled: boolean
+  visibleActorIds?: readonly string[]
 }>()
 const emit = defineEmits<{ select: [actorId: string] }>()
 const session = useGameSessionStore()
@@ -29,9 +31,17 @@ function healthRatio(actor: CombatActorSnapshot): number {
   return actor.maxHp > 0 ? Math.max(0, Math.min(100, (actor.hp / actor.maxHp) * 100)) : 0
 }
 
-const visibleAllies = computed(() => props.allies.slice(0, 5))
-const canSelectDead = computed(() => props.allies.find(ally => ally.actorId === props.localActorId)
-  ?.abilities?.some(ability => ability.targetType === 'SingleDeadAlly') ?? false)
+const visibleAllies = computed(() =>
+  props.allies
+    .filter((actor) => !props.visibleActorIds || props.visibleActorIds.includes(actor.actorId))
+    .slice(0, 5),
+)
+const canSelectDead = computed(
+  () =>
+    props.allies
+      .find((ally) => ally.actorId === props.localActorId)
+      ?.abilities?.some((ability) => ability.targetType === 'SingleDeadAlly') ?? false,
+)
 </script>
 
 <template>
@@ -50,7 +60,9 @@ const canSelectDead = computed(() => props.allies.find(ally => ally.actorId === 
       :data-selected="selectedActorId === ally.actorId"
       :data-aggro="aggroActorIds.includes(ally.actorId)"
       :aria-pressed="selectedActorId === ally.actorId"
-      :aria-label="`${ally.name}, ${Math.round(healthRatio(ally))}% HP${aggroActorIds.includes(ally.actorId) ? ', под агро' : ''}`"
+      :aria-label="
+        combatActorVitalsLabel(ally) + (aggroActorIds.includes(ally.actorId) ? ', под агро' : '')
+      "
       :disabled="disabled || (ally.hp <= 0 && !canSelectDead)"
       @click="emit('select', ally.actorId)"
     >

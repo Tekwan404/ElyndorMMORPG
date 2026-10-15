@@ -32,7 +32,7 @@ describe('buildBattleFormation', () => {
       actorId: 'local',
       slotId: 'solo-frontline',
       scale: 1,
-      bounds: { x: 0.02, y: 0.18, width: 0.38, height: 0.78 },
+      bounds: { x: 0.29, y: 0.45, width: 0.42, height: 0.54 },
     })
   })
 
@@ -42,6 +42,7 @@ describe('buildBattleFormation', () => {
     { count: 3, width: 390 },
     { count: 4, width: 390 },
     { count: 5, width: 390 },
+    { count: 5, width: 320 },
     { count: 5, width: 768 },
   ])('keeps protected upper bodies clear for $count actors at $width px', ({ count, width }) => {
     const visibleActorIds = actorIds.slice(0, count)
@@ -82,7 +83,7 @@ describe('buildBattleFormation', () => {
     const before = buildBattleFormation(input({ aggroActorId: 'ally-1' }))
     const after = buildBattleFormation(input({ aggroActorId: 'ally-3' }))
 
-    for (const actorId of ['local', 'ally-2', 'ally-4']) {
+    for (const actorId of actorIds) {
       const beforeSlot = before.slots.find((slot) => slot.actorId === actorId)
       const afterSlot = after.slots.find((slot) => slot.actorId === actorId)
 

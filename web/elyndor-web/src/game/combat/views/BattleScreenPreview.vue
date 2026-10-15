@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router'
 import type { CombatAbility, CombatActorSnapshot } from '@/api/contracts'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import BattleScreen from './BattleScreen.vue'
+import { TRAINING_DUMMY_ID } from '@/game/combat/trainingDummy'
 import ArenaBattlefield from '@/game/pvp/components/ArenaBattlefield.vue'
 
 const route = useRoute()
@@ -90,10 +91,18 @@ function player(index: number): CombatActorSnapshot {
 
 const players = Array.from({ length: partySize.value }, (_, index) => player(index))
 const arenaPreview = computed(() => route.query.mode === 'arena')
-const arenaEvents = computed(() => combat.events.map(event => {
-  const actorId = <T extends string | null | undefined>(id: T): T | string => id === 'enemy' ? 'ally-1' : id
-  return { ...event, sourceActorId: actorId(event.sourceActorId), targetActorId: actorId(event.targetActorId), actorId: actorId(event.actorId) }
-}))
+const arenaEvents = computed(() =>
+  combat.events.map((event) => {
+    const actorId = <T extends string | null | undefined>(id: T): T | string =>
+      id === 'enemy' ? 'ally-1' : id
+    return {
+      ...event,
+      sourceActorId: actorId(event.sourceActorId),
+      targetActorId: actorId(event.targetActorId),
+      actorId: actorId(event.actorId),
+    }
+  }),
+)
 const enemy: CombatActorSnapshot = {
   actorId: 'enemy',
   kind: 'Monster',
@@ -115,6 +124,27 @@ const enemy: CombatActorSnapshot = {
   currentAggroTargetActorId: players[Math.min(1, players.length - 1)]!.actorId,
 }
 
+if (route.query.mode === 'training') {
+  Object.assign(enemy, {
+    definitionId: TRAINING_DUMMY_ID,
+    name: 'Тренировочный манекен',
+    resourceType: 'NONE',
+    maxResource: 0,
+    resource: 0,
+    hp: 999862357,
+    maxHp: 1000000000,
+    artId: null,
+    level: 1,
+  })
+  Object.assign(players[0]!, {
+    hp: 6435,
+    maxHp: 6435,
+    resourceType: 'MANA',
+    resource: 15895,
+    maxResource: 16252,
+  })
+}
+
 combat.snapshot = {
   sessionId: 'battle-preview',
   sequence: 12,
@@ -125,7 +155,26 @@ combat.snapshot = {
   player: players[0]!,
   players,
   enemy,
-  enemies: [enemy],
+  enemies: Array.from(
+    { length: Math.max(1, Math.min(4, Number(route.query.enemies) || 1)) },
+    (_, index) =>
+      index === 0 ? enemy : { ...enemy, actorId: `enemy-${index}`, name: `Страж ${index}` },
+  ),
+  companion:
+    route.query.companion === 'true'
+      ? {
+          ...enemy,
+          kind: 'Companion',
+          actorId: 'pet',
+          name: 'Спутник',
+          definitionId: 'WOLF',
+          hp: 250,
+          maxHp: 400,
+          resourceType: 'NONE',
+          resource: 0,
+          maxResource: 0,
+        }
+      : undefined,
   selectedTargetActorId: enemy.actorId,
 }
 combat.selectedFriendlyTargetActorId = players[Math.min(2, players.length - 1)]!.actorId
