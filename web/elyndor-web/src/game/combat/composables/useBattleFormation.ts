@@ -59,55 +59,40 @@ export const DEFAULT_FORMATION_CONSTRAINTS: FormationConstraints = {
 
 const FRONTLINE_SLOT: SlotTemplate = {
   id: 'frontline',
-  bounds: { x: 0.19, y: 0.55, width: 0.26, height: 0.44 },
+  bounds: { x: 0.35, y: 0.5, width: 0.3, height: 0.49 },
   scale: 1,
   zIndex: 50,
 }
-
 const SOLO_FRONTLINE_SLOT: SlotTemplate = {
   id: 'solo-frontline',
-  bounds: { x: 0.03, y: 0.16, width: 0.4, height: 0.8 },
+  bounds: { x: 0.29, y: 0.45, width: 0.42, height: 0.54 },
   scale: 1,
   zIndex: 50,
 }
-
-const MOBILE_SOLO_FRONTLINE_SLOT: SlotTemplate = {
-  id: 'solo-frontline',
-  bounds: { x: 0.02, y: 0.18, width: 0.38, height: 0.78 },
-  scale: 1,
-  zIndex: 50,
-}
-
 const BASE_SLOTS: readonly SlotTemplate[] = [
   {
-    id: 'rear-left',
-    bounds: { x: 0.01, y: 0.04, width: 0.16, height: 0.5 },
-    scale: 0.72,
-    zIndex: 10,
+    id: 'second-left',
+    bounds: { x: 0.03, y: 0.26, width: 0.27, height: 0.44 },
+    scale: 0.92,
+    zIndex: 20,
   },
   {
-    id: 'rear-right',
-    bounds: { x: 0.43, y: 0.04, width: 0.16, height: 0.5 },
-    scale: 0.76,
-    zIndex: 12,
+    id: 'second-right',
+    bounds: { x: 0.7, y: 0.26, width: 0.27, height: 0.44 },
+    scale: 0.92,
+    zIndex: 21,
   },
   {
-    id: 'mid-left',
-    bounds: { x: 0.06, y: 0.3, width: 0.21, height: 0.5 },
-    scale: 0.84,
-    zIndex: 24,
+    id: 'front-left',
+    bounds: { x: 0.02, y: 0.6, width: 0.25, height: 0.39 },
+    scale: 1,
+    zIndex: 45,
   },
   {
-    id: 'mid-right',
-    bounds: { x: 0.37, y: 0.3, width: 0.21, height: 0.5 },
-    scale: 0.88,
-    zIndex: 26,
-  },
-  {
-    id: 'reserve',
-    bounds: { x: 0.24, y: 0.04, width: 0.12, height: 0.48 },
-    scale: 0.7,
-    zIndex: 11,
+    id: 'front-right',
+    bounds: { x: 0.73, y: 0.6, width: 0.25, height: 0.39 },
+    scale: 1,
+    zIndex: 46,
   },
 ]
 
@@ -160,16 +145,15 @@ function createSlots(
   input: BattleFormationInput,
   constraints: FormationConstraints,
 ): BattleFormationSlot[] {
-  return actorIds.map((actorId, index) => {
-    const baseSlot = BASE_SLOTS[index] ?? BASE_SLOTS[BASE_SLOTS.length - 1]!
-    const isFrontline = actorId === frontlineActorId
-    const renderedSlot = actorIds.length === 1
-      ? input.viewportWidthPx <= 480
-        ? MOBILE_SOLO_FRONTLINE_SLOT
-        : SOLO_FRONTLINE_SLOT
-      : isFrontline
+  const otherIds = actorIds.filter((id) => id !== frontlineActorId)
+  return actorIds.map((actorId) => {
+    const baseSlot =
+      actorId === frontlineActorId
         ? FRONTLINE_SLOT
-        : baseSlot
+        : (BASE_SLOTS[otherIds.indexOf(actorId)] ?? BASE_SLOTS[BASE_SLOTS.length - 1]!)
+    const isFrontline = actorId === frontlineActorId
+    const renderedSlot =
+      actorIds.length === 1 ? SOLO_FRONTLINE_SLOT : isFrontline ? FRONTLINE_SLOT : baseSlot
     const bounds = renderedSlot.bounds
     const protectedUpperBodyBounds = expandRect(
       {
@@ -206,11 +190,9 @@ function resolveFrontlineActorId(
   aggroActorId: string | null | undefined,
   localActorId: string,
 ): string | undefined {
-  if (aggroActorId && actorIds.includes(aggroActorId)) {
-    return aggroActorId
-  }
-
-  return actorIds.includes(localActorId) ? localActorId : actorIds[0]
+  if (actorIds.includes(localActorId)) return localActorId
+  if (aggroActorId && actorIds.includes(aggroActorId)) return aggroActorId
+  return actorIds[0]
 }
 
 function prioritizedActorIds(input: BattleFormationInput, actorIds: readonly string[]): string[] {

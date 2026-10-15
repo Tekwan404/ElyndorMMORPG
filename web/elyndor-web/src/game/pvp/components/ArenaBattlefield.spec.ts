@@ -89,7 +89,7 @@ describe('ArenaBattlefield', () => {
     expect(wrapper.get('[data-character-figure="player-b"]').text()).toContain('Mini tekwan')
     expect(wrapper.find('[data-arena-battlefield]').exists()).toBe(true)
     expect(wrapper.find('[data-battle-screen]').exists()).toBe(true)
-    expect(wrapper.find('[data-enemy-resource]').exists()).toBe(true)
+    expect(wrapper.find('[data-actor-status="player-b"] [data-resource]').exists()).toBe(true)
     expect(wrapper.find('[data-autoattack-toggle]').exists()).toBe(true)
     expect(wrapper.get('[data-combat-exit]').text()).toContain('Сдаться')
     expect(wrapper.find('.arena-battle-screen__log').exists()).toBe(true)
@@ -151,7 +151,7 @@ describe('ArenaBattlefield', () => {
     expect(wrapper.text()).toContain('+8')
 
     const buttons = wrapper.findAll('button')
-    const next = buttons.find(button => button.text().includes('Следующий соперник'))
+    const next = buttons.find((button) => button.text().includes('Следующий соперник'))
     expect(next).toBeDefined()
     await next!.trigger('click')
 

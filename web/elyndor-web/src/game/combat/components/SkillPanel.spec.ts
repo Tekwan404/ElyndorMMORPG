@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import type { CombatAbility } from '@/api/contracts'
 import SkillPanel from './SkillPanel.vue'
@@ -20,8 +20,12 @@ describe('SkillPanel', () => {
   it('shows effective cast time and individual cooldown when inspecting an ability', async () => {
     const wrapper = mount(SkillPanel, {
       props: {
-        abilities: [{ ...ability(1), castTimeSeconds: 1.1 }], cooldowns: {}, resource: 100,
-        queuedAbilityIds: [], now: Date.parse('2026-09-25T12:00:00Z'), disabled: false,
+        abilities: [{ ...ability(1), castTimeSeconds: 1.1 }],
+        cooldowns: {},
+        resource: 100,
+        queuedAbilityIds: [],
+        now: Date.parse('2026-09-25T12:00:00Z'),
+        disabled: false,
       },
     })
     expect(wrapper.get('[data-ability-slot]').attributes('aria-label')).toContain('каст 1.1')
@@ -31,7 +35,7 @@ describe('SkillPanel', () => {
     wrapper.unmount()
   })
 
-  it('renders four mobile skill columns and forwards ready ability use', async () => {
+  it('renders five skill columns and forwards ready ability use', async () => {
     const wrapper = mount(SkillPanel, {
       props: {
         abilities: [1, 2, 3, 4].map(ability),
@@ -43,7 +47,7 @@ describe('SkillPanel', () => {
       },
     })
 
-    expect(wrapper.get('[data-skill-grid]').attributes('data-columns')).toBe('4')
+    expect(wrapper.get('[data-skill-grid]').attributes('data-columns')).toBe('5')
     expect(wrapper.findAll('[data-ability-slot]')).toHaveLength(4)
 
     await wrapper.get('[data-ability-slot="ABILITY_1"]').trigger('click')
@@ -85,7 +89,7 @@ describe('SkillPanel', () => {
     expect(wrapper.get('[data-ability-slot="ABILITY_4"]').attributes('data-state')).toBe('resource')
   })
 
-  it('keeps additional abilities behind an accessible compact expansion', async () => {
+  it('keeps at most ten abilities visible and pages to every extra ability', async () => {
     const wrapper = mount(SkillPanel, {
       props: {
         abilities: Array.from({ length: 16 }, (_, index) => ability(index + 1)),
@@ -96,17 +100,39 @@ describe('SkillPanel', () => {
         disabled: false,
       },
     })
+    expect(wrapper.findAll('[data-ability-slot]')).toHaveLength(10)
+    expect(wrapper.find('[data-ability-slot] strong').exists()).toBe(false)
+    await wrapper.get('[data-skill-next]').trigger('click')
+    expect(wrapper.findAll('[data-ability-slot]')).toHaveLength(6)
+    await wrapper.get('[data-ability-slot="ABILITY_16"]').trigger('click')
+    expect(wrapper.emitted('use')).toEqual([[expect.objectContaining({ id: 'ABILITY_16' })]])
+    await wrapper.setProps({ abilities: [ability(1)] })
+    expect(wrapper.find('[data-ability-slot="ABILITY_1"]').exists()).toBe(true)
+    wrapper.unmount()
+  })
 
-    const grid = wrapper.get('[data-skill-grid]')
-    const toggle = wrapper.get('[data-skill-overflow-toggle]')
-    expect(grid.attributes('data-expanded')).toBe('false')
-    expect(toggle.attributes('aria-expanded')).toBe('false')
-    expect(toggle.text()).toContain('Ещё 8')
-
-    await toggle.trigger('click')
-
-    expect(grid.attributes('data-expanded')).toBe('true')
-    expect(toggle.attributes('aria-expanded')).toBe('true')
-    expect(wrapper.findAll('[data-ability-slot]')).toHaveLength(16)
+  it('opens details on hold without firing the ability on release', async () => {
+    vi.useFakeTimers()
+    const wrapper = mount(SkillPanel, {
+      props: {
+        abilities: [ability(1)],
+        cooldowns: {},
+        resource: 100,
+        queuedAbilityIds: [],
+        now: 0,
+        disabled: false,
+      },
+    })
+    try {
+      await wrapper.get('[data-ability-slot]').trigger('pointerdown')
+      await vi.advanceTimersByTimeAsync(500)
+      await wrapper.get('[data-ability-slot]').trigger('pointerup')
+      await wrapper.get('[data-ability-slot]').trigger('click')
+      expect(wrapper.get('[data-ability-inspection]').text()).toContain('Описание 1')
+      expect(wrapper.emitted('use')).toBeUndefined()
+    } finally {
+      wrapper.unmount()
+      vi.useRealTimers()
+    }
   })
 })

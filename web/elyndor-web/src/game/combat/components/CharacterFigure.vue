@@ -2,8 +2,10 @@
 import { computed } from 'vue'
 
 import type { CombatActorSnapshot } from '@/api/contracts'
+import { combatActorVitalsLabel } from '@/game/combat/combatActorPresentation'
 import { resolveCharacterArt } from '@/assets/characterArt'
 import { useGameSessionStore } from '@/stores/gameSession'
+import CombatActorStatus from './CombatActorStatus.vue'
 import AggroIndicator from './AggroIndicator.vue'
 import TargetSelection from './TargetSelection.vue'
 
@@ -17,9 +19,11 @@ const props = withDefaults(
     frontline: boolean
     canSelectDead?: boolean
     threatPercent?: number | null
+    showStatus?: boolean
   }>(),
   {
     threatPercent: null,
+    showStatus: true,
   },
 )
 
@@ -36,16 +40,6 @@ const art = computed(() =>
       : props.actor.skinId,
   ),
 )
-const healthRatio = computed(() =>
-  props.actor.maxHp > 0
-    ? Math.max(0, Math.min(100, (props.actor.hp / props.actor.maxHp) * 100))
-    : 0,
-)
-const healthState = computed<'normal' | 'low' | 'critical'>(() => {
-  if (healthRatio.value <= 25) return 'critical'
-  if (healthRatio.value <= 50) return 'low'
-  return 'normal'
-})
 const urgentArt = computed(() => props.local || props.frontline)
 const responsiveSizes = computed(() =>
   props.frontline
@@ -54,8 +48,7 @@ const responsiveSizes = computed(() =>
 )
 const accessibleLabel = computed(() =>
   [
-    props.actor.name,
-    `${Math.round(healthRatio.value)}% HP`,
+    combatActorVitalsLabel(props.actor),
     props.aggro ? 'под агро' : null,
     props.selected ? 'выбранная цель' : null,
     props.actor.hp <= 0 ? 'погиб' : null,
@@ -79,6 +72,7 @@ const accessibleLabel = computed(() =>
       type="button"
       class="character-figure__button"
       :aria-label="accessibleLabel"
+      :tabindex="showStatus ? 0 : -1"
       :aria-pressed="selected"
       :disabled="disabled || (actor.hp <= 0 && !canSelectDead)"
       @click="emit('select', actor.actorId)"
@@ -95,24 +89,16 @@ const accessibleLabel = computed(() =>
           :sizes="responsiveSizes"
         />
         <b v-else class="character-figure__fallback">{{ actor.name.slice(0, 1).toUpperCase() }}</b>
+        <TargetSelection v-if="selected" />
+        <AggroIndicator v-if="aggro" :threat-percent="threatPercent" />
       </span>
-      <TargetSelection v-if="selected" />
-      <AggroIndicator v-if="aggro" :threat-percent="threatPercent" />
-      <span class="character-figure__caption">
-        <strong>{{ actor.name }}</strong>
-        <span
-          class="character-figure__health"
-          :data-health-state="healthState"
-          role="progressbar"
-          :aria-label="`HP ${actor.name}`"
-          :aria-valuenow="Math.round(healthRatio)"
-          aria-valuemin="0"
-          aria-valuemax="100"
-        >
-          <i :style="{ width: `${healthRatio}%` }" />
-        </span>
-        <small>{{ Math.ceil(actor.hp) }} / {{ Math.ceil(actor.maxHp) }}</small>
+      <span v-if="showStatus" class="character-figure__caption">
+        <CombatActorStatus
+          :actor="actor"
+          :fallback-level="local ? session.snapshot?.character?.level : undefined"
+        />
       </span>
+      <span v-else class="character-figure__status-space" aria-hidden="true" />
     </button>
   </article>
 </template>
@@ -153,6 +139,10 @@ const accessibleLabel = computed(() =>
   cursor: default;
 }
 .character-figure__art {
+  align-self: end;
+  width: 100%;
+  max-height: 100%;
+  aspect-ratio: 2 / 3;
   position: relative;
   z-index: 2;
   display: grid;
@@ -186,6 +176,12 @@ const accessibleLabel = computed(() =>
   pointer-events: none;
 }
 .character-figure__caption {
+  --combat-status-bar-height: calc(14px / var(--actor-scale, 1));
+  --combat-status-font-size: calc(9px / var(--actor-scale, 1));
+  --combat-status-name-size: calc(10px / var(--actor-scale, 1));
+  min-width: calc(80px / var(--actor-scale, 1));
+  justify-self: start;
+  width: 100%;
   position: relative;
   z-index: 6;
   display: grid;
@@ -196,40 +192,6 @@ const accessibleLabel = computed(() =>
   border-radius: 7px;
   background: linear-gradient(180deg, rgb(8 10 16 / 72%), rgb(5 7 11 / 94%));
   box-shadow: 0 4px 12px rgb(0 0 0 / 35%);
-}
-.character-figure__caption strong {
-  overflow: hidden;
-  font-size: clamp(0.56rem, 2.4vw, 0.72rem);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.character-figure__caption small {
-  color: #b9b1a3;
-  font-size: 0.48rem;
-}
-.character-figure__health {
-  display: block;
-  height: 4px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgb(0 0 0 / 78%);
-}
-.character-figure__health i {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #8c3044, #dd6678);
-  transition: width 160ms ease, background 160ms ease, box-shadow 160ms ease;
-}
-.character-figure__health[data-health-state='low'] i {
-  background: linear-gradient(90deg, #9a4c2c, #e59545);
-}
-.character-figure__health[data-health-state='critical'] {
-  box-shadow: 0 0 7px rgb(232 55 75 / 30%);
-}
-.character-figure__health[data-health-state='critical'] i {
-  background: linear-gradient(90deg, #8d142c, #ff405c);
-  box-shadow: 0 0 7px rgb(255 64 92 / 45%);
 }
 .character-figure[data-aggro='true'] {
   filter: drop-shadow(0 0 12px rgb(218 68 82 / 28%));
@@ -242,5 +204,8 @@ const accessibleLabel = computed(() =>
   .character-figure {
     transition-duration: 1ms;
   }
+}
+.character-figure__status-space {
+  height: 52px;
 }
 </style>

@@ -1,10 +1,11 @@
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { CombatActorSnapshot } from '@/api/contracts'
 import type { CombatNumberPresentation } from '@/game/combat/battleEventPresentation'
 import BattleArena from './BattleArena.vue'
+import * as formation from '@/game/combat/composables/useBattleFormation'
 
 function actor(id: string, kind: CombatActorSnapshot['kind']): CombatActorSnapshot {
   return {
@@ -66,6 +67,44 @@ describe('BattleArena', () => {
     expect(wrapper.findAll('[data-character-figure="ally-1"]')).toHaveLength(1)
     expect(wrapper.get('[data-character-figure="ally-1"]').attributes('data-selected')).toBe('true')
     expect(wrapper.get('[data-character-figure="ally-1"]').attributes('data-aggro')).toBe('true')
+  })
+
+  it('keeps reserve actors selectable without duplicating visible actors or losing dead-ally targeting', async () => {
+    const allies = [
+      actor('local', 'Player'),
+      ...[1, 2, 3, 4].map((index) => actor(`ally-${index}`, 'Player')),
+    ]
+    allies[0]!.abilities = [
+      {
+        id: 'REVIVE',
+        displayName: 'Возрождение',
+        description: '',
+        iconId: null,
+        resourceCost: 0,
+        cooldownSeconds: 0,
+        targetType: 'SingleDeadAlly',
+      },
+    ]
+    const wrapper = mountArena(allies)
+    const build = formation.buildBattleFormation
+    const spy = vi.spyOn(formation, 'buildBattleFormation').mockImplementation((input) =>
+      build({
+        ...input,
+        constraints: { minUpperBodyClearance: 0.3, protectedUpperBodyRatio: 0.5 },
+      }),
+    )
+    await wrapper.setProps({ layoutWidthPx: 120 })
+    const reserve = wrapper.findAll('[data-ally-strip-actor]')
+    expect(reserve.length).toBeGreaterThan(0)
+    const id = reserve[0]!.attributes('data-ally-strip-actor')!
+    expect(wrapper.find(`[data-character-figure="${id}"]`).exists()).toBe(false)
+    await wrapper.setProps({
+      allies: allies.map((ally) => (ally.actorId === id ? { ...ally, hp: 0 } : ally)),
+    })
+    await wrapper.get(`[data-ally-strip-actor="${id}"]`).trigger('click')
+    expect(wrapper.emitted('selectFriendly')).toEqual([[id]])
+    spy.mockRestore()
+    wrapper.unmount()
   })
 
   it('anchors newly received server numbers to their target actors without replaying history', async () => {
