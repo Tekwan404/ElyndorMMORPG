@@ -145,6 +145,24 @@ if (route.query.mode === 'training') {
   })
 }
 
+if (route.query.effects === 'true') {
+  const applied = new Date().toISOString()
+  const expires = new Date(Date.now() + 120_000).toISOString()
+  players[0]!.effects = [
+    { id: 'MAGE_COMBUSTION_ACTIVE', displayName: 'Возгорание',
+      description: 'Некритический прямой огненный удар добавляет 10 п.п. шанса крита. Крит сбрасывает накопление. Возгорание завершается после 3 критических ударов или по таймеру.',
+      iconId: 'mage-combustion', kind: 'Buff', disposition: 'Beneficial', instanceId: 'preview-combustion',
+      sourceActorId: 'local', appliedAtUtc: applied, expiresAtUtc: expires, stacks: 1, maxStacks: 1 },
+    { id: 'MAGE_MANA_SHIELD_EFFECT', displayName: 'Щит маны', description: 'Осталось поглощения: 420 ед. урона. Расходует 1 ману за единицу поглощённого урона.',
+      iconId: 'mage-mana-shield', kind: 'Shield', disposition: 'Beneficial', instanceId: 'preview-shield',
+      sourceActorId: 'local', appliedAtUtc: applied, expiresAtUtc: expires, stacks: 1, maxStacks: 1 },
+  ]
+  enemy.effects = [{ id: 'MAGE_FIRE_IGNITE', displayName: 'Воспламенение',
+    description: 'Наносит 75 ед. магического урона каждые 2 сек. до учёта защиты цели.',
+    iconId: 'mage-fireball', kind: 'DamageOverTime', disposition: 'Harmful', instanceId: 'preview-ignite',
+    sourceActorId: 'local', appliedAtUtc: applied, expiresAtUtc: expires, stacks: 3, maxStacks: 5 }]
+}
+
 combat.snapshot = {
   sessionId: 'battle-preview',
   sequence: 12,

@@ -81,7 +81,16 @@ public sealed record CombatEffectSnapshot(
     DateTimeOffset ExpiresAtUtc,
     string? DisplayName = null,
     string? Description = null,
-    string? IconId = null);
+    string? IconId = null,
+    string? Kind = null,
+    string? Disposition = null,
+    Guid? InstanceId = null,
+    Guid? SourceActorId = null,
+    DateTimeOffset? AppliedAtUtc = null,
+    int? MaxStacks = null)
+{
+    public static CombatEffectSnapshot From(ActiveEffect effect) => CombatEffectPresentation.Snapshot(effect);
+}
 public sealed record CombatAbilitySnapshot(
     string Id,
     decimal ResourceCost,

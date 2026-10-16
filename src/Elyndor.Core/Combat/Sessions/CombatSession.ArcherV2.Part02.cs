@@ -138,7 +138,8 @@ EffectKind.Buff,
 ArcherRuntimeDuration("SNIPER_FOCUS", "durationSeconds"),
 1,
 EffectStackPolicy.Replace,
-1),
+1,
+Description: FormattableString.Invariant($"Точность физических выстрелов и автоатак: +{ArcherRuntimeParameter("SNIPER_FOCUS", "accuracyBonus"):0.##} п.п.; шанс крита: +{ArcherRuntimeParameter("SNIPER_FOCUS", "criticalChanceBonus"):0.##} п.п.; пробивание брони: +{ArcherRuntimeParameter("SNIPER_FOCUS", "armorPenetrationBonus"):0.##}%.")),
 now);
 if (TryGetArcherHook(
 "M-8-3",

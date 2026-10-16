@@ -1,72 +1,122 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-
+import { computed, shallowRef } from 'vue'
 import type { CombatEffectSnapshot } from '@/api/contracts'
 import { itemArtUrl } from '@/assets/itemArt'
 import { resolveAbilityArt } from '@/game/talents/talentArt'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
+import UIModal from '@/ui/components/UIModal.vue'
 import type { GlyphName } from '@/ui/icons/icon.types'
 
 const props = defineProps<{
   effects: CombatEffectSnapshot[]
   now: number
   side: 'player' | 'enemy'
+  sources?: Record<string, string>
 }>()
-
-const expanded = ref(false)
-const selectedEffectKey = ref<string | null>(null)
+const expanded = shallowRef(false)
+const selectedEffectKey = shallowRef<string | null>(null)
+const failedArt = shallowRef(new Set<string>())
 const initiallyVisibleCount = 6
-const visibleEffects = computed(() =>
-  expanded.value ? props.effects : props.effects.slice(0, initiallyVisibleCount),
+const activeEffects = computed(() =>
+  props.effects.filter((effect) => Date.parse(effect.expiresAtUtc) > props.now),
 )
-const overflowCount = computed(() => Math.max(0, props.effects.length - initiallyVisibleCount))
-const selectedEffect = computed(() =>
-  props.effects.find(effect => effectKey(effect) === selectedEffectKey.value) ?? null,
+const visibleEffects = computed(() =>
+  expanded.value ? activeEffects.value : activeEffects.value.slice(0, initiallyVisibleCount),
+)
+const overflowCount = computed(() =>
+  Math.max(0, activeEffects.value.length - initiallyVisibleCount),
+)
+const selectedEffect = computed(
+  () => activeEffects.value.find((effect) => effectKey(effect) === selectedEffectKey.value) ?? null,
 )
 const criticalEffect = computed(() =>
   props.side === 'player'
-    ? props.effects.find(effect => effect.id === 'BLACK_STAR_LIVING_BOMB_MARK') ?? null
+    ? (activeEffects.value.find((effect) => effect.id === 'BLACK_STAR_LIVING_BOMB_MARK') ?? null)
     : null,
 )
 
 function effectKey(effect: CombatEffectSnapshot): string {
-  return `${effect.id}:${effect.expiresAtUtc}`
+  return effect.instanceId ?? `${effect.id}:${effect.sourceActorId ?? ''}:${effect.expiresAtUtc}`
 }
-
 function effectName(effect: CombatEffectSnapshot): string {
-  if (effect.displayName?.trim()) return effect.displayName
-  const readableId = effect.id.replace(/[_-]+/g, ' ').toLocaleLowerCase('ru-RU')
-  return readableId.charAt(0).toLocaleUpperCase('ru-RU') + readableId.slice(1)
+  return effect.displayName?.trim() || kindLabel(effect)
 }
-
-function effectDescription(effect: CombatEffectSnapshot): string {
-  return effect.description?.trim() || 'Подробное описание этого эффекта пока не добавлено.'
+function disposition(effect: CombatEffectSnapshot): 'Beneficial' | 'Harmful' | 'Neutral' {
+  return (
+    effect.disposition ??
+    (['Debuff', 'DamageOverTime', 'Stun', 'Silence', 'Root', 'Fear', 'Disarm'].includes(
+      effect.kind ?? '',
+    )
+      ? 'Harmful'
+      : 'Neutral')
+  )
 }
-
+function dispositionLabel(effect: CombatEffectSnapshot): string {
+  return disposition(effect) === 'Beneficial'
+    ? 'Усиление'
+    : disposition(effect) === 'Harmful'
+      ? 'Ослабление'
+      : 'Эффект'
+}
+function kindLabel(effect: CombatEffectSnapshot): string {
+  const labels: Record<string, string> = {
+    Buff: 'Усиление',
+    Debuff: 'Ослабление',
+    DamageOverTime: 'Периодический урон',
+    HealingOverTime: 'Периодическое исцеление',
+    Shield: 'Поглощающий щит',
+    StatModifier: 'Изменение характеристик',
+    Stun: 'Оглушение',
+    Silence: 'Немота',
+    Root: 'Опутывание',
+    Fear: 'Страх',
+    Disarm: 'Обезоруживание',
+    DamageReflection: 'Отражение урона',
+    LethalDamagePrevention: 'Защита от смерти',
+    TemporaryMaxHp: 'Запас здоровья',
+  }
+  return labels[effect.kind ?? ''] ?? 'Боевой эффект'
+}
 function remainingSeconds(effect: CombatEffectSnapshot): number {
-  return Math.max(0, Math.ceil((Date.parse(effect.expiresAtUtc) - props.now) / 1_000))
+  return Math.max(0, Math.ceil((Date.parse(effect.expiresAtUtc) - props.now) / 1000))
 }
-
-function preciseRemainingSeconds(effect: CombatEffectSnapshot): string {
-  const remaining = Math.max(0, (Date.parse(effect.expiresAtUtc) - props.now) / 1_000)
-  return remaining.toFixed(1)
+function timeLabel(effect: CombatEffectSnapshot): string {
+  const seconds = remainingSeconds(effect)
+  return seconds >= 3600
+    ? `${Math.ceil(seconds / 3600)}ч`
+    : seconds >= 60
+      ? `${Math.ceil(seconds / 60)}м`
+      : `${seconds}с`
 }
-
+function progress(effect: CombatEffectSnapshot): number {
+  if (!effect.appliedAtUtc) return 1
+  const duration = Date.parse(effect.expiresAtUtc) - Date.parse(effect.appliedAtUtc)
+  return duration > 0
+    ? Math.min(1, Math.max(0, (Date.parse(effect.expiresAtUtc) - props.now) / duration))
+    : 0
+}
 function effectArt(effect: CombatEffectSnapshot): string | undefined {
-  return resolveAbilityArt(effect.id, effect.iconId) ?? itemArtUrl(effect.iconId)
+  const art = resolveAbilityArt(effect.id, effect.iconId) ?? itemArtUrl(effect.iconId)
+  return art && !failedArt.value.has(art) ? art : undefined
 }
-
+function rememberFailedArt(effect: CombatEffectSnapshot): void {
+  const art = effectArt(effect)
+  if (art) failedArt.value = new Set([...failedArt.value, art])
+}
 function effectGlyph(effect: CombatEffectSnapshot): GlyphName {
+  if (effect.kind === 'Shield' || effect.kind === 'LethalDamagePrevention') return 'shield'
+  if (effect.kind === 'HealingOverTime' || effect.kind === 'TemporaryMaxHp') return 'holy'
+  if (['Stun', 'Root', 'Silence', 'Disarm', 'Fear'].includes(effect.kind ?? '')) return 'lock'
   const id = `${effect.id} ${effect.iconId ?? ''}`.toLowerCase()
-  if (id.includes('fire') || id.includes('burn') || id.includes('flame')) return 'fire'
-  if (id.includes('frost') || id.includes('ice') || id.includes('frozen')) return 'ice'
-  if (id.includes('poison')) return 'poison'
-  if (id.includes('shield') || id.includes('block') || id.includes('guard')) return 'shield'
-  if (id.includes('bow') || id.includes('arrow') || id.includes('mark')) return 'bow'
-  if (id.includes('holy') || id.includes('light')) return 'holy'
-  return 'star'
+  if (/fire|burn|flame|combust|pyro|ignite/.test(id)) return 'fire'
+  if (/frost|ice|frozen|chill|cold|winter/.test(id)) return 'ice'
+  if (/poison|venom/.test(id)) return 'poison'
+  if (/shield|block|guard/.test(id)) return 'shield'
+  if (/bow|arrow|mark|archer/.test(id)) return 'bow'
+  if (/holy|light|paladin/.test(id)) return 'holy'
+  if (effect.kind === 'DamageOverTime') return 'skull'
+  return disposition(effect) === 'Harmful' ? 'shadow' : 'refresh'
 }
-
 function toggleDetails(effect: CombatEffectSnapshot): void {
   const key = effectKey(effect)
   selectedEffectKey.value = selectedEffectKey.value === key ? null : key
@@ -75,7 +125,7 @@ function toggleDetails(effect: CombatEffectSnapshot): void {
 
 <template>
   <div
-    v-if="effects.length"
+    v-if="activeEffects.length"
     class="combat-effect-strip"
     :class="`combat-effect-strip--${side}`"
     data-combat-effect-strip
@@ -87,31 +137,38 @@ function toggleDetails(effect: CombatEffectSnapshot): void {
       role="alert"
       aria-live="assertive"
     >
-      <span aria-hidden="true">💀</span>
-      <strong>ЧЁРНАЯ ЗВЕЗДА</strong>
-      <span aria-hidden="true">·</span>
-      <b>{{ preciseRemainingSeconds(criticalEffect) }}</b>
+      <IconGenerator :config="{ id: 'critical-effect', glyph: 'skull', category: 'effect' }" />
+      <strong>ЧЁРНАЯ ЗВЕЗДА</strong><span aria-hidden="true">·</span>
+      <b>{{ Math.max(0, (Date.parse(criticalEffect.expiresAtUtc) - now) / 1000).toFixed(1) }}</b>
     </div>
-
     <button
       v-for="effect in visibleEffects"
       :key="effectKey(effect)"
       type="button"
       class="combat-effect-strip__effect"
+      :data-disposition="disposition(effect)"
       :class="{ 'combat-effect-strip__effect--selected': selectedEffectKey === effectKey(effect) }"
-      :aria-label="`${effectName(effect)}. ${effect.stacks > 1 ? `Стаки: ${effect.stacks}. ` : ''}${remainingSeconds(effect)} сек. Нажмите, чтобы посмотреть описание.`"
+      :aria-label="`${effectName(effect)}. ${dispositionLabel(effect)}. ${effect.stacks > 1 ? `Стаки: ${effect.stacks}. ` : ''}Осталось ${timeLabel(effect)}. Нажмите для описания.`"
       :aria-pressed="selectedEffectKey === effectKey(effect)"
+      aria-haspopup="dialog"
       @click="toggleDetails(effect)"
     >
-      <img v-if="effectArt(effect)" :src="effectArt(effect)" alt="" />
+      <img
+        v-if="effectArt(effect)"
+        :src="effectArt(effect)"
+        alt=""
+        @error="rememberFailedArt(effect)"
+      />
       <IconGenerator
         v-else
         :config="{ id: `effect-${effect.id}`, glyph: effectGlyph(effect), category: 'effect' }"
       />
       <b v-if="effect.stacks > 1" class="combat-effect-strip__stacks">{{ effect.stacks }}</b>
-      <small>{{ remainingSeconds(effect) }}с</small>
+      <small>{{ timeLabel(effect) }}</small>
+      <i class="combat-effect-strip__duration" aria-hidden="true"
+        ><span :style="{ transform: `scaleX(${progress(effect)})` }"
+      /></i>
     </button>
-
     <button
       v-if="overflowCount"
       type="button"
@@ -121,36 +178,232 @@ function toggleDetails(effect: CombatEffectSnapshot): void {
     >
       {{ expanded ? '−' : `+${overflowCount}` }}
     </button>
-
-    <section v-if="selectedEffect" class="combat-effect-strip__details" data-effect-inspection aria-live="polite">
-      <div>
-        <strong>{{ effectName(selectedEffect) }}</strong>
-        <p>{{ effectDescription(selectedEffect) }}</p>
-        <small v-if="selectedEffect.stacks > 1">Стаки: {{ selectedEffect.stacks }}</small>
-        <small>Осталось: {{ remainingSeconds(selectedEffect) }} сек.</small>
-      </div>
-      <button type="button" aria-label="Закрыть описание эффекта" @click="selectedEffectKey = null">×</button>
-    </section>
+    <UIModal
+      :open="selectedEffect !== null"
+      :title="selectedEffect ? effectName(selectedEffect) : ''"
+      compact
+      @close="selectedEffectKey = null"
+    >
+      <section v-if="selectedEffect" class="effect-inspection" data-effect-inspection>
+        <div class="effect-inspection__heading">
+          <img
+            v-if="effectArt(selectedEffect)"
+            :src="effectArt(selectedEffect)"
+            alt=""
+            @error="rememberFailedArt(selectedEffect)"
+          />
+          <IconGenerator
+            v-else
+            :config="{
+              id: `inspect-${selectedEffect.id}`,
+              glyph: effectGlyph(selectedEffect),
+              category: 'effect',
+            }"
+          />
+          <div>
+            <strong>{{ dispositionLabel(selectedEffect) }}</strong
+            ><span v-if="kindLabel(selectedEffect) !== dispositionLabel(selectedEffect)">{{
+              kindLabel(selectedEffect)
+            }}</span>
+          </div>
+        </div>
+        <p v-if="selectedEffect.description?.trim()">{{ selectedEffect.description }}</p>
+        <dl>
+          <div>
+            <dt>Осталось</dt>
+            <dd>{{ timeLabel(selectedEffect) }}</dd>
+          </div>
+          <div v-if="selectedEffect.sourceActorId && sources?.[selectedEffect.sourceActorId]">
+            <dt>Источник</dt>
+            <dd>{{ sources[selectedEffect.sourceActorId] }}</dd>
+          </div>
+          <div v-if="selectedEffect.stacks > 1 || (selectedEffect.maxStacks ?? 1) > 1">
+            <dt>Стаки</dt>
+            <dd>
+              {{ selectedEffect.stacks
+              }}<template v-if="selectedEffect.maxStacks">
+                / {{ selectedEffect.maxStacks }}</template
+              >
+            </dd>
+          </div>
+        </dl>
+      </section>
+    </UIModal>
   </div>
 </template>
 
 <style scoped>
-.combat-effect-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-.combat-effect-strip__critical-warning { display: flex; width: 100%; min-height: 38px; align-items: center; justify-content: center; gap: 7px; padding: 6px 10px; border: 1px solid rgb(255 92 78 / 72%); border-radius: var(--ui-radius-sm); background: linear-gradient(90deg, rgb(45 4 9 / 96%), rgb(94 12 17 / 96%), rgb(45 4 9 / 96%)); box-shadow: 0 0 16px rgb(255 52 45 / 24%); color: #fff1dc; text-align: center; }
-.combat-effect-strip__critical-warning strong { font-size: clamp(.68rem, 3.2vw, .82rem); letter-spacing: .08em; }
-.combat-effect-strip__critical-warning b { min-width: 3ch; color: #ffcf66; font-size: clamp(.78rem, 3.8vw, .96rem); font-variant-numeric: tabular-nums; }
-.combat-effect-strip__effect, .combat-effect-strip__overflow { position: relative; display: grid; width: 34px; height: 34px; flex: none; place-items: center; padding: 2px; border: 1px solid rgb(191 183 255 / 38%); border-radius: 8px; background: rgb(5 8 15 / 88%); color: var(--ui-color-text-primary); font: inherit; }
-.combat-effect-strip__effect--selected { border-color: var(--ui-color-accent, #aaa3ff); box-shadow: 0 0 0 1px rgb(170 163 255 / 28%); }
-.combat-effect-strip__effect img, .combat-effect-strip__effect :deep(.icon-generator) { width: 25px; height: 25px; object-fit: cover; }
-.combat-effect-strip__effect small { position: absolute; right: -3px; bottom: -4px; padding: 0 3px; border: 1px solid rgb(255 255 255 / 12%); border-radius: 5px; background: #090c13; color: #f4f0dc; font-size: .48rem; line-height: 1.3; }
-.combat-effect-strip__stacks { position: absolute; top: -4px; left: -4px; display: grid; min-width: 14px; height: 14px; place-items: center; border-radius: 50%; background: #aaa3ff; color: #090915; font-size: .52rem; line-height: 1; }
-.combat-effect-strip__overflow { border-style: dashed; color: var(--ui-color-text-muted); font-size: .62rem; font-weight: 800; }
-.combat-effect-strip__details { display: flex; width: 100%; align-items: flex-start; justify-content: space-between; gap: 8px; margin-top: 3px; padding: 7px 9px; border: 1px solid rgb(191 183 255 / 35%); border-radius: var(--ui-radius-sm); background: rgb(5 8 15 / 94%); }
-.combat-effect-strip__details strong { display: block; color: var(--ui-color-text-primary); font-size: .65rem; }
-.combat-effect-strip__details p { margin: 3px 0; color: var(--ui-color-text-muted); font-size: .58rem; line-height: 1.35; }
-.combat-effect-strip__details small { display: inline-block; margin: 2px 8px 0 0; color: var(--ui-color-text-muted); font-size: .52rem; }
-.combat-effect-strip__details > button { display: grid; width: 28px; height: 28px; flex: none; place-items: center; border: 1px solid var(--ui-color-border); border-radius: var(--ui-radius-sm); background: transparent; color: var(--ui-color-text-primary); font: inherit; }
-.combat-effect-strip--enemy .combat-effect-strip__effect { border-color: rgb(245 123 103 / 34%); }
-.combat-effect-strip--player { flex: 1; min-width: 0; }
-.combat-effect-strip--enemy .combat-effect-strip__details { width: min(76vw, 280px); }
+.combat-effect-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.combat-effect-strip__effect,
+.combat-effect-strip__overflow {
+  position: relative;
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  place-items: center;
+  overflow: hidden;
+  padding: 3px 3px 8px;
+  border: 1px solid #6c7181;
+  border-radius: 8px;
+  background: #0b111a;
+  color: #f4f0dc;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.combat-effect-strip__effect[data-disposition='Beneficial'] {
+  border-color: #789d8e;
+}
+.combat-effect-strip__effect[data-disposition='Harmful'] {
+  border-color: #c47466;
+}
+.combat-effect-strip__effect--selected {
+  box-shadow: inset 0 0 0 2px #dfc380;
+}
+.combat-effect-strip__effect:focus-visible,
+.combat-effect-strip__overflow:focus-visible {
+  outline: 2px solid #dfc380;
+  outline-offset: 2px;
+}
+.combat-effect-strip__effect img,
+.combat-effect-strip__effect :deep(.icon-generator) {
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+.combat-effect-strip__effect small {
+  position: absolute;
+  right: 0;
+  bottom: 3px;
+  left: 0;
+  background: rgb(3 6 10 / 88%);
+  color: #fff4dc;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 12px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.combat-effect-strip__stacks {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  min-width: 14px;
+  padding: 0 2px;
+  border-radius: 3px;
+  background: #d5b775;
+  color: #10141b;
+  font-size: 10px;
+  line-height: 14px;
+  text-align: center;
+}
+.combat-effect-strip__duration {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: #242d38;
+}
+.combat-effect-strip__duration span {
+  display: block;
+  height: 100%;
+  background: #d5b775;
+  transform-origin: left;
+}
+.combat-effect-strip__effect[data-disposition='Harmful'] .combat-effect-strip__duration span {
+  background: #de8d78;
+}
+.combat-effect-strip__overflow {
+  padding: 3px;
+  border-style: dashed;
+  font-size: 12px;
+  font-weight: 800;
+}
+.combat-effect-strip__critical-warning {
+  display: flex;
+  width: 100%;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border: 1px solid #c65e52;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #2d0409, #5e0c11, #2d0409);
+  color: #fff1dc;
+}
+.combat-effect-strip__critical-warning :deep(.icon-generator) {
+  width: 22px;
+  height: 22px;
+}
+.combat-effect-strip__critical-warning strong {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+.combat-effect-strip__critical-warning b {
+  color: #ffcf66;
+  font-variant-numeric: tabular-nums;
+}
+.effect-inspection {
+  color: var(--ui-color-text-primary);
+  font-size: 14px;
+  line-height: 1.55;
+}
+.effect-inspection__heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.effect-inspection__heading > img,
+.effect-inspection__heading > :deep(.icon-generator) {
+  width: 54px;
+  height: 54px;
+  border: 1px solid #b39356;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.effect-inspection__heading div {
+  display: grid;
+  gap: 3px;
+}
+.effect-inspection__heading strong {
+  color: #d9bf83;
+  font-size: 12px;
+}
+.effect-inspection__heading span {
+  color: var(--ui-color-text-muted);
+  font-size: 12px;
+}
+.effect-inspection p {
+  margin: 16px 0;
+}
+.effect-inspection dl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid rgb(205 177 113 / 20%);
+}
+.effect-inspection dl div {
+  display: grid;
+  gap: 2px;
+}
+.effect-inspection dt {
+  color: var(--ui-color-text-muted);
+  font-size: 11px;
+}
+.effect-inspection dd {
+  margin: 0;
+  color: #f0d99e;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
 </style>

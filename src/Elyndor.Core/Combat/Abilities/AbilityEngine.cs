@@ -50,6 +50,15 @@ public static partial class AbilityEngine
         }
         StartGcd(runtime, ability, now);
 
+        if (ability.Type == AbilityType.Casted && ability.IsSpell)
+        {
+            decimal castTimeMultiplier = EffectEngine.CalculateStat(
+                runtime.Actor, EffectStat.CastTimeMultiplier, 1, now);
+            ability = ability with
+            {
+                CastTime = TimeSpan.FromTicks((long)(ability.CastTime.Ticks * castTimeMultiplier))
+            };
+        }
         Guid[] targetIds = ResolveTargetIds(ability, intent);
         if (ability.Type is AbilityType.Casted or AbilityType.Channelled)
         {

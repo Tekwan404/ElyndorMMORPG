@@ -9,6 +9,9 @@ namespace Elyndor.Core.Combat.Mage;
 
 internal sealed class ArcaneMageRuntime(MageCombatContext context, MageCombatRuntime owner) : MageRuntimeBase(context, owner)
 {
+    private const decimal ArcanePowerDamageBonusPercent = 20m;
+    private decimal ArcanePowerExtraCostPercent => TryGetMageHook("A-7-1", out ResolvedTalentEventHook control)
+        ? control.Value : 20m;
     private DateTimeOffset? _lastMageManaSpendAtUtc;
     private int _arcanePowerManaSpendCount;
     private readonly List<PendingMageResourceRefund> _pendingMageResourceRefunds = [];
@@ -94,14 +97,11 @@ internal sealed class ArcaneMageRuntime(MageCombatContext context, MageCombatRun
 
         if (IsArcanePowerActive(now) && IsOffensiveMageAbility(ability))
         {
-            damageMultiplier *= 1.20m;
+            damageMultiplier *= 1 + ArcanePowerDamageBonusPercent / 100m;
             ActiveEffect? freeCost = FindOwnEffect(_player.Actor, ArcanePowerFreeCostEffectId, now);
             if (freeCost is null)
             {
-                decimal extraCostPercent = 20m;
-                if (TryGetMageHook("A-7-1", out ResolvedTalentEventHook controlPower))
-                    extraCostPercent = controlPower.Value;
-                resourceCost *= 1 + extraCostPercent / 100m;
+                resourceCost *= 1 + ArcanePowerExtraCostPercent / 100m;
             }
         }
 
@@ -296,7 +296,8 @@ internal sealed class ArcaneMageRuntime(MageCombatContext context, MageCombatRun
         _arcanePowerManaSpendCount = 0;
         ApplyMageEffect(_player.Actor, new EffectDefinition(
             ArcanePowerEffectId, EffectKind.Buff, duration, 1,
-            EffectStackPolicy.Replace, arcanePower.Value), now);
+            EffectStackPolicy.Replace, arcanePower.Value,
+            Description: $"Урон атакующих заклинаний увеличен на {ArcanePowerDamageBonusPercent}%, а стоимость маны — на {ArcanePowerExtraCostPercent}%. Заряды Мощи без переплаты временно отменяют надбавку к стоимости."), now);
 
         if (HasMageTalent("A-8-3"))
         {

@@ -123,7 +123,10 @@ public sealed partial class CombatSession
             && !_paladinIncarnationVerdictConsumed.Contains(_player.Actor.ActorId))
             criticalBonus += 100;
 
-        var actions = ability.Actions?.Select(action => action.Effect is null ? action : action with
+        var actions = ability.Actions?
+            .Where(action => action.Effect?.Id is not ("PALADIN_HAMMER_OF_JUSTICE_MARKER"
+                or "PALADIN_REPENTANCE_MARKER" or "PALADIN_CLEANSE_CAST"))
+            .Select(action => action.Effect is null ? action : action with
         {
             Effect = action.Effect.Id switch
             {

@@ -30,7 +30,7 @@ public sealed partial class CombatSession
             // Time advancement remains session-owned, including dead-player cursors.
             _lastPlayerResourceRegenAtUtc = now;
             ResourceRuntime.Regenerate(_player.Actor, from, now,
-                ResourceRegenRateAt, ResourceRegenBoundaries());
+                ResourceRegenRateAt, ResourceRegenBoundaries(), baseManaRegenPerSecond: _player.ResourceType == "MANA" ? _player.ResourceRegenPerSecond : 0);
         }
     }
 

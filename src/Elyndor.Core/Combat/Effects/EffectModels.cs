@@ -70,7 +70,9 @@ public enum EffectStat
     IncomingPhysicalDamageMultiplier,
     BlockChance,
     BlockValueMin,
-    BlockValueMax
+    BlockValueMax,
+    CastTimeMultiplier,
+    ManaRegenMultiplier
 }
 public enum EffectModifierMode { Flat, Percent, Multiplicative }
 

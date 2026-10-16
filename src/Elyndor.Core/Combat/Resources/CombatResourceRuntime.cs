@@ -1,3 +1,5 @@
+using Elyndor.Core.Combat.Effects;
+
 namespace Elyndor.Core.Combat.Resources;
 
 /// <summary>
@@ -50,7 +52,8 @@ public sealed class CombatResourceRuntime(
     public void Regenerate(
         CombatActorState actor, DateTimeOffset from, DateTimeOffset to,
         Func<DateTimeOffset, decimal> rateAt,
-        IEnumerable<DateTimeOffset>? rateBoundaries = null)
+        IEnumerable<DateTimeOffset>? rateBoundaries = null,
+        decimal baseManaRegenPerSecond = 0)
     {
         if (to <= from || actor.IsDead) return;
         var boundaries = new SortedSet<DateTimeOffset> { from, to };
@@ -58,11 +61,24 @@ public sealed class CombatResourceRuntime(
             foreach (DateTimeOffset boundary in rateBoundaries)
                 if (boundary > from && boundary < to) boundaries.Add(boundary);
 
+        if (baseManaRegenPerSecond > 0)
+            foreach (ActiveEffect effect in actor.ActiveEffects.Where(effect =>
+                         effect.Definition.Kind == EffectKind.StatModifier
+                         && effect.Definition.ModifiedStat == EffectStat.ManaRegenMultiplier))
+            {
+                if (effect.AppliedAtUtc > from && effect.AppliedAtUtc < to) boundaries.Add(effect.AppliedAtUtc);
+                if (effect.ExpiresAtUtc > from && effect.ExpiresAtUtc < to) boundaries.Add(effect.ExpiresAtUtc);
+            }
+
         decimal amount = 0;
         DateTimeOffset start = from;
         foreach (DateTimeOffset end in boundaries.Skip(1))
         {
-            amount += rateAt(start) * (end - start).Ticks / TimeSpan.TicksPerSecond;
+            decimal multiplier = baseManaRegenPerSecond > 0
+                ? EffectEngine.CalculateStat(actor, EffectStat.ManaRegenMultiplier, 1, start)
+                : 1;
+            decimal rate = Math.Max(0, rateAt(start) + baseManaRegenPerSecond * (multiplier - 1));
+            amount += rate * (end - start).Ticks / TimeSpan.TicksPerSecond;
             start = end;
         }
         if (amount > 0) Grant(actor, amount, to, "COMBAT_REGEN");
