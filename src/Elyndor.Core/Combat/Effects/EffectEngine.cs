@@ -284,13 +284,18 @@ public static partial class EffectEngine
         Guid? sourceId = null)
     {
         ActiveEffect[] modifiers = target.ActiveEffects
-            .Where(effect => effect.ExpiresAtUtc > now
+            .Where(effect => effect.AppliedAtUtc <= now && effect.ExpiresAtUtc > now
                 && effect.Definition.Kind == EffectKind.StatModifier
                 && effect.Definition.ModifiedStat == stat
                 && (!effect.Definition.SourceSpecific
                     || !sourceId.HasValue
                     || effect.SourceId == sourceId.Value))
             .ToArray();
+        // Each caster owns their concentration aura; matching auras do not multiply.
+        if (stat == EffectStat.CastTimeMultiplier)
+            modifiers = modifiers.GroupBy(effect => effect.Definition.StackPolicy == EffectStackPolicy.StrongestWins
+                    ? effect.Definition.Id : effect.InstanceId.ToString())
+                .Select(group => group.MinBy(effect => effect.Definition.Magnitude)!).ToArray();
         decimal flat = modifiers
             .Where(effect => effect.Definition.ModifierMode == EffectModifierMode.Flat)
             .Sum(effect => effect.Definition.Magnitude * effect.Stacks);

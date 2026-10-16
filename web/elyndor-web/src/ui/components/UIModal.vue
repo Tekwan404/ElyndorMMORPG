@@ -2,7 +2,7 @@
 import { useId, useTemplateRef } from 'vue'
 import { useModalLayer } from '@/ui/composables/useModalLayer'
 
-const props = defineProps<{ open: boolean; title: string; busy?: boolean; fullscreen?: boolean }>()
+const props = defineProps<{ open: boolean; title: string; busy?: boolean; fullscreen?: boolean; compact?: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 const titleId = useId()
 
@@ -18,7 +18,7 @@ const { layerIndex } = useModalLayer({ open: () => props.open, root: dialog, clo
     <div
       v-if="open"
       class="ui-modal"
-      :class="{ 'ui-modal--fullscreen': fullscreen }"
+      :class="{ 'ui-modal--fullscreen': fullscreen, 'ui-modal--compact': compact }"
       :style="{ zIndex: `calc(var(--ui-z-modal) + ${layerIndex})` }"
       @click.self="close"
     >
@@ -148,4 +148,5 @@ const { layerIndex } = useModalLayer({ open: () => props.open, root: dialog, clo
     align-items: center;
   }
 }
+.ui-modal--compact .ui-modal__dialog { max-width: 420px; }
 </style>

@@ -1,3 +1,4 @@
+using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat;
 using Elyndor.Core.Combat.Sessions;
 
@@ -44,10 +45,8 @@ public static class ArenaStateProjector
             session.CooldownsFor(fighter.AccountId),
             new HashSet<string>(fighter.Abilities.Keys, StringComparer.Ordinal),
             session.AbilitySnapshotsFor(fighter.AccountId),
-            fighter.Actor.ActiveEffects.Select(effect => new CombatEffectSnapshot(
-                effect.Definition.Id, effect.Stacks, effect.ExpiresAtUtc,
-                effect.Definition.DisplayName, effect.Definition.Description,
-                effect.Definition.IconId)).ToArray(),
+            fighter.Actor.ActiveEffects.Where(CombatEffectPresentation.IsVisible)
+                .Select(CombatEffectSnapshot.From).ToArray(),
             cast is null ? null : CombatCastSnapshot.From(cast),
             GenderId: entrant.GenderId, SkinId: entrant.SkinId, Level: entrant.Level);
     }

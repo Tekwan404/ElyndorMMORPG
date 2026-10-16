@@ -1379,3 +1379,23 @@ DR для игроков / PvP (не применяется в текущей в
 - Slow, Root, Fear, Charm не используются текущим content.
 - Добавляется `LETHAL_DAMAGE_PREVENTION` как универсальный defensive effect family.
 - Party Effect не является spatial Aura и может использоваться Commander уже сейчас.
+
+
+## Runtime presentation and completed support effects
+
+Active effect snapshots carry a localized name, description, icon, kind and
+beneficial/harmful disposition. Instance/source IDs, application time and maximum
+stacks let clients inspect one stable effect across refreshes. PvE and Arena use
+the same projection. Descriptions derive periodic amounts/intervals, remaining
+shield absorption and stat changes from the live effect; technical bookkeeping
+markers are not separate player buffs.
+
+Paladin support effects use the common stat engine. Blessing of Wisdom adds 100%
+of base mana regeneration for ten seconds, without doubling other regeneration
+bonuses or affecting Focus/Rage. Concentration reduces casted spell duration by 8%
+at cast start; channels and physical casts are unchanged. Matching Concentration
+auras do not stack, and each caster retains ownership when switching auras.
+Divine Replenishment reduces outgoing healing by 10% for eight seconds.
+Hammer of Justice stuns ordinary targets for three seconds; bosses only receive
+its interrupt. Repentance stuns ordinary targets for four seconds and instead
+reduces boss outgoing damage by 10% for four seconds.

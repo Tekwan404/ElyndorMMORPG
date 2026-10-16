@@ -87,6 +87,10 @@ const timer = window.setInterval(() => {
 
 const snapshot = battle.snapshot
 const localActor = computed(() => snapshot.value?.player ?? null)
+const effectSources = computed(() => Object.fromEntries([
+  ...(snapshot.value?.players ?? []), ...(snapshot.value?.enemies ?? []),
+  ...[snapshot.value?.player, snapshot.value?.enemy, snapshot.value?.companion].filter(actor => actor != null),
+].map(actor => [actor.actorId, actor.name])))
 const selectedEnemy = battle.selectedEnemy
 const activeEnemies = computed(() => battle.enemies.value.filter((enemy) => enemy.hp > 0))
 const displayEnemies = computed(() =>
@@ -439,6 +443,7 @@ onUnmounted(() => {
           v-if="selectedEnemy.effects.length"
           class="battle-screen__enemy-effects"
           :effects="selectedEnemy.effects"
+          :sources="effectSources"
           :now="now"
           side="enemy"
         />
@@ -488,6 +493,7 @@ onUnmounted(() => {
         <CombatEffectStrip
           v-if="localActor.effects.length"
           :effects="localActor.effects"
+          :sources="effectSources"
           :now="now"
           side="player"
         />
@@ -727,6 +733,7 @@ onUnmounted(() => {
 
 <style scoped>
 .battle-screen {
+  isolation: isolate;
   --battle-gap: clamp(0.28rem, 1vw, 0.46rem);
   display: flex;
   flex-direction: column;
@@ -1078,6 +1085,7 @@ onUnmounted(() => {
     min-height: 240px;
   }
   .battle-screen {
+  isolation: isolate;
     height: auto;
     min-height: 100svh;
     overflow-y: auto;

@@ -1,3 +1,4 @@
+using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Damage;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Combat.Paladin;
@@ -211,6 +212,10 @@ public sealed partial class CombatSession
                     TimeSpan.FromSeconds(HasPaladinTalent("R-9-1") ? 16 : 12),
                     HasPaladinTalent("R-9-1"));
                 break;
+            case "HAMMER_OF_JUSTICE":
+            case "REPENTANCE":
+                ApplyPaladinControl(abilityId, combatEvent.TargetActorId, now);
+                break;
             case "CLEANSE":
                 if (combatEvent.TargetActorId is { } cleanseTargetId
                     && ResolvePaladinActor(cleanseTargetId) is { } cleanseTarget)
@@ -256,7 +261,8 @@ public sealed partial class CombatSession
                     TimeSpan.FromSeconds(20),
                     1,
                     EffectStackPolicy.Replace,
-                    1),
+                    1,
+                    Description: $"Следующий Вердикт храмовника расходует на {PaladinDivinePurposeManaDiscount} маны меньше и наносит на {PaladinDivinePurposeBonusDamagePercent}% больше урона."),
                 now);
         }
 
@@ -977,6 +983,31 @@ public sealed partial class CombatSession
         if (HasPaladinTalent("P-9-1"))
             duration += 2;
         return duration;
+    }
+
+    private void ApplyPaladinControl(string abilityId, Guid? targetId, DateTimeOffset now)
+    {
+        if (targetId is not { } id || ResolvePaladinActor(id) is not { IsDead: false } target
+            || !_abilities.TryGetValue(abilityId, out AbilityDefinition? ability)
+            || ability.Actions?.Select(action => action.Effect).FirstOrDefault(effect => effect is not null) is not { } definition)
+            return;
+        if (IsBossActor(id))
+        {
+            if (abilityId == "HAMMER_OF_JUSTICE") return;
+            definition = definition with
+            {
+                Kind = EffectKind.StatModifier,
+                ModifiedStat = EffectStat.OutgoingDamageMultiplier,
+                ModifierMode = EffectModifierMode.Multiplicative,
+                Magnitude = ability.RuntimeParameters?.GetValueOrDefault("bossOutgoingDamageMultiplier", 1) ?? 1
+            };
+        }
+        else
+        {
+            definition = definition with { Kind = EffectKind.Stun };
+        }
+        ApplyKernelEvents(EffectEngine.Apply(target, _player.Actor.ActorId, definition, now),
+            _player.Actor.ActorId, id, abilityId);
     }
 
     private bool IsBossActor(Guid actorId) =>

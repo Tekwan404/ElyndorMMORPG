@@ -2758,14 +2758,8 @@ public sealed partial class CombatSession
                 StringComparer.Ordinal),
             new HashSet<string>(knownAbilityIds, StringComparer.Ordinal),
             abilities,
-            definition.Actor.ActiveEffects.Select(effect =>
-                new CombatEffectSnapshot(
-                    effect.Definition.Id,
-                    effect.Stacks,
-                    effect.ExpiresAtUtc,
-                    effect.Definition.DisplayName,
-                    effect.Definition.Description,
-                    effect.Definition.IconId)).ToArray(),
+            definition.Actor.ActiveEffects.Where(CombatEffectPresentation.IsVisible)
+                .Select(CombatEffectSnapshot.From).ToArray(),
             runtime.ActiveCast is null
                 ? null
                 : CombatCastSnapshot.From(runtime.ActiveCast),

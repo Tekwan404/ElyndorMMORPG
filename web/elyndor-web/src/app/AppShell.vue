@@ -882,17 +882,27 @@ onMounted(() => {
 }
 
 @media (max-width: 480px) {
-  .hud__main { grid-template-columns: 38px minmax(0, 1fr); row-gap: 3px; }
-  .hud__portrait { grid-column: 1; grid-row: 1 / span 2; }
-  .hud__identity { grid-column: 2; grid-row: 1; }
-  .hud__meta { grid-column: 2; grid-row: 2; justify-content: flex-start; }
+  .hud { padding-inline: 10px; }
+  .hud__main { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 6px; }
+  .hud__portrait { width: 34px; height: 38px; }
+  .hud__identity-line { flex-wrap: wrap; gap: 1px 4px; }
+  .hud__identity b { font-size: 13px; }
+  .hud__level { max-width: 100%; overflow: hidden; font-size: 9px; text-overflow: ellipsis; }
+  .hud__profile-title { overflow: hidden; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; }
+  .hud__meta { gap: 4px; }
+  .hud__wallet { padding-inline: 5px; font-size: 10px; }
+  .hud__meta :deep(.crystal-wallet) { gap: 3px; padding-inline: 3px 5px; }
+  .hud__meta :deep(.crystal-wallet strong) { font-size: 10px; }
+  .hud__meta :deep(.crystal-wallet img) { width: 16px; }
+  .hud__wallet :deep(.money-amount > span + span) { margin-inline-start: .2em; }
 }
 
 @media (max-width: 360px) {
-  .hud {
-    padding-inline: var(--ui-space-2);
-  }
-
+  .hud { padding-inline: 7px; }
+  .hud__main { gap: 5px; }
+  .hud__meta { gap: 3px; }
+  .hud__wallet { padding-inline: 4px; font-size: 9px; }
+  .hud__meta :deep(.crystal-wallet strong) { font-size: 9px; }
 }
 
 @media (min-width: 582px) {

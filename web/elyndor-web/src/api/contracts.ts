@@ -853,6 +853,12 @@ export interface CombatEffectSnapshot {
   displayName?: string | null
   description?: string | null
   iconId?: string | null
+  kind?: string | null
+  disposition?: 'Beneficial' | 'Harmful' | 'Neutral' | null
+  instanceId?: string | null
+  sourceActorId?: string | null
+  appliedAtUtc?: string | null
+  maxStacks?: number | null
 }
 
 export interface CombatAbility {

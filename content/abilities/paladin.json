@@ -1,7 +1,7 @@
 {
-  "contentVersion": "0.49.0",
-  "balanceVersion": "0.39.0",
-  "publishedAtUtc": "2026-10-08T08:30:00+00:00",
+  "contentVersion": "0.61.0",
+  "balanceVersion": "0.48.0",
+  "publishedAtUtc": "2026-10-16T00:00:00+00:00",
   "definitions": [
     {
       "type": "CLASS",
@@ -218,17 +218,19 @@
           "type": "ApplyEffect",
           "effect": {
             "id": "PALADIN_BLESSING_WISDOM",
-            "kind": "Buff",
+            "kind": "StatModifier",
             "duration": "00:00:10",
             "maxStacks": 1,
             "stackPolicy": "Replace",
-            "magnitude": 1,
+            "magnitude": 2.00,
+            "modifiedStat": "ManaRegenMultiplier",
+            "modifierMode": "Multiplicative",
             "dispelCategory": "PALADIN_BLESSING"
           }
         }
       ],
       "displayName": "Благословение мудрости",
-      "description": "Кратковременно усиливает восстановление маны союзника."
+      "description": "Удваивает базовое восстановление маны союзника на 10 секунд."
     },
     {
       "id": "CLEANSE", "iconId": "paladin-cleanse",
@@ -368,17 +370,20 @@
           "type": "ApplyEffect",
           "effect": {
             "id": "PALADIN_CONCENTRATION_AURA",
-            "kind": "Buff",
+            "kind": "StatModifier",
             "duration": "00:30:00",
             "maxStacks": 1,
             "stackPolicy": "StrongestWins",
-            "magnitude": 0.08,
+            "magnitude": 0.92,
+            "modifiedStat": "CastTimeMultiplier",
+            "sourceSpecific": true,
+            "modifierMode": "Multiplicative",
             "dispelCategory": "PALADIN_AURA"
           }
         }
       ],
       "displayName": "Аура сосредоточенности",
-      "description": "Ускоряет применение заклинаний группы через Paladin runtime."
+      "description": "Сокращает время применения заклинаний группы на 8%. Не ускоряет поддерживаемые заклинания."
     },
     {
       "id": "DIVINE_REPLENISHMENT", "iconId": "paladin-divine-replenishment",
@@ -397,16 +402,18 @@
           "type": "ApplyEffect",
           "effect": {
             "id": "PALADIN_DIVINE_REPLENISHMENT_PENALTY",
-            "kind": "Buff",
+            "kind": "StatModifier",
             "duration": "00:00:08",
             "maxStacks": 1,
             "stackPolicy": "Replace",
-            "magnitude": 0.90
+            "magnitude": 0.90,
+            "modifiedStat": "OutgoingHealingMultiplier",
+            "modifierMode": "Multiplicative"
           }
         }
       ],
       "displayName": "Божественное восполнение",
-      "description": "Восстанавливает ману ценой кратковременного снижения лечения."
+      "description": "Восстанавливает 30 маны. На 8 секунд снижает исходящее исцеление на 10%."
     },
     {
       "id": "BLESSING_OF_PROTECTION", "iconId": "paladin-blessing-of-protection",
@@ -679,7 +686,7 @@
         }
       ],
       "displayName": "Молот правосудия",
-      "description": "Прерывает противника и оглушает обычные цели; боссы получают boss-safe вариант."
+      "description": "Прерывает противника. Обычные цели оглушены на 3 секунды; боссы не оглушаются."
     },
     {
       "id": "SEAL_OF_COMMAND", "iconId": "paladin-seal-of-command",
@@ -760,6 +767,7 @@
     {
       "id": "REPENTANCE", "iconId": "paladin-repentance",
       "type": "Instant",
+      "runtimeParameters": { "bossOutgoingDamageMultiplier": 0.90 },
       "targetType": "SingleEnemy",
       "resourceCost": 18,
       "cooldown": "00:00:45",
@@ -783,7 +791,7 @@
         }
       ],
       "displayName": "Покаяние",
-      "description": "Контролирует обычную цель; для босса Paladin runtime применяет безопасное снижение урона."
+      "description": "Оглушает обычную цель на 4 секунды. Вместо оглушения снижает наносимый боссом урон на 10% на 4 секунды."
     },
     {
       "id": "TEMPLARS_VERDICT", "iconId": "paladin-templars-verdict",

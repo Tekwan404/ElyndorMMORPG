@@ -348,6 +348,8 @@ internal sealed class FireMageRuntime(MageCombatContext context, MageCombatRunti
             _fireDirectCritStreak = 0;
     }
 
+    private int CombustionCriticalHitLimit => HasMageTalent("F-9-1") ? 4 : 3;
+
     internal void ActivateCombustion(DateTimeOffset now)
     {
         if (!TryGetMageHook("F-6-1", out ResolvedTalentEventHook combustion)) return;
@@ -355,7 +357,8 @@ internal sealed class FireMageRuntime(MageCombatContext context, MageCombatRunti
         _combustionCritCount = 0;
         RemovePyroEffect(_player.Actor, CombustionCritStackEffectId, now);
         ApplyPyroEffect(_player.Actor, new EffectDefinition(
-            CombustionEffectId, EffectKind.Buff, duration, 1, EffectStackPolicy.Replace, 0), now);
+            CombustionEffectId, EffectKind.Buff, duration, 1, EffectStackPolicy.Replace, 0,
+            Description: $"Некритический прямой огненный удар добавляет {combustion.Value} п.п. шанса крита. Крит сбрасывает накопление. Возгорание завершается после {CombustionCriticalHitLimit} критических ударов или по таймеру."), now);
 
         if (TryGetMageHook("F-8-3", out ResolvedTalentEventHook perfect))
         {
@@ -412,7 +415,7 @@ internal sealed class FireMageRuntime(MageCombatContext context, MageCombatRunti
                 }
             }
 
-            int limit = HasMageTalent("F-9-1") ? 4 : 3;
+            int limit = CombustionCriticalHitLimit;
             if (_combustionCritCount >= limit)
                 RemovePyroEffect(_player.Actor, CombustionEffectId, now);
         }

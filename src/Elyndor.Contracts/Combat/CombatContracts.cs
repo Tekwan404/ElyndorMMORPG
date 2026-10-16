@@ -6,7 +6,13 @@ public sealed record CombatEffectResponse(
     DateTimeOffset ExpiresAtUtc,
     string? DisplayName = null,
     string? Description = null,
-    string? IconId = null);
+    string? IconId = null,
+    string? Kind = null,
+    string? Disposition = null,
+    Guid? InstanceId = null,
+    Guid? SourceActorId = null,
+    DateTimeOffset? AppliedAtUtc = null,
+    int? MaxStacks = null);
 public sealed record CombatCastResponse(
     string AbilityId,
     DateTimeOffset StartedAtUtc,
