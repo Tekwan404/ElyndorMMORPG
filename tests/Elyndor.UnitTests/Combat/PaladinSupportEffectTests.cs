@@ -200,4 +200,3 @@ public sealed class PaladinSupportEffectTests
         throw new DirectoryNotFoundException("Repository content was not found.");
     }
 }
-
