@@ -97,7 +97,7 @@ public sealed class CombatEffectPresentationTests
         var actor = CombatActorState.CreateDummy(1000);
         Guid owner = Guid.NewGuid();
         EffectEngine.Apply(actor, owner, new("TEST_SHIELD", EffectKind.Shield,
-            TimeSpan.FromSeconds(10), 1, EffectStackPolicy.Replace, 100), Now);
+            TimeSpan.FromSeconds(10), 1, EffectStackPolicy.Replace, 100, Description: "Щит небесной защиты."), Now);
         Elyndor.Core.Combat.Damage.DamagePipeline.Resolve(new(actor, actor, 25,
             Elyndor.Core.Combat.Damage.DamageType.True, CanMiss: false, CanCrit: false, CanDodge: false),
             new SeededGameRandom(1), Now);

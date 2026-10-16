@@ -14,7 +14,7 @@ public static partial class CombatEffectPresentation
         EffectDefinition definition = active.Definition;
         return new(definition.Id, active.Stacks, active.ExpiresAtUtc,
             NonEmpty(definition.DisplayName) ?? Names.GetValueOrDefault(definition.Id) ?? KindName(definition.Kind),
-            NonEmpty(definition.Description) ?? Describe(active),
+            Description(active),
             NonEmpty(definition.IconId) ?? Icon(definition),
             definition.Kind.ToString(), Disposition(definition), active.InstanceId,
             active.SourceId, active.AppliedAtUtc, definition.MaxStacks);
@@ -22,6 +22,18 @@ public static partial class CombatEffectPresentation
 
     private static string? NonEmpty(string? text) => string.IsNullOrWhiteSpace(text) ? null : text.Trim();
     private static string Number(decimal value) => value.ToString("0.##", CultureInfo.GetCultureInfo("ru-RU"));
+
+    private static string Description(ActiveEffect active)
+    {
+        string? context = NonEmpty(active.Definition.Description);
+        if (context is null) return Describe(active);
+        // Boss instructions remain visible, but cannot replace live absorption/tick/stat values.
+        return active.Definition.Kind is EffectKind.Shield or EffectKind.DamageOverTime
+            or EffectKind.HealingOverTime or EffectKind.StatModifier
+            or EffectKind.DamageReflection or EffectKind.TemporaryMaxHp
+            ? $"{context} {Describe(active)}"
+            : context;
+    }
 
     private static string Describe(ActiveEffect active)
     {
