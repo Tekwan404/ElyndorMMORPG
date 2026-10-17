@@ -11,7 +11,10 @@ vi.mock('@/api/apiClient', () => ({
   ApiRequestError: class extends Error {},
 }))
 vi.mock('@/stores/gameSession', () => ({
-  useGameSessionStore: () => ({ refreshSnapshot: vi.fn<() => Promise<void>>() }),
+  useGameSessionStore: () => ({
+    snapshot: { character: { level: 60 } },
+    refreshSnapshot: vi.fn<() => Promise<void>>(),
+  }),
 }))
 const overview = {
   season: 1,
