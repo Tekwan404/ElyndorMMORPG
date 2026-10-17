@@ -64,18 +64,23 @@ Balance is centralized in `WorldPvpBalance`:
   by a contributing hostile player (highest damage, excluding departed actors),
   even when the encounter awards no rating or currency. Settlement receipts keep
   these counts idempotent across retries.
-- Rewarded progression needs at least 10 seconds of PvP interaction, enemy damage
-  worth at least 20% of victim maximum HP, and actual resistance (PvP damage or
-  useful healing from the victim). Fast kills and passive victims still award no
-  rating, honor, tokens or rewarded assists.
-- At least 10% of qualifying damage/support is required. The largest damage
+- A legitimate lethal PvP kill awards progression even if the battle lasts only
+  a few seconds or the defender does not attack back. No minimum fight duration,
+  resistance check, or victim-max-HP fraction applies. All honor/rating rewards
+  still require actual PvP damage/support and follow pair cooldown/daily limits.
+- A rewarded winning kill subtracts ceil(half the winner's full rating award)
+  from the defeated player's rating, clamped to zero. Denied/repeated rewards do
+  not cause rating penalties. Qualified assists receive ceil(standard award / the
+  number of contributors), minimum 1; the main victor receives the full amount.
+- At least 10% of total damage/support is required for assists. The largest damage
   contributor receives a victory; other qualifying contributors receive assists.
   Companion damage belongs to its owner. Effective healing only consumes recent
   PvP wounds, excludes self-healing, expires after 30 seconds and is consumed by
   one defeat. Departed contributors receive no later credit.
-- Each qualifying credit grants 5 Field Honor and 5–15 rating points depending
-  on the opponent's rating relative to the recipient. A victory against equal
-  or higher rating also grants one Bloody Token.
+- The credited victor receives 5 Field Honor and 5–15 rating points depending
+  on the opponent's rating relative to the recipient. Assists receive diminishing
+  honor/rating shares. A victory against equal or higher rating also grants one
+  Bloody Token.
 - Each pair can award progression once per rolling 24 hours in either direction.
   At most 20 credited opponents per character per UTC day. Deaths remain visible
   even when a reward is refused. These limits reduce collusion; they do not claim
