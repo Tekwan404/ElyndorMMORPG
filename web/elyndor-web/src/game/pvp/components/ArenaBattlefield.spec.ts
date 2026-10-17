@@ -98,6 +98,14 @@ describe('ArenaBattlefield', () => {
     wrapper.unmount()
   })
 
+  it('keeps the arena journal visible and enables a longer PvP history', async () => {
+    const wrapper = mountBattlefield()
+    const log = wrapper.findComponent({ name: 'CombatLog' })
+    expect(wrapper.find('[data-combat-log-toggle]').exists()).toBe(true)
+    expect(log.props('maxEntries')).toBe(200)
+    wrapper.unmount()
+  })
+
   it('targets the opponent for attacks and the local player for self abilities', async () => {
     const wrapper = mountBattlefield()
 
