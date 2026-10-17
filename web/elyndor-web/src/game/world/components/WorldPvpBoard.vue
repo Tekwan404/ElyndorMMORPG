@@ -1,146 +1,129 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useGameSessionStore } from '@/stores/gameSession'
+import WorldPvpLeaderboard from './WorldPvpLeaderboard.vue'
+import WorldPvpRewardShop from './WorldPvpRewardShop.vue'
 import { useWorldPvpProgression } from '../useWorldPvpProgression'
-const { overview, offers, race, loading, buying, error, message, refresh, buy } =
+
+const session = useGameSessionStore()
+const { overview, offers, race, loading, buying, error, shopError, message, refresh, buy } =
   useWorldPvpProgression()
+const level = computed(() => session.snapshot?.character?.level ?? 0)
+
+function changeRace(value: string): void {
+  race.value = value
+  void refresh()
+}
 </script>
 
 <template>
-  <section class="war-board" aria-label="Война фракций" data-world-pvp-board>
-    <header>
-      <h3>Война фракций</h3>
-      <button :disabled="loading || buying" @click="refresh">Обновить</button>
+  <section class="war-board" aria-label="Война фракций" data-world-pvp-board :aria-busy="loading">
+    <header class="war-board__header">
+      <div>
+        <small>ГИЛЬДИЯ АВАНТЮРИСТОВ · ОТКРЫТЫЙ МИР</small>
+        <h3>Война фракций</h3>
+        <p>Мёртвые Пределы · Уровень 60 · Отдельно от арены</p>
+      </div>
+      <button type="button" :disabled="loading || buying" @click="refresh">
+        {{ loading ? 'Обновляем…' : 'Обновить' }}
+      </button>
     </header>
-    <p>Сражения в Мёртвых Пределах · ур. 60. Отдельный рейтинг открытого мира.</p>
-    <p v-if="loading" role="status">Загрузка реестра…</p>
-    <p v-if="error" role="alert">{{ error }}</p>
-    <p v-if="message" role="status">{{ message }}</p>
+
+    <p v-if="error" class="war-board__feedback war-board__feedback--error" role="alert">{{ error }}</p>
+    <p v-if="message" class="war-board__feedback war-board__feedback--success" role="status">{{ message }}</p>
+    <p v-if="loading && !overview" class="war-board__feedback" role="status">Загружаем реестр войны…</p>
+
     <template v-if="overview">
-      <p>
-        Сезон {{ overview.season }} · до
-        {{ new Date(overview.endsAtUtc).toLocaleDateString('ru-RU') }}
-      </p>
-      <p class="war-board__wallet">
-        Полевая честь: {{ overview.fieldHonor }} · Кровавые жетоны: {{ overview.bloodyTokens }}
-      </p>
-      <p>
-        Твой рейтинг: {{ overview.self.rating }} · Победы: {{ overview.self.victories }} · Помощь:
-        {{ overview.self.assists }} · Смерти: {{ overview.self.deaths }}
-      </p>
-      <p class="war-board__rules">
-        Награждено сегодня: {{ overview.rewardedToday }}/{{ overview.dailyLimit }}. Одна пара
-        противников приносит награду раз в 24 часа. Даже быстрая победа приносит рейтинг и честь,
-        если за эту пару ещё положена награда. За поражение снимается половина очков,
-        полученных победителем (но не ниже нуля). Помощь в группе приносит уменьшенную награду.
-        Новый день — в 00:00 UTC.
-      </p>
-      <label
-        >Рейтинг
-        <select v-model="race" :disabled="loading || buying" @change="refresh">
-          <option value="">Все фракции</option>
-          <option value="HUMAN">Люди</option>
-          <option value="UNDEAD">Нежить</option>
-        </select></label
-      >
-      <ol class="war-board__ranks">
-        <li v-for="leader in overview.leaders" :key="leader.characterId">
-          <strong>{{ leader.name }}</strong> · {{ leader.raceId === 'UNDEAD' ? 'Нежить' : 'Люди'
-          }}<br />{{ leader.rating }} очк. · {{ leader.victories }} побед ·
-          {{ leader.assists }} помощи · {{ leader.deaths }} смертей
-        </li>
-      </ol>
-      <p v-if="!overview.leaders.length">В этом сезоне ещё нет участников с очками.</p>
-      <h4>Награды войны</h4>
-      <p class="war-board__rules">
-        5 полевой чести за зачётную победу или помощь. Основной участник победы над противником с не
-        меньшим рейтингом получает жетон. Снаряжение совпадает с ассортиментом арены, цены назначает
-        сервер.
-      </p>
-      <ul class="war-board__offers">
-        <li v-for="offer in offers" :key="offer.id">
-          <strong>{{ offer.name }}</strong> · ур. {{ offer.requiredLevel }}
-          <div class="war-board__actions">
-            <button
-              data-buy-honor
-              :disabled="loading || buying || overview.fieldHonor < offer.fieldHonorPrice"
-              @click="buy(offer, false)"
-            >
-              {{ offer.fieldHonorPrice }} чести</button
-            ><button
-              :disabled="loading || buying || overview.bloodyTokens < offer.tokenPrice"
-              @click="buy(offer, true)"
-            >
-              {{ offer.tokenPrice }} жет.
-            </button>
-          </div>
-        </li>
-      </ul>
+      <div class="war-board__season">
+        <span>Сезон {{ overview.season }}</span>
+        <small>Завершится {{ new Date(overview.endsAtUtc).toLocaleDateString('ru-RU') }}</small>
+      </div>
+      <div class="war-board__stats" aria-label="Твоя статистика PvP">
+        <div><small>Рейтинг</small><strong>{{ overview.self.rating }}</strong></div>
+        <div><small>Победы</small><strong>{{ overview.self.victories }}</strong></div>
+        <div><small>Помощь</small><strong>{{ overview.self.assists }}</strong></div>
+        <div><small>Смерти</small><strong>{{ overview.self.deaths }}</strong></div>
+      </div>
+      <div class="war-board__balances" aria-label="Валюта войны">
+        <p>Полевая честь: <strong>{{ overview.fieldHonor }}</strong></p>
+        <p>Кровавые жетоны: <strong>{{ overview.bloodyTokens }}</strong></p>
+      </div>
+      <div class="war-board__limit">
+        <span>Наград за сегодня</span>
+        <strong>{{ overview.rewardedToday }} / {{ overview.dailyLimit }}</strong>
+        <progress :value="overview.rewardedToday" :max="overview.dailyLimit || 1"
+          :aria-label="'Награды за сегодня: ' + overview.rewardedToday + ' из ' + overview.dailyLimit" />
+      </div>
+
+      <WorldPvpLeaderboard :leaders="overview.leaders" :self="overview.self" :race="race"
+        :disabled="loading || buying" @filter="changeRace" />
+
+      <div class="war-board__divider" role="separator" />
+      <p v-if="shopError" class="war-board__feedback war-board__feedback--error" role="alert">{{ shopError }}</p>
+      <WorldPvpRewardShop v-else :offers="offers" :field-honor="overview.fieldHonor"
+        :bloody-tokens="overview.bloodyTokens" :character-level="level"
+        :loading="loading" :buying="buying" @buy="buy" />
+
+      <details class="war-board__rules">
+        <summary>Как начисляются рейтинг и награды?</summary>
+        <p>Победа засчитывается даже за быстрый бой. За наградное убийство выдаются рейтинг,
+          полевая честь и, при подходящем рейтинге врага, кровавый жетон.
+          Проигравший теряет часть рейтинга, но не уходит ниже нуля.</p>
+        <p>Одна пара игроков приносит награду не чаще раза в 24 часа в любом направлении.
+          Суточный лимит обнуляется в 00:00 UTC. Победы сверх лимита остаются в статистике,
+          а помощь группы приносит уменьшенную выплату.</p>
+      </details>
     </template>
   </section>
 </template>
 
 <style scoped>
 .war-board {
-  color: var(--ui-text-primary, #e0d4bc);
   display: grid;
-  gap: 0.7rem;
   min-width: 0;
+  width: 100%;
+  gap: 14px;
+  color: #e8dcc6;
 }
-.war-board header,
-.war-board__actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-  justify-content: space-between;
+.war-board__header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.war-board__header > div { flex: 1 1 200px; min-width: 0; }
+.war-board__header small { color: #d5b274; font-size: .65rem; font-weight: 800; letter-spacing: .1em; }
+.war-board h3 { margin: 5px 0 3px; color: #f4e6ce; font-size: clamp(1.15rem, 4.5vw, 1.55rem); }
+.war-board__header p { margin: 0; color: #b9ae9d; font-size: .8rem; line-height: 1.45; }
+.war-board__header button {
+  min-height: 44px; padding: 8px 12px; border: 1px solid #88704b; border-radius: 9px;
+  background: #2b241c; color: #f2daae; font: inherit; font-size: .8rem; cursor: pointer;
 }
-.war-board p,
-.war-board h3,
-.war-board h4 {
-  margin: 0;
-  line-height: 1.5;
+.war-board button:disabled { opacity: .5; cursor: not-allowed; }
+.war-board button:focus-visible, .war-board summary:focus-visible { outline: 2px solid #e6c481; outline-offset: 2px; }
+.war-board__feedback { margin: 0; padding: 10px; border: 1px solid #554b37; border-radius: 9px; color: #dbccb4; font-size: .8rem; line-height: 1.45; }
+.war-board__feedback--error { border-color: #92544a; color: #ffc7b5; }
+.war-board__feedback--success { border-color: #5f8061; color: #c9e5bc; }
+.war-board__season { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 12px; color: #d7b878; font-size: .82rem; }
+.war-board__season span { font-weight: 800; }
+.war-board__season small { color: #bdb19e; font-size: .75rem; }
+.war-board__stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.war-board__stats > div {
+  display: grid; gap: 5px; min-width: 0; padding: 10px 5px; text-align: center;
+  border: 1px solid rgb(186 153 97 / 30%); border-radius: 9px; background: #191c22;
 }
-.war-board__wallet {
-  color: #e2be75;
+.war-board__stats small { color: #bcb19c; font-size: clamp(.65rem, 2.5vw, .75rem); }
+.war-board__stats strong { color: #f7e5c7; font-size: clamp(1.1rem, 5vw, 1.4rem); font-variant-numeric: tabular-nums; }
+.war-board__balances { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.war-board__balances p {
+  display: grid; gap: 3px; margin: 0; padding: 11px; border-radius: 9px;
+  border: 1px solid rgb(195 156 96 / 24%); background: rgb(128 89 43 / 13%);
+  color: #d6bc91; font-size: .76rem; line-height: 1.3;
 }
-.war-board__rules {
-  font-size: 0.78rem;
-  color: #b6aa94;
-}
-.war-board button,
-.war-board select {
-  min-height: 44px;
-  border: 1px solid #746043;
-  background: #251e17;
-  color: #ecd9b4;
-  padding: 0.4rem 0.6rem;
-  font: inherit;
-}
-.war-board button:disabled {
-  opacity: 0.5;
-}
-.war-board button:focus-visible,
-.war-board select:focus-visible {
-  outline: 2px solid #e6c481;
-  outline-offset: 2px;
-}
-.war-board__offers {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.war-board li {
-  overflow-wrap: anywhere;
-  padding: 0.6rem 0;
-  border-bottom: 1px solid #4a3e2d;
-  font-size: 0.82rem;
-  line-height: 1.5;
-}
-.war-board__actions {
-  justify-content: flex-start;
-  margin-top: 0.4rem;
-}
-.war-board__ranks {
-  margin: 0;
-  padding-left: 1.5rem;
+.war-board__balances strong { color: #f8d795; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.war-board__limit { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 7px; color: #ac9e8a; font-size: .76rem; }
+.war-board__limit strong { color: #dac093; font-variant-numeric: tabular-nums; }
+.war-board__limit progress { grid-column: 1 / -1; width: 100%; height: 7px; accent-color: #c9a266; }
+.war-board__divider { height: 1px; background: linear-gradient(90deg, transparent, #7e6242, transparent); }
+.war-board__rules { padding: 10px 12px; border: 1px solid rgb(189 152 95 / 25%); border-radius: 10px; color: #bfb19d; font-size: .77rem; line-height: 1.55; }
+.war-board__rules summary { min-height: 32px; color: #d9bd8d; cursor: pointer; font-weight: 700; }
+.war-board__rules p { margin: 9px 0 0; }
+@media (max-width: 360px) {
+  .war-board__balances { grid-template-columns: 1fr; }
 }
 </style>
