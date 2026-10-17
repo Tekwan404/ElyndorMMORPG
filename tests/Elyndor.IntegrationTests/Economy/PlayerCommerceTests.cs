@@ -423,6 +423,10 @@ public sealed class PlayerCommerceTests(PostgresFixture postgres) : IAsyncLifeti
         Guid item = await Item(seller);
         var lot = await Listing(seller, item);
         await using (var db = postgres.CreateDbContext())
+        {
+            Assert.Equal(sellerRace, (await db.AuctionListings.SingleAsync()).SellerRaceId);
+        }
+        await using (var db = postgres.CreateDbContext())
             if (!insufficientFunds) await db.CharacterItems.IgnoreQueryFilters().Where(x => x.Id == item)
                 .ExecuteUpdateAsync(s => s.SetProperty(x => x.CharacterId, buyer.Character));
         Assert.False((await Buy(buyer, lot.Id)).Succeeded);
