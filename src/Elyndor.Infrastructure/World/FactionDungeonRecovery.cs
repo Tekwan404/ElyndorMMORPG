@@ -38,9 +38,11 @@ internal static class FactionDungeonRecovery
                     && content.Indexes.LocationsById.TryGetValue(current.EntryLocationId, out var currentEntry)
                     && WorldLocationAccess.CanEnter(currentEntry, raceId)) continue;
                 if (run.Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active)) return false;
-                string targetId = raceId == "UNDEAD" ? "UNDEAD_" + run.DungeonId
-                    : run.DungeonId.StartsWith("UNDEAD_", StringComparison.Ordinal) ? run.DungeonId[7..] : run.DungeonId;
-                if (!content.Indexes.DungeonsById.TryGetValue(targetId, out var target))
+                string? targetId = content.Indexes.DungeonsById.TryGetValue(run.DungeonId, out var mapped)
+                    ? mapped.FactionCounterpartId : null;
+                if (targetId is null || !content.Indexes.DungeonsById.TryGetValue(targetId, out var target)
+                    || !content.Indexes.LocationsById.TryGetValue(target.EntryLocationId, out var targetEntry)
+                    || !WorldLocationAccess.CanEnter(targetEntry, raceId))
                 {
                     logger?.LogWarning(
                         "Leaving incompatible dungeon run {RunId} for character {CharacterId}: counterpart {TargetDungeonId} missing.",
