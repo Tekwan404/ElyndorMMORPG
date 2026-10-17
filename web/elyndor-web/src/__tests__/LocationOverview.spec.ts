@@ -180,6 +180,30 @@ describe('LocationOverview', () => {
     expect(residents.element.open).toBe(true)
     expect(loot.element.open).toBe(false)
   })
+  it('renders the server-marked contested area without suggesting combat is available', async () => {
+    const session = prepareLocation('world-pvp-contested')
+    session.snapshot!.world!.currentLocation.id = 'DEAD_REACHES'
+    session.snapshot!.world!.currentLocation.isWorldPvpZone = true
+    vi.spyOn(apiClient, 'request').mockResolvedValue([])
+    const wrapper = mount(LocationOverview, { props: { interactive: true } })
+    await flushPromises()
+
+    expect(wrapper.get('[data-world-pvp-zone]').text()).toContain('Спорная территория')
+    expect(wrapper.get('[data-world-pvp-zone]').text()).toContain('Нападения на игроков пока недоступны')
+    wrapper.unmount()
+  })
+
+  it('never infers an active PvP zone from the location name alone', async () => {
+    const session = prepareLocation('world-pvp-safe')
+    session.snapshot!.world!.currentLocation.id = 'DEAD_REACHES'
+    session.snapshot!.world!.currentLocation.isWorldPvpZone = false
+    vi.spyOn(apiClient, 'request').mockResolvedValue([])
+    const wrapper = mount(LocationOverview)
+    await flushPromises()
+
+    expect(wrapper.find('[data-world-pvp-zone]').exists()).toBe(false)
+    wrapper.unmount()
+  })
 })
 
 function prepareLocation(contentVersion: string) {
