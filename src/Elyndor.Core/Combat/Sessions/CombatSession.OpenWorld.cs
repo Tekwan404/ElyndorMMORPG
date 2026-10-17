@@ -4,6 +4,7 @@ using Elyndor.Core.Combat.Participants;
 using Elyndor.Core.Combat.Targeting;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Pvp;
+using Elyndor.Core.Characters;
 
 namespace Elyndor.Core.Combat.Sessions;
 
@@ -94,7 +95,7 @@ public sealed partial class CombatSession
     {
         errorCode = CombatErrorCodes.CommandRejected;
         if (!IsOpenWorldPvp || definition.Participant.Kind != CombatActorKind.Player
-            || definition.Participant.RaceId is not ("HUMAN" or "UNDEAD")
+            || definition.Participant.RaceId is not (RaceIds.Human or RaceIds.Undead)
             || definition.Participant.Actor.IsDead || definition.AccountId == Guid.Empty)
             return false;
         AdvanceTo(now);
@@ -107,6 +108,18 @@ public sealed partial class CombatSession
         }
         ValidateAutoAttack(definition.Participant.AutoAttack);
         if (definition.Participant.OffHandAutoAttack is { } offHand) ValidateAutoAttack(offHand);
+        // Resolve an actual living hostile target before mutating the participant roster.
+        var initialTarget = _enemies.FirstOrDefault(enemy => !enemy.Actor.IsDead && enemy.Actor.IsTargetable(now))
+            ?? _playerStatesByActorId.Values
+                .Where(state => state.Definition.RaceId != definition.Participant.RaceId
+                    && !state.Definition.Actor.IsDead
+                    && _participantRoster.GetStatus(state.Definition.Actor.ActorId) == CombatParticipantStatus.Active)
+                .Select(state => state.Definition).FirstOrDefault();
+        if (initialTarget is null)
+        {
+            errorCode = CombatErrorCodes.InvalidTarget;
+            return false;
+        }
         if (_combatTargetsById.ContainsKey(id) || !_participantRoster.TryAdd(new(definition.AccountId, id, id), now))
         {
             errorCode = "world_pvp_combat_full";
@@ -140,7 +153,7 @@ public sealed partial class CombatSession
         }
         foreach (var monster in _enemies)
             if (!monster.Actor.IsDead) _enemyThreatTables[monster.Actor.ActorId].AddThreat(id, 1);
-        state.SelectedTargetActorId = HostileParticipants(id).First(target => !target.Actor.IsDead).Actor.ActorId;
+        state.SelectedTargetActorId = initialTarget.Actor.ActorId;
         _setPassiveRuntime.RegisterParticipant(id, definition.Participant.EquippedSetPieces
             ?? new Dictionary<string, int>());
         _itemSpecialEffectLoadoutSnapshot = _itemSpecialEffectLoadoutSnapshot
