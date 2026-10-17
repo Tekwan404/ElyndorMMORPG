@@ -17,6 +17,11 @@ const developmentRoutes: RouteRecordRaw[] = import.meta.env.DEV
         name: 'battle-screen-preview',
         component: () => import('@/game/combat/views/BattleScreenPreview.vue'),
       },
+      {
+        path: '/dev/world-pvp',
+        name: 'world-pvp-preview',
+        component: () => import('@/game/worldPvp/WorldPvpPreview.vue'),
+      },
     ]
   : []
 
