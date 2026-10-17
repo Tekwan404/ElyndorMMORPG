@@ -15,6 +15,7 @@ const messages: Record<string, string> = {
   party_already_in_party: 'Персонаж уже состоит в группе.',
   party_invite_expired: 'Срок приглашения истёк. Попросите лидера отправить новое.',
   party_target_not_friend: 'Сначала добавьте персонажа в друзья.',
+  party_faction_restricted: 'В группу можно пригласить только свою фракцию.',
   party_not_found: 'Группа больше не существует.',
   dungeon_party_required: 'Сначала создайте группу.',
   dungeon_not_leader: 'Забег запускает лидер группы.',

@@ -165,7 +165,8 @@ public static class PartyEndpoints
             PartyErrorCodes.CharacterNotFound
             or PartyErrorCodes.PartyNotFound
             or PartyErrorCodes.InviteNotFound => StatusCodes.Status404NotFound,
-            PartyErrorCodes.NotLeader => StatusCodes.Status403Forbidden,
+            PartyErrorCodes.NotLeader
+            or PartyErrorCodes.FactionRestricted => StatusCodes.Status403Forbidden,
             PartyErrorCodes.AlreadyInParty
             or PartyErrorCodes.PartyFull
             or PartyErrorCodes.InviteExpired

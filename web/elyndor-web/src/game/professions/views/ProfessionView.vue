@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isTown } from '@/game/world/undeadHomeland'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 
 import { ApiRequestError } from '@/api/apiClient'
@@ -303,7 +304,7 @@ function ingredientOwned(itemId: string): number {
 
 function locationLabel(id: string | null): string {
   if (!id) return 'без ограничения'
-  if (id === 'STARTER_TOWN') return 'Городская мастерская'
+  if (isTown(id)) return 'Городская мастерская'
   return locationPresentation(id).label
 }
 
@@ -652,7 +653,7 @@ onMounted(load)
               !selectedItem ||
               !['Common', 'Uncommon'].includes(selectedItem.rarity) ||
               pendingKey !== null ||
-              currentLocationId !== 'STARTER_TOWN'
+              !isTown(currentLocationId)
             "
             @click="confirmDisenchant = true"
             >Распылить предмет</UIButton
@@ -697,7 +698,7 @@ onMounted(load)
               !enchantment.slots.includes(selectedItem.slot ?? '') ||
               ingredientOwned(enchantment.scrollItemId) < 1 ||
               pendingKey !== null ||
-              currentLocationId !== 'STARTER_TOWN'
+              !isTown(currentLocationId)
             "
             @click="applyEnchantment(enchantment.id)"
             >Наложить чары</UIButton
@@ -746,10 +747,10 @@ onMounted(load)
         </header>
         <p
           class="profession-workshop"
-          :class="{ 'profession-workshop--ready': currentLocationId === 'STARTER_TOWN' }"
+          :class="{ 'profession-workshop--ready': isTown(currentLocationId) }"
         >
           {{
-            currentLocationId === 'STARTER_TOWN'
+            isTown(currentLocationId)
               ? 'Мастерская доступна — можно создавать предметы.'
               : 'Для создания предметов нужна городская мастерская.'
           }}

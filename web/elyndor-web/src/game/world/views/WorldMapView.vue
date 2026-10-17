@@ -4,11 +4,17 @@ import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { apiClient } from '@/api/apiClient'
 import type { WorldLocation } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
+import undeadMapArt from '@/assets/world/undead-homeland-map.webp'
 import { useDungeonStore } from '@/game/party/dungeonStore'
 import { socialErrorMessage } from '@/game/social/socialPresentation'
-import { locationKind, locationLabel, locationPresentation } from '@/game/world/locationPresentation'
+import {
+  locationKind,
+  locationLabel,
+  locationPresentation,
+} from '@/game/world/locationPresentation'
 import {
   BORDERLANDS_MAP_ID,
+  DEAD_KINGDOMS_MAP_ID,
   OUTER_REACHES_MAP_ID,
   worldMapPosition,
 } from '@/game/world/worldMapLayout'
@@ -30,6 +36,7 @@ const catalogError = ref(false)
 
 const mapOptions = [
   { id: BORDERLANDS_MAP_ID, label: 'Пограничные земли', eyebrow: 'ПОГРАНИЧНЫЕ ЗЕМЛИ' },
+  { id: DEAD_KINGDOMS_MAP_ID, label: 'Земли мёртвых', eyebrow: 'ЗЕМЛИ МЁРТВЫХ' },
   { id: OUTER_REACHES_MAP_ID, label: 'Дальние земли', eyebrow: 'ДАЛЬНИЕ ЗЕМЛИ' },
 ] as const
 
@@ -45,7 +52,7 @@ const currentMapId = computed(() => locationMapId(world.value?.currentLocation))
 const characterLevel = computed(() => session.snapshot?.character?.level ?? 1)
 const contracts = computed(() => world.value?.contracts ?? [])
 const reachableLocationIds = computed(
-  () => new Set(world.value?.outgoingTransitions.map(location => location.id) ?? []),
+  () => new Set(world.value?.outgoingTransitions.map((location) => location.id) ?? []),
 )
 const allVisibleLocations = computed(() => {
   const byId = new Map<string, WorldLocation>()
@@ -54,67 +61,86 @@ const allVisibleLocations = computed(() => {
     byId.set(world.value.currentLocation.id, world.value.currentLocation)
     for (const location of world.value.outgoingTransitions) byId.set(location.id, location)
   }
-  return [...byId.values()].sort((left, right) =>
-    left.recommendedLevel - right.recommendedLevel
-      || left.displayName.localeCompare(right.displayName),
+  return [...byId.values()].sort(
+    (left, right) =>
+      left.recommendedLevel - right.recommendedLevel ||
+      left.displayName.localeCompare(right.displayName),
   )
 })
-const availableMaps = computed(() => mapOptions)
-const activeMap = computed(() =>
-  mapOptions.find(map => map.id === selectedMapId.value) ?? mapOptions[0]!,
+const availableMaps = computed(() =>
+  mapOptions.filter(
+    (map) =>
+      map.id === OUTER_REACHES_MAP_ID ||
+      map.id ===
+        (session.snapshot?.character?.raceId === 'UNDEAD'
+          ? DEAD_KINGDOMS_MAP_ID
+          : BORDERLANDS_MAP_ID),
+  ),
+)
+const activeMap = computed(
+  () => mapOptions.find((map) => map.id === selectedMapId.value) ?? mapOptions[0]!,
 )
 const visibleLocations = computed(() =>
-  allVisibleLocations.value.filter(location => locationMapId(location) === selectedMapId.value),
+  allVisibleLocations.value.filter((location) => locationMapId(location) === selectedMapId.value),
 )
-const selectedLocation = computed(() =>
-  visibleLocations.value.find(location => location.id === selectedLocationId.value)
-  ?? (locationMapId(world.value?.currentLocation) === selectedMapId.value
-    ? world.value?.currentLocation
-    : null)
-  ?? visibleLocations.value[0]
-  ?? null,
+const selectedLocation = computed(
+  () =>
+    visibleLocations.value.find((location) => location.id === selectedLocationId.value) ??
+    (locationMapId(world.value?.currentLocation) === selectedMapId.value
+      ? world.value?.currentLocation
+      : null) ??
+    visibleLocations.value[0] ??
+    null,
 )
-const selectedIsDungeon = computed(() =>
-  locationKind(selectedLocation.value?.id) === 'dungeon',
+const selectedIsDungeon = computed(() => locationKind(selectedLocation.value?.id) === 'dungeon')
+const selectedDungeonPreview = computed(() =>
+  selectedIsDungeon.value
+    ? (dungeon.previews.find((item) => item.id === selectedLocation.value?.id) ?? null)
+    : null,
 )
-const selectedDungeonPreview = computed(() => selectedIsDungeon.value
-  ? dungeon.previews.find(item => item.id === selectedLocation.value?.id) ?? null
-  : null)
 const selectedDungeonId = computed(() =>
-  selectedIsDungeon.value ? selectedLocation.value?.id ?? null : null,
+  selectedIsDungeon.value ? (selectedLocation.value?.id ?? null) : null,
 )
-const selectedDungeonMinimumLevel = computed(() =>
-  selectedDungeonPreview.value?.minimumLevel ?? selectedLocation.value?.minimumLevel ?? 1,
+const selectedDungeonMinimumLevel = computed(
+  () => selectedDungeonPreview.value?.minimumLevel ?? selectedLocation.value?.minimumLevel ?? 1,
 )
-const selectedIsCurrent = computed(
-  () => selectedLocation.value?.id === currentLocationId.value,
-)
-const selectedIsReachable = computed(
-  () => !isTravelling.value && selectedLocation.value
+const selectedIsCurrent = computed(() => selectedLocation.value?.id === currentLocationId.value)
+const selectedIsReachable = computed(() =>
+  !isTravelling.value && selectedLocation.value
     ? reachableLocationIds.value.has(selectedLocation.value.id)
     : false,
 )
 function locationArt(locationId: string | null | undefined): string {
   return locationPresentation(
     locationId,
-    allVisibleLocations.value.find(location => location.id === locationId)?.displayName,
+    allVisibleLocations.value.find((location) => location.id === locationId)?.displayName,
   ).art
 }
 
 const mapArt = computed(() =>
-  selectedMapId.value === OUTER_REACHES_MAP_ID
-    ? gameArt.world.outerReachesMap
-    : gameArt.world.worldMap,
+  selectedMapId.value === DEAD_KINGDOMS_MAP_ID
+    ? undeadMapArt
+    : selectedMapId.value === OUTER_REACHES_MAP_ID
+      ? gameArt.world.outerReachesMap
+      : gameArt.world.worldMap,
 )
 const mapAspectRatio = computed(() =>
-  selectedMapId.value === OUTER_REACHES_MAP_ID ? '280 / 498' : '1055 / 1491',
+  selectedMapId.value === DEAD_KINGDOMS_MAP_ID
+    ? '941 / 1672'
+    : selectedMapId.value === OUTER_REACHES_MAP_ID
+      ? '280 / 498'
+      : '1055 / 1491',
 )
 const mapViewportRatio = computed(() =>
-  selectedMapId.value === OUTER_REACHES_MAP_ID ? '0.562' : '0.707',
+  selectedMapId.value === DEAD_KINGDOMS_MAP_ID
+    ? '0.563'
+    : selectedMapId.value === OUTER_REACHES_MAP_ID
+      ? '0.562'
+      : '0.707',
 )
 const selectedArt = computed(() => locationArt(selectedLocation.value?.id))
-const activeContract = computed(() =>
-  contracts.value.find(contract => contract.status === 'ACTIVE') ?? null,
+const activeContract = computed(
+  () => contracts.value.find((contract) => contract.status === 'ACTIVE') ?? null,
 )
 const selectedDangerLabel = computed(() => {
   if (selectedLocation.value) {
@@ -129,15 +155,18 @@ const selectedDangerLabel = computed(() => {
 })
 const routeLines = computed(() => {
   const currentLocation = visibleLocations.value.find(
-    location => location.id === currentLocationId.value,
+    (location) => location.id === currentLocationId.value,
   )
   if (!currentLocation) return []
 
   const current = nodePosition(currentLocation.id, visibleLocations.value.indexOf(currentLocation))
   return visibleLocations.value
-    .map(location => ({ location, target: nodePosition(location.id, visibleLocations.value.indexOf(location)) }))
-    .filter(entry => reachableLocationIds.value.has(entry.location.id))
-    .map(entry => {
+    .map((location) => ({
+      location,
+      target: nodePosition(location.id, visibleLocations.value.indexOf(location)),
+    }))
+    .filter((entry) => reachableLocationIds.value.has(entry.location.id))
+    .map((entry) => {
       const midpointX = (current.x + entry.target.x) / 2
       return {
         id: entry.location.id,
@@ -163,14 +192,17 @@ async function loadLocations(): Promise<void> {
 }
 
 function selectMap(mapId: string): void {
-  if (!availableMaps.value.some(map => map.id === mapId)) return
+  if (!availableMaps.value.some((map) => map.id === mapId)) return
   selectedMapId.value = mapId
   const current = world.value?.currentLocation
-  const next = locationMapId(current) === mapId
-    ? current
-    : (world.value?.outgoingTransitions ?? []).find(location => locationMapId(location) === mapId)
-      ?? allVisibleLocations.value.find(location => locationMapId(location) === mapId)
-      ?? null
+  const next =
+    locationMapId(current) === mapId
+      ? current
+      : ((world.value?.outgoingTransitions ?? []).find(
+          (location) => locationMapId(location) === mapId,
+        ) ??
+        allVisibleLocations.value.find((location) => locationMapId(location) === mapId) ??
+        null)
   selectedLocationId.value = next?.id ?? null
 }
 
@@ -189,7 +221,8 @@ function selectLocation(locationId: string): void {
 
 async function travel(): Promise<void> {
   const location = selectedLocation.value
-  if (isTravelling.value || !location || !selectedIsReachable.value || session.mutationPending) return
+  if (isTravelling.value || !location || !selectedIsReachable.value || session.mutationPending)
+    return
 
   await session.travel(location.id)
   if (!session.errorCode) {
@@ -199,7 +232,8 @@ async function travel(): Promise<void> {
 
 async function enterSelectedDungeon(): Promise<void> {
   const dungeonId = selectedDungeonId.value
-  if (!dungeonId || characterLevel.value < selectedDungeonMinimumLevel.value || isTravelling.value) return
+  if (!dungeonId || characterLevel.value < selectedDungeonMinimumLevel.value || isTravelling.value)
+    return
   if (await dungeon.teleport(dungeonId)) {
     await session.refreshSnapshot()
   }
@@ -209,7 +243,10 @@ function locationName(location: WorldLocation): string {
   return locationLabel(location)
 }
 
-function displayLocationName(locationId: string | null | undefined, fallback?: string | null): string {
+function displayLocationName(
+  locationId: string | null | undefined,
+  fallback?: string | null,
+): string {
   return locationPresentation(locationId, fallback).label
 }
 
@@ -231,7 +268,7 @@ function lockReason(location: WorldLocation): string | null {
     return `Требуется ${location.minimumLevel} уровень.`
   }
   if (location.requiredContractId) {
-    const contract = contracts.value.find(item => item.id === location.requiredContractId)
+    const contract = contracts.value.find((item) => item.id === location.requiredContractId)
     if (contract?.status !== 'COMPLETED') {
       return contract
         ? `Сначала выполните «${contract.displayName}».`
@@ -268,15 +305,19 @@ const mapCanvasStyle = computed(() => ({
   '--map-viewport-ratio': mapViewportRatio.value,
 }))
 
-watch(currentLocationId, locationId => {
-  const current = world.value?.currentLocation
-  if (!locationId || !current) return
-  selectedMapId.value = locationMapId(current)
-  selectedLocationId.value = locationId
-}, { immediate: true })
+watch(
+  currentLocationId,
+  (locationId) => {
+    const current = world.value?.currentLocation
+    if (!locationId || !current) return
+    selectedMapId.value = locationMapId(current)
+    selectedLocationId.value = locationId
+  },
+  { immediate: true },
+)
 
-watch(availableMaps, maps => {
-  if (!maps.some(map => map.id === selectedMapId.value)) {
+watch(availableMaps, (maps) => {
+  if (!maps.some((map) => map.id === selectedMapId.value)) {
     selectedMapId.value = currentMapId.value
     selectedLocationId.value = world.value?.currentLocation.id ?? null
   }
@@ -301,9 +342,9 @@ onMounted(() => {
           {{
             isTravelling
               ? displayLocationName(
-                activeTravel?.targetLocationId,
-                locations.find(item => item.id === activeTravel?.targetLocationId)?.displayName,
-              )
+                  activeTravel?.targetLocationId,
+                  locations.find((item) => item.id === activeTravel?.targetLocationId)?.displayName,
+                )
               : world.currentLocation
                 ? locationName(world.currentLocation)
                 : '—'
@@ -312,27 +353,18 @@ onMounted(() => {
       </div>
     </header>
 
-    <UIToast
-      v-if="activeTravel"
-      tone="info"
-      title="Герой в пути"
-      data-travel-status
-    >
+    <UIToast v-if="activeTravel" tone="info" title="Герой в пути" data-travel-status>
       Переход к
       {{
         displayLocationName(
           activeTravel?.targetLocationId,
-          locations.find(item => item.id === activeTravel?.targetLocationId)?.displayName,
+          locations.find((item) => item.id === activeTravel?.targetLocationId)?.displayName,
         )
       }}
       выполняется сервером. После прибытия карта обновится автоматически.
     </UIToast>
 
-    <UIToast
-      v-if="catalogError"
-      tone="warning"
-      title="Карта загружена частично"
-    >
+    <UIToast v-if="catalogError" tone="warning" title="Карта загружена частично">
       Полный каталог мира недоступен. Показаны текущая локация и доступные переходы.
     </UIToast>
 
@@ -377,17 +409,8 @@ onMounted(() => {
           <strong>{{ activeMap.label }}</strong>
         </div>
 
-        <svg
-          class="map-routes"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <path
-            v-for="route in routeLines"
-            :key="route.id"
-            :d="route.path"
-          />
+        <svg class="map-routes" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <path v-for="route in routeLines" :key="route.id" :d="route.path" />
         </svg>
 
         <button
@@ -404,71 +427,87 @@ onMounted(() => {
           @click="selectLocation(location.id)"
         >
           <span class="map-node__pulse" />
-          <span class="map-node__marker" :data-location-kind="locationKind(location.id) === 'dungeon' ? 'dungeon' : 'normal'">
+          <span
+            class="map-node__marker"
+            :data-location-kind="locationKind(location.id) === 'dungeon' ? 'dungeon' : 'normal'"
+          >
             <span class="map-node__index">{{ locationIndex(index) }}</span>
           </span>
         </button>
-
       </section>
 
-        <section
-          v-if="selectedLocation"
-          ref="selectedLocationElement"
-          class="map-selection"
-          :data-kind="selectedIsDungeon ? 'dungeon' : 'location'"
-          data-map-selection
-          data-map-preview
-          aria-label="Выбранная локация"
-        >
-          <div
-            class="map-selection__art"
-            :style="{ backgroundImage: selectedArt ? `url(${selectedArt})` : 'none' }"
-            aria-hidden="true"
-          />
-          <div class="map-selection__copy">
-            <div class="map-selection__eyebrow">
-              <small>{{ selectedIsDungeon ? 'ПОДЗЕМЕЛЬЕ' : 'ВЫБРАННАЯ ТОЧКА' }}</small>
-              <span>{{ selectedDangerLabel }} · {{ levelRangeLabel(selectedLocation) }}</span>
-            </div>
-            <strong>{{ locationName(selectedLocation) }}</strong>
-            <p>{{ selectedLocation.description || 'Описание этой области пока не заполнено.' }}</p>
-            <em v-if="lockReason(selectedLocation) && !selectedIsDungeon" class="map-selection__lock">
-              {{ lockReason(selectedLocation) }}
-            </em>
-            <em v-if="selectedIsDungeon && dungeon.errorCode" class="map-selection__lock" role="alert">
-              {{ socialErrorMessage(dungeon.errorCode) }}
-            </em>
+      <section
+        v-if="selectedLocation"
+        ref="selectedLocationElement"
+        class="map-selection"
+        :data-kind="selectedIsDungeon ? 'dungeon' : 'location'"
+        data-map-selection
+        data-map-preview
+        aria-label="Выбранная локация"
+      >
+        <div
+          class="map-selection__art"
+          :style="{ backgroundImage: selectedArt ? `url(${selectedArt})` : 'none' }"
+          aria-hidden="true"
+        />
+        <div class="map-selection__copy">
+          <div class="map-selection__eyebrow">
+            <small>{{ selectedIsDungeon ? 'ПОДЗЕМЕЛЬЕ' : 'ВЫБРАННАЯ ТОЧКА' }}</small>
+            <span>{{ selectedDangerLabel }} · {{ levelRangeLabel(selectedLocation) }}</span>
           </div>
-          <div class="map-selection__actions">
-            <UIButton
-              v-if="selectedIsCurrent"
-              data-map-open-location
-              data-open-location
-              @click="emit('open-location')"
-            >
-              {{ selectedIsDungeon ? 'Войти в подземелье' : 'Осмотреть локацию' }}
-            </UIButton>
-            <UIButton
-              v-else-if="selectedIsDungeon"
-              data-dungeon-map-entry
-              :disabled="characterLevel < selectedDungeonMinimumLevel || isTravelling"
-              :loading="dungeon.teleporting"
-              @click="enterSelectedDungeon"
-            >
-              {{ characterLevel < selectedDungeonMinimumLevel ? `Нужен ${selectedDungeonMinimumLevel} ур.` : 'Телепорт ко входу' }}
-            </UIButton>
-            <UIButton
-              v-else
-              data-map-travel
-              data-map-travel-inline
-              :disabled="isTravelling || !selectedIsReachable"
-              :loading="session.mutationPending"
-              @click="travel"
-            >
-              {{ isTravelling ? 'Переход выполняется' : selectedIsReachable ? 'Начать переход' : 'Маршрут закрыт' }}
-            </UIButton>
-          </div>
-        </section>
+          <strong>{{ locationName(selectedLocation) }}</strong>
+          <p>{{ selectedLocation.description || 'Описание этой области пока не заполнено.' }}</p>
+          <em v-if="lockReason(selectedLocation) && !selectedIsDungeon" class="map-selection__lock">
+            {{ lockReason(selectedLocation) }}
+          </em>
+          <em
+            v-if="selectedIsDungeon && dungeon.errorCode"
+            class="map-selection__lock"
+            role="alert"
+          >
+            {{ socialErrorMessage(dungeon.errorCode) }}
+          </em>
+        </div>
+        <div class="map-selection__actions">
+          <UIButton
+            v-if="selectedIsCurrent"
+            data-map-open-location
+            data-open-location
+            @click="emit('open-location')"
+          >
+            {{ selectedIsDungeon ? 'Войти в подземелье' : 'Осмотреть локацию' }}
+          </UIButton>
+          <UIButton
+            v-else-if="selectedIsDungeon"
+            data-dungeon-map-entry
+            :disabled="characterLevel < selectedDungeonMinimumLevel || isTravelling"
+            :loading="dungeon.teleporting"
+            @click="enterSelectedDungeon"
+          >
+            {{
+              characterLevel < selectedDungeonMinimumLevel
+                ? `Нужен ${selectedDungeonMinimumLevel} ур.`
+                : 'Телепорт ко входу'
+            }}
+          </UIButton>
+          <UIButton
+            v-else
+            data-map-travel
+            data-map-travel-inline
+            :disabled="isTravelling || !selectedIsReachable"
+            :loading="session.mutationPending"
+            @click="travel"
+          >
+            {{
+              isTravelling
+                ? 'Переход выполняется'
+                : selectedIsReachable
+                  ? 'Начать переход'
+                  : 'Маршрут закрыт'
+            }}
+          </UIButton>
+        </div>
+      </section>
 
       <div class="map-legend" aria-label="Легенда карты">
         <span><i data-state="current" /> Вы здесь</span>
@@ -476,7 +515,11 @@ onMounted(() => {
         <span><i data-state="locked" /> Нет прямого пути</span>
       </div>
 
-      <section class="map-location-index" data-location-index aria-label="Список локаций по номерам карты">
+      <section
+        class="map-location-index"
+        data-location-index
+        aria-label="Список локаций по номерам карты"
+      >
         <header class="map-location-index__header">
           <div>
             <small>ТОЧКИ НА КАРТЕ</small>
@@ -512,9 +555,16 @@ onMounted(() => {
           <strong>{{ activeContract.displayName }}</strong>
           <p>{{ activeContract.description }}</p>
         </div>
-        <span>Открывает: {{ displayLocationName(activeContract.unlockLocationId, locations.find(item => item.id === activeContract?.unlockLocationId)?.displayName) }}</span>
+        <span
+          >Открывает:
+          {{
+            displayLocationName(
+              activeContract.unlockLocationId,
+              locations.find((item) => item.id === activeContract?.unlockLocationId)?.displayName,
+            )
+          }}</span
+        >
       </UICard>
-
     </template>
   </section>
 </template>
@@ -570,9 +620,9 @@ onMounted(() => {
 
 .world-map__header small {
   color: #aaa3ff;
-  font-size: .62rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: .1em;
+  letter-spacing: 0.1em;
 }
 
 .world-map__header h1,
@@ -606,7 +656,7 @@ onMounted(() => {
   color: var(--ui-color-text-muted);
   font-size: var(--ui-font-size-xs);
   font-weight: 700;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -635,11 +685,12 @@ onMounted(() => {
   background-image:
     radial-gradient(circle at 72% 18%, rgb(123 104 164 / 12%), transparent 24%),
     radial-gradient(circle at 22% 78%, rgb(116 80 46 / 12%), transparent 28%),
-    linear-gradient(180deg, rgb(5 8 14 / 9%), transparent 18% 85%, rgb(5 8 14 / 8%)),
-    var(--map-art);
+    linear-gradient(180deg, rgb(5 8 14 / 9%), transparent 18% 85%, rgb(5 8 14 / 8%)), var(--map-art);
   background-position: center;
   background-size: 100% 100%;
-  box-shadow: var(--ui-shadow-inset), 0 18px 46px rgb(0 0 0 / 28%);
+  box-shadow:
+    var(--ui-shadow-inset),
+    0 18px 46px rgb(0 0 0 / 28%);
   isolation: isolate;
 }
 
@@ -682,12 +733,12 @@ onMounted(() => {
   color: #aaa3ff;
   font-size: var(--ui-font-size-xs);
   font-weight: 800;
-  letter-spacing: .1em;
+  letter-spacing: 0.1em;
 }
 
 .map-canvas__caption strong {
   font-family: var(--ui-font-display);
-  font-size: .72rem;
+  font-size: 0.72rem;
 }
 
 .map-routes {
@@ -746,12 +797,12 @@ onMounted(() => {
   border: 1px solid rgb(120 127 154 / 52%);
   border-radius: 50%;
   background: linear-gradient(180deg, rgb(30 35 49 / 96%), rgb(9 13 22 / 98%));
-  box-shadow: 0 .35rem .9rem rgb(0 0 0 / 42%);
+  box-shadow: 0 0.35rem 0.9rem rgb(0 0 0 / 42%);
 }
 
 .map-node__index {
   color: #d6d9e4;
-  font-size: .58rem;
+  font-size: 0.58rem;
   font-weight: 900;
   line-height: 1;
   text-shadow: 0 1px 4px #05070b;
@@ -767,7 +818,9 @@ onMounted(() => {
 
 .map-node[data-state='current'] .map-node__marker {
   border-color: rgb(92 211 168 / 78%);
-  box-shadow: 0 0 0 3px rgb(79 185 150 / 10%), 0 .35rem .9rem rgb(0 0 0 / 42%);
+  box-shadow:
+    0 0 0 3px rgb(79 185 150 / 10%),
+    0 0.35rem 0.9rem rgb(0 0 0 / 42%);
 }
 
 .map-node[data-state='current'] .map-node__index {
@@ -794,7 +847,7 @@ onMounted(() => {
 }
 
 .map-node[data-state='locked'] {
-  opacity: .55;
+  opacity: 0.55;
 }
 
 .map-node--selected .map-node__label {
@@ -819,9 +872,7 @@ onMounted(() => {
 
 .map-selection[data-kind='dungeon'] {
   border-color: rgb(224 188 100 / 48%);
-  background:
-    linear-gradient(110deg, rgb(91 66 27 / 22%), transparent 52%),
-    rgb(5 8 14 / 92%);
+  background: linear-gradient(110deg, rgb(91 66 27 / 22%), transparent 52%), rgb(5 8 14 / 92%);
 }
 
 .map-selection__art {
@@ -850,7 +901,7 @@ onMounted(() => {
   color: #aaa3ff;
   font-size: var(--ui-font-size-xs);
   font-weight: 800;
-  letter-spacing: .1em;
+  letter-spacing: 0.1em;
 }
 
 .map-selection[data-kind='dungeon'] small {
@@ -865,7 +916,7 @@ onMounted(() => {
 .map-selection strong {
   overflow: hidden;
   font-family: var(--ui-font-display);
-  font-size: .95rem;
+  font-size: 0.95rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -912,9 +963,9 @@ onMounted(() => {
 
 .contract-card small {
   color: var(--ui-color-gold);
-  font-size: .56rem;
+  font-size: 0.56rem;
   font-weight: 800;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
 }
 
 .contract-card strong {
@@ -989,7 +1040,7 @@ onMounted(() => {
   color: #aaa3ff;
   font-size: var(--ui-font-size-xs);
   font-weight: 800;
-  letter-spacing: .1em;
+  letter-spacing: 0.1em;
 }
 
 .map-location-index__header span {
@@ -1043,7 +1094,7 @@ onMounted(() => {
   border: 1px solid rgb(170 163 255 / 42%);
   border-radius: 50%;
   color: #d8d4ff;
-  font-size: .66rem;
+  font-size: 0.66rem;
 }
 
 .map-location-index__copy {
@@ -1061,7 +1112,7 @@ onMounted(() => {
 
 .map-location-index__copy small {
   color: var(--ui-color-text-muted);
-  font-size: .62rem;
+  font-size: 0.62rem;
 }
 
 .map-location-index__state {
@@ -1083,8 +1134,8 @@ onMounted(() => {
 
 @keyframes map-pulse {
   from {
-    opacity: .65;
-    transform: scale(.7);
+    opacity: 0.65;
+    transform: scale(0.7);
   }
   to {
     opacity: 0;
@@ -1129,6 +1180,5 @@ onMounted(() => {
   .map-selection p {
     -webkit-line-clamp: 1;
   }
-
 }
 </style>

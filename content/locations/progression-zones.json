@@ -16,7 +16,8 @@
       "maximumLevel": 60,
       "requiredContractId": null,
       "artId": "starter-town",
-      "description": "Безопасный город искателей приключений. Здесь можно восстановиться, подготовиться и отправиться на охоту."
+      "description": "Безопасный город искателей приключений. Здесь можно восстановиться, подготовиться и отправиться на охоту.",
+      "requiredRaceId": "HUMAN"
     },
     {
       "id": "WHISPERING_FOREST",
@@ -54,7 +55,8 @@
       "requiredContractId": null,
       "artId": "whispering-forest",
       "description": "Первые опасные тропы за городскими стенами. Здесь водятся волки, кабаны и гигантские пауки.",
-      "allowAfk": true
+      "allowAfk": true,
+      "requiredRaceId": "HUMAN"
     },
     {
       "id": "DEEP_FOREST",
@@ -97,7 +99,8 @@
       "requiredContractId": null,
       "artId": "whispering-forest",
       "description": "Тёмная часть леса, где хищники стали опаснее, а на тропах появились гоблины.",
-      "allowAfk": true
+      "allowAfk": true,
+      "requiredRaceId": "HUMAN"
     },
     {
       "id": "ANCIENT_MINE",
@@ -113,7 +116,8 @@
       "requiredContractId": null,
       "artId": "ancient-ruins",
       "description": "Вход в Древнюю шахту. В глубинах скрываются сильные противники и ценные трофеи.",
-      "travelDurationSeconds": 0
+      "travelDurationSeconds": 0,
+      "requiredRaceId": "HUMAN"
     },
     {
       "id": "BROODMOTHER_LAIR",
@@ -134,7 +138,8 @@
       "maximumLevel": 14,
       "requiredContractId": null,
       "artId": "ancient-ruins",
-      "description": "Логово древней паучьей Прародительницы. Победа над ней откроет путь дальше."
+      "description": "Логово древней паучьей Прародительницы. Победа над ней откроет путь дальше.",
+      "requiredRaceId": "HUMAN"
     },
     {
       "id": "BLIGHTED_GROVE",
@@ -177,7 +182,8 @@
       "requiredContractId": null,
       "artId": "caravan-road",
       "description": "Заражённая чаща за логовом Прародительницы. Локация доступна для исследования независимо от выполнения контрактов.",
-      "allowAfk": true
+      "allowAfk": true,
+      "requiredRaceId": "HUMAN"
     },
     {
       "id": "ECLIPSED_CITADEL",
@@ -193,7 +199,8 @@
       "requiredContractId": null,
       "artId": "ancient-ruins",
       "description": "Вход в Цитадель Затмения. За её стенами ждут опасные враги, легендарные комплекты и именное оружие.",
-      "travelDurationSeconds": 0
+      "travelDurationSeconds": 0,
+      "requiredRaceId": "HUMAN"
     },
     {
       "id": "SHATTERED_ORDER_CITADEL_TEST",
@@ -209,7 +216,8 @@
       "requiredContractId": null,
       "artId": "ancient-ruins",
       "description": "Подземелье 25 уровня в покинутой башне астромантов. Веллариус собирает силу погасших светил, а четыре хранителя обсерватории стерегут звёздное снаряжение.",
-      "travelDurationSeconds": 0
+      "travelDurationSeconds": 0,
+      "requiredRaceId": "HUMAN"
     }
   ]
 }

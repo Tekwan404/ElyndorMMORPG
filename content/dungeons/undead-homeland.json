@@ -1,0 +1,413 @@
+{
+  "contentVersion": "0.61.0",
+  "publishedAtUtc": "2026-10-16T00:00:00+00:00",
+  "dungeons": [
+    {
+      "id": "UNDEAD_ANCIENT_MINE",
+      "displayName": "Шахта Погребённых",
+      "description": "Шахта Погребённых для группы 1–5 игроков 14–16 уровня. Пять последовательных столкновений, редкие и эпические предметы по пути и очень редкие легендарные трофеи с Прародительницы Глубин.",
+      "minimumLevel": 14,
+      "maximumLevel": 16,
+      "entryLocationId": "UNDEAD_ANCIENT_MINE",
+      "minimumPartySize": 1,
+      "maximumPartySize": 5,
+      "encounters": [
+        {
+          "id": "MINE_GUARDIAN_1",
+          "monsterId": "ANCIENT_MINE_WOLF_L15",
+          "checkpointId": "MINE_ENTRANCE"
+        },
+        {
+          "id": "MINE_GUARDIAN_2",
+          "monsterId": "ANCIENT_MINE_BOAR_L15",
+          "checkpointId": "OLD_LIFT"
+        },
+        {
+          "id": "MINE_GUARDIAN_3",
+          "monsterId": "ANCIENT_MINE_SPIDER_L16",
+          "checkpointId": "CRYSTAL_GALLERY"
+        },
+        {
+          "id": "MINE_GUARDIAN_4",
+          "monsterId": "ANCIENT_MINE_GOBLIN_L16",
+          "checkpointId": "LOWER_SHAFT"
+        },
+        {
+          "id": "MINE_BOSS",
+          "monsterId": "ANCIENT_MINE_BROODMOTHER_L16",
+          "checkpointId": "ANCIENT_HEART",
+          "isBoss": true
+        }
+      ]
+    },
+    {
+      "id": "UNDEAD_ECLIPSED_CITADEL",
+      "displayName": "Цитадель Безмолвия",
+      "description": "Эндгейм-подземелье 25 уровня. Четыре элитных стража и Архонт Погасшей Звезды охраняют легендарные комплекты Чёрного Бастиона, Затмённого Оракула и Чёрного Созвездия.",
+      "minimumLevel": 25,
+      "maximumLevel": 25,
+      "entryLocationId": "UNDEAD_ECLIPSED_CITADEL",
+      "minimumPartySize": 1,
+      "maximumPartySize": 5,
+      "encounters": [
+        {
+          "id": "CITADEL_WARDEN_1",
+          "monsterId": "ECLIPSED_CITADEL_SENTINEL_L25",
+          "checkpointId": "OUTER_SEAL"
+        },
+        {
+          "id": "CITADEL_WARDEN_2",
+          "monsterId": "ECLIPSED_CITADEL_GOLEM_L25",
+          "checkpointId": "BLACK_HALL"
+        },
+        {
+          "id": "CITADEL_WARDEN_3",
+          "monsterId": "ECLIPSED_CITADEL_WEAVER_L25",
+          "checkpointId": "STAR_VAULT"
+        },
+        {
+          "id": "CITADEL_WARDEN_4",
+          "monsterId": "ECLIPSED_CITADEL_EXECUTIONER_L25",
+          "checkpointId": "ECLIPSE_GATE"
+        },
+        {
+          "id": "CITADEL_BOSS",
+          "monsterId": "ECLIPSED_CITADEL_ARCHON_L25",
+          "checkpointId": "DEAD_STAR_THRONE",
+          "isBoss": true
+        }
+      ]
+    },
+    {
+      "id": "UNDEAD_SHATTERED_ORDER_CITADEL_TEST",
+      "displayName": "Обсерватория Мёртвых Звёзд",
+      "description": "Древняя башня астромантов, захваченная Веллариусом и его хранителями. Пройдите четыре зала обсерватории, остановите ритуал Азраэля и соберите комплекты звёздной стражи.",
+      "minimumLevel": 25,
+      "maximumLevel": 25,
+      "entryLocationId": "UNDEAD_SHATTERED_ORDER_CITADEL_TEST",
+      "minimumPartySize": 1,
+      "maximumPartySize": 5,
+      "encounters": [
+        {
+          "id": "SHATTERED_ORDER_MIRROR_CASTELLAN",
+          "monsterId": "SHATTERED_ORDER_MIRROR_CASTELLAN_L25",
+          "checkpointId": "MIRROR_HALL",
+          "isBoss": true,
+          "mechanicId": "MIRROR_BARRIER",
+          "adds": [
+            {
+              "role": "GUARDIAN",
+              "monsterId": "SHATTERED_ORDER_MIRROR_GUARDIAN_L25"
+            },
+            {
+              "role": "PRIEST",
+              "monsterId": "SHATTERED_ORDER_MIRROR_PRIEST_L25"
+            },
+            {
+              "role": "EXECUTIONER",
+              "monsterId": "SHATTERED_ORDER_MIRROR_EXECUTIONER_L25"
+            }
+          ]
+        },
+        {
+          "id": "SHATTERED_ORDER_VELARIUS",
+          "monsterId": "SHATTERED_ORDER_VELARIUS_L25",
+          "checkpointId": "ARCANE_SANCTUM",
+          "isBoss": true,
+          "mechanicId": "VELARIUS_MANA",
+          "adds": [
+            {
+              "role": "MANA_FEEDER",
+              "monsterId": "SHATTERED_ORDER_MANA_FEEDER_L25"
+            }
+          ]
+        },
+        {
+          "id": "SHATTERED_ORDER_MOR_ET",
+          "monsterId": "SHATTERED_ORDER_MOR_ET_L25",
+          "checkpointId": "SOUL_VAULT",
+          "isBoss": true,
+          "mechanicId": "MOR_ET_SOULS",
+          "adds": [
+            {
+              "role": "SOUL_WARRIOR",
+              "monsterId": "SHATTERED_ORDER_SOUL_WARRIOR_L25"
+            },
+            {
+              "role": "SOUL_MAGE",
+              "monsterId": "SHATTERED_ORDER_SOUL_MAGE_L25"
+            },
+            {
+              "role": "SOUL_ARCHER",
+              "monsterId": "SHATTERED_ORDER_SOUL_ARCHER_L25"
+            },
+            {
+              "role": "SOUL_PALADIN",
+              "monsterId": "SHATTERED_ORDER_SOUL_PALADIN_L25"
+            }
+          ]
+        },
+        {
+          "id": "SHATTERED_ORDER_AZRAEL",
+          "monsterId": "SHATTERED_ORDER_AZRAEL_L25",
+          "checkpointId": "TRIUNE_THRONE",
+          "isBoss": true,
+          "mechanicId": "AZRAEL_TRIUNE",
+          "adds": [
+            {
+              "role": "FIRE",
+              "monsterId": "SHATTERED_ORDER_AZRAEL_FIRE_L25"
+            },
+            {
+              "role": "FROST",
+              "monsterId": "SHATTERED_ORDER_AZRAEL_FROST_L25"
+            },
+            {
+              "role": "VOID",
+              "monsterId": "SHATTERED_ORDER_AZRAEL_VOID_L25"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "UNDEAD_HEART_OF_BLIGHTED_GROVE",
+      "displayName": "Сердце Рощи Тлена",
+      "description": "Подземелье 20 уровня: четыре босса, шесть слотов комплектов и профессиональные материалы.",
+      "minimumLevel": 20,
+      "maximumLevel": 20,
+      "entryLocationId": "UNDEAD_HEART_OF_BLIGHTED_GROVE",
+      "minimumPartySize": 1,
+      "maximumPartySize": 5,
+      "encounters": [
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_PORCHENYI_DREVEN_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_PORCHENYI_DREVEN_L20",
+          "checkpointId": "DUNGEON_01",
+          "isBoss": false
+        },
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_IADOVITYI_LOZOVIK_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_IADOVITYI_LOZOVIK_L20",
+          "checkpointId": "DUNGEON_02",
+          "isBoss": false
+        },
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_GNIIUSHCHII_KULTIST_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_GNIIUSHCHII_KULTIST_L20",
+          "checkpointId": "DUNGEON_03",
+          "isBoss": false
+        },
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_SERDECHNYI_STRAZH_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_SERDECHNYI_STRAZH_L20",
+          "checkpointId": "DUNGEON_04",
+          "isBoss": false
+        },
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_BOSS_KRIVOKOREN_STRAZH_SERDTSA_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_KRIVOKOREN_STRAZH_SERDTSA_L20",
+          "checkpointId": "DUNGEON_05",
+          "isBoss": true
+        },
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_BOSS_MATRONA_IADOVITYKH_LOZ_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_MATRONA_IADOVITYKH_LOZ_L20",
+          "checkpointId": "DUNGEON_06",
+          "isBoss": true
+        },
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_BOSS_PROPOVEDNIK_GNILI_SAL_VER_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_PROPOVEDNIK_GNILI_SAL_VER_L20",
+          "checkpointId": "DUNGEON_07",
+          "isBoss": true
+        },
+        {
+          "id": "HEART_OF_BLIGHTED_GROVE_BOSS_SERDTSE_CHASHCHI_OSKVERNIONNYI_DUKH_L20",
+          "monsterId": "HEART_OF_BLIGHTED_GROVE_BOSS_SERDTSE_CHASHCHI_OSKVERNIONNYI_DUKH_L20",
+          "checkpointId": "DUNGEON_08",
+          "isBoss": true
+        }
+      ]
+    },
+    {
+      "id": "UNDEAD_SHATTERED_ORDER_CITADEL",
+      "displayName": "Цитадель Угасших Клятв",
+      "description": "Некогда Орден защищал северные земли. После смерти Великого Магистра его командиры начали гражданскую войну, маги обратились к запретным ритуалам, а павших рыцарей снова подняли на службу.",
+      "minimumLevel": 30,
+      "maximumLevel": 30,
+      "entryLocationId": "UNDEAD_SHATTERED_ORDER_CITADEL",
+      "minimumPartySize": 1,
+      "maximumPartySize": 5,
+      "encounters": [
+        {
+          "id": "SHATTERED_ORDER_CITADEL_OSKOLOCHNYI_STRAZH_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_OSKOLOCHNYI_STRAZH_L30",
+          "checkpointId": "GATES_01",
+          "isBoss": false
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_ZERKALNYI_CHASOVOI_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_ZERKALNYI_CHASOVOI_L30",
+          "checkpointId": "GATES_02",
+          "isBoss": false
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_ZERKALNYI_KASTELAN_L30",
+          "checkpointId": "GATES_TORVALD",
+          "isBoss": true
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_CHARODEI_RASKOLA_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_CHARODEI_RASKOLA_L30",
+          "checkpointId": "ARCHIVE_01",
+          "isBoss": false
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_ISKAZHIONNYI_POSLUSHNIK_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_ISKAZHIONNYI_POSLUSHNIK_L30",
+          "checkpointId": "ARCHIVE_02",
+          "isBoss": false
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_BOSS_ARKHIMAG_VELLARIUS_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_ARKHIMAG_VELLARIUS_L30",
+          "checkpointId": "ARCHIVE_ELLARIA",
+          "isBoss": true
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_KHRANITEL_RAZLOMA_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_KHRANITEL_RAZLOMA_L30",
+          "checkpointId": "FALLEN_01",
+          "isBoss": false
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_OTRAZHIONNYI_ZVER_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_OTRAZHIONNYI_ZVER_L30",
+          "checkpointId": "FALLEN_02",
+          "isBoss": false
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_MAGISTR_RAZBITOGO_ORDENA_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_MAGISTR_RAZBITOGO_ORDENA_L30",
+          "checkpointId": "FALLEN_03",
+          "isBoss": false
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_BOSS_KHRANITEL_DUSH_MOR_ET_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_KHRANITEL_DUSH_MOR_ET_L30",
+          "checkpointId": "FALLEN_REVAN",
+          "isBoss": true
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_RYTSAR_ZERKALNOGO_IADRA_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_RYTSAR_ZERKALNOGO_IADRA_L30",
+          "checkpointId": "OATH_01",
+          "isBoss": false
+        },
+        {
+          "id": "SHATTERED_ORDER_CITADEL_BOSS_TRIEDINYI_MAGISTR_AZRAEL_L30",
+          "monsterId": "SHATTERED_ORDER_CITADEL_BOSS_TRIEDINYI_MAGISTR_AZRAEL_L30",
+          "checkpointId": "OATH_KAEL_MOR",
+          "isBoss": true,
+          "mechanicId": "KAEL_MOR_TRIALS",
+          "adds": [
+            {
+              "role": "TRIAL_DEFENDER",
+              "monsterId": "SHATTERED_ORDER_TRIAL_DEFENDER"
+            },
+            {
+              "role": "TRIAL_CASTER",
+              "monsterId": "SHATTERED_ORDER_TRIAL_CASTER"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "UNDEAD_BLACK_BASTION",
+      "displayName": "Бастион Вечной Ночи",
+      "description": "Финальное подземелье диапазона 40 уровня с восьмичастными комплектами и легендарной цепочкой.",
+      "minimumLevel": 40,
+      "maximumLevel": 40,
+      "entryLocationId": "UNDEAD_BLACK_BASTION",
+      "minimumPartySize": 1,
+      "maximumPartySize": 5,
+      "encounters": [
+        {
+          "id": "BLACK_BASTION_OBSIDIANOVAIA_GONCHAIA_L40",
+          "monsterId": "BLACK_BASTION_OBSIDIANOVAIA_GONCHAIA_L40",
+          "checkpointId": "DUNGEON_01",
+          "isBoss": false
+        },
+        {
+          "id": "BLACK_BASTION_BASTIONNYI_PALACH_L40",
+          "monsterId": "BLACK_BASTION_BASTIONNYI_PALACH_L40",
+          "checkpointId": "DUNGEON_02",
+          "isBoss": false
+        },
+        {
+          "id": "BLACK_BASTION_PEPELNYI_RYTSAR_L40",
+          "monsterId": "BLACK_BASTION_PEPELNYI_RYTSAR_L40",
+          "checkpointId": "DUNGEON_03",
+          "isBoss": false
+        },
+        {
+          "id": "BLACK_BASTION_RUNNYI_RAZRUSHITEL_L40",
+          "monsterId": "BLACK_BASTION_RUNNYI_RAZRUSHITEL_L40",
+          "checkpointId": "DUNGEON_04",
+          "isBoss": false
+        },
+        {
+          "id": "BLACK_BASTION_CHIORNYI_INKVIZITOR_L40",
+          "monsterId": "BLACK_BASTION_CHIORNYI_INKVIZITOR_L40",
+          "checkpointId": "DUNGEON_05",
+          "isBoss": false
+        },
+        {
+          "id": "BLACK_BASTION_PRIZRACHNYI_ZNAMENOSETS_L40",
+          "monsterId": "BLACK_BASTION_PRIZRACHNYI_ZNAMENOSETS_L40",
+          "checkpointId": "DUNGEON_06",
+          "isBoss": false
+        },
+        {
+          "id": "BLACK_BASTION_BOSS_KOMENDANT_VRAT_RAGNOR_L40",
+          "monsterId": "BLACK_BASTION_BOSS_KOMENDANT_VRAT_RAGNOR_L40",
+          "checkpointId": "DUNGEON_07",
+          "isBoss": true
+        },
+        {
+          "id": "BLACK_BASTION_BOSS_INKVIZITOR_SEIRA_L40",
+          "monsterId": "BLACK_BASTION_BOSS_INKVIZITOR_SEIRA_L40",
+          "checkpointId": "DUNGEON_08",
+          "isBoss": true
+        },
+        {
+          "id": "BLACK_BASTION_BOSS_RUNNYI_KOLOSS_ARK_TOR_L40",
+          "monsterId": "BLACK_BASTION_BOSS_RUNNYI_KOLOSS_ARK_TOR_L40",
+          "checkpointId": "DUNGEON_09",
+          "isBoss": true
+        },
+        {
+          "id": "BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40",
+          "monsterId": "BLACK_BASTION_BOSS_MARSHAL_PEPELNOGO_ZNAMENI_L40",
+          "checkpointId": "DUNGEON_10",
+          "isBoss": true
+        },
+        {
+          "id": "BLACK_BASTION_BOSS_MAGISTR_CHIORNOI_ZVEZDY_L40",
+          "monsterId": "BLACK_BASTION_BOSS_MAGISTR_CHIORNOI_ZVEZDY_L40",
+          "checkpointId": "DUNGEON_11",
+          "isBoss": true
+        },
+        {
+          "id": "BLACK_BASTION_BOSS_PERVYI_STRAZH_MOR_KAR_L40",
+          "monsterId": "BLACK_BASTION_BOSS_PERVYI_STRAZH_MOR_KAR_L40",
+          "checkpointId": "DUNGEON_12",
+          "isBoss": true
+        }
+      ]
+    }
+  ]
+}

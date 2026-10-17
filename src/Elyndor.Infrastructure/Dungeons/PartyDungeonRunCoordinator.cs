@@ -148,13 +148,20 @@ public sealed class PartyDungeonRunCoordinator(
             {
                 character.Id,
                 character.AccountId,
-                character.Level
+                character.Level,
+                character.RaceId
             })
             .ToArrayAsync(cancellationToken);
         if (characters.Length != memberIds.Length)
         {
             await transaction.RollbackAsync(cancellationToken);
             return PartyDungeonStartResult.Failure(DungeonErrorCodes.CharacterNotFound);
+        }
+        if (contentProvider.GetCurrent().Indexes.LocationsById.TryGetValue(definition.EntryLocationId, out var entry)
+            && characters.Any(character => !WorldLocationAccess.CanEnter(entry, character.RaceId)))
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return PartyDungeonStartResult.Failure(DungeonErrorCodes.MemberCannotEnter);
         }
         if (characters.Any(character => character.Level < definition.MinimumLevel))
         {

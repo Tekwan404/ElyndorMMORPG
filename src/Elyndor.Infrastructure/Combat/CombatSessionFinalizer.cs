@@ -218,7 +218,7 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                 if (location is not null)
                 {
                     string respawnLocation = dungeonId is null
-                        ? WorldLocationIds.StarterTown
+                        ? WorldLocationAccess.HomeTown(character.RaceId)
                         : (contentSnapshot is null
                             ? dungeonService?.GetDefinition(dungeonId)?.EntryLocationId
                             : contentSnapshot.Indexes.DungeonsById.GetValueOrDefault(dungeonId)?.EntryLocationId)

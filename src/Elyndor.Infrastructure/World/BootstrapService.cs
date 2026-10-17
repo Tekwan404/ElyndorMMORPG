@@ -244,6 +244,7 @@ public sealed class BootstrapService(
         }
 
         DateTimeOffset now = timeProvider.GetUtcNow();
+        contentPackage = QuestCatalog.ForRace(contentPackage, character.RaceId);
         BootstrapReleaseUpdate? releaseUpdate = await GetReleaseUpdateAsync(
             accountId,
             cancellationToken);
@@ -310,7 +311,7 @@ public sealed class BootstrapService(
         {
             location = new CharacterLocation(
                 character.Id,
-                WorldLocationIds.StarterTown,
+                WorldLocationAccess.HomeTown(character.RaceId),
                 1,
                 now);
             dbContext.CharacterLocations.Add(location);
@@ -319,14 +320,39 @@ public sealed class BootstrapService(
         }
         else if (locationUnknown)
         {
-            location!.Relocate(WorldLocationIds.StarterTown, now);
+            location!.Relocate(WorldLocationAccess.HomeTown(character.RaceId), now);
             repaired = true;
             LogRepair(character.Id, "unknown_location_relocated");
+        }
+
+        bool dungeonRecoveryReady = combatActivity?.HasActiveCombat(accountId) != true
+            && await FactionDungeonRecovery.RepairAsync(dbContext, contentSnapshot, character.Id,
+                character.RaceId, now, cancellationToken);
+        if (location is not null
+            && indexes.LocationsById.TryGetValue(location.LocationId, out LocationDefinition? legacyLocation)
+            && !WorldLocationAccess.CanEnter(legacyLocation, character.RaceId)
+            && dungeonRecoveryReady
+            && combatActivity?.HasActiveCombat(accountId) != true
+            && !await dbContext.AfkFarmSessions.AnyAsync(
+                session => session.CharacterId == character.Id && session.Status == AfkFarmStatus.Active,
+                cancellationToken))
+        {
+            string counterpartId = character.RaceId == "UNDEAD"
+                ? "UNDEAD_" + location.LocationId
+                : location.LocationId.StartsWith("UNDEAD_", StringComparison.Ordinal)
+                    ? location.LocationId[7..] : WorldLocationAccess.HomeTown(character.RaceId);
+            string destination = indexes.LocationsById.TryGetValue(counterpartId, out var counterpart)
+                && WorldLocationAccess.CanEnter(counterpart, character.RaceId)
+                    ? counterpartId : WorldLocationAccess.HomeTown(character.RaceId);
+            location.Relocate(destination, now);
+            repaired = true;
+            LogRepair(character.Id, "faction_location_relocated");
         }
 
         if (activeTravel is not null
             && (!indexes.LocationsById.ContainsKey(activeTravel.FromLocationId)
                 || !indexes.LocationsById.ContainsKey(activeTravel.TargetLocationId)
+                || !WorldLocationAccess.CanEnter(indexes.LocationsById[activeTravel.TargetLocationId], character.RaceId)
                 || !string.Equals(
                     location!.LocationId,
                     activeTravel.FromLocationId,
@@ -354,10 +380,7 @@ public sealed class BootstrapService(
                 cancellationToken);
         LocationDefinition current = worldMap.GetRequired(location!.LocationId);
         OutOfCombatRecoveryOptions recovery = recoveryOptions?.Value ?? new();
-        bool isTown = string.Equals(
-            current.Id,
-            WorldLocationIds.StarterTown,
-            StringComparison.Ordinal);
+        bool isTown = WorldLocationAccess.IsTown(current.Id);
         decimal resourceRegenPerSecond =
             recovery.ResolveResourceRegenPerSecond(effectiveResourceProfile, isTown);
         ResourceProfile recoveryResourceProfile = effectiveResourceProfile with
@@ -440,6 +463,7 @@ public sealed class BootstrapService(
             ? []
             : current.Transitions
                 .Select(worldMap.GetRequired)
+                .Where(target => WorldLocationAccess.CanEnter(target, character.RaceId))
                 .Where(target => character.Level >= target.MinimumLevel)
                 .Where(target => target.RequiredContractId is null
                     || completedContractIds.Contains(target.RequiredContractId))
@@ -447,6 +471,8 @@ public sealed class BootstrapService(
                 .ToArray();
 
         BootstrapWorldContract[] contracts = (contentPackage.WorldContracts ?? [])
+            .Where(contract => !indexes.LocationsById.TryGetValue(contract.OfferLocationId ?? contract.UnlockLocationId, out var offer)
+                || WorldLocationAccess.CanEnter(offer, character.RaceId))
             .Select(contract =>
             {
                 QuestDefinition? quest = QuestCatalog.Find(

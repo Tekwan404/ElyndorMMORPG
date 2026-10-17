@@ -21,4 +21,5 @@ public sealed record LocationDefinition(
     decimal TravelDurationSeconds = 0,
     bool AllowAfk = false,
     string MapId = "BORDERLANDS",
-    IReadOnlyList<LocationPointDefinition>? Points = null);
+    IReadOnlyList<LocationPointDefinition>? Points = null,
+    string? RequiredRaceId = null);

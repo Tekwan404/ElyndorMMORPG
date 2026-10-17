@@ -19,22 +19,40 @@ export function resolveCharacterArt(
   genderId: string,
   variant: 'transparent' | 'scene' = 'transparent',
   skinId: string | null = null,
+  raceId?: string,
 ): string | null {
+  const race = raceId ?? (skinId?.includes('_UNDEAD_') ? 'UNDEAD' : 'HUMAN')
   if (skinId) {
     const skin = characterArtByKey.get(skinId.toLowerCase().replace(/_/g, '-'))
-    if (skin && skinId.startsWith(`${classId.toUpperCase()}_${genderId.toUpperCase()}_`)) return skin
+    if (
+      skin &&
+      skinId.startsWith(`${classId.toUpperCase()}_${genderId.toUpperCase()}_`) &&
+      skinId.includes('_UNDEAD_') === (race === 'UNDEAD')
+    )
+      return skin
+  }
+  if (race === 'UNDEAD') {
+    const starter = characterArtByKey.get(
+      `${classId.toLowerCase()}-${genderId.toLowerCase()}-undead-starter`,
+    )
+    if (starter) return starter
   }
   const exact = characterArtByKey.get(artKey(classId, genderId, variant))
   if (exact) return exact
 
-  const defaultArt = characterArtByKey.get(`${classId.toLowerCase()}-${genderId.toLowerCase()}-default`)
+  const defaultArt = characterArtByKey.get(
+    `${classId.toLowerCase()}-${genderId.toLowerCase()}-default`,
+  )
   if (defaultArt) return defaultArt
 
   const classFallback = characterArtByKey.get(artKey(classId, 'male', variant))
   if (classFallback) return classFallback
 
-  return characterArtByKey.get(`${classId.toLowerCase()}-male-default`)
-    ?? characterArtByKey.get('warrior-male-default') ?? null
+  return (
+    characterArtByKey.get(`${classId.toLowerCase()}-male-default`) ??
+    characterArtByKey.get('warrior-male-default') ??
+    null
+  )
 }
 
 export function resolveSkinPreview(imageId: string): string | null {

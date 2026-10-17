@@ -38,6 +38,7 @@ const art = computed(() =>
     props.local
       ? (session.snapshot?.character?.activeSkinId ?? props.actor.skinId)
       : props.actor.skinId,
+    props.local ? session.snapshot?.character?.raceId : undefined,
   ),
 )
 const urgentArt = computed(() => props.local || props.frontline)

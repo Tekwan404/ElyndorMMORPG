@@ -110,8 +110,10 @@ public sealed class QuestService(
             return new QuestJournalSnapshot([]);
 
         GameContentSnapshot contentSnapshot = contentProvider.GetCurrent();
-        GameContentPackage content = contentSnapshot.Package;
-        IReadOnlyList<QuestDefinition> quests = QuestCatalog.Resolve(content);
+        GameContentPackage content = QuestCatalog.ForRace(contentSnapshot.Package, character.RaceId);
+        IReadOnlyList<QuestDefinition> quests = QuestCatalog.Resolve(content)
+            .Where(quest => !contentSnapshot.Indexes.LocationsById.TryGetValue(quest.OfferLocationId, out var offer)
+                || WorldLocationAccess.CanEnter(offer, character.RaceId)).ToArray();
 
         CharacterQuestState[] states = await dbContext.CharacterQuestStates
             .AsNoTracking()
@@ -235,7 +237,7 @@ public sealed class QuestService(
         if (character is null)
             return QuestMutationResult.Failure(QuestErrorCodes.CharacterNotFound);
 
-        GameContentPackage content = contentProvider.GetCurrent().Package;
+        GameContentPackage content = QuestCatalog.ForRace(contentProvider.GetCurrent().Package, character.RaceId);
         QuestDefinition? quest = QuestCatalog.Find(content, questId);
         if (quest is null)
             return QuestMutationResult.Failure(QuestErrorCodes.QuestNotFound);
@@ -390,7 +392,7 @@ public sealed class QuestService(
         }
 
         QuestDefinition? quest =
-            QuestCatalog.Find(contentSnapshot.Package, questId);
+            QuestCatalog.Find(QuestCatalog.ForRace(contentSnapshot.Package, character.RaceId), questId);
         if (quest is null)
         {
             await transaction.RollbackAsync(cancellationToken);

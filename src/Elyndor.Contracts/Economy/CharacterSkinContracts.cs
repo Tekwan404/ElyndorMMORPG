@@ -1,7 +1,7 @@
 namespace Elyndor.Contracts.Economy;
 
 public sealed record CharacterSkinOfferResponse(string Id, string Name, string ClassId, string GenderId,
-    string ImageId, long CrystalPrice, bool Owned, bool Eligible, bool Purchasable);
+    string ImageId, long CrystalPrice, bool Owned, bool Eligible, bool Purchasable, string RaceId = "HUMAN");
 public sealed record CharacterSkinStoreResponse(long CrystalBalance, string? ActiveSkinId,
     IReadOnlyList<CharacterSkinOfferResponse> Skins);
 public sealed record CharacterSkinPurchaseRequest(string SkinId, Guid MutationId);

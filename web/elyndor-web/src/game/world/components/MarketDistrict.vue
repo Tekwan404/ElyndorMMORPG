@@ -2,6 +2,18 @@
 import MerchantPortrait from '@/game/world/components/MerchantPortrait.vue'
 import crystalArt from '@/assets/store/ether-crystal.webp'
 import { MARKET_MERCHANTS } from '@/game/world/marketMerchants'
+import { marketMerchant } from '@/game/world/marketMerchants'
+import { computed } from 'vue'
+import { useGameSessionStore } from '@/stores/gameSession'
+
+const session = useGameSessionStore()
+const merchants = computed(() =>
+  MARKET_MERCHANTS.map((merchant) =>
+    marketMerchant(
+      session.snapshot?.character?.raceId === 'UNDEAD' ? 'UNDEAD_' + merchant.id : merchant.id,
+    ),
+  ),
+)
 
 const emit = defineEmits<{
   'open-merchant': [merchantId: string]
@@ -18,7 +30,7 @@ const emit = defineEmits<{
     </header>
     <div class="market-district__stalls">
       <button
-        v-for="merchant in MARKET_MERCHANTS"
+        v-for="merchant in merchants"
         :key="merchant.id"
         type="button"
         class="market-stall"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import TownNpcPortrait from '@/game/world/components/TownNpcPortrait.vue'
 import { formatMoney } from '@/shared/money'
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
@@ -9,7 +10,11 @@ import AdventurerGuildBoard from '@/game/world/components/AdventurerGuildBoard.v
 import DungeonLocationCard from '@/game/world/components/DungeonLocationCard.vue'
 import MerchantShop from '@/game/world/components/MerchantShop.vue'
 import SkinningAftermath from '@/game/professions/components/SkinningAftermath.vue'
-import { locationKind, locationLabel, locationPresentation } from '@/game/world/locationPresentation'
+import {
+  locationKind,
+  locationLabel,
+  locationPresentation,
+} from '@/game/world/locationPresentation'
 import { useCombatSessionStore } from '@/stores/combatSession'
 import { useGameSessionStore } from '@/stores/gameSession'
 import { usePartyStore } from '@/game/party/partyStore'
@@ -17,7 +22,11 @@ import { UIButton, UICard, UIModal, UIToast } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
 const props = withDefaults(
-  defineProps<{ openGuild?: boolean; showDungeonLocationCard?: boolean; sceneInteractions?: boolean }>(),
+  defineProps<{
+    openGuild?: boolean
+    showDungeonLocationCard?: boolean
+    sceneInteractions?: boolean
+  }>(),
   { openGuild: false, showDungeonLocationCard: true, sceneInteractions: false },
 )
 const emit = defineEmits<{ 'open-party': [] }>()
@@ -51,45 +60,58 @@ const isTravelling = computed(() => activeTravel.value !== null)
 const character = computed(() => session.snapshot?.character)
 const currentLocationId = computed(() => world.value?.currentLocation.id ?? '')
 const isDungeonLocation = computed(() => locationKind(currentLocationId.value) === 'dungeon')
+const isUndead = computed(() => character.value?.raceId === 'UNDEAD')
 const isCityLocation = computed(() => locationKind(currentLocationId.value) === 'city')
-const activeAfkFarm = computed(() => session.snapshot?.afkFarm?.status === 'Active'
-  ? session.snapshot.afkFarm
-  : null)
-const canUseAfkFarm = computed(() =>
-  !isTravelling.value
-  && !combat.isActive
-  && !isDungeonLocation.value
-  && world.value?.currentLocation.allowAfk === true
-  && activeAfkFarm.value === null,
+const activeAfkFarm = computed(() =>
+  session.snapshot?.afkFarm?.status === 'Active' ? session.snapshot.afkFarm : null,
 )
-const canExplore = computed(() =>
-  !isTravelling.value && world.value?.currentLocation.dangerLevel !== 'SAFE',
+const canUseAfkFarm = computed(
+  () =>
+    !isTravelling.value &&
+    !combat.isActive &&
+    !isDungeonLocation.value &&
+    world.value?.currentLocation.allowAfk === true &&
+    activeAfkFarm.value === null,
 )
-const explorePending = computed(() => session.isMutationPending('world:explore') || combat.lifecyclePending)
-const canStartWorldCombat = computed(() =>
-  party.snapshot === null
-    || party.snapshot.leaderCharacterId === character.value?.id,
+const canExplore = computed(
+  () => !isTravelling.value && world.value?.currentLocation.dangerLevel !== 'SAFE',
 )
-const locationContracts = computed(() => (world.value?.contracts ?? []).filter((contract) =>
-  contract.status !== 'COMPLETED'
-  && (contract.offerLocationId === currentLocationId.value || contract.status === 'ACTIVE'),
-))
-const locationQuestLeads = computed(() => (session.questJournal?.quests ?? []).filter(quest =>
-  quest.status === 'AVAILABLE'
-  && quest.type !== 'CONTRACT'
-  && quest.offerLocationId === currentLocationId.value,
-))
-const hasLocalGuildContracts = computed(() => (session.questJournal?.quests ?? []).some(quest =>
-  quest.type === 'CONTRACT'
-  && quest.offerLocationId === currentLocationId.value
-  && quest.status !== 'COMPLETED',
-))
-const locationName = computed(() => world.value
-  ? locationLabel(world.value.currentLocation)
-  : 'Неизвестная область')
-const locationDescription = computed(() =>
-  world.value?.currentLocation.description
-  || 'Исследуйте область или откройте карту для путешествия.',
+const explorePending = computed(
+  () => session.isMutationPending('world:explore') || combat.lifecyclePending,
+)
+const canStartWorldCombat = computed(
+  () => party.snapshot === null || party.snapshot.leaderCharacterId === character.value?.id,
+)
+const locationContracts = computed(() =>
+  (world.value?.contracts ?? []).filter(
+    (contract) =>
+      contract.status !== 'COMPLETED' &&
+      (contract.offerLocationId === currentLocationId.value || contract.status === 'ACTIVE'),
+  ),
+)
+const locationQuestLeads = computed(() =>
+  (session.questJournal?.quests ?? []).filter(
+    (quest) =>
+      quest.status === 'AVAILABLE' &&
+      quest.type !== 'CONTRACT' &&
+      quest.offerLocationId === currentLocationId.value,
+  ),
+)
+const hasLocalGuildContracts = computed(() =>
+  (session.questJournal?.quests ?? []).some(
+    (quest) =>
+      quest.type === 'CONTRACT' &&
+      quest.offerLocationId === currentLocationId.value &&
+      quest.status !== 'COMPLETED',
+  ),
+)
+const locationName = computed(() =>
+  world.value ? locationLabel(world.value.currentLocation) : 'Неизвестная область',
+)
+const locationDescription = computed(
+  () =>
+    world.value?.currentLocation.description ||
+    'Исследуйте область или откройте карту для путешествия.',
 )
 
 async function acceptQuest(questId: string): Promise<void> {
@@ -118,8 +140,10 @@ const dangerLabel = computed(() => {
 const worldErrorMessage = computed(() => {
   const code = session.errorCode ?? (!combat.isActive ? combat.errorCode : null)
   if (!code) return null
-  if (code === 'world_encounter_unavailable') return 'В этой области сейчас не удалось найти противника.'
-  if (code === 'world_encounter_location_unavailable') return 'Текущее положение героя не удалось подтвердить.'
+  if (code === 'world_encounter_unavailable')
+    return 'В этой области сейчас не удалось найти противника.'
+  if (code === 'world_encounter_location_unavailable')
+    return 'Текущее положение героя не удалось подтвердить.'
   if (code === 'travel_conflict') return 'Мир изменился во время перехода. Попробуйте ещё раз.'
   if (code === 'character_in_combat') return 'Сначала завершите текущий бой.'
   if (code === 'afk_locked_location') return 'Сначала откройте эту область через её контракт.'
@@ -137,15 +161,17 @@ const recoveryMessage = computed(() => {
       ? 'В городе: +15% здоровья в секунду.'
       : 'Вне города: +10% здоровья в секунду.'
   }
-  if (vitals.resourceType === 'RAGE' && vitals.currentResource > 0) return 'После боя ярость постепенно угасает.'
+  if (vitals.resourceType === 'RAGE' && vitals.currentResource > 0)
+    return 'После боя ярость постепенно угасает.'
   return null
 })
 const needsOutOfCombatRefresh = computed(() => {
   const vitals = character.value?.vitals
   if (!vitals || combat.isActive) return false
-  const resourceNeedsRefresh = vitals.resourceType === 'RAGE'
-    ? vitals.currentResource > 0
-    : vitals.maxResource > 0 && vitals.currentResource < vitals.maxResource
+  const resourceNeedsRefresh =
+    vitals.resourceType === 'RAGE'
+      ? vitals.currentResource > 0
+      : vitals.maxResource > 0 && vitals.currentResource < vitals.maxResource
   return vitals.currentHp < vitals.maxHp || resourceNeedsRefresh
 })
 
@@ -174,12 +200,15 @@ function rarityLabel(rarity: string): string {
 }
 
 async function explore(): Promise<void> {
-  if (!canExplore.value
-    || !canStartWorldCombat.value
-    || combat.isActive
-    || session.mutationPending
-    || combat.pending
-    || explorePending.value) return
+  if (
+    !canExplore.value ||
+    !canStartWorldCombat.value ||
+    combat.isActive ||
+    session.mutationPending ||
+    combat.pending ||
+    explorePending.value
+  )
+    return
 
   dismissCombatResult()
   const encounter = await session.explore()
@@ -238,7 +267,14 @@ async function stopAfkFarm(): Promise<void> {
 }
 
 async function startTraining(): Promise<void> {
-  if (isTravelling.value || !isCityLocation.value || session.mutationPending || combat.isActive || combat.pending) return
+  if (
+    isTravelling.value ||
+    !isCityLocation.value ||
+    session.mutationPending ||
+    combat.isActive ||
+    combat.pending
+  )
+    return
   if (await combat.startTraining()) {
     lastEnemyName.value = 'Тренировочный манекен'
     dismissCombatResult()
@@ -249,7 +285,10 @@ function lootRemaining(endsAtUtc: string): number {
   return Math.max(0, (Date.parse(endsAtUtc) - lootNow.value) / 1_000)
 }
 
-async function chooseLootRoll(lootRollId: string, choice: 'Need' | 'Greed' | 'Pass'): Promise<void> {
+async function chooseLootRoll(
+  lootRollId: string,
+  choice: 'Need' | 'Greed' | 'Pass',
+): Promise<void> {
   await combat.chooseLootRoll(lootRollId, choice)
 }
 
@@ -261,8 +300,13 @@ async function attachToPartyCombat(): Promise<void> {
 async function refreshOutOfCombatVitals(): Promise<void> {
   if (vitalsRefreshPending || combat.isActive || session.mutationPending) return
   vitalsRefreshPending = true
-  try { await session.refreshSnapshot() } catch { /* background refresh */ }
-  finally { vitalsRefreshPending = false }
+  try {
+    await session.refreshSnapshot()
+  } catch {
+    /* background refresh */
+  } finally {
+    vitalsRefreshPending = false
+  }
 }
 
 function syncVitalsRefreshTimer(enabled: boolean): void {
@@ -290,7 +334,7 @@ function scheduleCombatResultDismiss(): void {
   }, 8_000)
 }
 
-watch(isTravelling, travelling => {
+watch(isTravelling, (travelling) => {
   if (travelling) {
     merchantOpen.value = false
     guildOpen.value = false
@@ -298,34 +342,45 @@ watch(isTravelling, travelling => {
   }
 })
 
-watch(currentLocationId, (locationId, previousLocationId) => {
-  if (locationId !== previousLocationId) {
-    merchantOpen.value = false
-    guildOpen.value = false
-    if (previousLocationId) dismissCombatResult()
-  }
-}, { immediate: true })
-
-watch(() => combat.recoveryRequired ? null : combat.snapshot?.status, (status) => {
-  if (status === 'Victory' || status === 'Defeat') {
-    const terminalSnapshot = combat.snapshot
-    if (!terminalSnapshot) return
-
-    if (window.sessionStorage.getItem(COMBAT_RESULT_SESSION_KEY) !== terminalSnapshot.sessionId) {
-      window.sessionStorage.setItem(COMBAT_RESULT_SESSION_KEY, terminalSnapshot.sessionId)
-      lastEnemyName.value = terminalSnapshot.enemies?.[0]?.name ?? terminalSnapshot.enemy.name
-      lastCombatResult.value = combat.participantStatus === 'Fled' ? 'Cancelled' : status
-      scheduleCombatResultDismiss()
+watch(
+  currentLocationId,
+  (locationId, previousLocationId) => {
+    if (locationId !== previousLocationId) {
+      merchantOpen.value = false
+      guildOpen.value = false
+      if (previousLocationId) dismissCombatResult()
     }
-    void session.refreshSnapshot()
-    if (status === 'Victory') void session.refreshQuestJournal()
-  }
-}, { immediate: true })
+  },
+  { immediate: true },
+)
+
+watch(
+  () => (combat.recoveryRequired ? null : combat.snapshot?.status),
+  (status) => {
+    if (status === 'Victory' || status === 'Defeat') {
+      const terminalSnapshot = combat.snapshot
+      if (!terminalSnapshot) return
+
+      if (window.sessionStorage.getItem(COMBAT_RESULT_SESSION_KEY) !== terminalSnapshot.sessionId) {
+        window.sessionStorage.setItem(COMBAT_RESULT_SESSION_KEY, terminalSnapshot.sessionId)
+        lastEnemyName.value = terminalSnapshot.enemies?.[0]?.name ?? terminalSnapshot.enemy.name
+        lastCombatResult.value = combat.participantStatus === 'Fled' ? 'Cancelled' : status
+        scheduleCombatResultDismiss()
+      }
+      void session.refreshSnapshot()
+      if (status === 'Victory') void session.refreshQuestJournal()
+    }
+  },
+  { immediate: true },
+)
 
 watch(needsOutOfCombatRefresh, syncVitalsRefreshTimer, { immediate: true })
-watch(() => props.openGuild, open => {
-  if (open && isCityLocation.value && !isTravelling.value) guildOpen.value = true
-})
+watch(
+  () => props.openGuild,
+  (open) => {
+    if (open && isCityLocation.value && !isTravelling.value) guildOpen.value = true
+  },
+)
 onBeforeUnmount(() => {
   syncVitalsRefreshTimer(false)
   if (combatResultTimer !== null) window.clearTimeout(combatResultTimer)
@@ -340,7 +395,11 @@ onMounted(() => {
 
 <template>
   <section v-if="world && character" class="world">
-    <section v-if="!isDungeonLocation" class="scene" :style="{ backgroundImage: `url(${sceneBackground})` }">
+    <section
+      v-if="!isDungeonLocation"
+      class="scene"
+      :style="{ backgroundImage: `url(${sceneBackground})` }"
+    >
       <div class="scene__shade" />
       <div class="scene__content">
         <div class="scene-location">
@@ -351,7 +410,11 @@ onMounted(() => {
           <h1>{{ locationName }}</h1>
           <p>{{ locationDescription }}</p>
         </div>
-        <div v-if="canExplore && lastCombatResult !== 'Victory' && canStartWorldCombat" class="scene__actions" aria-label="Действия локации">
+        <div
+          v-if="canExplore && lastCombatResult !== 'Victory' && canStartWorldCombat"
+          class="scene__actions"
+          aria-label="Действия локации"
+        >
           <UIButton
             data-explore
             :loading="explorePending"
@@ -366,7 +429,8 @@ onMounted(() => {
             variant="secondary"
             :disabled="session.mutationPending"
             @click="openAfkFarm"
-          >Автоматическая охота</UIButton>
+            >Автоматическая охота</UIButton
+          >
         </div>
       </div>
     </section>
@@ -377,17 +441,37 @@ onMounted(() => {
       @open-party="emit('open-party')"
     />
 
-    <UIToast v-if="worldErrorMessage" tone="danger" placement="inline" role="alert" data-world-error>
+    <UIToast
+      v-if="worldErrorMessage"
+      tone="danger"
+      placement="inline"
+      role="alert"
+      data-world-error
+    >
       {{ worldErrorMessage }}
     </UIToast>
 
     <UICard v-if="activeAfkFarm" class="afk-status" data-afk-active>
       <div>
         <small>АВТОМАТИЧЕСКАЯ ОХОТА</small>
-        <strong>{{ activeAfkFarm.kills }} побед · +{{ activeAfkFarm.xpEarned }} опыта · +{{ formatMoney(activeAfkFarm.goldEarned) }}</strong>
-        <p>До {{ new Date(activeAfkFarm.endsAtUtc).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) }}</p>
+        <strong
+          >{{ activeAfkFarm.kills }} побед · +{{ activeAfkFarm.xpEarned }} опыта · +{{
+            formatMoney(activeAfkFarm.goldEarned)
+          }}</strong
+        >
+        <p>
+          До
+          {{
+            new Date(activeAfkFarm.endsAtUtc).toLocaleTimeString('ru-RU', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })
+          }}
+        </p>
       </div>
-      <UIButton variant="secondary" :loading="session.mutationPending" @click="stopAfkFarm">Остановить</UIButton>
+      <UIButton variant="secondary" :loading="session.mutationPending" @click="stopAfkFarm"
+        >Остановить</UIButton
+      >
     </UICard>
 
     <UICard v-if="combat.isAwaitingAttachment" class="party-combat-card" data-party-combat-pending>
@@ -401,7 +485,8 @@ onMounted(() => {
         :disabled="isTravelling || combat.pending"
         data-attach-party-combat
         @click="attachToPartyCombat"
-      >Войти в бой</UIButton>
+        >Войти в бой</UIButton
+      >
     </UICard>
 
     <UICard v-if="lastCombatResult === 'Victory'" class="reward-card" data-combat-result="victory">
@@ -410,20 +495,45 @@ onMounted(() => {
         <strong>{{ lastEnemyName ?? 'Противник' }} повержен</strong>
       </div>
       <div v-if="combat.reward" class="reward-card__summary">
-        <strong>+{{ combat.reward.xpEarned }} опыта · +{{ formatMoney(combat.reward.goldEarned) }}</strong>
-        <p v-if="combat.reward.completedContractIds?.includes('CONTRACT_BROODMOTHER_GATE')" class="contract-completed">
-          <IconGenerator :config="{ id: 'contract-completed', glyph: 'star', category: 'utility' }" />
+        <strong
+          >+{{ combat.reward.xpEarned }} опыта · +{{
+            formatMoney(combat.reward.goldEarned)
+          }}</strong
+        >
+        <p
+          v-if="combat.reward.completedContractIds?.includes('CONTRACT_BROODMOTHER_GATE')"
+          class="contract-completed"
+        >
+          <IconGenerator
+            :config="{ id: 'contract-completed', glyph: 'star', category: 'utility' }"
+          />
           Контракт выполнен: Прародительница. Путь в Осквернённую чащу открыт.
         </p>
         <ul v-if="combat.reward.items.length">
           <li v-for="item in combat.reward.items" :key="item.itemId">
-            <ItemIcon class="reward-item__icon" :icon-id="item.iconId" :item-id="item.itemId" :name="item.name" :type="item.type" :rarity="item.rarity" />
+            <ItemIcon
+              class="reward-item__icon"
+              :icon-id="item.iconId"
+              :item-id="item.itemId"
+              :name="item.name"
+              :type="item.type"
+              :rarity="item.rarity"
+            />
             {{ item.name }} ×{{ item.quantity }}
           </li>
         </ul>
       </div>
-      <UIButton v-if="canExplore && canStartWorldCombat && !props.sceneInteractions" data-explore-after-victory :loading="explorePending" :disabled="session.mutationPending || combat.pending || combat.isActive" @click="explore">Исследовать дальше</UIButton>
-      <UIButton variant="secondary" data-dismiss-combat-result @click="dismissCombatResult">Закрыть</UIButton>
+      <UIButton
+        v-if="canExplore && canStartWorldCombat && !props.sceneInteractions"
+        data-explore-after-victory
+        :loading="explorePending"
+        :disabled="session.mutationPending || combat.pending || combat.isActive"
+        @click="explore"
+        >Исследовать дальше</UIButton
+      >
+      <UIButton variant="secondary" data-dismiss-combat-result @click="dismissCombatResult"
+        >Закрыть</UIButton
+      >
     </UICard>
 
     <SkinningAftermath />
@@ -434,40 +544,71 @@ onMounted(() => {
         <strong>Розыгрыш добычи</strong>
       </div>
       <article v-for="roll in combat.lootRolls" :key="roll.lootRollId" class="loot-roll-row">
-        <ItemIcon class="loot-roll-row__icon" :icon-id="roll.iconId" :item-id="roll.itemId" :name="roll.name" :type="roll.type ?? 'Equipment'" :rarity="roll.rarity" />
+        <ItemIcon
+          class="loot-roll-row__icon"
+          :icon-id="roll.iconId"
+          :item-id="roll.itemId"
+          :name="roll.name"
+          :type="roll.type ?? 'Equipment'"
+          :rarity="roll.rarity"
+        />
         <div>
           <strong>{{ roll.name }} ×{{ roll.quantity }}</strong>
-          <small>{{ rarityLabel(roll.rarity) }} · {{ Math.ceil(lootRemaining(roll.endsAtUtc)) }}с</small>
+          <small
+            >{{ rarityLabel(roll.rarity) }} · {{ Math.ceil(lootRemaining(roll.endsAtUtc)) }}с</small
+          >
         </div>
         <div class="loot-roll-actions">
           <UIButton
             :disabled="combat.pending || !roll.canNeed"
-            :title="roll.canNeed ? 'Приоритетный бросок' : 'Персонаж не может использовать этот предмет'"
+            :title="
+              roll.canNeed ? 'Приоритетный бросок' : 'Персонаж не может использовать этот предмет'
+            "
             @click="chooseLootRoll(roll.lootRollId, 'Need')"
-          >Нужно</UIButton>
-          <UIButton :disabled="combat.pending" variant="secondary" @click="chooseLootRoll(roll.lootRollId, 'Greed')">Претендовать</UIButton>
-          <UIButton :disabled="combat.pending" variant="secondary" @click="chooseLootRoll(roll.lootRollId, 'Pass')">Отказаться</UIButton>
+            >Нужно</UIButton
+          >
+          <UIButton
+            :disabled="combat.pending"
+            variant="secondary"
+            @click="chooseLootRoll(roll.lootRollId, 'Greed')"
+            >Претендовать</UIButton
+          >
+          <UIButton
+            :disabled="combat.pending"
+            variant="secondary"
+            @click="chooseLootRoll(roll.lootRollId, 'Pass')"
+            >Отказаться</UIButton
+          >
         </div>
       </article>
     </UICard>
 
+    <UIToast v-if="activeTravel" tone="info" title="Герой в пути" data-location-travel>
+      Путь: {{ displayLocationName(activeTravel.targetLocationId) }}. Действия станут доступны после
+      прибытия.
+    </UIToast>
+
     <UIToast
-      v-if="activeTravel"
-      tone="info"
-      title="Герой в пути"
-      data-location-travel
+      v-if="lastCombatResult === 'Defeat'"
+      tone="danger"
+      title="Поражение"
+      data-combat-result="defeat"
     >
-      Путь: {{ displayLocationName(activeTravel.targetLocationId) }}. Действия станут доступны после прибытия.
+      {{
+        isDungeonLocation
+          ? 'Вы у входа в подземелье. Ресурс восстановлен до 50%.'
+          : 'Вы очнулись в Стартовом городе.'
+      }}
     </UIToast>
+    <UIToast v-if="recoveryMessage" tone="info" title="Восстановление">{{
+      recoveryMessage
+    }}</UIToast>
 
-    <UIToast v-if="lastCombatResult === 'Defeat'" tone="danger" title="Поражение" data-combat-result="defeat">
-      {{ isDungeonLocation
-        ? 'Вы у входа в подземелье. Ресурс восстановлен до 50%.'
-        : 'Вы очнулись в Стартовом городе.' }}
-    </UIToast>
-    <UIToast v-if="recoveryMessage" tone="info" title="Восстановление">{{ recoveryMessage }}</UIToast>
-
-    <section v-if="locationQuestLeads.length && !props.sceneInteractions" class="world-stories" aria-labelledby="stories-title">
+    <section
+      v-if="locationQuestLeads.length && !props.sceneInteractions"
+      class="world-stories"
+      aria-labelledby="stories-title"
+    >
       <header class="section-heading">
         <div>
           <small>ЛЮДИ И ИСТОРИИ</small>
@@ -476,15 +617,27 @@ onMounted(() => {
         <span>{{ locationQuestLeads.length }}</span>
       </header>
       <div class="story-list">
-        <article v-for="quest in locationQuestLeads" :key="quest.id" class="story-card" :data-world-quest-id="quest.id">
+        <article
+          v-for="quest in locationQuestLeads"
+          :key="quest.id"
+          class="story-card"
+          :data-world-quest-id="quest.id"
+        >
           <div class="story-card__icon" aria-hidden="true">
-            <IconGenerator :config="{ id: `story-${quest.id}`, glyph: 'scroll', category: 'utility' }" />
+            <IconGenerator
+              :config="{ id: `story-${quest.id}`, glyph: 'scroll', category: 'utility' }"
+            />
           </div>
           <div class="story-card__copy">
-            <small>{{ quest.type === 'SIDE' ? 'ПОРУЧЕНИЕ' : 'СЮЖЕТ' }} · ур. {{ quest.requiredLevel }}</small>
+            <small
+              >{{ quest.type === 'SIDE' ? 'ПОРУЧЕНИЕ' : 'СЮЖЕТ' }} · ур.
+              {{ quest.requiredLevel }}</small
+            >
             <strong>{{ quest.displayName }}</strong>
             <p>{{ quest.description }}</p>
-            <span class="story-card__reward">+{{ quest.rewardXp }} опыта · +{{ formatMoney(quest.rewardGold) }}</span>
+            <span class="story-card__reward"
+              >+{{ quest.rewardXp }} опыта · +{{ formatMoney(quest.rewardGold) }}</span
+            >
           </div>
           <UIButton
             data-accept-world-quest
@@ -497,75 +650,93 @@ onMounted(() => {
       </div>
     </section>
 
-    <section v-if="!isCityLocation && hasLocalGuildContracts" class="field-guild" aria-labelledby="field-guild-title">
-        <header class="section-heading">
-          <div>
-            <small>ГИЛЬДИЯ АВАНТЮРИСТОВ</small>
-            <strong id="field-guild-title">Экспедиционный пост</strong>
-          </div>
-          <span>КОНТРАКТЫ</span>
-        </header>
-        <article class="activity-card">
-          <div class="activity-card__icon" aria-hidden="true">
-            <IconGenerator :config="{ id: 'field-guild', glyph: 'sword', category: 'utility' }" />
-          </div>
-          <div class="activity-card__copy">
-            <small>РЕГИСТРАТОР</small>
-            <strong>Контракты региона</strong>
-            <p>Работа против угроз этой области.</p>
-          </div>
-          <UIButton data-open-field-guild @click="guildOpen = true">Открыть контракты</UIButton>
-        </article>
+    <section
+      v-if="!isCityLocation && hasLocalGuildContracts"
+      class="field-guild"
+      aria-labelledby="field-guild-title"
+    >
+      <header class="section-heading">
+        <div>
+          <small>ГИЛЬДИЯ АВАНТЮРИСТОВ</small>
+          <strong id="field-guild-title">Экспедиционный пост</strong>
+        </div>
+        <span>КОНТРАКТЫ</span>
+      </header>
+      <article class="activity-card">
+        <div class="activity-card__icon" aria-hidden="true">
+          <IconGenerator :config="{ id: 'field-guild', glyph: 'sword', category: 'utility' }" />
+        </div>
+        <div class="activity-card__copy">
+          <small>РЕГИСТРАТОР</small>
+          <strong>Контракты региона</strong>
+          <p>Работа против угроз этой области.</p>
+        </div>
+        <UIButton data-open-field-guild @click="guildOpen = true">Открыть контракты</UIButton>
+      </article>
     </section>
 
-    <section v-if="locationContracts.length" class="location-contracts" aria-labelledby="contracts-title">
-        <header class="section-heading">
-          <div>
-            <small>КОНТРАКТЫ</small>
-            <strong id="contracts-title">Задания области</strong>
-          </div>
-          <span>{{ locationContracts.length }}</span>
-        </header>
+    <section
+      v-if="locationContracts.length"
+      class="location-contracts"
+      aria-labelledby="contracts-title"
+    >
+      <header class="section-heading">
+        <div>
+          <small>КОНТРАКТЫ</small>
+          <strong id="contracts-title">Задания области</strong>
+        </div>
+        <span>{{ locationContracts.length }}</span>
+      </header>
 
-        <article
-          v-for="contract in locationContracts"
-          :key="contract.id"
-          class="contract-card"
-          :data-contract-id="contract.id"
-          :data-contract-status="contract.status"
-        >
-          <div class="contract-card__icon" aria-hidden="true">
-            <IconGenerator :config="{ id: `contract-${contract.id}`, glyph: 'star', category: 'utility' }" />
-          </div>
-          <div class="contract-card__copy">
-            <small>{{ contractStatusLabel(contract.status) }} · УР. {{ contract.requiredLevel }}</small>
-            <strong>{{ contract.displayName }}</strong>
-            <p>{{ contract.description }}</p>
-            <div class="contract-card__reward">
-              <span>Награда</span>
-              <b>+{{ contract.rewardXp }} опыта · +{{ formatMoney(contract.rewardGold) }}</b>
-              <em>Открывает: {{ displayLocationName(contract.unlockLocationId) }}</em>
-            </div>
-          </div>
-          <UIButton
-            v-if="contract.status === 'AVAILABLE'"
-            data-accept-contract
-            :loading="session.mutationPending"
-            :disabled="isTravelling || session.mutationPending"
-            @click="acceptContract(contract.id)"
+      <article
+        v-for="contract in locationContracts"
+        :key="contract.id"
+        class="contract-card"
+        :data-contract-id="contract.id"
+        :data-contract-status="contract.status"
+      >
+        <div class="contract-card__icon" aria-hidden="true">
+          <IconGenerator
+            :config="{ id: `contract-${contract.id}`, glyph: 'star', category: 'utility' }"
+          />
+        </div>
+        <div class="contract-card__copy">
+          <small
+            >{{ contractStatusLabel(contract.status) }} · УР. {{ contract.requiredLevel }}</small
           >
-            Взять контракт
-          </UIButton>
-          <span v-else-if="contract.status === 'ACTIVE'" class="contract-card__status contract-card__status--active">
-            Убейте цель
-          </span>
-          <span v-else-if="contract.status === 'COMPLETED'" class="contract-card__status contract-card__status--done">
-            Выполнено
-          </span>
-          <span v-else class="contract-card__status">
-            Нужен {{ contract.requiredLevel }} уровень
-          </span>
-        </article>
+          <strong>{{ contract.displayName }}</strong>
+          <p>{{ contract.description }}</p>
+          <div class="contract-card__reward">
+            <span>Награда</span>
+            <b>+{{ contract.rewardXp }} опыта · +{{ formatMoney(contract.rewardGold) }}</b>
+            <em>Открывает: {{ displayLocationName(contract.unlockLocationId) }}</em>
+          </div>
+        </div>
+        <UIButton
+          v-if="contract.status === 'AVAILABLE'"
+          data-accept-contract
+          :loading="session.mutationPending"
+          :disabled="isTravelling || session.mutationPending"
+          @click="acceptContract(contract.id)"
+        >
+          Взять контракт
+        </UIButton>
+        <span
+          v-else-if="contract.status === 'ACTIVE'"
+          class="contract-card__status contract-card__status--active"
+        >
+          Убейте цель
+        </span>
+        <span
+          v-else-if="contract.status === 'COMPLETED'"
+          class="contract-card__status contract-card__status--done"
+        >
+          Выполнено
+        </span>
+        <span v-else class="contract-card__status">
+          Нужен {{ contract.requiredLevel }} уровень
+        </span>
+      </article>
     </section>
     <section v-if="isCityLocation" class="town-services" aria-labelledby="town-services-title">
       <header class="section-heading">
@@ -580,7 +751,12 @@ onMounted(() => {
 
       <div class="service-grid">
         <article class="service-card service-card--training" data-town-service="training">
-          <img class="service-card__portrait" :src="gameArt.npc.combatTrainer" alt="Боевой наставник" />
+          <TownNpcPortrait
+            class="service-card__portrait"
+            :human-art="gameArt.npc.combatTrainer"
+            role="combatTrainer"
+            name="Боевой наставник"
+          />
           <div class="service-card__copy">
             <small>ТРЕНИРОВОЧНАЯ ПЛОЩАДКА</small>
             <strong>Манекен</strong>
@@ -597,23 +773,29 @@ onMounted(() => {
         </article>
 
         <article class="service-card service-card--merchant" data-town-service="merchant">
-          <img class="service-card__portrait" :src="gameArt.npc.marcus" alt="Маркус" />
+          <TownNpcPortrait
+            class="service-card__portrait"
+            :human-art="gameArt.npc.marcus"
+            role="marcus"
+            name="Маркус"
+          />
           <div class="service-card__copy">
             <small>ТОРГОВЕЦ</small>
-            <strong>Маркус</strong>
+            <strong>{{ isUndead ? 'Морт' : 'Маркус' }}</strong>
             <p>Припасы, лечебные зелья и продажа добытых материалов.</p>
           </div>
-          <UIButton
-            data-open-merchant
-            :disabled="isTravelling"
-            @click="merchantOpen = true"
-          >
+          <UIButton data-open-merchant :disabled="isTravelling" @click="merchantOpen = true">
             {{ isTravelling ? 'В пути' : 'Торговать' }}
           </UIButton>
         </article>
 
         <article class="service-card service-card--forge" data-town-service="forge">
-          <img class="service-card__portrait" :src="gameArt.npc.blacksmith" alt="Кузнец" />
+          <TownNpcPortrait
+            class="service-card__portrait"
+            :human-art="gameArt.npc.blacksmith"
+            role="blacksmith"
+            name="Кузнец"
+          />
           <div class="service-card__copy">
             <small>КУЗНИЦА</small>
             <strong>Кузница</strong>
@@ -625,17 +807,29 @@ onMounted(() => {
         </article>
 
         <article class="service-card service-card--guild" data-town-service="guild">
-          <img class="service-card__portrait" :src="gameArt.npc.registrar" alt="Регистратор гильдии" />
+          <TownNpcPortrait
+            class="service-card__portrait"
+            :human-art="gameArt.npc.registrar"
+            role="registrar"
+            name="Регистратор гильдии"
+          />
           <div class="service-card__copy">
             <small>ГИЛЬДИЯ АВАНТЮРИСТОВ</small>
             <strong>Гильдия авантюристов</strong>
-            <p>Селия выдаёт контракты и отмечает новые угрозы.</p>
+            <p>{{ isUndead ? 'Морвена' : 'Селия' }} выдаёт контракты и отмечает новые угрозы.</p>
           </div>
-          <UIButton data-open-adventurer-guild :disabled="isTravelling" @click="guildOpen = true">Войти</UIButton>
+          <UIButton data-open-adventurer-guild :disabled="isTravelling" @click="guildOpen = true"
+            >Войти</UIButton
+          >
         </article>
 
         <article class="service-card service-card--rest" data-town-service="rest">
-          <img class="service-card__portrait" :src="gameArt.npc.innkeeper" alt="Хозяйка постоялого двора" />
+          <TownNpcPortrait
+            class="service-card__portrait"
+            :human-art="gameArt.npc.innkeeper"
+            role="innkeeper"
+            name="Хозяйка постоялого двора"
+          />
           <div class="service-card__copy">
             <small>ПОСТОЯЛЫЙ ДВОР</small>
             <strong>Отдых</strong>
@@ -663,11 +857,16 @@ onMounted(() => {
             :variant="afkDurationMinutes === duration ? 'primary' : 'secondary'"
             :disabled="afkPreviewLoading || session.mutationPending"
             @click="selectAfkDuration(duration)"
-          >{{ duration < 60 ? `${duration} мин` : `${duration / 60} ч` }}</UIButton>
+            >{{ duration < 60 ? `${duration} мин` : `${duration / 60} ч` }}</UIButton
+          >
         </div>
         <label v-if="afkTargets.length" class="afk-target">
           <span>Цель</span>
-          <select :value="afkTargetMonsterId ?? ''" :disabled="afkPreviewLoading || session.mutationPending" @change="selectAfkTarget(($event.target as HTMLSelectElement).value)">
+          <select
+            :value="afkTargetMonsterId ?? ''"
+            :disabled="afkPreviewLoading || session.mutationPending"
+            @change="selectAfkTarget(($event.target as HTMLSelectElement).value)"
+          >
             <option value="">Любые противники</option>
             <option v-for="target in afkTargets" :key="target.monsterId" :value="target.monsterId">
               {{ target.displayName }}
@@ -676,15 +875,24 @@ onMounted(() => {
         </label>
         <div v-if="afkPreview" class="afk-preview">
           <span>Примерно {{ afkPreview.kills }} побед</span>
-          <strong>+{{ afkPreview.estimatedXp }} опыта · +{{ formatMoney(afkPreview.estimatedGold) }}</strong>
-          <small>{{ afkPreview.potentialLootRolls }} возможных розыгрышей добычи · эффективность: {{ afkPreview.efficiencyPercent }}%</small>
+          <strong
+            >+{{ afkPreview.estimatedXp }} опыта · +{{
+              formatMoney(afkPreview.estimatedGold)
+            }}</strong
+          >
+          <small
+            >{{ afkPreview.potentialLootRolls }} возможных розыгрышей добычи · эффективность:
+            {{ afkPreview.efficiencyPercent }}%</small
+          >
         </div>
         <p v-else-if="afkPreviewLoading">Рассчитываем результат…</p>
         <p v-else-if="session.errorCode">Не удалось получить расчёт. Проверьте условия области.</p>
       </div>
       <template #actions>
         <UIButton variant="secondary" @click="afkOpen = false">Отмена</UIButton>
-        <UIButton :loading="session.mutationPending" :disabled="!afkPreview" @click="startAfkFarm">Начать</UIButton>
+        <UIButton :loading="session.mutationPending" :disabled="!afkPreview" @click="startAfkFarm"
+          >Начать</UIButton
+        >
       </template>
     </UIModal>
   </section>
@@ -837,7 +1045,9 @@ onMounted(() => {
   background-color: var(--ui-color-surface-1);
   background-position: center;
   background-size: cover;
-  box-shadow: var(--ui-shadow-inset), 0 18px 42px rgb(0 0 0 / 26%);
+  box-shadow:
+    var(--ui-shadow-inset),
+    0 18px 42px rgb(0 0 0 / 26%);
 }
 
 .scene::after {
@@ -886,9 +1096,9 @@ onMounted(() => {
   border-radius: var(--ui-radius-round);
   background: rgb(5 8 14 / 58%);
   color: var(--ui-color-text-muted);
-  font-size: .59rem;
+  font-size: 0.59rem;
   font-weight: 700;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   backdrop-filter: blur(8px);
 }
@@ -920,7 +1130,7 @@ onMounted(() => {
   font-family: var(--ui-font-display);
   font-size: clamp(1.8rem, 8vw, 2.55rem);
   line-height: 1.02;
-  letter-spacing: -.02em;
+  letter-spacing: -0.02em;
 }
 
 .scene-location > p,
@@ -936,8 +1146,7 @@ onMounted(() => {
   gap: var(--ui-space-3);
   border-color: color-mix(in srgb, var(--ui-color-success) 35%, var(--ui-color-border));
   background:
-    linear-gradient(135deg, rgb(79 185 150 / 8%), transparent 48%),
-    var(--ui-gradient-panel);
+    linear-gradient(135deg, rgb(79 185 150 / 8%), transparent 48%), var(--ui-gradient-panel);
 }
 
 .reward-card__heading {
@@ -948,7 +1157,7 @@ onMounted(() => {
 .reward-card__heading small {
   color: var(--ui-color-success);
   font-weight: 700;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
 }
 
 .reward-card__summary > strong {
@@ -1043,9 +1252,9 @@ onMounted(() => {
 
 .section-heading small {
   color: #aaa3ff;
-  font-size: .56rem;
+  font-size: 0.56rem;
   font-weight: 800;
-  letter-spacing: .09em;
+  letter-spacing: 0.09em;
 }
 
 .section-heading strong {
@@ -1062,7 +1271,7 @@ onMounted(() => {
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-round);
   color: var(--ui-color-text-muted);
-  font-size: .54rem;
+  font-size: 0.54rem;
   font-weight: 700;
 }
 
@@ -1078,8 +1287,7 @@ onMounted(() => {
   overflow: hidden;
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-lg);
-  background:
-    linear-gradient(180deg, rgb(13 18 30 / 82%), rgb(6 9 16 / 88%));
+  background: linear-gradient(180deg, rgb(13 18 30 / 82%), rgb(6 9 16 / 88%));
   box-shadow: var(--ui-shadow-inset);
 }
 
@@ -1114,9 +1322,9 @@ onMounted(() => {
 
 .contract-card__copy small {
   color: #aaa3ff;
-  font-size: .53rem;
+  font-size: 0.53rem;
   font-weight: 800;
-  letter-spacing: .07em;
+  letter-spacing: 0.07em;
 }
 
 .contract-card__copy strong {
@@ -1190,7 +1398,7 @@ onMounted(() => {
   border-radius: var(--ui-radius-md);
   object-fit: cover;
   object-position: top center;
-  box-shadow: 0 .35rem .9rem rgb(0 0 0 / 32%);
+  box-shadow: 0 0.35rem 0.9rem rgb(0 0 0 / 32%);
 }
 
 .activity-card__icon,
@@ -1202,8 +1410,7 @@ onMounted(() => {
   border: 1px solid var(--ui-color-border-strong);
   border-radius: var(--ui-radius-md);
   background:
-    radial-gradient(circle at 50% 25%, rgb(146 136 255 / 10%), transparent 62%),
-    rgb(5 8 14 / 82%);
+    radial-gradient(circle at 50% 25%, rgb(146 136 255 / 10%), transparent 62%), rgb(5 8 14 / 82%);
   color: #aaa3ff;
   font-size: 1.25rem;
 }
@@ -1218,9 +1425,9 @@ onMounted(() => {
 .activity-card__copy small,
 .service-card__copy small {
   color: #aaa3ff;
-  font-size: .53rem;
+  font-size: 0.53rem;
   font-weight: 800;
-  letter-spacing: .07em;
+  letter-spacing: 0.07em;
 }
 
 .activity-card__copy strong,
@@ -1284,9 +1491,7 @@ onMounted(() => {
   grid-template-columns: 3.1rem minmax(0, 1fr) auto;
   align-items: center;
   min-height: auto;
-  background:
-    linear-gradient(90deg, rgb(79 185 150 / 7%), transparent 64%),
-    rgb(7 11 18);
+  background: linear-gradient(90deg, rgb(79 185 150 / 7%), transparent 64%), rgb(7 11 18);
 }
 
 .service-card :deep(.ui-button) {
@@ -1439,6 +1644,5 @@ onMounted(() => {
     width: 2.65rem;
     height: 2.65rem;
   }
-
 }
 </style>

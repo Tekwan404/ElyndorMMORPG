@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { isTown } from '@/game/world/undeadHomeland'
+import TownNpcPortrait from './TownNpcPortrait.vue'
 import { formatMoney } from '@/shared/money'
 import { computed, ref, watch } from 'vue'
 
@@ -18,7 +20,7 @@ const props = defineProps<{
 const emit = defineEmits<{ close: [] }>()
 const session = useGameSessionStore()
 
-const isCentralPost = computed(() => props.locationId === 'STARTER_TOWN')
+const isCentralPost = computed(() => isTown(props.locationId))
 const boardTitle = computed(() =>
   isCentralPost.value ? 'Городская гильдия' : 'Экспедиционный пост',
 )
@@ -27,41 +29,54 @@ const boardSubtitle = computed(() =>
     ? 'Официальные контракты для доступных регионов.'
     : 'Контракты и цели текущей экспедиции.',
 )
+const isUndead = computed(() => session.snapshot?.character?.raceId === 'UNDEAD')
 const featuredNpc = computed(() =>
   isCentralPost.value
-    ? { name: 'Селия', role: 'Регистратор', art: gameArt.npc.registrar }
-    : { name: 'Гаррет', role: 'Полевой охотник', art: gameArt.npc.huntMaster },
+    ? {
+        name: isUndead.value ? 'Морвена' : 'Селия',
+        role: 'Регистратор',
+        art: gameArt.npc.registrar,
+      }
+    : {
+        name: isUndead.value ? 'Вейр' : 'Гаррет',
+        role: 'Полевой охотник',
+        art: gameArt.npc.huntMaster,
+      },
 )
-const guildNpcs = [
+const guildNpcs = computed(() => [
   {
-    name: 'Селия',
+    name: isUndead.value ? 'Морвена' : 'Селия',
     role: 'Регистратор',
     detail: 'Контракты',
     art: gameArt.npc.registrar,
+    portraitRole: 'registrar',
     active: true,
   },
   {
-    name: 'Гаррет',
+    name: isUndead.value ? 'Вейр' : 'Гаррет',
     role: 'Мастер охоты',
     detail: 'Цели и угрозы',
     art: gameArt.npc.huntMaster,
+    portraitRole: 'huntMaster',
     active: false,
   },
   {
-    name: 'Бран',
+    name: isUndead.value ? 'Морт' : 'Бран',
     role: 'Квартирмейстер',
     detail: 'Снабжение',
     art: gameArt.npc.quartermaster,
+    portraitRole: 'quartermaster',
     active: false,
   },
   {
-    name: 'Эллира',
+    name: isUndead.value ? 'Нэрис' : 'Эллира',
     role: 'Картограф',
     detail: 'Новые регионы',
     art: gameArt.npc.cartographer,
+    portraitRole: 'cartographer',
     active: false,
   },
-]
+])
 
 type ContractFilter = 'ALL' | 'READY_TO_CLAIM' | 'ACTIVE' | 'AVAILABLE' | 'LOCKED'
 
@@ -183,7 +198,7 @@ async function claim(quest: Quest): Promise<void> {
     <section class="guild-board" data-adventurer-guild-board>
       <header class="guild-board__header">
         <div class="guild-board__portrait">
-          <img :src="featuredNpc.art" :alt="featuredNpc.name" />
+          <TownNpcPortrait :human-art="featuredNpc.art" :name="featuredNpc.name" role="registrar" />
         </div>
         <div>
           <small>{{
@@ -198,7 +213,7 @@ async function claim(quest: Quest): Promise<void> {
         <header class="guild-staff-heading">
           <div>
             <small>СОСТАВ ПОСТА</small>
-            <strong>Люди, которые держат экспедицию</strong>
+            <strong>Те, кто держит экспедицию</strong>
           </div>
           <span>4 специалиста</span>
         </header>
@@ -211,7 +226,7 @@ async function claim(quest: Quest): Promise<void> {
             :aria-label="`${npc.name}, ${npc.role}`"
           >
             <span class="guild-npc__portrait">
-              <img :src="npc.art" :alt="npc.name" loading="lazy" />
+              <TownNpcPortrait :human-art="npc.art" :name="npc.name" :role="npc.portraitRole" />
             </span>
             <div>
               <strong>{{ npc.name }}</strong>

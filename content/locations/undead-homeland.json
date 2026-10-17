@@ -1,0 +1,1082 @@
+{
+  "contentVersion": "0.62.0",
+  "publishedAtUtc": "2026-10-17T00:00:00+00:00",
+  "locations": [
+    {
+      "id": "UNDEAD_STARTER_TOWN",
+      "displayName": "Тихоград",
+      "dangerLevel": "SAFE",
+      "recommendedLevel": 1,
+      "transitions": [
+        "UNDEAD_WHISPERING_FOREST"
+      ],
+      "encounters": [],
+      "minimumLevel": 1,
+      "maximumLevel": 60,
+      "requiredContractId": null,
+      "artId": "undead-starter-town",
+      "description": "Тихоград — безопасный город нежити. Здесь мёртвые торгуют, осваивают ремёсла и готовятся к походам в Земли мёртвых.",
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_WHISPERING_FOREST",
+      "displayName": "Лес Последнего Шёпота",
+      "dangerLevel": "ADVENTURE",
+      "recommendedLevel": 3,
+      "transitions": [
+        "UNDEAD_STARTER_TOWN",
+        "UNDEAD_FLOWER_MEADOW",
+        "UNDEAD_DEEP_FOREST"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 5,
+      "requiredContractId": null,
+      "artId": "shepchushchii-les",
+      "description": "Первый лес, волки, кабаны, пауки. Визуальная тема: шепчущий лес в стилистике Elyndor.",
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "WHISPERING_FOREST_IADOVITYI_PAUK_L3",
+          "weight": 1
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_LESNOI_VOLK_L3",
+          "weight": 1
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_MATIORYI_VOLK_L4",
+          "weight": 1
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_KABAN_L4",
+          "weight": 1
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_DIKII_KABAN_VOZHAK_L4",
+          "respawnSeconds": 300,
+          "weight": 0.28,
+          "availability": {
+            "periodSeconds": 3600,
+            "durationSeconds": 600,
+            "offsetSeconds": 0
+          }
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_GIGANTSKII_PAUK_L5",
+          "weight": 1
+        },
+        {
+          "monsterId": "WHISPERING_FOREST_LESNOI_RAZBOINIK_L5",
+          "weight": 1
+        }
+      ],
+      "points": [
+        {
+          "id": "OLD_WATCH_POST",
+          "displayName": "Старый дозор",
+          "description": "На коре вырезан знак городского дозора. Свежие кабаньи следы уходят от тропы в чащу, а над заброшенной вышкой дрожит паутина."
+        }
+      ],
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_DEEP_FOREST",
+      "displayName": "Могильная чаща",
+      "dangerLevel": "DANGEROUS",
+      "recommendedLevel": 8,
+      "transitions": [
+        "UNDEAD_WHISPERING_FOREST",
+        "UNDEAD_FLOWER_MEADOW",
+        "UNDEAD_OLD_ROAD",
+        "UNDEAD_STONE_SPURS",
+        "UNDEAD_BROODMOTHER_LAIR"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 11,
+      "requiredContractId": null,
+      "artId": "glubokii-les",
+      "description": "Порча, ловушки, гоблины и усиленные звери. Визуальная тема: глубокий лес в стилистике Elyndor.",
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "DEEP_WOLF_L6",
+          "weight": 1
+        },
+        {
+          "monsterId": "CORRUPTED_BOAR_L7",
+          "weight": 1
+        },
+        {
+          "monsterId": "DEEP_SPIDER_L8",
+          "weight": 1
+        },
+        {
+          "monsterId": "GOBLIN_SCOUT_L9",
+          "weight": 1
+        },
+        {
+          "monsterId": "DEEP_FOREST_GOBLIN_KAPKANSHCHIK_L10",
+          "weight": 1
+        },
+        {
+          "monsterId": "ALPHA_WOLF_L11",
+          "weight": 1
+        }
+      ],
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_ANCIENT_MINE",
+      "displayName": "Шахта Погребённых",
+      "dangerLevel": "SAFE",
+      "recommendedLevel": 15,
+      "transitions": [
+        "UNDEAD_DEEP_FOREST"
+      ],
+      "encounters": [],
+      "minimumLevel": 1,
+      "maximumLevel": 16,
+      "requiredContractId": null,
+      "artId": "ancient-ruins",
+      "description": "Вход в Древнюю шахту. В глубинах скрываются сильные противники и ценные трофеи.",
+      "travelDurationSeconds": 0,
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_BROODMOTHER_LAIR",
+      "displayName": "Логово Могильной Матриархи",
+      "dangerLevel": "DANGEROUS",
+      "recommendedLevel": 14,
+      "transitions": [
+        "UNDEAD_DEEP_FOREST",
+        "UNDEAD_BLIGHTED_GROVE"
+      ],
+      "encounters": [
+        {
+          "monsterId": "SPIDER_BROODMOTHER_L14",
+          "weight": 1
+        }
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 14,
+      "requiredContractId": null,
+      "artId": "ancient-ruins",
+      "description": "Изолированное логово древней паучьей Прародительницы. Победа даёт награды и прогресс контракта, но не служит ключом к обычным зонам мира.",
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_BLIGHTED_GROVE",
+      "displayName": "Роща Тлена",
+      "dangerLevel": "DANGEROUS",
+      "recommendedLevel": 18,
+      "transitions": [
+        "UNDEAD_BROODMOTHER_LAIR",
+        "UNDEAD_STONE_SPURS",
+        "UNDEAD_ASHEN_BORDER",
+        "UNDEAD_HEART_OF_BLIGHTED_GROVE"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 20,
+      "requiredContractId": null,
+      "artId": "oskvernionnaia-chashcha",
+      "description": "Порча, яд, чума и подготовка к подземелью 20 уровня. Локация открыта для исследования независимо от выполнения контрактов.",
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "BANDIT_ARCHER_L16",
+          "weight": 1
+        },
+        {
+          "monsterId": "CORRUPTED_BOAR_L17",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_PORCHENYI_VOLK_L15",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_ZARAZHIONNYI_OLEN_L18",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_SHIPASTYI_KHISHCHNIK_L18",
+          "weight": 1
+        },
+        {
+          "monsterId": "BANDIT_ROGUE_L19",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_LESNAIA_VEDMA_L19",
+          "respawnSeconds": 300,
+          "weight": 0.28
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_BOLOTNYI_VASILISK_L19",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_IADOVITAIA_MATRONA_CHASHCHI_L19",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_PORCHENNYI_DREVEN_L19",
+          "weight": 1
+        },
+        {
+          "monsterId": "ALPHA_WOLF_L20",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_LOZOVYI_DUSHITEL_L20",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLIGHTED_GROVE_GLASHATAI_PORCHI_L20",
+          "respawnSeconds": 300,
+          "weight": 0.28
+        }
+      ],
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_ECLIPSED_CITADEL",
+      "displayName": "Цитадель Безмолвия",
+      "dangerLevel": "SAFE",
+      "recommendedLevel": 25,
+      "transitions": [
+        "UNDEAD_BLIGHTED_GROVE"
+      ],
+      "encounters": [],
+      "minimumLevel": 1,
+      "maximumLevel": 25,
+      "requiredContractId": null,
+      "artId": "ancient-ruins",
+      "description": "Вход в Цитадель Безмолвия. За её стенами ждут опасные враги, легендарные комплекты и именное оружие.",
+      "travelDurationSeconds": 0,
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_SHATTERED_ORDER_CITADEL_TEST",
+      "displayName": "Обсерватория Мёртвых Звёзд",
+      "dangerLevel": "SAFE",
+      "recommendedLevel": 25,
+      "transitions": [
+        "UNDEAD_BLIGHTED_GROVE"
+      ],
+      "encounters": [],
+      "minimumLevel": 1,
+      "maximumLevel": 25,
+      "requiredContractId": null,
+      "artId": "ancient-ruins",
+      "description": "Подземелье 25 уровня в покинутой башне астромантов. Веллариус собирает силу погасших светил, а четыре хранителя обсерватории стерегут звёздное снаряжение.",
+      "travelDurationSeconds": 0,
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_FLOWER_MEADOW",
+      "displayName": "Поляна Бледноцвета",
+      "dangerLevel": "ADVENTURE",
+      "recommendedLevel": 6,
+      "transitions": [
+        "UNDEAD_STARTER_TOWN",
+        "UNDEAD_WHISPERING_FOREST",
+        "UNDEAD_DEEP_FOREST",
+        "UNDEAD_OLD_ROAD"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 8,
+      "requiredContractId": null,
+      "artId": "tsvetochnaia-poliana",
+      "description": "Ранний хаб профессий и светлая зона. Визуальная тема: цветочная поляна в стилистике Elyndor.",
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "FOREST_WOLF_L4",
+          "weight": 1
+        },
+        {
+          "monsterId": "FOREST_BOAR_L2",
+          "weight": 1
+        },
+        {
+          "monsterId": "FLOWER_MEADOW_ODICHAVSHII_OLEN_L5",
+          "weight": 1
+        },
+        {
+          "monsterId": "FLOWER_MEADOW_ZHALIASHCHII_ROEVIK_L6",
+          "weight": 1
+        },
+        {
+          "monsterId": "FLOWER_MEADOW_KORNEVOI_DUKH_L7",
+          "weight": 1
+        },
+        {
+          "monsterId": "FLOWER_MEADOW_MATKA_ROEVIKOV_L7",
+          "respawnSeconds": 300,
+          "weight": 0.28,
+          "availability": {
+            "periodSeconds": 3600,
+            "durationSeconds": 600,
+            "offsetSeconds": 1200
+          }
+        }
+      ],
+      "points": [
+        {
+          "id": "HOLLOW_ROOTS",
+          "displayName": "Полые корни",
+          "description": "Цветы вокруг старого дерева склоняются к земле даже в безветрие. В полых корнях слышен гул роевиков; жители поляны обходят это место стороной."
+        }
+      ],
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_OLD_ROAD",
+      "displayName": "Тракт Усопших",
+      "dangerLevel": "DANGEROUS",
+      "recommendedLevel": 12,
+      "transitions": [
+        "UNDEAD_FLOWER_MEADOW",
+        "UNDEAD_DEEP_FOREST",
+        "UNDEAD_STONE_SPURS"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 14,
+      "requiredContractId": null,
+      "artId": "staryi-trakt",
+      "description": "Разбойники, наёмники, подрывники и дорога. Визуальная тема: старый тракт в стилистике Elyndor.",
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "OLD_ROAD_GOBLIN_MARODIOR_L11",
+          "weight": 1
+        },
+        {
+          "monsterId": "OLD_ROAD_BOEVOI_PIOS_TRAKTA_L12",
+          "weight": 1
+        },
+        {
+          "monsterId": "OLD_ROAD_KAPITAN_PYLNOI_DOROGI_L13",
+          "respawnSeconds": 300,
+          "weight": 0.28,
+          "availability": {
+            "periodSeconds": 3600,
+            "durationSeconds": 600,
+            "offsetSeconds": 2400
+          }
+        },
+        {
+          "monsterId": "OLD_ROAD_RAZBOINIK_LUCHNIK_L13",
+          "weight": 1
+        },
+        {
+          "monsterId": "OLD_ROAD_RAZBOINIK_PODRYVNIK_L14",
+          "weight": 1
+        },
+        {
+          "monsterId": "OLD_ROAD_DOROZHNYI_MARODIOR_L14",
+          "weight": 1
+        }
+      ],
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_STONE_SPURS",
+      "displayName": "Костяные отроги",
+      "dangerLevel": "DANGEROUS",
+      "recommendedLevel": 14,
+      "transitions": [
+        "UNDEAD_DEEP_FOREST",
+        "UNDEAD_OLD_ROAD",
+        "UNDEAD_ANCIENT_MINE",
+        "UNDEAD_BLIGHTED_GROVE"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 16,
+      "requiredContractId": null,
+      "artId": "kamennye-otrogi",
+      "description": "Руда, тяжёлая броня и вход в древнюю шахту. Визуальная тема: каменные отроги в стилистике Elyndor.",
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "STONE_SPURS_NETOPYR_L12",
+          "weight": 1
+        },
+        {
+          "monsterId": "STONE_SPURS_OBEZUMEVSHII_SHAKHTIOR_L14",
+          "weight": 1
+        },
+        {
+          "monsterId": "STONE_SPURS_RUNNOKAMENNYI_STRAZH_L14",
+          "weight": 1
+        },
+        {
+          "monsterId": "STONE_SPURS_KAMNEGLOT_L15",
+          "weight": 1
+        },
+        {
+          "monsterId": "STONE_SPURS_KHOZIAIN_ZHIL_L16",
+          "respawnSeconds": 300,
+          "weight": 0.28
+        },
+        {
+          "monsterId": "STONE_SPURS_MOLODOI_KAMNEGLOT_L16",
+          "weight": 1
+        }
+      ],
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_ASHEN_BORDER",
+      "displayName": "Пепельный рубеж",
+      "dangerLevel": "DANGEROUS",
+      "recommendedLevel": 20,
+      "transitions": [
+        "UNDEAD_BLIGHTED_GROVE",
+        "UNDEAD_MOON_ASH_MARSHES"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 23,
+      "requiredContractId": null,
+      "artId": "pepelnaia-granitsa",
+      "description": "Организованное затмение, огонь и руны. Визуальная тема: пепельная граница в стилистике Elyndor.",
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "ASHEN_BORDER_ZAKLINATEL_TLEIUSHCHIKH_RUN_L20",
+          "weight": 1
+        },
+        {
+          "monsterId": "ASHEN_BORDER_PEPELNYI_ELEMENTAL_L21",
+          "weight": 1
+        },
+        {
+          "monsterId": "ASHEN_BORDER_PALACH_GRANITSY_L22",
+          "respawnSeconds": 300,
+          "weight": 0.28
+        },
+        {
+          "monsterId": "ASHEN_BORDER_PEPELNYI_NALIOTCHIK_L22",
+          "weight": 1
+        },
+        {
+          "monsterId": "ASHEN_BORDER_DOZORNYI_GRANITSY_L23",
+          "weight": 1
+        },
+        {
+          "monsterId": "ASHEN_BORDER_PEPELNYI_GONCHII_ZVER_L23",
+          "weight": 1
+        }
+      ],
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_MOON_ASH_MARSHES",
+      "displayName": "Топи Забвения",
+      "dangerLevel": "DANGEROUS",
+      "recommendedLevel": 24,
+      "transitions": [
+        "UNDEAD_ASHEN_BORDER",
+        "UNDEAD_ECLIPSE_OUTSKIRTS"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 26,
+      "requiredContractId": null,
+      "artId": "topi-lunnogo-pepla",
+      "description": "Яд, болезнь, высасывание здоровья и магические болота. Визуальная тема: топи лунного пепла в стилистике Elyndor.",
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "MOON_ASH_MARSHES_LUNNYI_VASILISK_L21",
+          "weight": 1
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_POZHIRATEL_SVETA_L25",
+          "respawnSeconds": 300,
+          "weight": 0.28
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_BOLOTNYI_POZHIRATEL_L24",
+          "weight": 1
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_LUNNOPEPELNYI_UTOPLENNIK_L25",
+          "weight": 1
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_VEDMAK_TOPEI_L25",
+          "weight": 1
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_BOLOTNAIA_MAT_L26",
+          "respawnSeconds": 300,
+          "weight": 0.28
+        },
+        {
+          "monsterId": "MOON_ASH_MARSHES_PRIZRACHNYI_PALOMNIK_L26",
+          "weight": 1
+        }
+      ],
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_ECLIPSE_OUTSKIRTS",
+      "displayName": "Предместья Безмолвия",
+      "dangerLevel": "DANGEROUS",
+      "recommendedLevel": 26,
+      "transitions": [
+        "UNDEAD_MOON_ASH_MARSHES",
+        "UNDEAD_ECLIPSED_CITADEL",
+        "UNDEAD_SHATTERED_LANDS"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 29,
+      "requiredContractId": null,
+      "artId": "predmestia-zatmeniia",
+      "description": "Армия цитадели, руны, конструкты и кузницы. Визуальная тема: предместья затмения в стилистике Elyndor.",
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_REKRUT_ZATMENIIA_L24",
+          "weight": 1
+        },
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_STRELOK_ZATMENIIA_L25",
+          "weight": 1
+        },
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_MOGILNYI_AKOLIT_L26",
+          "weight": 1
+        },
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_ZAKLINATEL_RASKOLA_L27",
+          "weight": 1
+        },
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_RUNNYI_STRAZH_ZATMENIIA_L28",
+          "weight": 1
+        },
+        {
+          "monsterId": "ECLIPSE_OUTSKIRTS_CHASOVOI_UMBRY_L29",
+          "respawnSeconds": 300,
+          "weight": 0.28
+        }
+      ],
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_SHATTERED_LANDS",
+      "displayName": "Земли Угасших Клятв",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 30,
+      "transitions": [
+        "UNDEAD_ECLIPSE_OUTSKIRTS",
+        "UNDEAD_BLACKSTONE_HIGHLANDS",
+        "UNDEAD_SHATTERED_ORDER_CITADEL"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 32,
+      "requiredContractId": null,
+      "artId": "zemli-raskola",
+      "description": "Разорённые земли вокруг древней крепости, где остатки воинского Ордена продолжают гражданскую войну.",
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "SHATTERED_LANDS_OSKOLOCHNYI_STRAZH_L30",
+          "weight": 1
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_ZERKALNYI_CHASOVOI_L31",
+          "respawnSeconds": 300,
+          "weight": 0.28
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_CHARODEI_RASKOLA_L31",
+          "weight": 1
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_ISKAZHIONNYI_POSLUSHNIK_L31",
+          "weight": 1
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_KHRANITEL_RAZLOMA_L32",
+          "respawnSeconds": 300,
+          "weight": 0.18
+        },
+        {
+          "monsterId": "SHATTERED_LANDS_OTRAZHIONNYI_ZVER_L32",
+          "weight": 1
+        }
+      ],
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_BLACKSTONE_HIGHLANDS",
+      "displayName": "Надгробное нагорье",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 32,
+      "transitions": [
+        "UNDEAD_SHATTERED_LANDS",
+        "UNDEAD_CRIMSON_WASTELAND"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 35,
+      "requiredContractId": null,
+      "artId": "chernokamennoe-nagore",
+      "description": "Позднее горное дело, тяжёлая броня, огонь и кузни. Визуальная тема: чернокаменное нагорье в стилистике Elyndor.",
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_CHERNOKAMENNYI_VOLK_L30",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_OBSIDIANOVYI_SKORPION_L32",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_KUZNETS_CHIORNOGO_ZHELEZA_L32",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_RUNNYI_GOLEM_L34",
+          "respawnSeconds": 300,
+          "weight": 0.28
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_PIROMANT_NAGORIA_L34",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACKSTONE_HIGHLANDS_CHERNOKAMENNYI_GROMILA_L35",
+          "weight": 1
+        }
+      ],
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_CRIMSON_WASTELAND",
+      "displayName": "Пустошь Потерянных Душ",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 36,
+      "transitions": [
+        "UNDEAD_BLACKSTONE_HIGHLANDS",
+        "UNDEAD_OBSIDIAN_EDGE"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 38,
+      "requiredContractId": null,
+      "artId": "bagrovaia-pustosh",
+      "description": "Нежить, души, проклятия и некромантия. Визуальная тема: багровая пустошь в стилистике Elyndor.",
+      "allowAfk": true,
+      "encounters": [
+        {
+          "monsterId": "CRIMSON_WASTELAND_KOSTIANOI_RYTSAR_L33",
+          "weight": 1
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_CHUMNOI_ZHRETS_L34",
+          "weight": 1
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_TENEVOI_NEKROMANT_L34",
+          "weight": 1
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_POZHIRATEL_DUSH_L35",
+          "weight": 1
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_SKELET_LUCHNIK_L36",
+          "weight": 1
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_POGREBALNAIA_BANSHI_L38",
+          "respawnSeconds": 300,
+          "weight": 0.28
+        },
+        {
+          "monsterId": "CRIMSON_WASTELAND_VLADYKA_SKLEPA_L38",
+          "respawnSeconds": 300,
+          "weight": 0.18
+        }
+      ],
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_OBSIDIAN_EDGE",
+      "displayName": "Предел Вечной Ночи",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 38,
+      "transitions": [
+        "UNDEAD_CRIMSON_WASTELAND",
+        "UNDEAD_BLACK_BASTION",
+        "UNDEAD_BLACK_CRAGS"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 40,
+      "requiredContractId": null,
+      "artId": "obsidianovyi-predel",
+      "description": "Преддверие Чёрного Бастиона и последний рубеж Пограничных земель. За Пределом открывается путь в Дальние земли.",
+      "travelDurationSeconds": 0,
+      "allowAfk": true,
+      "mapId": "DEAD_KINGDOMS",
+      "encounters": [
+        {
+          "monsterId": "OBSIDIAN_EDGE_OBSIDIANOVYI_GONCHII_L36",
+          "weight": 1
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_PEPELNYI_RYTSAR_L36",
+          "weight": 1
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_STRELOK_BASTIONA_L37",
+          "weight": 1
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_INKVIZITOR_BASTIONA_L37",
+          "weight": 1
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_RUNNYI_RAZRUSHITEL_L37",
+          "weight": 1
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_MAGISTR_BASTIONA_L39",
+          "respawnSeconds": 300,
+          "weight": 0.28
+        },
+        {
+          "monsterId": "OBSIDIAN_EDGE_PREDVESTNIK_PERVOGO_STRAZHA_L39",
+          "respawnSeconds": 300,
+          "weight": 0.18
+        }
+      ],
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_HEART_OF_BLIGHTED_GROVE",
+      "displayName": "Сердце Рощи Тлена",
+      "dangerLevel": "SAFE",
+      "recommendedLevel": 20,
+      "transitions": [
+        "UNDEAD_BLIGHTED_GROVE"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 20,
+      "requiredContractId": null,
+      "artId": "serdtse-oskvernionnoi-chashchi",
+      "description": "Подземелье 20 уровня: четыре босса, шесть слотов комплектов и профессиональные материалы.",
+      "allowAfk": false,
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_SHATTERED_ORDER_CITADEL",
+      "displayName": "Цитадель Угасших Клятв",
+      "dangerLevel": "SAFE",
+      "recommendedLevel": 30,
+      "transitions": [
+        "UNDEAD_SHATTERED_LANDS"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 30,
+      "requiredContractId": null,
+      "artId": "tsitadel-raskolotogo-ordena",
+      "description": "Подземелье 30 уровня о гражданской войне древнего Ордена, запретной магии и поднятых рыцарях.",
+      "allowAfk": false,
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_BLACK_BASTION",
+      "displayName": "Бастион Вечной Ночи",
+      "dangerLevel": "SAFE",
+      "recommendedLevel": 40,
+      "transitions": [
+        "UNDEAD_OBSIDIAN_EDGE"
+      ],
+      "minimumLevel": 1,
+      "maximumLevel": 40,
+      "requiredContractId": null,
+      "artId": "chiornyi-bastion",
+      "description": "Финальное подземелье диапазона 40 уровня с восьмичастными комплектами и легендарной цепочкой.",
+      "allowAfk": false,
+      "mapId": "DEAD_KINGDOMS",
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_BLACK_CRAGS",
+      "displayName": "Чёрные Кручи",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 42,
+      "minimumLevel": 41,
+      "maximumLevel": 44,
+      "transitions": [
+        "UNDEAD_OBSIDIAN_EDGE",
+        "UNDEAD_PLAGUEWOOD"
+      ],
+      "artId": "chiornye-kruchi",
+      "description": "Раскалённые горные склоны за Обсидиановым пределом: шлак, старые кузни, лавовые трещины и железные налётчики.",
+      "encounters": [
+        {
+          "monsterId": "BLACK_CRAGS_LAVA_SCORPION_L41",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACK_CRAGS_BLACKSPINE_L42",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACK_CRAGS_ASH_SERPENT_L42",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACK_CRAGS_SLAG_GOLEM_L43",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACK_CRAGS_IRON_RAIDER_L43",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACK_CRAGS_FLAME_BINDER_L44",
+          "weight": 1
+        },
+        {
+          "monsterId": "BLACK_CRAGS_BLACK_FORGE_SMITH_L44",
+          "respawnSeconds": 300,
+          "weight": 0.25
+        }
+      ],
+      "mapId": "OUTER_REACHES",
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_PLAGUEWOOD",
+      "displayName": "Моровой Бор",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 46,
+      "minimumLevel": 44,
+      "maximumLevel": 48,
+      "transitions": [
+        "UNDEAD_BLACK_CRAGS",
+        "UNDEAD_GLASS_DESERT"
+      ],
+      "artId": "morovoi-bor",
+      "description": "Мёртвый лес, где заражённые звери, древни и остатки дозора медленно уступают место Мору.",
+      "encounters": [
+        {
+          "monsterId": "PLAGUEWOOD_PLAGUE_STAG_L44",
+          "weight": 1
+        },
+        {
+          "monsterId": "PLAGUEWOOD_MOR_SPIDER_L45",
+          "weight": 1
+        },
+        {
+          "monsterId": "PLAGUEWOOD_CORPSE_RAVEN_L45",
+          "weight": 1
+        },
+        {
+          "monsterId": "PLAGUEWOOD_ROTTEN_TREANT_L46",
+          "weight": 1
+        },
+        {
+          "monsterId": "PLAGUEWOOD_FALLEN_WATCHMAN_L47",
+          "weight": 1
+        },
+        {
+          "monsterId": "PLAGUEWOOD_MOR_HEALER_L47",
+          "weight": 1
+        },
+        {
+          "monsterId": "PLAGUEWOOD_MOTHER_OF_BLIGHT_L48",
+          "respawnSeconds": 300,
+          "weight": 0.25
+        }
+      ],
+      "mapId": "OUTER_REACHES",
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_GLASS_DESERT",
+      "displayName": "Стеклянная Пустыня",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 50,
+      "minimumLevel": 48,
+      "maximumLevel": 52,
+      "transitions": [
+        "UNDEAD_PLAGUEWOOD",
+        "UNDEAD_FROZEN_EDGE"
+      ],
+      "artId": "stekliannaia-pustynia",
+      "description": "Выжженная магией пустыня, где песок спёкся в чёрное стекло, а древние осколки продолжают оживать.",
+      "encounters": [
+        {
+          "monsterId": "GLASS_DESERT_GLASS_SCORPION_L48",
+          "weight": 1
+        },
+        {
+          "monsterId": "GLASS_DESERT_ASH_WORM_L49",
+          "weight": 1
+        },
+        {
+          "monsterId": "GLASS_DESERT_FLINT_LIZARD_L49",
+          "weight": 1
+        },
+        {
+          "monsterId": "GLASS_DESERT_DUST_SCAVENGER_L50",
+          "weight": 1
+        },
+        {
+          "monsterId": "GLASS_DESERT_SHARD_GOLEM_L51",
+          "weight": 1
+        },
+        {
+          "monsterId": "GLASS_DESERT_WASTE_PROPHET_L51",
+          "weight": 1
+        },
+        {
+          "monsterId": "GLASS_DESERT_GLASS_COLOSSUS_L52",
+          "respawnSeconds": 300,
+          "weight": 0.25
+        }
+      ],
+      "mapId": "OUTER_REACHES",
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_FROZEN_EDGE",
+      "displayName": "Ледяной Предел",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 54,
+      "minimumLevel": 52,
+      "maximumLevel": 56,
+      "transitions": [
+        "UNDEAD_GLASS_DESERT",
+        "UNDEAD_DOOMED_LANDS"
+      ],
+      "artId": "ledianoi-predel",
+      "description": "Высокогорный северный край с вечными метелями, древними рунами и замёрзшими дорогами погибших крепостей.",
+      "encounters": [
+        {
+          "monsterId": "FROZEN_EDGE_WHITE_MANE_PREDATOR_L52",
+          "weight": 1
+        },
+        {
+          "monsterId": "FROZEN_EDGE_ICE_BEAR_L53",
+          "weight": 1
+        },
+        {
+          "monsterId": "FROZEN_EDGE_FROST_SPIDER_L53",
+          "weight": 1
+        },
+        {
+          "monsterId": "FROZEN_EDGE_RIME_GHOST_L54",
+          "weight": 1
+        },
+        {
+          "monsterId": "FROZEN_EDGE_NORTHERN_GIANT_L55",
+          "weight": 1
+        },
+        {
+          "monsterId": "FROZEN_EDGE_RUNIC_HERMIT_L55",
+          "weight": 1
+        },
+        {
+          "monsterId": "FROZEN_EDGE_WHITE_PASS_GUARD_L56",
+          "respawnSeconds": 300,
+          "weight": 0.25
+        }
+      ],
+      "mapId": "OUTER_REACHES",
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "requiredRaceId": "UNDEAD"
+    },
+    {
+      "id": "UNDEAD_DOOMED_LANDS",
+      "displayName": "Гиблые Земли",
+      "dangerLevel": "DEADLY",
+      "recommendedLevel": 58,
+      "minimumLevel": 56,
+      "maximumLevel": 60,
+      "transitions": [
+        "UNDEAD_FROZEN_EDGE",
+        "DEAD_REACHES"
+      ],
+      "artId": "giblye-zemli",
+      "description": "Последняя прокачочная территория 1–60: поля старой войны, чума, нежить, разрушенные некрополи и мёртвые гарнизоны.",
+      "encounters": [
+        {
+          "monsterId": "DOOMED_LANDS_PLAGUE_KNIGHT_L56",
+          "weight": 1
+        },
+        {
+          "monsterId": "DOOMED_LANDS_CARRION_EATER_L57",
+          "weight": 1
+        },
+        {
+          "monsterId": "DOOMED_LANDS_BONE_PROPHET_L57",
+          "weight": 1
+        },
+        {
+          "monsterId": "DOOMED_LANDS_LAST_BREATH_BANSHEE_L58",
+          "weight": 1
+        },
+        {
+          "monsterId": "DOOMED_LANDS_NECROTIC_COLOSSUS_L59",
+          "weight": 1
+        },
+        {
+          "monsterId": "DOOMED_LANDS_PRIEST_OF_DOOM_L59",
+          "weight": 1
+        },
+        {
+          "monsterId": "DOOMED_LANDS_GRAVE_BEAST_L60",
+          "weight": 1
+        },
+        {
+          "monsterId": "DOOMED_LANDS_VICEROY_OF_BLIGHT_L60",
+          "respawnSeconds": 300,
+          "weight": 0.22
+        }
+      ],
+      "mapId": "OUTER_REACHES",
+      "requiredContractId": null,
+      "travelDurationSeconds": 0,
+      "allowAfk": false,
+      "requiredRaceId": "UNDEAD"
+    }
+  ]
+}

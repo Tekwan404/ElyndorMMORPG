@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { isTown } from '@/game/world/undeadHomeland'
 import { formatMoney } from '@/shared/money'
 import { computed, ref, watch } from 'vue'
 
@@ -79,7 +80,9 @@ let pendingLootReadSequence = 0
 const containerActionPending = ref(false)
 const containerActionError = ref<string | null>(null)
 const openedContainer = ref<OpenLootContainerResponse | null>(null)
-const MARCUS_MERCHANT_ID = 'MARCUS_SUPPLIES'
+const MARCUS_MERCHANT_ID = computed(() =>
+  session.snapshot?.character?.raceId === 'UNDEAD' ? 'UNDEAD_MARCUS_SUPPLIES' : 'MARCUS_SUPPLIES',
+)
 const contextualSlot = computed(() => props.slotFilter ?? null)
 const isContextualSlotMode = computed(() => contextualSlot.value !== null)
 
@@ -205,7 +208,7 @@ const selectedSellValue = computed(() =>
     0,
   ),
 )
-const canSellHere = computed(() => session.snapshot?.world?.currentLocation.id === 'STARTER_TOWN')
+const canSellHere = computed(() => isTown(session.snapshot?.world?.currentLocation.id))
 const activeFilterCount = computed(
   () => [newOnly.value, rarityFilter.value !== 'all', equipableOnly.value].filter(Boolean).length,
 )
@@ -543,7 +546,7 @@ async function sellSelectedItems(): Promise<void> {
   bulkActionError.value = null
   try {
     const updated = await session.sellMerchantItems(
-      MARCUS_MERCHANT_ID,
+      MARCUS_MERCHANT_ID.value,
       items.map((item) => ({
         characterItemId: item.id,
         quantity: selectedQuantity(item),
@@ -574,7 +577,7 @@ async function sellSelectedItem(): Promise<void> {
       confirmLabel: 'Продать',
     }))
   if (!confirmed) return
-  const updated = await session.sellMerchantItem(MARCUS_MERCHANT_ID, item.id, item.quantity)
+  const updated = await session.sellMerchantItem(MARCUS_MERCHANT_ID.value, item.id, item.quantity)
   if (updated) selectedItem.value = null
 }
 
@@ -834,9 +837,15 @@ function statRows(item: InventoryItem): string[] {
     item.stats.spellPower ? `Сила заклинаний +${item.stats.spellPower}` : '',
     item.stats.criticalChance ? `Шанс критического удара +${item.stats.criticalChance}%` : '',
     item.stats.criticalDamage ? `Критический урон +${item.stats.criticalDamage}%` : '',
-    item.stats.physicalVampirismPercent ? `Физический вампиризм +${item.stats.physicalVampirismPercent}%` : '',
-    item.stats.magicalVampirismPercent ? `Магический вампиризм +${item.stats.magicalVampirismPercent}%` : '',
-    item.stats.universalVampirismPercent ? `Универсальный вампиризм +${item.stats.universalVampirismPercent}%` : '',
+    item.stats.physicalVampirismPercent
+      ? `Физический вампиризм +${item.stats.physicalVampirismPercent}%`
+      : '',
+    item.stats.magicalVampirismPercent
+      ? `Магический вампиризм +${item.stats.magicalVampirismPercent}%`
+      : '',
+    item.stats.universalVampirismPercent
+      ? `Универсальный вампиризм +${item.stats.universalVampirismPercent}%`
+      : '',
     item.stats.accuracy ? `Точность +${item.stats.accuracy}%` : '',
     item.stats.attackSpeed ? `Скорость атаки +${item.stats.attackSpeed}%` : '',
     item.stats.armor ? `Броня +${item.stats.armor}` : '',
@@ -1534,7 +1543,11 @@ async function toggleSelectedLock(): Promise<void> {
             <span>для экипировки</span>
           </div>
         </section>
-        <p v-if="selectedItem.sourceType === 'GM_FORGE'" class="item-detail__hint item-detail__hint--locked" data-gm-item>
+        <p
+          v-if="selectedItem.sourceType === 'GM_FORGE'"
+          class="item-detail__hint item-detail__hint--locked"
+          data-gm-item
+        >
           DEV-предмет · только для тестирования. Не продаётся и не передаётся другим игрокам.
         </p>
         <p class="item-detail__description">{{ selectedItem.description }}</p>
@@ -1624,7 +1637,10 @@ async function toggleSelectedLock(): Promise<void> {
           {{ selectedItem.type === 'Equipment' ? 'этот предмет' : 'этот предмет за штуку' }} за
           {{ formatMoney(selectedItem.sellPriceGold) }}.
         </p>
-        <p v-if="selectedItem.isLocked && selectedItem.sourceType !== 'GM_FORGE'" class="item-detail__hint item-detail__hint--locked">
+        <p
+          v-if="selectedItem.isLocked && selectedItem.sourceType !== 'GM_FORGE'"
+          class="item-detail__hint item-detail__hint--locked"
+        >
           Предмет защищён от продажи торговцу. Снимите защиту, если захотите его продать.
         </p>
         <p v-if="selectedItem.type === 'Consumable'" class="item-detail__hint">

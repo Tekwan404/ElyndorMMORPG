@@ -98,6 +98,7 @@ public sealed class CombatSessionFactory(
             return Failure(CombatErrorCodes.UnsupportedClass, character.Id);
 
         bool isTraining = string.Equals(monsterId, TrainingDummyId, StringComparison.Ordinal);
+        if (isTraining) expectedLocationId = WorldLocationAccess.HomeTown(character.RaceId);
         MonsterDefinition? monster = isTraining
             ? CreateTrainingDummy(character.Level)
             : indexes.MonstersById.GetValueOrDefault(monsterId);
@@ -115,12 +116,12 @@ public sealed class CombatSessionFactory(
 
         LocationDefinition? currentLocation =
             indexes.LocationsById.GetValueOrDefault(expectedLocationId);
-        if (currentLocation is null)
+        if (currentLocation is null || !WorldLocationAccess.CanEnter(currentLocation, character.RaceId))
             return Failure(CombatErrorCodes.InvalidLocation, character.Id);
 
         if (isTraining)
         {
-            if (!string.Equals(expectedLocationId, StarterTownId, StringComparison.Ordinal))
+            if (!string.Equals(expectedLocationId, WorldLocationAccess.HomeTown(character.RaceId), StringComparison.Ordinal))
                 return Failure(CombatErrorCodes.InvalidLocation, character.Id);
         }
         else if (!allowUnlistedEncounter
@@ -249,7 +250,8 @@ public sealed class CombatSessionFactory(
             EquippedSetPieces: EquippedSetPieceCounter.Count(derived.Inventory),
             EquippedSpecialEffectIds: EquippedSpecialEffectIds(derived.Inventory),
             GenderId: character.GenderId,
-            SkinId: character.ActiveSkinId,
+            SkinId: character.RaceId == "UNDEAD" && character.ActiveSkinId?.Contains("_UNDEAD_", StringComparison.Ordinal) != true
+                ? $"{character.ClassId}_{character.GenderId}_UNDEAD_STARTER" : character.ActiveSkinId,
             EquipmentArmor: derived.Equipment.ArmorFlat,
             MainHandWeaponCategory: derived.Equipment.MainHandWeaponCategory,
             OffHandEquipmentCategory: offHandItem?.Definition.OffHandCategory,
@@ -479,7 +481,8 @@ public sealed class CombatSessionFactory(
             EquippedSetPieces: EquippedSetPieceCounter.Count(derived.Inventory),
             EquippedSpecialEffectIds: EquippedSpecialEffectIds(derived.Inventory),
             GenderId: character.GenderId,
-            SkinId: character.ActiveSkinId,
+            SkinId: character.RaceId == "UNDEAD" && character.ActiveSkinId?.Contains("_UNDEAD_", StringComparison.Ordinal) != true
+                ? $"{character.ClassId}_{character.GenderId}_UNDEAD_STARTER" : character.ActiveSkinId,
             EquipmentArmor: derived.Equipment.ArmorFlat,
             MainHandWeaponCategory: derived.Equipment.MainHandWeaponCategory,
             OffHandEquipmentCategory: offHandItem?.Definition.OffHandCategory,

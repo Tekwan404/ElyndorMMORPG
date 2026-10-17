@@ -6,13 +6,50 @@ export interface AuthenticationResponse {
   sessionCredentialExpiresAtUtc?: string | null
 }
 
-export interface PremiumStoreOffer { sku: string; itemDefinitionId: string; name: string; description: string; rarity: string; iconId: string | null; quantity: number; crystalPrice: number; canPurchase: boolean; maxPackCount?: number; inventoryCapacityBonus?: number }
-export interface PremiumStoreSnapshot { crystalBalance: number; offers: PremiumStoreOffer[] }
-export interface PremiumStorePurchaseResponse { crystalBalance: number }
-export interface CharacterSkinOffer { id: string; name: string; classId: string; genderId: string; imageId: string; crystalPrice: number; owned: boolean; eligible: boolean; purchasable: boolean }
-export interface CharacterSkinStoreSnapshot { crystalBalance: number; activeSkinId: string | null; skins: CharacterSkinOffer[] }
-export interface CharacterSkinMutationResponse { crystalBalance: number; activeSkinId: string | null }
-export interface PromoCodeRedemptionResponse { crystalBalance: number }
+export interface PremiumStoreOffer {
+  sku: string
+  itemDefinitionId: string
+  name: string
+  description: string
+  rarity: string
+  iconId: string | null
+  quantity: number
+  crystalPrice: number
+  canPurchase: boolean
+  maxPackCount?: number
+  inventoryCapacityBonus?: number
+}
+export interface PremiumStoreSnapshot {
+  crystalBalance: number
+  offers: PremiumStoreOffer[]
+}
+export interface PremiumStorePurchaseResponse {
+  crystalBalance: number
+}
+export interface CharacterSkinOffer {
+  id: string
+  name: string
+  classId: string
+  genderId: string
+  imageId: string
+  crystalPrice: number
+  owned: boolean
+  eligible: boolean
+  purchasable: boolean
+  raceId?: string
+}
+export interface CharacterSkinStoreSnapshot {
+  crystalBalance: number
+  activeSkinId: string | null
+  skins: CharacterSkinOffer[]
+}
+export interface CharacterSkinMutationResponse {
+  crystalBalance: number
+  activeSkinId: string | null
+}
+export interface PromoCodeRedemptionResponse {
+  crystalBalance: number
+}
 
 export interface ContentAdminCurrent {
   contentVersion: string
@@ -269,7 +306,6 @@ export interface WorldContract {
   rewardGold: number
 }
 
-
 export type QuestStatus = 'LOCKED' | 'AVAILABLE' | 'ACTIVE' | 'READY_TO_CLAIM' | 'COMPLETED'
 
 export interface QuestObjective {
@@ -443,8 +479,7 @@ export const EQUIPMENT_SLOT_TO_EQUIPPED_KEY = {
   Ring2: 'ring2',
 } as const satisfies Record<EquipmentSlot, string>
 
-export type EquippedInventoryKey =
-  (typeof EQUIPMENT_SLOT_TO_EQUIPPED_KEY)[EquipmentSlot]
+export type EquippedInventoryKey = (typeof EQUIPMENT_SLOT_TO_EQUIPPED_KEY)[EquipmentSlot]
 export type ItemType = 'Equipment' | 'Material' | 'Consumable' | 'LootContainer' | 'Recipe'
 export type ItemRarity = 'Common' | 'Uncommon' | 'Rare' | 'Epic' | 'Legendary' | 'Unique'
 
@@ -587,7 +622,7 @@ export type EquippedInventory = Record<EquippedInventoryKey, InventoryItem | nul
 
 export function createEmptyEquippedInventory(): EquippedInventory {
   return Object.fromEntries(
-    EQUIPMENT_SLOTS.map(slot => [EQUIPMENT_SLOT_TO_EQUIPPED_KEY[slot], null]),
+    EQUIPMENT_SLOTS.map((slot) => [EQUIPMENT_SLOT_TO_EQUIPPED_KEY[slot], null]),
   ) as EquippedInventory
 }
 
@@ -711,8 +746,20 @@ export interface CharacterStats {
 }
 
 export interface CharacterStatContribution {
-  source: 'CLASS_BASE' | 'LEVEL_GROWTH' | 'EQUIPMENT' | 'TALENT_FLAT' | 'TALENT_PERCENT'
-    | 'EFFECTS' | 'FORMULA_BASE' | 'STRENGTH' | 'AGILITY' | 'INTELLECT' | 'STAMINA' | 'TALENT_BONUS' | 'EQUIPMENT_BONUS'
+  source:
+    | 'CLASS_BASE'
+    | 'LEVEL_GROWTH'
+    | 'EQUIPMENT'
+    | 'TALENT_FLAT'
+    | 'TALENT_PERCENT'
+    | 'EFFECTS'
+    | 'FORMULA_BASE'
+    | 'STRENGTH'
+    | 'AGILITY'
+    | 'INTELLECT'
+    | 'STAMINA'
+    | 'TALENT_BONUS'
+    | 'EQUIPMENT_BONUS'
   value: number
 }
 
@@ -823,27 +870,56 @@ export interface TravelResponse {
 
 export type TalentLoadoutId = 'LOADOUT_1' | 'LOADOUT_2'
 export type TalentBranchId =
-  | 'GUARDIAN' | 'BERSERKER' | 'WARLORD'
-  | 'FIRE' | 'ARCANE' | 'FROST'
-  | 'MARKSMAN' | 'BEAST_MASTERY' | 'ARCANE_ARCHER'
-export interface TalentPrerequisite { talentId: string; requiredRank: number }
+  | 'GUARDIAN'
+  | 'BERSERKER'
+  | 'WARLORD'
+  | 'FIRE'
+  | 'ARCANE'
+  | 'FROST'
+  | 'MARKSMAN'
+  | 'BEAST_MASTERY'
+  | 'ARCANE_ARCHER'
+export interface TalentPrerequisite {
+  talentId: string
+  requiredRank: number
+}
 export interface TalentNode {
-  id: string; branchId: TalentBranchId; tier: number; requiredSpentPoints: number
-  name: string; englishName: string; maxRank: number
-  prerequisites: TalentPrerequisite[]; description: string; requiredLevel: number | null
-  iconId: string | null; runtimeStatus: 'SUPPORTED' | 'PARTIAL' | 'DEFERRED'
+  id: string
+  branchId: TalentBranchId
+  tier: number
+  requiredSpentPoints: number
+  name: string
+  englishName: string
+  maxRank: number
+  prerequisites: TalentPrerequisite[]
+  description: string
+  requiredLevel: number | null
+  iconId: string | null
+  runtimeStatus: 'SUPPORTED' | 'PARTIAL' | 'DEFERRED'
   unlockedAbilityId: string | null
 }
 export interface TalentBranch {
-  id: TalentBranchId; name: string; fantasy: string; nodeCount: number
+  id: TalentBranchId
+  name: string
+  fantasy: string
+  nodeCount: number
 }
 export interface TalentLoadout {
-  id: TalentLoadoutId; selectedRanks: Record<string, number>; spentPoints: number
+  id: TalentLoadoutId
+  selectedRanks: Record<string, number>
+  spentPoints: number
 }
 export interface TalentSnapshot {
-  treeId: string; classId: string; version: number; activeLoadoutId: TalentLoadoutId
-  stateVersion: number; earnedPoints: number; availablePoints: number
-  branches: TalentBranch[]; nodes: TalentNode[]; loadouts: TalentLoadout[]
+  treeId: string
+  classId: string
+  version: number
+  activeLoadoutId: TalentLoadoutId
+  stateVersion: number
+  earnedPoints: number
+  availablePoints: number
+  branches: TalentBranch[]
+  nodes: TalentNode[]
+  loadouts: TalentLoadout[]
 }
 
 export interface CombatEffectSnapshot {

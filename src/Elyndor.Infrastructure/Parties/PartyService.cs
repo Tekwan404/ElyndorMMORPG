@@ -21,6 +21,7 @@ public static class PartyErrorCodes
     public const string NotFriends = "party_target_not_friend";
     public const string IdempotencyConflict = "party_idempotency_conflict";
     public const string InvalidState = "party_invalid_state";
+    public const string FactionRestricted = "party_faction_restricted";
 }
 
 public sealed record PartyMemberView(
@@ -156,7 +157,7 @@ public sealed class PartyService(
             .Select(member => member.CharacterId)
             .ToArray();
         Dictionary<Guid, Guid> accountIds = await dbContext.Characters
-            .Where(candidate => characterIds.Contains(candidate.Id))
+            .Where(candidate => characterIds.Contains(candidate.Id) && candidate.RaceId == character.RaceId)
             .ToDictionaryAsync(candidate => candidate.Id, candidate => candidate.AccountId, cancellationToken);
         HashSet<Guid> localCharacterIds = (await dbContext.CharacterLocations
                 .AsNoTracking()
@@ -254,10 +255,12 @@ public sealed class PartyService(
                 member => member.CharacterId == targetCharacterId,
                 cancellationToken))
             return PartyOperationResult.Failure(PartyErrorCodes.AlreadyInParty);
-        if (!await dbContext.Characters.AnyAsync(
-                character => character.Id == targetCharacterId,
-                cancellationToken))
+        string? targetRace = await dbContext.Characters.Where(character => character.Id == targetCharacterId)
+            .Select(character => character.RaceId).SingleOrDefaultAsync(cancellationToken);
+        if (targetRace is null)
             return PartyOperationResult.Failure(PartyErrorCodes.CharacterNotFound);
+        if (targetRace != inviter.RaceId)
+            return PartyOperationResult.Failure(PartyErrorCodes.FactionRestricted);
 
         if (mode == PartyInviteMode.Friend
             && !await dbContext.Friendships.AnyAsync(
@@ -341,6 +344,9 @@ public sealed class PartyService(
         Party? party = await GetPartyAsync(invite.PartyId, cancellationToken);
         if (party is null || party.State != PartyState.Active)
             return PartyOperationResult.Failure(PartyErrorCodes.PartyNotFound);
+        if (await dbContext.Characters.Where(character => character.Id == party.LeaderCharacterId)
+                .Select(character => character.RaceId).SingleAsync(cancellationToken) != target.RaceId)
+            return PartyOperationResult.Failure(PartyErrorCodes.FactionRestricted);
         if (party.Members.Count >= Party.MaxPartySize)
             return PartyOperationResult.Failure(PartyErrorCodes.PartyFull);
 

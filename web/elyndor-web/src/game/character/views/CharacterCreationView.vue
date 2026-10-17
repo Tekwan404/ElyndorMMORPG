@@ -46,7 +46,8 @@ const classes: readonly {
     value: 'ARCHER',
     label: 'Лучник',
     role: 'Дальний бой · Концентрация',
-    description: 'Меткий охотник, который держит дистанцию и выбирает момент для решающего выстрела.',
+    description:
+      'Меткий охотник, который держит дистанцию и выбирает момент для решающего выстрела.',
     traits: ['Дистанция', 'Точность', 'Мобильность'],
     glyph: 'bow',
     modifier: 'poison',
@@ -64,7 +65,8 @@ const classes: readonly {
     value: 'PALADIN',
     label: 'Паладин',
     role: 'Свет · Мана',
-    description: 'Святой воин в тяжёлой броне: сражается в первых рядах, защищает и исцеляет союзников.',
+    description:
+      'Святой воин в тяжёлой броне: сражается в первых рядах, защищает и исцеляет союзников.',
     traits: ['Защита', 'Исцеление', 'Свет'],
     glyph: 'holy',
     modifier: 'holy',
@@ -79,8 +81,12 @@ const valid = computed(
     !/^[ -]|[ -]$|[ -]{2}/.test(name.value),
 )
 
-const selectedClass = computed(() => classes.find((option) => option.value === classId.value) ?? classes[0]!)
-const characterArt = computed(() => resolveCharacterArt(classId.value, genderId.value, 'transparent'))
+const selectedClass = computed(
+  () => classes.find((option) => option.value === classId.value) ?? classes[0]!,
+)
+const characterArt = computed(() =>
+  resolveCharacterArt(classId.value, genderId.value, 'transparent', null, raceId.value),
+)
 const nameFeedback = computed(() => {
   if (!name.value) return '3–16 символов · буквы и цифры 0–9'
   if (valid.value) return 'Имя подходит'
@@ -90,12 +96,16 @@ const nameFeedback = computed(() => {
 
 const errorMessage = computed(() => {
   if (!session.errorCode) return null
-  return ({
-    character_name_taken: 'Это имя уже занято.',
-    character_already_exists: 'На аккаунте уже есть герой.',
-    character_name_invalid: 'Проверьте имя героя.',
-    network_unavailable: 'Нет связи с сервером. Попробуйте ещё раз.',
-  } as Record<string, string>)[session.errorCode] ?? 'Не удалось создать героя. Попробуйте ещё раз.'
+  return (
+    (
+      {
+        character_name_taken: 'Это имя уже занято.',
+        character_already_exists: 'На аккаунте уже есть герой.',
+        character_name_invalid: 'Проверьте имя героя.',
+        network_unavailable: 'Нет связи с сервером. Попробуйте ещё раз.',
+      } as Record<string, string>
+    )[session.errorCode] ?? 'Не удалось создать героя. Попробуйте ещё раз.'
+  )
 })
 
 function classIcon(option: (typeof classes)[number]): IconConfig {
@@ -217,7 +227,10 @@ async function submit() {
           <section class="control-section name-section">
             <label class="name-field">
               <span>Имя героя</span>
-              <div class="name-input-wrap" :class="{ 'name-input-wrap--valid': valid && name.length > 0 }">
+              <div
+                class="name-input-wrap"
+                :class="{ 'name-input-wrap--valid': valid && name.length > 0 }"
+              >
                 <input
                   v-model="name"
                   maxlength="16"
@@ -269,8 +282,16 @@ async function submit() {
     calc(var(--ui-space-5) + var(--ui-safe-area-bottom))
     calc(var(--ui-space-4) + var(--ui-safe-area-left));
   background:
-    radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--creation-accent) 12%, transparent), transparent 36%),
-    linear-gradient(180deg, color-mix(in srgb, var(--ui-color-surface-2) 78%, transparent), var(--ui-color-background));
+    radial-gradient(
+      circle at 50% 20%,
+      color-mix(in srgb, var(--creation-accent) 12%, transparent),
+      transparent 36%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--ui-color-surface-2) 78%, transparent),
+      var(--ui-color-background)
+    );
 }
 .creation[data-class='PALADIN'] {
   --creation-accent: #d8b968;
@@ -332,8 +353,16 @@ h1 {
   border: 1px solid color-mix(in srgb, var(--creation-accent) 42%, var(--ui-color-border));
   border-radius: calc(var(--ui-radius-md) * 1.5);
   background:
-    linear-gradient(180deg, transparent 48%, color-mix(in srgb, var(--ui-color-background) 88%, transparent) 100%),
-    radial-gradient(circle at 50% 34%, color-mix(in srgb, var(--creation-accent) 14%, transparent), transparent 43%),
+    linear-gradient(
+      180deg,
+      transparent 48%,
+      color-mix(in srgb, var(--ui-color-background) 88%, transparent) 100%
+    ),
+    radial-gradient(
+      circle at 50% 34%,
+      color-mix(in srgb, var(--creation-accent) 14%, transparent),
+      transparent 43%
+    ),
     var(--ui-color-surface-2);
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, var(--ui-color-text-primary) 4%, transparent),
@@ -371,7 +400,11 @@ h1 {
   translate: -50% 0;
   border: 1px solid color-mix(in srgb, var(--creation-accent) 36%, transparent);
   border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--creation-accent) 16%, transparent), transparent 66%);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--creation-accent) 16%, transparent),
+    transparent 66%
+  );
   box-shadow: 0 0 80px color-mix(in srgb, var(--creation-accent) 11%, transparent);
   opacity: 0.85;
 }
@@ -486,7 +519,10 @@ fieldset {
   background: color-mix(in srgb, var(--ui-color-background) 52%, var(--ui-color-surface-2));
   color: var(--ui-color-text-muted);
   cursor: pointer;
-  transition: border-color 140ms ease, background 140ms ease, transform 140ms ease;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    transform 140ms ease;
 }
 .class-choice:hover {
   border-color: color-mix(in srgb, var(--creation-accent) 54%, var(--ui-color-border));
@@ -614,7 +650,8 @@ legend {
 .name-input-wrap input {
   width: 100%;
   min-height: var(--ui-control-height-lg);
-  padding: var(--ui-space-2) calc(var(--ui-space-5) + var(--ui-space-2)) var(--ui-space-2) var(--ui-space-3);
+  padding: var(--ui-space-2) calc(var(--ui-space-5) + var(--ui-space-2)) var(--ui-space-2)
+    var(--ui-space-3);
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-md);
   outline: 0;
@@ -622,7 +659,9 @@ legend {
   color: var(--ui-color-text-primary);
   font: inherit;
   font-size: var(--ui-font-size-input);
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
 }
 .name-input-wrap input:focus {
   border-color: var(--creation-accent);
@@ -761,7 +800,8 @@ legend {
   .creation__action {
     bottom: calc(-1 * var(--ui-space-1));
     margin-inline: calc(-1 * var(--ui-space-3));
-    padding: var(--ui-space-3) var(--ui-space-3) calc(var(--ui-space-1) + var(--ui-safe-area-bottom));
+    padding: var(--ui-space-3) var(--ui-space-3)
+      calc(var(--ui-space-1) + var(--ui-safe-area-bottom));
   }
 }
 @media (max-width: 380px) {

@@ -154,6 +154,15 @@ public sealed class DungeonRun
         State = DungeonRunState.Abandoned;
     }
 
+    public void MoveToFactionDungeon(string dungeonId)
+    {
+        EnsureActive();
+        ArgumentException.ThrowIfNullOrWhiteSpace(dungeonId);
+        if (Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active))
+            throw new InvalidOperationException("An active encounter cannot move between faction dungeons.");
+        DungeonId = dungeonId;
+    }
+
     private void EnsureActive()
     {
         if (State != DungeonRunState.Active)

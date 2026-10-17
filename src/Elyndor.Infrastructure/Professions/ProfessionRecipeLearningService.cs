@@ -4,6 +4,7 @@ using System.Text;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Content;
 using Elyndor.Core.Professions;
+using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Elyndor.Infrastructure.World;
 using Microsoft.EntityFrameworkCore;
@@ -47,7 +48,7 @@ public sealed class ProfessionRecipeLearningService(GameDbContext db, IContentSn
                 return new ProfessionMutationResult(false, "resource_travelling");
             string? location = await db.CharacterLocations.Where(item => item.CharacterId == character.Id)
                 .Select(item => item.LocationId).SingleOrDefaultAsync(cancellationToken);
-            if (location != recipe.RequiredLocationId) return new ProfessionMutationResult(false, ProfessionErrorCodes.WrongWorkshop);
+            if (location != (recipe.RequiredLocationId is null ? null : WorldLocationAccess.RequiredLocation(recipe.RequiredLocationId, character.RaceId))) return new ProfessionMutationResult(false, ProfessionErrorCodes.WrongWorkshop);
             var scroll = await db.CharacterItems.Where(item => item.CharacterId == character.Id
                     && item.ItemDefinitionId == recipe.LearningScrollItemId && item.Storage == "INVENTORY" && !item.IsLocked && item.TransactionLockId == null
                     && !db.CharacterEquipment.Any(equipment => equipment.CharacterItemId == item.Id))

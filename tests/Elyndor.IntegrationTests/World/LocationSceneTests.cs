@@ -29,6 +29,24 @@ public sealed class LocationSceneTests(PostgresFixture postgres) : IAsyncLifetim
     public Task InitializeAsync() => postgres.ResetAsync();
     public Task DisposeAsync() => Task.CompletedTask;
 
+    [Theory]
+    [InlineData("HUMAN", "BORDERLANDS", "UNDEAD_STARTER_TOWN")]
+    [InlineData("UNDEAD", "DEAD_KINGDOMS", "STARTER_TOWN")]
+    public async Task CatalogAndTravelEnforceFactionOwnership(string raceId, string homeMap, string forbiddenTown)
+    {
+        await using var factory = CreateFactory();
+        using HttpClient client = await CreatePlayerAsync(factory, raceId: raceId);
+        var locations = (await client.GetFromJsonAsync<WorldLocationResponse[]>("/api/v1/world/locations"))!;
+        Assert.Contains(locations, location => location.MapId == homeMap);
+        Assert.Contains(locations, location => location.MapId == "OUTER_REACHES");
+        Assert.DoesNotContain(locations, location => location.Id == forbiddenTown);
+        Assert.All(locations, location => Assert.True(location.MapId == homeMap || location.MapId == "OUTER_REACHES"));
+        using var response = await client.PostAsJsonAsync("/api/v1/world/travel",
+            new TravelRequest(Guid.CreateVersion7(), forbiddenTown));
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Contains(TravelErrorCodes.FactionRestricted, await response.Content.ReadAsStringAsync());
+    }
+
     [Fact]
     public async Task SelectedEnemyStartsExistingCombatAndSelectionPreservesProgress()
     {
@@ -304,7 +322,7 @@ public sealed class LocationSceneTests(PostgresFixture postgres) : IAsyncLifetim
                 });
         });
 
-    private async Task<HttpClient> CreatePlayerAsync(WebApplicationFactory<Program> factory, string name = "SceneTester")
+    private async Task<HttpClient> CreatePlayerAsync(WebApplicationFactory<Program> factory, string name = "SceneTester", string raceId = "HUMAN")
     {
         var accountId = Guid.CreateVersion7();
         var telegramUserId = ++_nextTelegramUserId;
@@ -317,13 +335,13 @@ public sealed class LocationSceneTests(PostgresFixture postgres) : IAsyncLifetim
         var token = factory.Services.GetRequiredService<JwtTokenIssuer>().Issue(accountId, telegramUserId);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
         var created = await client.PostAsJsonAsync("/api/v1/character",
-            new CreateCharacterRequest(Guid.CreateVersion7(), name, "HUMAN", "MALE", "WARRIOR"));
+            new CreateCharacterRequest(Guid.CreateVersion7(), name, raceId, "MALE", "WARRIOR"));
         created.EnsureSuccessStatusCode();
         var character = (await created.Content.ReadFromJsonAsync<CharacterResponse>())!;
         await using (var db = postgres.CreateDbContext())
         {
             var location = await db.CharacterLocations.SingleAsync(entry => entry.CharacterId == character.Id);
-            location.Relocate(Forest, factory.Services.GetRequiredService<TimeProvider>().GetUtcNow());
+            location.Relocate(raceId == "UNDEAD" ? "UNDEAD_" + Forest : Forest, factory.Services.GetRequiredService<TimeProvider>().GetUtcNow());
             await db.SaveChangesAsync();
         }
         return client;

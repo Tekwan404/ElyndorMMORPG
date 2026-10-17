@@ -8,7 +8,8 @@ public sealed record CharacterSkinDefinition(
     string ImageId,
     long CrystalPrice,
     bool Enabled = true,
-    bool Purchasable = true);
+    bool Purchasable = true,
+    string RaceId = "HUMAN");
 
 public sealed class CharacterSkinOwnership
 {

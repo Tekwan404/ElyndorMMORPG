@@ -54,6 +54,28 @@ describe('WorldMapView', () => {
     vi.restoreAllMocks()
   })
 
+  it('shows the undead homeland and shared continent without the human map', async () => {
+    const ownLocations = LOCATIONS.map((location) => ({
+      ...location,
+      id: 'UNDEAD_' + location.id,
+      mapId: 'DEAD_KINGDOMS',
+    }))
+    vi.spyOn(apiClient, 'request').mockResolvedValue(ownLocations)
+    const session = useGameSessionStore()
+    const state = snapshot()
+    state.character!.raceId = 'UNDEAD'
+    state.world!.currentLocation = ownLocations[0]!
+    state.world!.outgoingTransitions = [ownLocations[1]!]
+    session.snapshot = state
+    const wrapper = mount(WorldMapView)
+    await flushPromises()
+    expect(wrapper.find('[data-map-switch-id="DEAD_KINGDOMS"]').exists()).toBe(true)
+    expect(wrapper.find('[data-map-switch-id="BORDERLANDS"]').exists()).toBe(false)
+    expect(wrapper.find('[data-map-switch-id="OUTER_REACHES"]').exists()).toBe(true)
+    expect(wrapper.get('[data-map-selection]').text()).toContain('Тихоград')
+    wrapper.unmount()
+  })
+
   it('loads the server world catalog and marks only authoritative transitions reachable', async () => {
     vi.spyOn(apiClient, 'request').mockResolvedValue(LOCATIONS)
 
@@ -66,8 +88,12 @@ describe('WorldMapView', () => {
     expect(wrapper.get('[data-world-map-switch]')).toBeTruthy()
     expect(wrapper.get('[data-map-switch-id="OUTER_REACHES"]')).toBeTruthy()
     expect(wrapper.findAll('[data-location-id]')).toHaveLength(3)
-    expect(wrapper.get('[data-location-id="STARTER_TOWN"]').attributes('data-state')).toBe('current')
-    expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').attributes('data-state')).toBe('reachable')
+    expect(wrapper.get('[data-location-id="STARTER_TOWN"]').attributes('data-state')).toBe(
+      'current',
+    )
+    expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').attributes('data-state')).toBe(
+      'reachable',
+    )
     expect(wrapper.get('[data-location-id="DEEP_FOREST"]').attributes('data-state')).toBe('locked')
   })
 
@@ -95,13 +121,17 @@ describe('WorldMapView', () => {
     const wrapper = mount(WorldMapView)
     await flushPromises()
 
-    expect(wrapper.get('[data-location-id="STARTER_TOWN"]').attributes('aria-label')).toContain('Стартовый город')
+    expect(wrapper.get('[data-location-id="STARTER_TOWN"]').attributes('aria-label')).toContain(
+      'Стартовый город',
+    )
     expect(wrapper.get('[data-location-id="STARTER_TOWN"]').attributes('aria-pressed')).toBe('true')
     expect(wrapper.get('[data-map-selection]').text()).toContain('Стартовый город')
 
     await wrapper.get('[data-location-id="WHISPERING_FOREST"]').trigger('click')
 
-    expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').attributes('aria-pressed')).toBe(
+      'true',
+    )
     expect(wrapper.get('[data-map-selection]').text()).toContain('Шепчущий лес')
   })
 
@@ -119,7 +149,9 @@ describe('WorldMapView', () => {
     expect(wrapper.get('[data-location-list-id="WHISPERING_FOREST"]').text()).toContain('02')
 
     await wrapper.get('[data-location-list-id="WHISPERING_FOREST"]').trigger('click')
-    expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').attributes('aria-pressed')).toBe('true')
+    expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').attributes('aria-pressed')).toBe(
+      'true',
+    )
   })
 
   it('keeps map node order stable when the current location changes', async () => {
@@ -130,8 +162,8 @@ describe('WorldMapView', () => {
     const wrapper = mount(WorldMapView)
     await flushPromises()
 
-    const order = () => wrapper.findAll('[data-location-id]')
-      .map(node => node.attributes('data-location-id'))
+    const order = () =>
+      wrapper.findAll('[data-location-id]').map((node) => node.attributes('data-location-id'))
 
     expect(order()).toEqual(['STARTER_TOWN', 'WHISPERING_FOREST', 'DEEP_FOREST'])
 
@@ -144,7 +176,9 @@ describe('WorldMapView', () => {
     await flushPromises()
 
     expect(order()).toEqual(['STARTER_TOWN', 'WHISPERING_FOREST', 'DEEP_FOREST'])
-    expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').attributes('data-state')).toBe('current')
+    expect(wrapper.get('[data-location-id="WHISPERING_FOREST"]').attributes('data-state')).toBe(
+      'current',
+    )
   })
 
   it('travels only to a server-provided outgoing transition without opening the location tab', async () => {
@@ -198,7 +232,7 @@ describe('WorldMapView', () => {
     await flushPromises()
 
     const nodes = wrapper.findAll('[data-location-id]')
-    const slots = nodes.map(node => {
+    const slots = nodes.map((node) => {
       const style = node.attributes('style') ?? ''
       return `${style.match(/left: ([^;]+)/)?.[1]}:${style.match(/top: ([^;]+)/)?.[1]}`
     })
@@ -227,7 +261,12 @@ describe('WorldMapView', () => {
 
     expect(wrapper.get('.map-canvas').attributes('style')).toContain('elyndor-world-map')
     for (const id of ['OBSIDIAN_EDGE', 'BLACK_BASTION']) {
-      const top = Number.parseFloat(wrapper.get(`[data-location-id="${id}"]`).element.getAttribute('style')!.match(/top:\s*([\d.]+)%/)?.[1] ?? '0')
+      const top = Number.parseFloat(
+        wrapper
+          .get(`[data-location-id="${id}"]`)
+          .element.getAttribute('style')!
+          .match(/top:\s*([\d.]+)%/)?.[1] ?? '0',
+      )
       expect(top).toBeGreaterThanOrEqual(70)
     }
   })
@@ -274,7 +313,9 @@ describe('WorldMapView', () => {
 
     expect(wrapper.get('[data-map-id="OUTER_REACHES"]')).toBeTruthy()
     expect(wrapper.get('.map-canvas').attributes('style')).toContain('outer-reaches-map')
-    expect(wrapper.get('[data-location-id="BLACK_CRAGS"]').attributes('data-state')).toBe('reachable')
+    expect(wrapper.get('[data-location-id="BLACK_CRAGS"]').attributes('data-state')).toBe(
+      'reachable',
+    )
     expect(wrapper.find('[data-location-id="OBSIDIAN_EDGE"]').exists()).toBe(false)
     expect(wrapper.get('[data-map-selection]').text()).toContain('Чёрные Кручи')
   })
@@ -337,15 +378,17 @@ describe('WorldMapView', () => {
     session.snapshot.character!.level = 20
     session.snapshot.world!.outgoingTransitions = [LOCATIONS[1]!, citadel]
     const dungeon = useDungeonStore()
-    dungeon.previews = [{
-      id: 'ECLIPSED_CITADEL',
-      displayName: 'Цитадель Затмения',
-      minimumLevel: 15,
-      minimumPartySize: 1,
-      maximumPartySize: 5,
-      description: 'Dungeon preview',
-      encounters: [],
-    } as never]
+    dungeon.previews = [
+      {
+        id: 'ECLIPSED_CITADEL',
+        displayName: 'Цитадель Затмения',
+        minimumLevel: 15,
+        minimumPartySize: 1,
+        maximumPartySize: 5,
+        description: 'Dungeon preview',
+        encounters: [],
+      } as never,
+    ]
     const teleport = vi.spyOn(dungeon, 'teleport').mockResolvedValue(true)
 
     const wrapper = mount(WorldMapView)

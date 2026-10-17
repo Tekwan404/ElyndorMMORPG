@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Elyndor.Contracts.Dungeons;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.Content;
+using Elyndor.Core.World;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.Dungeons;
@@ -32,10 +33,18 @@ public static class DungeonEndpoints
         return endpoints;
     }
 
-    private static IResult GetPreviews(IContentSnapshotProvider contentProvider)
+    private static async Task<IResult> GetPreviews(ClaimsPrincipal user, GameDbContext dbContext,
+        IContentSnapshotProvider contentProvider, CancellationToken cancellationToken)
     {
+        if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+        string? raceId = await dbContext.Characters.AsNoTracking()
+            .Where(character => character.AccountId == accountId)
+            .Select(character => character.RaceId).SingleOrDefaultAsync(cancellationToken);
+        if (raceId is null) return Results.NotFound();
         GameContentSnapshot content = contentProvider.GetCurrent();
-        return Results.Ok((content.Package.Dungeons ?? []).Select(definition =>
+        return Results.Ok((content.Package.Dungeons ?? [])
+            .Where(definition => !content.Indexes.LocationsById.TryGetValue(definition.EntryLocationId, out var entry)
+                || WorldLocationAccess.CanEnter(entry, raceId)).Select(definition =>
             DungeonPreviewMapper.ToResponse(definition, content)).ToArray());
     }
 
@@ -157,11 +166,13 @@ public static class DungeonEndpoints
         var members = await dbContext.Characters
             .AsNoTracking()
             .Where(character => memberIds.Contains(character.Id))
-            .Select(character => new { character.Id, character.AccountId, character.Level })
+            .Select(character => new { character.Id, character.AccountId, character.Level, character.RaceId })
             .ToArrayAsync(cancellationToken);
         var caller = members.SingleOrDefault(member => member.AccountId == accountId);
         if (caller is null)
             return DungeonTeleportResult.Failure(DungeonErrorCodes.CharacterNotFound);
+        if (members.Any(member => !service.CanEnter(definition, member.RaceId)))
+            return DungeonTeleportResult.Failure(DungeonErrorCodes.MemberCannotEnter);
 
         if (party.ActiveDungeonRunId is Guid activeRunId)
         {

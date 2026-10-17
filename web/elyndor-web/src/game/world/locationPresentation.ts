@@ -1,5 +1,7 @@
 import type { WorldLocation } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
+import undeadCity from '@/assets/world/undead-starter-town.webp'
+import { UNDEAD_LOCATION_NAMES, baseLocationId } from './undeadHomeland'
 
 export type LocationKind = 'city' | 'region' | 'dungeon'
 
@@ -62,25 +64,105 @@ const PRESENTATIONS: Record<string, LocationPresentation> = {
 }
 
 Object.assign(PRESENTATIONS, {
-  FLOWER_MEADOW: { label: 'Цветочная поляна', art: gameArt.locations.FLOWER_MEADOW, kind: 'region', dangerLabel: 'Приключение' },
-  OLD_ROAD: { label: 'Старый тракт', art: gameArt.locations.OLD_ROAD, kind: 'region', dangerLabel: 'Опасная область' },
-  STONE_SPURS: { label: 'Каменные отроги', art: gameArt.locations.STONE_SPURS, kind: 'region', dangerLabel: 'Опасная область' },
-  ASHEN_BORDER: { label: 'Пепельная граница', art: gameArt.locations.ASHEN_BORDER, kind: 'region', dangerLabel: 'Опасная область' },
-  MOON_ASH_MARSHES: { label: 'Топи Лунного Пепла', art: gameArt.locations.MOON_ASH_MARSHES, kind: 'region', dangerLabel: 'Опасная область' },
-  ECLIPSE_OUTSKIRTS: { label: 'Предместья Затмения', art: gameArt.locations.ECLIPSE_OUTSKIRTS, kind: 'region', dangerLabel: 'Опасная область' },
-  SHATTERED_LANDS: { label: 'Земли Раскола', art: gameArt.locations.SHATTERED_LANDS, kind: 'region', dangerLabel: 'Высокий риск' },
-  BLACKSTONE_HIGHLANDS: { label: 'Чернокаменное нагорье', art: gameArt.locations.BLACKSTONE_HIGHLANDS, kind: 'region', dangerLabel: 'Высокий риск' },
-  CRIMSON_WASTELAND: { label: 'Багровая пустошь', art: gameArt.locations.CRIMSON_WASTELAND, kind: 'region', dangerLabel: 'Высокий риск' },
-  OBSIDIAN_EDGE: { label: 'Обсидиановый предел', art: gameArt.locations.OBSIDIAN_EDGE, kind: 'region', dangerLabel: 'Смертельная опасность' },
-  HEART_OF_BLIGHTED_GROVE: { label: 'Сердце Осквернённой Чащи', art: gameArt.locations.HEART_OF_BLIGHTED_GROVE_RAID, kind: 'dungeon', dangerLabel: 'Подземелье · 20 уровень' },
-  SHATTERED_ORDER_CITADEL: { label: 'Цитадель Расколотого Ордена', art: gameArt.locations.SHATTERED_ORDER_CITADEL_RAID, kind: 'dungeon', dangerLabel: 'Подземелье · 30 уровень' },
-  BLACK_BASTION: { label: 'Чёрный Бастион', art: gameArt.locations.BLACK_BASTION_RAID, kind: 'dungeon', dangerLabel: 'Подземелье · 40 уровень' },
+  FLOWER_MEADOW: {
+    label: 'Цветочная поляна',
+    art: gameArt.locations.FLOWER_MEADOW,
+    kind: 'region',
+    dangerLabel: 'Приключение',
+  },
+  OLD_ROAD: {
+    label: 'Старый тракт',
+    art: gameArt.locations.OLD_ROAD,
+    kind: 'region',
+    dangerLabel: 'Опасная область',
+  },
+  STONE_SPURS: {
+    label: 'Каменные отроги',
+    art: gameArt.locations.STONE_SPURS,
+    kind: 'region',
+    dangerLabel: 'Опасная область',
+  },
+  ASHEN_BORDER: {
+    label: 'Пепельная граница',
+    art: gameArt.locations.ASHEN_BORDER,
+    kind: 'region',
+    dangerLabel: 'Опасная область',
+  },
+  MOON_ASH_MARSHES: {
+    label: 'Топи Лунного Пепла',
+    art: gameArt.locations.MOON_ASH_MARSHES,
+    kind: 'region',
+    dangerLabel: 'Опасная область',
+  },
+  ECLIPSE_OUTSKIRTS: {
+    label: 'Предместья Затмения',
+    art: gameArt.locations.ECLIPSE_OUTSKIRTS,
+    kind: 'region',
+    dangerLabel: 'Опасная область',
+  },
+  SHATTERED_LANDS: {
+    label: 'Земли Раскола',
+    art: gameArt.locations.SHATTERED_LANDS,
+    kind: 'region',
+    dangerLabel: 'Высокий риск',
+  },
+  BLACKSTONE_HIGHLANDS: {
+    label: 'Чернокаменное нагорье',
+    art: gameArt.locations.BLACKSTONE_HIGHLANDS,
+    kind: 'region',
+    dangerLabel: 'Высокий риск',
+  },
+  CRIMSON_WASTELAND: {
+    label: 'Багровая пустошь',
+    art: gameArt.locations.CRIMSON_WASTELAND,
+    kind: 'region',
+    dangerLabel: 'Высокий риск',
+  },
+  OBSIDIAN_EDGE: {
+    label: 'Обсидиановый предел',
+    art: gameArt.locations.OBSIDIAN_EDGE,
+    kind: 'region',
+    dangerLabel: 'Смертельная опасность',
+  },
+  HEART_OF_BLIGHTED_GROVE: {
+    label: 'Сердце Осквернённой Чащи',
+    art: gameArt.locations.HEART_OF_BLIGHTED_GROVE_RAID,
+    kind: 'dungeon',
+    dangerLabel: 'Подземелье · 20 уровень',
+  },
+  SHATTERED_ORDER_CITADEL: {
+    label: 'Цитадель Расколотого Ордена',
+    art: gameArt.locations.SHATTERED_ORDER_CITADEL_RAID,
+    kind: 'dungeon',
+    dangerLabel: 'Подземелье · 30 уровень',
+  },
+  BLACK_BASTION: {
+    label: 'Чёрный Бастион',
+    art: gameArt.locations.BLACK_BASTION_RAID,
+    kind: 'dungeon',
+    dangerLabel: 'Подземелье · 40 уровень',
+  },
   BLACK_CRAGS: { label: 'Чёрные Кручи', art: '', kind: 'region', dangerLabel: 'Смертельная зона' },
   PLAGUEWOOD: { label: 'Моровой Бор', art: '', kind: 'region', dangerLabel: 'Смертельная зона' },
-  GLASS_DESERT: { label: 'Стеклянная Пустыня', art: '', kind: 'region', dangerLabel: 'Смертельная зона' },
-  FROZEN_EDGE: { label: 'Ледяной Предел', art: '', kind: 'region', dangerLabel: 'Смертельная зона' },
+  GLASS_DESERT: {
+    label: 'Стеклянная Пустыня',
+    art: '',
+    kind: 'region',
+    dangerLabel: 'Смертельная зона',
+  },
+  FROZEN_EDGE: {
+    label: 'Ледяной Предел',
+    art: '',
+    kind: 'region',
+    dangerLabel: 'Смертельная зона',
+  },
   DOOMED_LANDS: { label: 'Гиблые Земли', art: '', kind: 'region', dangerLabel: 'Смертельная зона' },
-  DEAD_REACHES: { label: 'Мёртвые Пределы', art: '', kind: 'region', dangerLabel: 'Элитная зона · 60 уровень' },
+  DEAD_REACHES: {
+    label: 'Мёртвые Пределы',
+    art: '',
+    kind: 'region',
+    dangerLabel: 'Элитная зона · 60 уровень',
+  },
 })
 
 const FALLBACK_PRESENTATION: LocationPresentation = {
@@ -99,6 +181,14 @@ export function locationPresentation(
   locationId: string | null | undefined,
   fallbackLabel?: string | null,
 ): LocationPresentation {
+  if (locationId?.startsWith('UNDEAD_')) {
+    const original = PRESENTATIONS[baseLocationId(locationId)] ?? FALLBACK_PRESENTATION
+    return {
+      ...original,
+      label: UNDEAD_LOCATION_NAMES[locationId] ?? safeFallbackLabel(fallbackLabel),
+      art: locationId === 'UNDEAD_STARTER_TOWN' ? undeadCity : original.art,
+    }
+  }
   const presentation = locationId ? PRESENTATIONS[locationId] : undefined
   if (presentation) return presentation
   return {

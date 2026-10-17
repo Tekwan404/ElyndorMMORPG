@@ -26,7 +26,8 @@ public sealed record WorldSceneSnapshot(
     GameContentSnapshot Content,
     DateTimeOffset ServerTimeUtc,
     IReadOnlySet<string>? CompletedQuestIds = null,
-    IReadOnlyDictionary<string, DateTimeOffset>? EliteRespawns = null);
+    IReadOnlyDictionary<string, DateTimeOffset>? EliteRespawns = null,
+    string RaceId = "HUMAN");
 
 public sealed record WorldEncounterSnapshot(
     Guid EncounterId,
@@ -217,8 +218,11 @@ public sealed class WorldEncounterService(
 
         if (!content.Indexes.LocationsById.TryGetValue(characterLocation.LocationId, out var location))
             return (null, WorldEncounterErrorCodes.LocationUnavailable);
+        if (!WorldLocationAccess.CanEnter(location, character.RaceId))
+            return (null, WorldEncounterErrorCodes.LocationUnavailable);
 
-        var localQuestIds = (content.Package.Quests ?? []).Where(quest => quest.OfferLocationId == location.Id)
+        var localQuestIds = (Elyndor.Core.Quests.QuestCatalog.ForRace(content.Package, character.RaceId).Quests ?? [])
+            .Where(quest => quest.OfferLocationId == location.Id)
             .Select(quest => quest.Id).ToArray();
         var completedQuests = await dbContext.CharacterQuestStates.AsNoTracking()
             .Where(quest => quest.CharacterId == character.Id && quest.Status == Elyndor.Core.Quests.QuestStateStatuses.Completed
@@ -233,7 +237,7 @@ public sealed class WorldEncounterService(
             .ToArrayAsync(cancellationToken);
         var now = timeProvider.GetUtcNow();
         var respawns = await GetEliteRespawnsAsync(location, now, cancellationToken);
-        return (new WorldSceneSnapshot(character.Id, location, content, now, completedQuests.ToHashSet(StringComparer.Ordinal), respawns), null);
+        return (new WorldSceneSnapshot(character.Id, location, content, now, completedQuests.ToHashSet(StringComparer.Ordinal), respawns, character.RaceId), null);
     }
 
     public async Task<bool> IsTargetAvailableAsync(string locationId, string monsterId, CancellationToken cancellationToken)

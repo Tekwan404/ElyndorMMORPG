@@ -58,10 +58,14 @@ export interface DetailedWorldLocation extends WorldLocation {
 let cachedContentVersion: string | null = null
 let catalogPromise: Promise<DetailedWorldLocation[]> | null = null
 
-export function loadLocationCatalog(contentVersion: string): Promise<DetailedWorldLocation[]> {
-  if (catalogPromise && cachedContentVersion === contentVersion) return catalogPromise
+export function loadLocationCatalog(
+  contentVersion: string,
+  characterId = '',
+): Promise<DetailedWorldLocation[]> {
+  const cacheKey = `${contentVersion}:${characterId}`
+  if (catalogPromise && cachedContentVersion === cacheKey) return catalogPromise
 
-  cachedContentVersion = contentVersion
+  cachedContentVersion = cacheKey
   catalogPromise = apiClient
     .request<DetailedWorldLocation[]>('/api/v1/world/locations')
     .catch((error) => {

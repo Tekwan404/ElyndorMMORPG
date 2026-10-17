@@ -28,7 +28,9 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
         if (owner is null) return [];
         var definitions = content.GetCurrent().Package.Items?.ToDictionary(x => x.Id, StringComparer.Ordinal);
         if (definitions is null) return [];
-        var query = db.AuctionListings.AsNoTracking().Where(x => x.State == "ACTIVE" && x.ExpiresAt > time.GetUtcNow());
+        var query = db.AuctionListings.AsNoTracking().Where(x => x.State == "ACTIVE" && x.ExpiresAt > time.GetUtcNow()
+            && db.Characters.Any(seller => seller.Id == x.SellerId
+                && db.Characters.Any(buyer => buyer.Id == owner && buyer.RaceId == seller.RaceId)));
         if (mine) query = query.Where(x => x.SellerId == owner);
         else query = query.Where(x => x.SellerId != owner);
         if (!string.IsNullOrWhiteSpace(search) || !string.IsNullOrWhiteSpace(type))
@@ -360,10 +362,11 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
                 notification = null;
                 var lot = await LockAsync(id, ct);
                 if (replay) return Response(lot);
-                var item = await transactions.ItemAsync(lot.ItemId, lot.SellerId, id, true, ct);
-                lot.Sell(buyerId.Value, time.GetUtcNow());
                 var buyer = characters.Single(x => x.Id == buyerId);
                 var seller = characters.Single(x => x.Id == lot.SellerId);
+                if (buyer.RaceId != seller.RaceId) throw new CommerceRuleException("auction_not_found");
+                var item = await transactions.ItemAsync(lot.ItemId, lot.SellerId, id, true, ct);
+                lot.Sell(buyerId.Value, time.GetUtcNow());
                 if (!buyer.TrySpendGold(lot.Price)) throw new CommerceRuleException("commerce_insufficient_funds");
                 seller.AddGold(lot.Price - lot.Tax);
                 // Delivery is durable in the same transaction, including when the buyer's bag is full.

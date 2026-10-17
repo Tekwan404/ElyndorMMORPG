@@ -11,6 +11,8 @@ using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Characters;
 using Elyndor.Infrastructure.Professions;
 using Elyndor.Server.Items;
+using Elyndor.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace Elyndor.Server.World;
 
@@ -23,10 +25,17 @@ public static class WorldEndpoints
             .WithTags("World");
 
         group.MapGet("/bootstrap", GetBootstrapAsync);
-        group.MapGet("/world/locations", (IContentSnapshotProvider contentProvider) =>
+        group.MapGet("/world/locations", async (ClaimsPrincipal user, GameDbContext dbContext,
+            IContentSnapshotProvider contentProvider, CancellationToken cancellationToken) =>
         {
+            if (!TryGetAccountId(user, out Guid accountId)) return Results.Unauthorized();
+            string? raceId = await dbContext.Characters.AsNoTracking()
+                .Where(character => character.AccountId == accountId)
+                .Select(character => character.RaceId).SingleOrDefaultAsync(cancellationToken);
+            if (raceId is null) return Results.NotFound();
             GameContentSnapshot content = contentProvider.GetCurrent();
             return Results.Ok(content.WorldMap.Locations
+                .Where(location => WorldLocationAccess.CanEnter(location, raceId))
                 .OrderBy(location => location.Id, StringComparer.Ordinal)
                 .Select(location => ToLocation(location, content))
                 .ToArray());
@@ -253,6 +262,7 @@ public static class WorldEndpoints
                                 ? StatusCodes.Status422UnprocessableEntity
                         : result.ErrorCode is TravelErrorCodes.LevelRequired
                             or TravelErrorCodes.ContractRequired
+                            or TravelErrorCodes.FactionRestricted
                                 ? StatusCodes.Status403Forbidden
                                 : StatusCodes.Status404NotFound;
                 return Results.Problem(

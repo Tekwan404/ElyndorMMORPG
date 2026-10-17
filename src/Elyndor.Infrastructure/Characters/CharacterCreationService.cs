@@ -180,7 +180,7 @@ public sealed class CharacterCreationService(
             now);
         if (!string.IsNullOrWhiteSpace(classProfile.StartingCompanionProfileId))
             character.SelectCompanionProfile(classProfile.StartingCompanionProfileId);
-        CharacterLocation location = new(character.Id, WorldLocationIds.StarterTown, 1, now);
+        CharacterLocation location = new(character.Id, WorldLocationAccess.HomeTown(character.RaceId), 1, now);
         _dbContext.Characters.Add(character);
         _dbContext.CharacterLocations.Add(location);
 

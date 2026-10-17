@@ -122,6 +122,10 @@ public sealed class DungeonService(
     public DungeonDefinition? GetDefinition(string dungeonId) =>
         contentProvider.GetCurrent().Indexes.DungeonsById.GetValueOrDefault(dungeonId);
 
+    public bool CanEnter(DungeonDefinition definition, string raceId) =>
+        !contentProvider.GetCurrent().Indexes.LocationsById.TryGetValue(definition.EntryLocationId, out var entry)
+            || WorldLocationAccess.CanEnter(entry, raceId);
+
     public Task<DungeonTeleportResult> TeleportToEntryAsync(
         Guid accountId,
         string dungeonId,
@@ -154,6 +158,8 @@ public sealed class DungeonService(
             return DungeonTeleportResult.Failure(DungeonErrorCodes.CharacterNotFound);
         if (character.Level < definition.MinimumLevel)
             return DungeonTeleportResult.Failure(DungeonErrorCodes.LevelRequired);
+        if (!CanEnter(definition, character.RaceId))
+            return DungeonTeleportResult.Failure(DungeonErrorCodes.MemberCannotEnter);
 
         DateTimeOffset now = timeProvider.GetUtcNow();
         await TravelPersistence.CompleteDueAsync(dbContext, character.Id, now, cancellationToken);
@@ -921,6 +927,8 @@ public sealed class DungeonService(
         DungeonDefinition definition,
         CancellationToken cancellationToken)
     {
+        if (!CanEnter(definition, character.RaceId))
+            return DungeonErrorCodes.MemberCannotEnter;
         CharacterLocation? location = await dbContext.CharacterLocations
             .SingleOrDefaultAsync(candidate => candidate.CharacterId == character.Id, cancellationToken);
         if (location is null || !string.Equals(location.LocationId, definition.EntryLocationId, StringComparison.Ordinal))

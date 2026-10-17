@@ -26,10 +26,13 @@ import { initializeTelegramWebApp } from '@/telegram/telegramWebApp'
 import { beginTelegramWebLogin } from '@/telegram/telegramWebLogin'
 import { UIButton, UIHealthBar, UILoadingState, UIModal } from '@/ui/components'
 
-const PremiumStoreView = defineAsyncComponent(() => import('@/game/economy/views/PremiumStoreView.vue'))
+const PremiumStoreView = defineAsyncComponent(
+  () => import('@/game/economy/views/PremiumStoreView.vue'),
+)
 const ArenaView = defineAsyncComponent(() => import('@/game/pvp/views/ArenaView.vue'))
 
-type ShellView = 'world' | 'hero' | 'location' | 'quests' | 'menu' | 'arena' | 'world-boss' | 'store'
+type ShellView =
+  'world' | 'hero' | 'location' | 'quests' | 'menu' | 'arena' | 'world-boss' | 'store'
 
 const session = useGameSessionStore()
 const combat = useCombatSessionStore()
@@ -55,6 +58,7 @@ const portraitArt = computed(() =>
         character.value.genderId,
         'transparent',
         character.value.activeSkinId,
+        character.value.raceId,
       )
     : null,
 )
@@ -269,17 +273,21 @@ onMounted(() => {
       <div class="hud__main">
         <button class="hud__portrait" type="button" aria-label="Открыть героя" @click="openHero">
           <ProfileFrame :style-id="character.profileFrameStyle" class="hud__profile-frame">
-          <img v-if="portraitArt" :src="portraitArt" alt="" aria-hidden="true" />
-          <span v-else>{{ character.name.slice(0, 1).toUpperCase() }}</span>
+            <img v-if="portraitArt" :src="portraitArt" alt="" aria-hidden="true" />
+            <span v-else>{{ character.name.slice(0, 1).toUpperCase() }}</span>
           </ProfileFrame>
         </button>
 
         <button class="hud__identity" type="button" :title="character.name" @click="openHero">
           <span class="hud__identity-line">
             <b>{{ character.name }}</b>
-            <small class="hud__level">{{ character.level }} · {{ classLabel(character.classId) }}</small>
+            <small class="hud__level"
+              >{{ character.level }} · {{ classLabel(character.classId) }}</small
+            >
           </span>
-          <span v-if="character.profileTitle" class="hud__profile-title">{{ character.profileTitle }}</span>
+          <span v-if="character.profileTitle" class="hud__profile-title">{{
+            character.profileTitle
+          }}</span>
         </button>
 
         <div class="hud__meta">
@@ -356,7 +364,10 @@ onMounted(() => {
         v-else-if="session.state === 'world' && activeView === 'world'"
         @open-location="openLocation()"
       />
-      <section v-else-if="session.state === 'world' && activeView === 'store'" class="premium-entry">
+      <section
+        v-else-if="session.state === 'world' && activeView === 'store'"
+        class="premium-entry"
+      >
         <UIButton variant="ghost" @click="openLocation()">‹ В игру</UIButton>
         <PremiumStoreView />
       </section>
@@ -454,10 +465,24 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.hud__profile-frame { width: 100%; height: 100%; }
-.hud__profile-title { color: #d1b2e9 !important; font-size: 10px !important; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.premium-entry { padding: 0 10px 24px; }
-.hud__meta { min-width: 0; }
+.hud__profile-frame {
+  width: 100%;
+  height: 100%;
+}
+.hud__profile-title {
+  color: #d1b2e9 !important;
+  font-size: 10px !important;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.premium-entry {
+  padding: 0 10px 24px;
+}
+.hud__meta {
+  min-width: 0;
+}
 .arena-entry {
   display: grid;
   gap: var(--ui-space-3);
@@ -637,15 +662,22 @@ onMounted(() => {
   font-variant-numeric: tabular-nums;
 }
 
-.hud__meta :deep(.crystal-wallet) { flex: 0 0 auto; }
-.hud__wallet strong { display: block; min-width: 0; }
+.hud__meta :deep(.crystal-wallet) {
+  flex: 0 0 auto;
+}
+.hud__wallet strong {
+  display: block;
+  min-width: 0;
+}
 .hud__wallet :deep(.money-amount) {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.hud__wallet :deep(.money-amount > span + span) { margin-inline-start: 0.4em; }
+.hud__wallet :deep(.money-amount > span + span) {
+  margin-inline-start: 0.4em;
+}
 
 .hud__bars {
   display: grid;
@@ -882,27 +914,75 @@ onMounted(() => {
 }
 
 @media (max-width: 480px) {
-  .hud { padding-inline: 10px; }
-  .hud__main { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 6px; }
-  .hud__portrait { width: 34px; height: 38px; }
-  .hud__identity-line { flex-wrap: wrap; gap: 1px 4px; }
-  .hud__identity b { font-size: 13px; }
-  .hud__level { max-width: 100%; overflow: hidden; font-size: 9px; text-overflow: ellipsis; }
-  .hud__profile-title { overflow: hidden; max-width: 100%; text-overflow: ellipsis; white-space: nowrap; }
-  .hud__meta { gap: 4px; }
-  .hud__wallet { padding-inline: 5px; font-size: 10px; }
-  .hud__meta :deep(.crystal-wallet) { gap: 3px; padding-inline: 3px 5px; }
-  .hud__meta :deep(.crystal-wallet strong) { font-size: 10px; }
-  .hud__meta :deep(.crystal-wallet img) { width: 16px; }
-  .hud__wallet :deep(.money-amount > span + span) { margin-inline-start: .2em; }
+  .hud {
+    padding-inline: 10px;
+  }
+  .hud__main {
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    gap: 6px;
+  }
+  .hud__portrait {
+    width: 34px;
+    height: 38px;
+  }
+  .hud__identity-line {
+    flex-wrap: wrap;
+    gap: 1px 4px;
+  }
+  .hud__identity b {
+    font-size: 13px;
+  }
+  .hud__level {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 9px;
+    text-overflow: ellipsis;
+  }
+  .hud__profile-title {
+    overflow: hidden;
+    max-width: 100%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .hud__meta {
+    gap: 4px;
+  }
+  .hud__wallet {
+    padding-inline: 5px;
+    font-size: 10px;
+  }
+  .hud__meta :deep(.crystal-wallet) {
+    gap: 3px;
+    padding-inline: 3px 5px;
+  }
+  .hud__meta :deep(.crystal-wallet strong) {
+    font-size: 10px;
+  }
+  .hud__meta :deep(.crystal-wallet img) {
+    width: 16px;
+  }
+  .hud__wallet :deep(.money-amount > span + span) {
+    margin-inline-start: 0.2em;
+  }
 }
 
 @media (max-width: 360px) {
-  .hud { padding-inline: 7px; }
-  .hud__main { gap: 5px; }
-  .hud__meta { gap: 3px; }
-  .hud__wallet { padding-inline: 4px; font-size: 9px; }
-  .hud__meta :deep(.crystal-wallet strong) { font-size: 9px; }
+  .hud {
+    padding-inline: 7px;
+  }
+  .hud__main {
+    gap: 5px;
+  }
+  .hud__meta {
+    gap: 3px;
+  }
+  .hud__wallet {
+    padding-inline: 4px;
+    font-size: 9px;
+  }
+  .hud__meta :deep(.crystal-wallet strong) {
+    font-size: 9px;
+  }
 }
 
 @media (min-width: 582px) {

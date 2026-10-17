@@ -145,13 +145,16 @@ const errorText: Record<string, string> = {
   commerce_item_equipped: 'Сначала снимите предмет.',
   commerce_character_unavailable: 'Обмен недоступен во время боя или путешествия.',
   trade_location_mismatch: 'Для обмена нужно находиться в одной локации.',
+  trade_faction_restricted: 'Обмен доступен только внутри своей фракции.',
   trade_already_active: 'У одного из игроков уже есть обмен.',
   trade_stale_revision: 'Предложение изменилось. Проверьте его ещё раз.',
   trade_disconnected: 'Связь с обменом прервана.',
   trade_closed: 'Этот обмен уже завершён.',
   auction_unavailable: 'Лот больше недоступен.',
+  auction_not_found: 'Лот недоступен на аукционе вашей фракции.',
   auction_listing_limit: 'Нельзя создать столько лотов: превышен лимит активных лотов.',
-  auction_quote_changed: 'Комиссия аукциона изменилась. Проверьте новый расчёт и подтвердите ещё раз.',
+  auction_quote_changed:
+    'Комиссия аукциона изменилась. Проверьте новый расчёт и подтвердите ещё раз.',
   auction_invalid_listing: 'Проверьте цену и выбранные предметы.',
   mail_item_unavailable: 'Посылка больше недоступна.',
 }
@@ -161,8 +164,18 @@ export function commerceMessage(code: string): string {
 }
 
 export function commerceRarityLabel(rarity: string): string {
-  return ({ Common: 'Обычный', Uncommon: 'Необычный', Rare: 'Редкий', Epic: 'Эпический',
-    Legendary: 'Легендарный', Unique: 'Уникальный' } as Record<string, string>)[rarity] ?? rarity
+  return (
+    (
+      {
+        Common: 'Обычный',
+        Uncommon: 'Необычный',
+        Rare: 'Редкий',
+        Epic: 'Эпический',
+        Legendary: 'Легендарный',
+        Unique: 'Уникальный',
+      } as Record<string, string>
+    )[rarity] ?? rarity
+  )
 }
 
 export function parseMoneyInput(gold: string, silver: string, bronze: string): number {
@@ -170,18 +183,21 @@ export function parseMoneyInput(gold: string, silver: string, bronze: string): n
     const normalized = value.trim() || '0'
     if (!/^\d+$/.test(normalized)) throw new RangeError(`${label}: используйте только целое число`)
     const parsed = BigInt(normalized)
-    if (max !== undefined && parsed > max) throw new RangeError(`${label}: допустимо от 0 до ${max}`)
+    if (max !== undefined && parsed > max)
+      throw new RangeError(`${label}: допустимо от 0 до ${max}`)
     return parsed
   }
-  const total = parsePart(gold, 'Золото') * 10_000n
-    + parsePart(silver, 'Серебро', 99n) * 100n
-    + parsePart(bronze, 'Бронза', 99n)
+  const total =
+    parsePart(gold, 'Золото') * 10_000n +
+    parsePart(silver, 'Серебро', 99n) * 100n +
+    parsePart(bronze, 'Бронза', 99n)
   if (total > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('Сумма слишком велика')
   return Number(total)
 }
 
 export function parseGoldInput(value: string): number {
-  if (!/^(0|[1-9]\d*)(?:\.\d{1,4})?$/.test(value.trim())) throw new RangeError('Введите количество золота, до 4 знаков после точки')
+  if (!/^(0|[1-9]\d*)(?:\.\d{1,4})?$/.test(value.trim()))
+    throw new RangeError('Введите количество золота, до 4 знаков после точки')
   const [whole, fraction = ''] = value.trim().split('.')
   const bronze = BigInt(whole!) * 10_000n + BigInt(fraction.padEnd(4, '0'))
   if (bronze > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('Сумма слишком велика')
@@ -198,31 +214,53 @@ export async function loadAuctionSellableItems(): Promise<AuctionSellableItem[]>
   return apiClient.request<AuctionSellableItem[]>('/api/v1/auction/sellable-items')
 }
 
-export async function loadAuction(mine: boolean, search = '', type = '', page = 0): Promise<AuctionLot[]> {
+export async function loadAuction(
+  mine: boolean,
+  search = '',
+  type = '',
+  page = 0,
+): Promise<AuctionLot[]> {
   const query = new URLSearchParams({ mine: String(mine), search, type, page: String(page) })
   return apiClient.request<AuctionLot[]>(`/api/v1/auction?${query}`)
 }
 
 export async function previewAuction(itemId: string, price: number): Promise<AuctionFeePreview> {
   return apiClient.request<AuctionFeePreview>('/api/v1/auction/preview', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ itemId, price }),
   })
 }
 
-export async function createAuction(itemId: string, price: number, preview: AuctionFeePreview): Promise<AuctionMutation> {
+export async function createAuction(
+  itemId: string,
+  price: number,
+  preview: AuctionFeePreview,
+): Promise<AuctionMutation> {
   const fee = moneyUnits(preview.fee)
   const tax = moneyUnits(preview.tax)
-  if (fee > BigInt(Number.MAX_SAFE_INTEGER) || tax > BigInt(Number.MAX_SAFE_INTEGER)) throw new RangeError('Комиссия слишком велика')
+  if (fee > BigInt(Number.MAX_SAFE_INTEGER) || tax > BigInt(Number.MAX_SAFE_INTEGER))
+    throw new RangeError('Комиссия слишком велика')
   return apiClient.request<AuctionMutation>('/api/v1/auction', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ requestId: crypto.randomUUID(), itemId, price, expectedFee: Number(fee), expectedTax: Number(tax) }),
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      requestId: crypto.randomUUID(),
+      itemId,
+      price,
+      expectedFee: Number(fee),
+      expectedTax: Number(tax),
+    }),
   })
 }
 
-export async function previewAuctionBatch(itemIds: string[], price: number): Promise<AuctionBatchFeePreview> {
+export async function previewAuctionBatch(
+  itemIds: string[],
+  price: number,
+): Promise<AuctionBatchFeePreview> {
   return apiClient.request<AuctionBatchFeePreview>('/api/v1/auction/batch/preview', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ itemIds, price }),
   })
 }
@@ -234,11 +272,15 @@ export async function createAuctionBatch(
 ): Promise<AuctionBatchMutation> {
   const feePerItem = moneyUnits(preview.feePerItem)
   const taxPerItem = moneyUnits(preview.taxPerItem)
-  if (feePerItem > BigInt(Number.MAX_SAFE_INTEGER) || taxPerItem > BigInt(Number.MAX_SAFE_INTEGER)) {
+  if (
+    feePerItem > BigInt(Number.MAX_SAFE_INTEGER) ||
+    taxPerItem > BigInt(Number.MAX_SAFE_INTEGER)
+  ) {
     throw new RangeError('Комиссия слишком велика')
   }
   return apiClient.request<AuctionBatchMutation>('/api/v1/auction/batch', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       requestId: crypto.randomUUID(),
       itemIds,
@@ -251,7 +293,8 @@ export async function createAuctionBatch(
 
 export async function settleAuction(id: string, action: 'buy' | 'cancel'): Promise<void> {
   await apiClient.request(`/api/v1/auction/${id}/${action}`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ requestId: crypto.randomUUID() }),
   })
 }
@@ -262,7 +305,8 @@ export async function loadMailbox(): Promise<CommerceMail[]> {
 
 export async function claimMail(id: string): Promise<void> {
   await apiClient.request(`/api/v1/mailbox/${id}/claim`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ requestId: crypto.randomUUID() }),
   })
 }

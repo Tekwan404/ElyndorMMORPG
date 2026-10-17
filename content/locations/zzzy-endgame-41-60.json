@@ -21,7 +21,8 @@
       "description": "Преддверие Чёрного Бастиона и последний рубеж Пограничных земель. За Пределом открывается путь в Дальние земли.",
       "travelDurationSeconds": 0,
       "allowAfk": true,
-      "mapId": "BORDERLANDS"
+      "mapId": "BORDERLANDS",
+      "requiredRaceId": "HUMAN"
     },
     {
       "id": "BLACK_CRAGS",
@@ -70,7 +71,8 @@
       "mapId": "OUTER_REACHES",
       "requiredContractId": null,
       "travelDurationSeconds": 0,
-      "allowAfk": false
+      "allowAfk": false,
+      "requiredRaceId": "HUMAN"
     },
     {
       "id": "PLAGUEWOOD",
@@ -119,7 +121,8 @@
       "mapId": "OUTER_REACHES",
       "requiredContractId": null,
       "travelDurationSeconds": 0,
-      "allowAfk": false
+      "allowAfk": false,
+      "requiredRaceId": "HUMAN"
     },
     {
       "id": "GLASS_DESERT",
@@ -168,7 +171,8 @@
       "mapId": "OUTER_REACHES",
       "requiredContractId": null,
       "travelDurationSeconds": 0,
-      "allowAfk": false
+      "allowAfk": false,
+      "requiredRaceId": "HUMAN"
     },
     {
       "id": "FROZEN_EDGE",
@@ -217,7 +221,8 @@
       "mapId": "OUTER_REACHES",
       "requiredContractId": null,
       "travelDurationSeconds": 0,
-      "allowAfk": false
+      "allowAfk": false,
+      "requiredRaceId": "HUMAN"
     },
     {
       "id": "DOOMED_LANDS",
@@ -270,7 +275,8 @@
       "mapId": "OUTER_REACHES",
       "requiredContractId": null,
       "travelDurationSeconds": 0,
-      "allowAfk": false
+      "allowAfk": false,
+      "requiredRaceId": "HUMAN"
     },
     {
       "id": "DEAD_REACHES",
@@ -280,7 +286,8 @@
       "minimumLevel": 60,
       "maximumLevel": 60,
       "transitions": [
-        "DOOMED_LANDS"
+        "DOOMED_LANDS",
+        "UNDEAD_DOOMED_LANDS"
       ],
       "artId": "miortvye-predely",
       "description": "Элитная территория 60 уровня для редких противников, охоты на именных элиток и будущих мировых событий.",

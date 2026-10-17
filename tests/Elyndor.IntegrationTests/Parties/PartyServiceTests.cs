@@ -205,7 +205,55 @@ public sealed class PartyServiceTests(PostgresFixture postgres) : IAsyncLifetime
             await verifyContext.PartyMembers.CountAsync(member => member.CharacterId == targetCharacterId));
     }
 
-    private async Task<(Guid LeaderAccountId, Guid TargetAccountId, Guid TargetCharacterId)> SeedPairAsync()
+    [Fact]
+    public async Task OpposingRacesCannotInviteEachOther()
+    {
+        var (leader, _, target) = await SeedPairAsync("UNDEAD");
+        await using var db = postgres.CreateDbContext();
+        var service = new PartyService(db, new FixedTimeProvider(Now));
+        Assert.True((await service.CreateAsync(leader, Guid.NewGuid(), default)).IsSuccess);
+        var result = await service.InviteAsync(leader, Guid.NewGuid(), target, PartyInviteMode.Direct, default);
+        Assert.False(result.IsSuccess);
+        Assert.Equal(PartyErrorCodes.FactionRestricted, result.ErrorCode);
+        Assert.Empty(await db.PartyInvites.ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task LegacyCrossFactionInvitationCannotBeAccepted()
+    {
+        var (leader, targetAccount, target) = await SeedPairAsync("UNDEAD");
+        await using var db = postgres.CreateDbContext();
+        var service = new PartyService(db, new FixedTimeProvider(Now));
+        var created = await service.CreateAsync(leader, Guid.NewGuid(), default);
+        Guid inviteId = Guid.NewGuid();
+        db.PartyInvites.Add(PartyInvite.Create(inviteId, created.Snapshot!.PartyId,
+            created.Snapshot.LeaderCharacterId, target, PartyInviteMode.Direct, Now, Now.AddMinutes(5)));
+        await db.SaveChangesAsync();
+        var result = await service.AcceptInviteAsync(targetAccount, inviteId, default);
+        Assert.False(result.IsSuccess);
+        Assert.Equal(PartyErrorCodes.FactionRestricted, result.ErrorCode);
+        Assert.Single(await db.PartyMembers.ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task LegacyMixedPartyNeverAddsEnemyToCombatRoster()
+    {
+        var (leader, _, target) = await SeedPairAsync("UNDEAD");
+        await using var db = postgres.CreateDbContext();
+        var service = new PartyService(db, new FixedTimeProvider(Now));
+        var created = await service.CreateAsync(leader, Guid.NewGuid(), default);
+        var party = await db.Parties.SingleAsync();
+        party.AddMember(target, Now);
+        db.PartyMembers.Add(party.Members.Single(member => member.CharacterId == target));
+        db.CharacterLocations.AddRange(
+            new Elyndor.Core.World.CharacterLocation(created.Snapshot!.LeaderCharacterId, "DEAD_REACHES", 1, Now),
+            new Elyndor.Core.World.CharacterLocation(target, "DEAD_REACHES", 1, Now));
+        await db.SaveChangesAsync();
+        var roster = await service.GetCombatMembersAsync(leader, default);
+        Assert.Equal(created.Snapshot.LeaderCharacterId, Assert.Single(roster).CharacterId);
+    }
+
+    private async Task<(Guid LeaderAccountId, Guid TargetAccountId, Guid TargetCharacterId)> SeedPairAsync(string targetRace = "HUMAN")
     {
         Guid leaderAccountId = Guid.Parse("30000000-0000-0000-0000-000000000001");
         Guid targetAccountId = Guid.Parse("30000000-0000-0000-0000-000000000002");
@@ -233,7 +281,7 @@ public sealed class PartyServiceTests(PostgresFixture postgres) : IAsyncLifetime
                 Guid.NewGuid(),
                 "Target",
                 "TARGET",
-                "HUMAN",
+                targetRace,
                 "FEMALE",
                 "MAGE",
                 Now));

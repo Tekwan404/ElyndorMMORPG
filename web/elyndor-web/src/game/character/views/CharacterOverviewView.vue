@@ -33,7 +33,13 @@ const selectedAbility = ref<KnownAbility | null>(null)
 const characterArt = computed(() => {
   const currentCharacter = character.value
   return currentCharacter
-    ? resolveCharacterArt(currentCharacter.classId, currentCharacter.genderId, 'transparent', currentCharacter.activeSkinId)
+    ? resolveCharacterArt(
+        currentCharacter.classId,
+        currentCharacter.genderId,
+        'transparent',
+        currentCharacter.activeSkinId,
+        currentCharacter.raceId,
+      )
     : null
 })
 
@@ -51,9 +57,30 @@ interface PaperdollSlot {
 const equipment = computed<PaperdollSlot[]>(() => {
   const equipped = character.value?.inventory.equipped
   return [
-    { id: 'head', inventorySlot: 'Head', label: 'Шлем', item: equipped?.head ?? null, glyph: 'helmet', side: 'left' },
-    { id: 'shoulders', inventorySlot: 'Shoulders', label: 'Наплечники', item: equipped?.shoulders ?? null, glyph: 'armor', side: 'left' },
-    { id: 'cloak', inventorySlot: 'Cloak', label: 'Плащ', item: equipped?.cloak ?? null, glyph: 'scroll', side: 'left' },
+    {
+      id: 'head',
+      inventorySlot: 'Head',
+      label: 'Шлем',
+      item: equipped?.head ?? null,
+      glyph: 'helmet',
+      side: 'left',
+    },
+    {
+      id: 'shoulders',
+      inventorySlot: 'Shoulders',
+      label: 'Наплечники',
+      item: equipped?.shoulders ?? null,
+      glyph: 'armor',
+      side: 'left',
+    },
+    {
+      id: 'cloak',
+      inventorySlot: 'Cloak',
+      label: 'Плащ',
+      item: equipped?.cloak ?? null,
+      glyph: 'scroll',
+      side: 'left',
+    },
     {
       id: 'mainHand',
       inventorySlot: 'MainHand',
@@ -62,9 +89,30 @@ const equipment = computed<PaperdollSlot[]>(() => {
       glyph: 'sword',
       side: 'left',
     },
-    { id: 'hands', inventorySlot: 'Hands', label: 'Перчатки', item: equipped?.hands ?? null, glyph: 'armor', side: 'left' },
-    { id: 'ring1', inventorySlot: 'Ring1', label: 'Кольцо I', item: equipped?.ring1 ?? null, glyph: 'ring', side: 'left' },
-    { id: 'chest', inventorySlot: 'Chest', label: 'Нагрудник', item: equipped?.chest ?? null, glyph: 'armor', side: 'right' },
+    {
+      id: 'hands',
+      inventorySlot: 'Hands',
+      label: 'Перчатки',
+      item: equipped?.hands ?? null,
+      glyph: 'armor',
+      side: 'left',
+    },
+    {
+      id: 'ring1',
+      inventorySlot: 'Ring1',
+      label: 'Кольцо I',
+      item: equipped?.ring1 ?? null,
+      glyph: 'ring',
+      side: 'left',
+    },
+    {
+      id: 'chest',
+      inventorySlot: 'Chest',
+      label: 'Нагрудник',
+      item: equipped?.chest ?? null,
+      glyph: 'armor',
+      side: 'right',
+    },
     {
       id: 'amulet',
       inventorySlot: 'Amulet',
@@ -73,8 +121,22 @@ const equipment = computed<PaperdollSlot[]>(() => {
       glyph: 'star',
       side: 'right',
     },
-    { id: 'offHand', inventorySlot: 'OffHand', label: 'Вторая рука', item: equipped?.offHand ?? null, glyph: 'shield', side: 'right' },
-    { id: 'legs', inventorySlot: 'Legs', label: 'Поножи', item: equipped?.legs ?? null, glyph: 'armor', side: 'right' },
+    {
+      id: 'offHand',
+      inventorySlot: 'OffHand',
+      label: 'Вторая рука',
+      item: equipped?.offHand ?? null,
+      glyph: 'shield',
+      side: 'right',
+    },
+    {
+      id: 'legs',
+      inventorySlot: 'Legs',
+      label: 'Поножи',
+      item: equipped?.legs ?? null,
+      glyph: 'armor',
+      side: 'right',
+    },
     {
       id: 'feet',
       inventorySlot: 'Feet',
@@ -83,14 +145,27 @@ const equipment = computed<PaperdollSlot[]>(() => {
       glyph: 'boots',
       side: 'right',
     },
-    { id: 'ring2', inventorySlot: 'Ring2', label: 'Кольцо II', item: equipped?.ring2 ?? null, glyph: 'ring', side: 'right' },
+    {
+      id: 'ring2',
+      inventorySlot: 'Ring2',
+      label: 'Кольцо II',
+      item: equipped?.ring2 ?? null,
+      glyph: 'ring',
+      side: 'right',
+    },
   ]
 })
-const leftEquipment = computed(() => equipment.value.filter(slot => slot.side === 'left'))
-const rightEquipment = computed(() => equipment.value.filter(slot => slot.side === 'right'))
-const rangerPieces = computed(() => equipment.value.filter((slot) => slot.item?.setId === 'RANGER_SET').length)
-const talentAbilities = computed(() => character.value?.knownAbilities.filter((ability) => ability.sourceTalentId) ?? [])
-const baselineAbilities = computed(() => character.value?.knownAbilities.filter((ability) => !ability.sourceTalentId) ?? [])
+const leftEquipment = computed(() => equipment.value.filter((slot) => slot.side === 'left'))
+const rightEquipment = computed(() => equipment.value.filter((slot) => slot.side === 'right'))
+const rangerPieces = computed(
+  () => equipment.value.filter((slot) => slot.item?.setId === 'RANGER_SET').length,
+)
+const talentAbilities = computed(
+  () => character.value?.knownAbilities.filter((ability) => ability.sourceTalentId) ?? [],
+)
+const baselineAbilities = computed(
+  () => character.value?.knownAbilities.filter((ability) => !ability.sourceTalentId) ?? [],
+)
 const xpTarget = computed(() => character.value?.xpToNextLevel ?? 0)
 const xpRemaining = computed(() => Math.max(0, xpTarget.value - (character.value?.experience ?? 0)))
 
@@ -117,18 +192,22 @@ async function unequipSelected(): Promise<void> {
 
 function equipmentErrorMessage(code: string | null): string | null {
   if (!code) return null
-  if (code === 'inventory_equipment_change_in_combat') return 'Снаряжение нельзя менять во время боя.'
+  if (code === 'inventory_equipment_change_in_combat')
+    return 'Снаряжение нельзя менять во время боя.'
   if (code === 'inventory_invalid_slot') return 'Сервер не распознал слот снаряжения.'
   return 'Не удалось изменить снаряжение. Повторите попытку.'
 }
 
 function formatCombatNumber(value: number): string {
   const rounded = Math.round(value * 100) / 100
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')
+  return Number.isInteger(rounded)
+    ? String(rounded)
+    : rounded.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')
 }
 
 function weaponTiming(item: InventoryItem | null): { interval: number; aps: number } | null {
-  if (!item?.weaponBaseAttackIntervalSeconds || item.weaponBaseAttackIntervalSeconds <= 0) return null
+  if (!item?.weaponBaseAttackIntervalSeconds || item.weaponBaseAttackIntervalSeconds <= 0)
+    return null
   const multiplier = Math.max(0.1, character.value?.stats.attackSpeed ?? 1)
   const interval = item.weaponBaseAttackIntervalSeconds / multiplier
   return { interval, aps: 1 / interval }
@@ -138,9 +217,11 @@ const mainHandTiming = computed(() => {
   const equipped = character.value?.inventory.equipped
   return weaponTiming(equipped?.mainHand ?? null)
 })
-const offHandTiming = computed(() => weaponTiming(character.value?.inventory.equipped.offHand ?? null))
-const totalAttacksPerSecond = computed(() =>
-  (mainHandTiming.value?.aps ?? 0) + (offHandTiming.value?.aps ?? 0),
+const offHandTiming = computed(() =>
+  weaponTiming(character.value?.inventory.equipped.offHand ?? null),
+)
+const totalAttacksPerSecond = computed(
+  () => (mainHandTiming.value?.aps ?? 0) + (offHandTiming.value?.aps ?? 0),
 )
 
 function itemStats(item: InventoryItem): string[] {
@@ -165,7 +246,12 @@ function abilityArt(ability: KnownAbility): string | null {
 }
 
 function abilityInitials(ability: KnownAbility): string {
-  return abilityName(ability).split(' ').map((word) => word[0]).join('').slice(0, 2).toUpperCase()
+  return abilityName(ability)
+    .split(' ')
+    .map((word) => word[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
 }
 </script>
 
@@ -200,7 +286,15 @@ function abilityInitials(ability: KnownAbility): string {
             @click="openEquipmentSlot(slot)"
           >
             <span class="equipment-slot__icon">
-              <ItemIcon v-if="slot.item" :icon-id="slot.item.iconId" :item-id="slot.item.id" :name="slot.item.name" :type="slot.item.type" :equipment-slot="slot.item.slot" :rarity="slot.item.rarity" />
+              <ItemIcon
+                v-if="slot.item"
+                :icon-id="slot.item.iconId"
+                :item-id="slot.item.id"
+                :name="slot.item.name"
+                :type="slot.item.type"
+                :equipment-slot="slot.item.slot"
+                :rarity="slot.item.rarity"
+              />
               <IconGenerator
                 v-else
                 :config="{ id: `paperdoll-${slot.id}`, glyph: slot.glyph, category: 'equipment' }"
@@ -212,9 +306,17 @@ function abilityInitials(ability: KnownAbility): string {
 
         <div class="paperdoll__figure">
           <div class="hero-figure">
-            <IconGenerator class="hero-figure__sigil" :config="{ id: 'character-hero-sigil', glyph: 'star', category: 'utility' }" />
+            <IconGenerator
+              class="hero-figure__sigil"
+              :config="{ id: 'character-hero-sigil', glyph: 'star', category: 'utility' }"
+            />
             <img v-if="characterArt" :src="characterArt" :alt="classLabel(character.classId)" />
-            <div v-else class="hero-figure__fallback" role="img" :aria-label="classLabel(character.classId)">
+            <div
+              v-else
+              class="hero-figure__fallback"
+              role="img"
+              :aria-label="classLabel(character.classId)"
+            >
               <span>{{ character.name.slice(0, 1).toUpperCase() }}</span>
               <small>{{ classLabel(character.classId) }}</small>
             </div>
@@ -240,7 +342,15 @@ function abilityInitials(ability: KnownAbility): string {
             @click="openEquipmentSlot(slot)"
           >
             <span class="equipment-slot__icon">
-              <ItemIcon v-if="slot.item" :icon-id="slot.item.iconId" :item-id="slot.item.id" :name="slot.item.name" :type="slot.item.type" :equipment-slot="slot.item.slot" :rarity="slot.item.rarity" />
+              <ItemIcon
+                v-if="slot.item"
+                :icon-id="slot.item.iconId"
+                :item-id="slot.item.id"
+                :name="slot.item.name"
+                :type="slot.item.type"
+                :equipment-slot="slot.item.slot"
+                :rarity="slot.item.rarity"
+              />
               <IconGenerator
                 v-else
                 :config="{ id: `paperdoll-${slot.id}`, glyph: slot.glyph, category: 'equipment' }"
@@ -260,22 +370,31 @@ function abilityInitials(ability: KnownAbility): string {
           <span>до уровня: {{ xpRemaining }}</span>
         </div>
         <div class="xp-track">
-          <i :style="{ width: `${xpTarget > 0 ? Math.min(100, character.experience / xpTarget * 100) : 100}%` }" />
+          <i
+            :style="{
+              width: `${xpTarget > 0 ? Math.min(100, (character.experience / xpTarget) * 100) : 100}%`,
+            }"
+          />
         </div>
       </div>
 
       <div class="equipment-summary">
         <div>
           <small>Надетое снаряжение</small>
-          <strong>{{ equipment.filter((slot) => slot.item).length }} / {{ equipment.length }} слотов</strong>
+          <strong
+            >{{ equipment.filter((slot) => slot.item).length }} /
+            {{ equipment.length }} слотов</strong
+          >
         </div>
         <div v-if="mainHandTiming" class="attack-timing">
           <small>Текущая автоатака</small>
           <strong>
-            Основная: {{ formatCombatNumber(mainHandTiming.interval) }} сек. · {{ formatCombatNumber(mainHandTiming.aps) }} уд/с
+            Основная: {{ formatCombatNumber(mainHandTiming.interval) }} сек. ·
+            {{ formatCombatNumber(mainHandTiming.aps) }} уд/с
           </strong>
           <span v-if="offHandTiming">
-            Вторая: {{ formatCombatNumber(offHandTiming.interval) }} сек. · {{ formatCombatNumber(offHandTiming.aps) }} уд/с
+            Вторая: {{ formatCombatNumber(offHandTiming.interval) }} сек. ·
+            {{ formatCombatNumber(offHandTiming.aps) }} уд/с
           </span>
           <b v-if="offHandTiming">Итого: {{ formatCombatNumber(totalAttacksPerSecond) }} уд/с</b>
         </div>
@@ -289,11 +408,26 @@ function abilityInitials(ability: KnownAbility): string {
 
     <UIPanel v-if="character.classId === 'WARRIOR'" class="abilities-panel">
       <template #title>Боевые способности</template>
-      <p class="hint">Здесь только то, что реально доступно персонажу. Новые активные способности открываются талантами.</p>
+      <p class="hint">
+        Здесь только то, что реально доступно персонажу. Новые активные способности открываются
+        талантами.
+      </p>
       <div class="ability-grid">
-        <button v-for="ability in [...baselineAbilities, ...talentAbilities]" :key="ability.id" type="button" @click="selectedAbility = ability">
-          <span class="ability-icon"><img v-if="abilityArt(ability)" :src="abilityArt(ability)!" alt="" /><b v-else>{{ abilityInitials(ability) }}</b></span>
-          <span><strong>{{ abilityName(ability) }}</strong><small>{{ ability.sourceTalentName ?? 'Базовое действие класса' }}</small></span>
+        <button
+          v-for="ability in [...baselineAbilities, ...talentAbilities]"
+          :key="ability.id"
+          type="button"
+          @click="selectedAbility = ability"
+        >
+          <span class="ability-icon"
+            ><img v-if="abilityArt(ability)" :src="abilityArt(ability)!" alt="" /><b v-else>{{
+              abilityInitials(ability)
+            }}</b></span
+          >
+          <span
+            ><strong>{{ abilityName(ability) }}</strong
+            ><small>{{ ability.sourceTalentName ?? 'Базовое действие класса' }}</small></span
+          >
         </button>
       </div>
     </UIPanel>
@@ -301,16 +435,21 @@ function abilityInitials(ability: KnownAbility): string {
     <UIModal
       :open="selectedItem !== null"
       :title="selectedItem?.name ?? ''"
-      @close="selectedItem = null; selectedEquipmentSlot = null; equipmentActionError = null"
+      @close="() => { selectedItem = null; selectedEquipmentSlot = null; equipmentActionError = null }"
     >
       <article v-if="selectedItem" class="detail">
         <p>{{ selectedItem.description }}</p>
-        <dl><div v-for="row in itemStats(selectedItem)" :key="row"><dt>{{ row }}</dt></div></dl>
+        <dl>
+          <div v-for="row in itemStats(selectedItem)" :key="row">
+            <dt>{{ row }}</dt>
+          </div>
+        </dl>
         <p v-if="selectedItem.weaponBaseAttackIntervalSeconds">
-          Скорость оружия: {{ formatCombatNumber(selectedItem.weaponBaseAttackIntervalSeconds) }} сек. базово
+          Скорость оружия:
+          {{ formatCombatNumber(selectedItem.weaponBaseAttackIntervalSeconds) }} сек. базово
           <template v-if="weaponTiming(selectedItem)">
-            · {{ formatCombatNumber(weaponTiming(selectedItem)!.interval) }} сек. сейчас
-            · {{ formatCombatNumber(weaponTiming(selectedItem)!.aps) }} уд/с
+            · {{ formatCombatNumber(weaponTiming(selectedItem)!.interval) }} сек. сейчас ·
+            {{ formatCombatNumber(weaponTiming(selectedItem)!.aps) }} уд/с
           </template>
         </p>
         <p v-if="selectedItem.setId">Часть комплекта Следопыта.</p>
@@ -332,15 +471,34 @@ function abilityInitials(ability: KnownAbility): string {
       </template>
     </UIModal>
 
-    <UIModal :open="selectedAbility !== null" :title="selectedAbility ? abilityName(selectedAbility) : ''" @close="selectedAbility = null">
+    <UIModal
+      :open="selectedAbility !== null"
+      :title="selectedAbility ? abilityName(selectedAbility) : ''"
+      @close="selectedAbility = null"
+    >
       <article v-if="selectedAbility" class="detail">
         <p>{{ abilityDescription(selectedAbility) }}</p>
         <dl>
-          <div><dt>Стоимость</dt><dd>{{ selectedAbility.resourceCost }} ярости</dd></div>
-          <div><dt>Перезарядка</dt><dd>{{ selectedAbility.cooldownSeconds }} сек.</dd></div>
-          <div><dt>Тип</dt><dd>{{ abilityTypeLabel(selectedAbility.type) }}</dd></div>
-          <div><dt>Цель</dt><dd>{{ abilityTargetLabel(selectedAbility.targetType) }}</dd></div>
-          <div v-if="selectedAbility.sourceTalentName"><dt>Источник</dt><dd>{{ selectedAbility.sourceTalentName }}</dd></div>
+          <div>
+            <dt>Стоимость</dt>
+            <dd>{{ selectedAbility.resourceCost }} ярости</dd>
+          </div>
+          <div>
+            <dt>Перезарядка</dt>
+            <dd>{{ selectedAbility.cooldownSeconds }} сек.</dd>
+          </div>
+          <div>
+            <dt>Тип</dt>
+            <dd>{{ abilityTypeLabel(selectedAbility.type) }}</dd>
+          </div>
+          <div>
+            <dt>Цель</dt>
+            <dd>{{ abilityTargetLabel(selectedAbility.targetType) }}</dd>
+          </div>
+          <div v-if="selectedAbility.sourceTalentName">
+            <dt>Источник</dt>
+            <dd>{{ selectedAbility.sourceTalentName }}</dd>
+          </div>
         </dl>
       </article>
     </UIModal>
@@ -415,9 +573,9 @@ function abilityInitials(ability: KnownAbility): string {
 .eyebrow {
   margin-bottom: 3px !important;
   color: #bcb6ff;
-  font-size: .6rem;
+  font-size: 0.6rem;
   font-weight: 700;
-  letter-spacing: .1em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -485,7 +643,9 @@ function abilityInitials(ability: KnownAbility): string {
   background:
     radial-gradient(circle at 50% 24%, rgb(255 255 255 / 4%), transparent 52%),
     linear-gradient(180deg, rgb(13 18 29 / 94%), rgb(4 7 12 / 94%));
-  box-shadow: var(--ui-shadow-inset), 0 5px 12px rgb(0 0 0 / 18%);
+  box-shadow:
+    var(--ui-shadow-inset),
+    0 5px 12px rgb(0 0 0 / 18%);
   color: var(--ui-color-text-muted);
   font: inherit;
 }
@@ -496,7 +656,7 @@ function abilityInitials(ability: KnownAbility): string {
 }
 
 .equipment-slot:not(.filled) {
-  opacity: .54;
+  opacity: 0.54;
 }
 
 .equipment-slot[data-rarity='Uncommon'] {
@@ -509,13 +669,17 @@ function abilityInitials(ability: KnownAbility): string {
 
 .equipment-slot[data-rarity='Epic'] {
   border-color: color-mix(in srgb, var(--ui-color-primary) 82%, var(--ui-color-border));
-  box-shadow: var(--ui-shadow-inset), 0 0 12px rgb(146 136 255 / 11%);
+  box-shadow:
+    var(--ui-shadow-inset),
+    0 0 12px rgb(146 136 255 / 11%);
 }
 
 .equipment-slot[data-rarity='Legendary'],
 .equipment-slot[data-rarity='Unique'] {
   border-color: var(--ui-color-gold);
-  box-shadow: var(--ui-shadow-inset), 0 0 14px rgb(232 200 102 / 13%);
+  box-shadow:
+    var(--ui-shadow-inset),
+    0 0 14px rgb(232 200 102 / 13%);
 }
 
 .equipment-slot__icon {
@@ -539,17 +703,16 @@ function abilityInitials(ability: KnownAbility): string {
 
 .equipment-slot.filled .equipment-slot__icon {
   background:
-    radial-gradient(circle at 50% 30%, rgb(146 136 255 / 12%), transparent 62%),
-    rgb(3 6 11 / 82%);
+    radial-gradient(circle at 50% 30%, rgb(146 136 255 / 12%), transparent 62%), rgb(3 6 11 / 82%);
 }
 
 .equipment-slot__label {
   width: 100%;
   overflow: hidden;
   color: var(--ui-color-text-muted);
-  font-size: .43rem;
+  font-size: 0.43rem;
   font-weight: 700;
-  letter-spacing: .02em;
+  letter-spacing: 0.02em;
   line-height: 1.05;
   text-align: center;
   text-overflow: ellipsis;
@@ -633,7 +796,7 @@ function abilityInitials(ability: KnownAbility): string {
 }
 
 .hero-figure__fallback small {
-  font-size: .6rem;
+  font-size: 0.6rem;
 }
 
 .hero-figure__caption {
@@ -649,14 +812,14 @@ function abilityInitials(ability: KnownAbility): string {
   max-width: 100%;
   overflow: hidden;
   font-family: var(--ui-font-display);
-  font-size: .78rem;
+  font-size: 0.78rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .hero-figure__caption small {
   color: var(--ui-color-text-muted);
-  font-size: .5rem;
+  font-size: 0.5rem;
 }
 
 .progression,
@@ -665,13 +828,20 @@ function abilityInitials(ability: KnownAbility): string {
   gap: 2px;
   min-width: 0;
   color: var(--ui-color-text-secondary);
-  font-size: .58rem;
+  font-size: 0.58rem;
 }
 
-.attack-timing small { color: var(--ui-color-text-muted); }
+.attack-timing small {
+  color: var(--ui-color-text-muted);
+}
 .attack-timing strong,
-.attack-timing b { color: #d5d2ff; font-weight: 700; }
-.attack-timing span { color: var(--ui-color-text-secondary); }
+.attack-timing b {
+  color: #d5d2ff;
+  font-weight: 700;
+}
+.attack-timing span {
+  color: var(--ui-color-text-secondary);
+}
 
 .equipment-summary {
   position: relative;
@@ -698,8 +868,8 @@ function abilityInitials(ability: KnownAbility): string {
 .progression__heading small,
 .equipment-summary small {
   color: var(--ui-color-text-muted);
-  font-size: .57rem;
-  letter-spacing: .06em;
+  font-size: 0.57rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -710,7 +880,7 @@ function abilityInitials(ability: KnownAbility): string {
 
 .progression__heading > span {
   color: var(--ui-color-text-muted);
-  font-size: .62rem;
+  font-size: 0.62rem;
 }
 
 .xp-track {
@@ -741,7 +911,7 @@ function abilityInitials(ability: KnownAbility): string {
   align-items: center;
   gap: 5px;
   color: var(--ui-color-text-muted);
-  font-size: .62rem;
+  font-size: 0.62rem;
 }
 
 .set-progress i {
@@ -803,7 +973,7 @@ function abilityInitials(ability: KnownAbility): string {
 
 .ability-grid small {
   color: var(--ui-color-text-muted);
-  font-size: .62rem;
+  font-size: 0.62rem;
 }
 
 .ability-icon {
@@ -908,7 +1078,7 @@ function abilityInitials(ability: KnownAbility): string {
   }
 
   .equipment-slot__label {
-    font-size: .39rem;
+    font-size: 0.39rem;
   }
 
   .paperdoll__identity {
