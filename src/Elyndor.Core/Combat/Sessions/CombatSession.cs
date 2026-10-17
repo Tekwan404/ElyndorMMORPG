@@ -982,7 +982,8 @@ public sealed partial class CombatSession
             contributionEligible,
             participantContributions,
             BuildStatisticsSnapshot(requester.Definition.Actor.ActorId),
-            OpenWorldPvp: IsOpenWorldPvp);
+            OpenWorldPvp: IsOpenWorldPvp,
+            WorldPvpDefeats: IsOpenWorldPvp ? _worldPvpDefeats.ToArray() : null);
     }
 
     public CombatCommandResult Cancel(DateTimeOffset now)
@@ -2464,6 +2465,7 @@ public sealed partial class CombatSession
         Sequence++;
         CombatEvent sequenced = combatEvent with { Sequence = Sequence };
         RecordSessionStatistics(sequenced);
+        RecordWorldPvpProgress(sequenced);
         _events.Add(sequenced);
         if (_events.Count > RetainedEventLimit)
             _events.RemoveRange(0, _events.Count - RetainedEventLimit);

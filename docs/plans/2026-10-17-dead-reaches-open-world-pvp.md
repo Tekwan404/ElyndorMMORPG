@@ -24,8 +24,8 @@ requested behavior and is not an acceptable implementation.
    Reuse the normal combat UI with perspective-correct hostile/friendly rosters.
    Expose explicit location discovery/entry actions and readable server errors.
 5. Keep death free of equipment/currency loss, using the existing home-city respawn.
-   No honor, arena rating or currency is awarded for killing players. Monster
-   rewards require PvE contribution and use the existing idempotent settlement.
+   Arena rating and honor remain separate. World PvP progression follows the
+   approved extension below. Monster rewards still require PvE contribution.
    Player actors must never be interpreted as monster loot templates.
 6. Reconnect attaches to the same active session. Process interruption follows the
    existing durable combat recovery: interrupted active fights are cancelled;
@@ -38,3 +38,18 @@ Existing solo, party, dungeon and arena behavior must remain unchanged.
 
 Verification: deterministic kernel tests, PostgreSQL/API admission and settlement
 tests, frontend targeting/discovery tests, mobile browser smoke, full build and CI.
+
+## Approved extension: ranking and rewards in this release
+
+User explicitly requested ranking and rewards now (2026-10-17). Add separate
+seasonal standings, field honor/token wallets, immutable defeat/reward receipts,
+a filtered leaderboard and a guild shop for existing PvP equipment. Use the
+server-captured contributions rather than retained client events. Lock affected
+characters in ID order inside each settlement transaction. Unique defeat receipts
+protect retries, while pair cooldowns and UTC daily caps constrain farming.
+Purchases use existing inventory/item generation and character mutation guards.
+Preserve the PvE contract flow under a separate menu beside Faction War.
+
+Verify support attribution and expiry, instant/passive defeats, stronger opponents,
+seasons, pair reversal, daily cap/reset, concurrent settlement, crash recovery,
+concurrent purchase retries, insufficient balance, faction filtering and phone UI.

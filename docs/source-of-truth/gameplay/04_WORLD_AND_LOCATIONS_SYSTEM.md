@@ -769,3 +769,14 @@ World confirms location/interaction availability but does not own:
 - guild membership.
 
 Dungeon uses `LocationId + DungeonInstanceId` as isolated world scope.
+
+
+## World PvP progression (2026-10-17)
+
+В «Мёртвых Пределах» действует независимый от арены рейтинг открытого мира.
+Гильдия показывает общий топ и топ фракций, победы, помощь, смерти, полевую честь
+и кровавые жетоны. За признанный сервером вклад выдаются награды; покупки
+существующего PvP-снаряжения используют отдельные кошельки World PvP.
+Параметры, антифарм и границы восстановления описаны в
+`docs/development/dead-reaches-pvp.md`; числа централизованы в `WorldPvpBalance`.
+PvE-контракты и рейтинг арены продолжают работать независимо.

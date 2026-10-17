@@ -150,7 +150,7 @@ jobs:
         working-directory: web/elyndor-web
         env:
           ELYNDOR_E2E_UI_PREVIEW: "true"
-        run: npm run test:e2e -- e2e/battle-screen.spec.ts e2e/game-shell.spec.ts --grep 'battle-screen|Dead Reaches PvPvE'
+        run: npm run test:e2e -- e2e/battle-screen.spec.ts e2e/game-shell.spec.ts --grep 'battle-screen|Dead Reaches PvPvE|World PvP rewards'
 
       - name: Start real E2E server
         env:

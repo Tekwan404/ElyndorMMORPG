@@ -51,6 +51,9 @@ public static class DependencyInjection
         builder.Services.AddScoped<CharacterAbilityCooldownStore>();
         builder.Services.AddScoped<CombatSessionFactory>();
         builder.Services.AddScoped<OpenWorldPvpService>();
+        builder.Services.AddScoped<WorldPvpSettlementService>();
+        builder.Services.AddScoped<WorldPvpReadService>();
+        builder.Services.AddScoped<WorldPvpShopService>();
         builder.Services.AddSingleton<OpenWorldPresence>();
         builder.Services.AddScoped<CombatDurabilityService>();
         builder.Services.AddScoped<CombatApplicationService>();

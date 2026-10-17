@@ -330,6 +330,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     try {
       await connect()
       const update = await apiClient.request<CombatUpdate>('/api/v1/world/pvp/enter', {
+        headers: { 'Content-Type': 'application/json' },
         method: 'POST', body: JSON.stringify({ targetCharacterId, attackPlayer }),
       })
       applyUpdate(update)

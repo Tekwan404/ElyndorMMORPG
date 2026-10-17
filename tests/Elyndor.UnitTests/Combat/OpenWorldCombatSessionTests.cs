@@ -266,6 +266,61 @@ public sealed class OpenWorldCombatSessionTests
         Assert.Equal(monster.Actor.ActorId, session.Snapshot(human.Participant.Actor.ActorId).SelectedTargetActorId);
     }
 
+    [Fact]
+    public void ProgressionCapturesUsefulHealingAndDamageWithoutPveCredit()
+    {
+        var human = Player("HUMAN");
+        var healer = Player("HUMAN");
+        var enemy = Player("UNDEAD");
+        var session = Fight(human, Monster());
+        session.TryJoinOpenWorldParticipant(healer, Now, out _);
+        session.TryJoinOpenWorldParticipant(enemy, Now, out _);
+        Guid humanId = human.Participant.Actor.ActorId, enemyId = enemy.Participant.Actor.ActorId;
+        session.Handle(humanId, new UseAbilityCommand("first", Strike.Id, enemyId), Now);
+        session.Handle(enemyId, new UseAbilityCommand("wound", Strike.Id, humanId), Now);
+        session.Handle(healer.Participant.Actor.ActorId, new UseAbilityCommand("support", Heal.Id, humanId), Now);
+        for (int i = 0; i < 10 && !enemy.Participant.Actor.IsDead; i++)
+            session.Handle(humanId, new UseAbilityCommand($"kill-{i}", Strike.Id, enemyId), Now.AddSeconds(12));
+        var defeat = Assert.Single(session.Snapshot(humanId).WorldPvpDefeats!);
+        Assert.Equal(enemyId, defeat.VictimId);
+        Assert.True(defeat.Contributions.Single(c => c.CharacterId == humanId).Damage > 0);
+        Assert.Equal(10, defeat.Contributions.Single(c => c.CharacterId == healer.Participant.Actor.ActorId).Support);
+        Assert.DoesNotContain(defeat.Contributions, c => c.CharacterId == enemyId);
+    }
+
+    [Fact]
+    public void InstantKillsHaveDeathRecordWithoutProgression()
+    {
+        var human = Player("HUMAN");
+        var enemy = Player("UNDEAD");
+        var session = Fight(human, Monster());
+        session.TryJoinOpenWorldParticipant(enemy, Now, out _);
+        enemy.Participant.Actor.SetCurrentHp(1);
+        session.Handle(human.Participant.Actor.ActorId, new UseAbilityCommand("fast", Strike.Id, enemy.Participant.Actor.ActorId), Now);
+        Assert.Empty(Assert.Single(session.Snapshot().WorldPvpDefeats!).Contributions);
+    }
+
+    [Fact]
+    public void OldHealingCannotGrantAssistsForLaterOpponents()
+    {
+        var human = Player("HUMAN");
+        var healer = Player("HUMAN");
+        var enemy = Player("UNDEAD");
+        var session = Fight(human, Monster());
+        session.TryJoinOpenWorldParticipant(healer, Now, out _);
+        session.TryJoinOpenWorldParticipant(enemy, Now, out _);
+        Guid h = human.Participant.Actor.ActorId, e = enemy.Participant.Actor.ActorId;
+        session.Handle(e, new UseAbilityCommand("wound", Strike.Id, h), Now);
+        session.Handle(healer.Participant.Actor.ActorId, new UseAbilityCommand("heal", Heal.Id, h), Now);
+        session.Handle(h, new UseAbilityCommand("engage", Strike.Id, e), Now);
+        human.Participant.Actor.SetCurrentHp(80);
+        session.Handle(healer.Participant.Actor.ActorId, new UseAbilityCommand("pve-heal", Heal.Id, h), Now.AddSeconds(29));
+        for (int i = 0; i < 10 && !enemy.Participant.Actor.IsDead; i++)
+            session.Handle(h, new UseAbilityCommand($"late-{i}", Strike.Id, e), Now.AddSeconds(45));
+        var defeat = Assert.Single(session.Snapshot(h).WorldPvpDefeats!);
+        Assert.DoesNotContain(defeat.Contributions, c => c.CharacterId == healer.Participant.Actor.ActorId);
+    }
+
     private static CombatPlayerDefinition Player(string race) => new(Guid.NewGuid(),
         new(new CombatActorState(Guid.NewGuid(), 100, 100, 100, 100, CombatStats.Default),
             CombatActorKind.Player, "WARRIOR", race, "RAGE", new(TimeSpan.FromHours(1), 1, 0, 0),

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { isTown } from '@/game/world/undeadHomeland'
 import TownNpcPortrait from './TownNpcPortrait.vue'
+import WorldPvpBoard from './WorldPvpBoard.vue'
 import { formatMoney } from '@/shared/money'
 import { computed, ref, watch } from 'vue'
 
@@ -26,57 +27,16 @@ const boardTitle = computed(() =>
 )
 const boardSubtitle = computed(() =>
   isCentralPost.value
-    ? 'Официальные контракты для доступных регионов.'
+    ? 'Ведёт контракты, реестр воинов и наград.'
     : 'Контракты и цели текущей экспедиции.',
 )
 const isUndead = computed(() => session.snapshot?.character?.raceId === 'UNDEAD')
-const featuredNpc = computed(() =>
-  isCentralPost.value
-    ? {
-        name: isUndead.value ? 'Морвена' : 'Селия',
-        role: 'Регистратор',
-        art: gameArt.npc.registrar,
-      }
-    : {
-        name: isUndead.value ? 'Вейр' : 'Гаррет',
-        role: 'Полевой охотник',
-        art: gameArt.npc.huntMaster,
-      },
-)
-const guildNpcs = computed(() => [
-  {
-    name: isUndead.value ? 'Морвена' : 'Селия',
-    role: 'Регистратор',
-    detail: 'Контракты',
-    art: gameArt.npc.registrar,
-    portraitRole: 'registrar',
-    active: true,
-  },
-  {
-    name: isUndead.value ? 'Вейр' : 'Гаррет',
-    role: 'Мастер охоты',
-    detail: 'Цели и угрозы',
-    art: gameArt.npc.huntMaster,
-    portraitRole: 'huntMaster',
-    active: false,
-  },
-  {
-    name: isUndead.value ? 'Морт' : 'Бран',
-    role: 'Квартирмейстер',
-    detail: 'Снабжение',
-    art: gameArt.npc.quartermaster,
-    portraitRole: 'quartermaster',
-    active: false,
-  },
-  {
-    name: isUndead.value ? 'Нэрис' : 'Эллира',
-    role: 'Картограф',
-    detail: 'Новые регионы',
-    art: gameArt.npc.cartographer,
-    portraitRole: 'cartographer',
-    active: false,
-  },
-])
+const featuredNpc = computed(() => ({
+  name: isUndead.value ? 'Морвена' : 'Селия',
+  role: 'Регистратор',
+  art: gameArt.npc.registrar,
+}))
+const section = ref<'contracts' | 'war'>('contracts')
 
 type ContractFilter = 'ALL' | 'READY_TO_CLAIM' | 'ACTIVE' | 'AVAILABLE' | 'LOCKED'
 
@@ -209,195 +169,186 @@ async function claim(quest: Quest): Promise<void> {
         </div>
       </header>
 
-      <section class="guild-board__people" aria-label="Представители гильдии">
-        <header class="guild-staff-heading">
-          <div>
-            <small>СОСТАВ ПОСТА</small>
-            <strong>Те, кто держит экспедицию</strong>
-          </div>
-          <span>4 специалиста</span>
-        </header>
-        <div class="guild-staff-rail">
-          <article
-            v-for="npc in guildNpcs"
-            :key="npc.name"
-            class="guild-npc"
-            :class="{ 'guild-npc--active': npc.active }"
-            :aria-label="`${npc.name}, ${npc.role}`"
-          >
-            <span class="guild-npc__portrait">
-              <TownNpcPortrait :human-art="npc.art" :name="npc.name" :role="npc.portraitRole" />
-            </span>
-            <div>
-              <strong>{{ npc.name }}</strong>
-              <small>{{ npc.role }}</small>
-              <span>{{ npc.detail }}</span>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="registrar">
-        <div>
-          <small>РЕГИСТРАТОР</small>
-          <strong>{{
-            isCentralPost ? 'Стойка регистрации контрактов' : 'Полевой журнал контрактов'
-          }}</strong>
-          <p>
-            Контракты — официально зарегистрированная работа. Недоступные заказы открываются по мере
-            развития героя и истории.
-          </p>
-        </div>
-        <span>{{ contracts.length }} заказов</span>
-      </section>
-
-      <section v-if="contracts.length" class="contract-board" aria-label="Доска контрактов">
-        <header class="contract-board__heading">
-          <div>
-            <small>ДОСКА КОНТРАКТОВ</small>
-            <strong>Выбери заказ, чтобы изучить детали</strong>
-          </div>
-          <span>{{ filteredContracts.length }} / {{ contracts.length }}</span>
-        </header>
-
-        <nav class="contract-filters" aria-label="Фильтр контрактов">
-          <button
-            v-for="filter in contractFilters"
-            :key="filter.id"
-            type="button"
-            class="contract-filter"
-            :class="{ 'contract-filter--active': activeFilter === filter.id }"
-            :aria-pressed="activeFilter === filter.id"
-            @click="activeFilter = filter.id"
-          >
-            {{ filter.label }}
-          </button>
-        </nav>
-
-        <div v-if="filteredContracts.length" class="contract-rail">
-          <button
-            v-for="contract in filteredContracts"
-            :key="contract.id"
-            type="button"
-            class="contract-tab"
-            :class="{
-              'contract-tab--selected': selectedContract?.id === contract.id,
-              'contract-tab--ready': contract.status === 'READY_TO_CLAIM',
-            }"
-            :data-guild-contract-tab="contract.id"
-            :aria-pressed="selectedContract?.id === contract.id"
-            @click="selectedContractId = contract.id"
-          >
-            <span class="contract-tab__seal" aria-hidden="true">
-              <IconGenerator
-                :config="{
-                  id: `guild-contract-${contract.id}`,
-                  glyph: contractGlyph(contract),
-                  category: 'utility',
-                }"
-              />
-            </span>
-            <span class="contract-tab__copy">
-              <small>№{{ contract.contractNumber ?? contract.id }}</small>
-              <strong>{{ contractTitle(contract) }}</strong>
-              <em>{{ statusLabel(contract) }}</em>
-            </span>
-            <b>ур. {{ contract.requiredLevel }}</b>
-          </button>
-        </div>
-
-        <div v-else class="guild-board__empty guild-board__empty--filter">
-          <strong>В этом разделе нет контрактов</strong>
-          <p>Переключи фильтр или дождись нового заказа от гильдии.</p>
-        </div>
-
-        <article
-          v-if="selectedContract"
-          class="guild-contract"
-          :class="{ 'guild-contract--ready': selectedContract.status === 'READY_TO_CLAIM' }"
-          :data-guild-contract-id="selectedContract.id"
-          :data-guild-contract-status="selectedContract.status"
+      <nav class="guild-menu" aria-label="Разделы гильдии">
+        <UIButton
+          variant="secondary"
+          :aria-pressed="section === 'contracts'"
+          @click="section = 'contracts'"
+          >Контракты</UIButton
         >
-          <header class="guild-contract__heading">
+        <UIButton variant="secondary" :aria-pressed="section === 'war'" @click="section = 'war'"
+          >Война фракций</UIButton
+        >
+      </nav>
+      <WorldPvpBoard v-if="section === 'war'" />
+      <template v-else>
+        <section class="registrar">
+          <div>
+            <small>РЕГИСТРАТОР</small>
+            <strong>{{
+              isCentralPost ? 'Стойка регистрации контрактов' : 'Полевой журнал контрактов'
+            }}</strong>
+            <p>
+              Контракты — официально зарегистрированная работа. Недоступные заказы открываются по
+              мере развития героя и истории.
+            </p>
+          </div>
+          <span>{{ contracts.length }} заказов</span>
+        </section>
+
+        <section v-if="contracts.length" class="contract-board" aria-label="Доска контрактов">
+          <header class="contract-board__heading">
             <div>
-              <small>
-                КОНТРАКТ №{{ selectedContract.contractNumber ?? selectedContract.id }} ·
-                {{ statusLabel(selectedContract) }}
-              </small>
-              <h3>{{ contractTitle(selectedContract) }}</h3>
+              <small>ДОСКА КОНТРАКТОВ</small>
+              <strong>Выбери заказ, чтобы изучить детали</strong>
             </div>
-            <span>ур. {{ selectedContract.requiredLevel }}</span>
+            <span>{{ filteredContracts.length }} / {{ contracts.length }}</span>
           </header>
 
-          <dl class="guild-contract__meta">
-            <div>
-              <dt>Заказчик</dt>
-              <dd>{{ selectedContract.issuerName ?? 'Гильдия авантюристов' }}</dd>
-            </div>
-            <div>
-              <dt>Регион</dt>
-              <dd>{{ contractRegionLabel(selectedContract) }}</dd>
-            </div>
-            <div>
-              <dt>Угроза</dt>
-              <dd>{{ selectedContract.threatLevel ?? 'Не указана' }}</dd>
-            </div>
-          </dl>
-
-          <p class="guild-contract__description">{{ selectedContract.description }}</p>
-
-          <div class="guild-contract__reward">
-            <small>НАГРАДА</small>
-            <strong
-              >+{{ selectedContract.rewardXp }} опыта · +{{
-                formatMoney(selectedContract.rewardGold)
-              }}</strong
+          <nav class="contract-filters" aria-label="Фильтр контрактов">
+            <button
+              v-for="filter in contractFilters"
+              :key="filter.id"
+              type="button"
+              class="contract-filter"
+              :class="{ 'contract-filter--active': activeFilter === filter.id }"
+              :aria-pressed="activeFilter === filter.id"
+              @click="activeFilter = filter.id"
             >
-            <span v-if="selectedContract.unlockLocationId">Открывает новую область</span>
+              {{ filter.label }}
+            </button>
+          </nav>
+
+          <div v-if="filteredContracts.length" class="contract-rail">
+            <button
+              v-for="contract in filteredContracts"
+              :key="contract.id"
+              type="button"
+              class="contract-tab"
+              :class="{
+                'contract-tab--selected': selectedContract?.id === contract.id,
+                'contract-tab--ready': contract.status === 'READY_TO_CLAIM',
+              }"
+              :data-guild-contract-tab="contract.id"
+              :aria-pressed="selectedContract?.id === contract.id"
+              @click="selectedContractId = contract.id"
+            >
+              <span class="contract-tab__seal" aria-hidden="true">
+                <IconGenerator
+                  :config="{
+                    id: `guild-contract-${contract.id}`,
+                    glyph: contractGlyph(contract),
+                    category: 'utility',
+                  }"
+                />
+              </span>
+              <span class="contract-tab__copy">
+                <small>№{{ contract.contractNumber ?? contract.id }}</small>
+                <strong>{{ contractTitle(contract) }}</strong>
+                <em>{{ statusLabel(contract) }}</em>
+              </span>
+              <b>ур. {{ contract.requiredLevel }}</b>
+            </button>
           </div>
 
-          <footer>
-            <UIButton
-              v-if="selectedContract.status === 'AVAILABLE'"
-              data-guild-accept-contract
-              :disabled="session.mutationPending"
-              @click="accept(selectedContract)"
-            >
-              Принять контракт
-            </UIButton>
-            <UIButton
-              v-else-if="selectedContract.status === 'READY_TO_CLAIM'"
-              data-guild-claim-contract
-              :disabled="session.mutationPending"
-              @click="claim(selectedContract)"
-            >
-              Получить награду
-            </UIButton>
-            <span v-else-if="selectedContract.status === 'ACTIVE'" class="guild-contract__state">
-              Контракт зарегистрирован · цель в работе
-            </span>
-            <span
-              v-else-if="selectedContract.status === 'LOCKED'"
-              class="guild-contract__state guild-contract__state--locked"
-            >
-              {{ lockedReason(selectedContract) }}
-            </span>
-            <span v-else class="guild-contract__state guild-contract__state--done">
-              Контракт закрыт
-            </span>
-          </footer>
-        </article>
-      </section>
+          <div v-else class="guild-board__empty guild-board__empty--filter">
+            <strong>В этом разделе нет контрактов</strong>
+            <p>Переключи фильтр или дождись нового заказа от гильдии.</p>
+          </div>
 
-      <div v-else class="guild-board__empty">
-        <strong>Новых контрактов нет</strong>
-        <p>В этом представительстве сейчас нет работы, доступной для регистрации.</p>
-      </div>
+          <article
+            v-if="selectedContract"
+            class="guild-contract"
+            :class="{ 'guild-contract--ready': selectedContract.status === 'READY_TO_CLAIM' }"
+            :data-guild-contract-id="selectedContract.id"
+            :data-guild-contract-status="selectedContract.status"
+          >
+            <header class="guild-contract__heading">
+              <div>
+                <small>
+                  КОНТРАКТ №{{ selectedContract.contractNumber ?? selectedContract.id }} ·
+                  {{ statusLabel(selectedContract) }}
+                </small>
+                <h3>{{ contractTitle(selectedContract) }}</h3>
+              </div>
+              <span>ур. {{ selectedContract.requiredLevel }}</span>
+            </header>
+
+            <dl class="guild-contract__meta">
+              <div>
+                <dt>Заказчик</dt>
+                <dd>{{ selectedContract.issuerName ?? 'Гильдия авантюристов' }}</dd>
+              </div>
+              <div>
+                <dt>Регион</dt>
+                <dd>{{ contractRegionLabel(selectedContract) }}</dd>
+              </div>
+              <div>
+                <dt>Угроза</dt>
+                <dd>{{ selectedContract.threatLevel ?? 'Не указана' }}</dd>
+              </div>
+            </dl>
+
+            <p class="guild-contract__description">{{ selectedContract.description }}</p>
+
+            <div class="guild-contract__reward">
+              <small>НАГРАДА</small>
+              <strong
+                >+{{ selectedContract.rewardXp }} опыта · +{{
+                  formatMoney(selectedContract.rewardGold)
+                }}</strong
+              >
+              <span v-if="selectedContract.unlockLocationId">Открывает новую область</span>
+            </div>
+
+            <footer>
+              <UIButton
+                v-if="selectedContract.status === 'AVAILABLE'"
+                data-guild-accept-contract
+                :disabled="session.mutationPending"
+                @click="accept(selectedContract)"
+              >
+                Принять контракт
+              </UIButton>
+              <UIButton
+                v-else-if="selectedContract.status === 'READY_TO_CLAIM'"
+                data-guild-claim-contract
+                :disabled="session.mutationPending"
+                @click="claim(selectedContract)"
+              >
+                Получить награду
+              </UIButton>
+              <span v-else-if="selectedContract.status === 'ACTIVE'" class="guild-contract__state">
+                Контракт зарегистрирован · цель в работе
+              </span>
+              <span
+                v-else-if="selectedContract.status === 'LOCKED'"
+                class="guild-contract__state guild-contract__state--locked"
+              >
+                {{ lockedReason(selectedContract) }}
+              </span>
+              <span v-else class="guild-contract__state guild-contract__state--done">
+                Контракт закрыт
+              </span>
+            </footer>
+          </article>
+        </section>
+
+        <div v-else class="guild-board__empty">
+          <strong>Новых контрактов нет</strong>
+          <p>В этом представительстве сейчас нет работы, доступной для регистрации.</p>
+        </div>
+      </template>
     </section>
   </UIModal>
 </template>
 
 <style scoped>
+.guild-menu {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
 .guild-board {
   display: grid;
   gap: var(--ui-space-3);
@@ -450,60 +401,6 @@ async function claim(quest: Quest): Promise<void> {
   color: var(--ui-color-text-muted);
   font-size: 0.68rem;
   line-height: 1.45;
-}
-.guild-board__people {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 5px;
-}
-.guild-npc {
-  display: grid;
-  grid-template-columns: 2.35rem minmax(0, 1fr);
-  align-items: center;
-  gap: 7px;
-  min-width: 0;
-  padding: 6px;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-sm);
-  background: rgb(8 12 18 / 90%);
-  opacity: 0.68;
-}
-.guild-npc--active {
-  border-color: rgb(232 200 102 / 42%);
-  background: linear-gradient(90deg, rgb(232 200 102 / 10%), rgb(8 12 18 / 92%));
-  opacity: 1;
-}
-.guild-npc img {
-  width: 2.35rem;
-  height: 2.35rem;
-  overflow: hidden;
-  border: 1px solid var(--ui-color-border-strong);
-  border-radius: var(--ui-radius-sm);
-  object-fit: cover;
-  object-position: 50% 16%;
-}
-.guild-npc div {
-  display: grid;
-  min-width: 0;
-  gap: 1px;
-}
-.guild-npc strong {
-  overflow: hidden;
-  font-family: var(--ui-font-display);
-  font-size: 0.65rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.guild-npc small,
-.guild-npc span {
-  overflow: hidden;
-  color: var(--ui-color-text-muted);
-  font-size: 0.49rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.guild-npc span {
-  color: var(--ui-color-gold-muted);
 }
 .registrar {
   display: flex;
@@ -637,50 +534,31 @@ async function claim(quest: Quest): Promise<void> {
     flex-direction: column;
   }
 }
-
-.guild-board__people {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 7px;
-  padding: 2px 0;
-}
-
-.guild-staff-heading,
 .contract-board__heading {
   display: flex;
   align-items: end;
   justify-content: space-between;
   gap: var(--ui-space-3);
 }
-
-.guild-staff-heading > div,
 .contract-board__heading > div {
   display: grid;
   gap: 2px;
 }
-
-.guild-staff-heading small,
 .contract-board__heading small {
   color: var(--ui-color-gold);
   font-size: 0.55rem;
   font-weight: 800;
   letter-spacing: 0.1em;
 }
-
-.guild-staff-heading strong,
 .contract-board__heading strong {
   font-family: var(--ui-font-display);
   font-size: 0.76rem;
 }
-
-.guild-staff-heading > span,
 .contract-board__heading > span {
   flex: 0 0 auto;
   color: var(--ui-color-text-muted);
   font-size: 0.56rem;
 }
-
-.guild-staff-rail,
 .contract-rail,
 .contract-filters {
   display: flex;
@@ -689,60 +567,6 @@ async function claim(quest: Quest): Promise<void> {
   padding: 2px 1px 5px;
   scrollbar-width: thin;
   scrollbar-color: rgb(232 200 102 / 28%) transparent;
-}
-
-.guild-npc {
-  display: grid;
-  grid-template-columns: 2.65rem minmax(0, 1fr);
-  flex: 0 0 9.1rem;
-  align-items: center;
-  gap: 7px;
-  min-height: 3.3rem;
-  padding: 5px;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-sm);
-  background: linear-gradient(135deg, rgb(22 25 34 / 94%), rgb(7 10 16 / 94%));
-  opacity: 0.72;
-}
-
-.guild-npc--active {
-  border-color: rgb(232 200 102 / 58%);
-  background: linear-gradient(110deg, rgb(91 66 27 / 28%), rgb(8 12 18 / 96%));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%);
-  opacity: 1;
-}
-
-.guild-npc__portrait {
-  display: grid;
-  width: 2.65rem;
-  height: 3.25rem;
-  place-items: start center;
-  overflow: hidden;
-  border: 1px solid var(--ui-color-border-strong);
-  border-radius: var(--ui-radius-sm);
-  background:
-    radial-gradient(circle at 50% 24%, rgb(170 163 255 / 16%), transparent 65%), rgb(4 7 12 / 92%);
-}
-
-.guild-npc__portrait img {
-  width: 175%;
-  height: 175%;
-  object-fit: cover;
-  object-position: 50% 13%;
-  transform: translateY(-2%);
-}
-
-.guild-npc div {
-  gap: 2px;
-}
-
-.guild-npc strong {
-  font-size: 0.68rem;
-}
-
-.guild-npc small,
-.guild-npc span {
-  font-size: 0.5rem;
 }
 
 .contract-board {

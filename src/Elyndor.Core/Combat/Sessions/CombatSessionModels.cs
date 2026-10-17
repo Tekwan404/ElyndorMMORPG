@@ -202,7 +202,8 @@ public sealed record CombatSessionSnapshot(
     IReadOnlyList<ContributionEligibilityResult>? ParticipantContributions = null,
     CombatSessionStatisticsSnapshot? Statistics = null,
     Guid? ContentRevisionId = null,
-    bool OpenWorldPvp = false);
+    bool OpenWorldPvp = false,
+    IReadOnlyList<Elyndor.Core.World.WorldPvpDefeat>? WorldPvpDefeats = null);
 
 public static class CombatErrorCodes
 {

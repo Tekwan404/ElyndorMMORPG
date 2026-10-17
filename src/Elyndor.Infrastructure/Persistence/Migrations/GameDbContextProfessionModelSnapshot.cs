@@ -2857,6 +2857,112 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.ToTable("travel_operations", "game");
                 });
 
+            modelBuilder.Entity("Elyndor.Core.World.WorldPvpDeathReceipt", b =>
+                {
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("VictimId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("AtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("SessionId", "VictimId");
+
+                    b.HasIndex("VictimId");
+
+                    b.ToTable("world_pvp_death_receipts", "game");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.World.WorldPvpRewardReceipt", b =>
+                {
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("VictimId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("AtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("BloodyTokens")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("FieldHonor")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Season")
+                        .HasColumnType("integer");
+
+                    b.HasKey("SessionId", "VictimId", "CharacterId");
+
+                    b.HasIndex("CharacterId", "AtUtc");
+
+                    b.HasIndex("CharacterId", "VictimId", "AtUtc");
+
+                    b.ToTable("world_pvp_reward_receipts", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_world_pvp_receipt_positive", "\"Rating\" > 0 AND \"FieldHonor\" > 0 AND \"BloodyTokens\" >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.World.WorldPvpStanding", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Season")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Assists")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Deaths")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Victories")
+                        .HasColumnType("integer");
+
+                    b.HasKey("CharacterId", "Season");
+
+                    b.HasIndex("Season", "Rating", "CharacterId")
+                        .IsDescending(false, true, false);
+
+                    b.ToTable("world_pvp_standings", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_world_pvp_standing_nonnegative", "\"Rating\" >= 0 AND \"Victories\" >= 0 AND \"Assists\" >= 0 AND \"Deaths\" >= 0 AND \"Season\" > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Elyndor.Core.World.WorldPvpWallet", b =>
+                {
+                    b.Property<Guid>("CharacterId")
+                        .HasColumnType("uuid");
+
+                    b.Property<long>("BloodyTokens")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("FieldHonor")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("CharacterId");
+
+                    b.ToTable("world_pvp_wallets", "game", t =>
+                        {
+                            t.HasCheckConstraint("ck_world_pvp_wallet_nonnegative", "\"FieldHonor\" >= 0 AND \"BloodyTokens\" >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossCombatSessionBinding", b =>
                 {
                     b.Property<Guid>("CombatSessionId")
@@ -3845,6 +3951,48 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_travel_operations_characters_character_id");
+                });
+
+            modelBuilder.Entity("Elyndor.Core.World.WorldPvpDeathReceipt", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("VictimId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Elyndor.Core.World.WorldPvpRewardReceipt", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Elyndor.Core.World.WorldPvpDeathReceipt", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId", "VictimId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Elyndor.Core.World.WorldPvpStanding", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Elyndor.Core.World.WorldPvpWallet", b =>
+                {
+                    b.HasOne("Elyndor.Core.Characters.Character", null)
+                        .WithMany()
+                        .HasForeignKey("CharacterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Elyndor.Core.WorldBosses.WorldBossCombatSessionBinding", b =>

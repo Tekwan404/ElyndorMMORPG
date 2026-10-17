@@ -93,7 +93,7 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
     }
 
     [Fact]
-    public async Task RestartRecoversIndividualVitalsAndDefeatWithoutPvpLootOrReplayHealing()
+    public async Task RestartRecoversIndividualVitalsAndPvpRewardsWithoutPveLootOrReplayHealing()
     {
         var human = await SeedAsync("HUMAN");
         var undead = await SeedAsync("UNDEAD");
@@ -111,6 +111,9 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
         winner = winner with { Player = winner.Player with { Hp = 37 } };
         var loser = session.Snapshot(undead.Character) with { Status = CombatSessionStatus.Defeat };
         loser = loser with { Player = loser.Player with { Hp = 0 } };
+        WorldPvpDefeat[] defeats = [new(undead.Character, winner.ServerTimeUtc, [new(human.Character, 100, 0)])];
+        winner = winner with { WorldPvpDefeats = defeats };
+        loser = loser with { WorldPvpDefeats = defeats };
         await using var db = postgres.CreateDbContext();
         var durability = new CombatDurabilityService(db, NullLogger<CombatDurabilityService>.Instance,
             host.Services.GetRequiredService<IServiceScopeFactory>(), contentProvider: provider);
@@ -122,12 +125,133 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
         Assert.True((await db.CharacterVitals.AsNoTracking().SingleAsync(row => row.CharacterId == undead.Character)).CurrentHp > 0);
         Assert.Equal("UNDEAD_STARTER_TOWN", (await db.CharacterLocations.AsNoTracking().SingleAsync(row => row.CharacterId == undead.Character)).LocationId);
         Assert.Empty(await db.CombatRewardGrants.ToArrayAsync());
+        Assert.Equal(5, (await db.WorldPvpWallets.AsNoTracking().SingleAsync()).FieldHonor);
+        Assert.Single(await db.WorldPvpRewardReceipts.ToArrayAsync());
         Assert.Empty(await db.ActiveCombatSessions.ToArrayAsync());
         var vitals = await db.CharacterVitals.SingleAsync(row => row.CharacterId == human.Character);
         vitals.BeginContext(10, 0, DateTimeOffset.UtcNow);
         await db.SaveChangesAsync();
         await scope.ServiceProvider.GetRequiredService<ICombatSessionFinalizer>().FinalizeAsync(human.Character, winner, content, CancellationToken.None);
         Assert.Equal(10, (await db.CharacterVitals.AsNoTracking().SingleAsync(row => row.CharacterId == human.Character)).CurrentHp);
+        Assert.Single(await db.WorldPvpRewardReceipts.ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task ConcurrentSettlementIsIdempotentAndReversePairCannotFarmRewards()
+    {
+        var human = await SeedAsync("HUMAN");
+        var undead = await SeedAsync("UNDEAD");
+        var healer = await SeedAsync("HUMAN");
+        await using var host = CreateFactory();
+        using var client = Client(host, human.Account);
+        var snapshot = await ProgressionSnapshotAsync(host, human, undead);
+        var now = snapshot.ServerTimeUtc;
+        snapshot = snapshot with { WorldPvpDefeats = [new(undead.Character, now,
+            [new(human.Character, 100, 0), new(healer.Character, 0, 40)])] };
+        await using var first = postgres.CreateDbContext();
+        await using var second = postgres.CreateDbContext();
+        await Task.WhenAll(new WorldPvpSettlementService(first, TimeProvider.System).ApplyAsync(snapshot, CancellationToken.None),
+            new WorldPvpSettlementService(second, TimeProvider.System).ApplyAsync(snapshot, CancellationToken.None));
+        await using var verify = postgres.CreateDbContext();
+        Assert.Single(await verify.WorldPvpDeathReceipts.ToArrayAsync());
+        Assert.Equal(2, await verify.WorldPvpRewardReceipts.CountAsync());
+        Assert.Equal(5, (await verify.WorldPvpWallets.SingleAsync(w => w.CharacterId == human.Character)).FieldHonor);
+        Assert.Equal(1, (await verify.WorldPvpStandings.SingleAsync(w => w.CharacterId == healer.Character)).Assists);
+        var reverse = snapshot with { SessionId = Guid.NewGuid(), WorldPvpDefeats = [new(human.Character, now, [new(undead.Character, 100, 0)])] };
+        await new WorldPvpSettlementService(first, TimeProvider.System).ApplyAsync(reverse, CancellationToken.None);
+        Assert.False(await verify.WorldPvpWallets.AnyAsync(w => w.CharacterId == undead.Character));
+        var repeated = snapshot with { SessionId = Guid.NewGuid() };
+        await new WorldPvpSettlementService(first, TimeProvider.System).ApplyAsync(repeated, CancellationToken.None);
+        Assert.Equal(2, await verify.WorldPvpRewardReceipts.CountAsync());
+        await new WorldPvpReadService(verify, TimeProvider.System).GetAsync(human.Account, "HUMAN", CancellationToken.None);
+        var overview = await client.GetFromJsonAsync<WorldPvpOverview>("/api/v1/world/pvp/progression?raceId=HUMAN");
+        Assert.Equal(2, overview!.Leaders.Count);
+        Assert.All(overview.Leaders, row => Assert.Equal("HUMAN", row.RaceId));
+        Assert.Equal(5, overview.FieldHonor);
+        Assert.Empty(await verify.ArenaStandings.ToArrayAsync());
+        Assert.Empty(await verify.ArenaHonorWallets.ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task WorldPvpShopRetriesCannotDuplicateItemsOrOverspendEitherCurrency()
+    {
+        var human = await SeedAsync("HUMAN");
+        await using var host = CreateFactory();
+        using var client = Client(host, human.Account);
+        var offers = await client.GetFromJsonAsync<WorldPvpOffer[]>("/api/v1/world/pvp/shop");
+        var offer = offers!.First(o => o.RequiredLevel <= 60);
+        await using (var db = postgres.CreateDbContext())
+        {
+            var wallet = new WorldPvpWallet(human.Character);
+            wallet.Grant(offer.FieldHonorPrice, offer.TokenPrice);
+            db.WorldPvpWallets.Add(wallet);
+            await db.SaveChangesAsync();
+        }
+        Guid mutation = Guid.NewGuid();
+        var request = new { itemId = offer.Id, tokens = false, mutationId = mutation };
+        var responses = await Task.WhenAll(client.PostAsJsonAsync("/api/v1/world/pvp/shop/buy", request),
+            client.PostAsJsonAsync("/api/v1/world/pvp/shop/buy", request));
+        foreach (var response in responses)
+        {
+            response.EnsureSuccessStatusCode();
+            Assert.True((await response.Content.ReadFromJsonAsync<WorldPvpPurchaseResult>())!.Succeeded);
+            response.Dispose();
+        }
+        using var conflict = await client.PostAsJsonAsync("/api/v1/world/pvp/shop/buy", new { itemId = offer.Id, tokens = true, mutationId = mutation });
+        Assert.Equal("mutation_conflict", (await conflict.Content.ReadFromJsonAsync<WorldPvpPurchaseResult>())!.ErrorCode);
+        using var tokenBuy = await client.PostAsJsonAsync("/api/v1/world/pvp/shop/buy", new { itemId = offer.Id, tokens = true, mutationId = Guid.NewGuid() });
+        Assert.True((await tokenBuy.Content.ReadFromJsonAsync<WorldPvpPurchaseResult>())!.Succeeded);
+        using var poor = await client.PostAsJsonAsync("/api/v1/world/pvp/shop/buy", new { itemId = offer.Id, tokens = false, mutationId = Guid.NewGuid() });
+        Assert.Equal("not_enough_currency", (await poor.Content.ReadFromJsonAsync<WorldPvpPurchaseResult>())!.ErrorCode);
+        await using var verify = postgres.CreateDbContext();
+        Assert.Equal(2, await verify.CharacterItems.CountAsync(i => i.CharacterId == human.Character));
+        var remaining = await verify.WorldPvpWallets.SingleAsync();
+        Assert.Equal(0, remaining.FieldHonor);
+        Assert.Equal(0, remaining.BloodyTokens);
+    }
+
+    [Fact]
+    public async Task DailyCapAndPairCooldownPersistAcrossSessionsAndResetAfterUtcDay()
+    {
+        var human = await SeedAsync("HUMAN");
+        var enemy = await SeedAsync("UNDEAD");
+        await using var host = CreateFactory();
+        using var client = Client(host, human.Account);
+        var snapshot = await ProgressionSnapshotAsync(host, human, enemy);
+        var now = snapshot.ServerTimeUtc;
+        await using var db = postgres.CreateDbContext();
+        var service = new WorldPvpSettlementService(db, TimeProvider.System);
+        for (int i = 0; i < WorldPvpBalance.DailyRewardedOpponents + 1; i++)
+        {
+            var target = i == 0 ? enemy : await SeedAsync("UNDEAD");
+            await service.ApplyAsync(snapshot with { SessionId = Guid.NewGuid(),
+                WorldPvpDefeats = [new(target.Character, now, [new(human.Character, 100, 0)])] }, CancellationToken.None);
+        }
+        Assert.Equal(20, await db.WorldPvpRewardReceipts.CountAsync());
+        Assert.Equal(100, (await db.WorldPvpWallets.AsNoTracking().SingleAsync()).FieldHonor);
+        var next = now.AddHours(25);
+        await new WorldPvpSettlementService(db, new FixedTime(next)).ApplyAsync(snapshot with {
+            SessionId = Guid.NewGuid(), ServerTimeUtc = next,
+            WorldPvpDefeats = [new(enemy.Character, next, [new(human.Character, 100, 0)])] }, CancellationToken.None);
+        Assert.Equal(21, await db.WorldPvpRewardReceipts.CountAsync());
+    }
+
+    private sealed class FixedTime(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
+
+    private static async Task<CombatSessionSnapshot> ProgressionSnapshotAsync(WebApplicationFactory<Program> host,
+        (Guid Account, Guid Character) human, (Guid Account, Guid Character) undead)
+    {
+        using var scope = host.Services.CreateScope();
+        var content = scope.ServiceProvider.GetRequiredService<IContentSnapshotProvider>().GetCurrent();
+        var bootstrap = scope.ServiceProvider.GetRequiredService<BootstrapService>();
+        var factory = scope.ServiceProvider.GetRequiredService<CombatSessionFactory>();
+        var first = await factory.CreateArenaPlayerAsync(await bootstrap.GetAsync(human.Account, CancellationToken.None), content, CancellationToken.None);
+        var second = await factory.CreateArenaPlayerAsync(await bootstrap.GetAsync(undead.Account, CancellationToken.None), content, CancellationToken.None);
+        return factory.CreateOpenWorldDuel(first, second, content).Snapshot(human.Character)
+            with { Status = CombatSessionStatus.Victory };
     }
 
     private static async Task<CombatUpdateResponse> EnterAsync(HttpClient client, Guid target, bool attack = true)

@@ -1,5 +1,44 @@
 import { expect, test, type Page } from '@playwright/test'
 
+test('World PvP rewards are available from the single guild registrar on a phone', async ({ page }) => {
+  test.setTimeout(90_000)
+  test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses deterministic progression fixtures.')
+  await installMockApiUnlessReal(page)
+  await installOpenWorldCombatTransport(page)
+  const initial = snapshot(true, 'STARTER_TOWN')
+  await page.route('**/api/v1/bootstrap', route => route.fulfill({ json: { ...initial, character: { ...initial.character!, level: 60 } } }))
+  let purchased = false
+  await page.route('**/api/v1/world/pvp/progression*', route => route.fulfill({ json: {
+    season: 1, endsAtUtc: '2026-12-12T00:00:00Z', fieldHonor: purchased ? 0 : 5, bloodyTokens: 1,
+    rewardedToday: 1, dailyLimit: 20, self: { rating: 10, victories: 1, assists: 0, deaths: 0 },
+    leaders: [{ characterId: 'warrior', name: 'Победитель', raceId: 'HUMAN', rating: 10, victories: 1, assists: 0, deaths: 0 }],
+  } }))
+  await page.route('**/api/v1/world/pvp/shop', route => route.fulfill({ json: [
+    { id: 'TEST_SWORD', name: 'Клинок войны', requiredLevel: 60, fieldHonorPrice: 5, tokenPrice: 1 },
+  ] }))
+  await page.route('**/api/v1/world/pvp/shop/buy', route => {
+    expect(route.request().headers()['content-type']).toContain('application/json')
+    expect(route.request().postDataJSON()).toMatchObject({ itemId: 'TEST_SWORD', tokens: false })
+    purchased = true
+    return route.fulfill({ json: { succeeded: true, errorCode: null } })
+  })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await page.locator('[data-city-marker="adventurers"]').click()
+  const guild = page.getByRole('dialog', { name: 'Гильдия авантюристов' })
+  await expect(guild.locator('.guild-board__header')).toContainText('Селия')
+  await guild.getByRole('button', { name: 'Война фракций', exact: true }).click()
+  const war = guild.locator('[data-world-pvp-board]')
+  await expect(war).toContainText('Полевая честь: 5')
+  await expect(war).toContainText('Победитель')
+  await war.locator('[data-buy-honor]').click()
+  await expect(war).toContainText('Снаряжение добавлено в сумку.')
+  await expect(war).toContainText('Полевая честь: 0')
+  await expect(war.locator('[data-buy-honor]')).toBeDisabled()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false)
+  await page.screenshot({ path: '../../output/playwright/world-pvp-guild-390.png', fullPage: true })
+})
+
 test('Dead Reaches PvPvE discovers opponents and enters the shared fight on a phone', async ({ page }) => {
   test.setTimeout(90_000)
   test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses deterministic discovery and combat transport fixtures.')
@@ -16,6 +55,7 @@ test('Dead Reaches PvPvE discovers opponents and enters the shared fight on a ph
   let entered = false
   let intent: unknown = null
   await page.route('**/api/v1/world/pvp/enter', route => {
+    expect(route.request().headers()['content-type']).toContain('application/json')
     intent = route.request().postDataJSON()
     entered = true
     const actor = { actorId: bootstrap.character.id, definitionId: 'WARRIOR', kind: 'Player', name: bootstrap.character.name,
@@ -684,8 +724,9 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.locator('[data-city-marker="adventurers"]').click()
   const guildDialog = page.getByRole('dialog', { name: 'Гильдия авантюристов' })
   await expect(guildDialog).toBeVisible()
-  await expect(guildDialog.getByText('Селия', { exact: true })).toBeVisible()
-  await expect(guildDialog.getByLabel('Гаррет, Мастер охоты')).toBeVisible()
+  await expect(guildDialog.locator('.guild-board__header')).toContainText('Селия')
+  await expect(guildDialog.getByLabel('Гаррет, Мастер охоты')).toHaveCount(0)
+  await expect(guildDialog.getByRole('button', { name: 'Война фракций', exact: true })).toBeVisible()
   await page.screenshot({ path: '../../output/playwright/session-3-ui-guild.png', fullPage: true })
   await guildDialog.getByRole('button', { name: 'Закрыть', exact: true }).click()
   await expect(guildDialog).toBeHidden()
