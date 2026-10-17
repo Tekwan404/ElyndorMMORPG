@@ -1,3 +1,5 @@
+using Elyndor.Core.Characters;
+
 namespace Elyndor.Core.World;
 
 public static class WorldLocationAccess
@@ -6,7 +8,7 @@ public static class WorldLocationAccess
         location.RequiredRaceId is null || location.RequiredRaceId == raceId;
 
     public static string HomeTown(string raceId) =>
-        raceId == "UNDEAD" ? WorldLocationIds.UndeadStarterTown : WorldLocationIds.StarterTown;
+        raceId == RaceIds.Undead ? WorldLocationIds.UndeadStarterTown : WorldLocationIds.StarterTown;
 
     public static bool IsTown(string? locationId) =>
         locationId is WorldLocationIds.StarterTown or WorldLocationIds.UndeadStarterTown;
