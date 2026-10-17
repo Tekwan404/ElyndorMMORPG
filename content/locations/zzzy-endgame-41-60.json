@@ -33,6 +33,7 @@
       "maximumLevel": 44,
       "transitions": [
         "OBSIDIAN_EDGE",
+        "UNDEAD_OBSIDIAN_EDGE",
         "PLAGUEWOOD"
       ],
       "artId": "chiornye-kruchi",
@@ -71,8 +72,7 @@
       "mapId": "OUTER_REACHES",
       "requiredContractId": null,
       "travelDurationSeconds": 0,
-      "allowAfk": false,
-      "requiredRaceId": "HUMAN"
+      "allowAfk": false
     },
     {
       "id": "PLAGUEWOOD",
@@ -121,8 +121,7 @@
       "mapId": "OUTER_REACHES",
       "requiredContractId": null,
       "travelDurationSeconds": 0,
-      "allowAfk": false,
-      "requiredRaceId": "HUMAN"
+      "allowAfk": false
     },
     {
       "id": "GLASS_DESERT",
@@ -171,8 +170,7 @@
       "mapId": "OUTER_REACHES",
       "requiredContractId": null,
       "travelDurationSeconds": 0,
-      "allowAfk": false,
-      "requiredRaceId": "HUMAN"
+      "allowAfk": false
     },
     {
       "id": "FROZEN_EDGE",
@@ -221,8 +219,7 @@
       "mapId": "OUTER_REACHES",
       "requiredContractId": null,
       "travelDurationSeconds": 0,
-      "allowAfk": false,
-      "requiredRaceId": "HUMAN"
+      "allowAfk": false
     },
     {
       "id": "DOOMED_LANDS",
@@ -275,8 +272,7 @@
       "mapId": "OUTER_REACHES",
       "requiredContractId": null,
       "travelDurationSeconds": 0,
-      "allowAfk": false,
-      "requiredRaceId": "HUMAN"
+      "allowAfk": false
     },
     {
       "id": "DEAD_REACHES",
@@ -286,8 +282,7 @@
       "minimumLevel": 60,
       "maximumLevel": 60,
       "transitions": [
-        "DOOMED_LANDS",
-        "UNDEAD_DOOMED_LANDS"
+        "DOOMED_LANDS"
       ],
       "artId": "miortvye-predely",
       "description": "Элитная территория 60 уровня для редких противников, охоты на именных элиток и будущих мировых событий.",

@@ -2,9 +2,10 @@
 
 Implement a copy of the existing BORDERLANDS region for UNDEAD characters, named
 Земли мёртвых, with Тихоград as its city. Preserve encounter balance, rewards,
-level ranges and services. OUTER_REACHES has separate faction locations with the
-same presentation; only DEAD_REACHES is shared and requires level 60. Implementing
-open-world PvP combat is outside this content and faction-access slice.
+level ranges and services. Only the level 1–40 regions are faction-separated.
+OUTER_REACHES is shared by both factions at levels 41–60, without faction copies.
+Open-world PvP is planned only for DEAD_REACHES (minimum level 60); all other world
+locations remain PvE. Implementing that combat is outside this content and access slice.
 
 1. Copy composed locations and their local dungeon, quest, contract, merchant and
    gathering definitions into canonical content categories with separate IDs.
@@ -43,5 +44,6 @@ Auction browsing filters the seller's authoritative character race before paging
 Purchases validate buyer/seller race under the existing character locks before any
 settlement. Existing lots need no migration because character race is immutable.
 Direct trade and party invites/acceptance reject opposing factions. Arena matchmaking
-and its shared ranking are unchanged. Each faction has its own approach and return
-route to DEAD_REACHES; bootstrap repairs old undead OUTER_REACHES positions too.
+and its shared ranking are unchanged. BLACK_CRAGS connects the shared continent
+to both home regions; the server exposes only the return route to the player's own
+homeland. Existing shared-continent positions retain their original location IDs.

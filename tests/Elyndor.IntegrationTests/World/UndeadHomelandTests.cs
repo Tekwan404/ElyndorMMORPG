@@ -49,8 +49,6 @@ public sealed class UndeadHomelandTests(PostgresFixture postgres) : IAsyncLifeti
     [Theory]
     [InlineData("HUMAN", "UNDEAD_WHISPERING_FOREST")]
     [InlineData("UNDEAD", "WHISPERING_FOREST")]
-    [InlineData("HUMAN", "UNDEAD_BLACK_CRAGS")]
-    [InlineData("UNDEAD", "BLACK_CRAGS")]
     public async Task DirectTravelCannotBypassFactionRestriction(string raceId, string target)
     {
         var content = await LoadContentAsync();
@@ -69,7 +67,7 @@ public sealed class UndeadHomelandTests(PostgresFixture postgres) : IAsyncLifeti
     [InlineData("HUMAN", "WHISPERING_FOREST")]
     [InlineData("UNDEAD", "UNDEAD_WHISPERING_FOREST")]
     [InlineData("HUMAN", "BLACK_CRAGS")]
-    [InlineData("UNDEAD", "UNDEAD_BLACK_CRAGS")]
+    [InlineData("UNDEAD", "BLACK_CRAGS")]
     [InlineData("HUMAN", "DEAD_REACHES")]
     [InlineData("UNDEAD", "DEAD_REACHES")]
     public async Task OwnRegionAndSharedContinentRemainAccessible(string raceId, string target)
@@ -86,7 +84,7 @@ public sealed class UndeadHomelandTests(PostgresFixture postgres) : IAsyncLifeti
     [Theory]
     [InlineData("UNDEAD", "WHISPERING_FOREST", "UNDEAD_WHISPERING_FOREST")]
     [InlineData("HUMAN", "UNDEAD_WHISPERING_FOREST", "WHISPERING_FOREST")]
-    [InlineData("UNDEAD", "BLACK_CRAGS", "UNDEAD_BLACK_CRAGS")]
+    [InlineData("UNDEAD", "BLACK_CRAGS", "BLACK_CRAGS")]
     public async Task BootstrapRepairsLegacyFactionPositionAndFiltersTransitions(string raceId, string oldLocation, string expected)
     {
         var content = await LoadContentAsync();
@@ -184,14 +182,34 @@ public sealed class UndeadHomelandTests(PostgresFixture postgres) : IAsyncLifeti
 
     private sealed class NoCombat : ICombatActivityReader { public bool HasActiveCombat(Guid accountId) => false; }
 
-    private async Task<Guid> SeedAsync(string raceId, string locationId)
+    [Theory]
+    [InlineData("HUMAN", 41, "BLACK_CRAGS", true)]
+    [InlineData("UNDEAD", 41, "BLACK_CRAGS", true)]
+    [InlineData("HUMAN", 59, "DEAD_REACHES", false)]
+    [InlineData("UNDEAD", 59, "DEAD_REACHES", false)]
+    public async Task SharedContinentUsesLevelGatesForBothRaces(string raceId, int level, string target, bool allowed)
+    {
+        var content = await LoadContentAsync();
+        Guid accountId = await SeedAsync(raceId, WorldLocationAccess.HomeTown(raceId), level);
+        await using var db = postgres.CreateDbContext();
+        var service = new TravelService(db, new WorldMap(content.Locations, directTravel: true), Clock);
+        var result = await service.TravelAsync(accountId, Guid.CreateVersion7(), target, default);
+        Assert.Equal(allowed, result.IsSuccess);
+        if (!allowed)
+        {
+            Assert.Equal(TravelErrorCodes.LevelRequired, result.ErrorCode);
+            Assert.Equal(WorldLocationAccess.HomeTown(raceId), (await db.CharacterLocations.SingleAsync()).LocationId);
+        }
+    }
+
+    private async Task<Guid> SeedAsync(string raceId, string locationId, int level = 60)
     {
         await using var db = postgres.CreateDbContext();
         Guid accountId = Guid.CreateVersion7();
         Guid characterId = Guid.CreateVersion7();
         db.Accounts.Add(new Account(accountId, Random.Shared.NextInt64(1, long.MaxValue), Now));
         var character = new Character(characterId, accountId, Guid.CreateVersion7(), "Traveler", "TRAVELER", raceId, "MALE", "WARRIOR", Now);
-        character.SetLevel(60);
+        character.SetLevel(level);
         db.Characters.Add(character);
         db.CharacterLocations.Add(new CharacterLocation(characterId, locationId, 1, Now));
         await db.SaveChangesAsync();

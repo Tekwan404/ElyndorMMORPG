@@ -28,23 +28,19 @@ public sealed class UndeadHomelandContentTests
             undeadLocations.Single(location => location.Id == "UNDEAD_STARTER_TOWN").ArtId);
         Assert.Contains(package.Merchants!, merchant => merchant.LocationId == "UNDEAD_STARTER_TOWN");
         Assert.Contains(package.Quests!, quest => quest.OfferLocationId == "UNDEAD_STARTER_TOWN");
-        Assert.Contains("UNDEAD_OBSIDIAN_EDGE", package.Locations.Single(location => location.Id == "UNDEAD_BLACK_CRAGS").Transitions);
+        Assert.Contains("UNDEAD_OBSIDIAN_EDGE", package.Locations.Single(location => location.Id == "BLACK_CRAGS").Transitions);
     }
 
     [Fact]
-    public async Task OnlyDeadReachesIsSharedAndRequiresLevelSixty()
+    public async Task OuterReachesIsSharedButDeadReachesRequiresLevelSixty()
     {
         var package = await GameContentPackageLoader.LoadAsync(ContentPath());
-        var shared = Assert.Single(package.Locations, location => location.RequiredRaceId is null);
-        Assert.Equal("DEAD_REACHES", shared.Id);
-        Assert.Equal(60, shared.MinimumLevel);
-        foreach (var human in package.Locations.Where(location => location.MapId == "OUTER_REACHES"
-                     && location.RequiredRaceId == "HUMAN"))
-        {
-            var undead = Assert.Single(package.Locations, location => location.Id == "UNDEAD_" + human.Id);
-            Assert.Equal("UNDEAD", undead.RequiredRaceId);
-            Assert.Equal(human.Encounters, undead.Encounters);
-        }
+        var shared = package.Locations.Where(location => location.RequiredRaceId is null).ToArray();
+        Assert.Equal(6, shared.Length);
+        Assert.All(shared, location => Assert.Equal("OUTER_REACHES", location.MapId));
+        Assert.DoesNotContain(package.Locations, location => location.Id == "UNDEAD_BLACK_CRAGS");
+        Assert.Equal(60, Assert.Single(shared, location => location.Id == "DEAD_REACHES").MinimumLevel);
+        Assert.Contains("OBSIDIAN_EDGE", package.Locations.Single(location => location.Id == "BLACK_CRAGS").Transitions);
     }
 
     private static string ContentPath()
