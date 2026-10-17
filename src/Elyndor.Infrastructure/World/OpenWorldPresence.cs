@@ -5,7 +5,7 @@ namespace Elyndor.Infrastructure.World;
 
 public sealed record OpenWorldRosterEntry(Guid AccountId, OpenWorldPlayer Player);
 
-public sealed class OpenWorldPresence(TimeProvider timeProvider)
+public sealed class OpenWorldPresence(TimeProvider timeProvider) : IDisposable
 {
     private readonly ConcurrentDictionary<Guid, DateTimeOffset> _observed = [];
     private readonly SemaphoreSlim _rosterGate = new(1, 1);
@@ -45,4 +45,6 @@ public sealed class OpenWorldPresence(TimeProvider timeProvider)
 
     public bool IsPresent(Guid accountId) => _observed.TryGetValue(accountId, out var seen)
         && seen >= timeProvider.GetUtcNow() - OpenWorldPvpRules.PresenceLifetime;
+
+    public void Dispose() => _rosterGate.Dispose();
 }
