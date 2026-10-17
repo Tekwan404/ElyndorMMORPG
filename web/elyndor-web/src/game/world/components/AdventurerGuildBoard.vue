@@ -8,6 +8,7 @@ import type { Quest } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
 import { locationPresentation } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
+import WorldPvpView from '@/game/worldPvp/WorldPvpView.vue'
 import { UIButton, UIModal } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName } from '@/ui/icons/icon.types'
@@ -26,58 +27,18 @@ const boardTitle = computed(() =>
 )
 const boardSubtitle = computed(() =>
   isCentralPost.value
-    ? 'Официальные контракты для доступных регионов.'
-    : 'Контракты и цели текущей экспедиции.',
+    ? 'Контракты, военные награды и летопись противостояния фракций.'
+    : 'Контракты, мировые награды и хроника войны.',
 )
 const isUndead = computed(() => session.snapshot?.character?.raceId === 'UNDEAD')
-const featuredNpc = computed(() =>
-  isCentralPost.value
-    ? {
-        name: isUndead.value ? 'Морвена' : 'Селия',
-        role: 'Регистратор',
-        art: gameArt.npc.registrar,
-      }
-    : {
-        name: isUndead.value ? 'Вейр' : 'Гаррет',
-        role: 'Полевой охотник',
-        art: gameArt.npc.huntMaster,
-      },
-)
-const guildNpcs = computed(() => [
-  {
-    name: isUndead.value ? 'Морвена' : 'Селия',
-    role: 'Регистратор',
-    detail: 'Контракты',
-    art: gameArt.npc.registrar,
-    portraitRole: 'registrar',
-    active: true,
-  },
-  {
-    name: isUndead.value ? 'Вейр' : 'Гаррет',
-    role: 'Мастер охоты',
-    detail: 'Цели и угрозы',
-    art: gameArt.npc.huntMaster,
-    portraitRole: 'huntMaster',
-    active: false,
-  },
-  {
-    name: isUndead.value ? 'Морт' : 'Бран',
-    role: 'Квартирмейстер',
-    detail: 'Снабжение',
-    art: gameArt.npc.quartermaster,
-    portraitRole: 'quartermaster',
-    active: false,
-  },
-  {
-    name: isUndead.value ? 'Нэрис' : 'Эллира',
-    role: 'Картограф',
-    detail: 'Новые регионы',
-    art: gameArt.npc.cartographer,
-    portraitRole: 'cartographer',
-    active: false,
-  },
-])
+const featuredNpc = computed(() => ({
+  name: isUndead.value ? 'Морвена' : 'Селия',
+  role: 'Регистратор',
+  art: gameArt.npc.registrar,
+}))
 
+type GuildSection = 'contracts' | 'world-pvp'
+const activeSection = ref<GuildSection>('contracts')
 type ContractFilter = 'ALL' | 'READY_TO_CLAIM' | 'ACTIVE' | 'AVAILABLE' | 'LOCKED'
 
 const contractFilters: Array<{ id: ContractFilter; label: string }> = [
@@ -123,6 +84,7 @@ watch(
   () => props.open,
   (open) => {
     if (open) {
+      activeSection.value = 'contracts'
       void session.refreshQuestJournal()
     }
   },
@@ -209,34 +171,26 @@ async function claim(quest: Quest): Promise<void> {
         </div>
       </header>
 
-      <section class="guild-board__people" aria-label="Представители гильдии">
-        <header class="guild-staff-heading">
-          <div>
-            <small>СОСТАВ ПОСТА</small>
-            <strong>Те, кто держит экспедицию</strong>
-          </div>
-          <span>4 специалиста</span>
-        </header>
-        <div class="guild-staff-rail">
-          <article
-            v-for="npc in guildNpcs"
-            :key="npc.name"
-            class="guild-npc"
-            :class="{ 'guild-npc--active': npc.active }"
-            :aria-label="`${npc.name}, ${npc.role}`"
-          >
-            <span class="guild-npc__portrait">
-              <TownNpcPortrait :human-art="npc.art" :name="npc.name" :role="npc.portraitRole" />
-            </span>
-            <div>
-              <strong>{{ npc.name }}</strong>
-              <small>{{ npc.role }}</small>
-              <span>{{ npc.detail }}</span>
-            </div>
-          </article>
-        </div>
-      </section>
+      <nav class="guild-board__sections" aria-label="Разделы Гильдии авантюристов">
+        <button
+          type="button"
+          class="guild-board__section"
+          :class="{ 'guild-board__section--active': activeSection === 'contracts' }"
+          :aria-pressed="activeSection === 'contracts'"
+          data-guild-section="contracts"
+          @click="activeSection = 'contracts'"
+        >Контракты</button>
+        <button
+          type="button"
+          class="guild-board__section"
+          :class="{ 'guild-board__section--active': activeSection === 'world-pvp' }"
+          :aria-pressed="activeSection === 'world-pvp'"
+          data-guild-section="world-pvp"
+          @click="activeSection = 'world-pvp'"
+        >Война фракций</button>
+      </nav>
 
+      <template v-if="activeSection === 'contracts'">
       <section class="registrar">
         <div>
           <small>РЕГИСТРАТОР</small>
@@ -393,6 +347,8 @@ async function claim(quest: Quest): Promise<void> {
         <strong>Новых контрактов нет</strong>
         <p>В этом представительстве сейчас нет работы, доступной для регистрации.</p>
       </div>
+      </template>
+      <WorldPvpView v-else data-guild-world-pvp />
     </section>
   </UIModal>
 </template>
@@ -450,60 +406,6 @@ async function claim(quest: Quest): Promise<void> {
   color: var(--ui-color-text-muted);
   font-size: 0.68rem;
   line-height: 1.45;
-}
-.guild-board__people {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 5px;
-}
-.guild-npc {
-  display: grid;
-  grid-template-columns: 2.35rem minmax(0, 1fr);
-  align-items: center;
-  gap: 7px;
-  min-width: 0;
-  padding: 6px;
-  border: 1px solid var(--ui-color-border);
-  border-radius: var(--ui-radius-sm);
-  background: rgb(8 12 18 / 90%);
-  opacity: 0.68;
-}
-.guild-npc--active {
-  border-color: rgb(232 200 102 / 42%);
-  background: linear-gradient(90deg, rgb(232 200 102 / 10%), rgb(8 12 18 / 92%));
-  opacity: 1;
-}
-.guild-npc img {
-  width: 2.35rem;
-  height: 2.35rem;
-  overflow: hidden;
-  border: 1px solid var(--ui-color-border-strong);
-  border-radius: var(--ui-radius-sm);
-  object-fit: cover;
-  object-position: 50% 16%;
-}
-.guild-npc div {
-  display: grid;
-  min-width: 0;
-  gap: 1px;
-}
-.guild-npc strong {
-  overflow: hidden;
-  font-family: var(--ui-font-display);
-  font-size: 0.65rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.guild-npc small,
-.guild-npc span {
-  overflow: hidden;
-  color: var(--ui-color-text-muted);
-  font-size: 0.49rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.guild-npc span {
-  color: var(--ui-color-gold-muted);
 }
 .registrar {
   display: flex;
@@ -638,111 +540,60 @@ async function claim(quest: Quest): Promise<void> {
   }
 }
 
-.guild-board__people {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 7px;
-  padding: 2px 0;
-}
-
-.guild-staff-heading,
 .contract-board__heading {
   display: flex;
   align-items: end;
   justify-content: space-between;
   gap: var(--ui-space-3);
 }
-
-.guild-staff-heading > div,
 .contract-board__heading > div {
   display: grid;
   gap: 2px;
 }
-
-.guild-staff-heading small,
 .contract-board__heading small {
   color: var(--ui-color-gold);
   font-size: 0.55rem;
   font-weight: 800;
   letter-spacing: 0.1em;
 }
-
-.guild-staff-heading strong,
 .contract-board__heading strong {
   font-family: var(--ui-font-display);
   font-size: 0.76rem;
 }
-
-.guild-staff-heading > span,
 .contract-board__heading > span {
   flex: 0 0 auto;
   color: var(--ui-color-text-muted);
   font-size: 0.56rem;
 }
-
-.guild-staff-rail,
-.contract-rail,
-.contract-filters {
-  display: flex;
+.guild-board__sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
-  overflow-x: auto;
-  padding: 2px 1px 5px;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(232 200 102 / 28%) transparent;
+  padding: 4px;
+  border: 1px solid rgb(232 200 102 / 22%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(8 11 18 / 92%);
 }
-
-.guild-npc {
-  display: grid;
-  grid-template-columns: 2.65rem minmax(0, 1fr);
-  flex: 0 0 9.1rem;
-  align-items: center;
-  gap: 7px;
-  min-height: 3.3rem;
-  padding: 5px;
-  border: 1px solid var(--ui-color-border);
+.guild-board__section {
+  min-height: var(--ui-touch-target);
+  padding: 10px 6px;
+  border: 1px solid transparent;
   border-radius: var(--ui-radius-sm);
-  background: linear-gradient(135deg, rgb(22 25 34 / 94%), rgb(7 10 16 / 94%));
-  opacity: 0.72;
+  background: none;
+  color: var(--ui-color-text-muted);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
 }
-
-.guild-npc--active {
-  border-color: rgb(232 200 102 / 58%);
-  background: linear-gradient(110deg, rgb(91 66 27 / 28%), rgb(8 12 18 / 96%));
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 5%);
-  opacity: 1;
+.guild-board__section--active {
+  border-color: rgb(232 200 102 / 48%);
+  background: linear-gradient(120deg, rgb(97 69 36 / 80%), rgb(54 42 34 / 88%));
+  color: #f1d5a3;
 }
-
-.guild-npc__portrait {
-  display: grid;
-  width: 2.65rem;
-  height: 3.25rem;
-  place-items: start center;
-  overflow: hidden;
-  border: 1px solid var(--ui-color-border-strong);
-  border-radius: var(--ui-radius-sm);
-  background:
-    radial-gradient(circle at 50% 24%, rgb(170 163 255 / 16%), transparent 65%), rgb(4 7 12 / 92%);
-}
-
-.guild-npc__portrait img {
-  width: 175%;
-  height: 175%;
-  object-fit: cover;
-  object-position: 50% 13%;
-  transform: translateY(-2%);
-}
-
-.guild-npc div {
-  gap: 2px;
-}
-
-.guild-npc strong {
-  font-size: 0.68rem;
-}
-
-.guild-npc small,
-.guild-npc span {
-  font-size: 0.5rem;
+.guild-board__section:focus-visible {
+  outline: 2px solid #e5bf84;
+  outline-offset: 2px;
 }
 
 .contract-board {
