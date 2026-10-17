@@ -224,6 +224,74 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task RatedVictoryReducesVictimRatingButRepeatPairCannotReduceAgain()
+    {
+        var human = await SeedAsync("HUMAN");
+        var undead = await SeedAsync("UNDEAD");
+        await using var host = CreateFactory();
+        var snapshot = await ProgressionSnapshotAsync(host, human, undead);
+        await using var db = postgres.CreateDbContext();
+        var defender = new WorldPvpStanding(undead.Character, WorldPvpBalance.Season(snapshot.ServerTimeUtc));
+        defender.Credit(true, 9);
+        db.WorldPvpStandings.Add(defender);
+        await db.SaveChangesAsync();
+        db.ChangeTracker.Clear();
+        var service = new WorldPvpSettlementService(db, TimeProvider.System);
+        var fight = snapshot with { WorldPvpDefeats = [
+            new WorldPvpDefeat(undead.Character, snapshot.ServerTimeUtc,
+                [new(human.Character, 100, 0)], human.Character)] };
+
+        await service.ApplyAsync(fight, CancellationToken.None);
+        await service.ApplyAsync(fight with { SessionId = Guid.NewGuid() }, CancellationToken.None);
+        var saved = await db.WorldPvpStandings.AsNoTracking().SingleAsync(s => s.CharacterId == undead.Character);
+        Assert.Equal(4, saved.Rating);
+        Assert.Equal(2, saved.Deaths);
+        Assert.Single(await db.WorldPvpRewardReceipts.ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task FuturePvPEventTimestampIsClampedInsteadOfBreakingFinalization()
+    {
+        var human = await SeedAsync("HUMAN");
+        var undead = await SeedAsync("UNDEAD");
+        await using var host = CreateFactory();
+        var snapshot = await ProgressionSnapshotAsync(host, human, undead);
+        var now = snapshot.ServerTimeUtc;
+        var fight = snapshot with { WorldPvpDefeats = [
+            new WorldPvpDefeat(undead.Character, now.AddSeconds(3),
+                [new(human.Character, 100, 0)], human.Character)] };
+        await using var db = postgres.CreateDbContext();
+
+        await new WorldPvpSettlementService(db, new FixedTime(now)).ApplyAsync(fight, CancellationToken.None);
+
+        Assert.Equal(now, (await db.WorldPvpDeathReceipts.AsNoTracking().SingleAsync()).AtUtc);
+        Assert.Equal(now, (await db.WorldPvpRewardReceipts.AsNoTracking().SingleAsync()).AtUtc);
+    }
+
+    [Fact]
+    public async Task GroupAssistsPayLessHonorAndRatingThanSoloKill()
+    {
+        var human = await SeedAsync("HUMAN");
+        var healer = await SeedAsync("HUMAN");
+        var undead = await SeedAsync("UNDEAD");
+        await using var host = CreateFactory();
+        var snapshot = await ProgressionSnapshotAsync(host, human, undead);
+        var fight = snapshot with { WorldPvpDefeats = [
+            new WorldPvpDefeat(undead.Character, snapshot.ServerTimeUtc,
+                [new(human.Character, 100, 0), new(healer.Character, 0, 40)], human.Character)] };
+        await using var db = postgres.CreateDbContext();
+
+        await new WorldPvpSettlementService(db, TimeProvider.System).ApplyAsync(fight, CancellationToken.None);
+
+        var killer = await db.WorldPvpStandings.AsNoTracking().SingleAsync(s => s.CharacterId == human.Character);
+        var assist = await db.WorldPvpStandings.AsNoTracking().SingleAsync(s => s.CharacterId == healer.Character);
+        Assert.Equal(10, killer.Rating);
+        Assert.Equal(5, assist.Rating);
+        Assert.Equal(5, (await db.WorldPvpWallets.AsNoTracking().SingleAsync(w => w.CharacterId == human.Character)).FieldHonor);
+        Assert.Equal(3, (await db.WorldPvpWallets.AsNoTracking().SingleAsync(w => w.CharacterId == healer.Character)).FieldHonor);
+    }
+
+    [Fact]
     public async Task WorldPvpShopRetriesCannotDuplicateItemsOrOverspendEitherCurrency()
     {
         var human = await SeedAsync("HUMAN");
@@ -342,6 +410,7 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
         character.SetLevel(level);
         db.Characters.Add(character);
         db.CharacterLocations.Add(new CharacterLocation(id, location, 1, now));
+        db.CharacterVitals.Add(new CharacterVitals(id, 100, 0, now, now));
         await db.SaveChangesAsync();
         return (account, id);
     }
