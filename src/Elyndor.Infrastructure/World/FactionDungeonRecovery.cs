@@ -9,6 +9,18 @@ namespace Elyndor.Infrastructure.World;
 
 internal static class FactionDungeonRecovery
 {
+    private static readonly Action<ILogger, Guid, Guid, string?, Exception?> MissingCounterpart =
+        LoggerMessage.Define<Guid, Guid, string?>(
+            LogLevel.Warning,
+            new EventId(2310, nameof(MissingCounterpart)),
+            "Leaving incompatible dungeon run {RunId} for character {CharacterId}: counterpart {TargetDungeonId} missing.");
+
+    private static readonly Action<ILogger, Guid, Guid, string, string, Exception?> MismatchedEncounters =
+        LoggerMessage.Define<Guid, Guid, string, string>(
+            LogLevel.Warning,
+            new EventId(2311, nameof(MismatchedEncounters)),
+            "Leaving incompatible dungeon run {RunId} for character {CharacterId}: encounters differ between {SourceDungeonId} and {TargetDungeonId}.");
+
     public static async Task<bool> RepairAsync(GameDbContext db, GameContentSnapshot content,
         Guid characterId, string raceId, DateTimeOffset now, CancellationToken cancellationToken,
         ILogger? logger = null)
@@ -44,9 +56,8 @@ internal static class FactionDungeonRecovery
                     || !content.Indexes.LocationsById.TryGetValue(target.EntryLocationId, out var targetEntry)
                     || !WorldLocationAccess.CanEnter(targetEntry, raceId))
                 {
-                    logger?.LogWarning(
-                        "Leaving incompatible dungeon run {RunId} for character {CharacterId}: counterpart {TargetDungeonId} missing.",
-                        run.Id, characterId, targetId);
+                    if (logger is not null)
+                        MissingCounterpart(logger, run.Id, characterId, targetId, null);
                     run.Members.Single(member => member.CharacterId == characterId).MarkLeft();
                     continue;
                 }
@@ -66,9 +77,8 @@ internal static class FactionDungeonRecovery
                 if (!source.Encounters.Select(encounter => (encounter.Id, encounter.MonsterId, encounter.CheckpointId))
                     .SequenceEqual(target.Encounters.Select(encounter => (encounter.Id, encounter.MonsterId, encounter.CheckpointId))))
                 {
-                    logger?.LogWarning(
-                        "Leaving incompatible dungeon run {RunId} for character {CharacterId}: encounters differ between {SourceDungeonId} and {TargetDungeonId}.",
-                        run.Id, characterId, source.Id, target.Id);
+                    if (logger is not null)
+                        MismatchedEncounters(logger, run.Id, characterId, source.Id, target.Id, null);
                     run.Members.Single(member => member.CharacterId == characterId).MarkLeft();
                     continue;
                 }
