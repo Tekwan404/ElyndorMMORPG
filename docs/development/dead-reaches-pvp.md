@@ -99,3 +99,26 @@ Shop mutations use character locks and canonical mutation IDs; the UI reuses the
 same ID after a lost response, with inventory capacity and prices checked server-side.
 
 Bounties, streak titles, cosmetics and season-end prizes remain follow-up scope.
+
+
+## Configurable gold rewards
+
+Admin Content now includes a World PvP Rewards form. `GoldPerKill` and
+`GoldPerAssist` in `worldPvpRewards` use integer bronze units; the form accepts
+gold denominations (1 gold = 10,000 bronze), including four decimal places.
+For example 2.5 gold becomes 25,000 bronze. Zero disables ordinary-money rewards;
+existing releases without this optional profile preserve zero payouts. Maximum
+per recipient per credit is 1,000,000,000 bronze (100,000 gold).
+
+Save a content revision and publish it using the existing workflow. New battles
+capture the published profile; terminal recovery keeps the original version.
+The largest qualifying damage contributor receives kill gold; other qualified
+contributors receive assist gold. The actual last-hit killer statistic remains
+separate. All existing pair/day checks apply before money is granted. Balances
+and the immutable GoldEarned receipt commit in the same PostgreSQL transaction.
+A new failure, retry or repeated pair cannot mint a second payment.
+
+The live guild combines the five-section navigation from PR383 with real data
+and replay-safe purchases from PR386. Bounty/title panels report that those
+server systems are unavailable. Mock values remain confined to the development
+preview route.

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, shallowRef } from 'vue'
 import MoneyAmount from '@/ui/components/MoneyAmount.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import WorldPvpLeaderboard from './WorldPvpLeaderboard.vue'
@@ -10,6 +10,12 @@ const session = useGameSessionStore()
 const { overview, offers, race, loading, buying, error, shopError, message, refresh, buy } =
   useWorldPvpProgression()
 const level = computed(() => session.snapshot?.character?.level ?? 0)
+const panel = shallowRef('overview')
+const tabs = [
+  { id: 'overview', label: 'Обзор' }, { id: 'rating', label: 'Рейтинг' },
+  { id: 'rewards', label: 'Награды' }, { id: 'bounties', label: 'Розыск' },
+  { id: 'titles', label: 'Титулы' },
+]
 
 function changeRace(value: string): void {
   race.value = value
@@ -18,7 +24,7 @@ function changeRace(value: string): void {
 </script>
 
 <template>
-  <section class="war-board" aria-label="Война фракций" data-world-pvp-board :aria-busy="loading">
+  <section class="war-board" aria-label="Война фракций" data-world-pvp data-world-pvp-board :aria-busy="loading">
     <header class="war-board__header">
       <div>
         <small>ГИЛЬДИЯ АВАНТЮРИСТОВ · ОТКРЫТЫЙ МИР</small>
@@ -29,6 +35,12 @@ function changeRace(value: string): void {
         {{ loading ? 'Обновляем…' : 'Обновить' }}
       </button>
     </header>
+    <nav class="war-board__tabs" aria-label="Разделы войны фракций">
+      <button v-for="tab in tabs" :key="tab.id" type="button" :data-world-pvp-tab="tab.id"
+        :aria-pressed="panel === tab.id" @click="panel = tab.id">{{ tab.label }}</button>
+    </nav>
+    <p v-if="panel === 'bounties'" class="war-board__feedback" data-world-pvp-bounties-empty>Розыск ещё не открыт. Сервер пока не публикует награды за головы.</p>
+    <p v-if="panel === 'titles'" class="war-board__feedback" data-world-pvp-titles-empty>Летопись титулов ещё не открыта. Требования и прогресс появятся после подключения серверной системы.</p>
 
     <p v-if="error" class="war-board__feedback war-board__feedback--error" role="alert">{{ error }}</p>
     <p v-if="message" class="war-board__feedback war-board__feedback--success" role="status">{{ message }}</p>
@@ -57,14 +69,16 @@ function changeRace(value: string): void {
           :aria-label="'Награды за сегодня: ' + overview.rewardedToday + ' из ' + overview.dailyLimit" />
       </div>
 
-      <WorldPvpLeaderboard :leaders="overview.leaders" :self="overview.self" :race="race"
+      <WorldPvpLeaderboard v-if="panel === 'overview' || panel === 'rating'" :leaders="overview.leaders" :self="overview.self" :race="race"
         :disabled="loading || buying" @filter="changeRace" />
 
+      <template v-if="panel === 'overview' || panel === 'rewards'">
       <div class="war-board__divider" role="separator" />
       <p v-if="shopError" class="war-board__feedback war-board__feedback--error" role="alert">{{ shopError }}</p>
       <WorldPvpRewardShop v-else :offers="offers" :field-honor="overview.fieldHonor"
         :bloody-tokens="overview.bloodyTokens" :character-level="level"
         :loading="loading" :buying="buying" @buy="buy" />
+      </template>
 
       <details class="war-board__rules">
         <summary>Как начисляются рейтинг и награды?</summary>
@@ -80,6 +94,10 @@ function changeRace(value: string): void {
 </template>
 
 <style scoped>
+.war-board__tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; }
+.war-board__tabs button { min-height: 44px; padding: .4rem; color: #c9bca4; background: #1c1b1a; border: 1px solid #4b4336; border-radius: 7px; font: inherit; font-size: .78rem; }
+.war-board__tabs button[aria-pressed='true'] { color: #f4ddaa; border-color: #b08d51; background: #33281b; }
+.war-board__balances > p:first-child { grid-column: 1 / -1; }
 .war-board {
   display: grid;
   min-width: 0;

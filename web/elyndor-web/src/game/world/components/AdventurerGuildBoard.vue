@@ -169,18 +169,25 @@ async function claim(quest: Quest): Promise<void> {
         </div>
       </header>
 
-      <nav class="guild-menu" aria-label="Разделы гильдии">
-        <UIButton
-          variant="secondary"
+      <nav class="guild-board__sections" aria-label="Разделы Гильдии авантюристов">
+        <button
+          type="button"
+          class="guild-board__section"
+          :class="{ 'guild-board__section--active': section === 'contracts' }"
           :aria-pressed="section === 'contracts'"
+          data-guild-section="contracts"
           @click="section = 'contracts'"
-          >Контракты</UIButton
-        >
-        <UIButton variant="secondary" :aria-pressed="section === 'war'" @click="section = 'war'"
-          >Война фракций</UIButton
-        >
+        >Контракты</button>
+        <button
+          type="button"
+          class="guild-board__section"
+          :class="{ 'guild-board__section--active': section === 'war' }"
+          :aria-pressed="section === 'war'"
+          data-guild-section="world-pvp"
+          @click="section = 'war'"
+        >Война фракций</button>
       </nav>
-      <WorldPvpBoard v-if="section === 'war'" />
+      <WorldPvpBoard v-if="section === 'war'" data-guild-world-pvp />
       <template v-else>
         <section class="registrar">
           <div>
@@ -729,5 +736,37 @@ async function claim(quest: Quest): Promise<void> {
   .contract-tab {
     flex-basis: 12rem;
   }
+}
+
+
+.guild-board__sections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid rgb(232 200 102 / 22%);
+  border-radius: var(--ui-radius-md);
+  background: rgb(8 11 18 / 92%);
+}
+.guild-board__section {
+  min-height: var(--ui-touch-target);
+  padding: 10px 6px;
+  border: 1px solid transparent;
+  border-radius: var(--ui-radius-sm);
+  background: none;
+  color: var(--ui-color-text-muted);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.guild-board__section--active {
+  border-color: rgb(232 200 102 / 48%);
+  background: linear-gradient(120deg, rgb(97 69 36 / 80%), rgb(54 42 34 / 88%));
+  color: #f1d5a3;
+}
+.guild-board__section:focus-visible {
+  outline: 2px solid #e5bf84;
+  outline-offset: 2px;
 }
 </style>
