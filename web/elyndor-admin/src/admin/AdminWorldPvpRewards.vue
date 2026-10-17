@@ -51,7 +51,7 @@ function edit(key: "goldPerKill" | "goldPerAssist", event: Event) {
           type="text"
           inputmode="decimal"
           :value="settings.goldPerKill / 10000"
-          @input="edit('goldPerKill', $event)"
+          @change="edit('goldPerKill', $event)"
       /></label>
       <label
         >Золото за помощь<input
@@ -59,7 +59,7 @@ function edit(key: "goldPerKill" | "goldPerAssist", event: Event) {
           type="text"
           inputmode="decimal"
           :value="settings.goldPerAssist / 10000"
-          @input="edit('goldPerAssist', $event)"
+          @change="edit('goldPerAssist', $event)"
       /></label>
     </div>
     <p>
