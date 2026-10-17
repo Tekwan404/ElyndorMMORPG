@@ -38,4 +38,27 @@ export const worldPvpPreviewDashboard: WorldPvpDashboard = {
     { id: 'preview-bounty-b', targetCharacterId: 'preview-human-b', targetName: 'Лиандра', targetFaction: 'HUMAN', killStreak: 21, lastSeenLocationName: null, honorReward: 200, tokenReward: 10 },
     { id: 'preview-bounty-c', targetCharacterId: 'preview-undead-a', targetName: 'Мортарион', targetFaction: 'UNDEAD', killStreak: 50, lastSeenLocationName: 'Мёртвые Пределы', honorReward: 500, tokenReward: 50 },
   ],
+  titles: [
+    {
+      id: 'preview-hunter',
+      name: 'Охотник за головами',
+      description: 'Регистратор отмечает героя, который добыл славу в полевых схватках.',
+      requirement: 'Пример: победи разыскиваемого игрока',
+      progress: 1, target: 1, unlocked: true, equipped: true,
+    },
+    {
+      id: 'preview-executioner',
+      name: 'Палач',
+      description: 'Герой, чьё имя шепчут у дорог и заброшенных крепостей.',
+      requirement: 'Пример: 10 убийств подряд без смерти',
+      progress: 6, target: 10, unlocked: false, equipped: false,
+    },
+    {
+      id: 'preview-blood-reaper',
+      name: 'Кровавый жнец',
+      description: 'Титул за выдающуюся серию побед против вражеской фракции.',
+      requirement: 'Пример: 35 убийств подряд без смерти',
+      progress: 18, target: 35, unlocked: false, equipped: false,
+    },
+  ],
 }
