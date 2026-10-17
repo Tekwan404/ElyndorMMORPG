@@ -10,6 +10,7 @@ import {
 import { apiClient } from '@/api/apiClient'
 import type { CombatEvent } from '@/api/contracts'
 import { useGameSessionStore } from '@/stores/gameSession'
+import { isPvpCombatLogEnabled } from './pvpCombatLogSettings'
 import type {
   ArenaCommandResponse,
   ArenaHonorShop,
@@ -39,6 +40,8 @@ export const useArenaStore = defineStore('arena', () => {
   const shopErrorCode = ref<string | null>(null)
   const match = ref<ArenaMatch | null>(null)
   const log = ref<CombatEvent[]>([])
+  const reportedPvpMatches = new Set<string>()
+  const reportingPvpMatches = new Set<string>()
   const pending = ref(false)
   const autoAttackPending = ref(false)
   const invitations = ref<ArenaInvitation[]>([])
@@ -208,10 +211,35 @@ export const useArenaStore = defineStore('arena', () => {
     }
   }
 
+  async function reportPvpMatch(matchId: string, attempt = 0): Promise<void> {
+    if (reportedPvpMatches.has(matchId) || reportingPvpMatches.has(matchId)
+        || !isPvpCombatLogEnabled()) return
+    reportingPvpMatches.add(matchId)
+    let retry = false
+    try {
+      const response = await apiClient.request<{ sent: boolean; errorCode: string | null }>(
+        `/api/v1/arena/matches/${encodeURIComponent(matchId)}/log/telegram`,
+        { method: 'POST' },
+      )
+      if (response.sent) reportedPvpMatches.add(matchId)
+      else if (response.errorCode === 'arena_match_not_found') reportedPvpMatches.add(matchId)
+      else retry = true
+    } catch (error) {
+      console.warn('[arena-log] cannot send PvP report', error)
+      retry = true
+    } finally {
+      reportingPvpMatches.delete(matchId)
+    }
+    if (retry && attempt < 2 && isPvpCombatLogEnabled()) {
+      window.setTimeout(() => void reportPvpMatch(matchId, attempt + 1), 500 * (attempt + 1))
+    }
+  }
+
   function applyMatch(next: ArenaMatch | null): void {
     if (!next) return
     if (next.status === 'Active') rememberMatchBaseline()
     match.value = next
+    if (next.status === 'Completed' && next.matchId) void reportPvpMatch(next.matchId)
     if (next.sequence >= lastSequence) lastSequence = next.sequence
     if (next.events.length > 0) {
       const known = new Set(log.value.map(event => event.sequence))

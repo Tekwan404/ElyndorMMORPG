@@ -243,7 +243,7 @@ onUnmounted(() => window.clearInterval(timer))
         </section>
 
         <div class="arena-battle-screen__log">
-          <CombatLog :entries="eventProjection.logEntries" />
+          <CombatLog :entries="eventProjection.logEntries" :max-entries="200" />
         </div>
       </section>
     </div>

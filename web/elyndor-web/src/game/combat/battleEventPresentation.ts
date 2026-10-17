@@ -71,12 +71,17 @@ export function projectBattleEvents(
       })
     }
 
-    if (event.type === 'CriticalHit' || event.type === 'ResourceChanged') continue
+    if (
+      event.type === 'CriticalHit' || event.type === 'ResourceChanged'
+      || event.type === 'AbilityCompleted' || event.type === 'EffectTicked'
+      || event.type === 'ThreatAdded' || event.type === 'ThreatDropped'
+      || event.type === 'ThreatCleared'
+    ) continue
 
     logEntries.push({
       key: event.sequence,
       side: resolveSide(event, context),
-      text: eventText(event, context),
+      text: eventText(event, context, previous),
       occurredAtUtc: event.serverTimeUtc,
       eventType: event.type,
     })
@@ -93,16 +98,49 @@ function resolveSide(event: CombatEvent, context: BattleEventProjectionContext):
   return 'system'
 }
 
-function eventText(event: CombatEvent, context: BattleEventProjectionContext): string {
+const effectNames: Record<string, string> = {
+  'BERSERKER_DEATHS_EMBRACE_READY': 'Объятия смерти',
+  'BERSERKER_RECKLESSNESS_INCOMING': 'Безрассудство: получаемый урон',
+  'BERSERKER_RECKLESSNESS_OUTGOING': 'Безрассудство: наносимый урон',
+  'BERSERKER_BLOOD_RAGE_ATTACK_SPEED': 'Кровавая ярость: скорость атаки',
+  'BERSERKER_BLOOD_RAGE_ATTACK_POWER': 'Кровавая ярость: сила атаки',
+  'BERSERKER_DEVASTATING_VULNERABILITY': 'Сокрушительная уязвимость',
+  'WARLORD_PARTY_SHIELD': 'Групповой щит полководца',
+  'WARLORD_INSPIRATION': 'Вдохновение полководца',
+  'MAGE_MANA_SHIELD_EFFECT': 'Щит маны',
+}
+
+function effectName(definitionId: string | null, names: ReadonlyMap<string, string>): string {
+  if (!definitionId?.trim()) return 'Неизвестный эффект'
+  const named = names.get(definitionId)
+  if (named?.trim()) return named
+  return effectNames[definitionId.trim().toUpperCase().replace(/[^A-Z0-9]+/g, '_')]
+    ?? 'Неизвестный эффект'
+}
+
+function eventText(
+  event: CombatEvent,
+  context: BattleEventProjectionContext,
+  previous?: CombatEvent,
+): string {
   const sourceName = actorName(event.sourceActorId ?? event.actorId, context)
   const targetName = actorName(event.targetActorId ?? event.actorId, context)
-  const abilityName = event.definitionId
-    ? (context.abilityNames.get(event.definitionId) ?? readableIdentifier(event.definitionId))
-    : 'способность'
+  const abilityName = event.definitionId?.trim()
+    ? (context.abilityNames.get(event.definitionId) ?? (event.definitionId === 'AUTO_ATTACK' ? 'Автоатака' : 'Неизвестная способность'))
+    : 'Неизвестная способность'
 
   switch (event.type) {
-    case 'DamageDealt':
-      return `${sourceName}: ${Math.round(event.amount)} урона`
+    case 'DamageDealt': {
+      const isCrit = previous?.type === 'CriticalHit'
+        && previous.sourceActorId === event.sourceActorId
+        && previous.targetActorId === event.targetActorId
+        && previous.amount === event.amount
+      const skill = event.definitionId
+        ? context.abilityNames.get(event.definitionId)
+          ?? (event.definitionId === 'AUTO_ATTACK' ? 'Автоатака' : null)
+        : null
+      return `${sourceName} → ${targetName}: ${Math.round(event.amount)} урона${isCrit ? ' (КРИТ)' : ''}${event.isPeriodic ? ' (периодический)' : ''}${skill ? ` · ${skill}` : ''}`
+    }
     case 'AutoAttackStarted':
       return `${sourceName} включает автоатаку`
     case 'AutoAttackStopped':
@@ -119,10 +157,19 @@ function eventText(event: CombatEvent, context: BattleEventProjectionContext): s
       return `${targetName} уклоняется`
     case 'AbilityUsed':
       return `${sourceName} использует «${abilityName}»`
+    case 'AbilityStarted':
+      return `${sourceName} начинает применять «${abilityName}»`
     case 'EffectApplied':
-      return `${targetName}: наложен эффект «${abilityName}»`
+      return `${targetName}: наложен эффект «${effectName(event.definitionId, context.abilityNames)}»`
     case 'EffectRefreshed':
-      return `${targetName}: обновлён эффект «${abilityName}»`
+      return `${targetName}: обновлён эффект «${effectName(event.definitionId, context.abilityNames)}»`
+    case 'EffectRemoved':
+    case 'EffectExpired':
+      return `${targetName}: завершён эффект «${effectName(event.definitionId, context.abilityNames)}»`
+    case 'EffectImmune':
+      return `${targetName}: невосприимчивость к эффекту «${effectName(event.definitionId, context.abilityNames)}»`
+    case 'ShieldAbsorbed':
+      return `${targetName}: щит поглощает ${Math.round(event.amount)} урона`
     case 'ConsumableUsed':
       return `${sourceName} использует «${abilityName}»`
     case 'TauntApplied':
@@ -143,6 +190,8 @@ function eventText(event: CombatEvent, context: BattleEventProjectionContext): s
       return `${targetName} повержен`
     case 'CombatStarted':
       return 'Бой начался'
+    case 'ActionRejected':
+      return `${sourceName}: действие не выполнено`
     case 'CombatEnded':
       return event.definitionId === 'Victory'
         ? 'Победа'
@@ -154,16 +203,10 @@ function eventText(event: CombatEvent, context: BattleEventProjectionContext): s
     case 'AbilityInterrupted':
       return `«${abilityName}» прервана`
     default:
-      return event.definitionId ? `${sourceName}: ${abilityName}` : 'Событие боя'
+      return 'Событие боя'
   }
 }
 
-function readableIdentifier(identifier: string): string {
-  return identifier
-    .toLocaleLowerCase('ru-RU')
-    .replace(/_/g, ' ')
-    .replace(/^./u, (first) => first.toLocaleUpperCase('ru-RU'))
-}
 
 function actorName(actorId: string | null, context: BattleEventProjectionContext): string {
   if (!actorId) return 'Система'

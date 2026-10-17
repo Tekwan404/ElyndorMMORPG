@@ -96,6 +96,48 @@ describe('projectBattleEvents', () => {
     ])
   })
 
+  it('shows PvP attacker, target, critical hits and periodic damage without leaking internal IDs', () => {
+    const result = projectBattleEvents([
+      event(1, 'CriticalHit', { amount: 3301 }),
+      event(2, 'DamageDealt', { amount: 3301 }),
+      event(3, 'DamageDealt', { definitionId: 'BURN_TICK', isPeriodic: true }),
+      event(4, 'EffectApplied', { definitionId: 'Berserker recklessness outgoing' }),
+      event(5, 'EffectApplied', { definitionId: ' ' }),
+      event(6, 'ShieldAbsorbed', { amount: 120 }),
+    ], {
+      actorNames: new Map([['local', 'Текван'], ['enemy', 'Мини Текван']]),
+      abilityNames: new Map([['STRIKE', 'Удар']]),
+      enemyActorIds: new Set(['enemy']),
+      localActorId: 'local',
+    })
+
+    expect(result.logEntries.map(entry => entry.text)).toEqual([
+      'Текван → Мини Текван: 3301 урона (КРИТ) · Удар',
+      'Текван → Мини Текван: 42 урона (периодический)',
+      'Мини Текван: наложен эффект «Безрассудство: наносимый урон»',
+      'Мини Текван: наложен эффект «Неизвестный эффект»',
+      'Мини Текван: щит поглощает 120 урона',
+    ])
+  })
+
+  it('omits duplicate internal completion and tick events from player-facing PvP log', () => {
+    const result = projectBattleEvents([
+      event(1, 'AbilityUsed'),
+      event(2, 'AbilityCompleted'),
+      event(3, 'EffectTicked', { definitionId: 'Mage mana shield effect' }),
+      event(4, 'EffectExpired', { definitionId: 'Mage mana shield effect' }),
+    ], {
+      actorNames: new Map([['local', 'tekwan'], ['enemy', 'mini tekwan']]),
+      abilityNames: new Map([['STRIKE', 'Удар']]),
+      enemyActorIds: new Set(['enemy']),
+      localActorId: 'local',
+    })
+    expect(result.logEntries.map(entry => entry.text)).toEqual([
+      'tekwan использует «Удар»',
+      'mini tekwan: завершён эффект «Щит маны»',
+    ])
+  })
+
   it('keeps operational combat events readable without exposing raw identifiers', () => {
     const result = projectBattleEvents(
       [
@@ -118,7 +160,7 @@ describe('projectBattleEvents', () => {
     expect(result.logEntries.map((entry) => entry.text)).toEqual([
       'Текван включает автоатаку',
       'Текван блокирует 18 урона',
-      'Жрец отражений: наложен эффект «Unknown effect»',
+      'Жрец отражений: наложен эффект «Неизвестный эффект»',
       'Победа',
     ])
   })

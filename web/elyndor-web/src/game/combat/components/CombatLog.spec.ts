@@ -40,6 +40,19 @@ describe('CombatLog', () => {
     wrapper.unmount()
   })
 
+  it('shows seconds and can expand the arena journal beyond the default 40 events', async () => {
+    const many = Array.from({ length: 41 }, (_, i) => ({
+      ...entries[0]!,
+      key: i + 1,
+      text: `Событие #${i + 1}`,
+    }))
+    const wrapper = mount(CombatLog, { props: { entries: many, maxEntries: 200 } })
+    await wrapper.get('[data-combat-log-toggle]').trigger('click')
+    expect(wrapper.findAll('[data-combat-log-entry]')).toHaveLength(41)
+    expect(wrapper.get('time').text()).toBe('12:00:00')
+    wrapper.unmount()
+  })
+
   it('closes on Escape and restores focus to the toggle', async () => {
     const wrapper = mount(CombatLog, {
       props: { entries },

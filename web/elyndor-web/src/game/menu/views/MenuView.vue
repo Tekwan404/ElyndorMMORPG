@@ -12,6 +12,7 @@ import {
   setTrainingDummyCombatLogEnabled,
 } from '@/game/combat/trainingDummyCombatLogSettings'
 import CombatHotbarSettings from '@/game/combat/CombatHotbarSettings.vue'
+import { isPvpCombatLogEnabled, setPvpCombatLogEnabled } from '@/game/pvp/pvpCombatLogSettings'
 import TradePanel from '@/game/economy/views/TradePanel.vue'
 import FriendsView from '@/game/social/views/FriendsView.vue'
 import PartyView from '@/game/party/views/PartyView.vue'
@@ -31,6 +32,7 @@ const session = useGameSessionStore()
 const activeSection = ref<MenuSection>(props.initialSection)
 const copied = ref(false)
 const sendTrainingDummyCombatLogs = ref(isTrainingDummyCombatLogEnabled())
+const sendPvpCombatLogs = ref(isPvpCombatLogEnabled())
 const character = computed(() => session.snapshot?.character ?? null)
 const portraitArt = computed(() =>
   character.value
@@ -63,6 +65,10 @@ async function copyPublicCode(): Promise<void> {
 
 function updateTrainingDummyCombatLogPreference(): void {
   setTrainingDummyCombatLogEnabled(sendTrainingDummyCombatLogs.value)
+}
+
+function updatePvpCombatLogPreference(): void {
+  setPvpCombatLogEnabled(sendPvpCombatLogs.value)
 }
 </script>
 
@@ -199,6 +205,24 @@ function updateTrainingDummyCombatLogPreference(): void {
         />
         <span class="menu-switch__track" aria-hidden="true"><i /></span>
         <b>{{ sendTrainingDummyCombatLogs ? 'Вкл.' : 'Выкл.' }}</b>
+      </label>
+    </section>
+
+    <section v-if="activeSection === 'profile'" class="menu-setting" data-pvp-log-setting>
+      <div class="menu-setting__copy">
+        <small>ДИАГНОСТИКА · PvP</small>
+        <strong>Отчёты о боях на арене</strong>
+        <span>После каждого завершённого PvP-матча отправлять полный серверный журнал в Telegram.</span>
+      </div>
+      <label class="menu-switch">
+        <input
+          v-model="sendPvpCombatLogs"
+          type="checkbox"
+          aria-label="Отправлять отчёты PvP-матчей в Telegram"
+          @change="updatePvpCombatLogPreference"
+        />
+        <span class="menu-switch__track" aria-hidden="true"><i /></span>
+        <b>{{ sendPvpCombatLogs ? 'Вкл.' : 'Выкл.' }}</b>
       </label>
     </section>
 

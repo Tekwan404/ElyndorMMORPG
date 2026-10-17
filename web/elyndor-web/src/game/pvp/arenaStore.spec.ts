@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
 
 import { apiClient } from '@/api/apiClient'
@@ -63,9 +63,15 @@ describe('arenaStore', () => {
     vi.restoreAllMocks()
     signalR.start.mockClear()
     signalR.stop.mockClear()
-    signalR.invoke.mockClear()
+    // Reset queued mockResolvedValueOnce responses, not only recorded calls.
+    signalR.invoke.mockReset()
     signalR.invoke.mockResolvedValue(null)
+    localStorage.removeItem('elyndor:send-pvp-combat-logs')
     setActivePinia(createPinia())
+  })
+
+  afterEach(() => {
+    localStorage.removeItem('elyndor:send-pvp-combat-logs')
   })
 
   it('retries an uncertain invite with the same request id and clears its own pending state', async () => {
@@ -212,6 +218,31 @@ describe('arenaStore', () => {
     expect(arena.status?.isQueued).toBe(true)
     expect(arena.status?.queueMode).toBe('Ranked')
     expect(signalR.start).toHaveBeenCalledTimes(1)
+  })
+
+  it('sends an opt-in authoritative PvP report only once after match completion', async () => {
+    localStorage.setItem('elyndor:send-pvp-combat-logs', '1')
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce(status({ activeMatchId: 'match-1' }))
+      .mockResolvedValueOnce({ sent: true, errorCode: null })
+      .mockResolvedValueOnce(status())
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(status({ activeMatchId: 'match-1' }))
+    const completed = match({ status: 'Completed', outcome: 'WinnerA', result: 'Victory', sequence: 2 })
+    signalR.invoke
+      .mockResolvedValueOnce(match())
+      .mockResolvedValueOnce({ succeeded: true, errorCode: null, match: completed })
+      .mockResolvedValueOnce(completed)
+    const arena = useArenaStore()
+    await arena.refresh()
+    await arena.surrender()
+    expect(arena.match?.status).toBe('Completed')
+    // Reload the same completed match through the public store API.
+    await arena.refresh()
+    expect(signalR.invoke).toHaveBeenCalledWith('Surrender', 'match-1')
+    expect(signalR.invoke).toHaveBeenCalledWith('GetMatch', 'match-1', 2)
+    expect(request.mock.calls.filter(([path]) => path === '/api/v1/arena/matches/match-1/log/telegram'))
+      .toHaveLength(1)
   })
 
   it('sends autoattack intent and applies the authoritative response', async () => {

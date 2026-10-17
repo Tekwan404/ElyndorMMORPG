@@ -3,12 +3,12 @@ import { computed, nextTick, onMounted, onUnmounted, shallowRef, useTemplateRef 
 
 import type { BattleLogEntry } from '@/game/combat/battleEventPresentation'
 
-const props = defineProps<{ entries: readonly BattleLogEntry[] }>()
+const props = withDefaults(defineProps<{ entries: readonly BattleLogEntry[]; maxEntries?: number }>(), { maxEntries: 40 })
 const open = shallowRef(false)
 const toggleRef = useTemplateRef<HTMLButtonElement>('toggle')
 const closeRef = useTemplateRef<HTMLButtonElement>('close')
 const latestEntry = computed(() => props.entries[props.entries.length - 1] ?? null)
-const recentEntries = computed(() => props.entries.slice(-40).reverse())
+const recentEntries = computed(() => props.entries.slice(-props.maxEntries).reverse())
 
 async function openDrawer(): Promise<void> {
   open.value = true
@@ -44,7 +44,7 @@ function time(utc: string): string {
   const date = new Date(utc)
   return Number.isNaN(date.getTime())
     ? '--:--'
-    : date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+    : date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 }
 
 onMounted(() => window.addEventListener('keydown', onKeydown))
@@ -203,7 +203,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown))
 }
 .combat-log__drawer li {
   display: grid;
-  grid-template-columns: 2.5rem 1rem 1fr;
+  grid-template-columns: 3.7rem 1rem minmax(0, 1fr);
   align-items: baseline;
   gap: 0.25rem;
   padding: 0.28rem 0.2rem;
