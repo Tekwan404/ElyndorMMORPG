@@ -291,6 +291,7 @@ export interface WorldLocation {
   travelDurationSeconds?: number
   allowAfk?: boolean
   mapId?: string
+  isWorldPvpZone?: boolean
 }
 
 export interface WorldContract {
