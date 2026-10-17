@@ -4,6 +4,7 @@
   "dungeons": [
     {
       "id": "UNDEAD_ANCIENT_MINE",
+      "factionCounterpartId": "ANCIENT_MINE",
       "displayName": "Шахта Погребённых",
       "description": "Шахта Погребённых для группы 1–5 игроков 14–16 уровня. Пять последовательных столкновений, редкие и эпические предметы по пути и очень редкие легендарные трофеи с Прародительницы Глубин.",
       "minimumLevel": 14,
@@ -42,6 +43,7 @@
     },
     {
       "id": "UNDEAD_ECLIPSED_CITADEL",
+      "factionCounterpartId": "ECLIPSED_CITADEL",
       "displayName": "Цитадель Безмолвия",
       "description": "Эндгейм-подземелье 25 уровня. Четыре элитных стража и Архонт Погасшей Звезды охраняют легендарные комплекты Чёрного Бастиона, Затмённого Оракула и Чёрного Созвездия.",
       "minimumLevel": 25,
@@ -80,6 +82,7 @@
     },
     {
       "id": "UNDEAD_SHATTERED_ORDER_CITADEL_TEST",
+      "factionCounterpartId": "SHATTERED_ORDER_CITADEL_TEST",
       "displayName": "Обсерватория Мёртвых Звёзд",
       "description": "Древняя башня астромантов, захваченная Веллариусом и его хранителями. Пройдите четыре зала обсерватории, остановите ритуал Азраэля и соберите комплекты звёздной стражи.",
       "minimumLevel": 25,
@@ -172,6 +175,7 @@
     },
     {
       "id": "UNDEAD_HEART_OF_BLIGHTED_GROVE",
+      "factionCounterpartId": "HEART_OF_BLIGHTED_GROVE",
       "displayName": "Сердце Рощи Тлена",
       "description": "Подземелье 20 уровня: четыре босса, шесть слотов комплектов и профессиональные материалы.",
       "minimumLevel": 20,
@@ -232,6 +236,7 @@
     },
     {
       "id": "UNDEAD_SHATTERED_ORDER_CITADEL",
+      "factionCounterpartId": "SHATTERED_ORDER_CITADEL",
       "displayName": "Цитадель Угасших Клятв",
       "description": "Некогда Орден защищал северные земли. После смерти Великого Магистра его командиры начали гражданскую войну, маги обратились к запретным ритуалам, а павших рыцарей снова подняли на службу.",
       "minimumLevel": 30,
@@ -327,6 +332,7 @@
     },
     {
       "id": "UNDEAD_BLACK_BASTION",
+      "factionCounterpartId": "BLACK_BASTION",
       "displayName": "Бастион Вечной Ночи",
       "description": "Финальное подземелье диапазона 40 уровня с восьмичастными комплектами и легендарной цепочкой.",
       "minimumLevel": 40,
