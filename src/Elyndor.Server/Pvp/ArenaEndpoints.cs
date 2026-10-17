@@ -22,6 +22,7 @@ public static class ArenaEndpoints
         group.MapDelete("/queue", LeaveAsync);
         group.MapGet("/leaderboard", GetLeaderboardAsync);
         group.MapGet("/matches/{matchId:guid}", GetMatch);
+        group.MapPost("/matches/{matchId:guid}/log/telegram", ArenaCombatLogEndpoints.SendAsync);
         group.MapGet("/invites", GetInvitesAsync);
         group.MapPost("/invites", InviteAsync);
         group.MapPost("/invites/{inviteId:guid}", RespondToInviteAsync);
