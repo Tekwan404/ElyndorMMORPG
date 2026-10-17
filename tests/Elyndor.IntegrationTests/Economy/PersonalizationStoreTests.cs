@@ -185,9 +185,11 @@ public sealed class PersonalizationStoreTests(PostgresFixture postgres) : IAsync
     {
         await using GameDbContext db = postgres.CreateDbContext();
         string[] migrations = db.Database.GetMigrations().ToArray();
-        Assert.EndsWith("_StorePersonalization", migrations[^1], StringComparison.Ordinal);
+        int targetIndex = Array.FindIndex(migrations,
+            migration => migration.EndsWith("_StorePersonalization", StringComparison.Ordinal));
+        Assert.True(targetIndex > 0);
         IMigrator migrator = db.GetService<IMigrator>();
-        try { await migrator.MigrateAsync(migrations[^2]); }
+        try { await migrator.MigrateAsync(migrations[targetIndex - 1]); }
         finally { await migrator.MigrateAsync(migrations[^1]); }
         Assert.False(db.Database.HasPendingModelChanges());
         Assert.Empty(await db.CharacterCosmeticOwnerships.AsNoTracking().ToArrayAsync());
