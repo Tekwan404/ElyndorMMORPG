@@ -65,7 +65,9 @@ public sealed class OpenWorldPvpService(
         if (roster.Count == 0) return new(true, []);
 
         // Rotate the bounded window rather than hiding alphabetically late characters forever.
-        int start = (int)(presence.RotationWindow % roster.Count);
+        int pages = (roster.Count + OpenWorldPvpRules.MaximumVisiblePlayers - 1)
+            / OpenWorldPvpRules.MaximumVisiblePlayers;
+        int start = (int)(presence.RotationWindow % pages) * OpenWorldPvpRules.MaximumVisiblePlayers;
         var visible = Enumerable.Range(0, roster.Count)
             .Select(i => roster[(start + i) % roster.Count])
             .Where(row => row.AccountId != accountId)
