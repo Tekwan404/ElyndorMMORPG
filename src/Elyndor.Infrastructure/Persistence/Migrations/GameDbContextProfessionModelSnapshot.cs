@@ -945,6 +945,11 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("SellerId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("SellerRaceId")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
                     b.Property<DateTimeOffset?>("SettledAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -967,6 +972,8 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.HasIndex("SellerId");
 
                     b.HasIndex("State", "ExpiresAt");
+
+                    b.HasIndex("SellerRaceId", "State", "ExpiresAt");
 
                     b.ToTable("auction_listings", "game", t =>
                         {
