@@ -16,7 +16,7 @@ function skinRaceId(skinId: string): string {
   // The third token is the race only for race-specific catalog skins.
   // Older human skin IDs use their variant in this position instead.
   const candidate = skinId.split('_')[2]
-  return candidate === RaceIds.Undead ? RaceIds.Undead : RaceIds.Human
+  return Object.values(RaceIds).find((race) => race === candidate) ?? RaceIds.Human
 }
 
 function artKey(classId: string, genderId: string, variant: 'transparent' | 'scene'): string {
