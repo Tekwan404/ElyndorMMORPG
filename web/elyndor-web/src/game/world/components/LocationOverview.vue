@@ -308,6 +308,11 @@ watch(
       </div>
     </div>
 
+    <div v-if="currentLocation.isWorldPvpZone" class="location-overview__pvp-zone" data-world-pvp-zone role="note">
+      <strong>Спорная территория</strong>
+      <span>World PvP готовится к запуску. Нападения на игроков пока недоступны.</span>
+    </div>
+
     <slot name="primary-actions" />
 
     <UILoadingState v-if="loading" state="loading" title="Загружаем сведения об области…" />
@@ -477,6 +482,23 @@ watch(
   width: 100%;
   min-width: 0;
   gap: 12px;
+}
+
+.location-overview__pvp-zone {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid rgb(190 82 73 / 55%);
+  border-radius: 12px;
+  background: rgb(69 20 23 / 40%);
+  color: #f0d8d2;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.location-overview__pvp-zone strong {
+  color: #ffb5a6;
+  font-size: 13px;
 }
 
 .location-overview__hero {
