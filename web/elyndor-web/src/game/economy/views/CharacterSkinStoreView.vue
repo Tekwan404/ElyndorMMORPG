@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 
 import type { CharacterSkinOffer, CharacterSkinStoreSnapshot } from '@/api/contracts'
-import { resolveSkinPreview } from '@/assets/characterArt'
+import { resolveSkinThumbnail } from '@/assets/characterArt'
 import { classLabel } from '@/game/character/characterPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
 
@@ -110,10 +110,11 @@ onMounted(load)
         <div class="skin-card__stage">
           <span class="skin-card__crest">ELYNDOR · {{ classLabel(skin.classId) }}</span>
           <img
-            v-if="resolveSkinPreview(skin.imageId)"
-            :src="resolveSkinPreview(skin.imageId)!"
+            v-if="resolveSkinThumbnail(skin.imageId)"
+            :src="resolveSkinThumbnail(skin.imageId)!"
             :alt="skin.name"
             loading="lazy"
+            decoding="async"
           />
           <span v-else class="skin-card__missing" role="img" :aria-label="skin.name">✧</span>
           <span v-if="skinState(skin) === 'Используется'" class="skin-card__equipped"
