@@ -189,7 +189,9 @@ describe('LocationOverview', () => {
     await flushPromises()
 
     expect(wrapper.get('[data-world-pvp-zone]').text()).toContain('Спорная территория')
-    expect(wrapper.get('[data-world-pvp-zone]').text()).toContain('Нападения на игроков пока недоступны')
+    expect(wrapper.get('[data-world-pvp-zone]').text()).toContain(
+      'Нападения на игроков пока недоступны',
+    )
     wrapper.unmount()
   })
 
