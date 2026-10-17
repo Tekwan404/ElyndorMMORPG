@@ -41,7 +41,8 @@ public sealed record DungeonDefinition(
     string EntryLocationId,
     IReadOnlyList<DungeonEncounterDefinition> Encounters,
     int MinimumPartySize = 1,
-    int MaximumPartySize = 5);
+    int MaximumPartySize = 5,
+    string? FactionCounterpartId = null);
 
 public sealed record DungeonEncounterDefinition(
     string Id,
