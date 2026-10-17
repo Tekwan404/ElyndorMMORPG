@@ -283,6 +283,7 @@ public sealed class OpenWorldCombatSessionTests
             session.Handle(humanId, new UseAbilityCommand($"kill-{i}", Strike.Id, enemyId), Now.AddSeconds(12));
         var defeat = Assert.Single(session.Snapshot(humanId).WorldPvpDefeats!);
         Assert.Equal(enemyId, defeat.VictimId);
+        Assert.Equal(humanId, defeat.KillerId);
         Assert.True(defeat.Contributions.Single(c => c.CharacterId == humanId).Damage > 0);
         Assert.Equal(10, defeat.Contributions.Single(c => c.CharacterId == healer.Participant.Actor.ActorId).Support);
         Assert.DoesNotContain(defeat.Contributions, c => c.CharacterId == enemyId);
@@ -297,7 +298,9 @@ public sealed class OpenWorldCombatSessionTests
         session.TryJoinOpenWorldParticipant(enemy, Now, out _);
         enemy.Participant.Actor.SetCurrentHp(1);
         session.Handle(human.Participant.Actor.ActorId, new UseAbilityCommand("fast", Strike.Id, enemy.Participant.Actor.ActorId), Now);
-        Assert.Empty(Assert.Single(session.Snapshot().WorldPvpDefeats!).Contributions);
+        var defeat = Assert.Single(session.Snapshot().WorldPvpDefeats!);
+        Assert.Empty(defeat.Contributions);
+        Assert.Equal(human.Participant.Actor.ActorId, defeat.KillerId);
     }
 
     [Fact]
