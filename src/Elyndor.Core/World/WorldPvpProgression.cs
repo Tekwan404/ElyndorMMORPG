@@ -2,7 +2,7 @@ namespace Elyndor.Core.World;
 
 public sealed record WorldPvpContribution(Guid CharacterId, decimal Damage, decimal Support);
 public sealed record WorldPvpDefeat(Guid VictimId, DateTimeOffset AtUtc,
-    IReadOnlyList<WorldPvpContribution> Contributions);
+    IReadOnlyList<WorldPvpContribution> Contributions, Guid? KillerId = null);
 public sealed record WorldPvpCredit(Guid CharacterId, bool Victory);
 
 public static class WorldPvpBalance
@@ -42,11 +42,12 @@ public sealed class WorldPvpStanding
     public int Assists { get; private set; }
     public int Deaths { get; private set; }
     public void RecordDeath() => Deaths = checked(Deaths + 1);
-    public void Credit(bool victory, int rating)
+    public void RecordKill() => Victories = checked(Victories + 1);
+    public void Credit(bool victory, int rating, bool countVictory = true)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rating);
         Rating = checked(Rating + rating);
-        if (victory) Victories = checked(Victories + 1);
+        if (victory) { if (countVictory) RecordKill(); }
         else Assists = checked(Assists + 1);
     }
 }
