@@ -214,6 +214,24 @@ describe('arenaStore', () => {
     expect(signalR.start).toHaveBeenCalledTimes(1)
   })
 
+  it('sends an opt-in authoritative PvP report only once after match completion', async () => {
+    localStorage.setItem('elyndor:send-pvp-combat-logs', '1')
+    const request = vi.spyOn(apiClient, 'request')
+      .mockResolvedValueOnce(status({ activeMatchId: 'match-1' }))
+      .mockResolvedValueOnce({ sent: true, errorCode: null })
+      .mockResolvedValueOnce(status())
+      .mockResolvedValueOnce([])
+    signalR.invoke.mockResolvedValueOnce(match())
+    const arena = useArenaStore()
+    await arena.refresh()
+    signalR.invoke.mockResolvedValue(match({ status: 'Completed', result: 'Victory' }))
+    await arena.surrender()
+    await arena.surrender()
+    expect(request.mock.calls.filter(([path]) => path === '/api/v1/arena/matches/match-1/log/telegram'))
+      .toHaveLength(1)
+    localStorage.removeItem('elyndor:send-pvp-combat-logs')
+  })
+
   it('sends autoattack intent and applies the authoritative response', async () => {
     const arena = useArenaStore()
     await arena.connect()
