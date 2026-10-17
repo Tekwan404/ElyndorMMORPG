@@ -1,4 +1,5 @@
 using Elyndor.Core.World;
+using Elyndor.Core.Characters;
 using Elyndor.Core.Combat.Abilities;
 using Elyndor.Core.Combat.Effects;
 using Elyndor.Core.Talents;
@@ -42,7 +43,7 @@ public static partial class GameContentPackageValidator
                         "Location display name is required."));
                 }
 
-                if (location.RequiredRaceId is not null and not "HUMAN" and not "UNDEAD")
+                if (location.RequiredRaceId is not null and not RaceIds.Human and not RaceIds.Undead)
                 {
                     errors.Add(new ContentValidationError(
                         "INVALID_LOCATION_REQUIRED_RACE", $"{path}.requiredRaceId",
@@ -104,6 +105,32 @@ public static partial class GameContentPackageValidator
             }
 
             ValidateLocationTransitions(locations, locationIds, errors);
+            ValidateLocationCounterparts(locations, errors);
+        }
+
+        private static void ValidateLocationCounterparts(
+            IReadOnlyList<LocationDefinition> locations,
+            List<ContentValidationError> errors)
+        {
+            var byId = locations.GroupBy(location => location.Id, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+            for (int index = 0; index < locations.Count; index++)
+            {
+                var location = locations[index];
+                if (location.FactionCounterpartId is null) continue;
+                string path = $"locations[{index}].factionCounterpartId";
+                if (!byId.TryGetValue(location.FactionCounterpartId, out var counterpart)
+                    || counterpart.Id == location.Id
+                    || counterpart.FactionCounterpartId != location.Id
+                    || location.RequiredRaceId is null
+                    || counterpart.RequiredRaceId is null
+                    || location.RequiredRaceId == counterpart.RequiredRaceId)
+                {
+                    errors.Add(new ContentValidationError(
+                        "INVALID_LOCATION_FACTION_COUNTERPART", path,
+                        $"Location '{location.Id}' requires an existing reciprocal counterpart restricted to another race."));
+                }
+            }
         }
 
         private static void ValidateLocationTransitions(
