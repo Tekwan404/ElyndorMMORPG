@@ -48,11 +48,13 @@ public sealed partial class CombatSession
         if (!damage.Any(hit => hit.Value > 0)) return;
         // A real PvP kill counts even when anti-farm rules deny rating and currency.
         // Use the same highest-damage attribution as reward victories, excluding fled actors.
-        Guid? killerId = damage
+        bool killedByPlayer = _playerStatesByActorId.ContainsKey(source)
+            && IsHostileTarget(source, ev.ActorId);
+        Guid? killerId = killedByPlayer ? damage
             .Where(pair => pair.Value > 0 && _participantRoster.GetStatus(pair.Key.Source)
                 != Elyndor.Core.Combat.Participants.CombatParticipantStatus.Fled)
             .OrderByDescending(pair => pair.Value).ThenBy(pair => pair.Key.Source)
-            .Select(pair => (Guid?)pair.Key.Source).FirstOrDefault();
+            .Select(pair => (Guid?)pair.Key.Source).FirstOrDefault() : null;
         var contributions = new Dictionary<Guid, WorldPvpContribution>();
         bool qualified = _worldPvpFirstHit.TryGetValue(ev.ActorId, out var first)
             && ev.OccurredAtUtc - first >= WorldPvpBalance.MinimumFightDuration
