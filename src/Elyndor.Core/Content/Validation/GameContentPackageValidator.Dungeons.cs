@@ -10,6 +10,10 @@ public static partial class GameContentPackageValidator
     {
         IReadOnlyList<DungeonDefinition> dungeons = package.Dungeons ?? [];
         HashSet<string> dungeonIds = new(StringComparer.Ordinal);
+        var byDungeonId = dungeons.GroupBy(dungeon => dungeon.Id, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
+        var byLocationId = package.Locations.GroupBy(location => location.Id, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.Ordinal);
         HashSet<string> locationIds = package.Locations
             .Select(location => location.Id)
             .ToHashSet(StringComparer.Ordinal);
@@ -42,6 +46,27 @@ public static partial class GameContentPackageValidator
                     "INVALID_DUNGEON_DEFINITION",
                     path,
                     $"Dungeon '{dungeon.Id}' has invalid entry, level, party, or encounter settings."));
+            }
+
+            if (dungeon.FactionCounterpartId is not null)
+            {
+                if (!byDungeonId.TryGetValue(dungeon.FactionCounterpartId, out var counterpart)
+                    || counterpart.Id == dungeon.Id
+                    || counterpart.FactionCounterpartId != dungeon.Id
+                    || !byLocationId.TryGetValue(dungeon.EntryLocationId, out var entry)
+                    || !byLocationId.TryGetValue(counterpart.EntryLocationId, out var counterpartEntry)
+                    || entry.FactionCounterpartId != counterpartEntry.Id
+                    || entry.RequiredRaceId is null
+                    || counterpartEntry.RequiredRaceId is null
+                    || entry.RequiredRaceId == counterpartEntry.RequiredRaceId
+                    || !dungeon.Encounters.Select(encounter => (encounter.Id, encounter.MonsterId, encounter.CheckpointId))
+                        .SequenceEqual(counterpart.Encounters.Select(encounter => (encounter.Id, encounter.MonsterId, encounter.CheckpointId))))
+                {
+                    errors.Add(new ContentValidationError(
+                        "INVALID_DUNGEON_FACTION_COUNTERPART",
+                        $"{path}.factionCounterpartId",
+                        $"Dungeon '{dungeon.Id}' must reference a reciprocal and encounter-equivalent counterpart in the other faction."));
+                }
             }
 
             HashSet<string> encounterIds = new(StringComparer.Ordinal);
