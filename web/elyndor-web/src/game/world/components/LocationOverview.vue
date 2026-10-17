@@ -308,7 +308,12 @@ watch(
       </div>
     </div>
 
-    <div v-if="currentLocation.isWorldPvpZone" class="location-overview__pvp-zone" data-world-pvp-zone role="note">
+    <div
+      v-if="currentLocation.isWorldPvpZone"
+      class="location-overview__pvp-zone"
+      data-world-pvp-zone
+      role="note"
+    >
       <strong>Спорная территория</strong>
       <span>World PvP готовится к запуску. Нападения на игроков пока недоступны.</span>
     </div>
