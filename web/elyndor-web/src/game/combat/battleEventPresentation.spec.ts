@@ -120,6 +120,24 @@ describe('projectBattleEvents', () => {
     ])
   })
 
+  it('omits duplicate internal completion and tick events from player-facing PvP log', () => {
+    const result = projectBattleEvents([
+      event(1, 'AbilityUsed'),
+      event(2, 'AbilityCompleted'),
+      event(3, 'EffectTicked', { definitionId: 'Mage mana shield effect' }),
+      event(4, 'EffectExpired', { definitionId: 'Mage mana shield effect' }),
+    ], {
+      actorNames: new Map([['local', 'tekwan'], ['enemy', 'mini tekwan']]),
+      abilityNames: new Map([['STRIKE', 'Удар']]),
+      enemyActorIds: new Set(['enemy']),
+      localActorId: 'local',
+    })
+    expect(result.logEntries.map(entry => entry.text)).toEqual([
+      'tekwan использует «Удар»',
+      'mini tekwan: завершён эффект «Щит маны»',
+    ])
+  })
+
   it('keeps operational combat events readable without exposing raw identifiers', () => {
     const result = projectBattleEvents(
       [
