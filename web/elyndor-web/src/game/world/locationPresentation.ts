@@ -181,7 +181,7 @@ export function locationPresentation(
   locationId: string | null | undefined,
   fallbackLabel?: string | null,
 ): LocationPresentation {
-  if (locationId?.startsWith('UNDEAD_')) {
+  if (locationId && Object.prototype.hasOwnProperty.call(UNDEAD_LOCATION_NAMES, locationId)) {
     const original = PRESENTATIONS[baseLocationId(locationId)] ?? FALLBACK_PRESENTATION
     return {
       ...original,
