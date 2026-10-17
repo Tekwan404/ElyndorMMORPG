@@ -2,23 +2,24 @@ namespace Elyndor.Core.World;
 
 public sealed record WorldPvpContribution(Guid CharacterId, decimal Damage, decimal Support);
 public sealed record WorldPvpDefeat(Guid VictimId, DateTimeOffset AtUtc,
-    IReadOnlyList<WorldPvpContribution> Contributions);
+    IReadOnlyList<WorldPvpContribution> Contributions, Guid? KillerId = null);
 public sealed record WorldPvpCredit(Guid CharacterId, bool Victory);
 
 public static class WorldPvpBalance
 {
     public static readonly DateTimeOffset SeasonEpoch = new(2026, 10, 17, 0, 0, 0, TimeSpan.Zero);
     public static readonly TimeSpan PairCooldown = TimeSpan.FromDays(1);
-    public static readonly TimeSpan MinimumFightDuration = TimeSpan.FromSeconds(10);
     public static readonly TimeSpan SupportWindow = TimeSpan.FromSeconds(30);
     public const int DailyRewardedOpponents = 20;
     public const int FieldHonorPerCredit = 5;
     public const int TokenHonorValue = 5;
-    public const decimal MinimumDamageFraction = .2m;
     public const decimal MinimumContributionFraction = .1m;
     public static int Season(DateTimeOffset now) => Math.Max(1, 1 + (int)Math.Floor((now - SeasonEpoch).TotalDays / 56));
     public static DateTimeOffset SeasonEnds(int season) => SeasonEpoch.AddDays(season * 56d);
     public static int RatingAward(int own, int enemy) => Math.Clamp(10 + (enemy - own) / 100, 5, 15);
+    public static int RatingLoss(int winnerAward) => (winnerAward + 1) / 2;
+    public static int GroupAward(int award, int creditedCount, bool victory) => victory
+        ? award : Math.Max(1, (award + Math.Max(1, creditedCount) - 1) / Math.Max(1, creditedCount));
 
     public static IReadOnlyList<WorldPvpCredit> Credits(WorldPvpDefeat defeat)
     {
@@ -42,11 +43,17 @@ public sealed class WorldPvpStanding
     public int Assists { get; private set; }
     public int Deaths { get; private set; }
     public void RecordDeath() => Deaths = checked(Deaths + 1);
-    public void Credit(bool victory, int rating)
+    public void RecordKill() => Victories = checked(Victories + 1);
+    public void LoseRating(int amount)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(amount);
+        Rating = Math.Max(0, Rating - amount);
+    }
+    public void Credit(bool victory, int rating, bool countVictory = true)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(rating);
         Rating = checked(Rating + rating);
-        if (victory) Victories = checked(Victories + 1);
+        if (victory) { if (countVictory) RecordKill(); }
         else Assists = checked(Assists + 1);
     }
 }
@@ -77,4 +84,4 @@ public sealed class WorldPvpWallet
 // One immutable receipt per victim and battle, including rejected progression.
 public sealed record WorldPvpDeathReceipt(Guid SessionId, Guid VictimId, DateTimeOffset AtUtc);
 public sealed record WorldPvpRewardReceipt(Guid SessionId, Guid VictimId, Guid CharacterId,
-    DateTimeOffset AtUtc, int Season, int Rating, long FieldHonor, long BloodyTokens);
+    DateTimeOffset AtUtc, int Season, int Rating, long FieldHonor, long BloodyTokens, long GoldEarned = 0);

@@ -60,17 +60,27 @@ Balance is centralized in `WorldPvpBalance`:
 
 - Eight-week seasons start at 2026-10-17 00:00 UTC. Ratings start at zero. Wallets
   persist across seasons; no automatic end-of-season prizes are implemented.
-- A defeat needs at least 10 seconds of PvP interaction, enemy damage worth at
-  least 20% of victim maximum HP, and actual resistance (PvP damage or useful
-  healing from the victim). Fast kills and passive victims award no progression.
-- At least 10% of qualifying damage/support is required. The largest damage
+- PvP kills count in the seasonal victory statistic as soon as a player is defeated
+  by a contributing hostile player (highest damage, excluding departed actors),
+  even when the encounter awards no rating or currency. Settlement receipts keep
+  these counts idempotent across retries.
+- A legitimate lethal PvP kill awards progression even if the battle lasts only
+  a few seconds or the defender does not attack back. No minimum fight duration,
+  resistance check, or victim-max-HP fraction applies. All honor/rating rewards
+  still require actual PvP damage/support and follow pair cooldown/daily limits.
+- A rewarded winning kill subtracts ceil(half the winner's full rating award)
+  from the defeated player's rating, clamped to zero. Denied/repeated rewards do
+  not cause rating penalties. Qualified assists receive ceil(standard award / the
+  number of contributors), minimum 1; the main victor receives the full amount.
+- At least 10% of total damage/support is required for assists. The largest damage
   contributor receives a victory; other qualifying contributors receive assists.
   Companion damage belongs to its owner. Effective healing only consumes recent
   PvP wounds, excludes self-healing, expires after 30 seconds and is consumed by
   one defeat. Departed contributors receive no later credit.
-- Each qualifying credit grants 5 Field Honor and 5–15 rating points depending
-  on the opponent's rating relative to the recipient. A victory against equal
-  or higher rating also grants one Bloody Token.
+- The credited victor receives 5 Field Honor and 5–15 rating points depending
+  on the opponent's rating relative to the recipient. Assists receive diminishing
+  honor/rating shares. A victory against equal or higher rating also grants one
+  Bloody Token.
 - Each pair can award progression once per rolling 24 hours in either direction.
   At most 20 credited opponents per character per UTC day. Deaths remain visible
   even when a reward is refused. These limits reduce collusion; they do not claim
@@ -89,3 +99,26 @@ Shop mutations use character locks and canonical mutation IDs; the UI reuses the
 same ID after a lost response, with inventory capacity and prices checked server-side.
 
 Bounties, streak titles, cosmetics and season-end prizes remain follow-up scope.
+
+
+## Configurable gold rewards
+
+Admin Content now includes a World PvP Rewards form. `GoldPerKill` and
+`GoldPerAssist` in `worldPvpRewards` use integer bronze units; the form accepts
+gold denominations (1 gold = 10,000 bronze), including four decimal places.
+For example 2.5 gold becomes 25,000 bronze. Zero disables ordinary-money rewards;
+existing releases without this optional profile preserve zero payouts. Maximum
+per recipient per credit is 1,000,000,000 bronze (100,000 gold).
+
+Save a content revision and publish it using the existing workflow. New battles
+capture the published profile; terminal recovery keeps the original version.
+The largest qualifying damage contributor receives kill gold; other qualified
+contributors receive assist gold. The actual last-hit killer statistic remains
+separate. All existing pair/day checks apply before money is granted. Balances
+and the immutable GoldEarned receipt commit in the same PostgreSQL transaction.
+A new failure, retry or repeated pair cannot mint a second payment.
+
+The live guild combines the five-section navigation from PR383 with real data
+and replay-safe purchases from PR386. Bounty/title panels report that those
+server systems are unavailable. Mock values remain confined to the development
+preview route.

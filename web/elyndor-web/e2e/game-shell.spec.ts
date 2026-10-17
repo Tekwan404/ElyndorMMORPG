@@ -10,6 +10,7 @@ test('World PvP rewards are available from the single guild registrar on a phone
   let purchased = false
   await page.route('**/api/v1/world/pvp/progression*', route => route.fulfill({ json: {
     season: 1, endsAtUtc: '2026-12-12T00:00:00Z', fieldHonor: purchased ? 0 : 5, bloodyTokens: 1,
+    rewards: { goldPerKill: 25000, goldPerAssist: 5000 },
     rewardedToday: 1, dailyLimit: 20, self: { rating: 10, victories: 1, assists: 0, deaths: 0 },
     leaders: [{ characterId: 'warrior', name: 'Победитель', raceId: 'HUMAN', rating: 10, victories: 1, assists: 0, deaths: 0 }],
   } }))
@@ -30,6 +31,7 @@ test('World PvP rewards are available from the single guild registrar on a phone
   await guild.getByRole('button', { name: 'Война фракций', exact: true }).click()
   const war = guild.locator('[data-world-pvp-board]')
   await expect(war).toContainText('Полевая честь: 5')
+  await expect(war.getByRole('img', { name: 'Золото: 2; серебро: 50; бронза: 0', exact: true })).toBeVisible()
   await expect(war).toContainText('Победитель')
   await war.locator('[data-buy-honor]').click()
   await expect(war).toContainText('Снаряжение добавлено в сумку.')
@@ -70,7 +72,7 @@ test('Dead Reaches PvPvE discovers opponents and enters the shared fight on a ph
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/')
   await expect(page.locator('[data-world-pvp]')).toContainText('Мертвоборец', { timeout: 20_000 })
-  await page.locator('[data-world-pvp]').getByRole('button', { name: 'Атаковать', exact: true }).click()
+  await page.locator('[data-world-pvp]').getByRole('button', { name: 'Атаковать игрока Мертвоборец', exact: true }).click()
   await expect(page.locator('[data-combat-battlefield]')).toBeVisible()
   expect(entered).toBe(true)
   expect(intent).toEqual({ targetCharacterId: enemyId, attackPlayer: true })
@@ -142,7 +144,7 @@ test('undead homeland has its own city, NPCs and map on a phone', async ({ page 
   await page.locator('[data-city-back]').click()
   await page.locator('[data-city-marker="adventurers"]').click()
   await expect(page.locator('[data-adventurer-guild-board]')).toContainText('Морвена')
-  await expect(page.locator('[data-adventurer-guild-board] .town-npc')).toHaveCount(5)
+  await expect(page.locator('[data-adventurer-guild-board] .town-npc')).toHaveCount(1)
   await page.keyboard.press('Escape')
   await page.locator('[data-nav="world"]').click()
   await expect(page.locator('[data-map-switch-id="DEAD_KINGDOMS"]')).toBeVisible()

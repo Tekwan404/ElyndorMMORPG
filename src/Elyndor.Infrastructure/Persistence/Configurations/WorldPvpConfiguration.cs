@@ -42,6 +42,8 @@ public sealed class WorldPvpRewardReceiptConfiguration : IEntityTypeConfiguratio
         builder.ToTable("world_pvp_reward_receipts", t => t.HasCheckConstraint("ck_world_pvp_receipt_positive",
             "\"Rating\" > 0 AND \"FieldHonor\" > 0 AND \"BloodyTokens\" >= 0"));
         builder.HasKey(x => new { x.SessionId, x.VictimId, x.CharacterId });
+        builder.Property(x => x.GoldEarned).HasDefaultValue(0L);
+        builder.ToTable(t => t.HasCheckConstraint("ck_world_pvp_gold_nonnegative", "\"GoldEarned\" >= 0"));
         builder.HasOne<WorldPvpDeathReceipt>().WithMany().HasForeignKey(x => new { x.SessionId, x.VictimId }).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne<Character>().WithMany().HasForeignKey(x => x.CharacterId).OnDelete(DeleteBehavior.Cascade);
         builder.HasIndex(x => new { x.CharacterId, x.VictimId, x.AtUtc });

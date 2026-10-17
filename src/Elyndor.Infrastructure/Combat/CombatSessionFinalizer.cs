@@ -100,7 +100,7 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         DungeonService? dungeonService = scope.ServiceProvider.GetService<DungeonService>();
         if (snapshot.OpenWorldPvp && snapshot.Status != CombatSessionStatus.Active)
             await scope.ServiceProvider.GetRequiredService<Elyndor.Infrastructure.World.WorldPvpSettlementService>()
-                .ApplyAsync(snapshot, cancellationToken);
+                .ApplyAsync(snapshot, cancellationToken, contentSnapshot?.Package.WorldPvpRewards);
 
         // A corpse only belongs to the most recent combat aftermath. Completing or fleeing
         // another real combat abandons any older unskinned corpse. The time/session guard keeps

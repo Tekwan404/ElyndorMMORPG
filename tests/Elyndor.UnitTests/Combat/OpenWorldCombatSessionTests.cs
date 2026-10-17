@@ -111,6 +111,21 @@ public sealed class OpenWorldCombatSessionTests
     }
 
     [Fact]
+    public void JoiningWithNoLivingHostileTargetDoesNotMutateRoster()
+    {
+        var human = Player("HUMAN");
+        var monster = Monster();
+        var session = Fight(human, monster);
+        monster.Actor.SetCurrentHp(0); // Simulate stale active session before death processing.
+        var before = session.Snapshot().ParticipantRoster!.Count;
+        var ally = Player("HUMAN");
+
+        Assert.False(session.TryJoinOpenWorldParticipant(ally, Now, out var error));
+        Assert.Equal(CombatErrorCodes.InvalidTarget, error);
+        Assert.Equal(before, session.Snapshot().ParticipantRoster!.Count);
+    }
+
+    [Fact]
     public void LateArcherKeepsOwnCompanionAndItsMonsterContribution()
     {
         var human = Player("HUMAN");
@@ -283,13 +298,14 @@ public sealed class OpenWorldCombatSessionTests
             session.Handle(humanId, new UseAbilityCommand($"kill-{i}", Strike.Id, enemyId), Now.AddSeconds(12));
         var defeat = Assert.Single(session.Snapshot(humanId).WorldPvpDefeats!);
         Assert.Equal(enemyId, defeat.VictimId);
+        Assert.Equal(humanId, defeat.KillerId);
         Assert.True(defeat.Contributions.Single(c => c.CharacterId == humanId).Damage > 0);
         Assert.Equal(10, defeat.Contributions.Single(c => c.CharacterId == healer.Participant.Actor.ActorId).Support);
         Assert.DoesNotContain(defeat.Contributions, c => c.CharacterId == enemyId);
     }
 
     [Fact]
-    public void InstantKillsHaveDeathRecordWithoutProgression()
+    public void InstantKillsHaveKillerAndQualifyingDamage()
     {
         var human = Player("HUMAN");
         var enemy = Player("UNDEAD");
@@ -297,7 +313,10 @@ public sealed class OpenWorldCombatSessionTests
         session.TryJoinOpenWorldParticipant(enemy, Now, out _);
         enemy.Participant.Actor.SetCurrentHp(1);
         session.Handle(human.Participant.Actor.ActorId, new UseAbilityCommand("fast", Strike.Id, enemy.Participant.Actor.ActorId), Now);
-        Assert.Empty(Assert.Single(session.Snapshot().WorldPvpDefeats!).Contributions);
+        var defeat = Assert.Single(session.Snapshot().WorldPvpDefeats!);
+        Assert.Contains(defeat.Contributions, credit => credit.CharacterId == human.Participant.Actor.ActorId
+            && credit.Damage > 0);
+        Assert.Equal(human.Participant.Actor.ActorId, defeat.KillerId);
     }
 
     [Fact]

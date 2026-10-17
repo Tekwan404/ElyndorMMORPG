@@ -60,7 +60,8 @@ public sealed record GameContentPackage(
     IReadOnlyList<ProfessionDisenchantingDefinition>? ProfessionDisenchanting = null,
     IReadOnlyList<ResourceSourceDefinition>? ResourceSources = null,
     IReadOnlyList<ProfileCosmeticDefinition>? ProfileCosmetics = null,
-    CharacterRenameOffer? CharacterRename = null);
+    CharacterRenameOffer? CharacterRename = null,
+    WorldPvpRewardProfile? WorldPvpRewards = null);
 
 public sealed record AfkFarmRewardProfile(
     int ProcessingIntervalSeconds,

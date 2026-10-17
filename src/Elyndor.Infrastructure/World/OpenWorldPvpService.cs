@@ -25,30 +25,56 @@ public sealed class OpenWorldPvpService(
 {
     public async Task<OpenWorldPlayersResult> GetPlayersAsync(Guid accountId, CancellationToken cancellationToken)
     {
-        var self = await bootstrap.GetAsync(accountId, cancellationToken);
-        if (!Eligible(self)) return new(false, []);
+        // Polling must not run a full bootstrap (recovery, character repair and snapshots).
+        bool eligible = await (from character in db.Characters.AsNoTracking()
+                              join location in db.CharacterLocations.AsNoTracking()
+                                  on character.Id equals location.CharacterId
+                              join vitals in db.CharacterVitals.AsNoTracking()
+                                  on character.Id equals vitals.CharacterId
+                              where character.AccountId == accountId
+                                  && location.LocationId == OpenWorldPvpRules.LocationId
+                                  && character.Level >= OpenWorldPvpRules.MinimumLevel
+                                  && vitals.CurrentHp > 0
+                                  && !db.CharacterTravelStates.Any(t => t.CharacterId == character.Id)
+                                  && !db.AfkFarmSessions.Any(a => a.CharacterId == character.Id
+                                      && a.Status == AfkFarmStatus.Active)
+                              select character.Id).AnyAsync(cancellationToken);
+        if (!eligible) return new(false, []);
         presence.Observe(accountId);
-        Guid[] online = presence.ActiveAccounts().Concat(registry.OpenWorldAccounts()).Distinct().ToArray();
-        var candidates = await (from character in db.Characters.AsNoTracking()
-                                join location in db.CharacterLocations.AsNoTracking() on character.Id equals location.CharacterId
-                                where character.AccountId != accountId && online.Contains(character.AccountId)
-                                    && location.LocationId == OpenWorldPvpRules.LocationId && character.Level >= OpenWorldPvpRules.MinimumLevel
-                                orderby character.Name, character.Id
-                                select new
-                                {
-                                    character.Id,
-                                    character.AccountId,
-                                    character.Name,
-                                    character.RaceId,
-                                    character.ClassId,
-                                    character.GenderId,
-                                    character.ActiveSkinId,
-                                    character.Level
-                                })
-            .Take(OpenWorldPvpRules.MaximumVisiblePlayers).ToArrayAsync(cancellationToken);
-        return new(true, candidates.Select(player => new OpenWorldPlayer(player.Id, player.Name, player.RaceId,
-            player.ClassId, player.GenderId, player.ActiveSkinId, player.Level,
-            registry.IsOpenWorldCombat(player.AccountId))).ToArray());
+        var roster = await presence.GetRosterAsync(async ct =>
+        {
+            Guid[] online = presence.ActiveAccounts().Concat(registry.OpenWorldAccounts()).Distinct().ToArray();
+            var candidates = await (from character in db.Characters.AsNoTracking()
+                                    join location in db.CharacterLocations.AsNoTracking()
+                                        on character.Id equals location.CharacterId
+                                    where online.Contains(character.AccountId)
+                                        && location.LocationId == OpenWorldPvpRules.LocationId
+                                        && character.Level >= OpenWorldPvpRules.MinimumLevel
+                                    orderby character.Name, character.Id
+                                    select new
+                                    {
+                                        character.Id, character.AccountId, character.Name,
+                                        character.RaceId, character.ClassId, character.GenderId,
+                                        character.ActiveSkinId, character.Level
+                                    }).ToArrayAsync(ct);
+            return (IReadOnlyList<OpenWorldRosterEntry>)candidates.Select(player =>
+                new OpenWorldRosterEntry(player.AccountId,
+                    new OpenWorldPlayer(player.Id, player.Name, player.RaceId, player.ClassId,
+                        player.GenderId, player.ActiveSkinId, player.Level, false))).ToArray();
+        }, cancellationToken);
+        if (roster.Count == 0) return new(true, []);
+
+        // Rotate the bounded window rather than hiding alphabetically late characters forever.
+        int pages = (roster.Count + OpenWorldPvpRules.MaximumVisiblePlayers - 1)
+            / OpenWorldPvpRules.MaximumVisiblePlayers;
+        int start = (int)(presence.RotationWindow % pages) * OpenWorldPvpRules.MaximumVisiblePlayers;
+        var visible = Enumerable.Range(0, roster.Count)
+            .Select(i => roster[(start + i) % roster.Count])
+            .Where(row => row.AccountId != accountId)
+            .Take(OpenWorldPvpRules.MaximumVisiblePlayers)
+            .Select(row => row.Player with { InCombat = registry.IsOpenWorldCombat(row.AccountId) })
+            .ToArray();
+        return new(true, visible);
     }
 
     public async Task<CombatOperationResult> EnterAsync(Guid accountId, Guid targetCharacterId,

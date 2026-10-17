@@ -11,9 +11,13 @@ vi.mock('@/api/apiClient', () => ({
   ApiRequestError: class extends Error {},
 }))
 vi.mock('@/stores/gameSession', () => ({
-  useGameSessionStore: () => ({ refreshSnapshot: vi.fn<() => Promise<void>>() }),
+  useGameSessionStore: () => ({
+    snapshot: { character: { level: 60 } },
+    refreshSnapshot: vi.fn<() => Promise<void>>(),
+  }),
 }))
 const overview = {
+  rewards: { goldPerKill: 25000, goldPerAssist: 5000 },
   season: 1,
   endsAtUtc: '2026-12-12T00:00:00Z',
   fieldHonor: 5,
@@ -55,6 +59,7 @@ describe('WorldPvpBoard', () => {
     let wrapper = mount(WorldPvpBoard)
     await flushPromises()
     expect(wrapper.text()).toContain('Полевая честь: 5')
+    expect(wrapper.find('[aria-label="Золото: 2; серебро: 50; бронза: 0"]').exists()).toBe(true)
     expect(wrapper.text()).toContain('Воин')
     await wrapper.get('select').setValue('UNDEAD')
     await flushPromises()
@@ -73,6 +78,21 @@ describe('WorldPvpBoard', () => {
     const calls = mocks.request.mock.calls.filter((call) => String(call[0]).endsWith('/buy'))
     expect(calls[0]![1].body).toEqual(calls[1]![1].body)
     expect(calls[0]![1].headers).toEqual({ 'Content-Type': 'application/json' })
+    wrapper.unmount()
+  })
+
+  it('keeps the leaderboard available if the reward shop is offline', async () => {
+    mocks.request.mockReset().mockImplementation(async (url: string) => {
+      if (url.includes('/shop')) throw new Error('catalog unavailable')
+      return overview
+    })
+    const wrapper = mount(WorldPvpBoard)
+    await flushPromises()
+    expect(wrapper.text()).toContain('Полевая честь: 5')
+    expect(wrapper.text()).toContain('Воин')
+    expect(wrapper.find('[data-world-pvp-ranking]').exists()).toBe(true)
+    expect(wrapper.get('[role="alert"]').text()).toContain('Магазин временно недоступен')
+    expect(wrapper.find('[data-buy-honor]').exists()).toBe(false)
     wrapper.unmount()
   })
 

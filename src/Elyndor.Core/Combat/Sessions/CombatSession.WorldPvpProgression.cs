@@ -7,7 +7,6 @@ public sealed partial class CombatSession
     private readonly Dictionary<(Guid Victim, Guid Source), decimal> _worldPvpDamage = [];
     private readonly Dictionary<(Guid Ally, Guid Healer), (decimal Amount, DateTimeOffset AtUtc)> _worldPvpSupport = [];
     private readonly Dictionary<Guid, (decimal Debt, DateTimeOffset LastHit)> _worldPvpWounds = [];
-    private readonly Dictionary<Guid, DateTimeOffset> _worldPvpFirstHit = [];
     private readonly List<WorldPvpDefeat> _worldPvpDefeats = [];
 
     private void RecordWorldPvpProgress(CombatEvent ev)
@@ -26,7 +25,6 @@ public sealed partial class CombatSession
             var oldWound = _worldPvpWounds.GetValueOrDefault(target);
             decimal debt = ev.OccurredAtUtc - oldWound.LastHit <= WorldPvpBalance.SupportWindow ? oldWound.Debt : 0;
             _worldPvpWounds[target] = (debt + amount, ev.OccurredAtUtc);
-            _worldPvpFirstHit.TryAdd(target, ev.OccurredAtUtc);
         }
         if (ev.Type == CombatEventType.HealingApplied
             && _playerStatesByActorId.ContainsKey(source) && _playerStatesByActorId.ContainsKey(target)
@@ -42,17 +40,23 @@ public sealed partial class CombatSession
                 _worldPvpSupport[(target, source)] = (previous + useful, ev.OccurredAtUtc);
             }
         }
-        if (ev.Type != CombatEventType.ActorDied || !_playerStatesByActorId.TryGetValue(ev.ActorId, out var deceased)
+        if (ev.Type != CombatEventType.ActorDied || !_playerStatesByActorId.ContainsKey(ev.ActorId)
             || _worldPvpDefeats.Any(d => d.VictimId == ev.ActorId)) return;
         var damage = _worldPvpDamage.Where(pair => pair.Key.Victim == ev.ActorId).ToArray();
         if (!damage.Any(hit => hit.Value > 0)) return;
+        // A real PvP kill counts even when anti-farm rules deny rating and currency.
+        // Use the same highest-damage attribution as reward victories, excluding fled actors.
+        bool killedByPlayer = _playerStatesByActorId.ContainsKey(source)
+            && IsHostileTarget(source, ev.ActorId);
+        Guid? killerId = killedByPlayer ? damage
+            .Where(pair => pair.Value > 0 && _participantRoster.GetStatus(pair.Key.Source)
+                != Elyndor.Core.Combat.Participants.CombatParticipantStatus.Fled)
+            .OrderByDescending(pair => pair.Value).ThenBy(pair => pair.Key.Source)
+            .Select(pair => (Guid?)pair.Key.Source).FirstOrDefault() : null;
         var contributions = new Dictionary<Guid, WorldPvpContribution>();
-        bool qualified = _worldPvpFirstHit.TryGetValue(ev.ActorId, out var first)
-            && ev.OccurredAtUtc - first >= WorldPvpBalance.MinimumFightDuration
-            && (_worldPvpDamage.Any(pair => pair.Key.Source == ev.ActorId && pair.Value > 0)
-                || _worldPvpSupport.Any(pair => pair.Key.Healer == ev.ActorId && pair.Value.Amount > 0
-                    && ev.OccurredAtUtc - pair.Value.AtUtc <= WorldPvpBalance.SupportWindow))
-            && damage.Sum(pair => pair.Value) >= deceased.Definition.Actor.MaxHp * WorldPvpBalance.MinimumDamageFraction;
+        // The lethal hit can happen immediately and the victim need not counterattack.
+        // Anti-farm limits belong in durable settlement, not the combat outcome.
+        bool qualified = killedByPlayer && killerId is not null;
         if (qualified)
         {
             foreach (var hit in damage.Where(pair => _participantRoster.GetStatus(pair.Key.Source)
@@ -68,6 +72,6 @@ public sealed partial class CombatSession
                 _worldPvpSupport.Remove(heal.Key);
             }
         }
-        _worldPvpDefeats.Add(new(ev.ActorId, ev.OccurredAtUtc, contributions.Values.ToArray()));
+        _worldPvpDefeats.Add(new(ev.ActorId, ev.OccurredAtUtc, contributions.Values.ToArray(), killerId));
     }
 }

@@ -13,6 +13,9 @@ public static partial class GameContentPackageValidator
             GameContentPackage package,
             List<ContentValidationError> errors)
         {
+            if (package.WorldPvpRewards is { } rewards && !rewards.IsValid())
+                errors.Add(new("INVALID_WORLD_PVP_REWARDS", "worldPvpRewards",
+                    "World PvP money rewards must be between 0 and 1,000,000,000 bronze."));
             if (string.IsNullOrWhiteSpace(package.ContentVersion))
             {
                 errors.Add(new ContentValidationError(

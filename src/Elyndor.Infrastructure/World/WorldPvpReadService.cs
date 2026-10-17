@@ -1,4 +1,5 @@
 using Elyndor.Core.World;
+using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -7,9 +8,10 @@ namespace Elyndor.Infrastructure.World;
 public sealed record WorldPvpRank(Guid CharacterId, string Name, string RaceId, int Rating,
     int Victories, int Assists, int Deaths);
 public sealed record WorldPvpOverview(int Season, DateTimeOffset EndsAtUtc, WorldPvpRank? Self,
-    long FieldHonor, long BloodyTokens, int RewardedToday, int DailyLimit, IReadOnlyList<WorldPvpRank> Leaders);
+    long FieldHonor, long BloodyTokens, int RewardedToday, int DailyLimit, IReadOnlyList<WorldPvpRank> Leaders,
+    WorldPvpRewardProfile? Rewards = null);
 
-public sealed class WorldPvpReadService(GameDbContext db, TimeProvider time)
+public sealed class WorldPvpReadService(GameDbContext db, TimeProvider time, IContentSnapshotProvider? content = null)
 {
     public async Task<WorldPvpOverview?> GetAsync(Guid accountId, string? raceId, CancellationToken ct)
     {
@@ -30,6 +32,7 @@ public sealed class WorldPvpReadService(GameDbContext db, TimeProvider time)
         DateTimeOffset day = new(time.GetUtcNow().UtcDateTime.Date, TimeSpan.Zero);
         int today = await db.WorldPvpRewardReceipts.CountAsync(r => r.CharacterId == character.Id && r.AtUtc >= day && r.AtUtc < day.AddDays(1), ct);
         return new(season, WorldPvpBalance.SeasonEnds(season), self, wallet?.FieldHonor ?? 0,
-            wallet?.BloodyTokens ?? 0, today, WorldPvpBalance.DailyRewardedOpponents, leaders);
+            wallet?.BloodyTokens ?? 0, today, WorldPvpBalance.DailyRewardedOpponents, leaders,
+            content?.GetCurrent().Package.WorldPvpRewards ?? new());
     }
 }

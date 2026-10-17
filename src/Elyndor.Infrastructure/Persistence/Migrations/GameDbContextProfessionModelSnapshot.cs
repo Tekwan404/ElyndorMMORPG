@@ -2895,6 +2895,11 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.Property<long>("FieldHonor")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("GoldEarned")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
+
                     b.Property<int>("Rating")
                         .HasColumnType("integer");
 
@@ -2909,6 +2914,8 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
 
                     b.ToTable("world_pvp_reward_receipts", "game", t =>
                         {
+                            t.HasCheckConstraint("ck_world_pvp_gold_nonnegative", "\"GoldEarned\" >= 0");
+
                             t.HasCheckConstraint("ck_world_pvp_receipt_positive", "\"Rating\" > 0 AND \"FieldHonor\" > 0 AND \"BloodyTokens\" >= 0");
                         });
                 });

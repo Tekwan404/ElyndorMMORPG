@@ -45,3 +45,5 @@ Thumbs.db
 *.tmp
 *.patch
 *.bundle
+
+**/.eslintcache

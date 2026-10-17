@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Elyndor.Core.Content;
+using Elyndor.Core.Characters;
 using Elyndor.Infrastructure.World;
 using Elyndor.Server.Combat;
 
@@ -18,7 +19,7 @@ public static class OpenWorldPvpEndpoints
             WorldPvpReadService service, CancellationToken ct) =>
         {
             if (!TryGetAccount(user, out var account)) return Results.Unauthorized();
-            if (raceId is not (null or "HUMAN" or "UNDEAD")) return Results.BadRequest();
+            if (raceId is not (null or RaceIds.Human or RaceIds.Undead)) return Results.BadRequest();
             context.Response.Headers.CacheControl = "no-store";
             var result = await service.GetAsync(account, raceId, ct);
             return result is null ? Results.NotFound() : Results.Ok(result);

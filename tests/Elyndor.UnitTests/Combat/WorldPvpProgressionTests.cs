@@ -4,6 +4,14 @@ namespace Elyndor.UnitTests.Combat;
 
 public sealed class WorldPvpProgressionTests
 {
+    [Theory]
+    [InlineData(0, true)]
+    [InlineData(25000, true)]
+    [InlineData(-1, false)]
+    [InlineData(1000000001, false)]
+    public void MoneyRewardsRequireBoundedNonnegativeBronze(long amount, bool expected) =>
+        Assert.Equal(expected, new WorldPvpRewardProfile(amount, amount).IsValid());
+
     [Fact]
     public void ContributionCreditsDamageAndSupportWithoutLastHitBonus()
     {
@@ -23,6 +31,33 @@ public sealed class WorldPvpProgressionTests
     [InlineData(0, 1000, 15)]
     public void StrongerOpponentsGiveMoreRating(int own, int enemy, int expected) =>
         Assert.Equal(expected, WorldPvpBalance.RatingAward(own, enemy));
+
+    [Theory]
+    [InlineData(5, 3)]
+    [InlineData(10, 5)]
+    [InlineData(15, 8)]
+    public void RatingLossIsHalfWinnerAwardRoundedUp(int award, int loss) =>
+        Assert.Equal(loss, WorldPvpBalance.RatingLoss(award));
+
+    [Fact]
+    public void RatingLossNeverDropsBelowZero()
+    {
+        var standing = new WorldPvpStanding(Guid.NewGuid(), 1);
+        standing.Credit(true, 12);
+        standing.LoseRating(8);
+        Assert.Equal(4, standing.Rating);
+        standing.LoseRating(30);
+        Assert.Equal(0, standing.Rating);
+    }
+
+    [Fact]
+    public void GroupAssistsDiminishWithoutPenalizingSoloOrWinner()
+    {
+        Assert.Equal(5, WorldPvpBalance.GroupAward(5, 1, false));
+        Assert.Equal(3, WorldPvpBalance.GroupAward(5, 2, false));
+        Assert.Equal(2, WorldPvpBalance.GroupAward(5, 4, false));
+        Assert.Equal(5, WorldPvpBalance.GroupAward(5, 10, true));
+    }
 
     [Fact]
     public void SeasonsHaveEightWeeksAndStartOnUtcBoundary()
