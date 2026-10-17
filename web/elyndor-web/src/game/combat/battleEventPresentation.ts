@@ -71,7 +71,12 @@ export function projectBattleEvents(
       })
     }
 
-    if (event.type === 'CriticalHit' || event.type === 'ResourceChanged') continue
+    if (
+      event.type === 'CriticalHit' || event.type === 'ResourceChanged'
+      || event.type === 'AbilityCompleted' || event.type === 'EffectTicked'
+      || event.type === 'ThreatAdded' || event.type === 'ThreatDropped'
+      || event.type === 'ThreatCleared'
+    ) continue
 
     logEntries.push({
       key: event.sequence,
@@ -120,9 +125,9 @@ function eventText(
 ): string {
   const sourceName = actorName(event.sourceActorId ?? event.actorId, context)
   const targetName = actorName(event.targetActorId ?? event.actorId, context)
-  const abilityName = event.definitionId
-    ? (context.abilityNames.get(event.definitionId) ?? readableIdentifier(event.definitionId))
-    : 'способность'
+  const abilityName = event.definitionId?.trim()
+    ? (context.abilityNames.get(event.definitionId) ?? (event.definitionId === 'AUTO_ATTACK' ? 'Автоатака' : 'Неизвестная способность'))
+    : 'Неизвестная способность'
 
   switch (event.type) {
     case 'DamageDealt': {
@@ -152,12 +157,17 @@ function eventText(
       return `${targetName} уклоняется`
     case 'AbilityUsed':
       return `${sourceName} использует «${abilityName}»`
+    case 'AbilityStarted':
+      return `${sourceName} начинает применять «${abilityName}»`
     case 'EffectApplied':
       return `${targetName}: наложен эффект «${effectName(event.definitionId, context.abilityNames)}»`
     case 'EffectRefreshed':
       return `${targetName}: обновлён эффект «${effectName(event.definitionId, context.abilityNames)}»`
     case 'EffectRemoved':
+    case 'EffectExpired':
       return `${targetName}: завершён эффект «${effectName(event.definitionId, context.abilityNames)}»`
+    case 'EffectImmune':
+      return `${targetName}: невосприимчивость к эффекту «${effectName(event.definitionId, context.abilityNames)}»`
     case 'ShieldAbsorbed':
       return `${targetName}: щит поглощает ${Math.round(event.amount)} урона`
     case 'ConsumableUsed':
@@ -180,6 +190,8 @@ function eventText(
       return `${targetName} повержен`
     case 'CombatStarted':
       return 'Бой начался'
+    case 'ActionRejected':
+      return `${sourceName}: действие не выполнено`
     case 'CombatEnded':
       return event.definitionId === 'Victory'
         ? 'Победа'
@@ -195,12 +207,6 @@ function eventText(
   }
 }
 
-function readableIdentifier(identifier: string): string {
-  return identifier
-    .toLocaleLowerCase('ru-RU')
-    .replace(/_/g, ' ')
-    .replace(/^./u, (first) => first.toLocaleUpperCase('ru-RU'))
-}
 
 function actorName(actorId: string | null, context: BattleEventProjectionContext): string {
   if (!actorId) return 'Система'
