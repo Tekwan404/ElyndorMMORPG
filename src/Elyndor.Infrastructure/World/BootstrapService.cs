@@ -327,7 +327,7 @@ public sealed class BootstrapService(
 
         bool dungeonRecoveryReady = combatActivity?.HasActiveCombat(accountId) != true
             && await FactionDungeonRecovery.RepairAsync(dbContext, contentSnapshot, character.Id,
-                character.RaceId, now, cancellationToken);
+                character.RaceId, now, cancellationToken, logger);
         if (location is not null
             && indexes.LocationsById.TryGetValue(location.LocationId, out LocationDefinition? legacyLocation)
             && !WorldLocationAccess.CanEnter(legacyLocation, character.RaceId)
