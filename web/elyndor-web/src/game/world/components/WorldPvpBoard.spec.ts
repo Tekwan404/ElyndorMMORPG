@@ -79,6 +79,21 @@ describe('WorldPvpBoard', () => {
     wrapper.unmount()
   })
 
+  it('keeps the leaderboard available if the reward shop is offline', async () => {
+    mocks.request.mockReset().mockImplementation(async (url: string) => {
+      if (url.includes('/shop')) throw new Error('catalog unavailable')
+      return overview
+    })
+    const wrapper = mount(WorldPvpBoard)
+    await flushPromises()
+    expect(wrapper.text()).toContain('Полевая честь: 5')
+    expect(wrapper.text()).toContain('Воин')
+    expect(wrapper.get('[data-world-pvp-ranking]').exists()).toBe(true)
+    expect(wrapper.get('[role="alert"]').text()).toContain('Магазин временно недоступен')
+    expect(wrapper.find('[data-buy-honor]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
   it('shows loading failure and can retry without fabricated balances', async () => {
     mocks.request.mockReset().mockRejectedValue(new Error('offline'))
     const wrapper = mount(WorldPvpBoard)
