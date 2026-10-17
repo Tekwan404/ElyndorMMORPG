@@ -43,6 +43,9 @@ public sealed class CombatRecoveryContentTests(PostgresFixture postgres) : IAsyn
         };
         DungeonDefinition dungeon = oldContent.Dungeons![0] with
         {
+            // This isolated legacy test fixture deliberately contains only one dungeon;
+            // do not retain a live counterpart link to an absent definition.
+            FactionCounterpartId = null,
             Encounters = [oldContent.Dungeons![0].Encounters[0] with { MonsterId = "FOREST_WOLF_L1" }]
         };
         oldContent = oldContent with { Dungeons = [dungeon] };
