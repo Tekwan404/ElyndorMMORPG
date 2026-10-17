@@ -21,9 +21,10 @@ import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import { UIButton } from '@/ui/components'
 
 const MailboxView = defineAsyncComponent(() => import('@/game/economy/views/MailboxView.vue'))
+const WorldPvpView = defineAsyncComponent(() => import('@/game/worldPvp/WorldPvpView.vue'))
 
 export type MenuSection =
-  'profile' | 'friends' | 'party' | 'hotbar' | 'updates' | 'trade' | 'mailbox'
+  'profile' | 'friends' | 'party' | 'world-pvp' | 'hotbar' | 'updates' | 'trade' | 'mailbox'
 
 const props = defineProps<{ initialSection: MenuSection }>()
 const emit = defineEmits<{ 'open-world': []; 'open-store': [] }>()
@@ -136,6 +137,18 @@ function updateTrainingDummyCombatLogPreference(): void {
       <button
         class="menu-tile menu-tile--violet"
         type="button"
+        data-menu-world-pvp
+        @click="activeSection = 'world-pvp'"
+      >
+        <span class="menu-tile__icon" aria-hidden="true">
+          <IconGenerator :config="{ id: 'menu-world-pvp', glyph: 'shield', category: 'utility' }" />
+        </span>
+        <span><strong>Война фракций</strong><small>World PvP · рейтинг, награды, розыск</small></span>
+        <b aria-hidden="true">›</b>
+      </button>
+      <button
+        class="menu-tile menu-tile--violet"
+        type="button"
         data-open-hotbar-settings
         @click="activeSection = 'hotbar'"
       >
@@ -215,6 +228,7 @@ function updateTrainingDummyCombatLogPreference(): void {
       <FriendsView v-if="activeSection === 'friends'" @open-trade="activeSection = 'trade'" />
       <TradePanel v-else-if="activeSection === 'trade'" />
       <PartyView v-else-if="activeSection === 'party'" embedded @open-world="emit('open-world')" />
+      <WorldPvpView v-else-if="activeSection === 'world-pvp'" />
       <CombatHotbarSettings
         v-else-if="activeSection === 'hotbar' && character"
         :character-id="character.id"
