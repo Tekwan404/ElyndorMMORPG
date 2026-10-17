@@ -525,7 +525,7 @@ async function discardSelectedItem(): Promise<void> {
 
 async function sellSelectedItems(): Promise<void> {
   if (!canSellHere.value) {
-    bulkActionError.value = 'Продать выбранные вещи можно у торговца Маркуса в Стартовом городе.'
+    bulkActionError.value = 'Продать выбранные вещи можно у торговца припасами в городе своей фракции.'
     return
   }
 
@@ -1339,7 +1339,7 @@ async function toggleSelectedLock(): Promise<void> {
             Можно продать: {{ selectedSellableItems.length }} из {{ selectedItems.length }} ·
             {{ formatMoney(selectedSellValue) }}
           </small>
-          <small v-else-if="!canSellHere">Продажа доступна у Маркуса в Стартовом городе</small>
+          <small v-else-if="!canSellHere">Продажа доступна у торговца припасами в городе своей фракции</small>
         </div>
         <div class="inventory-bulk-bar__actions">
           <button type="button" @click="selectAllVisibleItems">
@@ -1633,7 +1633,7 @@ async function toggleSelectedLock(): Promise<void> {
           "
           class="item-detail__hint"
         >
-          Маркус купит
+          Торговец купит
           {{ selectedItem.type === 'Equipment' ? 'этот предмет' : 'этот предмет за штуку' }} за
           {{ formatMoney(selectedItem.sellPriceGold) }}.
         </p>

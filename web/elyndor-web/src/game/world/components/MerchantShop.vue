@@ -570,7 +570,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
         </header>
 
         <div v-if="recommendedOffers.length" class="merchant-recommendations">
-          <small>МАРКУС СОВЕТУЕТ</small>
+          <small>РЕКОМЕНДАЦИИ ТОРГОВЦА</small>
           <div>
             <button
               v-for="item in recommendedOffers"
@@ -884,7 +884,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
       <section v-else-if="activeTab === 'sell'" class="merchant-panel merchant-panel--sell">
         <header class="merchant-panel__heading">
           <div>
-            <small>СДАТЬ МАРКУСУ</small>
+            <small>ПРОДАТЬ ТОРГОВЦУ</small>
             <strong>Отметьте вещи и продайте пачкой</strong>
           </div>
           <span>{{ sellableItems.length }} предметов</span>

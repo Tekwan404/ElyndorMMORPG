@@ -777,7 +777,7 @@ onMounted(() => {
             class="service-card__portrait"
             :human-art="gameArt.npc.marcus"
             role="marcus"
-            name="Маркус"
+            :name="isUndead ? 'Морт' : 'Маркус'"
           />
           <div class="service-card__copy">
             <small>ТОРГОВЕЦ</small>
