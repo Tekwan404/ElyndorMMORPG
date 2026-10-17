@@ -14,6 +14,8 @@ using Elyndor.Server.Identity;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -140,7 +142,7 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
         Assert.True((await db.CharacterVitals.AsNoTracking().SingleAsync(row => row.CharacterId == undead.Character)).CurrentHp > 0);
         Assert.Equal("UNDEAD_STARTER_TOWN", (await db.CharacterLocations.AsNoTracking().SingleAsync(row => row.CharacterId == undead.Character)).LocationId);
         Assert.Empty(await db.CombatRewardGrants.ToArrayAsync());
-        Assert.Equal(5, (await db.WorldPvpWallets.AsNoTracking().SingleAsync()).FieldHonor);
+        Assert.Equal(20, (await db.WorldPvpWallets.AsNoTracking().SingleAsync()).FieldHonor);
         Assert.Single(await db.WorldPvpRewardReceipts.ToArrayAsync());
         Assert.Empty(await db.ActiveCombatSessions.ToArrayAsync());
         var vitals = await db.CharacterVitals.SingleAsync(row => row.CharacterId == human.Character);
@@ -152,7 +154,7 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ConcurrentSettlementIsIdempotentAndReversePairCannotFarmRewards()
+    public async Task ConcurrentSettlementIsIdempotentAndRevengeHasIndependentHonor()
     {
         var human = await SeedAsync("HUMAN");
         var undead = await SeedAsync("UNDEAD");
@@ -170,19 +172,19 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
         await using var verify = postgres.CreateDbContext();
         Assert.Single(await verify.WorldPvpDeathReceipts.ToArrayAsync());
         Assert.Equal(2, await verify.WorldPvpRewardReceipts.CountAsync());
-        Assert.Equal(5, (await verify.WorldPvpWallets.SingleAsync(w => w.CharacterId == human.Character)).FieldHonor);
+        Assert.Equal(20, (await verify.WorldPvpWallets.SingleAsync(w => w.CharacterId == human.Character)).FieldHonor);
         Assert.Equal(1, (await verify.WorldPvpStandings.SingleAsync(w => w.CharacterId == healer.Character)).Assists);
         var reverse = snapshot with { SessionId = Guid.NewGuid(), WorldPvpDefeats = [new(human.Character, now, [new(undead.Character, 100, 0)])] };
         await new WorldPvpSettlementService(first, TimeProvider.System).ApplyAsync(reverse, CancellationToken.None);
-        Assert.False(await verify.WorldPvpWallets.AnyAsync(w => w.CharacterId == undead.Character));
+        Assert.Equal(20, (await verify.WorldPvpWallets.AsNoTracking().SingleAsync(w => w.CharacterId == undead.Character)).FieldHonor);
         var repeated = snapshot with { SessionId = Guid.NewGuid() };
         await new WorldPvpSettlementService(first, TimeProvider.System).ApplyAsync(repeated, CancellationToken.None);
-        Assert.Equal(2, await verify.WorldPvpRewardReceipts.CountAsync());
+        Assert.Equal(5, await verify.WorldPvpRewardReceipts.CountAsync());
         await new WorldPvpReadService(verify, TimeProvider.System).GetAsync(human.Account, "HUMAN", CancellationToken.None);
         var overview = await client.GetFromJsonAsync<WorldPvpOverview>("/api/v1/world/pvp/progression?raceId=HUMAN");
         Assert.Equal(2, overview!.Leaders.Count);
         Assert.All(overview.Leaders, row => Assert.Equal("HUMAN", row.RaceId));
-        Assert.Equal(5, overview.FieldHonor);
+        Assert.Equal(35, overview.FieldHonor);
         Assert.Empty(await verify.ArenaStandings.ToArrayAsync());
         Assert.Empty(await verify.ArenaHonorWallets.ToArrayAsync());
     }
@@ -206,7 +208,7 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
         var victim = await db.WorldPvpStandings.AsNoTracking().SingleAsync(s => s.CharacterId == undead.Character);
         Assert.Equal(1, killer.Victories);
         Assert.Equal(0, killer.Assists);
-        Assert.Equal(0, killer.Rating);
+        Assert.Equal(0, killer.SeasonHonor);
         Assert.Equal(1, victim.Deaths);
         Assert.Single(await db.WorldPvpDeathReceipts.ToArrayAsync());
         Assert.Empty(await db.WorldPvpRewardReceipts.ToArrayAsync());
@@ -233,13 +235,13 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
         var killer = await db.WorldPvpStandings.AsNoTracking().SingleAsync(s => s.CharacterId == human.Character);
         Assert.Equal(2, killer.Victories);
         Assert.Equal(0, killer.Assists);
-        Assert.Equal(10, killer.Rating);
-        Assert.Single(await db.WorldPvpRewardReceipts.ToArrayAsync());
-        Assert.Equal(5, (await db.WorldPvpWallets.AsNoTracking().SingleAsync()).FieldHonor);
+        Assert.Equal(35, killer.SeasonHonor);
+        Assert.Equal(2, await db.WorldPvpRewardReceipts.CountAsync());
+        Assert.Equal(35, (await db.WorldPvpWallets.AsNoTracking().SingleAsync()).FieldHonor);
     }
 
     [Fact]
-    public async Task RatedVictoryReducesVictimRatingButRepeatPairCannotReduceAgain()
+    public async Task DeathsNeverReduceSeasonHonor()
     {
         var human = await SeedAsync("HUMAN");
         var undead = await SeedAsync("UNDEAD");
@@ -259,9 +261,9 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
         await service.ApplyAsync(fight, CancellationToken.None);
         await service.ApplyAsync(fight with { SessionId = Guid.NewGuid() }, CancellationToken.None);
         var saved = await db.WorldPvpStandings.AsNoTracking().SingleAsync(s => s.CharacterId == undead.Character);
-        Assert.Equal(4, saved.Rating);
+        Assert.Equal(9, saved.SeasonHonor);
         Assert.Equal(2, saved.Deaths);
-        Assert.Single(await db.WorldPvpRewardReceipts.ToArrayAsync());
+        Assert.Equal(2, await db.WorldPvpRewardReceipts.CountAsync());
     }
 
     [Fact]
@@ -287,7 +289,7 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GroupAssistsPayLessHonorAndRatingThanSoloKill()
+    public async Task GroupAssistsPayLessHonorThanSoloKill()
     {
         var human = await SeedAsync("HUMAN");
         var healer = await SeedAsync("HUMAN");
@@ -303,10 +305,10 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
 
         var killer = await db.WorldPvpStandings.AsNoTracking().SingleAsync(s => s.CharacterId == human.Character);
         var assist = await db.WorldPvpStandings.AsNoTracking().SingleAsync(s => s.CharacterId == healer.Character);
-        Assert.Equal(10, killer.Rating);
-        Assert.Equal(5, assist.Rating);
-        Assert.Equal(5, (await db.WorldPvpWallets.AsNoTracking().SingleAsync(w => w.CharacterId == human.Character)).FieldHonor);
-        Assert.Equal(3, (await db.WorldPvpWallets.AsNoTracking().SingleAsync(w => w.CharacterId == healer.Character)).FieldHonor);
+        Assert.Equal(20, killer.SeasonHonor);
+        Assert.Equal(10, assist.SeasonHonor);
+        Assert.Equal(20, (await db.WorldPvpWallets.AsNoTracking().SingleAsync(w => w.CharacterId == human.Character)).FieldHonor);
+        Assert.Equal(10, (await db.WorldPvpWallets.AsNoTracking().SingleAsync(w => w.CharacterId == healer.Character)).FieldHonor);
     }
 
     [Fact]
@@ -322,6 +324,9 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
             var wallet = new WorldPvpWallet(human.Character);
             wallet.Grant(offer.FieldHonorPrice, offer.TokenPrice);
             db.WorldPvpWallets.Add(wallet);
+            var standing = new WorldPvpStanding(human.Character, WorldPvpBalance.Season(DateTimeOffset.UtcNow));
+            standing.Credit(true, offer.FieldHonorPrice);
+            db.WorldPvpStandings.Add(standing);
             await db.SaveChangesAsync();
         }
         Guid mutation = Guid.NewGuid();
@@ -345,10 +350,11 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
         var remaining = await verify.WorldPvpWallets.SingleAsync();
         Assert.Equal(0, remaining.FieldHonor);
         Assert.Equal(0, remaining.BloodyTokens);
+        Assert.Equal(offer.FieldHonorPrice, (await verify.WorldPvpStandings.SingleAsync()).SeasonHonor);
     }
 
     [Fact]
-    public async Task DailyCapAndPairCooldownPersistAcrossSessionsAndResetAfterUtcDay()
+    public async Task EconomicCapDoesNotLimitHonorAndResetsAfterUtcDay()
     {
         var human = await SeedAsync("HUMAN");
         var enemy = await SeedAsync("UNDEAD");
@@ -364,13 +370,103 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
             await service.ApplyAsync(snapshot with { SessionId = Guid.NewGuid(),
                 WorldPvpDefeats = [new(target.Character, now, [new(human.Character, 100, 0)])] }, CancellationToken.None);
         }
-        Assert.Equal(20, await db.WorldPvpRewardReceipts.CountAsync());
-        Assert.Equal(100, (await db.WorldPvpWallets.AsNoTracking().SingleAsync()).FieldHonor);
+        Assert.Equal(21, await db.WorldPvpRewardReceipts.CountAsync());
+        Assert.Equal(20, await db.WorldPvpRewardReceipts.CountAsync(r => r.BloodyTokens > 0));
+        Assert.Equal(420, (await db.WorldPvpWallets.AsNoTracking().SingleAsync()).FieldHonor);
         var next = now.AddHours(25);
         await new WorldPvpSettlementService(db, new FixedTime(next)).ApplyAsync(snapshot with {
             SessionId = Guid.NewGuid(), ServerTimeUtc = next,
             WorldPvpDefeats = [new(enemy.Character, next, [new(human.Character, 100, 0)])] }, CancellationToken.None);
-        Assert.Equal(21, await db.WorldPvpRewardReceipts.CountAsync());
+        Assert.Equal(22, await db.WorldPvpRewardReceipts.CountAsync());
+        Assert.Equal(440, (await db.WorldPvpWallets.AsNoTracking().SingleAsync()).FieldHonor);
+    }
+
+    [Fact]
+    public async Task DirectedRepeatsPersistAtZeroResetAtUtcMidnightAndNeverDuplicateGold()
+    {
+        var human = await SeedAsync("HUMAN");
+        var enemy = await SeedAsync("UNDEAD");
+        await using var host = CreateFactory();
+        var snapshot = await ProgressionSnapshotAsync(host, human, enemy);
+        var now = new DateTimeOffset(snapshot.ServerTimeUtc.UtcDateTime.Date, TimeSpan.Zero).AddHours(23);
+        var rewards = new WorldPvpRewardProfile(25000, 5000);
+        await using var db = postgres.CreateDbContext();
+        var service = new WorldPvpSettlementService(db, new FixedTime(now));
+        for (int i = 0; i < 6; i++)
+            await service.ApplyAsync(snapshot with { SessionId = Guid.NewGuid(), WorldPvpDefeats = [
+                new(enemy.Character, now.AddMinutes(i), [new(human.Character, 100, 0)], human.Character)] }, CancellationToken.None, rewards);
+        var receipts = await db.WorldPvpRewardReceipts.AsNoTracking().OrderBy(r => r.TargetDefeatNumber).ToArrayAsync();
+        Assert.Equal(new long[] { 20, 15, 10, 5, 0, 0 }, receipts.Select(r => r.FieldHonor));
+        Assert.Equal(25000, receipts.Sum(r => r.GoldEarned));
+        Assert.Equal(1, receipts.Sum(r => r.BloodyTokens));
+        var standing = await db.WorldPvpStandings.AsNoTracking().SingleAsync(s => s.CharacterId == human.Character);
+        Assert.Equal(6, standing.Victories);
+        Assert.Equal(50, standing.SeasonHonor);
+        var midnight = now.AddHours(1);
+        await new WorldPvpSettlementService(db, new FixedTime(midnight)).ApplyAsync(snapshot with {
+            SessionId = Guid.NewGuid(), WorldPvpDefeats = [new(enemy.Character, midnight,
+                [new(human.Character, 100, 0)], human.Character)] }, CancellationToken.None, rewards);
+        Assert.Equal(70, (await db.WorldPvpStandings.AsNoTracking().SingleAsync(s => s.CharacterId == human.Character)).SeasonHonor);
+        Assert.Equal(50000, (await db.Characters.AsNoTracking().SingleAsync(c => c.Id == human.Character)).Gold);
+        var overview = await new WorldPvpReadService(db, new FixedTime(midnight)).GetAsync(human.Account, null, CancellationToken.None);
+        Assert.Equal(7, overview!.History!.Count);
+        Assert.Equal(1, overview.Self!.Rank.Level);
+        Assert.Equal(70, overview.Self.SeasonHonor);
+        Assert.Equal(1, overview.RewardedToday);
+        Assert.Equal(14, overview.Ranks!.Count);
+    }
+
+    [Fact]
+    public async Task SeasonHonorMigrationUsesEarnedReceiptsRatherThanSpentWalletOrLegacyRating()
+    {
+        var human = await SeedAsync("HUMAN");
+        var enemy = await SeedAsync("UNDEAD");
+        await using var db = postgres.CreateDbContext();
+        var migrator = db.GetService<IMigrator>();
+        await migrator.MigrateAsync("20261017185828_WorldPvpGoldRewards");
+        try
+        {
+            Guid session = Guid.NewGuid();
+            var at = DateTimeOffset.UtcNow;
+            int season = WorldPvpBalance.Season(at);
+            await db.Database.ExecuteSqlInterpolatedAsync($"""
+                INSERT INTO game.world_pvp_standings ("CharacterId", "Season", "Rating", "Victories", "Assists", "Deaths")
+                VALUES ({human.Character}, {season}, 999, 1, 0, 0);
+                INSERT INTO game.world_pvp_wallets ("CharacterId", "FieldHonor", "BloodyTokens")
+                VALUES ({human.Character}, 2, 0);
+                INSERT INTO game.world_pvp_death_receipts ("SessionId", "VictimId", "AtUtc")
+                VALUES ({session}, {enemy.Character}, {at});
+                INSERT INTO game.world_pvp_reward_receipts ("SessionId", "VictimId", "CharacterId", "AtUtc", "Season", "Rating", "FieldHonor", "BloodyTokens", "GoldEarned")
+                VALUES ({session}, {enemy.Character}, {human.Character}, {at}, {season}, 10, 5, 0, 0);
+                """);
+            await migrator.MigrateAsync();
+            var standing = await db.WorldPvpStandings.AsNoTracking().SingleAsync();
+            Assert.Equal(5, standing.SeasonHonor);
+            Assert.Equal(999, standing.Rating);
+            Assert.Equal(2, (await db.WorldPvpWallets.SingleAsync()).FieldHonor);
+        }
+        finally { await migrator.MigrateAsync(); }
+    }
+
+    [Fact]
+    public async Task SameTickKillThenDeathPreservesJournalOrderAndResetsStreak()
+    {
+        var first = await SeedAsync("HUMAN");
+        var second = await SeedAsync("UNDEAD");
+        var killer = first.Character.CompareTo(second.Character) < 0 ? first : second;
+        var victim = killer == first ? second : first;
+        await using var host = CreateFactory();
+        var snapshot = await ProgressionSnapshotAsync(host, first, second);
+        var at = snapshot.ServerTimeUtc;
+        await using var db = postgres.CreateDbContext();
+        await new WorldPvpSettlementService(db, new FixedTime(at)).ApplyAsync(snapshot with { WorldPvpDefeats = [
+            new(victim.Character, at, [new(killer.Character, 100, 0)], killer.Character),
+            new(killer.Character, at, [new(victim.Character, 100, 0)], victim.Character)] }, CancellationToken.None);
+        var saved = await db.WorldPvpStandings.AsNoTracking().SingleAsync(s => s.CharacterId == killer.Character);
+        Assert.Equal(1, saved.Victories);
+        Assert.Equal(1, saved.Deaths);
+        Assert.Equal(0, saved.KillStreak);
+        Assert.Equal(20, saved.SeasonHonor);
     }
 
     private sealed class FixedTime(DateTimeOffset now) : TimeProvider

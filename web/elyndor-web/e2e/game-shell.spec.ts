@@ -11,8 +11,9 @@ test('World PvP rewards are available from the single guild registrar on a phone
   await page.route('**/api/v1/world/pvp/progression*', route => route.fulfill({ json: {
     season: 1, endsAtUtc: '2026-12-12T00:00:00Z', fieldHonor: purchased ? 0 : 5, bloodyTokens: 1,
     rewards: { goldPerKill: 25000, goldPerAssist: 5000 },
-    rewardedToday: 1, dailyLimit: 20, self: { rating: 10, victories: 1, assists: 0, deaths: 0 },
-    leaders: [{ characterId: 'warrior', name: 'Победитель', raceId: 'HUMAN', rating: 10, victories: 1, assists: 0, deaths: 0 }],
+    rewardedToday: 1, dailyLimit: 20, self: { seasonHonor: 720, victories: 18, assists: 2, deaths: 7,
+      rank: { level: 3, name: 'Ветеран', requiredHonor: 500 }, nextRank: { level: 4, name: 'Сержант', requiredHonor: 1000 } },
+    leaders: [{ characterId: 'warrior', name: 'Победитель', raceId: 'HUMAN', seasonHonor: 10, victories: 1, assists: 0, deaths: 0 }],
   } }))
   await page.route('**/api/v1/world/pvp/shop', route => route.fulfill({ json: [
     { id: 'TEST_SWORD', name: 'Клинок войны', requiredLevel: 60, fieldHonorPrice: 5, tokenPrice: 1 },
@@ -32,6 +33,10 @@ test('World PvP rewards are available from the single guild registrar on a phone
   const war = guild.locator('[data-world-pvp-board]')
   await expect(war).toContainText('Полевая честь: 5')
   await expect(war.getByRole('img', { name: 'Золото: 2; серебро: 50; бронза: 0', exact: true })).toBeVisible()
+  await expect(war.locator('[data-honor-rank]')).toContainText('III · Ветеран')
+  await expect(war.locator('[data-honor-rank] progress')).toHaveAttribute('value', '72')
+  await war.locator('[data-honor-rank]').scrollIntoViewIfNeeded()
+  await page.screenshot({ path: '../../output/playwright/world-pvp-honor-rank-390.png', fullPage: true })
   await expect(war).toContainText('Победитель')
   await war.locator('[data-buy-honor]').click()
   await expect(war).toContainText('Снаряжение добавлено в сумку.')

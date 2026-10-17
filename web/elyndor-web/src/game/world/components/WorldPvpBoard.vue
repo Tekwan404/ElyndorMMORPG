@@ -2,6 +2,8 @@
 import { computed, shallowRef } from 'vue'
 import MoneyAmount from '@/ui/components/MoneyAmount.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
+import WorldPvpHonorProgress from './WorldPvpHonorProgress.vue'
+import WorldPvpHistory from './WorldPvpHistory.vue'
 import WorldPvpLeaderboard from './WorldPvpLeaderboard.vue'
 import WorldPvpRewardShop from './WorldPvpRewardShop.vue'
 import { useWorldPvpProgression } from '../useWorldPvpProgression'
@@ -12,9 +14,9 @@ const { overview, offers, race, loading, buying, error, shopError, message, refr
 const level = computed(() => session.snapshot?.character?.level ?? 0)
 const panel = shallowRef('overview')
 const tabs = [
-  { id: 'overview', label: 'Обзор' }, { id: 'rating', label: 'Рейтинг' },
+  { id: 'overview', label: 'Обзор' }, { id: 'rating', label: 'Слава' },
   { id: 'rewards', label: 'Награды' }, { id: 'bounties', label: 'Розыск' },
-  { id: 'titles', label: 'Титулы' },
+  { id: 'titles', label: 'Звания' }, { id: 'history', label: 'История' },
 ]
 
 function changeRace(value: string): void {
@@ -40,7 +42,7 @@ function changeRace(value: string): void {
         :aria-pressed="panel === tab.id" @click="panel = tab.id">{{ tab.label }}</button>
     </nav>
     <p v-if="panel === 'bounties'" class="war-board__feedback" data-world-pvp-bounties-empty>Розыск ещё не открыт. Сервер пока не публикует награды за головы.</p>
-    <p v-if="panel === 'titles'" class="war-board__feedback" data-world-pvp-titles-empty>Летопись титулов ещё не открыта. Требования и прогресс появятся после подключения серверной системы.</p>
+
 
     <p v-if="error" class="war-board__feedback war-board__feedback--error" role="alert">{{ error }}</p>
     <p v-if="message" class="war-board__feedback war-board__feedback--success" role="status">{{ message }}</p>
@@ -51,8 +53,9 @@ function changeRace(value: string): void {
         <span>Сезон {{ overview.season }}</span>
         <small>Завершится {{ new Date(overview.endsAtUtc).toLocaleDateString('ru-RU') }}</small>
       </div>
+      <WorldPvpHonorProgress :self="overview.self" />
       <div class="war-board__stats" aria-label="Твоя статистика PvP">
-        <div><small>Рейтинг</small><strong>{{ overview.self.rating }}</strong></div>
+        <div><small>Честь за сезон</small><strong>{{ overview.self.seasonHonor }}</strong></div>
         <div><small>Победы</small><strong>{{ overview.self.victories }}</strong></div>
         <div><small>Помощь</small><strong>{{ overview.self.assists }}</strong></div>
         <div><small>Смерти</small><strong>{{ overview.self.deaths }}</strong></div>
@@ -64,10 +67,10 @@ function changeRace(value: string): void {
         <p>Кровавые жетоны: <strong>{{ overview.bloodyTokens }}</strong></p>
       </div>
       <div class="war-board__limit">
-        <span>Наград за сегодня</span>
+        <span>Выплат золота / жетонов сегодня</span>
         <strong>{{ overview.rewardedToday }} / {{ overview.dailyLimit }}</strong>
         <progress :value="overview.rewardedToday" :max="overview.dailyLimit || 1"
-          :aria-label="'Награды за сегодня: ' + overview.rewardedToday + ' из ' + overview.dailyLimit" />
+          :aria-label="'Экономические награды за сегодня: ' + overview.rewardedToday + ' из ' + overview.dailyLimit" />
       </div>
 
       <WorldPvpLeaderboard v-if="panel === 'overview' || panel === 'rating'" :leaders="overview.leaders" :self="overview.self" :race="race"
@@ -81,20 +84,36 @@ function changeRace(value: string): void {
         :loading="loading" :buying="buying" @buy="buy" />
       </template>
 
+      <section v-if="panel === 'titles'" aria-label="Воинские звания" class="war-board__ranks">
+        <h4>Четырнадцать ступеней славы</h4>
+        <ol><li v-for="rank in overview.ranks ?? []" :key="rank.level" :data-unlocked="overview.self.seasonHonor >= rank.requiredHonor">
+          <strong>{{ rank.level }} · {{ rank.name }}</strong><span>{{ rank.requiredHonor.toLocaleString('ru-RU') }} чести</span>
+          <small>{{ overview.self.rank?.level === rank.level ? 'Текущее звание' : overview.self.seasonHonor >= rank.requiredHonor ? 'Достигнуто' : 'Не открыто' }}</small>
+        </li></ol>
+      </section>
+      <WorldPvpHistory v-if="panel === 'history'" :entries="overview.history ?? []" />
+      <WorldPvpHistory v-if="panel === 'overview' && overview.history?.length" :entries="overview.history.slice(0, 1)" />
       <details class="war-board__rules">
-        <summary>Как начисляются рейтинг и награды?</summary>
-        <p>Победа засчитывается даже за быстрый бой. За наградное убийство выдаются рейтинг,
-          полевая честь и, при подходящем рейтинге врага, кровавый жетон.
-          Проигравший теряет часть рейтинга, но не уходит ниже нуля.</p>
-        <p>Одна пара игроков приносит награду не чаще раза в 24 часа в любом направлении.
-          Суточный лимит обнуляется в 00:00 UTC. Победы сверх лимита остаются в статистике,
-          а помощь группы приносит уменьшенную выплату.</p>
+        <summary>Как начисляются честь и награды?</summary>
+        <p>Честь за сезон определяет звание и место в таблице славы. Смерть и покупки её не уменьшают.
+          Полевая честь — отдельная расходуемая валюта магазина. Арена сохраняет свой рейтинг.</p>
+        <p>Повторные зачётные встречи с одной целью за сутки дают 100%, 75%, 50%, 25%, затем 0% чести.
+          Счётчик направленный: месть приносит полную честь. Сброс в 00:00 UTC.
+          Помощь приносит уменьшенную награду. Общего дневного лимита чести нет.</p>
+        <p>Золото и жетоны выдаются только при первой зачётной встрече с целью за сутки,
+          не более {{ overview.dailyLimit }} экономических выплат в день. Жетон получает основной победитель.
+          Победы, помощь и смерти учитываются даже при нулевой награде.</p>
       </details>
     </template>
   </section>
 </template>
 
 <style scoped>
+.war-board__ranks ol { list-style: none; padding: 0; display: grid; gap: 7px; }
+.war-board__ranks li { display: grid; gap: 5px; padding: 10px; border: 1px solid #514738; border-radius: 6px; font-size: .8rem; color: #9c9485; }
+.war-board__ranks li[data-unlocked='true'] { color: #e6c88f; border-color: #a37e42; }
+.war-board__ranks small { font-size: .7rem; }
+
 .war-board__tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; }
 .war-board__tabs button { min-height: 44px; padding: .4rem; color: #c9bca4; background: #1c1b1a; border: 1px solid #4b4336; border-radius: 7px; font: inherit; font-size: .78rem; }
 .war-board__tabs button[aria-pressed='true'] { color: #f4ddaa; border-color: #b08d51; background: #33281b; }

@@ -10,10 +10,11 @@ public sealed class WorldPvpStandingConfiguration : IEntityTypeConfiguration<Wor
     public void Configure(EntityTypeBuilder<WorldPvpStanding> builder)
     {
         builder.ToTable("world_pvp_standings", t => t.HasCheckConstraint("ck_world_pvp_standing_nonnegative",
-            "\"Rating\" >= 0 AND \"Victories\" >= 0 AND \"Assists\" >= 0 AND \"Deaths\" >= 0 AND \"Season\" > 0"));
+            "\"Rating\" >= 0 AND \"SeasonHonor\" >= 0 AND \"KillStreak\" >= 0 AND \"Victories\" >= 0 AND \"Assists\" >= 0 AND \"Deaths\" >= 0 AND \"Season\" > 0"));
         builder.HasKey(x => new { x.CharacterId, x.Season });
         builder.HasOne<Character>().WithMany().HasForeignKey(x => x.CharacterId).OnDelete(DeleteBehavior.Cascade);
-        builder.HasIndex(x => new { x.Season, x.Rating, x.CharacterId }).IsDescending(false, true, false);
+        builder.Property(x => x.SeasonHonor).HasDefaultValue(0L);
+        builder.HasIndex(x => new { x.Season, x.SeasonHonor, x.CharacterId }).IsDescending(false, true, false);
     }
 }
 public sealed class WorldPvpWalletConfiguration : IEntityTypeConfiguration<WorldPvpWallet>
@@ -32,6 +33,7 @@ public sealed class WorldPvpDeathReceiptConfiguration : IEntityTypeConfiguration
     {
         builder.ToTable("world_pvp_death_receipts");
         builder.HasKey(x => new { x.SessionId, x.VictimId });
+        builder.HasIndex(x => new { x.VictimId, x.AtUtc, x.SessionId }).IsDescending(false, true, true);
         builder.HasOne<Character>().WithMany().HasForeignKey(x => x.VictimId).OnDelete(DeleteBehavior.Cascade);
     }
 }
@@ -40,9 +42,10 @@ public sealed class WorldPvpRewardReceiptConfiguration : IEntityTypeConfiguratio
     public void Configure(EntityTypeBuilder<WorldPvpRewardReceipt> builder)
     {
         builder.ToTable("world_pvp_reward_receipts", t => t.HasCheckConstraint("ck_world_pvp_receipt_positive",
-            "\"Rating\" > 0 AND \"FieldHonor\" > 0 AND \"BloodyTokens\" >= 0"));
+            "\"Rating\" >= 0 AND \"FieldHonor\" >= 0 AND \"BloodyTokens\" >= 0 AND \"TargetDefeatNumber\" > 0"));
         builder.HasKey(x => new { x.SessionId, x.VictimId, x.CharacterId });
         builder.Property(x => x.GoldEarned).HasDefaultValue(0L);
+        builder.Property(x => x.TargetDefeatNumber).HasDefaultValue(1);
         builder.ToTable(t => t.HasCheckConstraint("ck_world_pvp_gold_nonnegative", "\"GoldEarned\" >= 0"));
         builder.HasOne<WorldPvpDeathReceipt>().WithMany().HasForeignKey(x => new { x.SessionId, x.VictimId }).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne<Character>().WithMany().HasForeignKey(x => x.CharacterId).OnDelete(DeleteBehavior.Cascade);

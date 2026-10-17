@@ -24,13 +24,18 @@ const overview = {
   bloodyTokens: 1,
   rewardedToday: 1,
   dailyLimit: 20,
-  self: { rating: 10, victories: 1, assists: 0, deaths: 0 },
+  self: { characterId: 'a', name: 'Воин', raceId: 'HUMAN', seasonHonor: 720, victories: 18, assists: 2, deaths: 7,
+    rank: { level: 3, name: 'Ветеран', requiredHonor: 500 },
+    nextRank: { level: 4, name: 'Сержант', requiredHonor: 1000 } },
+  ranks: [{ level: 1, name: 'Новобранец', requiredHonor: 0 }, { level: 3, name: 'Ветеран', requiredHonor: 500 }],
+  history: [{ sessionId: 'fight', targetName: 'Противник', atUtc: '2026-10-18T10:00:00Z',
+    honor: 0, goldEarned: 0, bloodyTokens: 0, targetDefeatNumber: 5, victory: true, defeat: false }],
   leaders: [
     {
       characterId: 'a',
       name: 'Воин',
       raceId: 'HUMAN',
-      rating: 10,
+      seasonHonor: 10,
       victories: 1,
       assists: 0,
       deaths: 0,
@@ -93,6 +98,21 @@ describe('WorldPvpBoard', () => {
     expect(wrapper.find('[data-world-pvp-ranking]').exists()).toBe(true)
     expect(wrapper.get('[role="alert"]').text()).toContain('Магазин временно недоступен')
     expect(wrapper.find('[data-buy-honor]').exists()).toBe(false)
+    wrapper.unmount()
+  })
+
+  it('renders server rank, immutable honor and zero-reward history independently of shop currency', async () => {
+    mocks.request.mockReset().mockImplementation(async url => url.includes('/shop') ? [] : overview)
+    const wrapper = mount(WorldPvpBoard)
+    await flushPromises()
+    expect(wrapper.get('[data-honor-rank]').text()).toContain('III · Ветеран')
+    expect(wrapper.get('[data-honor-rank] progress').attributes('value')).toBe('72')
+    expect(wrapper.text()).toContain('Честь за сезон720')
+    await wrapper.get('[data-world-pvp-tab="titles"]').trigger('click')
+    expect(wrapper.text()).toContain('Текущее звание')
+    await wrapper.get('[data-world-pvp-tab="history"]').trigger('click')
+    expect(wrapper.get('[data-world-pvp-history]').text()).toContain('+0 чести')
+    expect(wrapper.get('[data-world-pvp-history]').text()).toContain('сегодня: 5')
     wrapper.unmount()
   })
 

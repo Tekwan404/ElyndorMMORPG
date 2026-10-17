@@ -22,7 +22,7 @@ public sealed class WorldPvpSettlementService(GameDbContext db, TimeProvider tim
         var settled = await db.WorldPvpDeathReceipts.AsNoTracking().Where(r => r.SessionId == snapshot.SessionId)
             .Select(r => r.VictimId).ToArrayAsync(ct);
         // The immutable terminal journal supplies every captured defeat, including departed players.
-        foreach (var defeat in defeats.Where(d => !settled.Contains(d.VictimId)).OrderBy(d => d.AtUtc).ThenBy(d => d.VictimId))
+        foreach (var defeat in defeats.Where(d => !settled.Contains(d.VictimId)).OrderBy(d => d.AtUtc))
             await db.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
             {
                 db.ChangeTracker.Clear();
@@ -44,7 +44,6 @@ public sealed class WorldPvpSettlementService(GameDbContext db, TimeProvider tim
                 }
                 int season = WorldPvpBalance.Season(at);
                 var victimStanding = await StandingAsync(victim.Id, season, ct);
-                int victimRating = victimStanding.Rating;
                 victimStanding.RecordDeath();
                 db.WorldPvpDeathReceipts.Add(new(snapshot.SessionId, victim.Id, at));
                 bool killRecorded = false;
@@ -59,39 +58,30 @@ public sealed class WorldPvpSettlementService(GameDbContext db, TimeProvider tim
                 }
                 var credits = WorldPvpBalance.Credits(defeat);
                 int creditedCount = credits.Count;
-                bool ratingPenalized = false;
                 foreach (var credit in credits)
                 {
                     if (!characters.TryGetValue(credit.CharacterId, out var player) || player.AccountId == victim.AccountId
                         || player.RaceId == victim.RaceId || player.Level < OpenWorldPvpRules.MinimumLevel
                         || victim.Level < OpenWorldPvpRules.MinimumLevel) continue;
-                    var cutoff = at - WorldPvpBalance.PairCooldown;
-                    bool repeated = await db.WorldPvpRewardReceipts.AnyAsync(r => r.AtUtc >= cutoff
-                        && ((r.CharacterId == player.Id && r.VictimId == victim.Id)
-                            || (r.CharacterId == victim.Id && r.VictimId == player.Id)), ct);
                     DateTimeOffset day = new(at.UtcDateTime.Date, TimeSpan.Zero);
+                    int previous = await db.WorldPvpRewardReceipts.CountAsync(r => r.CharacterId == player.Id
+                        && r.VictimId == victim.Id && r.AtUtc >= day && r.AtUtc < day.AddDays(1), ct);
                     int today = await db.WorldPvpRewardReceipts.CountAsync(r => r.CharacterId == player.Id
-                        && r.AtUtc >= day && r.AtUtc < day.AddDays(1), ct);
-                    if (repeated || today >= WorldPvpBalance.DailyRewardedOpponents) continue;
+                        && r.AtUtc >= day && r.AtUtc < day.AddDays(1)
+                        && (r.GoldEarned > 0 || r.BloodyTokens > 0), ct);
                     var standing = await StandingAsync(player.Id, season, ct);
-                    int fullRating = WorldPvpBalance.RatingAward(standing.Rating, victimRating);
-                    int rating = WorldPvpBalance.GroupAward(fullRating, creditedCount, credit.Victory);
-                    long honor = WorldPvpBalance.GroupAward(WorldPvpBalance.FieldHonorPerCredit,
-                        creditedCount, credit.Victory);
-                    long tokens = victimRating >= standing.Rating && credit.Victory ? 1 : 0;
-                    standing.Credit(credit.Victory, rating, countVictory: !killRecorded);
-                    if (credit.Victory && !ratingPenalized)
-                    {
-                        victimStanding.LoseRating(WorldPvpBalance.RatingLoss(fullRating));
-                        ratingPenalized = true;
-                    }
+                    long honor = WorldPvpBalance.RepeatHonor(WorldPvpBalance.GroupAward(
+                        WorldPvpBalance.FieldHonorPerCredit, creditedCount, credit.Victory), previous);
+                    bool economicReward = previous == 0 && today < WorldPvpBalance.DailyRewardedOpponents;
+                    long tokens = economicReward && credit.Victory ? 1 : 0;
+                    standing.Credit(credit.Victory, honor, countVictory: !killRecorded);
                     var wallet = await db.WorldPvpWallets.SingleOrDefaultAsync(w => w.CharacterId == player.Id, ct);
                     if (wallet is null) { wallet = new(player.Id); db.WorldPvpWallets.Add(wallet); }
                     wallet.Grant(honor, tokens);
-                    long gold = credit.Victory ? rewards.GoldPerKill : rewards.GoldPerAssist;
+                    long gold = economicReward ? (credit.Victory ? rewards.GoldPerKill : rewards.GoldPerAssist) : 0;
                     player.AddGold(gold);
                     db.WorldPvpRewardReceipts.Add(new(snapshot.SessionId, victim.Id, player.Id, at, season,
-                        rating, honor, tokens, gold));
+                        0, honor, tokens, gold, checked(previous + 1), credit.Victory));
                 }
                 await db.SaveChangesAsync(ct);
                 await tx.CommitAsync(ct);

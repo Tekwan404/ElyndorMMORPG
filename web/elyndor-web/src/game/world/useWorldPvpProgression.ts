@@ -3,16 +3,26 @@ import { apiClient } from '@/api/apiClient'
 import { runReplaySafeGameMutation } from '@/api/replaySafeMutation'
 import { useGameSessionStore } from '@/stores/gameSession'
 
+export interface WorldPvpHonorRank { level: number; name: string; requiredHonor: number }
+export interface WorldPvpHistoryEntry {
+  sessionId: string; targetName: string; raceId: string; atUtc: string; honor: number
+  goldEarned: number; bloodyTokens: number; targetDefeatNumber: number; victory: boolean | null; defeat: boolean
+}
 export interface WorldPvpRank {
   characterId: string
   name: string
   raceId: string
-  rating: number
+  seasonHonor: number
+  rank?: WorldPvpHonorRank
+  nextRank?: WorldPvpHonorRank | null
+  killStreak?: number
   victories: number
   assists: number
   deaths: number
 }
 export interface WorldPvpOverview {
+  ranks?: WorldPvpHonorRank[]
+  history?: WorldPvpHistoryEntry[]
   rewards?: { goldPerKill: number; goldPerAssist: number }
   season: number
   endsAtUtc: string
@@ -62,8 +72,8 @@ export function useWorldPvpProgression() {
       if (!disposed && version === revision) {
         overview.value = state.status === 'fulfilled' ? state.value : null
         offers.value = catalog.status === 'fulfilled' ? catalog.value : []
-        error.value = state.status === 'rejected' ? 'Не удалось обновить рейтинг. Повтори попытку.' : null
-        shopError.value = catalog.status === 'rejected' ? 'Магазин временно недоступен. Рейтинг можно просматривать.' : null
+        error.value = state.status === 'rejected' ? 'Не удалось обновить честь. Повтори попытку.' : null
+        shopError.value = catalog.status === 'rejected' ? 'Магазин временно недоступен. Таблицу славы можно просматривать.' : null
       }
     } catch {
       if (!disposed && version === revision)
