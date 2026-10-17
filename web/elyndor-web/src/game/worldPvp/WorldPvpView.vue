@@ -9,7 +9,7 @@ import {
   worldPvpSeasonLabel,
 } from './worldPvpContracts'
 
-type Panel = 'overview' | 'rating' | 'rewards' | 'bounties'
+type Panel = 'overview' | 'rating' | 'rewards' | 'bounties' | 'titles'
 type RatingScope = 'all' | WorldPvpFaction
 type RewardFilter = 'all' | WorldPvpRewardCategory
 
@@ -33,7 +33,8 @@ const sectionTabs: { id: Panel; label: string; shortLabel: string }[] = [
   { id: 'overview', label: 'Обзор', shortLabel: 'Обзор' },
   { id: 'rating', label: 'Рейтинг', shortLabel: 'Рейтинг' },
   { id: 'rewards', label: 'Награды', shortLabel: 'Награды' },
-  { id: 'bounties', label: 'Розыск', shortLabel: 'Розыск' },
+  { id: 'bounties', label: 'Награды за головы', shortLabel: 'Розыск' },
+  { id: 'titles', label: 'Титулы', shortLabel: 'Титулы' },
 ]
 const ratingScopes: { id: RatingScope; label: string }[] = [
   { id: 'all', label: 'Все' },
@@ -63,6 +64,7 @@ const bounties = computed(() => {
     .filter((entry) => !ownFaction || entry.targetFaction !== ownFaction)
     .sort((left, right) => right.killStreak - left.killStreak)
 })
+const titles = computed(() => props.dashboard?.titles ?? [])
 const seasonLabel = computed(() =>
   props.dashboard ? worldPvpSeasonLabel(props.dashboard.season.status) : 'Скоро',
 )
@@ -221,7 +223,7 @@ const rewardCurrencyLabel = (currency: 'BloodTokens' | 'FieldHonor'): string =>
     </div>
 
     <div
-      v-else
+      v-else-if="panel === 'bounties'"
       id="war-panel-bounties"
       role="tabpanel"
       aria-labelledby="war-tab-bounties"
@@ -245,6 +247,49 @@ const rewardCurrencyLabel = (currency: 'BloodTokens' | 'FieldHonor'): string =>
         <span class="war-empty__symbol" aria-hidden="true">☠</span>
         <strong>Никто не объявлен в розыск</strong>
         <p>Когда сервер откроет охоту за опасными игроками, здесь появятся доступные цели и награды за их устранение.</p>
+      </div>
+    </div>
+    <div
+      v-else
+      id="war-panel-titles"
+      role="tabpanel"
+      aria-labelledby="war-tab-titles"
+      class="war-section"
+      data-world-pvp-panel="titles"
+    >
+      <div class="war-section__lead">
+        <div><small>ЛЕТОПИСЬ ГИЛЬДИИ</small><h3>Воинские титулы</h3></div>
+        <span class="war-season">Слава открытого мира</span>
+      </div>
+      <p class="war-intro">
+        Титулы за победы, серии убийств и охоту за разыскиваемыми.
+        Условия, прогресс и владение подтверждает только сервер.
+      </p>
+      <div v-if="titles.length" class="war-titles">
+        <article v-for="title in titles" :key="title.id" class="war-title"
+          :class="{ 'war-title--unlocked': title.unlocked }" :data-world-pvp-title="title.id">
+          <span class="war-title__seal" aria-hidden="true">{{ title.unlocked ? '✦' : '♜' }}</span>
+          <div class="war-title__copy">
+            <strong>{{ title.name }}</strong>
+            <p>{{ title.description }}</p>
+            <small>{{ title.requirement }}</small>
+            <div v-if="title.progress !== null && title.target !== null && title.target > 0"
+              class="war-title__progress">
+              <div class="war-title__progress-track" role="progressbar" :aria-label="`Прогресс: ${title.name}`"
+                :aria-valuenow="Math.min(Math.max(title.progress, 0), title.target)"
+                :aria-valuemin="0" :aria-valuemax="title.target">
+                <span :style="{ width: `${Math.min(100, Math.max(0, (title.progress / title.target) * 100))}%` }" />
+              </div>
+              <small>{{ formatNumber(title.progress) }} / {{ formatNumber(title.target) }}</small>
+            </div>
+          </div>
+          <span class="war-title__state">{{ title.equipped ? 'Выбран' : title.unlocked ? 'Получен' : 'Не открыт' }}</span>
+        </article>
+      </div>
+      <div v-else class="war-empty" data-world-pvp-titles-empty>
+        <span class="war-empty__symbol" aria-hidden="true">♜</span>
+        <strong>Летопись титулов пока пуста</strong>
+        <p>Когда гильдия получит подтверждённые награды от сервера, здесь появятся титулы и требования для их получения.</p>
       </div>
     </div>
     <footer class="war-footer">World PvP — самостоятельный режим. Рейтинг, валюта и награды арены не используются.</footer>
@@ -313,7 +358,7 @@ const rewardCurrencyLabel = (currency: 'BloodTokens' | 'FieldHonor'): string =>
 .war-preview { margin: 0; padding: 10px 12px; border: 1px solid rgb(230 190 107 / 44%); border-radius: 9px; color: #f5dcb1; background: #39301b; font-size: 11px; line-height: 1.5; }
 .war-alert { margin: 0; padding: 12px; color: #ffd4c8; background: #3f2226; border: 1px solid #ad5450; border-radius: 9px; font-size: 12px; }
 .war-alert button { margin-left: 10px; border: 0; background: none; color: #ffe3ae; text-decoration: underline; cursor: pointer; }
-.war-tabs { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 5px; padding: 4px; border: 1px solid var(--war-border); border-radius: 12px; background: #11151d; }
+.war-tabs { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 5px; padding: 4px; border: 1px solid var(--war-border); border-radius: 12px; background: #11151d; }
 .war-tabs button { min-width: 0; min-height: 43px; padding: 8px 3px; border: 0; border-radius: 8px; color: #c0b8ac; background: transparent; font-size: 12px; font-weight: 700; line-height: 1.2; cursor: pointer; }
 .war-tabs button.is-active { color: #201911; background: linear-gradient(135deg,#e6c999,#bd965e); box-shadow: 0 3px 12px rgb(0 0 0 / 26%); }
 .war-tabs button:focus-visible, .war-filter button:focus-visible { outline: 2px solid #f3c78b; outline-offset: 2px; }
@@ -339,7 +384,7 @@ const rewardCurrencyLabel = (currency: 'BloodTokens' | 'FieldHonor'): string =>
 .war-filter { display: flex; gap: 6px; overflow-x: auto; padding: 1px 0 4px; }
 .war-filter button { flex-shrink: 0; min-height: 35px; padding: 6px 12px; border: 1px solid var(--war-border); border-radius: 9px; background: #191e28; color: #cfc2b0; font-size: 11px; cursor: pointer; }
 .war-filter button.is-active { color: #f8e6c3; border-color: #a77a4f; background: #443328; }
-.war-board,.war-rewards,.war-bounties { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.war-board,.war-rewards,.war-bounties,.war-titles { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
 .war-board__row { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 12px 10px; border: 1px solid var(--war-border); border-radius: 10px; background: var(--war-panel); }
 .war-board__row.is-self { border-color: #dfb575; background: #28251f; }
 .war-board__rank { width: 40px; flex-shrink: 0; text-align: center; color: #f0c888; font: 700 18px Georgia,serif; }
@@ -374,6 +419,75 @@ const rewardCurrencyLabel = (currency: 'BloodTokens' | 'FieldHonor'): string =>
 .war-bounty p { margin: 0; color: #c6b9ac; font-size: 11px; }
 .war-bounty__prize { padding: 9px; border-radius: 7px; background: rgb(26 18 20 / 45%); color: #bfb3a6; font-size: 11px; }
 .war-bounty__prize strong { color: #ffceac; }
+.war-title {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--war-border);
+  border-radius: 11px;
+  background: #171c25;
+}
+.war-title--unlocked {
+  border-color: rgb(215 173 111 / 58%);
+  background: linear-gradient(120deg, #2d2826, #171b24);
+}
+.war-title__seal {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid rgb(222 175 115 / 37%);
+  border-radius: 50%;
+  color: #e5bb8a;
+  font: 700 22px Georgia, serif;
+}
+.war-title__copy {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+.war-title__copy strong {
+  color: #f3ddbd;
+  font: 700 15px Georgia, serif;
+}
+.war-title__copy p {
+  margin: 0;
+  color: #b4ada3;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.war-title__copy > small {
+  color: #c7ad87;
+  font-size: 10px;
+}
+.war-title__progress {
+  display: grid;
+  gap: 4px;
+}
+.war-title__progress-track {
+  height: 5px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #36333a;
+}
+.war-title__progress-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #dab77f;
+}
+.war-title__progress > small {
+  color: #b9a999;
+  font-size: 10px;
+}
+.war-title__state {
+  grid-column: 2;
+  justify-self: start;
+  color: #d3b28b;
+  font-size: 10px;
+  font-weight: 700;
+}
 .war-footer { padding: 12px 0 2px; border-top: 1px solid var(--war-border); text-align: center; color: #8f8c88; font-size: 10px; line-height: 1.5; }
 @media (max-width: 410px) {
   .war-head { padding: 16px 12px; }
