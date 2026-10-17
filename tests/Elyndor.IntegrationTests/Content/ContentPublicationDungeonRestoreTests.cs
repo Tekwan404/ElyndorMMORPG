@@ -31,6 +31,9 @@ public sealed class ContentPublicationDungeonRestoreTests(PostgresFixture postgr
             PublishedAtUtc = Now.AddDays(-1),
             Dungeons = (bundled.Dungeons ?? [])
                 .Where(dungeon => dungeon.Id != "ECLIPSED_CITADEL")
+                .Select(dungeon => dungeon.Id == "UNDEAD_ECLIPSED_CITADEL"
+                    ? dungeon with { FactionCounterpartId = null }
+                    : dungeon)
                 .ToArray()
         };
         Assert.DoesNotContain(

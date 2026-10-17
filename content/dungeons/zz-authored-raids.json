@@ -5,6 +5,7 @@
   "dungeons": [
     {
       "id": "HEART_OF_BLIGHTED_GROVE",
+      "factionCounterpartId": "UNDEAD_HEART_OF_BLIGHTED_GROVE",
       "displayName": "Сердце Осквернённой Чащи",
       "description": "Подземелье 20 уровня: четыре босса, шесть слотов комплектов и профессиональные материалы.",
       "minimumLevel": 20,
@@ -25,6 +26,7 @@
     },
     {
       "id": "SHATTERED_ORDER_CITADEL",
+      "factionCounterpartId": "UNDEAD_SHATTERED_ORDER_CITADEL",
       "displayName": "Цитадель Расколотого Ордена",
       "description": "Некогда Орден защищал северные земли. После смерти Великого Магистра его командиры начали гражданскую войну, маги обратились к запретным ритуалам, а павших рыцарей снова подняли на службу.",
       "minimumLevel": 30,
@@ -52,6 +54,7 @@
     },
     {
       "id": "BLACK_BASTION",
+      "factionCounterpartId": "UNDEAD_BLACK_BASTION",
       "displayName": "Чёрный Бастион",
       "description": "Финальное подземелье диапазона 40 уровня с восьмичастными комплектами и легендарной цепочкой.",
       "minimumLevel": 40,

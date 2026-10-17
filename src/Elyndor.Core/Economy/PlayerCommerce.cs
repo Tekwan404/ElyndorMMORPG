@@ -1,3 +1,5 @@
+using Elyndor.Core.Characters;
+
 namespace Elyndor.Core.Economy;
 
 public sealed class CommerceRuleException(string code) : Exception(code)
@@ -95,15 +97,20 @@ public sealed class PlayerTrade
 public sealed class AuctionListing
 {
     private AuctionListing() { }
-    public AuctionListing(Guid id, Guid seller, Guid item, long price, long fee, long tax, DateTimeOffset now)
+    public AuctionListing(Guid id, Guid seller, Guid item, long price, long fee, long tax, DateTimeOffset now,
+        string sellerRaceId = RaceIds.Human)
     {
         if (id == Guid.Empty || seller == Guid.Empty || item == Guid.Empty || price <= 0 || fee < 0 || tax < 0 || tax > price)
             throw new CommerceRuleException("auction_invalid_listing");
+        if (string.IsNullOrWhiteSpace(sellerRaceId))
+            throw new CommerceRuleException("auction_invalid_seller_race");
+        SellerRaceId = sellerRaceId;
         Id = id; SellerId = seller; ItemId = item; Price = price; Fee = fee; Tax = tax;
         CreatedAt = now; ExpiresAt = now.AddHours(48);
     }
     public Guid Id { get; private set; }
     public Guid SellerId { get; private set; }
+    public string SellerRaceId { get; private set; } = RaceIds.Human;
     public Guid ItemId { get; private set; }
     public long Price { get; private set; }
     public long Fee { get; private set; }

@@ -93,6 +93,10 @@ jobs:
       - name: Validate game content
         run: dotnet run --project tools/Elyndor.ContentValidator --configuration Release --no-build -- --strict-item-icons --audit-affixes --audit-balance --benchmark-balance --audit-progression content/package.json
 
+      - name: Generate optimized character shop thumbnails
+        run: |
+          .artifacts/asset-tool-venv/bin/python tools/assets/generate_skin_thumbnails.py
+
       - name: Install frontend dependencies
         working-directory: web/elyndor-web
         run: npm ci

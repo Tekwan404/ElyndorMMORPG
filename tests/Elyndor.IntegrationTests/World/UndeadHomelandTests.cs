@@ -165,6 +165,38 @@ public sealed class UndeadHomelandTests(PostgresFixture postgres) : IAsyncLifeti
     }
 
     [Fact]
+    public async Task BootstrapLeavesNonEquivalentDungeonAndStillLogsCharacterIn()
+    {
+        var content = await LoadContentAsync();
+        Guid accountId = await SeedAsync("UNDEAD", "ANCIENT_MINE");
+        await using var db = postgres.CreateDbContext();
+        var character = await db.Characters.SingleAsync();
+        var run = DungeonRun.Create(Guid.CreateVersion7(), Guid.CreateVersion7(), character.Id, "ANCIENT_MINE", Now);
+        run.AddMember(character.Id, Now);
+        db.DungeonRuns.Add(run);
+        await db.SaveChangesAsync();
+
+        // Simulate a content release where the mirrored encounter sequence drifted.
+        var drifted = content with
+        {
+            Dungeons = content.Dungeons!.Select(dungeon =>
+                dungeon.Id == "UNDEAD_ANCIENT_MINE"
+                    ? dungeon with { Encounters = dungeon.Encounters.Skip(1).ToArray() }
+                    : dungeon).ToArray()
+        };
+        var inventory = new InventoryEquipmentService(db, content, Clock);
+        var derived = new CharacterDerivedStateService(db, content, inventory);
+        var bootstrap = new BootstrapService(db, content, new WorldMap(content.Locations), derived, Clock);
+        var result = await bootstrap.GetAsync(accountId, GameContentSnapshot.Create(drifted), CancellationToken.None);
+
+        Assert.NotNull(result.Character);
+        Assert.Equal("UNDEAD_ANCIENT_MINE", result.World!.CurrentLocation.Id);
+        var member = Assert.Single((await db.DungeonRuns.Include(candidate => candidate.Members).SingleAsync()).Members);
+        Assert.Equal(DungeonRunMemberState.Left, member.State);
+        Assert.Equal("ANCIENT_MINE", (await db.DungeonRuns.SingleAsync()).DungeonId);
+    }
+
+    [Fact]
     public async Task PartyDungeonCreationRejectsForeignRegionBeforeMovingAnyMember()
     {
         var content = await LoadContentAsync();

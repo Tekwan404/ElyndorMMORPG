@@ -5,6 +5,7 @@
   "dungeons": [
     {
       "id": "SHATTERED_ORDER_CITADEL_TEST",
+      "factionCounterpartId": "UNDEAD_SHATTERED_ORDER_CITADEL_TEST",
       "displayName": "Обсерватория Погасшего Неба",
       "description": "Древняя башня астромантов, захваченная Веллариусом и его хранителями. Пройдите четыре зала обсерватории, остановите ритуал Азраэля и соберите комплекты звёздной стражи.",
       "minimumLevel": 25,

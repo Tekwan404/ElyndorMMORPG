@@ -5,6 +5,7 @@
   "locations": [
     {
       "id": "WHISPERING_FOREST",
+      "factionCounterpartId": "UNDEAD_WHISPERING_FOREST",
       "displayName": "Шепчущий лес",
       "dangerLevel": "ADVENTURE",
       "recommendedLevel": 3,
@@ -23,6 +24,7 @@
     },
     {
       "id": "FLOWER_MEADOW",
+      "factionCounterpartId": "UNDEAD_FLOWER_MEADOW",
       "displayName": "Цветочная поляна",
       "dangerLevel": "ADVENTURE",
       "recommendedLevel": 6,
@@ -42,6 +44,7 @@
     },
     {
       "id": "DEEP_FOREST",
+      "factionCounterpartId": "UNDEAD_DEEP_FOREST",
       "displayName": "Глубокий лес",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 8,
@@ -62,6 +65,7 @@
     },
     {
       "id": "OLD_ROAD",
+      "factionCounterpartId": "UNDEAD_OLD_ROAD",
       "displayName": "Старый тракт",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 12,
@@ -80,6 +84,7 @@
     },
     {
       "id": "STONE_SPURS",
+      "factionCounterpartId": "UNDEAD_STONE_SPURS",
       "displayName": "Каменные отроги",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 14,
@@ -99,6 +104,7 @@
     },
     {
       "id": "BLIGHTED_GROVE",
+      "factionCounterpartId": "UNDEAD_BLIGHTED_GROVE",
       "displayName": "Осквернённая чаща",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 18,
@@ -118,6 +124,7 @@
     },
     {
       "id": "ASHEN_BORDER",
+      "factionCounterpartId": "UNDEAD_ASHEN_BORDER",
       "displayName": "Пепельная граница",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 20,
@@ -135,6 +142,7 @@
     },
     {
       "id": "MOON_ASH_MARSHES",
+      "factionCounterpartId": "UNDEAD_MOON_ASH_MARSHES",
       "displayName": "Топи Лунного Пепла",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 24,
@@ -152,6 +160,7 @@
     },
     {
       "id": "ECLIPSE_OUTSKIRTS",
+      "factionCounterpartId": "UNDEAD_ECLIPSE_OUTSKIRTS",
       "displayName": "Предместья Затмения",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 26,
@@ -170,6 +179,7 @@
     },
     {
       "id": "SHATTERED_LANDS",
+      "factionCounterpartId": "UNDEAD_SHATTERED_LANDS",
       "displayName": "Земли Раскола",
       "dangerLevel": "DEADLY",
       "recommendedLevel": 30,
@@ -188,6 +198,7 @@
     },
     {
       "id": "BLACKSTONE_HIGHLANDS",
+      "factionCounterpartId": "UNDEAD_BLACKSTONE_HIGHLANDS",
       "displayName": "Чернокаменное нагорье",
       "dangerLevel": "DEADLY",
       "recommendedLevel": 32,
@@ -205,6 +216,7 @@
     },
     {
       "id": "CRIMSON_WASTELAND",
+      "factionCounterpartId": "UNDEAD_CRIMSON_WASTELAND",
       "displayName": "Багровая пустошь",
       "dangerLevel": "DEADLY",
       "recommendedLevel": 36,
@@ -222,6 +234,7 @@
     },
     {
       "id": "OBSIDIAN_EDGE",
+      "factionCounterpartId": "UNDEAD_OBSIDIAN_EDGE",
       "displayName": "Обсидиановый предел",
       "dangerLevel": "DEADLY",
       "recommendedLevel": 38,
@@ -239,6 +252,7 @@
     },
     {
       "id": "HEART_OF_BLIGHTED_GROVE",
+      "factionCounterpartId": "UNDEAD_HEART_OF_BLIGHTED_GROVE",
       "displayName": "Сердце Осквернённой Чащи",
       "dangerLevel": "SAFE",
       "recommendedLevel": 20,
@@ -255,6 +269,7 @@
     },
     {
       "id": "SHATTERED_ORDER_CITADEL",
+      "factionCounterpartId": "UNDEAD_SHATTERED_ORDER_CITADEL",
       "displayName": "Цитадель Расколотого Ордена",
       "dangerLevel": "SAFE",
       "recommendedLevel": 30,
@@ -271,6 +286,7 @@
     },
     {
       "id": "BLACK_BASTION",
+      "factionCounterpartId": "UNDEAD_BLACK_BASTION",
       "displayName": "Чёрный Бастион",
       "dangerLevel": "SAFE",
       "recommendedLevel": 40,

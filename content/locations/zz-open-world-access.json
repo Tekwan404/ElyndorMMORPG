@@ -5,6 +5,7 @@
   "locations": [
     {
       "id": "DEEP_FOREST",
+      "factionCounterpartId": "UNDEAD_DEEP_FOREST",
       "displayName": "Глубокий лес",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 9,
@@ -49,6 +50,7 @@
     },
     {
       "id": "BROODMOTHER_LAIR",
+      "factionCounterpartId": "UNDEAD_BROODMOTHER_LAIR",
       "displayName": "Логово Прародительницы",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 14,
@@ -71,6 +73,7 @@
     },
     {
       "id": "BLIGHTED_GROVE",
+      "factionCounterpartId": "UNDEAD_BLIGHTED_GROVE",
       "displayName": "Осквернённая чаща",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 17,

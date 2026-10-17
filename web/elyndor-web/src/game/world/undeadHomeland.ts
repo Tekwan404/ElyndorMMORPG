@@ -1,3 +1,5 @@
+import undeadHomeland from '../../../../../content/locations/undead-homeland.json'
+
 // Presentation names mirror content/locations/undead-homeland.json.
 export const UNDEAD_LOCATION_NAMES: Record<string, string> = {
   UNDEAD_STARTER_TOWN: 'Тихоград',
@@ -27,6 +29,10 @@ export function isTown(locationId: string | null | undefined): boolean {
   return locationId === 'STARTER_TOWN' || locationId === 'UNDEAD_STARTER_TOWN'
 }
 
+const baseLocationById = new Map(
+  undeadHomeland.locations.map((location) => [location.id, location.factionCounterpartId]),
+)
+
 export function baseLocationId(locationId: string): string {
-  return locationId.startsWith('UNDEAD_') ? locationId.slice(7) : locationId
+  return baseLocationById.get(locationId) ?? locationId
 }

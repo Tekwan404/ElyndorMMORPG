@@ -25,6 +25,8 @@ public sealed class PlayerCommerceConfiguration : IEntityTypeConfiguration<Playe
         builder.ToTable("auction_listings", t => t.HasCheckConstraint("ck_auction_amounts", "\"Price\" > 0 AND \"Fee\" >= 0 AND \"Tax\" >= 0 AND \"Tax\" <= \"Price\""));
         builder.HasKey(x => x.Id);
         builder.Property(x => x.State).HasMaxLength(16);
+        builder.Property(x => x.SellerRaceId).HasMaxLength(16).IsRequired();
+        builder.HasIndex(x => new { x.SellerRaceId, x.State, x.ExpiresAt });
         builder.HasIndex(x => new { x.State, x.ExpiresAt });
         builder.HasIndex(x => x.ItemId).IsUnique().HasFilter("\"State\" = 'ACTIVE'");
         builder.HasOne<Character>().WithMany().HasForeignKey(x => x.SellerId).OnDelete(DeleteBehavior.Cascade);

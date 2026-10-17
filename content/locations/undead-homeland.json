@@ -4,6 +4,7 @@
   "locations": [
     {
       "id": "UNDEAD_STARTER_TOWN",
+      "factionCounterpartId": "STARTER_TOWN",
       "displayName": "Тихоград",
       "dangerLevel": "SAFE",
       "recommendedLevel": 1,
@@ -21,6 +22,7 @@
     },
     {
       "id": "UNDEAD_WHISPERING_FOREST",
+      "factionCounterpartId": "WHISPERING_FOREST",
       "displayName": "Лес Последнего Шёпота",
       "dangerLevel": "ADVENTURE",
       "recommendedLevel": 3,
@@ -83,6 +85,7 @@
     },
     {
       "id": "UNDEAD_DEEP_FOREST",
+      "factionCounterpartId": "DEEP_FOREST",
       "displayName": "Могильная чаща",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 8,
@@ -130,6 +133,7 @@
     },
     {
       "id": "UNDEAD_ANCIENT_MINE",
+      "factionCounterpartId": "ANCIENT_MINE",
       "displayName": "Шахта Погребённых",
       "dangerLevel": "SAFE",
       "recommendedLevel": 15,
@@ -148,6 +152,7 @@
     },
     {
       "id": "UNDEAD_BROODMOTHER_LAIR",
+      "factionCounterpartId": "BROODMOTHER_LAIR",
       "displayName": "Логово Могильной Матриархи",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 14,
@@ -171,6 +176,7 @@
     },
     {
       "id": "UNDEAD_BLIGHTED_GROVE",
+      "factionCounterpartId": "BLIGHTED_GROVE",
       "displayName": "Роща Тлена",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 18,
@@ -247,6 +253,7 @@
     },
     {
       "id": "UNDEAD_ECLIPSED_CITADEL",
+      "factionCounterpartId": "ECLIPSED_CITADEL",
       "displayName": "Цитадель Безмолвия",
       "dangerLevel": "SAFE",
       "recommendedLevel": 25,
@@ -265,6 +272,7 @@
     },
     {
       "id": "UNDEAD_SHATTERED_ORDER_CITADEL_TEST",
+      "factionCounterpartId": "SHATTERED_ORDER_CITADEL_TEST",
       "displayName": "Обсерватория Мёртвых Звёзд",
       "dangerLevel": "SAFE",
       "recommendedLevel": 25,
@@ -283,6 +291,7 @@
     },
     {
       "id": "UNDEAD_FLOWER_MEADOW",
+      "factionCounterpartId": "FLOWER_MEADOW",
       "displayName": "Поляна Бледноцвета",
       "dangerLevel": "ADVENTURE",
       "recommendedLevel": 6,
@@ -342,6 +351,7 @@
     },
     {
       "id": "UNDEAD_OLD_ROAD",
+      "factionCounterpartId": "OLD_ROAD",
       "displayName": "Тракт Усопших",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 12,
@@ -393,6 +403,7 @@
     },
     {
       "id": "UNDEAD_STONE_SPURS",
+      "factionCounterpartId": "STONE_SPURS",
       "displayName": "Костяные отроги",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 14,
@@ -440,6 +451,7 @@
     },
     {
       "id": "UNDEAD_ASHEN_BORDER",
+      "factionCounterpartId": "ASHEN_BORDER",
       "displayName": "Пепельный рубеж",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 20,
@@ -485,6 +497,7 @@
     },
     {
       "id": "UNDEAD_MOON_ASH_MARSHES",
+      "factionCounterpartId": "MOON_ASH_MARSHES",
       "displayName": "Топи Забвения",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 24,
@@ -535,6 +548,7 @@
     },
     {
       "id": "UNDEAD_ECLIPSE_OUTSKIRTS",
+      "factionCounterpartId": "ECLIPSE_OUTSKIRTS",
       "displayName": "Предместья Безмолвия",
       "dangerLevel": "DANGEROUS",
       "recommendedLevel": 26,
@@ -581,6 +595,7 @@
     },
     {
       "id": "UNDEAD_SHATTERED_LANDS",
+      "factionCounterpartId": "SHATTERED_LANDS",
       "displayName": "Земли Угасших Клятв",
       "dangerLevel": "DEADLY",
       "recommendedLevel": 30,
@@ -628,6 +643,7 @@
     },
     {
       "id": "UNDEAD_BLACKSTONE_HIGHLANDS",
+      "factionCounterpartId": "BLACKSTONE_HIGHLANDS",
       "displayName": "Надгробное нагорье",
       "dangerLevel": "DEADLY",
       "recommendedLevel": 32,
@@ -673,6 +689,7 @@
     },
     {
       "id": "UNDEAD_CRIMSON_WASTELAND",
+      "factionCounterpartId": "CRIMSON_WASTELAND",
       "displayName": "Пустошь Потерянных Душ",
       "dangerLevel": "DEADLY",
       "recommendedLevel": 36,
@@ -723,6 +740,7 @@
     },
     {
       "id": "UNDEAD_OBSIDIAN_EDGE",
+      "factionCounterpartId": "OBSIDIAN_EDGE",
       "displayName": "Предел Вечной Ночи",
       "dangerLevel": "DEADLY",
       "recommendedLevel": 38,
@@ -775,6 +793,7 @@
     },
     {
       "id": "UNDEAD_HEART_OF_BLIGHTED_GROVE",
+      "factionCounterpartId": "HEART_OF_BLIGHTED_GROVE",
       "displayName": "Сердце Рощи Тлена",
       "dangerLevel": "SAFE",
       "recommendedLevel": 20,
@@ -792,6 +811,7 @@
     },
     {
       "id": "UNDEAD_SHATTERED_ORDER_CITADEL",
+      "factionCounterpartId": "SHATTERED_ORDER_CITADEL",
       "displayName": "Цитадель Угасших Клятв",
       "dangerLevel": "SAFE",
       "recommendedLevel": 30,
@@ -809,6 +829,7 @@
     },
     {
       "id": "UNDEAD_BLACK_BASTION",
+      "factionCounterpartId": "BLACK_BASTION",
       "displayName": "Бастион Вечной Ночи",
       "dangerLevel": "SAFE",
       "recommendedLevel": 40,

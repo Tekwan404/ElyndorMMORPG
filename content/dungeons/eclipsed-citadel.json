@@ -5,6 +5,7 @@
   "dungeons": [
     {
       "id": "ECLIPSED_CITADEL",
+      "factionCounterpartId": "UNDEAD_ECLIPSED_CITADEL",
       "displayName": "Цитадель Затмения",
       "description": "Эндгейм-подземелье 25 уровня. Четыре элитных стража и Архонт Погасшей Звезды охраняют легендарные комплекты Чёрного Бастиона, Затмённого Оракула и Чёрного Созвездия.",
       "minimumLevel": 25,

@@ -22,4 +22,5 @@ public sealed record LocationDefinition(
     bool AllowAfk = false,
     string MapId = "BORDERLANDS",
     IReadOnlyList<LocationPointDefinition>? Points = null,
-    string? RequiredRaceId = null);
+    string? RequiredRaceId = null,
+    string? FactionCounterpartId = null);

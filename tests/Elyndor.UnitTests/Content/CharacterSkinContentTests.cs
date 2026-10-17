@@ -25,6 +25,10 @@ public sealed class CharacterSkinContentTests
         var package = await GameContentPackageLoader.LoadAsync(RepositoryContentPath());
         var skins = package.CharacterSkins!.Where(skin => skin.RaceId == "UNDEAD").ToArray();
         Assert.Equal(80, skins.Length);
+        // Deliberate cosmetic monetization: one free starter per class/gender and
+        // nine optional paid appearances; every purchase is visual-only.
+        Assert.Equal(8, skins.Count(skin => !skin.Purchasable && skin.CrystalPrice == 0));
+        Assert.Equal(72, skins.Count(skin => skin.Purchasable && skin.CrystalPrice is >= 550 and <= 1200));
         foreach (string classId in new[] { "WARRIOR", "ARCHER", "MAGE", "PALADIN" })
         foreach (string genderId in new[] { "MALE", "FEMALE" })
         {

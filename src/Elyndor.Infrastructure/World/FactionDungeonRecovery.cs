@@ -3,13 +3,27 @@ using Elyndor.Core.Dungeons;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Elyndor.Infrastructure.World;
 
 internal static class FactionDungeonRecovery
 {
+    private static readonly Action<ILogger, Guid, Guid, string?, Exception?> MissingCounterpart =
+        LoggerMessage.Define<Guid, Guid, string?>(
+            LogLevel.Warning,
+            new EventId(2310, nameof(MissingCounterpart)),
+            "Leaving incompatible dungeon run {RunId} for character {CharacterId}: counterpart {TargetDungeonId} missing.");
+
+    private static readonly Action<ILogger, Guid, Guid, string, string, Exception?> MismatchedEncounters =
+        LoggerMessage.Define<Guid, Guid, string, string>(
+            LogLevel.Warning,
+            new EventId(2311, nameof(MismatchedEncounters)),
+            "Leaving incompatible dungeon run {RunId} for character {CharacterId}: encounters differ between {SourceDungeonId} and {TargetDungeonId}.");
+
     public static async Task<bool> RepairAsync(GameDbContext db, GameContentSnapshot content,
-        Guid characterId, string raceId, DateTimeOffset now, CancellationToken cancellationToken)
+        Guid characterId, string raceId, DateTimeOffset now, CancellationToken cancellationToken,
+        ILogger? logger = null)
     {
         string[] forbiddenDungeons = content.Indexes.DungeonsById.Values
             .Where(dungeon => content.Indexes.LocationsById.TryGetValue(dungeon.EntryLocationId, out var location)
@@ -36,9 +50,17 @@ internal static class FactionDungeonRecovery
                     && content.Indexes.LocationsById.TryGetValue(current.EntryLocationId, out var currentEntry)
                     && WorldLocationAccess.CanEnter(currentEntry, raceId)) continue;
                 if (run.Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active)) return false;
-                string targetId = raceId == "UNDEAD" ? "UNDEAD_" + run.DungeonId
-                    : run.DungeonId.StartsWith("UNDEAD_", StringComparison.Ordinal) ? run.DungeonId[7..] : run.DungeonId;
-                if (!content.Indexes.DungeonsById.TryGetValue(targetId, out var target)) return false;
+                string? targetId = content.Indexes.DungeonsById.TryGetValue(run.DungeonId, out var mapped)
+                    ? mapped.FactionCounterpartId : null;
+                if (targetId is null || !content.Indexes.DungeonsById.TryGetValue(targetId, out var target)
+                    || !content.Indexes.LocationsById.TryGetValue(target.EntryLocationId, out var targetEntry)
+                    || !WorldLocationAccess.CanEnter(targetEntry, raceId))
+                {
+                    if (logger is not null)
+                        MissingCounterpart(logger, run.Id, characterId, targetId, null);
+                    run.Members.Single(member => member.CharacterId == characterId).MarkLeft();
+                    continue;
+                }
                 Guid[] memberIds = run.Members.Where(member => member.State == DungeonRunMemberState.Active)
                     .Select(member => member.CharacterId).ToArray();
                 bool sameFaction = !await db.Characters.AnyAsync(
@@ -54,7 +76,12 @@ internal static class FactionDungeonRecovery
                 var source = content.Indexes.DungeonsById[run.DungeonId];
                 if (!source.Encounters.Select(encounter => (encounter.Id, encounter.MonsterId, encounter.CheckpointId))
                     .SequenceEqual(target.Encounters.Select(encounter => (encounter.Id, encounter.MonsterId, encounter.CheckpointId))))
-                    throw new InvalidOperationException("Faction dungeon recovery requires equivalent encounters.");
+                {
+                    if (logger is not null)
+                        MismatchedEncounters(logger, run.Id, characterId, source.Id, target.Id, null);
+                    run.Members.Single(member => member.CharacterId == characterId).MarkLeft();
+                    continue;
+                }
                 run.MoveToFactionDungeon(target.Id);
                 var locations = await db.CharacterLocations.Where(location => memberIds.Contains(location.CharacterId)
                     && location.LocationId == source.EntryLocationId).ToArrayAsync(cancellationToken);

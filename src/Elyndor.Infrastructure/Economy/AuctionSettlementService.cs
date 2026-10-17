@@ -28,9 +28,13 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
         if (owner is null) return [];
         var definitions = content.GetCurrent().Package.Items?.ToDictionary(x => x.Id, StringComparer.Ordinal);
         if (definitions is null) return [];
-        var query = db.AuctionListings.AsNoTracking().Where(x => x.State == "ACTIVE" && x.ExpiresAt > time.GetUtcNow()
-            && db.Characters.Any(seller => seller.Id == x.SellerId
-                && db.Characters.Any(buyer => buyer.Id == owner && buyer.RaceId == seller.RaceId)));
+        string? buyerRaceId = await db.Characters.AsNoTracking()
+            .Where(character => character.Id == owner.Value)
+            .Select(character => character.RaceId)
+            .SingleOrDefaultAsync(ct);
+        if (buyerRaceId is null) return [];
+        var query = db.AuctionListings.AsNoTracking().Where(x => x.State == "ACTIVE"
+            && x.ExpiresAt > time.GetUtcNow() && x.SellerRaceId == buyerRaceId);
         if (mine) query = query.Where(x => x.SellerId == owner);
         else query = query.Where(x => x.SellerId != owner);
         if (!string.IsNullOrWhiteSpace(search) || !string.IsNullOrWhiteSpace(type))
@@ -205,7 +209,8 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
             if ((request.ExpectedFee.HasValue || request.ExpectedTax.HasValue)
                 && (request.ExpectedFee != fee || request.ExpectedTax != tax))
                 throw new CommerceRuleException("auction_quote_changed");
-            var listing = new AuctionListing(id, character.Value, item.Id, request.Price, fee, tax, time.GetUtcNow());
+            var listing = new AuctionListing(id, character.Value, item.Id, request.Price, fee, tax, time.GetUtcNow(),
+                characters[0].RaceId);
             if (!characters[0].TrySpendGold(fee)) throw new CommerceRuleException("commerce_insufficient_funds");
             item.AcquireTransactionLock(listing.Id);
             item.Transfer(listing.Id, character.Value, "AUCTION");
@@ -333,7 +338,8 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
                         request.Price,
                         fee,
                         tax,
-                        time.GetUtcNow());
+                        time.GetUtcNow(),
+                        characters[0].RaceId);
 
                     item.AcquireTransactionLock(listing.Id);
                     item.Transfer(listing.Id, character.Value, "AUCTION");
@@ -364,7 +370,8 @@ public sealed class AuctionSettlementService(GameDbContext db, CommerceTransacti
                 if (replay) return Response(lot);
                 var buyer = characters.Single(x => x.Id == buyerId);
                 var seller = characters.Single(x => x.Id == lot.SellerId);
-                if (buyer.RaceId != seller.RaceId) throw new CommerceRuleException("auction_not_found");
+                if (buyer.RaceId != seller.RaceId || buyer.RaceId != lot.SellerRaceId)
+                    throw new CommerceRuleException("auction_not_found");
                 var item = await transactions.ItemAsync(lot.ItemId, lot.SellerId, id, true, ct);
                 lot.Sell(buyerId.Value, time.GetUtcNow());
                 if (!buyer.TrySpendGold(lot.Price)) throw new CommerceRuleException("commerce_insufficient_funds");

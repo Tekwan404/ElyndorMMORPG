@@ -551,6 +551,7 @@ public sealed class PlayerCommerceTests(PostgresFixture postgres) : IAsyncLifeti
         var lot = await Listing(seller, item);
         await using (var db = postgres.CreateDbContext())
         {
+            Assert.Equal(sellerRace, (await db.AuctionListings.SingleAsync()).SellerRaceId);
             Assert.Empty(await Auction(db).ListingsAsync(enemy.Account, false, null, null, 0, default));
             Assert.Equal(lot.Id, Assert.Single(await Auction(db).ListingsAsync(ally.Account, false, null, null, 0, default)).Id);
             Assert.Equal(lot.Id, Assert.Single(await Auction(db).ListingsAsync(seller.Account, true, null, null, 0, default)).Id);

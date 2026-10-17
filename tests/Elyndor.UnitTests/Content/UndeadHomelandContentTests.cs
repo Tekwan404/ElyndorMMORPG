@@ -17,6 +17,8 @@ public sealed class UndeadHomelandContentTests
         {
             var undead = Assert.Single(undeadLocations, location => location.Id == "UNDEAD_" + human.Id);
             Assert.NotEqual(human.DisplayName, undead.DisplayName);
+            Assert.Equal(undead.Id, human.FactionCounterpartId);
+            Assert.Equal(human.Id, undead.FactionCounterpartId);
             Assert.Equal("HUMAN", human.RequiredRaceId);
             Assert.Equal("UNDEAD", undead.RequiredRaceId);
             Assert.Equal(human.MinimumLevel, undead.MinimumLevel);
@@ -41,6 +43,36 @@ public sealed class UndeadHomelandContentTests
         Assert.DoesNotContain(package.Locations, location => location.Id == "UNDEAD_BLACK_CRAGS");
         Assert.Equal(60, Assert.Single(shared, location => location.Id == "DEAD_REACHES").MinimumLevel);
         Assert.Contains("OBSIDIAN_EDGE", package.Locations.Single(location => location.Id == "BLACK_CRAGS").Transitions);
+    }
+
+    [Fact]
+    public async Task InvalidLocationFactionCounterpartFailsPublicationValidation()
+    {
+        var package = await GameContentPackageLoader.LoadAsync(ContentPath());
+        var broken = package with
+        {
+            Locations = package.Locations.Select(location =>
+                location.Id == "UNDEAD_STARTER_TOWN"
+                    ? location with { FactionCounterpartId = "MISSING_COUNTERPART" }
+                    : location).ToArray()
+        };
+        Assert.Contains(GameContentPackageValidator.Validate(broken),
+            error => error.Code == "INVALID_LOCATION_FACTION_COUNTERPART");
+    }
+
+    [Fact]
+    public async Task UnequalMirroredDungeonEncountersFailPublicationValidation()
+    {
+        var package = await GameContentPackageLoader.LoadAsync(ContentPath());
+        var broken = package with
+        {
+            Dungeons = package.Dungeons!.Select(dungeon =>
+                dungeon.Id == "UNDEAD_ANCIENT_MINE"
+                    ? dungeon with { Encounters = dungeon.Encounters.Skip(1).ToArray() }
+                    : dungeon).ToArray()
+        };
+        Assert.Contains(GameContentPackageValidator.Validate(broken),
+            error => error.Code == "INVALID_DUNGEON_FACTION_COUNTERPART");
     }
 
     private static string ContentPath()
