@@ -57,11 +57,12 @@ const rewards = computed(() =>
     (entry) => rewardFilter.value === 'all' || entry.category === rewardFilter.value,
   ),
 )
-const bounties = computed(() =>
-  (props.dashboard?.bounties ?? [])
-    .filter((entry) => !personal.value || entry.targetFaction !== personal.value.faction)
-    .sort((left, right) => right.killStreak - left.killStreak),
-)
+const bounties = computed(() => {
+  const ownFaction = personal.value?.faction
+  return (props.dashboard?.bounties ?? [])
+    .filter((entry) => !ownFaction || entry.targetFaction !== ownFaction)
+    .sort((left, right) => right.killStreak - left.killStreak)
+})
 const seasonLabel = computed(() =>
   props.dashboard ? worldPvpSeasonLabel(props.dashboard.season.status) : 'Скоро',
 )
@@ -313,12 +314,12 @@ const rewardCurrencyLabel = (currency: 'BloodTokens' | 'FieldHonor'): string =>
 .war-alert { margin: 0; padding: 12px; color: #ffd4c8; background: #3f2226; border: 1px solid #ad5450; border-radius: 9px; font-size: 12px; }
 .war-alert button { margin-left: 10px; border: 0; background: none; color: #ffe3ae; text-decoration: underline; cursor: pointer; }
 .war-tabs { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 5px; padding: 4px; border: 1px solid var(--war-border); border-radius: 12px; background: #11151d; }
-.war-tabs button { min-width: 0; min-height: 43px; padding: 8px 3px; border: 0; border-radius: 8px; color: #c0b8ac; background: transparent; font: 700 12px/1.2 inherit; cursor: pointer; }
+.war-tabs button { min-width: 0; min-height: 43px; padding: 8px 3px; border: 0; border-radius: 8px; color: #c0b8ac; background: transparent; font-size: 12px; font-weight: 700; line-height: 1.2; cursor: pointer; }
 .war-tabs button.is-active { color: #201911; background: linear-gradient(135deg,#e6c999,#bd965e); box-shadow: 0 3px 12px rgb(0 0 0 / 26%); }
 .war-tabs button:focus-visible, .war-filter button:focus-visible { outline: 2px solid #f3c78b; outline-offset: 2px; }
 .war-section { display: grid; gap: 13px; min-width: 0; }
 .war-section__lead { display: flex; align-items: end; justify-content: space-between; gap: 8px; }
-.war-section__lead small { display: block; color: #b8946a; font: 700 10px/1.4 inherit; letter-spacing: .12em; }
+.war-section__lead small { display: block; color: #b8946a; font-size: 10px; font-weight: 700; line-height: 1.4; letter-spacing: .12em; }
 .war-section__lead h3 { margin: 2px 0 0; font: 700 21px/1.2 Georgia, serif; color: #e9d5b5; }
 .war-season { max-width: 38%; text-align: right; font-size: 10px; line-height: 1.4; color: var(--war-muted); }
 .war-metrics { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 9px; }
@@ -346,7 +347,7 @@ const rewardCurrencyLabel = (currency: 'BloodTokens' | 'FieldHonor'): string =>
 .war-board__identity strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #efdec6; font-size: 13px; }
 .war-board__identity small { color: var(--war-muted); font-size: 10px; line-height: 1.35; }
 .war-board__score { white-space: nowrap; color: #e5bb7c; font: 700 16px Georgia,serif; text-align: right; }
-.war-board__score small { display: block; color: var(--war-muted); font: 10px inherit; }
+.war-board__score small { display: block; color: var(--war-muted); font-size: 10px; font-weight: 400; }
 .war-wallet { display: grid; gap: 8px; }
 .war-wallet > div { display: flex; align-items: center; gap: 10px; padding: 11px 13px; border: 1px solid var(--war-border); border-radius: 12px; background: #1a1e27; }
 .war-wallet__icon { display: grid; place-items: center; width: 37px; height: 37px; border-radius: 50%; background: #54472e; color: #f5d59a; font-size: 23px; }
