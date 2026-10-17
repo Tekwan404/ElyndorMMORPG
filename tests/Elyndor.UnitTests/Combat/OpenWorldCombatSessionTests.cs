@@ -111,6 +111,21 @@ public sealed class OpenWorldCombatSessionTests
     }
 
     [Fact]
+    public void JoiningWithNoLivingHostileTargetDoesNotMutateRoster()
+    {
+        var human = Player("HUMAN");
+        var monster = Monster();
+        var session = Fight(human, monster);
+        monster.Actor.SetCurrentHp(0); // Simulate stale active session before death processing.
+        var before = session.Snapshot().ParticipantRoster!.Count;
+        var ally = Player("HUMAN");
+
+        Assert.False(session.TryJoinOpenWorldParticipant(ally, Now, out var error));
+        Assert.Equal(CombatErrorCodes.InvalidTarget, error);
+        Assert.Equal(before, session.Snapshot().ParticipantRoster!.Count);
+    }
+
+    [Fact]
     public void LateArcherKeepsOwnCompanionAndItsMonsterContribution()
     {
         var human = Player("HUMAN");
@@ -290,7 +305,7 @@ public sealed class OpenWorldCombatSessionTests
     }
 
     [Fact]
-    public void InstantKillsHaveDeathRecordWithoutProgression()
+    public void InstantKillsHaveKillerAndQualifyingDamage()
     {
         var human = Player("HUMAN");
         var enemy = Player("UNDEAD");
@@ -299,7 +314,8 @@ public sealed class OpenWorldCombatSessionTests
         enemy.Participant.Actor.SetCurrentHp(1);
         session.Handle(human.Participant.Actor.ActorId, new UseAbilityCommand("fast", Strike.Id, enemy.Participant.Actor.ActorId), Now);
         var defeat = Assert.Single(session.Snapshot().WorldPvpDefeats!);
-        Assert.Empty(defeat.Contributions);
+        Assert.Contains(defeat.Contributions, credit => credit.CharacterId == human.Participant.Actor.ActorId
+            && credit.Damage > 0);
         Assert.Equal(human.Participant.Actor.ActorId, defeat.KillerId);
     }
 
