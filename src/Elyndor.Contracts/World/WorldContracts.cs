@@ -64,7 +64,8 @@ public sealed record WorldLocationResponse(
     bool AllowAfk = false,
     IReadOnlyList<WorldLocationResidentResponse>? Residents = null,
     IReadOnlyList<WorldLocationLootResponse>? Loot = null,
-    string MapId = "BORDERLANDS");
+    string MapId = "BORDERLANDS",
+    bool IsWorldPvpZone = false);
 
 public sealed record WorldContractResponse(
     string Id,
