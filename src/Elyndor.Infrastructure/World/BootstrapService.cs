@@ -337,11 +337,9 @@ public sealed class BootstrapService(
                 session => session.CharacterId == character.Id && session.Status == AfkFarmStatus.Active,
                 cancellationToken))
         {
-            string counterpartId = character.RaceId == "UNDEAD"
-                ? "UNDEAD_" + location.LocationId
-                : location.LocationId.StartsWith("UNDEAD_", StringComparison.Ordinal)
-                    ? location.LocationId[7..] : WorldLocationAccess.HomeTown(character.RaceId);
-            string destination = indexes.LocationsById.TryGetValue(counterpartId, out var counterpart)
+            string? counterpartId = legacyLocation.FactionCounterpartId;
+            string destination = counterpartId is not null
+                && indexes.LocationsById.TryGetValue(counterpartId, out var counterpart)
                 && WorldLocationAccess.CanEnter(counterpart, character.RaceId)
                     ? counterpartId : WorldLocationAccess.HomeTown(character.RaceId);
             location.Relocate(destination, now);
