@@ -14,6 +14,9 @@ namespace Elyndor.Infrastructure.Combat;
 
 public interface ICombatSessionFinalizer
 {
+    Task PrepareOpenWorldFinalizationAsync(IReadOnlyList<CombatSessionSnapshot> snapshots,
+        GameContentSnapshot? contentSnapshot, CancellationToken cancellationToken) => Task.CompletedTask;
+
     Task<CombatRewardApplicationResult?> FinalizeAsync(
         Guid characterId,
         CombatSessionSnapshot snapshot,
@@ -33,6 +36,14 @@ public interface ICombatSessionFinalizer
 /// </summary>
 public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : ICombatSessionFinalizer
 {
+    public async Task PrepareOpenWorldFinalizationAsync(IReadOnlyList<CombatSessionSnapshot> snapshots,
+        GameContentSnapshot? contentSnapshot, CancellationToken cancellationToken)
+    {
+        await using var scope = scopeFactory.CreateAsyncScope();
+        var durability = scope.ServiceProvider.GetRequiredService<CombatDurabilityService>();
+        await durability.RecordOpenWorldSnapshotsAsync(snapshots, contentSnapshot, cancellationToken);
+    }
+
     public Task<CombatRewardApplicationResult?> FinalizeAsync(
         Guid characterId,
         CombatSessionSnapshot snapshot,
@@ -73,6 +84,10 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                 cancellationToken);
         CombatDurabilityService? durability =
             scope.ServiceProvider.GetService<CombatDurabilityService>();
+        if (snapshot.OpenWorldPvp && durability is not null
+            && !await dbContext.ActiveCombatSessions.AsNoTracking().AnyAsync(row => row.SessionId == snapshot.SessionId
+                && row.CharacterId == characterId, cancellationToken))
+            return null;
         if (durability is not null && snapshot.Status != CombatSessionStatus.Active)
         {
             await durability.RecordTerminalSnapshotAsync(
@@ -83,6 +98,9 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         }
 
         DungeonService? dungeonService = scope.ServiceProvider.GetService<DungeonService>();
+        if (snapshot.OpenWorldPvp && snapshot.Status != CombatSessionStatus.Active)
+            await scope.ServiceProvider.GetRequiredService<Elyndor.Infrastructure.World.WorldPvpSettlementService>()
+                .ApplyAsync(snapshot, cancellationToken);
 
         // A corpse only belongs to the most recent combat aftermath. Completing or fleeing
         // another real combat abandons any older unskinned corpse. The time/session guard keeps
@@ -96,7 +114,7 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
 
         if (snapshot.Status == CombatSessionStatus.Victory
             && !isWorldBossCombat
-            && snapshot.PlayerContributionEligible == false)
+            && snapshot.PlayerContributionEligible == false && !snapshot.OpenWorldPvp)
         {
             if (dungeonService is not null)
             {
@@ -121,7 +139,8 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         // replay shortcut so reconnect/retry can heal a crash between reward and corpse writes.
         // Isolated finalizer hosts (for example focused combat tests) may intentionally omit
         // the profession subsystem; the production application always registers this service.
-        if (snapshot.Status == CombatSessionStatus.Victory && !fled && !isWorldBossCombat)
+        if (snapshot.Status == CombatSessionStatus.Victory && !fled && !isWorldBossCombat
+            && (!snapshot.OpenWorldPvp || snapshot.PlayerContributionEligible == true))
         {
             ProfessionCorpseService? corpseService =
                 scope.ServiceProvider.GetService<ProfessionCorpseService>();
@@ -146,7 +165,8 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         // A terminal victory may be observed again after reconnect/retry. Rewards are already
         // idempotent by CombatSessionId, but replaying the pre-reward combat vitals here would
         // overwrite authoritative post-reward state (for example a level-up full heal).
-        if (snapshot.Status == CombatSessionStatus.Victory && !fled && !isWorldBossCombat)
+        if (snapshot.Status == CombatSessionStatus.Victory && !fled && !isWorldBossCombat
+            && (!snapshot.OpenWorldPvp || snapshot.PlayerContributionEligible == true))
         {
             var existingReward = await dbContext.CombatRewardGrants
                 .AsNoTracking()
@@ -195,7 +215,7 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
                 : snapshot.ServerTimeUtc;
 
             if ((snapshot.Status == CombatSessionStatus.Defeat || snapshot.Player.Hp <= 0) && character is not null
-                && !fled)
+                && (!fled || snapshot.OpenWorldPvp && snapshot.Player.Hp <= 0))
             {
                 CharacterDerivedState derived = contentSnapshot is null
                     ? await derivedStateService.ResolveAsync(
@@ -254,7 +274,8 @@ public sealed class CombatSessionFinalizer(IServiceScopeFactory scopeFactory) : 
         }
 
         CombatRewardApplicationResult? reward = null;
-        if (snapshot.Status == CombatSessionStatus.Victory && !fled && !isWorldBossCombat)
+        if (snapshot.Status == CombatSessionStatus.Victory && !fled && !isWorldBossCombat
+            && (!snapshot.OpenWorldPvp || snapshot.PlayerContributionEligible == true))
         {
             CombatRewardService rewards =
                 scope.ServiceProvider.GetRequiredService<CombatRewardService>();

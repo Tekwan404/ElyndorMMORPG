@@ -108,7 +108,7 @@ internal static class CombatContractMapper
                         item.Snapshot.DiedAtUtc),
                     item.IsEligible,
                     item.Reason,
-                    item.ContributionScore)).ToArray());
+                    item.ContributionScore)).ToArray(), snapshot.OpenWorldPvp);
     }
 
     private static CombatActorResponse ToResponse(

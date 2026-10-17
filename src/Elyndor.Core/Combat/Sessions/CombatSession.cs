@@ -23,11 +23,15 @@ public sealed partial class CombatSession
     private const decimal BaseRageFromDirectDamageTaken = 5;
     private readonly Dictionary<Guid, CombatPlayerRuntimeState> _playerStatesByActorId;
     private CombatPlayerRuntimeState _activePlayerState = null!;
-    private readonly CombatParticipantDefinition? _companion;
-    private readonly Guid _companionOwnerActorId;
+    private readonly CombatParticipantDefinition? _primaryCompanion;
+    private CombatParticipantDefinition? _companion => IsOpenWorldPvp && _activePlayerState is not null ? _activePlayerState.Companion : _primaryCompanion;
+    private readonly Guid _primaryCompanionOwnerActorId;
+    private Guid _companionOwnerActorId => IsOpenWorldPvp ? _activePlayerState.Definition.Actor.ActorId : _primaryCompanionOwnerActorId;
     private readonly List<CombatParticipantDefinition> _enemies;
     private readonly Dictionary<Guid, CombatParticipantDefinition> _enemiesById;
-    private readonly CombatRuntimeState? _companionRuntime;
+    private readonly Dictionary<Guid, CombatParticipantDefinition> _combatTargetsById;
+    private readonly CombatRuntimeState? _primaryCompanionRuntime;
+    private CombatRuntimeState? _companionRuntime => IsOpenWorldPvp && _activePlayerState is not null ? _activePlayerState.CompanionRuntime : _primaryCompanionRuntime;
     private readonly Dictionary<Guid, CombatRuntimeState> _enemyRuntimes;
     private readonly Guid _primaryEnemyActorId;
     private Guid _selectedTargetActorId
@@ -38,9 +42,9 @@ public sealed partial class CombatSession
 
     // Transitional compatibility projection: existing class runtimes operate on the
     // currently selected enemy while the authoritative session state stores all enemies.
-    private CombatParticipantDefinition _enemy => _enemiesById[_selectedTargetActorId];
+    private CombatParticipantDefinition _enemy => _combatTargetsById[_selectedTargetActorId];
     private CombatRuntimeState _enemyRuntime => _enemyRuntimes[_selectedTargetActorId];
-    private CombatParticipantDefinition _primaryEnemy => _enemiesById[_primaryEnemyActorId];
+    private CombatParticipantDefinition _primaryEnemy => _combatTargetsById[_primaryEnemyActorId];
     private readonly IReadOnlyDictionary<string, AbilityDefinition> _abilities;
     private readonly Dictionary<Guid, EnemyAiRuntime> _enemyAiRuntimes;
     private readonly Dictionary<Guid, ThreatTable> _enemyThreatTables;
@@ -57,7 +61,12 @@ public sealed partial class CombatSession
     private readonly Dictionary<Guid, CombatSessionStatisticsState> _statisticsByActorId = [];
     private readonly CombatParticipantRoster _participantRoster;
     private readonly ContributionLedger _contributionLedger;
-    private DateTimeOffset? _nextCompanionAutoAttackAtUtc;
+    private DateTimeOffset? _primaryCompanionNextAutoAttackAtUtc;
+    private DateTimeOffset? _nextCompanionAutoAttackAtUtc
+    {
+        get => IsOpenWorldPvp ? _activePlayerState.CompanionNextAutoAttackAtUtc : _primaryCompanionNextAutoAttackAtUtc;
+        set { if (IsOpenWorldPvp) _activePlayerState.CompanionNextAutoAttackAtUtc = value; else _primaryCompanionNextAutoAttackAtUtc = value; }
+    }
     private CombatParticipantDefinition _player => _activePlayerState.Definition;
     private CombatRuntimeState _playerRuntime => _activePlayerState.Runtime;
     private ResolvedTalentModifiers _playerTalents => _activePlayerState.Talents;
@@ -101,7 +110,9 @@ public sealed partial class CombatSession
         CombatParticipantDefinition? companion = null,
         Guid? playerAccountId = null,
         IReadOnlyList<CombatPlayerDefinition>? additionalPlayers = null,
-        IReadOnlyList<ItemSpecialEffectDefinition>? itemSpecialEffects = null)
+        IReadOnlyList<ItemSpecialEffectDefinition>? itemSpecialEffects = null,
+        bool openWorldPvp = false,
+        Guid? playerPartyId = null)
         : this(
             sessionId,
             player,
@@ -118,7 +129,9 @@ public sealed partial class CombatSession
             companion,
             playerAccountId,
             additionalPlayers,
-            itemSpecialEffects)
+            itemSpecialEffects,
+            openWorldPvp,
+            playerPartyId)
     {
     }
 
@@ -138,7 +151,9 @@ public sealed partial class CombatSession
         CombatParticipantDefinition? companion = null,
         Guid? playerAccountId = null,
         IReadOnlyList<CombatPlayerDefinition>? additionalPlayers = null,
-        IReadOnlyList<ItemSpecialEffectDefinition>? itemSpecialEffects = null)
+        IReadOnlyList<ItemSpecialEffectDefinition>? itemSpecialEffects = null,
+        bool openWorldPvp = false,
+        Guid? playerPartyId = null)
         : this(
             sessionId,
             player,
@@ -155,7 +170,9 @@ public sealed partial class CombatSession
             companion,
             playerAccountId,
             additionalPlayers,
-            itemSpecialEffects)
+            itemSpecialEffects,
+            openWorldPvp,
+            playerPartyId)
     {
     }
 
@@ -175,7 +192,9 @@ public sealed partial class CombatSession
         CombatParticipantDefinition? companion = null,
         Guid? playerAccountId = null,
         IReadOnlyList<CombatPlayerDefinition>? additionalPlayers = null,
-        IReadOnlyList<ItemSpecialEffectDefinition>? itemSpecialEffects = null)
+        IReadOnlyList<ItemSpecialEffectDefinition>? itemSpecialEffects = null,
+        bool openWorldPvp = false,
+        Guid? playerPartyId = null)
     {
         if (sessionId == Guid.Empty)
             throw new ArgumentException("Session id is required.", nameof(sessionId));
@@ -187,7 +206,7 @@ public sealed partial class CombatSession
         ArgumentNullException.ThrowIfNull(random);
         ArgumentException.ThrowIfNullOrWhiteSpace(contentVersion);
         ArgumentException.ThrowIfNullOrWhiteSpace(balanceVersion);
-        if (enemies.Count == 0)
+        if (enemies.Count == 0 && !openWorldPvp)
             throw new ArgumentException("CombatSession requires at least one enemy.", nameof(enemies));
         if (player.Kind != CombatActorKind.Player
             || enemies.Any(enemy => enemy.Kind != CombatActorKind.Monster)
@@ -202,11 +221,11 @@ public sealed partial class CombatSession
                 playerAccountId ?? Guid.Empty,
                 player,
                 playerTalents,
-                initialPlayerCooldowns)
+                initialPlayerCooldowns, PartyId: playerPartyId)
         ];
         if (additionalPlayers is { Count: > 0 })
             playerDefinitions = playerDefinitions.Concat(additionalPlayers).ToArray();
-        if (playerDefinitions.Length > CombatParticipantRoster.DefaultMaximumParticipants)
+        if (playerDefinitions.Length > (openWorldPvp ? CombatParticipantRoster.MaximumOpenWorldParticipants : CombatParticipantRoster.DefaultMaximumParticipants))
             throw new ArgumentException("CombatSession supports at most five player participants.", nameof(additionalPlayers));
         if (playerDefinitions.Any(item =>
                 item.Participant.Kind != CombatActorKind.Player
@@ -254,14 +273,21 @@ public sealed partial class CombatSession
         if (companion is not null)
             ValidateAutoAttack(companion.AutoAttack);
 
+        IsOpenWorldPvp = openWorldPvp;
+        if (openWorldPvp && playerDefinitions.Any(definition => definition.Participant.RaceId is not ("HUMAN" or "UNDEAD")))
+            throw new ArgumentException("Open-world players require a captured faction.", nameof(player));
         SessionId = sessionId;
         ContentVersion = contentVersion;
         BalanceVersion = balanceVersion;
-        _companion = companion;
-        _companionOwnerActorId = player.Actor.ActorId;
+        _primaryCompanion = companion;
+        _primaryCompanionOwnerActorId = player.Actor.ActorId;
         _enemies = enemies.ToList();
         _enemiesById = _enemies.ToDictionary(enemy => enemy.Actor.ActorId);
-        _primaryEnemyActorId = _enemies[0].Actor.ActorId;
+        _combatTargetsById = openWorldPvp ? new(_enemiesById) : _enemiesById;
+        if (openWorldPvp)
+            foreach (var definition in playerDefinitions)
+                _combatTargetsById.Add(definition.Participant.Actor.ActorId, definition.Participant);
+        _primaryEnemyActorId = enemies.Count > 0 ? enemies[0].Actor.ActorId : playerDefinitions.First(definition => definition.Participant.RaceId != player.RaceId).Participant.Actor.ActorId;
         _random = random;
         _combatStartedAtUtc = startedAtUtc;
         _abilities = abilities;
@@ -277,8 +303,11 @@ public sealed partial class CombatSession
                         .Select(item => item.Participant.Actor)
                         .Concat(companion is null ? [] : [companion.Actor])
                         .Concat(enemies.Select(item => item.Actor))));
+            state.Companion = openWorldPvp ? (playerDefinition.Participant.Actor.ActorId == player.Actor.ActorId ? companion : playerDefinition.Companion) : null;
+            if (state.Companion is { } pet) _openWorldCompanionOwners.Add(pet.Actor.ActorId, state.Definition.Actor.ActorId);
             state.InitializeTalentRuntime(_random, _procGuard);
-            state.SelectedTargetActorId = _primaryEnemyActorId;
+            if (openWorldPvp) ConfigureOpenWorldControl(state.Definition.Actor);
+            state.SelectedTargetActorId = enemies.Count > 0 ? enemies[0].Actor.ActorId : playerDefinitions.First(definition => definition.Participant.RaceId != state.Definition.RaceId).Participant.Actor.ActorId;
             Guid actorId = playerDefinition.Participant.Actor.ActorId;
             _playerStatesByActorId.Add(actorId, state);
             _statisticsByActorId.Add(
@@ -296,7 +325,9 @@ public sealed partial class CombatSession
                     item.Participant.Actor.ActorId,
                     item.Participant.Actor.ActorId))
                 .ToArray(),
-            startedAtUtc);
+            startedAtUtc,
+            openWorldPvp ? CombatParticipantRoster.MaximumOpenWorldParticipants : CombatParticipantRoster.DefaultMaximumParticipants,
+            allowDynamicParticipation: openWorldPvp);
         foreach (CombatPlayerDefinition playerDefinition in playerDefinitions.Where(item => item.InitiallyAttached))
         {
             if (!_participantRoster.TryAttach(
@@ -315,6 +346,7 @@ public sealed partial class CombatSession
             contributionActorOwners[playerDefinition.Participant.Actor.ActorId] = playerDefinition.Participant.Actor.ActorId;
         if (companion is not null)
             contributionActorOwners[companion.Actor.ActorId] = player.Actor.ActorId;
+        foreach (var pair in _openWorldCompanionOwners) contributionActorOwners[pair.Key] = pair.Value;
         _contributionLedger = new ContributionLedger(contributionActorOwners);
         foreach (CombatPlayerDefinition playerDefinition in playerDefinitions.Where(
                      item => item.InitiallyAttached))
@@ -351,7 +383,7 @@ public sealed partial class CombatSession
         CombatActorState[] allPlayerActors = playerDefinitions
             .Select(item => item.Participant.Actor)
             .ToArray();
-        _companionRuntime = companion is null
+        _primaryCompanionRuntime = companion is null
             ? null
             : CreateRuntime(
                 companion.Actor,
@@ -386,6 +418,16 @@ public sealed partial class CombatSession
         _enemyForcedTargets = _enemies.ToDictionary(
             enemy => enemy.Actor.ActorId,
             _ => new ForcedTargetState());
+        if (openWorldPvp)
+        {
+            foreach (var state in _playerStatesByActorId.Values)
+            {
+                Guid id = state.Definition.Actor.ActorId;
+                _enemyRuntimes.Add(id, state.Runtime);
+                _enemyThreatTables.Add(id, new ThreatTable());
+                _enemyForcedTargets.Add(id, new ForcedTargetState());
+            }
+        }
         foreach (ThreatTable threat in _enemyThreatTables.Values)
         {
             foreach (CombatPlayerDefinition playerDefinition in playerDefinitions.Where(item => item.InitiallyAttached))
@@ -416,6 +458,8 @@ public sealed partial class CombatSession
         _nextCompanionAutoAttackAtUtc = companion is not null && companion.CanAutoAttack
             ? startedAtUtc + companion.AutoAttack.Interval
             : null;
+        if (openWorldPvp)
+            foreach (var state in _playerStatesByActorId.Values) InitializeOpenWorldCompanion(state, startedAtUtc);
         CombatPlayerRuntimeState initialPlayer = _activePlayerState;
         foreach (CombatPlayerRuntimeState state in _playerStatesByActorId.Values.ToArray())
         {
@@ -434,6 +478,7 @@ public sealed partial class CombatSession
             TargetActorId: _selectedTargetActorId));
     }
 
+    public bool IsOpenWorldPvp { get; }
     public Guid SessionId { get; }
     public string ContentVersion { get; }
     public string BalanceVersion { get; }
@@ -460,7 +505,7 @@ public sealed partial class CombatSession
         _contributionLedger.Evaluate(
             characterId,
             completedAtUtc,
-            DefaultParticipationPolicy);
+            IsOpenWorldPvp ? OpenWorldParticipationPolicy : DefaultParticipationPolicy);
 
     public bool TryAttachParticipant(
         Guid participantCharacterId,
@@ -487,6 +532,12 @@ public sealed partial class CombatSession
                 now);
         }
 
+        if (IsOpenWorldPvp)
+        {
+            state.LastResourceRegenAtUtc = now;
+            state.CompanionNextAutoAttackAtUtc = state.Companion is { CanAutoAttack: true } pet ? now + pet.AutoAttack.Interval : null;
+            RetargetOpenWorldPlayers(now);
+        }
         state.AutoAttackEnabled = state.Definition.CanAutoAttack;
         state.NextMainHandAutoAttackAtUtc = state.AutoAttackEnabled ? now : null;
         state.NextOffHandAutoAttackAtUtc = state.AutoAttackEnabled
@@ -513,11 +564,20 @@ public sealed partial class CombatSession
                 next = Min(next, _nextPlayerOffHandAutoAttackAtUtc);
                 next = Min(next, _playerRuntime.ActiveCast?.NextResolutionAtUtc);
                 next = Min(next, NextEffectDue(_player.Actor));
+                if (IsOpenWorldPvp)
+                {
+                    next = Min(next, _nextCompanionAutoAttackAtUtc);
+                    next = Min(next, _companionRuntime?.ActiveCast?.NextResolutionAtUtc);
+                    next = Min(next, _companion is null ? null : NextEffectDue(_companion.Actor));
+                }
             }
             ActivatePlayer(activePlayerId);
-            next = Min(next, _nextCompanionAutoAttackAtUtc);
-            next = Min(next, _companionRuntime?.ActiveCast?.NextResolutionAtUtc);
-            next = Min(next, _companion is null ? null : NextEffectDue(_companion.Actor));
+            if (!IsOpenWorldPvp)
+            {
+                next = Min(next, _nextCompanionAutoAttackAtUtc);
+                next = Min(next, _companionRuntime?.ActiveCast?.NextResolutionAtUtc);
+                next = Min(next, _companion is null ? null : NextEffectDue(_companion.Actor));
+            }
             next = Min(next, _nextSummonAtUtc);
             next = Min(next, NextGenericEncounterDueAtUtc);
             next = Min(next, NextDelayedAbilityActionAtUtc);
@@ -653,7 +713,9 @@ public sealed partial class CombatSession
         CombatCommandResult? preflight = GetCommandPreflightResult(
             participantCharacterId, command.CommandId, allowEscape: command is FleeCommand);
         if (preflight is not null) return preflight;
-        if (!IsActiveParticipant(participantCharacterId))
+        if (!IsActiveParticipant(participantCharacterId)
+            && !(IsOpenWorldPvp && command is FleeCommand
+                && _participantRoster.GetStatus(participantCharacterId) == CombatParticipantStatus.Dead))
         {
             bool alreadyFled = command is FleeCommand
                 && _participantRoster.GetStatus(participantCharacterId) == CombatParticipantStatus.Fled;
@@ -665,7 +727,9 @@ public sealed partial class CombatSession
         AdvanceCore(now);
         if (Status != CombatSessionStatus.Active)
             return new(false, CombatErrorCodes.Ended, Snapshot(participantCharacterId), GetEventsAfter(before));
-        if (!IsActiveParticipant(participantCharacterId))
+        if (!IsActiveParticipant(participantCharacterId)
+            && !(IsOpenWorldPvp && command is FleeCommand
+                && _participantRoster.GetStatus(participantCharacterId) == CombatParticipantStatus.Dead))
             return new(false, CombatErrorCodes.ParticipantNotActive, Snapshot(participantCharacterId), GetEventsAfter(before));
 
         ActivatePlayer(participantCharacterId);
@@ -722,6 +786,18 @@ public sealed partial class CombatSession
         }
 
         _contributionLedger.MarkFled(_player.Actor.ActorId, now);
+        if (IsOpenWorldPvp)
+        {
+            _playerAutoAttackEnabled = false;
+            _nextPlayerMainHandAutoAttackAtUtc = null;
+            _nextPlayerOffHandAutoAttackAtUtc = null;
+            _nextCompanionAutoAttackAtUtc = null;
+            _playerRuntime.ActiveCast = null;
+            _playerRuntime.PendingActions.Clear();
+            _player.Actor.SetTemporaryUntargetable(now, TimeSpan.FromDays(36500));
+            RetargetOpenWorldPlayers(now);
+            FinishOpenWorldIfResolved(new(CombatEventType.CombatEnded, now, _player.Actor.ActorId));
+        }
         SyncWarlordConditionalEffects(now);
         if (!_participantRoster.HasActiveParticipants())
         {
@@ -833,7 +909,8 @@ public sealed partial class CombatSession
 
     public CombatSessionSnapshot Snapshot(Guid? requesterCharacterId = null)
     {
-        CombatActorSnapshot[] enemies = _enemies
+        CombatPlayerRuntimeState perspective = requesterCharacterId is { } id && _playerStatesByActorId.TryGetValue(id, out var found) ? found : _activePlayerState;
+        CombatActorSnapshot[] enemies = HostileParticipants(perspective.Definition.Actor.ActorId)
             .Select(enemy => ActorSnapshot(
                 enemy,
                 _enemyRuntimes[enemy.Actor.ActorId],
@@ -845,8 +922,9 @@ public sealed partial class CombatSession
             && _playerStatesByActorId.TryGetValue(requested, out CombatPlayerRuntimeState? requestedState)
                 ? requestedState
                 : _activePlayerState;
-        CombatActorSnapshot selected = enemies.Single(enemy =>
-            enemy.ActorId == requester.SelectedTargetActorId);
+        CombatActorSnapshot selected = enemies.FirstOrDefault(enemy => enemy.ActorId == requester.SelectedTargetActorId)
+            ?? ActorSnapshot(_combatTargetsById[requester.SelectedTargetActorId],
+                _enemyRuntimes[requester.SelectedTargetActorId], false);
         ContributionSnapshot? contribution = _contributionLedger.TryGetSnapshot(
             requester.Definition.Actor.ActorId,
             out ContributionSnapshot? recordedContribution)
@@ -860,6 +938,7 @@ public sealed partial class CombatSession
         ContributionEligibilityResult[] participantContributions =
             _participantRoster.Participants
                 .Where(participant => participant.Status != CombatParticipantStatus.Rostered)
+                .Where(participant => !IsOpenWorldPvp || !_playerStatesByActorId[participant.ActorId].Definition.Actor.IsDead)
                 .Where(participant => _contributionLedger.TryGetSnapshot(
                     participant.CharacterId,
                     out _))
@@ -868,6 +947,7 @@ public sealed partial class CombatSession
                     CurrentTimeUtc))
                 .ToArray();
         CombatActorSnapshot[] players = _playerStatesByActorId.Values
+            .Where(state => AreFactionAllies(perspective.Definition.Actor.ActorId, state.Definition.Actor.ActorId))
             .Select(state => ActorSnapshot(
                 state.Definition,
                 state.Runtime,
@@ -879,7 +959,7 @@ public sealed partial class CombatSession
         return new CombatSessionSnapshot(
             SessionId,
             Sequence,
-            Status,
+            PerspectiveStatus(requester),
             CurrentTimeUtc,
             ActorSnapshot(
                 requester.Definition,
@@ -890,18 +970,20 @@ public sealed partial class CombatSession
             BalanceVersion,
             enemies,
             requester.SelectedTargetActorId,
-            _companion is null || _companionRuntime is null
+            CompanionFor(requester) is null || CompanionRuntimeFor(requester) is null
                 ? null
                 : ActorSnapshot(
-                    _companion,
-                    _companionRuntime,
-                    Status == CombatSessionStatus.Active && !_companion.Actor.IsDead),
+                    CompanionFor(requester)!,
+                    CompanionRuntimeFor(requester)!,
+                    Status == CombatSessionStatus.Active && !CompanionFor(requester)!.Actor.IsDead),
             contribution,
             players,
             _participantRoster.Participants,
             contributionEligible,
             participantContributions,
-            BuildStatisticsSnapshot(requester.Definition.Actor.ActorId));
+            BuildStatisticsSnapshot(requester.Definition.Actor.ActorId),
+            OpenWorldPvp: IsOpenWorldPvp,
+            WorldPvpDefeats: IsOpenWorldPvp ? _worldPvpDefeats.ToArray() : null);
     }
 
     public CombatCommandResult Cancel(DateTimeOffset now)
@@ -967,7 +1049,7 @@ public sealed partial class CombatSession
                 CombatEventType.TargetChanged,
                 now,
                 _player.Actor.ActorId,
-                _enemiesById[primaryTargetActorId].DefinitionId,
+                _combatTargetsById[primaryTargetActorId].DefinitionId,
                 SourceActorId: _player.Actor.ActorId,
                 TargetActorId: primaryTargetActorId));
             SyncBerserkerConditionalEffects(now);
@@ -1011,23 +1093,23 @@ public sealed partial class CombatSession
             switch (action.Type)
             {
                 case ConsumableActionType.RestoreHp:
-                {
-                    decimal previousHp = _player.Actor.CurrentHp;
-                    _player.Actor.ApplyHealing(action.Amount);
-                    decimal healed = _player.Actor.CurrentHp - previousHp;
-                    if (healed > 0)
                     {
-                        Append(new CombatEvent(
-                            CombatEventType.HealingApplied,
-                            now,
-                            _player.Actor.ActorId,
-                            command.ItemDefinitionId,
-                            healed,
-                            SourceActorId: _player.Actor.ActorId,
-                            TargetActorId: _player.Actor.ActorId));
+                        decimal previousHp = _player.Actor.CurrentHp;
+                        _player.Actor.ApplyHealing(action.Amount);
+                        decimal healed = _player.Actor.CurrentHp - previousHp;
+                        if (healed > 0)
+                        {
+                            Append(new CombatEvent(
+                                CombatEventType.HealingApplied,
+                                now,
+                                _player.Actor.ActorId,
+                                command.ItemDefinitionId,
+                                healed,
+                                SourceActorId: _player.Actor.ActorId,
+                                TargetActorId: _player.Actor.ActorId));
+                        }
+                        break;
                     }
-                    break;
-                }
                 case ConsumableActionType.RestoreResource:
                     AddResource(
                         _player.Actor,
@@ -1087,7 +1169,7 @@ public sealed partial class CombatSession
         Dictionary<Guid, AbilityTargetModifier> modifiers = [];
         foreach (Guid targetActorId in targetActorIds)
         {
-            if (!_enemiesById.TryGetValue(
+            if (!_combatTargetsById.TryGetValue(
                     targetActorId,
                     out CombatParticipantDefinition? target))
             {
@@ -1117,7 +1199,7 @@ public sealed partial class CombatSession
 
         if (ability.TargetType == AbilityTargetType.SelfAndPartyMembersInCombat)
         {
-            Guid[] partyMembers = ActivePlayerActorIds()
+            Guid[] partyMembers = ActivePartyActorIds()
                 .Concat(_companion is not null && !_companion.Actor.IsDead
                     ? [_companion.Actor.ActorId]
                     : [])
@@ -1132,9 +1214,11 @@ public sealed partial class CombatSession
             Guid targetActorId = requestedTargetActorId == Guid.Empty
                 ? _selectedTargetActorId
                 : requestedTargetActorId;
-            return _enemiesById.TryGetValue(
+            return _combatTargetsById.TryGetValue(
                     targetActorId,
                     out CombatParticipantDefinition? selected)
+                && IsHostileTarget(_player.Actor.ActorId, targetActorId)
+                && IsCombatTargetAvailable(targetActorId)
                 && !selected.Actor.IsDead
                 && selected.Actor.IsTargetable(now)
                 && CanPlayerTargetKaelMorEnemy(_player.Actor.ActorId, targetActorId)
@@ -1148,7 +1232,8 @@ public sealed partial class CombatSession
                     participant.ActorId == requestedTargetActorId
                     && participant.Status == CombatParticipantStatus.Dead
                     && _playerStatesByActorId.TryGetValue(participant.ActorId, out var state)
-                    && state.Definition.Actor.IsDead)
+                    && state.Definition.Actor.IsDead
+                    && AreFactionAllies(_player.Actor.ActorId, requestedTargetActorId))
                 ? [requestedTargetActorId]
                 : [];
         }
@@ -1160,7 +1245,8 @@ public sealed partial class CombatSession
 
             bool isCurrentPlayer = requestedTargetActorId == _player.Actor.ActorId;
             bool isActiveOtherPlayer = !isCurrentPlayer
-                && ActivePlayerActorIds().Contains(requestedTargetActorId);
+                && ActivePlayerActorIds().Contains(requestedTargetActorId)
+                && AreFactionAllies(_player.Actor.ActorId, requestedTargetActorId);
             return (isCurrentPlayer
                 ? ability.AllowSelfTarget
                 : isActiveOtherPlayer)
@@ -1185,7 +1271,7 @@ public sealed partial class CombatSession
         if (targetLimit <= 0)
             return [];
 
-        return _enemies
+        return HostileParticipants(_player.Actor.ActorId)
             .Where(enemy =>
                 !enemy.Actor.IsDead
                 && enemy.Actor.IsTargetable(now)
@@ -1208,9 +1294,11 @@ public sealed partial class CombatSession
         DateTimeOffset now,
         long before)
     {
-        if (!_enemiesById.TryGetValue(
+        if (!_combatTargetsById.TryGetValue(
                 command.TargetActorId,
                 out CombatParticipantDefinition? target)
+            || !IsHostileTarget(_player.Actor.ActorId, command.TargetActorId)
+            || !IsCombatTargetAvailable(command.TargetActorId)
             || target.Actor.IsDead
             || !target.Actor.IsTargetable(now))
         {
@@ -1316,13 +1404,11 @@ public sealed partial class CombatSession
                     due);
                 if (Status != CombatSessionStatus.Active) break;
             }
-            if (_companionRuntime is not null && _companion is not null)
+            ForEachSessionCompanion(() =>
             {
-                CompleteReadyCast(
-                    _companionRuntime,
-                    _companion.Actor.ActorId,
-                    due);
-            }
+                if (_companionRuntime is not null && _companion is not null)
+                    CompleteReadyCast(_companionRuntime, _companion.Actor.ActorId, due);
+            });
             foreach (CombatParticipantDefinition enemy in _enemies)
             {
                 CompleteReadyCast(
@@ -1360,13 +1446,12 @@ public sealed partial class CombatSession
                 if (Status != CombatSessionStatus.Active) break;
             }
 
-            if (Status == CombatSessionStatus.Active
-                && _companion is not null
-                && !_companion.Actor.IsDead
-                && _nextCompanionAutoAttackAtUtc <= due)
+            ForEachSessionCompanion(() =>
             {
-                ResolveReadyCompanionAutoAttack(due);
-            }
+                if (Status == CombatSessionStatus.Active && _companion is not null
+                    && !_companion.Actor.IsDead && _nextCompanionAutoAttackAtUtc <= due)
+                    ResolveReadyCompanionAutoAttack(due);
+            });
 
             if (Status == CombatSessionStatus.Active
                 && _nextSummonAtUtc <= due)
@@ -1442,9 +1527,9 @@ public sealed partial class CombatSession
         try
         {
             ActivatePlayer(_companionOwnerActorId);
-            CombatParticipantDefinition? target = _enemiesById.GetValueOrDefault(_selectedTargetActorId);
+            CombatParticipantDefinition? target = _combatTargetsById.GetValueOrDefault(_selectedTargetActorId);
             if (target is null || target.Actor.IsDead || !target.Actor.IsTargetable(due))
-                target = _enemies.FirstOrDefault(enemy => !enemy.Actor.IsDead && enemy.Actor.IsTargetable(due));
+                target = HostileParticipants(_player.Actor.ActorId).FirstOrDefault(enemy => !enemy.Actor.IsDead && enemy.Actor.IsTargetable(due));
             if (target is not null)
                 ResolveAutoAttack(_companion!, target, due);
             _nextCompanionAutoAttackAtUtc = Status == CombatSessionStatus.Active && !_companion!.Actor.IsDead
@@ -1493,14 +1578,11 @@ public sealed partial class CombatSession
             CombatActorState[] existingEnemyActors =
                 _enemies.Select(enemy => enemy.Actor).ToArray();
 
-            foreach (CombatPlayerRuntimeState playerState in _playerStatesByActorId.Values)
-                playerState.Runtime.AddActor(summoned.Actor);
-            _companionRuntime?.AddActor(summoned.Actor);
-            foreach (CombatRuntimeState runtime in _enemyRuntimes.Values)
-                runtime.AddActor(summoned.Actor);
+            AddActorToCombatRuntimes(summoned.Actor);
 
             _enemies.Add(summoned);
             _enemiesById.Add(summoned.Actor.ActorId, summoned);
+            if (IsOpenWorldPvp) _combatTargetsById.Add(summoned.Actor.ActorId, summoned);
             EnsureThreatTable(summoned.Actor.ActorId);
             _enemyRuntimes.Add(
                 summoned.Actor.ActorId,
@@ -1690,9 +1772,7 @@ public sealed partial class CombatSession
         DateTimeOffset now)
     {
         Guid[] hostileActors = ActivePlayerActorIds()
-            .Concat(_companion is not null && !_companion.Actor.IsDead
-                ? [_companion.Actor.ActorId]
-                : [])
+            .Concat(ActiveSessionCompanions().Select(pet => pet.Actor.ActorId))
             .ToArray();
         if (hostileActors.Length == 0)
             return [];
@@ -1717,7 +1797,7 @@ public sealed partial class CombatSession
         CombatParticipantDefinition[] candidates = _participantRoster.Participants
             .Where(item => item.Status == CombatParticipantStatus.Active)
             .Select(item => _playerStatesByActorId[item.ActorId].Definition)
-            .Concat(_companion is null ? [] : [_companion])
+            .Concat(ActiveSessionCompanions())
             .ToArray();
         if (candidates.Length == 0)
             return _player;
@@ -1912,6 +1992,25 @@ public sealed partial class CombatSession
             if (Status != CombatSessionStatus.Active) return;
         }
 
+        ForEachSessionCompanion(() => ProcessCompanionEffects(now));
+
+        foreach (CombatParticipantDefinition enemy in _enemies)
+        {
+            ApplyKernelEvents(
+                EffectEngine.Process(
+                    enemy.Actor,
+                    now,
+                    (effect, tickAt) => ResolvePeriodicEffectDamage(effect, enemy.Actor, tickAt),
+                    (effect, expiresAt) => ResolveExpiredEffectActions(effect, enemy.Actor, expiresAt)),
+                _player.Actor.ActorId,
+                enemy.Actor.ActorId,
+                null);
+            if (Status != CombatSessionStatus.Active) return;
+        }
+    }
+
+    private void ProcessCompanionEffects(DateTimeOffset now)
+    {
         if (_companion is not null)
         {
             // Mend Pet dispels only after its final healing tick, never on cast.
@@ -1938,19 +2037,6 @@ public sealed partial class CombatSession
             }
         }
 
-        foreach (CombatParticipantDefinition enemy in _enemies)
-        {
-            ApplyKernelEvents(
-                EffectEngine.Process(
-                    enemy.Actor,
-                    now,
-                    (effect, tickAt) => ResolvePeriodicEffectDamage(effect, enemy.Actor, tickAt),
-                    (effect, expiresAt) => ResolveExpiredEffectActions(effect, enemy.Actor, expiresAt)),
-                _player.Actor.ActorId,
-                enemy.Actor.ActorId,
-                null);
-            if (Status != CombatSessionStatus.Active) return;
-        }
     }
 
     private IReadOnlyList<CombatEvent> ResolvePeriodicEffectDamage(
@@ -1958,17 +2044,7 @@ public sealed partial class CombatSession
         CombatActorState target,
         DateTimeOffset tickAt)
     {
-        CombatActorState? source = _playerStatesByActorId.TryGetValue(
-                effect.SourceId,
-                out CombatPlayerRuntimeState? playerSource)
-            ? playerSource.Definition.Actor
-            : _companion is not null && effect.SourceId == _companion.Actor.ActorId
-                ? _companion.Actor
-                : _enemiesById.TryGetValue(
-                effect.SourceId,
-                out CombatParticipantDefinition? enemySource)
-                ? enemySource.Actor
-                : null;
+        CombatActorState? source = ResolveCombatActor(effect.SourceId);
         if (source is null || source.IsDead || target.IsDead) return [];
 
         DamageType type = effect.Definition.PeriodicDamageType;
@@ -1996,67 +2072,74 @@ public sealed partial class CombatSession
         CombatWeaponHand? weaponHand = null,
         string? weaponDefinitionId = null)
     {
-        CombatEvent[] normalizedEvents = EventRouter.Normalize(
-            events, sourceActorId, targetActorId, definitionId, weaponHand, weaponDefinitionId);
-        if (_mechanicsEventSink is not null)
+        var invokingPlayerState = _activePlayerState;
+        try
         {
-            ApplyMechanicsKernelEvents(normalizedEvents);
-            return;
-        }
-        HashSet<Guid> pendingEnemyDeaths = normalizedEvents
-            .Where(item => item.Type == CombatEventType.ActorDied
-                && item.ActorId != _player.Actor.ActorId
-                && _enemiesById.ContainsKey(item.ActorId)
-                && !_deadActors.Contains(item.ActorId))
-            .Select(item => item.ActorId)
-            .ToHashSet();
 
-        foreach (CombatEvent normalized in normalizedEvents)
-        {
-            if (normalized.Type == CombatEventType.ActorDied
-                && !_deadActors.Add(normalized.ActorId))
-                continue;
-
-            bool enemyDeath = normalized.Type == CombatEventType.ActorDied
-                && normalized.ActorId != _player.Actor.ActorId
-                && _enemiesById.ContainsKey(normalized.ActorId);
-            if (enemyDeath)
-                pendingEnemyDeaths.Remove(normalized.ActorId);
-
-            if (!TryActivatePlayerForActor(normalized.SourceActorId)
-                && !TryActivatePlayerForActor(normalized.ActorId))
+            CombatEvent[] normalizedEvents = EventRouter.Normalize(
+                events, sourceActorId, targetActorId, definitionId, weaponHand, weaponDefinitionId);
+            if (_mechanicsEventSink is not null)
             {
-                TryActivatePlayerForActor(normalized.TargetActorId);
+                ApplyMechanicsKernelEvents(normalizedEvents);
+                return;
             }
-            RegisterThreat(normalized);
-            Append(normalized);
-            if (normalized.Type == CombatEventType.ActorResurrected)
-                RestoreResurrectedParticipant(normalized);
-            InterruptChannelOnControl(normalized);
-            ProcessEnemyInterruptUtilityEvent(normalized);
-            ProcessMonsterInterruptActionEvent(normalized);
-            ProcessGenericDamageReflection(normalized);
-            if (Status != CombatSessionStatus.Active)
-                break;
-            ProcessGenericEncounterEvent(normalized);
-            if (normalized.Type == CombatEventType.ActorDied
-                && normalized.ActorId == _player.Actor.ActorId)
+            HashSet<Guid> pendingEnemyDeaths = normalizedEvents
+                .Where(item => item.Type == CombatEventType.ActorDied
+                    && item.ActorId != _player.Actor.ActorId
+                    && _enemiesById.ContainsKey(item.ActorId)
+                    && !_deadActors.Contains(item.ActorId))
+                .Select(item => item.ActorId)
+                .ToHashSet();
+
+            foreach (CombatEvent normalized in normalizedEvents)
             {
-                _contributionLedger.MarkDied(
-                    _player.Actor.ActorId,
-                    normalized.OccurredAtUtc);
-            }
-            EventRouter.Dispatch(normalized);
-            ObserveWarlordPartyEvent(normalized);
-            if (normalized.Type == CombatEventType.ActorDied)
-            {
-                FinishForDeath(
-                    normalized,
-                    deferVictory: enemyDeath && pendingEnemyDeaths.Count > 0);
+                if (normalized.Type == CombatEventType.ActorDied
+                    && !_deadActors.Add(normalized.ActorId))
+                    continue;
+
+                bool enemyDeath = normalized.Type == CombatEventType.ActorDied
+                    && normalized.ActorId != _player.Actor.ActorId
+                    && _enemiesById.ContainsKey(normalized.ActorId);
+                if (enemyDeath)
+                    pendingEnemyDeaths.Remove(normalized.ActorId);
+
+                if (!TryActivatePlayerForActor(normalized.SourceActorId)
+                    && !TryActivatePlayerForActor(normalized.ActorId))
+                {
+                    TryActivatePlayerForActor(normalized.TargetActorId);
+                }
+                RegisterThreat(normalized);
+                Append(normalized);
+                if (normalized.Type == CombatEventType.ActorResurrected)
+                    RestoreResurrectedParticipant(normalized);
+                InterruptChannelOnControl(normalized);
+                ProcessEnemyInterruptUtilityEvent(normalized);
+                ProcessMonsterInterruptActionEvent(normalized);
+                ProcessGenericDamageReflection(normalized);
                 if (Status != CombatSessionStatus.Active)
                     break;
+                ProcessGenericEncounterEvent(normalized);
+                if (normalized.Type == CombatEventType.ActorDied
+                    && normalized.ActorId == _player.Actor.ActorId)
+                {
+                    _contributionLedger.MarkDied(
+                        _player.Actor.ActorId,
+                        normalized.OccurredAtUtc);
+                }
+                EventRouter.Dispatch(normalized);
+                ObserveWarlordPartyEvent(normalized);
+                if (normalized.Type == CombatEventType.ActorDied)
+                {
+                    FinishForDeath(
+                        normalized,
+                        deferVictory: enemyDeath && pendingEnemyDeaths.Count > 0);
+                    if (Status != CombatSessionStatus.Active)
+                        break;
+                }
             }
+
         }
+        finally { _activePlayerState = invokingPlayerState; }
     }
 
     private void RestoreResurrectedParticipant(CombatEvent combatEvent)
@@ -2073,8 +2156,8 @@ public sealed partial class CombatSession
 
     private bool TryActivatePlayerForActor(Guid? actorId)
     {
-        if (_companion is not null && actorId == _companion.Actor.ActorId)
-            actorId = _companionOwnerActorId;
+        if (actorId is { } petId && _openWorldCompanionOwners.TryGetValue(petId, out var petOwner)) actorId = petOwner;
+        else if (_companion is not null && actorId == _companion.Actor.ActorId) actorId = _companionOwnerActorId;
         if (actorId is null
             || !_playerStatesByActorId.ContainsKey(actorId.Value))
             return false;
@@ -2237,6 +2320,12 @@ public sealed partial class CombatSession
             deadPlayer.NextMainHandAutoAttackAtUtc = null;
             deadPlayer.NextOffHandAutoAttackAtUtc = null;
             _contributionLedger.MarkDied(death.ActorId, death.OccurredAtUtc);
+            if (IsOpenWorldPvp)
+            {
+                FinishOpenWorldIfResolved(death);
+                RetargetOpenWorldPlayers(death.OccurredAtUtc);
+                return;
+            }
             if (!_participantRoster.HasActiveParticipants())
             {
                 Status = CombatSessionStatus.Defeat;
@@ -2245,6 +2334,8 @@ public sealed partial class CombatSession
             return;
         }
 
+        if (IsOpenWorldPvp && _openWorldCompanionOwners.TryGetValue(death.ActorId, out var deadPetOwner))
+            ActivatePlayer(deadPetOwner);
         if (_companion is not null && death.ActorId == _companion.Actor.ActorId)
         {
             _nextCompanionAutoAttackAtUtc = null;
@@ -2278,6 +2369,12 @@ public sealed partial class CombatSession
             _nextSummonAtUtc = null;
         }
 
+        if (IsOpenWorldPvp)
+        {
+            FinishOpenWorldIfResolved(death);
+            RetargetOpenWorldPlayers(death.OccurredAtUtc);
+            return;
+        }
         CombatParticipantDefinition? nextAlive = _enemies
             .FirstOrDefault(enemy => !enemy.Actor.IsDead);
         if (nextAlive is null)
@@ -2368,10 +2465,12 @@ public sealed partial class CombatSession
         Sequence++;
         CombatEvent sequenced = combatEvent with { Sequence = Sequence };
         RecordSessionStatistics(sequenced);
+        RecordWorldPvpProgress(sequenced);
         _events.Add(sequenced);
         if (_events.Count > RetainedEventLimit)
             _events.RemoveRange(0, _events.Count - RetainedEventLimit);
-        _contributionLedger.Record(sequenced);
+        if (!IsOpenWorldPvp || IsPveContributionEvent(sequenced))
+            _contributionLedger.Record(sequenced);
     }
 
     private void RecordSessionStatistics(CombatEvent combatEvent)
@@ -2392,7 +2491,7 @@ public sealed partial class CombatSession
             : sourceIsCompanion
                 ? companionOwnerStatistics
                 : null;
-        bool targetsEnemy = _enemiesById.ContainsKey(targetActorId);
+        bool targetsEnemy = IsHostileTarget(sourceActorId, targetActorId);
 
         if (sourceStatistics is not null)
         {
@@ -2421,34 +2520,34 @@ public sealed partial class CombatSession
                     break;
 
                 case CombatEventType.DamageDealt when targetsEnemy:
-                {
-                    decimal amount = Math.Max(0, combatEvent.Amount);
-                    sourceStatistics.DamageDealt += amount;
-                    sourceStatistics.DamageSources.Add(
-                        combatEvent,
-                        amount,
-                        sourceIsCompanion);
-
-                    if (sourceIsPlayer
-                        && !string.IsNullOrWhiteSpace(combatEvent.DefinitionId)
-                        && !string.Equals(
-                            combatEvent.DefinitionId,
-                            "AUTO_ATTACK",
-                            StringComparison.Ordinal))
                     {
-                        MutableCombatAbilityStatistics ability =
-                            sourceStatistics.GetAbility(combatEvent.DefinitionId);
-                        ability.Hits++;
-                        ability.Damage += amount;
-                        ability.MaxHit = Math.Max(ability.MaxHit, amount);
-                        if (combatEvent.IsCritical)
-                            ability.CriticalHits++;
-                    }
+                        decimal amount = Math.Max(0, combatEvent.Amount);
+                        sourceStatistics.DamageDealt += amount;
+                        sourceStatistics.DamageSources.Add(
+                            combatEvent,
+                            amount,
+                            sourceIsCompanion);
 
-                    if (sourceIsPlayer && combatEvent.IsCritical)
-                        sourceStatistics.CriticalHits++;
-                    break;
-                }
+                        if (sourceIsPlayer
+                            && !string.IsNullOrWhiteSpace(combatEvent.DefinitionId)
+                            && !string.Equals(
+                                combatEvent.DefinitionId,
+                                "AUTO_ATTACK",
+                                StringComparison.Ordinal))
+                        {
+                            MutableCombatAbilityStatistics ability =
+                                sourceStatistics.GetAbility(combatEvent.DefinitionId);
+                            ability.Hits++;
+                            ability.Damage += amount;
+                            ability.MaxHit = Math.Max(ability.MaxHit, amount);
+                            if (combatEvent.IsCritical)
+                                ability.CriticalHits++;
+                        }
+
+                        if (sourceIsPlayer && combatEvent.IsCritical)
+                            sourceStatistics.CriticalHits++;
+                        break;
+                    }
 
                 case CombatEventType.HealingApplied:
                     sourceStatistics.HealingDone += Math.Max(0, combatEvent.Amount);
@@ -2674,7 +2773,7 @@ public sealed partial class CombatSession
         IEnumerable<CombatActorState> others)
     {
         CombatRuntimeState runtime = new(actor);
-        foreach (CombatActorState other in others)
+        foreach (CombatActorState other in others.DistinctBy(actor => actor.ActorId))
         {
             if (other.ActorId != actor.ActorId)
                 runtime.AddActor(other);
@@ -2774,10 +2873,11 @@ public sealed partial class CombatSession
                 ? GetEnemyCurrentTargetActorId(definition.Actor.ActorId, CurrentTimeUtc)
                 : null,
             definition.IsCombatObject,
-            definition.RewardEligible,
+            definition.RewardEligible && definition.Kind == CombatActorKind.Monster,
             definition.GenderId,
             definition.MonsterRank,
             definition.SkinId,
+            Level: definition.Actor.Stats.Level,
             GlobalCooldownEndsAtUtc: runtime.GlobalCooldownEndsAtUtc);
     }
 
@@ -2845,6 +2945,8 @@ public sealed partial class CombatSession
             CombatRuntimeState runtime)
         {
             Definition = definition.Participant;
+            PartyId = definition.PartyId;
+            Companion = definition.Companion;
             Talents = definition.TalentModifiers;
             GenericTalentModifiers = Talents with
             {
@@ -2858,6 +2960,16 @@ public sealed partial class CombatSession
         public void InitializeTalentRuntime(IGameRandom random, ProcGuard procGuard) =>
             TalentRuntimeEngine = new(new TalentRuntimeState(Definition.Actor.ActorId, random, procGuard));
 
+        public Guid? PartyId { get; }
+        public bool BestialWrathFirstCommandAvailable { get; set; }
+        public bool ImprovedMendPetPendingCleanse { get; set; }
+        public Guid? LastOwnerHitTargetId { get; set; }
+        public DateTimeOffset? LastOwnerHitAtUtc { get; set; }
+        public Guid? LastCompanionHitTargetId { get; set; }
+        public DateTimeOffset? LastCompanionHitAtUtc { get; set; }
+        public CombatParticipantDefinition? Companion { get; set; }
+        public CombatRuntimeState? CompanionRuntime { get; set; }
+        public DateTimeOffset? CompanionNextAutoAttackAtUtc { get; set; }
         public CombatParticipantDefinition Definition { get; }
         public Guid SelectedTargetActorId { get; set; }
         public CombatRuntimeState Runtime { get; }

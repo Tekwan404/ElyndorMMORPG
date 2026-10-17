@@ -281,7 +281,11 @@ coordination.Duration,
 now);
 }
 }
-private bool _improvedMendPetPendingCleanse;
+private bool _improvedMendPetPendingCleanse
+{
+get => _activePlayerState.ImprovedMendPetPendingCleanse;
+set => _activePlayerState.ImprovedMendPetPendingCleanse = value;
+}
 
 private void MendPet(DateTimeOffset now)
 {

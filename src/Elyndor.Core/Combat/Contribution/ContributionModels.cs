@@ -94,6 +94,13 @@ public sealed class ContributionLedger
             throw new InvalidOperationException($"Actor '{actorId}' is already owned by another character.");
 
         _entries[characterId] = new Entry(characterId, actorId, joinedAtUtc);
+        _characterByActorId[actorId] = characterId;
+    }
+
+    public void RegisterOwnedActor(Guid characterId, Guid actorId)
+    {
+        if (!_entries.ContainsKey(characterId) || !_characterByActorId.TryAdd(actorId, characterId))
+            throw new InvalidOperationException("Invalid combat actor ownership.");
     }
 
     public void Record(CombatEvent combatEvent)

@@ -10,7 +10,7 @@ public sealed class SetPassiveCombatRuntime
 {
     private readonly SetPassiveDefinition[] _definitions;
     private readonly SetPassiveRuntime _runtime;
-    private readonly IReadOnlyDictionary<Guid, IReadOnlyDictionary<string, int>> _pieces;
+    private readonly Dictionary<Guid, IReadOnlyDictionary<string, int>> _pieces;
     private readonly Func<Guid, CombatActorState?> _actor;
     private readonly IReadOnlyDictionary<string, AbilityDefinition> _abilities;
     private readonly Func<Guid, IDictionary<string, DateTimeOffset>?> _cooldowns;
@@ -26,20 +26,32 @@ public sealed class SetPassiveCombatRuntime
     {
         _definitions = definitions.ToArray();
         _runtime = new(_definitions.Where(d => !d.Actions.All(a => a.Kind == SetPassiveActionKind.ModifyDirectDamage)));
-        _pieces = pieces;
+        _pieces = pieces.ToDictionary(pair => pair.Key, pair => pair.Value);
         _actor = actor;
         _abilities = abilities;
         _cooldowns = cooldowns;
         _companionOwners = companionOwners ?? new Dictionary<Guid, Guid>();
         foreach (Guid id in pieces.Keys)
         {
-            _charges[id] = new();
-            if (actor(id) is { } owner)
-            {
-                owner.SetPassiveEffectMultiplier = (ability, now) => _charges[id].Consume(ability, false, now, effects: true);
-                owner.SetPassiveMultiplier = (ability, spell, target, now, healing) =>
-                    ResolveMultiplier(id, ability, spell, target, now, healing);
-            }
+            ConfigureParticipant(id);
+        }
+    }
+
+    public void RegisterParticipant(Guid id, IReadOnlyDictionary<string, int> pieces)
+    {
+        if (!_pieces.TryAdd(id, pieces.ToDictionary(pair => pair.Key, pair => pair.Value)))
+            throw new InvalidOperationException("Set-passive participant is already captured.");
+        ConfigureParticipant(id);
+    }
+
+    private void ConfigureParticipant(Guid id)
+    {
+        _charges[id] = new();
+        if (_actor(id) is { } owner)
+        {
+            owner.SetPassiveEffectMultiplier = (ability, now) => _charges[id].Consume(ability, false, now, effects: true);
+            owner.SetPassiveMultiplier = (ability, spell, target, now, healing) =>
+                ResolveMultiplier(id, ability, spell, target, now, healing);
         }
     }
 

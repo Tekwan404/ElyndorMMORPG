@@ -29,7 +29,7 @@ public interface ICombatActivityReader
 
 public sealed record CombatParticipantBinding(Guid AccountId, Guid CharacterId);
 
-public sealed class CombatSessionRegistry(
+public sealed partial class CombatSessionRegistry(
     TimeProvider timeProvider,
     ICombatUpdatePublisher publisher,
     ICombatSessionFinalizer finalizer,
@@ -761,6 +761,24 @@ public sealed class CombatSessionRegistry(
             || entry.Finalized)
             return;
 
+        if (entry.Session.IsOpenWorldPvp)
+        {
+            var terminalSnapshots = entry.Bindings
+                .Where(binding => !entry.FinalizedParticipants.ContainsKey(binding.CharacterId))
+                .Where(binding => entry.Session.Status != CombatSessionStatus.Active
+                    || entry.Session.ParticipantRoster.GetStatus(binding.CharacterId) == CombatParticipantStatus.Fled)
+                .Select(binding => entry.Session.Snapshot(binding.CharacterId))
+                .Select(participant => participant.Status != CombatSessionStatus.Active ? participant
+                    : participant with { Status = participant.Player.Hp <= 0 ? CombatSessionStatus.Defeat : CombatSessionStatus.Cancelled })
+                .ToArray();
+            if (terminalSnapshots.Length > 0)
+                await RunIoAsync(entry, "journal", async token =>
+                {
+                    await finalizer.PrepareOpenWorldFinalizationAsync(terminalSnapshots, entry.ContentSnapshot, token);
+                    return true;
+                }, cancellationToken);
+        }
+
         foreach (ParticipantBinding binding in entry.Bindings)
         {
             CombatParticipantSnapshot? participant = snapshot.ParticipantRoster?
@@ -911,7 +929,9 @@ public sealed class CombatSessionRegistry(
         GameContentSnapshot? contentSnapshot,
         string? locationId)
     {
-        private readonly Dictionary<Guid, ParticipantBinding> _bindingsByAccount = [];
+        private readonly ConcurrentDictionary<Guid, ParticipantBinding> _bindingsByAccount = [];
+        private Guid _leaderAccountId;
+        private Guid _leaderCharacterId;
         private readonly Dictionary<Guid, CombatRewardApplicationResult?> _rewardsByCharacter = [];
         private readonly ConcurrentDictionary<Guid, CombatOperationResult> _publishedSnapshots = [];
 
@@ -928,16 +948,20 @@ public sealed class CombatSessionRegistry(
         public SessionExecutionState ExecutionState { get; set; } = SessionExecutionState.Active;
         public bool Finalized { get; set; }
         public ConcurrentDictionary<Guid, bool> FinalizedParticipants { get; } = [];
-        public Guid LeaderAccountId => _bindingsByAccount.Values.First().AccountId;
-        public Guid LeaderCharacterId => _bindingsByAccount.Values.First().CharacterId;
+        public Guid LeaderAccountId => _leaderAccountId;
+        public Guid LeaderCharacterId => _leaderCharacterId;
         public IReadOnlyCollection<Guid> AccountIds => _bindingsByAccount.Keys.ToArray();
         public IReadOnlyCollection<ParticipantBinding> Bindings => _bindingsByAccount.Values.ToArray();
 
         public void AddBinding(CombatParticipantBinding binding)
         {
-            _bindingsByAccount.Add(
-                binding.AccountId,
-                new ParticipantBinding(binding.AccountId, binding.CharacterId));
+            if (!_bindingsByAccount.TryAdd(binding.AccountId, new ParticipantBinding(binding.AccountId, binding.CharacterId)))
+                throw new InvalidOperationException("Combat account is already bound.");
+            if (_leaderAccountId == Guid.Empty)
+            {
+                _leaderAccountId = binding.AccountId;
+                _leaderCharacterId = binding.CharacterId;
+            }
             SetPublishedSnapshot(binding.AccountId,
                 CombatOperationResult.FromSnapshot(Session.Snapshot(binding.CharacterId), ContentSnapshot));
         }

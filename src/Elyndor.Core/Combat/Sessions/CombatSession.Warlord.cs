@@ -550,7 +550,7 @@ public sealed partial class CombatSession
                 ? _companion.Actor
                 : null;
 
-    private IEnumerable<CombatActorState> PartyActors => ActivePlayerActorIds()
+    private IEnumerable<CombatActorState> PartyActors => ActivePartyActorIds()
         .Select(id => _playerStatesByActorId[id].Definition.Actor)
         .Concat(_companion is not null && !_companion.Actor.IsDead ? [_companion.Actor] : []);
 
@@ -572,7 +572,8 @@ public sealed partial class CombatSession
         try
         {
             foreach (CombatPlayerRuntimeState state in _playerStatesByActorId.Values
-                         .Where(state => state != previous && !state.Definition.Actor.IsDead).ToArray())
+                         .Where(state => state != previous && !state.Definition.Actor.IsDead
+                             && AreCapturedPartyAllies(previous.Definition.Actor.ActorId, state.Definition.Actor.ActorId)).ToArray())
             {
                 _activePlayerState = state;
                 if (IsWarlord) action();

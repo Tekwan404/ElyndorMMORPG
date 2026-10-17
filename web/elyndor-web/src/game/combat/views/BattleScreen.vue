@@ -75,6 +75,10 @@ const now = shallowRef(Date.now())
 const fleeConfirmationOpen = shallowRef(false)
 const fleeActionFailed = shallowRef(false)
 function openFleeConfirmation(): void {
+  if (battle.snapshot.value?.openWorldPvp && battle.snapshot.value.player.hp <= 0) {
+    void fleeBattle()
+    return
+  }
   fleeActionFailed.value = false
   fleeConfirmationOpen.value = true
 }
@@ -529,6 +533,8 @@ onUnmounted(() => {
           :lifecycle-disabled="battle.lifecyclePending.value || connectionRecovering"
           :flee-disabled="battle.fleePending.value || connectionRecovering"
           :training="battle.isTraining.value"
+          :exit-label="snapshot.openWorldPvp && localActor.hp <= 0 ? 'Возродиться' : 'Сбежать'"
+          :exit-description="snapshot.openWorldPvp && localActor.hp <= 0 ? 'Вернуться в свой город' : 'Остаться в локации'"
           @toggle-auto-attack="battle.toggleAutoAttack"
           @flee="openFleeConfirmation"
           @reset-training="battle.resetTraining"

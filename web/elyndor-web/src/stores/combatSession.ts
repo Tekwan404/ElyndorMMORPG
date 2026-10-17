@@ -324,6 +324,22 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     return succeeded
   }
 
+  async function enterOpenWorldCombat(targetCharacterId: string, attackPlayer: boolean): Promise<boolean> {
+    if (isActive.value || lifecyclePending.value) return false
+    setOperationPending('lifecycle', true)
+    try {
+      await connect()
+      const update = await apiClient.request<CombatUpdate>('/api/v1/world/pvp/enter', {
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', body: JSON.stringify({ targetCharacterId, attackPlayer }),
+      })
+      applyUpdate(update)
+      return update.succeeded
+    } finally {
+      setOperationPending('lifecycle', false)
+    }
+  }
+
   async function startTraining(): Promise<boolean> {
     reward.value = null
     clearLootRolls()
@@ -1051,6 +1067,7 @@ export const useCombatSessionStore = defineStore('combatSession', () => {
     encounterPresentation,
     connect,
     startCombat,
+    enterOpenWorldCombat,
     startTraining,
     startDungeonEncounter,
     attachCombat,

@@ -61,13 +61,13 @@ SelectedEnemyActor() is { }
 target
 && HasArcherEffect(target, HunterMarkEffectId, now);
 private CombatParticipantDefinition? SelectedEnemy() =>
-_enemiesById.GetValueOrDefault(_selectedTargetActorId);
+_combatTargetsById.GetValueOrDefault(_selectedTargetActorId);
 private CombatActorState? SelectedEnemyActor() =>
 SelectedEnemy()?.Actor;
 private CombatActorState? ResolveEnemyActor(Guid? actorId) =>
 actorId is { }
 id
-&& _enemiesById.TryGetValue(id, out CombatParticipantDefinition? target)
+&& _combatTargetsById.TryGetValue(id, out CombatParticipantDefinition? target)
 ? target.Actor
 : null;
 private CombatActorState? ResolveArcherExecutionEnemyTarget(

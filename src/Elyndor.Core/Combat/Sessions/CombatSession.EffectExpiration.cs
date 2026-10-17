@@ -86,7 +86,7 @@ public sealed partial class CombatSession
                 .Where(enemy => !enemy.Actor.IsDead)
                 .Select(enemy => enemy.Actor)
             : ActiveEnemyTargetCandidates()
-                .Where(participant => !participant.Actor.IsDead)
+                .Where(participant => !participant.Actor.IsDead && AreFactionAllies(effectTarget.ActorId, participant.Actor.ActorId))
                 .Select(participant => participant.Actor);
         CombatActorState[] otherAllies = allies
             .Where(actor => actor.ActorId != effectTarget.ActorId)

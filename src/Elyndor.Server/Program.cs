@@ -273,6 +273,7 @@ app.MapAuthenticationEndpoints(mapDevelopmentAuthentication);
 app.MapAdminWebAuthenticationEndpoints();
 app.MapCharacterEndpoints();
 app.MapWorldEndpoints();
+app.MapOpenWorldPvpEndpoints();
 app.MapWorldBossEndpoints();
 app.MapQuestEndpoints();
 app.MapTalentEndpoints();

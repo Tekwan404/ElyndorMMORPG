@@ -85,7 +85,7 @@ OnTrapTriggered("IMMOLATION_TRAP", target, now);
 private void TriggerExplosiveTrap(DateTimeOffset now)
 {
 decimal damageMultiplier = ArcherAbilityDamageMultiplier("EXPLOSIVE_TRAP");
-foreach (CombatParticipantDefinition enemy in _enemies.Where(item => !item.Actor.IsDead))
+foreach (CombatParticipantDefinition enemy in HostileParticipants(_player.Actor.ActorId).Where(item => !item.Actor.IsDead && item.Actor.IsTargetable(now)))
 {
 ResolveOwnerAttackPowerDamage(
 enemy.Actor,

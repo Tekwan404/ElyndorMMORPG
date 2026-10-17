@@ -10,6 +10,7 @@
 ## Current engineering notes
 
 - World: [living locations and manual encounters](development/living-locations.md).
+- World PvPvE: [Dead Reaches combat, admission and recovery](development/dead-reaches-pvp.md).
 
 - Combat: [combat cadence and dungeon recovery](development/combat-dungeon-recovery.md),
   [event routing](development/combat-event-routing.md),

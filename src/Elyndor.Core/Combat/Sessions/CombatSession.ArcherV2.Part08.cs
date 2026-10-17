@@ -74,7 +74,7 @@ out ResolvedTalentEventHook aura))
 {
 return;
 }
-foreach (CombatPlayerRuntimeState state in _playerStatesByActorId.Values)
+foreach (CombatPlayerRuntimeState state in _playerStatesByActorId.Values.Where(state => AreCapturedPartyAllies(_player.Actor.ActorId, state.Definition.Actor.ActorId)))
 {
 bool isOwner = state.Definition.Actor.ActorId == _player.Actor.ActorId;
 if (!isOwner && state.Definition.DefinitionId is not ("WARRIOR" or "ARCHER" or "PALADIN"))

@@ -1,5 +1,84 @@
 import { expect, test, type Page } from '@playwright/test'
 
+test('World PvP rewards are available from the single guild registrar on a phone', async ({ page }) => {
+  test.setTimeout(90_000)
+  test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses deterministic progression fixtures.')
+  await installMockApiUnlessReal(page)
+  await installOpenWorldCombatTransport(page)
+  const initial = snapshot(true, 'STARTER_TOWN')
+  await page.route('**/api/v1/bootstrap', route => route.fulfill({ json: { ...initial, character: { ...initial.character!, level: 60 } } }))
+  let purchased = false
+  await page.route('**/api/v1/world/pvp/progression*', route => route.fulfill({ json: {
+    season: 1, endsAtUtc: '2026-12-12T00:00:00Z', fieldHonor: purchased ? 0 : 5, bloodyTokens: 1,
+    rewardedToday: 1, dailyLimit: 20, self: { rating: 10, victories: 1, assists: 0, deaths: 0 },
+    leaders: [{ characterId: 'warrior', name: 'Победитель', raceId: 'HUMAN', rating: 10, victories: 1, assists: 0, deaths: 0 }],
+  } }))
+  await page.route('**/api/v1/world/pvp/shop', route => route.fulfill({ json: [
+    { id: 'TEST_SWORD', name: 'Клинок войны', requiredLevel: 60, fieldHonorPrice: 5, tokenPrice: 1 },
+  ] }))
+  await page.route('**/api/v1/world/pvp/shop/buy', route => {
+    expect(route.request().headers()['content-type']).toContain('application/json')
+    expect(route.request().postDataJSON()).toMatchObject({ itemId: 'TEST_SWORD', tokens: false })
+    purchased = true
+    return route.fulfill({ json: { succeeded: true, errorCode: null } })
+  })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await page.locator('[data-city-marker="adventurers"]').click()
+  const guild = page.getByRole('dialog', { name: 'Гильдия авантюристов' })
+  await expect(guild.locator('.guild-board__header')).toContainText('Селия')
+  await guild.getByRole('button', { name: 'Война фракций', exact: true }).click()
+  const war = guild.locator('[data-world-pvp-board]')
+  await expect(war).toContainText('Полевая честь: 5')
+  await expect(war).toContainText('Победитель')
+  await war.locator('[data-buy-honor]').click()
+  await expect(war).toContainText('Снаряжение добавлено в сумку.')
+  await expect(war).toContainText('Полевая честь: 0')
+  await expect(war.locator('[data-buy-honor]')).toBeDisabled()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false)
+  await page.screenshot({ path: '../../output/playwright/world-pvp-guild-390.png', fullPage: true })
+})
+
+test('Dead Reaches PvPvE discovers opponents and enters the shared fight on a phone', async ({ page }) => {
+  test.setTimeout(90_000)
+  test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses deterministic discovery and combat transport fixtures.')
+  await installMockApiUnlessReal(page)
+  const initial = snapshot(true, 'STARTER_TOWN')
+  const location = { ...initial.world!.currentLocation, id: 'DEAD_REACHES', displayName: 'Мёртвые Пределы', minimumLevel: 60, maximumLevel: 60, mapId: 'OUTER_REACHES', dangerLevel: 'DEADLY' }
+  const bootstrap = { ...initial, character: { ...initial.character!, level: 60 }, world: { ...initial.world!, currentLocation: location } }
+  const enemyId = '00000000-0000-0000-0000-000000000022'
+  await page.route('**/api/v1/bootstrap', route => route.fulfill({ json: bootstrap }))
+  await page.route('**/api/v1/world/pvp/players', route => route.fulfill({ json: { available: true, players: [
+    { characterId: enemyId, name: 'Мертвоборец', raceId: 'UNDEAD', classId: 'WARRIOR', genderId: 'MALE', level: 60, inCombat: true },
+  ] } }))
+  await installOpenWorldCombatTransport(page)
+  let entered = false
+  let intent: unknown = null
+  await page.route('**/api/v1/world/pvp/enter', route => {
+    expect(route.request().headers()['content-type']).toContain('application/json')
+    intent = route.request().postDataJSON()
+    entered = true
+    const actor = { actorId: bootstrap.character.id, definitionId: 'WARRIOR', kind: 'Player', name: bootstrap.character.name,
+      hp: 100, maxHp: 100, resourceType: 'RAGE', resource: 10, maxResource: 100, autoAttackEnabled: true,
+      cooldowns: {}, knownAbilityIds: [], abilities: [], effects: [], level: 60, genderId: 'MALE' }
+    const enemy = { ...actor, actorId: enemyId, name: 'Мертвоборец', skinId: 'WARRIOR_MALE_UNDEAD_STARTER' }
+    return route.fulfill({ json: { succeeded: true, errorCode: null, events: [], reward: null, snapshot: {
+      sessionId: '00000000-0000-0000-0000-000000000099', sequence: 1, status: 'Active', openWorldPvp: true,
+      serverTimeUtc: new Date().toISOString(), player: actor, enemy, enemies: [enemy], players: [actor], selectedTargetActorId: enemyId,
+    } } })
+  })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/')
+  await expect(page.locator('[data-world-pvp]')).toContainText('Мертвоборец', { timeout: 20_000 })
+  await page.locator('[data-world-pvp]').getByRole('button', { name: 'Атаковать', exact: true }).click()
+  await expect(page.locator('[data-combat-battlefield]')).toBeVisible()
+  expect(entered).toBe(true)
+  expect(intent).toEqual({ targetCharacterId: enemyId, attackPlayer: true })
+  await expect(page.locator('.battle-arena__enemy img')).toHaveAttribute('src', /undead-starter/)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)).toBe(false)
+  await page.screenshot({ path: '../../output/playwright/dead-reaches-pvp-390.png', fullPage: true })
+})
+
 test('undead homeland has its own city, NPCs and map on a phone', async ({ page }) => {
   test.setTimeout(90_000)
   test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses a deterministic faction fixture.')
@@ -645,8 +724,9 @@ test('creates a hero, travels, and restores the world on reload', async ({ page 
   await page.locator('[data-city-marker="adventurers"]').click()
   const guildDialog = page.getByRole('dialog', { name: 'Гильдия авантюристов' })
   await expect(guildDialog).toBeVisible()
-  await expect(guildDialog.getByText('Селия', { exact: true })).toBeVisible()
-  await expect(guildDialog.getByLabel('Гаррет, Мастер охоты')).toBeVisible()
+  await expect(guildDialog.locator('.guild-board__header')).toContainText('Селия')
+  await expect(guildDialog.getByLabel('Гаррет, Мастер охоты')).toHaveCount(0)
+  await expect(guildDialog.getByRole('button', { name: 'Война фракций', exact: true })).toBeVisible()
   await page.screenshot({ path: '../../output/playwright/session-3-ui-guild.png', fullPage: true })
   await guildDialog.getByRole('button', { name: 'Закрыть', exact: true }).click()
   await expect(guildDialog).toBeHidden()
@@ -1112,3 +1192,20 @@ const emptyStatBreakdown = Object.fromEntries(
     { finalValue: archerStats[key as keyof typeof archerStats], contributions: [] },
   ]),
 )
+
+async function installOpenWorldCombatTransport(page: Page): Promise<void> {
+  await page.route('**/hubs/combat/negotiate*', route => route.fulfill({ json: {
+    negotiateVersion: 1, connectionId: 'world-pvp', connectionToken: 'world-pvp',
+    availableTransports: [{ transport: 'WebSockets', transferFormats: ['Text'] }],
+  } }))
+  await page.routeWebSocket(/\/hubs\/combat/, socket => {
+    socket.onMessage(raw => {
+      for (const frame of raw.toString().split('\u001e').filter(Boolean)) {
+        const message = JSON.parse(frame)
+        if (message.protocol) socket.send('{}\u001e')
+        else if (message.type === 1) socket.send(JSON.stringify({ type: 3, invocationId: message.invocationId,
+          result: { succeeded: false, errorCode: 'combat_not_found', snapshot: null, events: [], reward: null } }) + '\u001e')
+      }
+    })
+  })
+}

@@ -41,6 +41,10 @@ public sealed class GameDbContext(DbContextOptions<GameDbContext> options) : DbC
     public DbSet<ArenaStanding> ArenaStandings => Set<ArenaStanding>();
     public DbSet<ArenaHonorWallet> ArenaHonorWallets => Set<ArenaHonorWallet>();
     public DbSet<ArenaHonorLedgerEntry> ArenaHonorLedgerEntries => Set<ArenaHonorLedgerEntry>();
+    public DbSet<WorldPvpStanding> WorldPvpStandings => Set<WorldPvpStanding>();
+    public DbSet<WorldPvpWallet> WorldPvpWallets => Set<WorldPvpWallet>();
+    public DbSet<WorldPvpDeathReceipt> WorldPvpDeathReceipts => Set<WorldPvpDeathReceipt>();
+    public DbSet<WorldPvpRewardReceipt> WorldPvpRewardReceipts => Set<WorldPvpRewardReceipt>();
     public DbSet<PlayerTrade> PlayerTrades => Set<PlayerTrade>();
     public DbSet<AuctionListing> AuctionListings => Set<AuctionListing>();
     public DbSet<CommerceMail> CommerceMails => Set<CommerceMail>();

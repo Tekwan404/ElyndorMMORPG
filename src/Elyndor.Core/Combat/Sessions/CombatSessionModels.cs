@@ -66,14 +66,17 @@ public sealed record CombatParticipantDefinition(
     IReadOnlyList<Elyndor.Core.Combat.SetPassives.SetPassiveDefinition>? SetPassives = null,
     IReadOnlySet<string>? EquippedSpecialEffectIds = null,
     IReadOnlyList<Elyndor.Core.Combat.ItemEffects.ItemSpecialEffectDefinition>? ItemSpecialEffects = null,
-    string? OffHandEquipmentCategory = null);
+    string? OffHandEquipmentCategory = null,
+    string? RaceId = null);
 
 public sealed record CombatPlayerDefinition(
     Guid AccountId,
     CombatParticipantDefinition Participant,
     ResolvedTalentModifiers TalentModifiers,
     IReadOnlyDictionary<string, DateTimeOffset>? InitialCooldowns = null,
-    bool InitiallyAttached = true);
+    bool InitiallyAttached = true,
+    Guid? PartyId = null,
+    CombatParticipantDefinition? Companion = null);
 
 public sealed record CombatEffectSnapshot(
     string Id,
@@ -198,7 +201,9 @@ public sealed record CombatSessionSnapshot(
     bool? PlayerContributionEligible = null,
     IReadOnlyList<ContributionEligibilityResult>? ParticipantContributions = null,
     CombatSessionStatisticsSnapshot? Statistics = null,
-    Guid? ContentRevisionId = null);
+    Guid? ContentRevisionId = null,
+    bool OpenWorldPvp = false,
+    IReadOnlyList<Elyndor.Core.World.WorldPvpDefeat>? WorldPvpDefeats = null);
 
 public static class CombatErrorCodes
 {

@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 import type { CombatActorSnapshot } from '@/api/contracts'
 import { combatActorVitalsLabel } from '@/game/combat/combatActorPresentation'
+import { resolveCharacterArt } from '@/assets/characterArt'
 import { monsterArtUrl } from '@/assets/monsterArt'
 import type { CombatNumberPresentation } from '@/game/combat/battleEventPresentation'
 import {
@@ -76,7 +77,9 @@ const backgroundStyle = computed(() =>
 )
 const enemyArt = computed(() =>
   primaryEnemy.value
-    ? monsterArtUrl(primaryEnemy.value.artId, primaryEnemy.value.definitionId)
+    ? primaryEnemy.value.kind === 'Player'
+      ? resolveCharacterArt(primaryEnemy.value.definitionId, primaryEnemy.value.genderId ?? 'MALE', 'transparent', primaryEnemy.value.skinId)
+      : monsterArtUrl(primaryEnemy.value.artId, primaryEnemy.value.definitionId)
     : undefined,
 )
 const companionArt = computed(() =>

@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace Elyndor.Core.Combat.Participants;
 
 public enum CombatParticipantStatus
@@ -35,13 +37,16 @@ public static class CombatParticipantErrorCodes
 public sealed class CombatParticipantRoster
 {
     public const int DefaultMaximumParticipants = 5;
+    public const int MaximumOpenWorldParticipants = 20;
+    private readonly bool _allowDynamicParticipation;
 
-    private readonly Dictionary<Guid, ParticipantState> _participants;
+    private readonly ConcurrentDictionary<Guid, ParticipantState> _participants;
 
     public CombatParticipantRoster(
         IReadOnlyList<CombatParticipantIdentity> initialRoster,
         DateTimeOffset rosteredAtUtc,
-        int maximumParticipants = DefaultMaximumParticipants)
+        int maximumParticipants = DefaultMaximumParticipants,
+        bool allowDynamicParticipation = false)
     {
         ArgumentNullException.ThrowIfNull(initialRoster);
         if (initialRoster.Count == 0)
@@ -49,7 +54,7 @@ public sealed class CombatParticipantRoster
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(maximumParticipants);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(
             maximumParticipants,
-            DefaultMaximumParticipants);
+            allowDynamicParticipation ? MaximumOpenWorldParticipants : DefaultMaximumParticipants);
         if (initialRoster.Count > maximumParticipants)
             throw new ArgumentException("The combat roster exceeds its participant limit.", nameof(initialRoster));
         if (initialRoster.Select(item => item.CharacterId).Distinct().Count() != initialRoster.Count
@@ -59,11 +64,12 @@ public sealed class CombatParticipantRoster
             throw new ArgumentException("Combat participant identifiers must be unique.", nameof(initialRoster));
         }
 
-        _participants = initialRoster.ToDictionary(
+        _participants = new(initialRoster.ToDictionary(
             item => item.CharacterId,
-            item => new ParticipantState(item, rosteredAtUtc));
+            item => new ParticipantState(item, rosteredAtUtc)));
         RosteredAtUtc = rosteredAtUtc;
         MaximumParticipants = maximumParticipants;
+        _allowDynamicParticipation = allowDynamicParticipation;
     }
 
     public DateTimeOffset RosteredAtUtc { get; }
@@ -76,6 +82,16 @@ public sealed class CombatParticipantRoster
             .ToArray();
 
     public bool Contains(Guid characterId) => _participants.ContainsKey(characterId);
+
+    public bool TryAdd(CombatParticipantIdentity identity, DateTimeOffset now)
+    {
+        if (!_allowDynamicParticipation || _participants.Count >= MaximumParticipants
+            || identity.AccountId == Guid.Empty || identity.CharacterId == Guid.Empty || identity.ActorId == Guid.Empty
+            || _participants.Values.Any(participant => participant.Identity.AccountId == identity.AccountId
+                || participant.Identity.CharacterId == identity.CharacterId || participant.Identity.ActorId == identity.ActorId))
+            return false;
+        return _participants.TryAdd(identity.CharacterId, new ParticipantState(identity, now));
+    }
 
     public CombatParticipantStatus? GetStatus(Guid characterId) =>
         _participants.TryGetValue(characterId, out ParticipantState? participant)
@@ -122,7 +138,8 @@ public sealed class CombatParticipantRoster
             return false;
         }
 
-        if (participant.Status is not CombatParticipantStatus.Active)
+        if (participant.Status is not CombatParticipantStatus.Active
+            && !(_allowDynamicParticipation && participant.Status == CombatParticipantStatus.Dead))
         {
             errorCode = CombatParticipantErrorCodes.NotInRoster;
             return false;
