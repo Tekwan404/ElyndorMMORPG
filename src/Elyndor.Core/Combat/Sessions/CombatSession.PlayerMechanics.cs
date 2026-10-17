@@ -64,6 +64,7 @@ public sealed partial class CombatSession
         _abilities = abilities;
         _enemies = [opponent];
         _enemiesById = new() { [opponent.Actor.ActorId] = opponent };
+        _combatTargetsById = _enemiesById;
         _primaryEnemyActorId = opponent.Actor.ActorId;
         _enemyRuntimes = new() { [opponent.Actor.ActorId] = opponentRuntime };
         _enemyAiRuntimes = [];
@@ -71,8 +72,8 @@ public sealed partial class CombatSession
         // Revenge readiness and control. They never select targets or drive host AI.
         _enemyThreatTables = new() { [opponent.Actor.ActorId] = new ThreatTable() };
         _enemyForcedTargets = new() { [opponent.Actor.ActorId] = new ForcedTargetState() };
-        _companion = null;
-        _companionRuntime = null;
+        _primaryCompanion = null;
+        _primaryCompanionRuntime = null;
         _summonProfile = null;
         _activePlayerState = new CombatPlayerRuntimeState(owner, ownerRuntime)
         {

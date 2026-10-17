@@ -147,7 +147,7 @@ public sealed partial class CombatSession
 
         CombatParticipantDefinition? eventTarget =
             combatEvent.TargetActorId is { } targetActorId
-            && _enemiesById.TryGetValue(targetActorId, out CombatParticipantDefinition? resolvedTarget)
+            && _combatTargetsById.TryGetValue(targetActorId, out CombatParticipantDefinition? resolvedTarget)
                 ? resolvedTarget
                 : null;
 
@@ -429,7 +429,7 @@ public sealed partial class CombatSession
                      && item.AmountBeforeShields > 0
                      && item.TargetActorId.HasValue))
         {
-            if (!_enemiesById.TryGetValue(
+            if (!_combatTargetsById.TryGetValue(
                     physical.TargetActorId!.Value,
                     out CombatParticipantDefinition? target)
                 || target.Actor.IsDead)
@@ -486,7 +486,7 @@ public sealed partial class CombatSession
             .ToArray();
         foreach (Guid targetActorId in hitTargetIds)
         {
-            if (!_enemiesById.TryGetValue(
+            if (!_combatTargetsById.TryGetValue(
                     targetActorId,
                     out CombatParticipantDefinition? target)
                 || target.Actor.IsDead)

@@ -39,7 +39,7 @@ public sealed partial class CombatSession
     private MageCombatRuntime ActiveMageRuntime => _activePlayerState.MageRuntime ??= CreateMageRuntime(_activePlayerState);
     private DateTimeOffset? _lastMageManaSpendAtUtc => ActiveMageRuntime.Arcane.LastManaSpendAtUtc;
     private MageCombatRuntime CreateMageRuntime(CombatPlayerRuntimeState state) => new(new MageCombatContext(
-        state.Definition, state.Runtime, state.Talents, _abilities, _enemiesById, _enemyRuntimes,
+        state.Definition, state.Runtime, state.Talents, _abilities, IsOpenWorldPvp ? new HostileTargetView(this, state.Definition.Actor.ActorId) : _enemiesById, _enemyRuntimes,
         _random, _procGuard, _combatStartedAtUtc, () => state.SelectedTargetActorId,
         () => Status == CombatSessionStatus.Active,
         (events, source, target, id) => WithMageOwner(state, () => ApplyKernelEvents(events, source, target, id)),

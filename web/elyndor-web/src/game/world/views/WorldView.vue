@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 import DungeonLocationCard from '@/game/world/components/DungeonLocationCard.vue'
 import WorldBossBanner from '@/game/worldBoss/components/WorldBossBanner.vue'
+import OpenWorldPlayers from '@/game/world/components/OpenWorldPlayers.vue'
 import LocationOverview from '@/game/world/components/LocationOverview.vue'
 import { locationKind } from '@/game/world/locationPresentation'
 import { useGameSessionStore } from '@/stores/gameSession'
@@ -25,6 +26,7 @@ const isDungeonLocation = computed(() => locationKind(currentLocationId.value) =
       @open-party="emit('open-party')"
     />
     <LocationOverview v-else interactive />
+    <OpenWorldPlayers v-if="currentLocationId === 'DEAD_REACHES' && !session.snapshot?.world?.travel" />
     <div class="location-screen__systems">
       <WorldViewLegacy
         :open-guild="props.openGuild"

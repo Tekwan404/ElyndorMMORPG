@@ -329,6 +329,7 @@ public sealed partial class CombatSession
         decimal multiplier = Math.Max(0, 1 - holdLine.Value / 100m);
         foreach (CombatPlayerRuntimeState ally in _playerStatesByActorId.Values.Where(state =>
                      state.Definition.Actor.ActorId != _player.Actor.ActorId
+                     && AreCapturedPartyAllies(_player.Actor.ActorId, state.Definition.Actor.ActorId)
                      && !state.Definition.Actor.IsDead))
         {
             ApplyGuardianEffect(
@@ -351,7 +352,7 @@ public sealed partial class CombatSession
             return;
         }
 
-        if (_enemiesById.TryGetValue(targetActorId, out CombatParticipantDefinition? target)
+        if (_combatTargetsById.TryGetValue(targetActorId, out CombatParticipantDefinition? target)
             && target.MonsterRank != MonsterRank.Boss)
         {
             ApplyGuardianControlEffect(
@@ -365,7 +366,7 @@ public sealed partial class CombatSession
 
     private void TryApplyGuardianConcussionStun(Guid targetActorId, DateTimeOffset now)
     {
-        if (_enemiesById.TryGetValue(targetActorId, out CombatParticipantDefinition? target)
+        if (_combatTargetsById.TryGetValue(targetActorId, out CombatParticipantDefinition? target)
             && target.MonsterRank != MonsterRank.Boss)
         {
             ApplyGuardianControlEffect(
@@ -385,7 +386,7 @@ public sealed partial class CombatSession
         DateTimeOffset now)
     {
         if (duration <= TimeSpan.Zero
-            || !_enemiesById.TryGetValue(targetActorId, out CombatParticipantDefinition? target)
+            || !_combatTargetsById.TryGetValue(targetActorId, out CombatParticipantDefinition? target)
             || target.Actor.IsDead)
         {
             return;

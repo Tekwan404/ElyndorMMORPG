@@ -79,8 +79,8 @@ public sealed partial class CombatSession
         {
             return playerState.Definition.Actor;
         }
-        if (_companion is not null && _companion.Actor.ActorId == actorId)
-            return _companion.Actor;
+        if (SessionCompanions().FirstOrDefault(pet => pet.Actor.ActorId == actorId) is { } companion)
+            return companion.Actor;
         return _enemiesById.TryGetValue(
             actorId,
             out CombatParticipantDefinition? enemy)
@@ -90,6 +90,7 @@ public sealed partial class CombatSession
 
     private bool AreOpposingCombatActors(Guid firstActorId, Guid secondActorId)
     {
+        if (IsOpenWorldPvp) return IsHostileTarget(firstActorId, secondActorId);
         bool firstIsEnemy = _enemiesById.ContainsKey(firstActorId);
         bool secondIsEnemy = _enemiesById.ContainsKey(secondActorId);
         bool firstIsParty = _playerStatesByActorId.ContainsKey(firstActorId)

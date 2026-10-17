@@ -256,7 +256,7 @@ public sealed class CombatSessionFactory(
             MainHandWeaponCategory: derived.Equipment.MainHandWeaponCategory,
             OffHandEquipmentCategory: offHandItem?.Definition.OffHandCategory,
             SetPassives: EquipmentSetEffectResolver.Resolve(contentSnapshot.Package.EquipmentSets ?? []),
-            ItemSpecialEffects: contentSnapshot.Package.ItemSpecialEffects);
+            ItemSpecialEffects: contentSnapshot.Package.ItemSpecialEffects, RaceId: character.RaceId);
         CombatParticipantDefinition? companion =
             derived.ActiveCompanionProfile is null
                 ? null
@@ -366,7 +366,10 @@ public sealed class CombatSessionFactory(
             companion,
             accountId,
             additionalPlayers,
-            content.ItemSpecialEffects);
+            content.ItemSpecialEffects,
+            openWorldPvp: !isTraining && !allowUnlistedEncounter
+                && OpenWorldPvpRules.CanParticipate(expectedLocationId, character.Level),
+            playerPartyId: partyService is null ? null : (await partyService.GetAsync(accountId, cancellationToken))?.PartyId);
         if (!isTraining)
         {
             DungeonEncounterCombatConfigurator.Configure(session, monster.Id, contentSnapshot);
@@ -405,6 +408,19 @@ public sealed class CombatSessionFactory(
             contentSnapshot,
             participants,
             expectedLocationId);
+    }
+
+    public CombatSession CreateOpenWorldDuel(
+        CombatPlayerDefinition attacker, CombatPlayerDefinition target, GameContentSnapshot content)
+    {
+        var session = new CombatSession(Guid.NewGuid(), attacker.Participant,
+            Array.Empty<CombatParticipantDefinition>(),
+            (content.Package.Abilities ?? []).ToDictionary(ability => ability.Id, StringComparer.Ordinal),
+            new Dictionary<Guid, MonsterAiProfile>(), attacker.TalentModifiers, randomFactory.Create(),
+            timeProvider.GetUtcNow(), content.ContentVersion, content.BalanceVersion,
+            attacker.InitialCooldowns, companion: attacker.Companion, playerAccountId: attacker.AccountId, additionalPlayers: [target],
+            itemSpecialEffects: content.Package.ItemSpecialEffects, openWorldPvp: true, playerPartyId: attacker.PartyId);
+        return session;
     }
 
     private async Task<CombatPlayerDefinition> CreatePlayerDefinitionAsync(
@@ -487,7 +503,7 @@ public sealed class CombatSessionFactory(
             MainHandWeaponCategory: derived.Equipment.MainHandWeaponCategory,
             OffHandEquipmentCategory: offHandItem?.Definition.OffHandCategory,
             SetPassives: EquipmentSetEffectResolver.Resolve(contentSnapshot.Package.EquipmentSets ?? []),
-            ItemSpecialEffects: contentSnapshot.Package.ItemSpecialEffects);
+            ItemSpecialEffects: contentSnapshot.Package.ItemSpecialEffects, RaceId: character.RaceId);
         IReadOnlyDictionary<string, DateTimeOffset> cooldowns =
             isTraining || cooldownStore is null
                 ? new Dictionary<string, DateTimeOffset>(StringComparer.Ordinal)
@@ -500,7 +516,9 @@ public sealed class CombatSessionFactory(
             participant,
             derived.TalentModifiers,
             cooldowns,
-            initiallyAttached);
+            initiallyAttached,
+            PartyId: partyService is null ? null : (await partyService.GetAsync(bootstrap.AccountId, cancellationToken))?.PartyId,
+            Companion: derived.ActiveCompanionProfile is null ? null : ArcherCompanionRuntimeResolver.Resolve(derived.ActiveCompanionProfile, derived.Stats, character.Level, derived.TalentModifiers));
     }
 
     private static HashSet<string> EquippedSpecialEffectIds(

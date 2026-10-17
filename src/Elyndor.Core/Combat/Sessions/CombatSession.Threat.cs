@@ -371,8 +371,7 @@ public sealed partial class CombatSession
                 .Select(item => _playerStatesByActorId[item.ActorId].Definition)
                 .Where(candidate => !candidate.Actor.IsDead);
 
-        if (_companion is not null && !_companion.Actor.IsDead)
-            candidates = candidates.Append(_companion);
+        candidates = candidates.Concat(ActiveSessionCompanions());
 
         return candidates.ToArray();
     }

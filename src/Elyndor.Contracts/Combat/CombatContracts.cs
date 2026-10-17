@@ -114,7 +114,8 @@ public sealed record CombatSnapshotResponse(
     IReadOnlyList<CombatActorResponse>? Players = null,
     IReadOnlyList<CombatParticipantResponse>? ParticipantRoster = null,
     bool? PlayerContributionEligible = null,
-    IReadOnlyList<CombatParticipantContributionResponse>? ParticipantContributions = null);
+    IReadOnlyList<CombatParticipantContributionResponse>? ParticipantContributions = null,
+    bool OpenWorldPvp = false);
 
 public sealed record CombatEventResponse(
     long Sequence,

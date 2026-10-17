@@ -1030,6 +1030,7 @@ export interface CombatParticipantContributionSnapshot {
 }
 
 export interface CombatSnapshot {
+  openWorldPvp?: boolean
   sessionId: string
   sequence: number
   status: 'Active' | 'Victory' | 'Defeat' | 'Cancelled'

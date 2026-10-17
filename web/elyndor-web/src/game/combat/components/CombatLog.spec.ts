@@ -49,7 +49,8 @@ describe('CombatLog', () => {
     const wrapper = mount(CombatLog, { props: { entries: many, maxEntries: 200 } })
     await wrapper.get('[data-combat-log-toggle]').trigger('click')
     expect(wrapper.findAll('[data-combat-log-entry]')).toHaveLength(41)
-    expect(wrapper.get('time').text()).toBe('12:00:00')
+    expect(wrapper.get('time').text()).toMatch(/^\d{2}:\d{2}:00$/)
+    expect(wrapper.get('time').attributes('datetime')).toBe(entries[0]!.occurredAtUtc)
     wrapper.unmount()
   })
 

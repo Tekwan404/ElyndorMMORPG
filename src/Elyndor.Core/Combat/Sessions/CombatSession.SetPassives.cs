@@ -29,10 +29,10 @@ public sealed partial class CombatSession
             _setPassiveLoadoutSnapshot,
             id => _playerStatesByActorId.TryGetValue(id, out var state) ? state.Definition.Actor
                 : _enemiesById.TryGetValue(id, out var enemy) ? enemy.Actor
-                : _companion?.Actor.ActorId == id ? _companion.Actor : null,
+                : SessionCompanions().FirstOrDefault(pet => pet.Actor.ActorId == id)?.Actor,
             _abilities,
             id => _playerStatesByActorId.TryGetValue(id, out var state) ? state.Runtime.Cooldowns : null,
-            _companion is null ? null : new Dictionary<Guid, Guid> { [_companion.Actor.ActorId] = _companionOwnerActorId });
+            IsOpenWorldPvp ? _openWorldCompanionOwners : _companion is null ? null : new Dictionary<Guid, Guid> { [_companion.Actor.ActorId] = _companionOwnerActorId });
     }
 
     private void ApplySetPassiveHooks(CombatEvent combatEvent)

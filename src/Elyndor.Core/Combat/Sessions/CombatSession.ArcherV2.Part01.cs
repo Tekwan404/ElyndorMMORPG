@@ -55,16 +55,36 @@ private int _markedShotSequence
 get => _activePlayerState.MarkedShotSequence;
 set => _activePlayerState.MarkedShotSequence = value;
 }
-private Guid? _lastOwnerHitTargetId;
-private DateTimeOffset? _lastOwnerHitAtUtc;
-private Guid? _lastCompanionHitTargetId;
-private DateTimeOffset? _lastCompanionHitAtUtc;
+private Guid? _lastOwnerHitTargetId
+{
+get => _activePlayerState.LastOwnerHitTargetId;
+set => _activePlayerState.LastOwnerHitTargetId = value;
+}
+private DateTimeOffset? _lastOwnerHitAtUtc
+{
+get => _activePlayerState.LastOwnerHitAtUtc;
+set => _activePlayerState.LastOwnerHitAtUtc = value;
+}
+private Guid? _lastCompanionHitTargetId
+{
+get => _activePlayerState.LastCompanionHitTargetId;
+set => _activePlayerState.LastCompanionHitTargetId = value;
+}
+private DateTimeOffset? _lastCompanionHitAtUtc
+{
+get => _activePlayerState.LastCompanionHitAtUtc;
+set => _activePlayerState.LastCompanionHitAtUtc = value;
+}
 private DateTimeOffset? _nextSpiritBondAtUtc
 {
 get => _activePlayerState.NextSpiritBondAtUtc;
 set => _activePlayerState.NextSpiritBondAtUtc = value;
 }
-private bool _bestialWrathFirstCommandAvailable;
+private bool _bestialWrathFirstCommandAvailable
+{
+get => _activePlayerState.BestialWrathFirstCommandAvailable;
+set => _activePlayerState.BestialWrathFirstCommandAvailable = value;
+}
 private bool _survivalPreparationArmed
 {
 get => _activePlayerState.SurvivalPreparationArmed;

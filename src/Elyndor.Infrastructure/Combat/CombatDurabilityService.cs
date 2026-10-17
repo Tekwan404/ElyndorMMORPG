@@ -144,7 +144,8 @@ public sealed class CombatDurabilityService(
                 nameof(snapshot));
 
         if (!await dbContext.ActiveCombatSessions.AsNoTracking().AnyAsync(
-                state => state.SessionId == sessionId && state.TerminalSnapshotJson == null,
+                state => state.SessionId == sessionId && state.TerminalSnapshotJson == null
+                    && (!snapshot.OpenWorldPvp || state.CharacterId == snapshot.Player.ActorId),
                 cancellationToken))
             return;
         if (contentSnapshot is not null)
@@ -161,12 +162,32 @@ public sealed class CombatDurabilityService(
             TerminalSnapshotJsonOptions);
         await dbContext.ActiveCombatSessions
             .Where(state => state.SessionId == sessionId
-                && state.TerminalSnapshotJson == null)
+                && state.TerminalSnapshotJson == null
+                && (!snapshot.OpenWorldPvp || state.CharacterId == snapshot.Player.ActorId))
             .ExecuteUpdateAsync(
                 setters => setters.SetProperty(
                     state => state.TerminalSnapshotJson,
                     snapshotJson),
                 cancellationToken);
+    }
+
+    public async Task RecordOpenWorldSnapshotsAsync(IReadOnlyList<CombatSessionSnapshot> snapshots,
+        GameContentSnapshot? content, CancellationToken cancellationToken)
+    {
+        if (snapshots.Count == 0) return;
+        if (snapshots.Any(snapshot => !snapshot.OpenWorldPvp || snapshot.Status == CombatSessionStatus.Active
+            || snapshot.SessionId != snapshots[0].SessionId))
+            throw new ArgumentException("Invalid open-world terminal snapshots.", nameof(snapshots));
+        Guid? revision = content is null ? null : await CombatRecoveryContent.ArchiveAsync(
+            dbContext, content, snapshots[0].ServerTimeUtc, cancellationToken);
+        await dbContext.Database.CreateExecutionStrategy().ExecuteAsync(async () =>
+        {
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+            foreach (var snapshot in snapshots)
+                await RecordTerminalSnapshotAsync(snapshot.SessionId,
+                    snapshot with { ContentRevisionId = revision }, cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        });
     }
 
     public async Task<string?> ReserveConsumableAsync(
@@ -362,11 +383,26 @@ public sealed class CombatDurabilityService(
                         terminalSnapshot, cancellationToken);
                     foreach (ActiveCombatSession participant in participantStates)
                     {
-                        CombatSessionSnapshot participantSnapshot = ProjectSnapshotForCharacter(
-                            terminalSnapshot, participant.CharacterId);
+                        CombatSessionSnapshot participantSnapshot;
+                        if (terminalSnapshot.OpenWorldPvp)
+                        {
+                            if (participant.TerminalSnapshotJson is null) continue;
+                            participantSnapshot = JsonSerializer.Deserialize<CombatSessionSnapshot>(
+                                participant.TerminalSnapshotJson, TerminalSnapshotJsonOptions)
+                                ?? throw new InvalidDataException("Invalid open-world participant journal.");
+                            if (!participantSnapshot.OpenWorldPvp || participantSnapshot.Status == CombatSessionStatus.Active
+                                || participantSnapshot.Player.ActorId != participant.CharacterId
+                                || participantSnapshot.SessionId != session.SessionId
+                                || participantSnapshot.ContentRevisionId != terminalSnapshot.ContentRevisionId)
+                                throw new InvalidDataException("Open-world participant journal identity mismatch.");
+                        }
+                        else participantSnapshot = ProjectSnapshotForCharacter(terminalSnapshot, participant.CharacterId);
                         await finalizer.FinalizeAsync(participant.CharacterId, participantSnapshot,
                             recoveryContent, cancellationToken);
                     }
+                    if (terminalSnapshot.OpenWorldPvp && participantStates.Any(state => state.TerminalSnapshotJson is null))
+                        await dbContext.Database.CreateExecutionStrategy().ExecuteAsync(
+                            () => RecoverUnfinishedSessionAsync(session.SessionId, cancellationToken));
                     if (await dbContext.ActiveCombatSessions.AsNoTracking()
                         .AnyAsync(state => state.SessionId == session.SessionId, cancellationToken))
                         throw new InvalidOperationException($"Combat {session.SessionId} still has pending participant journals.");

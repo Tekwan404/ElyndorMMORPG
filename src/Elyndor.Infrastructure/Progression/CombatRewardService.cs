@@ -162,7 +162,7 @@ public sealed class CombatRewardService(
             ?? throw new InvalidOperationException("Level progression content is required for combat rewards.");
         ProgressionBalanceProfile? progressionBalance = content.ProgressionBalance;
         Guid[] eligibleCharacterIds = ResolveEligibleCharacterIds(snapshot);
-        int eligiblePartySize = Math.Max(1, eligibleCharacterIds.Length);
+        int eligiblePartySize = snapshot.OpenWorldPvp ? 1 : Math.Max(1, eligibleCharacterIds.Length);
 
         List<CombatRewardSourceAudit> sourceAudits = [];
         List<LootRoll> rolledPersonalLoot = [];
@@ -641,11 +641,11 @@ public sealed class CombatRewardService(
 
     private static LootRoll[] AggregateLoot(IEnumerable<LootRoll> rolls) =>
         rolls.GroupBy(roll => new
-            {
-                roll.ItemId,
-                roll.ItemLevelMin,
-                roll.ItemLevelMax
-            })
+        {
+            roll.ItemId,
+            roll.ItemLevelMin,
+            roll.ItemLevelMax
+        })
             .Select(group => new LootRoll(
                 group.Key.ItemId,
                 checked(group.Sum(roll => roll.Quantity)),

@@ -158,14 +158,11 @@ public sealed partial class CombatSession
             .Select(enemy => enemy.Actor)
             .ToArray();
 
-        foreach (CombatPlayerRuntimeState playerState in _playerStatesByActorId.Values)
-            playerState.Runtime.AddActor(summoned.Actor);
-        _companionRuntime?.AddActor(summoned.Actor);
-        foreach (CombatRuntimeState runtime in _enemyRuntimes.Values)
-            runtime.AddActor(summoned.Actor);
+        AddActorToCombatRuntimes(summoned.Actor);
 
         _enemies.Add(summoned);
         _enemiesById.Add(summoned.Actor.ActorId, summoned);
+        if (IsOpenWorldPvp) _combatTargetsById.Add(summoned.Actor.ActorId, summoned);
         _enemyRuntimes.Add(
             summoned.Actor.ActorId,
             CreateRuntime(

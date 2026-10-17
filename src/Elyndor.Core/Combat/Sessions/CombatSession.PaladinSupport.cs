@@ -28,7 +28,7 @@ public sealed partial class CombatSession
             || combatEvent.TargetActorId is not { } targetId
             || !_playerStatesByActorId.TryGetValue(attackerId, out var attacker)
             || !ActivePlayerActorIds().Contains(attackerId)
-            || !_enemiesById.TryGetValue(targetId, out var enemy))
+            || !_combatTargetsById.TryGetValue(targetId, out var enemy))
             return;
 
         DateTimeOffset now = combatEvent.OccurredAtUtc;
@@ -46,7 +46,8 @@ public sealed partial class CombatSession
                     .OrderByDescending(effect => effect.Definition.Magnitude)
                     .ThenBy(effect => effect.Sequence).ToArray())
                 {
-                    if (!ActivePlayerActorIds().Contains(mark.SourceId)
+                    if (!AreCapturedPartyAllies(attackerId, mark.SourceId)
+                        || !ActivePlayerActorIds().Contains(mark.SourceId)
                         || !_playerStatesByActorId.TryGetValue(mark.SourceId, out var owner))
                         continue;
                     ResolvedTalentEventHook? hook = owner.Talents.EventHooks.FirstOrDefault(h => h.TalentId == talentId);

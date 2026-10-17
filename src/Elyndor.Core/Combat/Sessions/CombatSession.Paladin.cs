@@ -581,7 +581,7 @@ public sealed partial class CombatSession
 
         if (state.Protection.CanTriggerHolyShieldBlockEffect(now)
             && combatEvent.SourceActorId is { } sourceId
-            && _enemiesById.TryGetValue(sourceId, out CombatParticipantDefinition? sourceEnemy)
+            && _combatTargetsById.TryGetValue(sourceId, out CombatParticipantDefinition? sourceEnemy)
             && !sourceEnemy.Actor.IsDead)
         {
             decimal attackPower = EffectEngine.CalculateStat(
@@ -679,7 +679,7 @@ public sealed partial class CombatSession
             return;
 
         if (combatEvent.DefinitionId == "AUTO_ATTACK"
-            && _enemiesById.TryGetValue(targetId, out CombatParticipantDefinition? targetEnemy)
+            && _combatTargetsById.TryGetValue(targetId, out CombatParticipantDefinition? targetEnemy)
             && !targetEnemy.Actor.IsDead)
         {
             decimal extraMultiplier = 0;
@@ -748,7 +748,7 @@ public sealed partial class CombatSession
             bool divinePurpose = state.DivinePurposeVerdictDamagePending;
             state.DivinePurposeVerdictDamagePending = false;
             decimal extraPercent = divinePurpose ? PaladinDivinePurposeBonusDamagePercent : 0m;
-            if (_enemiesById.TryGetValue(targetId, out CombatParticipantDefinition? verdictTarget)
+            if (_combatTargetsById.TryGetValue(targetId, out CombatParticipantDefinition? verdictTarget)
                 && verdictTarget.Actor.MaxHp > 0
                 && verdictTarget.Actor.CurrentHp / verdictTarget.Actor.MaxHp < 0.30m
                 && HasPaladinTalent("R-7-4"))
@@ -790,6 +790,7 @@ public sealed partial class CombatSession
         if (TryGetPaladinHook("R-6-3", out ResolvedTalentEventHook improved))
             conversionPercent += 5m * improved.Rank;
         CombatActorState[] recipients = _playerStatesByActorId.Values
+            .Where(state => AreCapturedPartyAllies(_player.Actor.ActorId, state.Definition.Actor.ActorId))
             .Select(state => state.Definition.Actor)
             .Where(actor => !actor.IsDead)
             .ToArray();
@@ -807,7 +808,7 @@ public sealed partial class CombatSession
             return;
 
         decimal shield = Math.Max(1, decimal.Round(_player.Actor.MaxHp * 0.08m, 0, MidpointRounding.AwayFromZero));
-        foreach (CombatPlayerRuntimeState playerState in _playerStatesByActorId.Values.Where(state => !state.Definition.Actor.IsDead))
+        foreach (CombatPlayerRuntimeState playerState in _playerStatesByActorId.Values.Where(state => !state.Definition.Actor.IsDead && AreCapturedPartyAllies(_player.Actor.ActorId, state.Definition.Actor.ActorId)))
         {
             ApplyPaladinEffect(
                 playerState.Definition.Actor,
@@ -826,6 +827,7 @@ public sealed partial class CombatSession
     private void ApplyBastionOfDawnShield(DateTimeOffset now)
     {
         CombatActorState? target = _playerStatesByActorId.Values
+            .Where(state => AreCapturedPartyAllies(_player.Actor.ActorId, state.Definition.Actor.ActorId))
             .Select(state => state.Definition.Actor)
             .Where(actor => !actor.IsDead)
             .OrderBy(actor => actor.MaxHp <= 0 ? 1m : actor.CurrentHp / actor.MaxHp)
@@ -955,7 +957,7 @@ public sealed partial class CombatSession
             return playerState.Definition.Actor;
         if (_companion?.Actor.ActorId == actorId)
             return _companion.Actor;
-        return _enemiesById.TryGetValue(actorId, out CombatParticipantDefinition? enemy)
+        return _combatTargetsById.TryGetValue(actorId, out CombatParticipantDefinition? enemy)
             ? enemy.Actor
             : null;
     }
@@ -1011,6 +1013,6 @@ public sealed partial class CombatSession
     }
 
     private bool IsBossActor(Guid actorId) =>
-        _enemiesById.TryGetValue(actorId, out CombatParticipantDefinition? enemy)
+        _combatTargetsById.TryGetValue(actorId, out CombatParticipantDefinition? enemy)
         && enemy.MonsterRank == Monsters.MonsterRank.Boss;
 }
