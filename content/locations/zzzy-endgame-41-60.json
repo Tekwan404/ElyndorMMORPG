@@ -6,6 +6,7 @@
   "locations": [
     {
       "id": "OBSIDIAN_EDGE",
+      "factionCounterpartId": "UNDEAD_OBSIDIAN_EDGE",
       "displayName": "Обсидиановый предел",
       "dangerLevel": "DEADLY",
       "recommendedLevel": 38,
