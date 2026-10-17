@@ -425,7 +425,8 @@ public static class WorldEndpoints
             location.Description,
             location.TravelDurationSeconds,
             location.AllowAfk,
-            MapId: location.MapId);
+            MapId: location.MapId,
+            IsWorldPvpZone: location.IsWorldPvpZone);
 
     private static WorldLocationResponse ToLocation(
         LocationDefinition location,
@@ -452,7 +453,8 @@ public static class WorldEndpoints
             location.AllowAfk,
             residents,
             loot,
-            location.MapId);
+            location.MapId,
+            Elyndor.Core.Pvp.WorldPvpRules.IsContestedLocation(location.Id));
     }
 
     internal static WorldLocationResidentResponse[] BuildResidents(
