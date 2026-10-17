@@ -26,7 +26,7 @@ const isDungeonLocation = computed(() => locationKind(currentLocationId.value) =
       @open-party="emit('open-party')"
     />
     <OpenWorldPlayers v-if="currentLocationId === 'DEAD_REACHES' && !session.snapshot?.world?.travel" />
-    <LocationOverview v-else-if="!isDungeonLocation" interactive />
+    <LocationOverview v-if="!isDungeonLocation" interactive />
     <div class="location-screen__systems">
       <WorldViewLegacy
         :open-guild="props.openGuild"
