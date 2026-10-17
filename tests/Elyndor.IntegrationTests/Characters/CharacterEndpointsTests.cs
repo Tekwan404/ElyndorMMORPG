@@ -81,7 +81,10 @@ public sealed class CharacterEndpointsTests(PostgresFixture postgres) : IAsyncLi
         Assert.NotNull(locations);
         var content = await Elyndor.Infrastructure.Content.GameContentPackageLoader.LoadAsync(
             Path.GetFullPath("content/package.json"));
-        Assert.Equal(content.Locations.Count, locations.Length);
+        Assert.Equal(
+            content.Locations.Where(location => WorldLocationAccess.CanEnter(location, "HUMAN"))
+                .Select(location => location.Id).OrderBy(id => id, StringComparer.Ordinal),
+            locations.Select(location => location.Id).OrderBy(id => id, StringComparer.Ordinal));
         Assert.Contains(locations, location =>
             string.Equals(location.Id, "SHATTERED_ORDER_CITADEL_TEST", StringComparison.Ordinal));
         Assert.Contains(locations, location =>
