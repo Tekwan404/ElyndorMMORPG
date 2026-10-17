@@ -28,7 +28,7 @@ describe('AdventurerGuildBoard: registrar and World PvP', () => {
     vi.spyOn(apiClient, 'request').mockImplementation(async path => (path.endsWith('/shop') ? [] : {
       season: 1, endsAtUtc: '2026-12-12T00:00:00Z', fieldHonor: 0, bloodyTokens: 0,
       rewardedToday: 0, dailyLimit: 20, leaders: [],
-      self: { characterId: 'human-hero', name: 'Воин', raceId: 'HUMAN', rating: 0, victories: 0, assists: 0, deaths: 0 },
+      self: { characterId: 'human-hero', name: 'Воин', raceId: 'HUMAN', seasonHonor: 0, victories: 0, assists: 0, deaths: 0 },
     }) as never)
     const session = useGameSessionStore()
     session.snapshot = {
@@ -57,9 +57,9 @@ describe('AdventurerGuildBoard: registrar and World PvP', () => {
     expect(wrapper.find('[data-guild-accept-contract]').exists()).toBe(false)
     await wrapper.get('[data-world-pvp-tab="rating"]').trigger('click')
     await flushPromises()
-    expect(wrapper.get('[data-world-pvp-ranking]').text()).toContain('Рейтинг открытого мира')
+    expect(wrapper.get('[data-world-pvp-ranking]').text()).toContain('Слава открытого мира')
     await wrapper.get('[data-world-pvp-tab="titles"]').trigger('click')
-    expect(wrapper.get('[data-world-pvp-titles-empty]').text()).toContain('Летопись титулов')
+    expect(wrapper.text()).toContain('Четырнадцать ступеней славы')
 
     await wrapper.get('[data-guild-section="contracts"]').trigger('click')
     expect(wrapper.get('[data-guild-section="contracts"]').attributes('aria-pressed')).toBe('true')

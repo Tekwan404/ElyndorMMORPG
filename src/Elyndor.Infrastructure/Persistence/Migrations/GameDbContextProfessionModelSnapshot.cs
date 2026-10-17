@@ -2870,7 +2870,8 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
 
                     b.HasKey("SessionId", "VictimId");
 
-                    b.HasIndex("VictimId");
+                    b.HasIndex("VictimId", "AtUtc", "SessionId")
+                        .IsDescending(false, true, true);
 
                     b.ToTable("world_pvp_death_receipts", "game");
                 });
@@ -2906,6 +2907,14 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.Property<int>("Season")
                         .HasColumnType("integer");
 
+                    b.Property<int>("TargetDefeatNumber")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
+                    b.Property<bool?>("Victory")
+                        .HasColumnType("boolean");
+
                     b.HasKey("SessionId", "VictimId", "CharacterId");
 
                     b.HasIndex("CharacterId", "AtUtc");
@@ -2916,7 +2925,7 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                         {
                             t.HasCheckConstraint("ck_world_pvp_gold_nonnegative", "\"GoldEarned\" >= 0");
 
-                            t.HasCheckConstraint("ck_world_pvp_receipt_positive", "\"Rating\" > 0 AND \"FieldHonor\" > 0 AND \"BloodyTokens\" >= 0");
+                            t.HasCheckConstraint("ck_world_pvp_receipt_positive", "\"Rating\" >= 0 AND \"FieldHonor\" >= 0 AND \"BloodyTokens\" >= 0 AND \"TargetDefeatNumber\" > 0");
                         });
                 });
 
@@ -2934,20 +2943,28 @@ namespace Elyndor.Infrastructure.Persistence.Migrations
                     b.Property<int>("Deaths")
                         .HasColumnType("integer");
 
+                    b.Property<int>("KillStreak")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Rating")
                         .HasColumnType("integer");
+
+                    b.Property<long>("SeasonHonor")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
 
                     b.Property<int>("Victories")
                         .HasColumnType("integer");
 
                     b.HasKey("CharacterId", "Season");
 
-                    b.HasIndex("Season", "Rating", "CharacterId")
+                    b.HasIndex("Season", "SeasonHonor", "CharacterId")
                         .IsDescending(false, true, false);
 
                     b.ToTable("world_pvp_standings", "game", t =>
                         {
-                            t.HasCheckConstraint("ck_world_pvp_standing_nonnegative", "\"Rating\" >= 0 AND \"Victories\" >= 0 AND \"Assists\" >= 0 AND \"Deaths\" >= 0 AND \"Season\" > 0");
+                            t.HasCheckConstraint("ck_world_pvp_standing_nonnegative", "\"Rating\" >= 0 AND \"SeasonHonor\" >= 0 AND \"KillStreak\" >= 0 AND \"Victories\" >= 0 AND \"Assists\" >= 0 AND \"Deaths\" >= 0 AND \"Season\" > 0");
                         });
                 });
 

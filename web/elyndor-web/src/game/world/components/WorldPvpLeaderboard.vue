@@ -20,11 +20,11 @@ function updateRace(event: Event): void {
 </script>
 
 <template>
-  <section class="war-ranking" aria-label="Сезонный рейтинг World PvP" data-world-pvp-ranking>
+  <section class="war-ranking" aria-label="Сезонная честь World PvP" data-world-pvp-ranking>
     <div class="war-ranking__heading">
       <div>
-        <small>ТАБЛИЦА ЧЕМПИОНОВ</small>
-        <h4>Рейтинг открытого мира</h4>
+        <small>ЛЕТОПИСЬ ВОИНОВ</small>
+        <h4>Слава открытого мира</h4>
       </div>
       <label class="war-ranking__filter">
         <span>Фракция</span>
@@ -41,20 +41,20 @@ function updateRace(event: Event): void {
         <span class="war-ranking__place" aria-label="Место">{{ i + 1 }}</span>
         <div class="war-ranking__identity">
           <strong>{{ leader.name }} <span v-if="leader.characterId === self.characterId">(ты)</span></strong>
-          <small>{{ raceLabel(leader.raceId) }} · {{ leader.victories }} побед · {{ leader.assists }} помощи · {{ leader.deaths }} смертей</small>
+          <small>{{ leader.rank?.name }} · {{ raceLabel(leader.raceId) }} · {{ leader.victories }} побед · {{ leader.assists }} помощи · {{ leader.deaths }} смертей</small>
         </div>
-        <b>{{ leader.rating }} <small>очк.</small></b>
+        <b>{{ leader.seasonHonor }} <small>чести</small></b>
       </li>
     </ol>
     <p v-else class="war-ranking__empty" role="status">
-      В выбранной фракции ещё нет участников с рейтинговыми очками.
+      В выбранной фракции ещё нет участников с сезонной честью.
     </p>
     <button v-if="leaders.length > 10" type="button" class="war-ranking__more"
       :aria-expanded="expanded" @click="expanded = !expanded">
       {{ expanded ? 'Свернуть список' : `Показать всех ( ${leaders.length} )` }}
     </button>
-    <p v-if="!selfListed && self.rating > 0" class="war-ranking__note">
-      Твой рейтинг — {{ self.rating }}. Ты вне отображаемого списка этой фракции или топ-50.
+    <p v-if="!selfListed && self.seasonHonor > 0" class="war-ranking__note">
+      Твоя честь — {{ self.seasonHonor }}. Ты вне отображаемого списка этой фракции или топ-50.
     </p>
   </section>
 </template>

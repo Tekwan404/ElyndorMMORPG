@@ -899,3 +899,15 @@ Frontend не рассчитывает финальную цену как author
 10. Real-money payment не подтверждается Economy System.
 11. Admin adjustment всегда audit'ится.
 12. Economy numbers являются Balance Profiles.
+
+
+## World PvP seasonal honor (2026-10-18)
+
+World PvP seasonal earned honor is progression, not a spendable wallet and not an
+Arena rating. It starts at zero, never decreases on death or purchases and determines
+one of 14 ranks. Field Honor is the separate spendable World PvP shop currency.
+Directed per-target UTC-day contribution rewards are 100/75/50/25/0 percent.
+Honor has no global daily cap. Gold/tokens retain independent economic limits.
+Arena calculations and balances are unchanged by this system.
+Current formulas, provisional thresholds, migration and economic limits:
+`docs/development/dead-reaches-pvp.md`.
