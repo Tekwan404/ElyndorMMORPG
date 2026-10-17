@@ -63,12 +63,25 @@ export interface WorldPvpBounty {
   tokenReward: number
 }
 
+export interface WorldPvpTitle {
+  id: string
+  name: string
+  description: string
+  /** Server-authored unlock criteria. Never interpreted as client reward logic. */
+  requirement: string
+  progress: number | null
+  target: number | null
+  unlocked: boolean
+  equipped: boolean
+}
+
 export interface WorldPvpDashboard {
   season: WorldPvpSeason
   personal: WorldPvpPersonalRecord | null
   standings: WorldPvpStanding[]
   rewards: WorldPvpReward[]
   bounties: WorldPvpBounty[]
+  titles?: WorldPvpTitle[]
 }
 
 export function worldPvpFactionLabel(faction: WorldPvpFaction): string {
