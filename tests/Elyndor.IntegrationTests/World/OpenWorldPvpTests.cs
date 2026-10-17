@@ -173,6 +173,57 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
     }
 
     [Fact]
+    public async Task FastKillCountsOnceWithoutAwardingRatingOrCurrency()
+    {
+        var human = await SeedAsync("HUMAN");
+        var undead = await SeedAsync("UNDEAD");
+        await using var host = CreateFactory();
+        var snapshot = await ProgressionSnapshotAsync(host, human, undead);
+        snapshot = snapshot with { WorldPvpDefeats = [
+            new(undead.Character, snapshot.ServerTimeUtc, [], human.Character)] };
+        await using var db = postgres.CreateDbContext();
+        var service = new WorldPvpSettlementService(db, TimeProvider.System);
+
+        await service.ApplyAsync(snapshot, CancellationToken.None);
+        await service.ApplyAsync(snapshot, CancellationToken.None);
+
+        var killer = await db.WorldPvpStandings.AsNoTracking().SingleAsync(s => s.CharacterId == human.Character);
+        var victim = await db.WorldPvpStandings.AsNoTracking().SingleAsync(s => s.CharacterId == undead.Character);
+        Assert.Equal(1, killer.Victories);
+        Assert.Equal(0, killer.Assists);
+        Assert.Equal(0, killer.Rating);
+        Assert.Equal(1, victim.Deaths);
+        Assert.Single(await db.WorldPvpDeathReceipts.ToArrayAsync());
+        Assert.Empty(await db.WorldPvpRewardReceipts.ToArrayAsync());
+        Assert.Empty(await db.WorldPvpWallets.ToArrayAsync());
+    }
+
+    [Fact]
+    public async Task RewardedAndRepeatKillsCountWithoutDuplicatingHonorOrVictory()
+    {
+        var human = await SeedAsync("HUMAN");
+        var undead = await SeedAsync("UNDEAD");
+        await using var host = CreateFactory();
+        var snapshot = await ProgressionSnapshotAsync(host, human, undead);
+        var defeat = new WorldPvpDefeat(undead.Character, snapshot.ServerTimeUtc,
+            [new(human.Character, 100, 0)], human.Character);
+        await using var db = postgres.CreateDbContext();
+        var service = new WorldPvpSettlementService(db, TimeProvider.System);
+        var first = snapshot with { WorldPvpDefeats = [defeat] };
+
+        await service.ApplyAsync(first, CancellationToken.None);
+        await service.ApplyAsync(first, CancellationToken.None);
+        await service.ApplyAsync(first with { SessionId = Guid.NewGuid() }, CancellationToken.None);
+
+        var killer = await db.WorldPvpStandings.AsNoTracking().SingleAsync(s => s.CharacterId == human.Character);
+        Assert.Equal(2, killer.Victories);
+        Assert.Equal(0, killer.Assists);
+        Assert.Equal(10, killer.Rating);
+        Assert.Single(await db.WorldPvpRewardReceipts.ToArrayAsync());
+        Assert.Equal(5, (await db.WorldPvpWallets.AsNoTracking().SingleAsync()).FieldHonor);
+    }
+
+    [Fact]
     public async Task WorldPvpShopRetriesCannotDuplicateItemsOrOverspendEitherCurrency()
     {
         var human = await SeedAsync("HUMAN");
