@@ -58,7 +58,8 @@ function changeRace(value: string): void {
         <div><small>Смерти</small><strong>{{ overview.self.deaths }}</strong></div>
       </div>
       <div class="war-board__balances" aria-label="Валюта войны">
-        <p>За убийство: <MoneyAmount :amount="overview.rewards?.goldPerKill ?? 0" /> · За помощь: <MoneyAmount :amount="overview.rewards?.goldPerAssist ?? 0" /></p>
+        <p>За убийство<MoneyAmount :amount="overview.rewards?.goldPerKill ?? 0" /></p>
+        <p>За помощь<MoneyAmount :amount="overview.rewards?.goldPerAssist ?? 0" /></p>
         <p>Полевая честь: <strong>{{ overview.fieldHonor }}</strong></p>
         <p>Кровавые жетоны: <strong>{{ overview.bloodyTokens }}</strong></p>
       </div>
@@ -97,7 +98,7 @@ function changeRace(value: string): void {
 .war-board__tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; }
 .war-board__tabs button { min-height: 44px; padding: .4rem; color: #c9bca4; background: #1c1b1a; border: 1px solid #4b4336; border-radius: 7px; font: inherit; font-size: .78rem; }
 .war-board__tabs button[aria-pressed='true'] { color: #f4ddaa; border-color: #b08d51; background: #33281b; }
-.war-board__balances > p:first-child { grid-column: 1 / -1; }
+.war-board__balances .money-amount { font-size: 1.3rem; font-weight: 700; }
 .war-board {
   display: grid;
   min-width: 0;
