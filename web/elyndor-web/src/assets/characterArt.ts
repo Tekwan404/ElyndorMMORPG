@@ -5,6 +5,18 @@ const characterArtModules = import.meta.glob<string>(
   { eager: true, import: 'default' },
 )
 
+// CI generates compact 320px WebP shop previews before the frontend build.
+const thumbnailModules = import.meta.glob<string>(
+  './characters/personal/thumbnails/*.webp',
+  { eager: true, import: 'default' },
+)
+const thumbnailByKey = new Map<string, string>(
+  Object.entries(thumbnailModules).map(([path, url]) => {
+    const fileName = path.split('/').pop() ?? path
+    return [fileName.replace(/\.[^.]+$/, ''), url]
+  }),
+)
+
 const characterArtByKey = new Map<string, string>(
   Object.entries(characterArtModules).map(([path, url]) => {
     const fileName = path.split('/').pop() ?? path
@@ -66,4 +78,9 @@ export function resolveCharacterArt(
 
 export function resolveSkinPreview(imageId: string): string | null {
   return characterArtByKey.get(imageId) ?? null
+}
+
+/** Small shop card preview. Full-resolution art is reserved for the character viewer. */
+export function resolveSkinThumbnail(imageId: string): string | null {
+  return thumbnailByKey.get(imageId) ?? resolveSkinPreview(imageId)
 }
