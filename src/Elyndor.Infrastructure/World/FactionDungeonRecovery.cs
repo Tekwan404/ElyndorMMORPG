@@ -3,13 +3,15 @@ using Elyndor.Core.Dungeons;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Elyndor.Infrastructure.World;
 
 internal static class FactionDungeonRecovery
 {
     public static async Task<bool> RepairAsync(GameDbContext db, GameContentSnapshot content,
-        Guid characterId, string raceId, DateTimeOffset now, CancellationToken cancellationToken)
+        Guid characterId, string raceId, DateTimeOffset now, CancellationToken cancellationToken,
+        ILogger? logger = null)
     {
         string[] forbiddenDungeons = content.Indexes.DungeonsById.Values
             .Where(dungeon => content.Indexes.LocationsById.TryGetValue(dungeon.EntryLocationId, out var location)
@@ -38,7 +40,14 @@ internal static class FactionDungeonRecovery
                 if (run.Encounters.Any(encounter => encounter.State == DungeonEncounterState.Active)) return false;
                 string targetId = raceId == "UNDEAD" ? "UNDEAD_" + run.DungeonId
                     : run.DungeonId.StartsWith("UNDEAD_", StringComparison.Ordinal) ? run.DungeonId[7..] : run.DungeonId;
-                if (!content.Indexes.DungeonsById.TryGetValue(targetId, out var target)) return false;
+                if (!content.Indexes.DungeonsById.TryGetValue(targetId, out var target))
+                {
+                    logger?.LogWarning(
+                        "Leaving incompatible dungeon run {RunId} for character {CharacterId}: counterpart {TargetDungeonId} missing.",
+                        run.Id, characterId, targetId);
+                    run.Members.Single(member => member.CharacterId == characterId).MarkLeft();
+                    continue;
+                }
                 Guid[] memberIds = run.Members.Where(member => member.State == DungeonRunMemberState.Active)
                     .Select(member => member.CharacterId).ToArray();
                 bool sameFaction = !await db.Characters.AnyAsync(
@@ -54,7 +63,13 @@ internal static class FactionDungeonRecovery
                 var source = content.Indexes.DungeonsById[run.DungeonId];
                 if (!source.Encounters.Select(encounter => (encounter.Id, encounter.MonsterId, encounter.CheckpointId))
                     .SequenceEqual(target.Encounters.Select(encounter => (encounter.Id, encounter.MonsterId, encounter.CheckpointId))))
-                    throw new InvalidOperationException("Faction dungeon recovery requires equivalent encounters.");
+                {
+                    logger?.LogWarning(
+                        "Leaving incompatible dungeon run {RunId} for character {CharacterId}: encounters differ between {SourceDungeonId} and {TargetDungeonId}.",
+                        run.Id, characterId, source.Id, target.Id);
+                    run.Members.Single(member => member.CharacterId == characterId).MarkLeft();
+                    continue;
+                }
                 run.MoveToFactionDungeon(target.Id);
                 var locations = await db.CharacterLocations.Where(location => memberIds.Contains(location.CharacterId)
                     && location.LocationId == source.EntryLocationId).ToArrayAsync(cancellationToken);
