@@ -34,7 +34,8 @@ def generate(source: Path = SOURCE, destination: Path = DESTINATION) -> tuple[in
             with Image.open(item) as original:
                 preview = ImageOps.exif_transpose(original).convert("RGBA")
                 preview.thumbnail((MAX_WIDTH, MAX_HEIGHT), Image.Resampling.LANCZOS)
-                preview.save(output, "WEBP", quality=68, method=6, exact=True)
+                # Method 6 is disproportionately slow on transparent character edges.
+                preview.save(output, "WEBP", quality=68, method=4, exact=True)
         total_preview_bytes += output.stat().st_size
     return len(artwork), total_source_bytes, total_preview_bytes
 
