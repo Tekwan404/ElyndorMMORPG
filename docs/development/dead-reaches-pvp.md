@@ -60,9 +60,14 @@ Balance is centralized in `WorldPvpBalance`:
 
 - Eight-week seasons start at 2026-10-17 00:00 UTC. Ratings start at zero. Wallets
   persist across seasons; no automatic end-of-season prizes are implemented.
-- A defeat needs at least 10 seconds of PvP interaction, enemy damage worth at
-  least 20% of victim maximum HP, and actual resistance (PvP damage or useful
-  healing from the victim). Fast kills and passive victims award no progression.
+- PvP kills count in the seasonal victory statistic as soon as a player is defeated
+  by a contributing hostile player (highest damage, excluding departed actors),
+  even when the encounter awards no rating or currency. Settlement receipts keep
+  these counts idempotent across retries.
+- Rewarded progression needs at least 10 seconds of PvP interaction, enemy damage
+  worth at least 20% of victim maximum HP, and actual resistance (PvP damage or
+  useful healing from the victim). Fast kills and passive victims still award no
+  rating, honor, tokens or rewarded assists.
 - At least 10% of qualifying damage/support is required. The largest damage
   contributor receives a victory; other qualifying contributors receive assists.
   Companion damage belongs to its owner. Effective healing only consumes recent
