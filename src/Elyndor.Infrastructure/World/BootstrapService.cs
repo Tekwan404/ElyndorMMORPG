@@ -77,7 +77,8 @@ public sealed record BootstrapLocation(
     string Description,
     decimal TravelDurationSeconds,
     bool AllowAfk,
-    string MapId = "BORDERLANDS");
+    string MapId = "BORDERLANDS",
+    bool IsWorldPvpZone = false);
 
 public sealed record BootstrapWorldContract(
     string Id,
@@ -767,5 +768,6 @@ public sealed class BootstrapService(
             location.Description,
             location.TravelDurationSeconds,
             location.AllowAfk,
-            location.MapId);
+            location.MapId,
+            Elyndor.Core.Pvp.WorldPvpRules.IsContestedLocation(location.Id));
 }
