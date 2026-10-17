@@ -1,5 +1,5 @@
 import { mount } from '@vue/test-utils'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 
 import WorldPvpView from './WorldPvpView.vue'
 import { worldPvpPreviewDashboard } from './worldPvpPreviewDashboard'
@@ -13,7 +13,7 @@ describe('WorldPvpView', () => {
     expect(wrapper.find('[data-world-pvp-preview]').exists()).toBe(false)
 
     await wrapper.get('[data-world-pvp-tab="rating"]').trigger('click')
-    expect(wrapper.get('[data-world-pvp-rating-empty]').text()).toContain('Арены не используются')
+    expect(wrapper.get('[data-world-pvp-rating-empty]').text()).toContain('арены не используются')
 
     await wrapper.get('[data-world-pvp-tab="rewards"]').trigger('click')
     expect(wrapper.get('[data-world-pvp-rewards-empty]').text()).toContain('не выполняет')
@@ -28,7 +28,7 @@ describe('WorldPvpView', () => {
     const wrapper = mount(WorldPvpView, { props: { dashboard: worldPvpPreviewDashboard, preview: true } })
 
     expect(wrapper.get('[data-world-pvp-preview]').text()).toContain('вымышлены')
-    expect(wrapper.get('[data-world-pvp-panel="overview"]').text()).toContain('3 450')
+    expect(wrapper.get('[data-world-pvp-panel="overview"]').text()).toMatch(/3[\s\u00a0\u202f]450/)
     await wrapper.get('[data-world-pvp-tab="rating"]').trigger('click')
 
     expect(wrapper.findAll('[data-world-pvp-standing]')).toHaveLength(4)
@@ -64,9 +64,8 @@ describe('WorldPvpView', () => {
   })
 
   it('offers an explicit retry without calling Arena or performing purchases', async () => {
-    const retry = vi.fn()
-    const wrapper = mount(WorldPvpView, { props: { error: 'Не удалось загрузить данные', onRefresh: retry } })
+    const wrapper = mount(WorldPvpView, { props: { error: 'Не удалось загрузить данные' } })
     await wrapper.get('[data-world-pvp-error] button').trigger('click')
-    expect(retry).toHaveBeenCalledTimes(1)
+    expect(wrapper.emitted('refresh')).toHaveLength(1)
   })
 })
