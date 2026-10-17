@@ -57,7 +57,7 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
         var players = await first.GetFromJsonAsync<OpenWorldPlayersResult>("/api/v1/world/pvp/players");
         Assert.Contains(players!.Players, player => player.CharacterId == target.Character);
         var started = await EnterAsync(first, target.Character);
-        Assert.True(started.Succeeded, started.ErrorCode);
+        Assert.True(started.Succeeded, $"Starting open-world duel failed: {started.ErrorCode}");
         Assert.True(started.Snapshot!.OpenWorldPvp);
         Assert.Equal("Player", started.Snapshot.Enemy.Kind);
         Assert.DoesNotContain(started.Snapshot.Enemies!, actor => actor.Kind == "Monster");
@@ -69,7 +69,7 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
         var retry = await EnterAsync(first, target.Character);
         Assert.False(retry.Succeeded);
         var joined = await EnterAsync(third, attacker.Character, attack: false);
-        Assert.True(joined.Succeeded, joined.ErrorCode);
+        Assert.True(joined.Succeeded, $"Joining open-world duel failed: {joined.ErrorCode}");
         Assert.Equal(started.Snapshot.SessionId, joined.Snapshot!.SessionId);
         Assert.Contains(joined.Snapshot.Players!, player => player.ActorId == attacker.Character);
         Assert.DoesNotContain(joined.Snapshot.Players!, player => player.ActorId == target.Character);
@@ -264,8 +264,11 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
 
         await new WorldPvpSettlementService(db, new FixedTime(now)).ApplyAsync(fight, CancellationToken.None);
 
-        Assert.Equal(now, (await db.WorldPvpDeathReceipts.AsNoTracking().SingleAsync()).AtUtc);
-        Assert.Equal(now, (await db.WorldPvpRewardReceipts.AsNoTracking().SingleAsync()).AtUtc);
+        // PostgreSQL timestamps have microsecond precision, while .NET DateTimeOffset has 100-ns ticks.
+        Assert.InRange(((await db.WorldPvpDeathReceipts.AsNoTracking().SingleAsync()).AtUtc - now).Duration(),
+            TimeSpan.Zero, TimeSpan.FromTicks(10));
+        Assert.InRange(((await db.WorldPvpRewardReceipts.AsNoTracking().SingleAsync()).AtUtc - now).Duration(),
+            TimeSpan.Zero, TimeSpan.FromTicks(10));
     }
 
     [Fact]
