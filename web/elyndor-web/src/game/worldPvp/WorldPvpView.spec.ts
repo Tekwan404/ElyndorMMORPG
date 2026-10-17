@@ -21,6 +21,9 @@ describe('WorldPvpView', () => {
     await wrapper.get('[data-world-pvp-tab="bounties"]').trigger('click')
     expect(wrapper.get('[data-world-pvp-bounties-empty]').text()).toContain('Никто не объявлен')
 
+    await wrapper.get('[data-world-pvp-tab="titles"]').trigger('click')
+    expect(wrapper.get('[data-world-pvp-titles-empty]').text()).toContain('Летопись титулов')
+    expect(wrapper.find('[data-world-pvp-title]').exists()).toBe(false)
     expect(wrapper.find('button[data-buy]').exists()).toBe(false)
   })
 
@@ -61,6 +64,23 @@ describe('WorldPvpView', () => {
     expect(wrapper.findAll('[data-world-pvp-bounty]')).toHaveLength(2)
     expect(wrapper.get('[data-world-pvp-bounty="preview-bounty-a"]').text()).toContain('Арториус')
     expect(wrapper.find('[data-world-pvp-bounty="preview-bounty-c"]').exists()).toBe(false)
+  })
+
+  it('shows only server-provided title unlocks and progress without granting titles', async () => {
+    const wrapper = mount(WorldPvpView, {
+      props: { dashboard: worldPvpPreviewDashboard, preview: true },
+    })
+    await wrapper.get('[data-world-pvp-tab="titles"]').trigger('click')
+
+    expect(wrapper.findAll('[data-world-pvp-title]')).toHaveLength(3)
+    expect(wrapper.get('[data-world-pvp-title="preview-hunter"]').text()).toContain('Выбран')
+    expect(wrapper.get('[data-world-pvp-title="preview-executioner"]').text()).toContain('6 / 10')
+    expect(wrapper.get('[data-world-pvp-title="preview-executioner"]').text()).toContain('Не открыт')
+    const progress = wrapper.get('[data-world-pvp-title="preview-executioner"] [role="progressbar"]')
+    expect(progress.attributes('aria-valuenow')).toBe('6')
+    expect(progress.attributes('aria-valuemax')).toBe('10')
+    expect(wrapper.find('[data-world-pvp-title] button').exists()).toBe(false)
+    wrapper.unmount()
   })
 
   it('offers an explicit retry without calling Arena or performing purchases', async () => {
