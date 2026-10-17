@@ -539,12 +539,52 @@ public sealed class PlayerCommerceTests(PostgresFixture postgres) : IAsyncLifeti
         var item = new CharacterItem(Guid.NewGuid(), owner.Character, "SMALL_HEALING_POTION", 1, _clock.Now);
         db.CharacterItems.Add(item); await db.SaveChangesAsync(); return item.Id;
     }
-    private async Task<PlayerIds> Player(long gold = 100)
+    [Theory]
+    [InlineData("HUMAN", "UNDEAD")]
+    [InlineData("UNDEAD", "HUMAN")]
+    public async Task AuctionIsSeparatedByRaceIncludingDirectPurchase(string sellerRace, string otherRace)
+    {
+        var seller = await Player(raceId: sellerRace);
+        var ally = await Player(raceId: sellerRace);
+        var enemy = await Player(raceId: otherRace);
+        Guid item = await Item(seller);
+        var lot = await Listing(seller, item);
+        await using (var db = postgres.CreateDbContext())
+        {
+            Assert.Empty(await Auction(db).ListingsAsync(enemy.Account, false, null, null, 0, default));
+            Assert.Equal(lot.Id, Assert.Single(await Auction(db).ListingsAsync(ally.Account, false, null, null, 0, default)).Id);
+            Assert.Equal(lot.Id, Assert.Single(await Auction(db).ListingsAsync(seller.Account, true, null, null, 0, default)).Id);
+        }
+        var denied = await Buy(enemy, lot.Id);
+        Assert.False(denied.Succeeded);
+        Assert.Equal("auction_not_found", denied.ErrorCode);
+        await using (var db = postgres.CreateDbContext())
+        {
+            Assert.Equal(100, (await db.Characters.FindAsync(enemy.Character))!.Gold);
+            Assert.Equal("ACTIVE", (await db.AuctionListings.FindAsync(lot.Id))!.State);
+            Assert.Empty(await db.CommerceMails.ToArrayAsync());
+        }
+        Assert.True((await Buy(ally, lot.Id)).Succeeded);
+    }
+
+    [Fact]
+    public async Task OpposingRacesCannotTradeEvenInSameLocation()
+    {
+        var human = await Player();
+        var undead = await Player(raceId: "UNDEAD");
+        await using var db = postgres.CreateDbContext();
+        var result = await Trade(db).OpenAsync(human.Account, undead.Character, Guid.NewGuid(), human.Connection, default);
+        Assert.False(result.Succeeded);
+        Assert.Equal("trade_faction_restricted", result.ErrorCode);
+        Assert.Empty(await db.PlayerTrades.ToArrayAsync());
+    }
+
+    private async Task<PlayerIds> Player(long gold = 100, string raceId = "HUMAN")
     {
         await using var db = postgres.CreateDbContext();
         Guid account = Guid.NewGuid(); Guid id = Guid.NewGuid();
         db.Accounts.Add(new Account(account, Random.Shared.NextInt64(1, long.MaxValue), _clock.Now));
-        var character = new Character(id, account, Guid.NewGuid(), "Trader", $"T{id:N}"[..16], "HUMAN", "MALE", "WARRIOR", _clock.Now);
+        var character = new Character(id, account, Guid.NewGuid(), "Trader", $"T{id:N}"[..16], raceId, "MALE", "WARRIOR", _clock.Now);
         character.AddGold(gold); db.Characters.Add(character);
         db.CharacterLocations.Add(new CharacterLocation(id, "STARTER_TOWN", 1, _clock.Now));
         await db.SaveChangesAsync(); return new PlayerIds(account, id, Guid.NewGuid().ToString());

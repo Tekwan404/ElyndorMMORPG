@@ -26,5 +26,15 @@ export const MARKET_MERCHANTS = [
 ] as const
 
 export function marketMerchant(id: string) {
-  return MARKET_MERCHANTS.find((merchant) => merchant.id === id) ?? MARKET_MERCHANTS[3]
+  const merchant =
+    MARKET_MERCHANTS.find((merchant) => merchant.id === id.replace(/^UNDEAD_/, '')) ??
+    MARKET_MERCHANTS[3]
+  if (!id.startsWith('UNDEAD_')) return merchant
+  const names: Record<string, string> = {
+    BORIN_ARMORY: 'Костоправ Гримм',
+    LIORA_HUNTING: 'Ловчая Нэрис',
+    ELARA_ARCANA: 'Чародейка Велена',
+    MARCUS_SUPPLIES: 'Снабженец Морт',
+  }
+  return { ...merchant, id, name: names[merchant.id] ?? merchant.name }
 }

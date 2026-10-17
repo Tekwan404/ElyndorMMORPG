@@ -24,6 +24,10 @@ public static class QuestProgression
         if (defeatedMonsterIds.Count == 0)
             return new([], []);
 
+        string? raceId = await dbContext.Characters.Where(character => character.Id == characterId)
+            .Select(character => character.RaceId).SingleOrDefaultAsync(cancellationToken);
+        if (raceId is not null) content = QuestCatalog.ForRace(content, raceId);
+
         CharacterQuestState[] states = await dbContext.CharacterQuestStates
             .Where(state => state.CharacterId == characterId
                 && state.Status != QuestStateStatuses.Completed)

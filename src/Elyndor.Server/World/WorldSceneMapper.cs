@@ -1,5 +1,6 @@
 using Elyndor.Contracts.World;
 using Elyndor.Core.World;
+using Elyndor.Core.Quests;
 using Elyndor.Infrastructure.World;
 using Elyndor.Infrastructure.Professions;
 
@@ -53,7 +54,7 @@ internal static class WorldSceneMapper
                 point.DisplayName, point.Description, 0, 0));
 
         // Existing quest definitions own NPC names, offers and game rules.
-        foreach (var quest in (scene.Content.Package.Quests ?? [])
+        foreach (var quest in (QuestCatalog.ForRace(scene.Content.Package, scene.RaceId).Quests ?? [])
             .Where(quest => quest.OfferLocationId == location.Id && scene.CompletedQuestIds?.Contains(quest.Id) != true)
             .OrderBy(quest => quest.RequiredLevel).ThenBy(quest => quest.Id, StringComparer.Ordinal))
             objects.Add(new WorldSceneObjectResponse($"QUEST_{quest.Id}", "Npc",

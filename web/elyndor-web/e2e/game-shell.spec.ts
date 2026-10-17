@@ -1,5 +1,77 @@
 import { expect, test, type Page } from '@playwright/test'
 
+test('undead homeland has its own city, NPCs and map on a phone', async ({ page }) => {
+  test.setTimeout(90_000)
+  test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses a deterministic faction fixture.')
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  await installMockApiUnlessReal(page)
+  const initial = snapshot(true, 'STARTER_TOWN')
+  const town = {
+    ...initial.world!.currentLocation,
+    id: 'UNDEAD_STARTER_TOWN',
+    displayName: 'Тихоград',
+    mapId: 'DEAD_KINGDOMS',
+    artId: 'undead-starter-town',
+  }
+  const forest = {
+    ...locations.WHISPERING_FOREST,
+    id: 'UNDEAD_WHISPERING_FOREST',
+    displayName: 'Лес Последнего Шёпота',
+    mapId: 'DEAD_KINGDOMS',
+  }
+  const bootstrap = {
+    ...initial,
+    character: { ...initial.character!, raceId: 'UNDEAD' },
+    world: { ...initial.world!, currentLocation: town, outgoingTransitions: [forest] },
+  }
+  await page.route('**/api/v1/bootstrap', (route) => route.fulfill({ json: bootstrap }))
+  await page.route('**/api/v1/world/locations', (route) => route.fulfill({ json: [town, forest] }))
+  await page.route('**/api/v1/quests/', (route) => route.fulfill({ json: { quests: [] } }))
+  await page.route('**/api/v1/inventory/merchant/UNDEAD_MARCUS_SUPPLIES', (route) =>
+    route.fulfill({
+      json: {
+        id: 'UNDEAD_MARCUS_SUPPLIES',
+        name: 'Снабженец Морт',
+        description: 'Припасы Тихограда.',
+        gold: 0,
+        items: [],
+        buybackItems: [],
+      },
+    }),
+  )
+  await page.goto('/')
+  await expect(page.getByRole('heading', { name: 'Тихоград', exact: true })).toBeVisible({
+    timeout: 20_000,
+  })
+  await expect(page.locator('.city-map__art')).toHaveAttribute('src', /undead-starter-town/)
+  await expect(page.locator('[data-city-marker]')).toHaveCount(8)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.screenshot({
+    path: '../../output/playwright/undead-tikhograd-390.png',
+    fullPage: true,
+  })
+  await page.locator('[data-city-marker="market"]').click()
+  await expect(page.locator('[data-market-merchant]')).toHaveCount(4)
+  await expect(page.locator('[data-market-merchant="UNDEAD_MARCUS_SUPPLIES"]')).toContainText(
+    'Снабженец Морт',
+  )
+  await page.locator('[data-market-merchant="UNDEAD_MARCUS_SUPPLIES"]').click()
+  await expect(page.getByRole('heading', { name: 'Снабженец Морт' }).last()).toBeVisible()
+  await page.screenshot({ path: '../../output/playwright/undead-merchant-390.png', fullPage: true })
+  await page.keyboard.press('Escape')
+  await page.locator('[data-city-back]').click()
+  await page.locator('[data-city-marker="adventurers"]').click()
+  await expect(page.locator('[data-adventurer-guild-board]')).toContainText('Морвена')
+  await expect(page.locator('[data-adventurer-guild-board] .town-npc')).toHaveCount(5)
+  await page.keyboard.press('Escape')
+  await page.locator('[data-nav="world"]').click()
+  await expect(page.locator('[data-map-switch-id="DEAD_KINGDOMS"]')).toBeVisible()
+  await expect(page.locator('[data-map-switch-id="BORDERLANDS"]')).toHaveCount(0)
+  await expect(page.locator('[data-map-switch-id="OUTER_REACHES"]')).toBeVisible()
+  expect(errors).toEqual([])
+})
+
 test('dungeon stages and all loot remain available without floor selection on a phone', async ({ page }) => {
   test.setTimeout(90_000)
   test.skip(process.env.ELYNDOR_E2E_REAL === 'true', 'Uses a deterministic dungeon progress fixture.')

@@ -27,7 +27,7 @@ public sealed class QuestServiceTests(PostgresFixture postgres) : IAsyncLifetime
     public async Task LevelOneToTwentyContentInterleavesStoryErrandsAndContracts()
     {
         GameContentPackage content = await LoadContentAsync();
-        IReadOnlyList<QuestDefinition> quests = QuestCatalog.Resolve(content);
+        IReadOnlyList<QuestDefinition> quests = QuestCatalog.Resolve(QuestCatalog.ForRace(content, "HUMAN"));
 
         Assert.Equal(23, quests.Count);
         Assert.Equal(8, quests.Count(quest => quest.Type == QuestType.Story));

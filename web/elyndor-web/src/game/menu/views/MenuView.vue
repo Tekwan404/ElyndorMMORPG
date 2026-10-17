@@ -32,20 +32,33 @@ const activeSection = ref<MenuSection>(props.initialSection)
 const copied = ref(false)
 const sendTrainingDummyCombatLogs = ref(isTrainingDummyCombatLogEnabled())
 const character = computed(() => session.snapshot?.character ?? null)
-const portraitArt = computed(() => character.value
-  ? resolveCharacterArt(character.value.classId, character.value.genderId, 'transparent', character.value.activeSkinId)
-  : null)
+const portraitArt = computed(() =>
+  character.value
+    ? resolveCharacterArt(
+        character.value.classId,
+        character.value.genderId,
+        'transparent',
+        character.value.activeSkinId,
+        character.value.raceId,
+      )
+    : null,
+)
 
-watch(() => props.initialSection, section => {
-  activeSection.value = section
-})
+watch(
+  () => props.initialSection,
+  (section) => {
+    activeSection.value = section
+  },
+)
 
 async function copyPublicCode(): Promise<void> {
   const code = character.value?.publicCode
   if (!code || !navigator.clipboard) return
   await navigator.clipboard.writeText(code)
   copied.value = true
-  window.setTimeout(() => { copied.value = false }, 1600)
+  window.setTimeout(() => {
+    copied.value = false
+  }, 1600)
 }
 
 function updateTrainingDummyCombatLogPreference(): void {
@@ -63,7 +76,11 @@ function updateTrainingDummyCombatLogPreference(): void {
       <span>ELYNDOR</span>
     </header>
 
-    <section v-if="character && activeSection === 'profile'" class="menu-profile" aria-label="Профиль героя">
+    <section
+      v-if="character && activeSection === 'profile'"
+      class="menu-profile"
+      aria-label="Профиль героя"
+    >
       <ProfileFrame class="menu-profile__portrait" :style-id="character.profileFrameStyle">
         <img v-if="portraitArt" :src="portraitArt" alt="" aria-hidden="true" />
         <span v-else>{{ character.name.slice(0, 1).toUpperCase() }}</span>
@@ -71,7 +88,9 @@ function updateTrainingDummyCombatLogPreference(): void {
       <div class="menu-profile__identity">
         <small>ГЕРОЙ · УР. {{ character.level }}</small>
         <strong>{{ character.name }}</strong>
-        <small v-if="character.profileTitle" class="profile-title">{{ character.profileTitle }}</small>
+        <small v-if="character.profileTitle" class="profile-title">{{
+          character.profileTitle
+        }}</small>
         <span>{{ classLabel(character.classId) }} · {{ formatMoney(character.gold) }}</span>
       </div>
       <div class="menu-profile__code">
@@ -82,14 +101,23 @@ function updateTrainingDummyCombatLogPreference(): void {
           variant="ghost"
           :disabled="!character.publicCode"
           @click="copyPublicCode"
-        >{{ copied ? 'Скопировано' : 'Копировать' }}</UIButton>
+          >{{ copied ? 'Скопировано' : 'Копировать' }}</UIButton
+        >
       </div>
     </section>
 
     <nav v-if="activeSection === 'profile'" class="menu-grid" aria-label="Игровое меню">
-      <button class="menu-tile menu-tile--gold" type="button" data-menu-store @click="emit('open-store')">
-        <span class="menu-tile__icon" aria-hidden="true"><img :src="crystalArt" alt="" style="width: 40px; height: 40px; object-fit: contain" /></span>
-        <span><strong>Магазин за кристаллы</strong><small>Облики, артефакты и припасы</small></span><b aria-hidden="true">›</b>
+      <button
+        class="menu-tile menu-tile--gold"
+        type="button"
+        data-menu-store
+        @click="emit('open-store')"
+      >
+        <span class="menu-tile__icon" aria-hidden="true"
+          ><img :src="crystalArt" alt="" style="width: 40px; height: 40px; object-fit: contain"
+        /></span>
+        <span><strong>Магазин за кристаллы</strong><small>Облики, артефакты и припасы</small></span
+        ><b aria-hidden="true">›</b>
       </button>
       <button class="menu-tile menu-tile--gold" type="button" @click="activeSection = 'friends'">
         <span class="menu-tile__icon" aria-hidden="true">
@@ -105,16 +133,28 @@ function updateTrainingDummyCombatLogPreference(): void {
         <span><strong>Группа</strong><small>Состав и поход</small></span>
         <b aria-hidden="true">›</b>
       </button>
-      <button class="menu-tile menu-tile--violet" type="button" data-open-hotbar-settings @click="activeSection = 'hotbar'">
+      <button
+        class="menu-tile menu-tile--violet"
+        type="button"
+        data-open-hotbar-settings
+        @click="activeSection = 'hotbar'"
+      >
         <span class="menu-tile__icon" aria-hidden="true">
           <IconGenerator :config="{ id: 'menu-hotbar', glyph: 'sword', category: 'utility' }" />
         </span>
         <span><strong>Панель боя</strong><small>Порядок способностей</small></span>
         <b aria-hidden="true">›</b>
       </button>
-      <button class="menu-tile menu-tile--gold" type="button" data-open-release-notes @click="activeSection = 'updates'">
+      <button
+        class="menu-tile menu-tile--gold"
+        type="button"
+        data-open-release-notes
+        @click="activeSection = 'updates'"
+      >
         <span class="menu-tile__icon" aria-hidden="true">
-          <IconGenerator :config="{ id: 'menu-release-notes', glyph: 'scroll', category: 'utility' }" />
+          <IconGenerator
+            :config="{ id: 'menu-release-notes', glyph: 'scroll', category: 'utility' }"
+          />
         </span>
         <span><strong>Новости игры</strong><small>Что изменилось в Elyndor</small></span>
         <b aria-hidden="true">›</b>
@@ -140,7 +180,11 @@ function updateTrainingDummyCombatLogPreference(): void {
       </RouterLink>
     </nav>
 
-    <section v-if="activeSection === 'profile' && session.isAdmin" class="menu-setting" data-training-dummy-log-setting>
+    <section
+      v-if="activeSection === 'profile' && session.isAdmin"
+      class="menu-setting"
+      data-training-dummy-log-setting
+    >
       <div class="menu-setting__copy">
         <small>ДИАГНОСТИКА</small>
         <strong>Отчёты с тренировочного манекена</strong>
@@ -183,7 +227,10 @@ function updateTrainingDummyCombatLogPreference(): void {
 </template>
 
 <style scoped>
-.profile-title { color: #d1b2e9; font-size: 12px; }
+.profile-title {
+  color: #d1b2e9;
+  font-size: 12px;
+}
 .menu-view {
   display: grid;
   width: min(100%, var(--ui-content-width));
@@ -205,9 +252,9 @@ function updateTrainingDummyCombatLogPreference(): void {
 
 .menu-view__header small {
   color: var(--ui-color-gold);
-  font-size: .55rem;
+  font-size: 0.55rem;
   font-weight: 800;
-  letter-spacing: .14em;
+  letter-spacing: 0.14em;
 }
 
 .menu-view__header h1 {
@@ -218,8 +265,8 @@ function updateTrainingDummyCombatLogPreference(): void {
 
 .menu-view__header > span {
   color: var(--ui-color-text-muted);
-  font-size: .65rem;
-  letter-spacing: .12em;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
 }
 
 .menu-profile {
@@ -230,8 +277,7 @@ function updateTrainingDummyCombatLogPreference(): void {
   padding: 10px;
   border: 1px solid rgb(205 177 113 / 32%);
   background:
-    linear-gradient(90deg, rgb(205 177 113 / 10%), transparent 55%),
-    var(--ui-gradient-panel);
+    linear-gradient(90deg, rgb(205 177 113 / 10%), transparent 55%), var(--ui-gradient-panel);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%);
 }
 
@@ -266,9 +312,9 @@ function updateTrainingDummyCombatLogPreference(): void {
 .menu-profile__identity small,
 .menu-profile__code small {
   color: var(--ui-color-gold);
-  font-size: .5rem;
+  font-size: 0.5rem;
   font-weight: 800;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
 }
 
 .menu-profile__identity strong {
@@ -281,7 +327,7 @@ function updateTrainingDummyCombatLogPreference(): void {
 
 .menu-profile__identity > span {
   color: var(--ui-color-text-muted);
-  font-size: .61rem;
+  font-size: 0.61rem;
 }
 
 .menu-profile__code {
@@ -291,8 +337,8 @@ function updateTrainingDummyCombatLogPreference(): void {
 
 .menu-profile__code code {
   color: #e8cb8a;
-  font-size: .62rem;
-  letter-spacing: .06em;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
 }
 
 .menu-profile__code :deep(.ui-button) {
@@ -321,7 +367,10 @@ function updateTrainingDummyCombatLogPreference(): void {
   color: var(--ui-color-text-primary);
   font: inherit;
   text-align: left;
-  transition: border-color var(--ui-transition-fast), transform var(--ui-transition-fast), background var(--ui-transition-fast);
+  transition:
+    border-color var(--ui-transition-fast),
+    transform var(--ui-transition-fast),
+    background var(--ui-transition-fast);
 }
 
 .menu-tile:not(:disabled):active {
@@ -334,7 +383,7 @@ function updateTrainingDummyCombatLogPreference(): void {
 }
 
 .menu-tile:disabled {
-  opacity: .48;
+  opacity: 0.48;
 }
 
 .menu-tile--gold {
@@ -377,7 +426,7 @@ function updateTrainingDummyCombatLogPreference(): void {
 .menu-tile strong {
   overflow: hidden;
   font-family: var(--ui-font-display);
-  font-size: .78rem;
+  font-size: 0.78rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -401,9 +450,7 @@ function updateTrainingDummyCombatLogPreference(): void {
   padding: 10px 11px;
   border: 1px solid rgb(182 161 236 / 22%);
   border-radius: var(--ui-radius-md);
-  background:
-    linear-gradient(90deg, rgb(105 92 184 / 9%), transparent 62%),
-    rgb(6 9 15 / 72%);
+  background: linear-gradient(90deg, rgb(105 92 184 / 9%), transparent 62%), rgb(6 9 15 / 72%);
 }
 
 .menu-setting__copy {
@@ -414,19 +461,19 @@ function updateTrainingDummyCombatLogPreference(): void {
 
 .menu-setting__copy small {
   color: var(--ui-color-primary);
-  font-size: .5rem;
+  font-size: 0.5rem;
   font-weight: 800;
-  letter-spacing: .09em;
+  letter-spacing: 0.09em;
 }
 
 .menu-setting__copy strong {
   font-family: var(--ui-font-display);
-  font-size: .77rem;
+  font-size: 0.77rem;
 }
 
 .menu-setting__copy span {
   color: var(--ui-color-text-muted);
-  font-size: .58rem;
+  font-size: 0.58rem;
   line-height: 1.35;
 }
 
@@ -454,18 +501,22 @@ function updateTrainingDummyCombatLogPreference(): void {
   border: 1px solid var(--ui-color-border-strong);
   border-radius: var(--ui-radius-round);
   background: rgb(2 5 10 / 84%);
-  transition: border-color var(--ui-transition-fast), background var(--ui-transition-fast);
+  transition:
+    border-color var(--ui-transition-fast),
+    background var(--ui-transition-fast);
 }
 
 .menu-switch__track i {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: .93rem;
-  height: .93rem;
+  width: 0.93rem;
+  height: 0.93rem;
   border-radius: 50%;
   background: var(--ui-color-text-muted);
-  transition: transform var(--ui-transition-fast), background var(--ui-transition-fast);
+  transition:
+    transform var(--ui-transition-fast),
+    background var(--ui-transition-fast);
 }
 
 .menu-switch input:checked + .menu-switch__track {
@@ -485,7 +536,7 @@ function updateTrainingDummyCombatLogPreference(): void {
 
 .menu-switch b {
   color: var(--ui-color-text-muted);
-  font-size: .5rem;
+  font-size: 0.5rem;
   font-weight: 800;
 }
 
@@ -507,7 +558,7 @@ function updateTrainingDummyCombatLogPreference(): void {
   border: 1px solid var(--ui-color-gold-muted);
   border-radius: 50%;
   color: var(--ui-color-gold);
-  font: 700 .7rem var(--ui-font-display);
+  font: 700 0.7rem var(--ui-font-display);
 }
 
 .menu-note p {
@@ -542,7 +593,7 @@ function updateTrainingDummyCombatLogPreference(): void {
   border: 0;
   background: transparent;
   box-shadow: none;
-  font-size: .85rem;
+  font-size: 0.85rem;
 }
 
 @media (max-width: 380px) {

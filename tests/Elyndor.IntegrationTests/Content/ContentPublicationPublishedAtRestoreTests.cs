@@ -34,14 +34,12 @@ public sealed class ContentPublicationPublishedAtRestoreTests(PostgresFixture po
                 .Where(item => item.Id != EnhancementOreId)
                 .ToArray(),
             Merchants = (bundled.Merchants ?? [])
-                .Select(merchant => merchant.Id == MarcusSuppliesId
-                    ? merchant with
+                .Select(merchant => merchant with
                     {
                         ItemIds = merchant.ItemIds
                             .Where(itemId => itemId != EnhancementOreId)
                             .ToArray()
-                    }
-                    : merchant)
+                    })
                 .ToArray(),
             PremiumStoreOffers = (bundled.PremiumStoreOffers ?? [])
                 .Where(offer => offer.ItemDefinitionId != EnhancementOreId)
@@ -119,6 +117,9 @@ public sealed class ContentPublicationPublishedAtRestoreTests(PostgresFixture po
                 .Single(merchant => merchant.Id == MarcusSuppliesId)
                 .ItemIds,
             itemId => itemId == EnhancementOreId);
+        Assert.All(bundled.Merchants!.Where(merchant => merchant.ItemIds.Contains(EnhancementOreId)),
+            merchant => Assert.Contains(EnhancementOreId,
+                restoredPackage.Merchants!.Single(restored => restored.Id == merchant.Id).ItemIds));
         Assert.Equal(bundled.ContentVersion, restoredPackage.ContentVersion);
         Assert.Equal(bundled.BalanceVersion, restoredPackage.BalanceVersion);
         Assert.Equal(revisionId, restored.RuntimeState.RevisionId);

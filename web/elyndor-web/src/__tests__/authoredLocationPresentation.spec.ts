@@ -3,6 +3,14 @@ import { describe, expect, it } from 'vitest'
 import { locationPresentation } from '@/game/world/locationPresentation'
 
 describe('authored location presentation', () => {
+  it('gives the undead city its own name and art while preserving copied location kinds', () => {
+    const city = locationPresentation('UNDEAD_STARTER_TOWN')
+    expect(city.label).toBe('Тихоград')
+    expect(city.kind).toBe('city')
+    expect(city.art).not.toBe(locationPresentation('STARTER_TOWN').art)
+    expect(locationPresentation('UNDEAD_ANCIENT_MINE').kind).toBe('dungeon')
+    expect(locationPresentation('UNDEAD_WHISPERING_FOREST').label).toBe('Лес Последнего Шёпота')
+  })
   it('presents every authored group instance as a dungeon', () => {
     for (const id of [
       'FLOWER_MEADOW',

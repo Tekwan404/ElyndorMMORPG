@@ -1,6 +1,7 @@
 using Elyndor.Core.Afk;
 using Elyndor.Core.Dungeons;
 using Elyndor.Core.World;
+using Elyndor.Core.Content;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -24,7 +25,8 @@ public sealed record DungeonNavigationResult(
 
 public sealed class DungeonNavigationService(
     GameDbContext dbContext,
-    TimeProvider timeProvider)
+    TimeProvider timeProvider,
+    IContentSnapshotProvider? contentProvider = null)
 {
     public async Task<DungeonNavigationResult> CanEnterAsync(
         Guid accountId,
@@ -138,8 +140,9 @@ public sealed class DungeonNavigationService(
 
         await RemoveStaleTravelAsync(characterId!.Value, cancellationToken);
         DateTimeOffset now = timeProvider.GetUtcNow();
-        if (!string.Equals(location!.LocationId, WorldLocationIds.StarterTown, StringComparison.Ordinal))
-            location.Relocate(WorldLocationIds.StarterTown, now);
+        string homeTown = await GetHomeTownAsync(characterId.Value, cancellationToken);
+        if (!string.Equals(location!.LocationId, homeTown, StringComparison.Ordinal))
+            location.Relocate(homeTown, now);
 
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
@@ -183,8 +186,9 @@ public sealed class DungeonNavigationService(
 
         await RemoveStaleTravelAsync(characterId!.Value, cancellationToken);
         DateTimeOffset now = timeProvider.GetUtcNow();
-        if (!string.Equals(location!.LocationId, WorldLocationIds.StarterTown, StringComparison.Ordinal))
-            location.Relocate(WorldLocationIds.StarterTown, now);
+        string homeTown = await GetHomeTownAsync(characterId.Value, cancellationToken);
+        if (!string.Equals(location!.LocationId, homeTown, StringComparison.Ordinal))
+            location.Relocate(homeTown, now);
 
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
@@ -256,6 +260,11 @@ public sealed class DungeonNavigationService(
             return DungeonNavigationResult.Failure(DungeonErrorCodes.AfkFarmActive);
         }
 
+        string raceId = await dbContext.Characters.Where(character => character.Id == characterId!.Value)
+            .Select(character => character.RaceId).SingleAsync(cancellationToken);
+        if (contentProvider?.GetCurrent().Indexes.LocationsById.TryGetValue(entryLocationId, out var entry) == true
+            && !WorldLocationAccess.CanEnter(entry, raceId))
+            return DungeonNavigationResult.Failure(DungeonErrorCodes.MemberCannotEnter);
         DateTimeOffset now = timeProvider.GetUtcNow();
         if (!string.Equals(location!.LocationId, entryLocationId, StringComparison.Ordinal))
             location.Relocate(entryLocationId, now);
@@ -305,6 +314,10 @@ public sealed class DungeonNavigationService(
             return DungeonNavigationResult.Failure(DungeonErrorCodes.InvalidLocation);
         return null;
     }
+
+    private async Task<string> GetHomeTownAsync(Guid characterId, CancellationToken cancellationToken) =>
+        WorldLocationAccess.HomeTown(await dbContext.Characters.Where(character => character.Id == characterId)
+            .Select(character => character.RaceId).SingleAsync(cancellationToken));
 
     private async Task RemoveStaleTravelAsync(Guid characterId, CancellationToken cancellationToken)
     {

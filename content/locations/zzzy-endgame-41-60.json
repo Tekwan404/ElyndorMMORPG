@@ -21,7 +21,8 @@
       "description": "Преддверие Чёрного Бастиона и последний рубеж Пограничных земель. За Пределом открывается путь в Дальние земли.",
       "travelDurationSeconds": 0,
       "allowAfk": true,
-      "mapId": "BORDERLANDS"
+      "mapId": "BORDERLANDS",
+      "requiredRaceId": "HUMAN"
     },
     {
       "id": "BLACK_CRAGS",
@@ -32,6 +33,7 @@
       "maximumLevel": 44,
       "transitions": [
         "OBSIDIAN_EDGE",
+        "UNDEAD_OBSIDIAN_EDGE",
         "PLAGUEWOOD"
       ],
       "artId": "chiornye-kruchi",

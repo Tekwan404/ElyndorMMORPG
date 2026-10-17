@@ -1,0 +1,804 @@
+{
+  "characterSkins": [
+    {
+      "id": "WARRIOR_MALE_UNDEAD_STARTER",
+      "name": "Пробуждение",
+      "classId": "WARRIOR",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-male-undead-starter",
+      "crystalPrice": 0,
+      "purchasable": false
+    },
+    {
+      "id": "WARRIOR_MALE_UNDEAD_MIDGAME",
+      "name": "Путь отрёкшихся",
+      "classId": "WARRIOR",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-male-undead-midgame",
+      "crystalPrice": 550,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_MALE_UNDEAD_ENDGAME",
+      "name": "Наследие вечности",
+      "classId": "WARRIOR",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-male-undead-endgame",
+      "crystalPrice": 900,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_MALE_UNDEAD_GUARDIAN",
+      "name": "Могильный страж",
+      "classId": "WARRIOR",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-male-undead-guardian",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_MALE_UNDEAD_BERSERKER",
+      "name": "Кровавая ярость",
+      "classId": "WARRIOR",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-male-undead-berserker",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_MALE_UNDEAD_WARLORD",
+      "name": "Полководец усопших",
+      "classId": "WARRIOR",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-male-undead-warlord",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_MALE_UNDEAD_COLLECTOR_01",
+      "name": "Зов бездны",
+      "classId": "WARRIOR",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-male-undead-collector-01",
+      "crystalPrice": 850,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_MALE_UNDEAD_COLLECTOR_02",
+      "name": "Наследник тлена",
+      "classId": "WARRIOR",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-male-undead-collector-02",
+      "crystalPrice": 950,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_MALE_UNDEAD_COLLECTOR_03",
+      "name": "Венец бессмертия",
+      "classId": "WARRIOR",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-male-undead-collector-03",
+      "crystalPrice": 1100,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_MALE_UNDEAD_COLLECTOR_04",
+      "name": "Владыка последней ночи",
+      "classId": "WARRIOR",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-male-undead-collector-04",
+      "crystalPrice": 1200,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_FEMALE_UNDEAD_STARTER",
+      "name": "Пробуждение",
+      "classId": "WARRIOR",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-female-undead-starter",
+      "crystalPrice": 0,
+      "purchasable": false
+    },
+    {
+      "id": "WARRIOR_FEMALE_UNDEAD_MIDGAME",
+      "name": "Путь отрёкшихся",
+      "classId": "WARRIOR",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-female-undead-midgame",
+      "crystalPrice": 550,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_FEMALE_UNDEAD_ENDGAME",
+      "name": "Наследие вечности",
+      "classId": "WARRIOR",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-female-undead-endgame",
+      "crystalPrice": 900,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_FEMALE_UNDEAD_GUARDIAN",
+      "name": "Могильный страж",
+      "classId": "WARRIOR",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-female-undead-guardian",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_FEMALE_UNDEAD_BERSERKER",
+      "name": "Кровавая ярость",
+      "classId": "WARRIOR",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-female-undead-berserker",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_FEMALE_UNDEAD_WARLORD",
+      "name": "Полководец усопших",
+      "classId": "WARRIOR",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-female-undead-warlord",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_FEMALE_UNDEAD_COLLECTOR_01",
+      "name": "Зов бездны",
+      "classId": "WARRIOR",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-female-undead-collector-01",
+      "crystalPrice": 850,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_FEMALE_UNDEAD_COLLECTOR_02",
+      "name": "Наследник тлена",
+      "classId": "WARRIOR",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-female-undead-collector-02",
+      "crystalPrice": 950,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_FEMALE_UNDEAD_COLLECTOR_03",
+      "name": "Венец бессмертия",
+      "classId": "WARRIOR",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-female-undead-collector-03",
+      "crystalPrice": 1100,
+      "purchasable": true
+    },
+    {
+      "id": "WARRIOR_FEMALE_UNDEAD_COLLECTOR_04",
+      "name": "Владыка последней ночи",
+      "classId": "WARRIOR",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "warrior-female-undead-collector-04",
+      "crystalPrice": 1200,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_MALE_UNDEAD_STARTER",
+      "name": "Пробуждение",
+      "classId": "ARCHER",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-male-undead-starter",
+      "crystalPrice": 0,
+      "purchasable": false
+    },
+    {
+      "id": "ARCHER_MALE_UNDEAD_MIDGAME",
+      "name": "Путь отрёкшихся",
+      "classId": "ARCHER",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-male-undead-midgame",
+      "crystalPrice": 550,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_MALE_UNDEAD_ENDGAME",
+      "name": "Наследие вечности",
+      "classId": "ARCHER",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-male-undead-endgame",
+      "crystalPrice": 900,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_MALE_UNDEAD_MARKSMANSHIP",
+      "name": "Мёртвый прицел",
+      "classId": "ARCHER",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-male-undead-marksmanship",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_MALE_UNDEAD_BEAST_MASTERY",
+      "name": "Повелитель костяной стаи",
+      "classId": "ARCHER",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-male-undead-beast-mastery",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_MALE_UNDEAD_SURVIVAL",
+      "name": "Ловчий сумерек",
+      "classId": "ARCHER",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-male-undead-survival",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_MALE_UNDEAD_COLLECTOR_01",
+      "name": "Зов бездны",
+      "classId": "ARCHER",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-male-undead-collector-01",
+      "crystalPrice": 850,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_MALE_UNDEAD_COLLECTOR_02",
+      "name": "Наследник тлена",
+      "classId": "ARCHER",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-male-undead-collector-02",
+      "crystalPrice": 950,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_MALE_UNDEAD_COLLECTOR_03",
+      "name": "Венец бессмертия",
+      "classId": "ARCHER",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-male-undead-collector-03",
+      "crystalPrice": 1100,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_MALE_UNDEAD_COLLECTOR_04",
+      "name": "Владыка последней ночи",
+      "classId": "ARCHER",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-male-undead-collector-04",
+      "crystalPrice": 1200,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_FEMALE_UNDEAD_STARTER",
+      "name": "Пробуждение",
+      "classId": "ARCHER",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-female-undead-starter",
+      "crystalPrice": 0,
+      "purchasable": false
+    },
+    {
+      "id": "ARCHER_FEMALE_UNDEAD_MIDGAME",
+      "name": "Путь отрёкшихся",
+      "classId": "ARCHER",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-female-undead-midgame",
+      "crystalPrice": 550,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_FEMALE_UNDEAD_ENDGAME",
+      "name": "Наследие вечности",
+      "classId": "ARCHER",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-female-undead-endgame",
+      "crystalPrice": 900,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_FEMALE_UNDEAD_MARKSMANSHIP",
+      "name": "Мёртвый прицел",
+      "classId": "ARCHER",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-female-undead-marksmanship",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_FEMALE_UNDEAD_BEAST_MASTERY",
+      "name": "Повелитель костяной стаи",
+      "classId": "ARCHER",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-female-undead-beast-mastery",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_FEMALE_UNDEAD_SURVIVAL",
+      "name": "Ловчий сумерек",
+      "classId": "ARCHER",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-female-undead-survival",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_FEMALE_UNDEAD_COLLECTOR_01",
+      "name": "Зов бездны",
+      "classId": "ARCHER",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-female-undead-collector-01",
+      "crystalPrice": 850,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_FEMALE_UNDEAD_COLLECTOR_02",
+      "name": "Наследник тлена",
+      "classId": "ARCHER",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-female-undead-collector-02",
+      "crystalPrice": 950,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_FEMALE_UNDEAD_COLLECTOR_03",
+      "name": "Венец бессмертия",
+      "classId": "ARCHER",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-female-undead-collector-03",
+      "crystalPrice": 1100,
+      "purchasable": true
+    },
+    {
+      "id": "ARCHER_FEMALE_UNDEAD_COLLECTOR_04",
+      "name": "Владыка последней ночи",
+      "classId": "ARCHER",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "archer-female-undead-collector-04",
+      "crystalPrice": 1200,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_MALE_UNDEAD_STARTER",
+      "name": "Пробуждение",
+      "classId": "MAGE",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-male-undead-starter",
+      "crystalPrice": 0,
+      "purchasable": false
+    },
+    {
+      "id": "MAGE_MALE_UNDEAD_MIDGAME",
+      "name": "Путь отрёкшихся",
+      "classId": "MAGE",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-male-undead-midgame",
+      "crystalPrice": 550,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_MALE_UNDEAD_ENDGAME",
+      "name": "Наследие вечности",
+      "classId": "MAGE",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-male-undead-endgame",
+      "crystalPrice": 900,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_MALE_UNDEAD_PYROMANCER",
+      "name": "Пламя погребального костра",
+      "classId": "MAGE",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-male-undead-pyromancer",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_MALE_UNDEAD_ARCANE",
+      "name": "Тайны загробного мира",
+      "classId": "MAGE",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-male-undead-arcane",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_MALE_UNDEAD_FROST",
+      "name": "Холод склепа",
+      "classId": "MAGE",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-male-undead-frost",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_MALE_UNDEAD_COLLECTOR_01",
+      "name": "Зов бездны",
+      "classId": "MAGE",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-male-undead-collector-01",
+      "crystalPrice": 850,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_MALE_UNDEAD_COLLECTOR_02",
+      "name": "Наследник тлена",
+      "classId": "MAGE",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-male-undead-collector-02",
+      "crystalPrice": 950,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_MALE_UNDEAD_COLLECTOR_03",
+      "name": "Венец бессмертия",
+      "classId": "MAGE",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-male-undead-collector-03",
+      "crystalPrice": 1100,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_MALE_UNDEAD_COLLECTOR_04",
+      "name": "Владыка последней ночи",
+      "classId": "MAGE",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-male-undead-collector-04",
+      "crystalPrice": 1200,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_FEMALE_UNDEAD_STARTER",
+      "name": "Пробуждение",
+      "classId": "MAGE",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-female-undead-starter",
+      "crystalPrice": 0,
+      "purchasable": false
+    },
+    {
+      "id": "MAGE_FEMALE_UNDEAD_MIDGAME",
+      "name": "Путь отрёкшихся",
+      "classId": "MAGE",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-female-undead-midgame",
+      "crystalPrice": 550,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_FEMALE_UNDEAD_ENDGAME",
+      "name": "Наследие вечности",
+      "classId": "MAGE",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-female-undead-endgame",
+      "crystalPrice": 900,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_FEMALE_UNDEAD_PYROMANCER",
+      "name": "Пламя погребального костра",
+      "classId": "MAGE",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-female-undead-pyromancer",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_FEMALE_UNDEAD_ARCANE",
+      "name": "Тайны загробного мира",
+      "classId": "MAGE",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-female-undead-arcane",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_FEMALE_UNDEAD_FROST",
+      "name": "Холод склепа",
+      "classId": "MAGE",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-female-undead-frost",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_FEMALE_UNDEAD_COLLECTOR_01",
+      "name": "Зов бездны",
+      "classId": "MAGE",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-female-undead-collector-01",
+      "crystalPrice": 850,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_FEMALE_UNDEAD_COLLECTOR_02",
+      "name": "Наследник тлена",
+      "classId": "MAGE",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-female-undead-collector-02",
+      "crystalPrice": 950,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_FEMALE_UNDEAD_COLLECTOR_03",
+      "name": "Венец бессмертия",
+      "classId": "MAGE",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-female-undead-collector-03",
+      "crystalPrice": 1100,
+      "purchasable": true
+    },
+    {
+      "id": "MAGE_FEMALE_UNDEAD_COLLECTOR_04",
+      "name": "Владыка последней ночи",
+      "classId": "MAGE",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "mage-female-undead-collector-04",
+      "crystalPrice": 1200,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_MALE_UNDEAD_STARTER",
+      "name": "Пробуждение",
+      "classId": "PALADIN",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-male-undead-starter",
+      "crystalPrice": 0,
+      "purchasable": false
+    },
+    {
+      "id": "PALADIN_MALE_UNDEAD_MIDGAME",
+      "name": "Путь отрёкшихся",
+      "classId": "PALADIN",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-male-undead-midgame",
+      "crystalPrice": 550,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_MALE_UNDEAD_ENDGAME",
+      "name": "Наследие вечности",
+      "classId": "PALADIN",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-male-undead-endgame",
+      "crystalPrice": 900,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_MALE_UNDEAD_HOLY",
+      "name": "Свет за гранью смерти",
+      "classId": "PALADIN",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-male-undead-holy",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_MALE_UNDEAD_PROTECTION",
+      "name": "Щит вечного дозора",
+      "classId": "PALADIN",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-male-undead-protection",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_MALE_UNDEAD_RETRIBUTION",
+      "name": "Посмертное возмездие",
+      "classId": "PALADIN",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-male-undead-retribution",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_MALE_UNDEAD_COLLECTOR_01",
+      "name": "Зов бездны",
+      "classId": "PALADIN",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-male-undead-collector-01",
+      "crystalPrice": 850,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_MALE_UNDEAD_COLLECTOR_02",
+      "name": "Наследник тлена",
+      "classId": "PALADIN",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-male-undead-collector-02",
+      "crystalPrice": 950,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_MALE_UNDEAD_COLLECTOR_03",
+      "name": "Венец бессмертия",
+      "classId": "PALADIN",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-male-undead-collector-03",
+      "crystalPrice": 1100,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_MALE_UNDEAD_COLLECTOR_04",
+      "name": "Владыка последней ночи",
+      "classId": "PALADIN",
+      "genderId": "MALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-male-undead-collector-04",
+      "crystalPrice": 1200,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_FEMALE_UNDEAD_STARTER",
+      "name": "Пробуждение",
+      "classId": "PALADIN",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-female-undead-starter",
+      "crystalPrice": 0,
+      "purchasable": false
+    },
+    {
+      "id": "PALADIN_FEMALE_UNDEAD_MIDGAME",
+      "name": "Путь отрёкшихся",
+      "classId": "PALADIN",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-female-undead-midgame",
+      "crystalPrice": 550,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_FEMALE_UNDEAD_ENDGAME",
+      "name": "Наследие вечности",
+      "classId": "PALADIN",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-female-undead-endgame",
+      "crystalPrice": 900,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_FEMALE_UNDEAD_HOLY",
+      "name": "Свет за гранью смерти",
+      "classId": "PALADIN",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-female-undead-holy",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_FEMALE_UNDEAD_PROTECTION",
+      "name": "Щит вечного дозора",
+      "classId": "PALADIN",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-female-undead-protection",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_FEMALE_UNDEAD_RETRIBUTION",
+      "name": "Посмертное возмездие",
+      "classId": "PALADIN",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-female-undead-retribution",
+      "crystalPrice": 700,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_FEMALE_UNDEAD_COLLECTOR_01",
+      "name": "Зов бездны",
+      "classId": "PALADIN",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-female-undead-collector-01",
+      "crystalPrice": 850,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_FEMALE_UNDEAD_COLLECTOR_02",
+      "name": "Наследник тлена",
+      "classId": "PALADIN",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-female-undead-collector-02",
+      "crystalPrice": 950,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_FEMALE_UNDEAD_COLLECTOR_03",
+      "name": "Венец бессмертия",
+      "classId": "PALADIN",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-female-undead-collector-03",
+      "crystalPrice": 1100,
+      "purchasable": true
+    },
+    {
+      "id": "PALADIN_FEMALE_UNDEAD_COLLECTOR_04",
+      "name": "Владыка последней ночи",
+      "classId": "PALADIN",
+      "genderId": "FEMALE",
+      "raceId": "UNDEAD",
+      "imageId": "paladin-female-undead-collector-04",
+      "crystalPrice": 1200,
+      "purchasable": true
+    }
+  ]
+}

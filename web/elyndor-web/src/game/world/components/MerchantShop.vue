@@ -11,6 +11,7 @@ import {
   type MerchantSnapshot,
 } from '@/api/contracts'
 import { gameArt } from '@/assets/gameArt'
+import undeadCityArt from '@/assets/world/undead-starter-town.webp'
 import MerchantPortrait from '@/game/world/components/MerchantPortrait.vue'
 import { marketMerchant } from '@/game/world/marketMerchants'
 import { consumableActionLabel } from '@/game/items/consumablePresentation'
@@ -19,9 +20,11 @@ import { useGameSessionStore } from '@/stores/gameSession'
 import { UIButton, UIModal } from '@/ui/components'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 
-const props = withDefaults(defineProps<{ open: boolean; merchantId?: string }>(), { merchantId: 'MARCUS_SUPPLIES' })
+const props = withDefaults(defineProps<{ open: boolean; merchantId?: string }>(), {
+  merchantId: 'MARCUS_SUPPLIES',
+})
 const emit = defineEmits<{ close: [] }>()
-const merchantPresentation = computed(() => marketMerchant(props.merchantId))
+const merchantPresentation = computed(() => marketMerchant(resolvedMerchantId.value))
 const loadError = ref(false)
 let loadSequence = 0
 
@@ -30,11 +33,25 @@ type SortMode = 'recommended' | 'price-asc' | 'price-desc' | 'rarity'
 type EquipmentSubcategory = 'all' | 'weapon' | 'armor' | 'accessory'
 type ActiveTab = 'buy' | 'sell' | 'buyback'
 type StatKey =
-  | 'strength' | 'agility' | 'intellect' | 'stamina'
-  | 'maxHp' | 'attackPower' | 'spellPower' | 'criticalChance'
-  | 'armor' | 'magicResistance' | 'dodge' | 'attackSpeed'
+  | 'strength'
+  | 'agility'
+  | 'intellect'
+  | 'stamina'
+  | 'maxHp'
+  | 'attackPower'
+  | 'spellPower'
+  | 'criticalChance'
+  | 'armor'
+  | 'magicResistance'
+  | 'dodge'
+  | 'attackSpeed'
 
 const session = useGameSessionStore()
+const resolvedMerchantId = computed(() =>
+  session.snapshot?.character?.raceId === 'UNDEAD' && !props.merchantId.startsWith('UNDEAD_')
+    ? 'UNDEAD_' + props.merchantId
+    : props.merchantId,
+)
 const merchant = ref<MerchantSnapshot | null>(null)
 const loading = ref(false)
 const activeTab = ref<ActiveTab>('buy')
@@ -52,52 +69,82 @@ const purchasePulseId = ref<string | null>(null)
 let pulseTimer: ReturnType<typeof setTimeout> | null = null
 
 const merchantFilters = ['all', 'Consumable', 'Equipment', 'Material'] as const
+
+function selectFilter(filter: MerchantFilter) {
+  activeFilter.value = filter
+  equipmentSubcategory.value = 'all'
+}
+
+function resetFilters() {
+  searchQuery.value = ''
+  activeFilter.value = 'all'
+  onlyAffordable.value = false
+  onlyForClass.value = false
+}
 const buyPending = computed(() => session.isMutationPending('merchant:buy'))
 const sellPending = computed(() => session.isMutationDomainPending('merchant:sell-'))
 const buybackPending = computed(() => session.isMutationPending('merchant:buyback'))
 const characterClassId = computed(() => session.snapshot?.character?.classId ?? '')
 const characterLevel = computed(() => session.snapshot?.character?.level ?? 1)
-const walletGold = computed(() => Number(merchant.value?.gold ?? session.snapshot?.character?.gold ?? 0))
+const walletGold = computed(() =>
+  Number(merchant.value?.gold ?? session.snapshot?.character?.gold ?? 0),
+)
 const buybackItems = computed(() => merchant.value?.buybackItems ?? [])
 
-const sellableItems = computed(() => session.snapshot?.character?.inventory.items
-  .filter(item => !item.equippedSlot && !item.isLocked && item.sellPriceGold > 0) ?? [])
-const protectedItemsCount = computed(() => session.snapshot?.character?.inventory.items
-  .filter(item => !item.equippedSlot && item.isLocked && item.sellPriceGold > 0).length ?? 0)
-const affordableOfferCount = computed(() =>
-  merchant.value?.items.filter(item => isAffordable(item)).length ?? 0,
+const sellableItems = computed(
+  () =>
+    session.snapshot?.character?.inventory.items.filter(
+      (item) => !item.equippedSlot && !item.isLocked && item.sellPriceGold > 0,
+    ) ?? [],
+)
+const protectedItemsCount = computed(
+  () =>
+    session.snapshot?.character?.inventory.items.filter(
+      (item) => !item.equippedSlot && item.isLocked && item.sellPriceGold > 0,
+    ).length ?? 0,
+)
+const affordableOfferCount = computed(
+  () => merchant.value?.items.filter((item) => isAffordable(item)).length ?? 0,
 )
 
 const visibleOffers = computed(() => {
   const query = searchQuery.value.trim().toLocaleLowerCase()
-  const offers = merchant.value?.items.filter(item => {
-    const matchesType = activeFilter.value === 'all' || item.type === activeFilter.value
-    const matchesQuery = !query
-      || item.name.toLocaleLowerCase().includes(query)
-      || item.description.toLocaleLowerCase().includes(query)
-    const matchesBudget = !onlyAffordable.value || isAffordable(item)
-    const matchesClass = !onlyForClass.value || item.type !== 'Equipment' || isForCurrentClass(item)
-    const matchesEquipmentGroup = activeFilter.value !== 'Equipment'
-      || equipmentSubcategory.value === 'all'
-      || equipmentGroup(item) === equipmentSubcategory.value
-    return matchesType && matchesQuery && matchesBudget && matchesClass && matchesEquipmentGroup
-  }) ?? []
+  const offers =
+    merchant.value?.items.filter((item) => {
+      const matchesType = activeFilter.value === 'all' || item.type === activeFilter.value
+      const matchesQuery =
+        !query ||
+        item.name.toLocaleLowerCase().includes(query) ||
+        item.description.toLocaleLowerCase().includes(query)
+      const matchesBudget = !onlyAffordable.value || isAffordable(item)
+      const matchesClass =
+        !onlyForClass.value || item.type !== 'Equipment' || isForCurrentClass(item)
+      const matchesEquipmentGroup =
+        activeFilter.value !== 'Equipment' ||
+        equipmentSubcategory.value === 'all' ||
+        equipmentGroup(item) === equipmentSubcategory.value
+      return matchesType && matchesQuery && matchesBudget && matchesClass && matchesEquipmentGroup
+    }) ?? []
 
-  if (sortMode.value === 'price-asc') return [...offers].sort((a, b) => a.buyPriceGold - b.buyPriceGold)
-  if (sortMode.value === 'price-desc') return [...offers].sort((a, b) => b.buyPriceGold - a.buyPriceGold)
-  if (sortMode.value === 'rarity') return [...offers].sort((a, b) => rarityRank(b.rarity) - rarityRank(a.rarity))
+  if (sortMode.value === 'price-asc')
+    return [...offers].sort((a, b) => a.buyPriceGold - b.buyPriceGold)
+  if (sortMode.value === 'price-desc')
+    return [...offers].sort((a, b) => b.buyPriceGold - a.buyPriceGold)
+  if (sortMode.value === 'rarity')
+    return [...offers].sort((a, b) => rarityRank(b.rarity) - rarityRank(a.rarity))
   return [...offers].sort((a, b) => recommendationScore(b) - recommendationScore(a))
 })
 
-const selectedOffer = computed(() =>
-  visibleOffers.value.find(item => item.definitionId === selectedOfferId.value)
-    ?? visibleOffers.value[0]
-    ?? null,
+const selectedOffer = computed(
+  () =>
+    visibleOffers.value.find((item) => item.definitionId === selectedOfferId.value) ??
+    visibleOffers.value[0] ??
+    null,
 )
 
 const recommendedOffers = computed(() =>
   [...(merchant.value?.items ?? [])]
-    .filter(item => isAffordable(item))
+    .filter((item) => isAffordable(item))
     .sort((a, b) => recommendationScore(b) - recommendationScore(a))
     .slice(0, 3),
 )
@@ -106,11 +153,12 @@ const selectedOfferMaxQuantity = computed(() => {
   if (!selectedOffer.value) return 1
   return selectedOffer.value.type === 'Equipment' ? 1 : 20
 })
-const selectedTotalPrice = computed(() =>
-  (selectedOffer.value?.buyPriceGold ?? 0) * selectedQuantity.value,
+const selectedTotalPrice = computed(
+  () => (selectedOffer.value?.buyPriceGold ?? 0) * selectedQuantity.value,
 )
-const selectedCanAfford = computed(() =>
-  !!selectedOffer.value && canAffordMoney(merchant.value?.gold ?? 0, selectedTotalPrice.value),
+const selectedCanAfford = computed(
+  () =>
+    !!selectedOffer.value && canAffordMoney(merchant.value?.gold ?? 0, selectedTotalPrice.value),
 )
 const maxAffordableQuantity = computed(() => {
   if (!selectedOffer.value || selectedOffer.value.buyPriceGold <= 0) return 1
@@ -126,26 +174,30 @@ const selectedComparisonRows = computed(() =>
   selectedOffer.value ? comparisonRows(selectedOffer.value) : [],
 )
 const selectedSellItems = computed(() =>
-  sellableItems.value.filter(item => selectedSellIds.value.includes(item.id)),
+  sellableItems.value.filter((item) => selectedSellIds.value.includes(item.id)),
 )
 const selectedSellValue = computed(() =>
   selectedSellItems.value.reduce((sum, item) => sum + item.sellPriceGold * item.quantity, 0),
 )
 
-watch([() => props.open, () => props.merchantId], ([open]) => {
-  if (!open) return
-  activeTab.value = 'buy'
-  searchQuery.value = ''
-  activeFilter.value = 'all'
-  equipmentSubcategory.value = 'all'
-  onlyAffordable.value = false
-  onlyForClass.value = false
-  sortMode.value = 'recommended'
-  selectedQuantity.value = 1
-  selectedSellIds.value = []
-  reaction.value = 'Осмотрись. Хорошее снаряжение само себя не купит.'
-  void loadMerchant()
-}, { immediate: true })
+watch(
+  [() => props.open, () => resolvedMerchantId.value],
+  ([open]) => {
+    if (!open) return
+    activeTab.value = 'buy'
+    searchQuery.value = ''
+    activeFilter.value = 'all'
+    equipmentSubcategory.value = 'all'
+    onlyAffordable.value = false
+    onlyForClass.value = false
+    sortMode.value = 'recommended'
+    selectedQuantity.value = 1
+    selectedSellIds.value = []
+    reaction.value = 'Осмотрись. Хорошее снаряжение само себя не купит.'
+    void loadMerchant()
+  },
+  { immediate: true },
+)
 
 watch(selectedOfferId, () => {
   selectedQuantity.value = 1
@@ -157,15 +209,15 @@ onBeforeUnmount(() => {
 
 async function loadMerchant(): Promise<void> {
   const sequence = ++loadSequence
-  const merchantId = props.merchantId
+  const merchantId = resolvedMerchantId.value
   loading.value = true
   loadError.value = false
   merchant.value = null
   try {
     const loaded = await session.getMerchant(merchantId)
-    if (sequence !== loadSequence || props.merchantId !== merchantId) return
+    if (sequence !== loadSequence || resolvedMerchantId.value !== merchantId) return
     merchant.value = loaded
-    if (!loaded.items.some(item => item.definitionId === selectedOfferId.value))
+    if (!loaded.items.some((item) => item.definitionId === selectedOfferId.value))
       selectedOfferId.value = loaded.items[0]?.definitionId ?? null
   } catch {
     if (sequence === loadSequence) loadError.value = true
@@ -214,9 +266,11 @@ function isAffordable(item: MerchantItem): boolean {
 }
 
 function inventoryCount(item: MerchantItem): number {
-  return session.snapshot?.character?.inventory.items
-    .filter(entry => entry.definitionId === item.definitionId)
-    .reduce((sum, entry) => sum + entry.quantity, 0) ?? 0
+  return (
+    session.snapshot?.character?.inventory.items
+      .filter((entry) => entry.definitionId === item.definitionId)
+      .reduce((sum, entry) => sum + entry.quantity, 0) ?? 0
+  )
 }
 
 function classPrimaryStat(): 'strength' | 'agility' | 'intellect' | null {
@@ -277,17 +331,22 @@ function comparisonRows(item: MerchantItem) {
       const current = Number(equipped?.stats?.[key] ?? 0)
       return { key, label, next, current, delta: next - current }
     })
-    .filter(row => row.next !== 0 || row.current !== 0)
+    .filter((row) => row.next !== 0 || row.current !== 0)
 }
 
 function hasPositiveComparison(item: MerchantItem): boolean {
-  return comparisonRows(item).some(row => row.delta > 0)
+  return comparisonRows(item).some((row) => row.delta > 0)
 }
 
 function recommendationScore(item: MerchantItem): number {
   let score = 0
   if (isAffordable(item)) score += 10
-  if (item.type === 'Consumable' && item.definitionId === 'SMALL_HEALING_POTION' && inventoryCount(item) < 5) score += 40
+  if (
+    item.type === 'Consumable' &&
+    item.definitionId === 'SMALL_HEALING_POTION' &&
+    inventoryCount(item) < 5
+  )
+    score += 40
   if (item.type === 'Equipment' && isForCurrentClass(item)) score += 20
   if (item.type === 'Equipment' && hasPositiveComparison(item)) score += 25
   if ((item.requiredLevel ?? 1) <= characterLevel.value) score += 5
@@ -295,7 +354,8 @@ function recommendationScore(item: MerchantItem): number {
 }
 
 function recommendationReason(item: MerchantItem): string {
-  if (item.definitionId === 'SMALL_HEALING_POTION' && inventoryCount(item) < 5) return 'Запас заканчивается'
+  if (item.definitionId === 'SMALL_HEALING_POTION' && inventoryCount(item) < 5)
+    return 'Запас заканчивается'
   if (item.type === 'Equipment' && hasPositiveComparison(item)) return 'Есть прирост характеристик'
   if (item.type === 'Equipment' && isForCurrentClass(item)) return 'Подходит вашему классу'
   return 'Полезно в дороге'
@@ -323,12 +383,17 @@ function pulse(itemId: string): void {
 }
 
 async function buy(item: MerchantItem, quantity = 1): Promise<void> {
-  const updated = await session.buyMerchantItem(props.merchantId, item.definitionId, quantity)
+  const updated = await session.buyMerchantItem(
+    resolvedMerchantId.value,
+    item.definitionId,
+    quantity,
+  )
   if (!updated) return
   merchant.value = updated
-  reaction.value = quantity > 1
-    ? 'Вот это запас. ' + quantity + ' шт. — хватит на дорогу.'
-    : 'Хороший выбор. В дороге пригодится.'
+  reaction.value =
+    quantity > 1
+      ? 'Вот это запас. ' + quantity + ' шт. — хватит на дорогу.'
+      : 'Хороший выбор. В дороге пригодится.'
   pulse(item.definitionId)
   selectedQuantity.value = 1
 }
@@ -345,13 +410,15 @@ function inventoryItemTypeLabel(item: InventoryItem): string {
 }
 
 function isValuable(item: InventoryItem): boolean {
-  return rarityRank(item.rarity) >= rarityRank('Rare')
-    || (item.generatedItem?.stars ?? 0) > 0
-    || (item.reforgeCount ?? 0) > 0
+  return (
+    rarityRank(item.rarity) >= rarityRank('Rare') ||
+    (item.generatedItem?.stars ?? 0) > 0 ||
+    (item.reforgeCount ?? 0) > 0
+  )
 }
 
 async function performSell(item: InventoryItem, quantity: number): Promise<boolean> {
-  const updated = await session.sellMerchantItem(props.merchantId, item.id, quantity)
+  const updated = await session.sellMerchantItem(resolvedMerchantId.value, item.id, quantity)
   if (!updated) return false
   merchant.value = updated
   return true
@@ -360,26 +427,27 @@ async function performSell(item: InventoryItem, quantity: number): Promise<boole
 async function sell(item: InventoryItem, quantity: number): Promise<void> {
   if (isValuable(item)) {
     const confirmed = window.confirm(
-      'Продать ценный предмет «' + item.name + '» за ' + (item.sellPriceGold * quantity) + ' золота?',
+      'Продать ценный предмет «' + item.name + '» за ' + item.sellPriceGold * quantity + ' золота?',
     )
     if (!confirmed) return
   }
   if (await performSell(item, quantity)) {
     reaction.value = 'Сделка есть сделка. Если передумаешь — загляни во «Выкуп».'
-    selectedSellIds.value = selectedSellIds.value.filter(id => id !== item.id)
+    selectedSellIds.value = selectedSellIds.value.filter((id) => id !== item.id)
   }
 }
 
 function toggleSellSelection(itemId: string): void {
   selectedSellIds.value = selectedSellIds.value.includes(itemId)
-    ? selectedSellIds.value.filter(id => id !== itemId)
+    ? selectedSellIds.value.filter((id) => id !== itemId)
     : [...selectedSellIds.value, itemId]
 }
 
 function selectAllSellable(): void {
-  selectedSellIds.value = selectedSellIds.value.length === sellableItems.value.length
-    ? []
-    : sellableItems.value.map(item => item.id)
+  selectedSellIds.value =
+    selectedSellIds.value.length === sellableItems.value.length
+      ? []
+      : sellableItems.value.map((item) => item.id)
 }
 
 async function sellSelected(): Promise<void> {
@@ -387,14 +455,17 @@ async function sellSelected(): Promise<void> {
   if (!items.length) return
   if (items.some(isValuable)) {
     const confirmed = window.confirm(
-      'В выбранных предметах есть Rare+ или улучшенные вещи. Продать '
-      + items.length + ' позиций за ' + selectedSellValue.value + ' золота?',
+      'В выбранных предметах есть Rare+ или улучшенные вещи. Продать ' +
+        items.length +
+        ' позиций за ' +
+        selectedSellValue.value +
+        ' золота?',
     )
     if (!confirmed) return
   }
   let sold = 0
   for (const item of items) {
-    if (!await performSell(item, item.quantity)) break
+    if (!(await performSell(item, item.quantity))) break
     sold += 1
   }
   selectedSellIds.value = []
@@ -402,7 +473,7 @@ async function sellSelected(): Promise<void> {
 }
 
 async function buyback(item: MerchantBuybackItem): Promise<void> {
-  const updated = await session.buybackMerchantItem(props.merchantId, item.characterItemId)
+  const updated = await session.buybackMerchantItem(resolvedMerchantId.value, item.characterItemId)
   if (!updated) return
   merchant.value = updated
   reaction.value = 'Передумал? Бывает. Забирай — вещь всё ещё твоя.'
@@ -410,21 +481,33 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 </script>
 
 <template>
-  <UIModal :open="open" :title="merchantPresentation.name" :busy="buyPending || sellPending || buybackPending" @close="emit('close')">
+  <UIModal
+    :open="open"
+    :title="merchantPresentation.name"
+    :busy="buyPending || sellPending || buybackPending"
+    @close="emit('close')"
+  >
     <section class="merchant">
       <header
         class="merchant__npc"
-        :style="{ '--merchant-scene': 'url(' + gameArt.world.capital + ')' }"
+        :style="{
+          '--merchant-scene':
+            'url(' +
+            (resolvedMerchantId.startsWith('UNDEAD_') ? undeadCityArt : gameArt.world.capital) +
+            ')',
+        }"
       >
         <div class="merchant__npc-shade" />
         <div class="merchant__portrait">
-          <MerchantPortrait :merchant-id="merchantId" :name="merchantPresentation.name" />
+          <MerchantPortrait :merchant-id="resolvedMerchantId" :name="merchantPresentation.name" />
         </div>
 
         <div class="merchant__identity">
           <span class="merchant__eyebrow">{{ merchantPresentation.role }}</span>
           <h2>{{ merchant?.name ?? merchantPresentation.name }}</h2>
-          <p>{{ merchant?.description ?? 'Припасы, снаряжение и полезные мелочи перед дорогой.' }}</p>
+          <p>
+            {{ merchant?.description ?? 'Припасы, снаряжение и полезные мелочи перед дорогой.' }}
+          </p>
           <div class="merchant__service">
             <span>⚒ Проверенный товар</span>
             <span>◆ Честная цена</span>
@@ -433,7 +516,9 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
         <div class="merchant__wallet">
           <small>Ваш кошелёк</small>
-          <strong><MoneyAmount :amount="merchant?.gold ?? session.snapshot?.character?.gold ?? 0" /></strong>
+          <strong
+            ><MoneyAmount :amount="merchant?.gold ?? session.snapshot?.character?.gold ?? 0"
+          /></strong>
           <span>{{ affordableOfferCount }} товаров по карману</span>
         </div>
       </header>
@@ -444,7 +529,10 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
         <small>— {{ merchantPresentation.name }}</small>
       </div>
 
-      <p v-if="loadError" role="alert">Не удалось загрузить товары. <UIButton variant="ghost" @click="loadMerchant">Повторить</UIButton></p>
+      <p v-if="loadError" role="alert">
+        Не удалось загрузить товары.
+        <UIButton variant="ghost" @click="loadMerchant">Повторить</UIButton>
+      </p>
       <nav class="merchant-tabs" aria-label="Разделы торговца">
         <button
           type="button"
@@ -475,14 +563,14 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
       <section v-if="activeTab === 'buy'" class="merchant-panel merchant-panel--buy">
         <header class="merchant-panel__heading">
           <div>
-            <small>ВИТРИНА МАРКУСА</small>
+            <small>{{ resolvedMerchantId.startsWith('UNDEAD_') ? 'ТОВАРЫ ТОРГОВЦА' : 'ВИТРИНА МАРКУСА' }}</small>
             <strong>Выберите товар для следующего похода</strong>
           </div>
           <span>{{ visibleOffers.length }} / {{ merchant?.items.length ?? 0 }}</span>
         </header>
 
         <div v-if="recommendedOffers.length" class="merchant-recommendations">
-          <small>МАРКУС СОВЕТУЕТ</small>
+          <small>РЕКОМЕНДАЦИИ ТОРГОВЦА</small>
           <div>
             <button
               v-for="item in recommendedOffers"
@@ -520,8 +608,10 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
                 type="button"
                 :data-merchant-filter="filter"
                 :class="{ active: activeFilter === filter }"
-                @click="activeFilter = filter; equipmentSubcategory = 'all'"
-              >{{ filterLabel(filter) }}</button>
+                @click="selectFilter(filter)"
+              >
+                {{ filterLabel(filter) }}
+              </button>
             </div>
 
             <label class="merchant-filter__sort">
@@ -536,10 +626,34 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
           </div>
 
           <div v-if="activeFilter === 'Equipment'" class="merchant-filter__subcategories">
-            <button type="button" :class="{ active: equipmentSubcategory === 'all' }" @click="equipmentSubcategory = 'all'">Всё снаряжение</button>
-            <button type="button" :class="{ active: equipmentSubcategory === 'weapon' }" @click="equipmentSubcategory = 'weapon'">Оружие</button>
-            <button type="button" :class="{ active: equipmentSubcategory === 'armor' }" @click="equipmentSubcategory = 'armor'">Броня</button>
-            <button type="button" :class="{ active: equipmentSubcategory === 'accessory' }" @click="equipmentSubcategory = 'accessory'">Аксессуары</button>
+            <button
+              type="button"
+              :class="{ active: equipmentSubcategory === 'all' }"
+              @click="equipmentSubcategory = 'all'"
+            >
+              Всё снаряжение
+            </button>
+            <button
+              type="button"
+              :class="{ active: equipmentSubcategory === 'weapon' }"
+              @click="equipmentSubcategory = 'weapon'"
+            >
+              Оружие
+            </button>
+            <button
+              type="button"
+              :class="{ active: equipmentSubcategory === 'armor' }"
+              @click="equipmentSubcategory = 'armor'"
+            >
+              Броня
+            </button>
+            <button
+              type="button"
+              :class="{ active: equipmentSubcategory === 'accessory' }"
+              @click="equipmentSubcategory = 'accessory'"
+            >
+              Аксессуары
+            </button>
           </div>
 
           <div class="merchant-filter__toggles">
@@ -657,8 +771,12 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
               <div>
                 <small>{{ itemTypeLabel(selectedOffer) }}</small>
                 <h3>{{ selectedOffer.name }}</h3>
-                <span v-if="inventoryCount(selectedOffer) > 0">Уже в сумке: {{ inventoryCount(selectedOffer) }}</span>
-                <span v-if="selectedOffer.requiredLevel">Требуется уровень: {{ selectedOffer.requiredLevel }}</span>
+                <span v-if="inventoryCount(selectedOffer) > 0"
+                  >Уже в сумке: {{ inventoryCount(selectedOffer) }}</span
+                >
+                <span v-if="selectedOffer.requiredLevel"
+                  >Требуется уровень: {{ selectedOffer.requiredLevel }}</span
+                >
               </div>
             </div>
 
@@ -670,7 +788,9 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
             >
               <div>
                 <span>Эффект</span>
-                <strong>{{ selectedOffer.consumableActions.map(consumableActionLabel).join(' · ') }}</strong>
+                <strong>{{
+                  selectedOffer.consumableActions.map(consumableActionLabel).join(' · ')
+                }}</strong>
               </div>
               <small v-if="selectedOffer.consumableCooldownSeconds">
                 Перезарядка {{ selectedOffer.consumableCooldownSeconds }} сек.
@@ -719,7 +839,10 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
                 </button>
                 <button type="button" @click="setBuyQuantity(maxAffordableQuantity)">MAX</button>
               </div>
-              <small>После покупки: {{ inventoryCount(selectedOffer) + selectedQuantity }} в сумке</small>
+              <small
+                >После покупки: {{ inventoryCount(selectedOffer) + selectedQuantity }} в
+                сумке</small
+              >
             </div>
 
             <footer class="merchant-detail__purchase">
@@ -754,19 +877,14 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
         <div v-else-if="merchant && visibleOffers.length === 0" class="merchant-empty">
           <span class="merchant-empty__mark">⌕</span>
           <p>По этим фильтрам ничего не нашлось.</p>
-          <button
-            type="button"
-            @click="searchQuery = ''; activeFilter = 'all'; onlyAffordable = false; onlyForClass = false"
-          >
-            Сбросить фильтры
-          </button>
+          <button type="button" @click="resetFilters">Сбросить фильтры</button>
         </div>
       </section>
 
       <section v-else-if="activeTab === 'sell'" class="merchant-panel merchant-panel--sell">
         <header class="merchant-panel__heading">
           <div>
-            <small>СДАТЬ МАРКУСУ</small>
+            <small>ПРОДАТЬ ТОРГОВЦУ</small>
             <strong>Отметьте вещи и продайте пачкой</strong>
           </div>
           <span>{{ sellableItems.length }} предметов</span>
@@ -784,7 +902,14 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
         </div>
 
         <p v-if="protectedItemsCount > 0" class="protected-hint">
-          <IconGenerator :config="{ id: 'merchant-locked-items', glyph: 'lock', category: 'utility', state: 'locked' }" />
+          <IconGenerator
+            :config="{
+              id: 'merchant-locked-items',
+              glyph: 'lock',
+              category: 'utility',
+              state: 'locked',
+            }"
+          />
           Защищённые предметы скрыты из продажи: {{ protectedItemsCount }}
         </p>
 
@@ -888,7 +1013,9 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
             <UIButton
               :loading="buybackPending"
-              :disabled="buybackPending || !canAffordMoney(merchant?.gold ?? 0, item.buybackPriceGold)"
+              :disabled="
+                buybackPending || !canAffordMoney(merchant?.gold ?? 0, item.buybackPriceGold)
+              "
               @click="buyback(item)"
             >
               Выкупить
@@ -948,8 +1075,14 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   bottom: 0;
   left: 0;
   height: 4px;
-  background:
-    linear-gradient(90deg, transparent, rgb(216 173 99 / 36%) 20%, rgb(216 173 99 / 62%) 50%, rgb(216 173 99 / 36%) 80%, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(216 173 99 / 36%) 20%,
+    rgb(216 173 99 / 62%) 50%,
+    rgb(216 173 99 / 36%) 80%,
+    transparent
+  );
   content: '';
 }
 
@@ -978,7 +1111,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   background: #17130f;
   box-shadow:
     0 0 0 3px rgb(0 0 0 / 34%),
-    0 .7rem 1.5rem rgb(0 0 0 / 45%);
+    0 0.7rem 1.5rem rgb(0 0 0 / 45%);
 }
 
 .merchant__portrait img {
@@ -1004,9 +1137,9 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 .merchant-detail small,
 .sell-card small {
   color: #988f80;
-  font-size: .52rem;
+  font-size: 0.52rem;
   font-weight: 850;
-  letter-spacing: .095em;
+  letter-spacing: 0.095em;
   text-transform: uppercase;
 }
 
@@ -1030,7 +1163,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 .merchant__identity p {
   max-width: 34rem;
   color: #c5c0b5;
-  font-size: .7rem;
+  font-size: 0.7rem;
   line-height: 1.45;
 }
 
@@ -1040,7 +1173,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   gap: 5px 10px;
   margin-top: 3px;
   color: #bca878;
-  font-size: .55rem;
+  font-size: 0.55rem;
 }
 
 .merchant__wallet {
@@ -1059,21 +1192,20 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .merchant__wallet strong {
   color: var(--merchant-gold-soft);
-  font-size: .88rem;
+  font-size: 0.88rem;
   font-variant-numeric: tabular-nums;
 }
 
 .merchant__wallet span {
   color: #8f968d;
-  font-size: .52rem;
+  font-size: 0.52rem;
 }
 
 .merchant-tabs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   border-bottom: 1px solid rgb(216 173 99 / 16%);
-  background:
-    linear-gradient(180deg, rgb(44 31 22 / 76%), rgb(20 18 16 / 72%));
+  background: linear-gradient(180deg, rgb(44 31 22 / 76%), rgb(20 18 16 / 72%));
 }
 
 .merchant-tabs button {
@@ -1084,9 +1216,9 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   background: transparent;
   color: #938b80;
   font: inherit;
-  font-size: .67rem;
+  font-size: 0.67rem;
   font-weight: 850;
-  letter-spacing: .035em;
+  letter-spacing: 0.035em;
   text-transform: uppercase;
 }
 
@@ -1111,7 +1243,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 }
 
 .merchant-tabs button:disabled {
-  opacity: .25;
+  opacity: 0.25;
 }
 
 .merchant-panel {
@@ -1135,7 +1267,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 .merchant-panel__heading strong {
   color: #ddd5c7;
   font-family: var(--ui-font-display);
-  font-size: .9rem;
+  font-size: 0.9rem;
 }
 
 .merchant-panel__heading > span {
@@ -1143,7 +1275,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   border: 1px solid rgb(216 173 99 / 15%);
   border-radius: var(--ui-radius-round);
   color: #9e9485;
-  font-size: .56rem;
+  font-size: 0.56rem;
 }
 
 .merchant-filter {
@@ -1151,8 +1283,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   gap: 8px;
   padding: 10px var(--ui-space-4);
   border-bottom: 1px solid rgb(255 255 255 / 5%);
-  background:
-    linear-gradient(180deg, rgb(7 9 12 / 82%), rgb(11 10 9 / 54%));
+  background: linear-gradient(180deg, rgb(7 9 12 / 82%), rgb(11 10 9 / 54%));
 }
 
 .merchant-filter__search {
@@ -1176,7 +1307,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   background: transparent;
   color: var(--ui-color-text-primary);
   font: inherit;
-  font-size: .7rem;
+  font-size: 0.7rem;
 }
 
 .merchant-filter__search input::placeholder {
@@ -1209,7 +1340,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   background: rgb(255 255 255 / 1.5%);
   color: #979187;
   font: inherit;
-  font-size: .58rem;
+  font-size: 0.58rem;
 }
 
 .merchant-filter__chips button {
@@ -1249,7 +1380,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .merchant-filter__affordable b {
   color: #c2a86f;
-  font-size: .58rem;
+  font-size: 0.58rem;
 }
 
 .merchant-filter__check {
@@ -1260,21 +1391,19 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   border: 1px solid rgb(216 173 99 / 28%);
   border-radius: 3px;
   color: #f0d79c;
-  font-size: .65rem;
+  font-size: 0.65rem;
 }
 
 .merchant-buy {
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(13.5rem, .75fr);
+  grid-template-columns: minmax(0, 1.45fr) minmax(13.5rem, 0.75fr);
   min-height: 24rem;
 }
 
 .merchant-showcase {
   min-width: 0;
   border-right: 1px solid rgb(216 173 99 / 13%);
-  background:
-    linear-gradient(90deg, rgb(55 35 22 / 8%), transparent 35%),
-    #090b0e;
+  background: linear-gradient(90deg, rgb(55 35 22 / 8%), transparent 35%), #090b0e;
 }
 
 .merchant-showcase__rail {
@@ -1284,9 +1413,9 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   gap: 8px;
   padding: 8px 11px 3px;
   color: #786f62;
-  font-size: .48rem;
+  font-size: 0.48rem;
   font-weight: 850;
-  letter-spacing: .1em;
+  letter-spacing: 0.1em;
 }
 
 .merchant-showcase__rail i {
@@ -1328,8 +1457,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   border: 1px solid rgb(176 164 142 / 14%);
   border-radius: var(--ui-radius-md);
   background:
-    linear-gradient(135deg, rgb(255 255 255 / 2.5%), transparent 48%),
-    rgb(17 19 22 / 94%);
+    linear-gradient(135deg, rgb(255 255 255 / 2.5%), transparent 48%), rgb(17 19 22 / 94%);
   color: #c9c2b7;
   font: inherit;
   text-align: left;
@@ -1349,19 +1477,17 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 .offer-card:hover,
 .offer-card.active {
   border-color: rgb(216 173 99 / 46%);
-  background:
-    linear-gradient(135deg, rgb(216 173 99 / 9%), transparent 48%),
-    rgb(22 22 21 / 96%);
+  background: linear-gradient(135deg, rgb(216 173 99 / 9%), transparent 48%), rgb(22 22 21 / 96%);
 }
 
 .offer-card.active {
   box-shadow:
     inset 0 0 0 1px rgb(216 173 99 / 12%),
-    0 .4rem 1rem rgb(0 0 0 / 16%);
+    0 0.4rem 1rem rgb(0 0 0 / 16%);
 }
 
 .offer-card.is-unaffordable {
-  opacity: .68;
+  opacity: 0.68;
 }
 
 .offer-card__visual {
@@ -1385,7 +1511,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 .offer-card__rarity {
   overflow: hidden;
   color: #8e8980;
-  font-size: .48rem;
+  font-size: 0.48rem;
   line-height: 1.1;
   text-align: center;
   text-overflow: ellipsis;
@@ -1407,7 +1533,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   display: -webkit-box;
   overflow: hidden;
   color: #e5dfd4;
-  font-size: .69rem;
+  font-size: 0.69rem;
   line-height: 1.22;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -1417,7 +1543,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   display: -webkit-box;
   overflow: hidden;
   color: #85847f;
-  font-size: .55rem;
+  font-size: 0.55rem;
   line-height: 1.35;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
@@ -1436,13 +1562,13 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .offer-card__footer b {
   color: #e8c77e;
-  font-size: .67rem;
+  font-size: 0.67rem;
   font-style: normal;
 }
 
 .offer-card__footer em {
   color: #798377;
-  font-size: .49rem;
+  font-size: 0.49rem;
   font-style: normal;
   text-align: right;
 }
@@ -1500,7 +1626,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .merchant-detail__banner span {
   color: #c9a96d;
-  font-size: .55rem;
+  font-size: 0.55rem;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -1523,7 +1649,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   background: #080a0d;
   box-shadow:
     inset 0 0 15px rgb(0 0 0 / 60%),
-    0 .4rem 1rem rgb(0 0 0 / 24%);
+    0 0.4rem 1rem rgb(0 0 0 / 24%);
 }
 
 .offer-card__icon :deep(img),
@@ -1543,13 +1669,13 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .merchant-detail__identity > div > span {
   color: #879087;
-  font-size: .55rem;
+  font-size: 0.55rem;
 }
 
 .merchant-detail > p {
   margin: 0;
   color: #aaa59c;
-  font-size: .66rem;
+  font-size: 0.66rem;
   line-height: 1.5;
 }
 
@@ -1569,12 +1695,12 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .merchant-detail__effect span {
   color: #7f9487;
-  font-size: .52rem;
+  font-size: 0.52rem;
 }
 
 .merchant-detail__effect strong {
   color: #8ac6a0;
-  font-size: .66rem;
+  font-size: 0.66rem;
 }
 
 .merchant-detail__effect > small {
@@ -1602,14 +1728,14 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 .merchant-detail__quote p {
   margin: 0;
   color: #9c9488;
-  font-size: .58rem;
+  font-size: 0.58rem;
   font-style: italic;
   line-height: 1.35;
 }
 
 .merchant-detail__quote small {
   color: #7f776c;
-  font-size: .48rem;
+  font-size: 0.48rem;
   text-align: right;
 }
 
@@ -1642,7 +1768,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .merchant-detail__purchase span {
   color: #7f9782;
-  font-size: .52rem;
+  font-size: 0.52rem;
 }
 
 .merchant-detail__purchase span.danger {
@@ -1662,7 +1788,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   border-bottom: 1px solid rgb(255 255 255 / 5%);
   background: rgb(146 136 255 / 4%);
   color: #b9b4e8;
-  font-size: .62rem;
+  font-size: 0.62rem;
 }
 
 .sell-list {
@@ -1706,14 +1832,14 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 .sell-card__copy strong {
   overflow: hidden;
   color: #ddd6ca;
-  font-size: .7rem;
+  font-size: 0.7rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .sell-card__copy span {
   color: #8a8780;
-  font-size: .58rem;
+  font-size: 0.58rem;
 }
 
 .sell-card__price {
@@ -1725,7 +1851,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .sell-card__price strong {
   color: #e0bd76;
-  font-size: .7rem;
+  font-size: 0.7rem;
 }
 
 .sell-card__actions {
@@ -1757,7 +1883,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .merchant-empty p {
   margin: 0;
-  font-size: .68rem;
+  font-size: 0.68rem;
 }
 
 .merchant-empty button {
@@ -1766,7 +1892,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   background: transparent;
   color: #d2b477;
   font: inherit;
-  font-size: .6rem;
+  font-size: 0.6rem;
   text-decoration: underline;
 }
 
@@ -1923,14 +2049,14 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .merchant-reaction p {
   margin: 0;
-  font-size: .58rem;
+  font-size: 0.58rem;
   font-style: italic;
   line-height: 1.3;
 }
 
 .merchant-reaction small {
   color: #7f776c;
-  font-size: .48rem;
+  font-size: 0.48rem;
   white-space: nowrap;
 }
 
@@ -1944,9 +2070,9 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .merchant-recommendations > small {
   color: #a99164;
-  font-size: .5rem;
+  font-size: 0.5rem;
   font-weight: 850;
-  letter-spacing: .1em;
+  letter-spacing: 0.1em;
 }
 
 .merchant-recommendations > div {
@@ -1985,14 +2111,14 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 .merchant-recommendations button b {
   overflow: hidden;
   color: #d9d1c2;
-  font-size: .58rem;
+  font-size: 0.58rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .merchant-recommendations button em {
   color: #8e9a86;
-  font-size: .48rem;
+  font-size: 0.48rem;
   font-style: normal;
 }
 
@@ -2022,7 +2148,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   background: transparent;
   color: #817c74;
   font: inherit;
-  font-size: .53rem;
+  font-size: 0.53rem;
 }
 
 .merchant-filter__subcategories button.active {
@@ -2039,7 +2165,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   display: flex;
   flex-wrap: wrap;
   gap: 3px;
-  min-height: .9rem;
+  min-height: 0.9rem;
 }
 
 .offer-card__badges i {
@@ -2048,7 +2174,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   border-radius: 3px;
   background: rgb(216 173 99 / 5%);
   color: #aa9977;
-  font-size: .43rem;
+  font-size: 0.43rem;
   font-style: normal;
   line-height: 1;
 }
@@ -2061,12 +2187,12 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   background: rgb(216 173 99 / 8%);
   color: #e2c37f;
   font: inherit;
-  font-size: .51rem;
+  font-size: 0.51rem;
   font-weight: 800;
 }
 
 .offer-card__quick-buy:disabled {
-  opacity: .38;
+  opacity: 0.38;
 }
 
 .offer-card.purchase-pulse {
@@ -2074,9 +2200,17 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 }
 
 @keyframes merchant-purchase-pulse {
-  0% { box-shadow: 0 0 0 0 rgb(216 173 99 / 0%); }
-  35% { box-shadow: 0 0 0 2px rgb(216 173 99 / 45%), 0 0 1.2rem rgb(216 173 99 / 28%); }
-  100% { box-shadow: 0 0 0 0 rgb(216 173 99 / 0%); }
+  0% {
+    box-shadow: 0 0 0 0 rgb(216 173 99 / 0%);
+  }
+  35% {
+    box-shadow:
+      0 0 0 2px rgb(216 173 99 / 45%),
+      0 0 1.2rem rgb(216 173 99 / 28%);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(216 173 99 / 0%);
+  }
 }
 
 .merchant-compare {
@@ -2096,7 +2230,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .merchant-compare header span {
   color: #aebdca;
-  font-size: .55rem;
+  font-size: 0.55rem;
   font-weight: 800;
 }
 
@@ -2104,7 +2238,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   overflow: hidden;
   max-width: 55%;
   color: #777f86;
-  font-size: .48rem;
+  font-size: 0.48rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -2120,7 +2254,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   gap: 5px;
   margin: 0;
   color: #8f9498;
-  font-size: .52rem;
+  font-size: 0.52rem;
 }
 
 .merchant-compare p em {
@@ -2156,7 +2290,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .merchant-quantity > span {
   color: #a29a8e;
-  font-size: .56rem;
+  font-size: 0.56rem;
   font-weight: 800;
 }
 
@@ -2175,7 +2309,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   background: rgb(255 255 255 / 2%);
   color: #ceb57d;
   font: inherit;
-  font-size: .65rem;
+  font-size: 0.65rem;
 }
 
 .merchant-quantity__stepper button {
@@ -2184,7 +2318,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .merchant-quantity__stepper b {
   color: #e3d8c4;
-  font-size: .62rem;
+  font-size: 0.62rem;
   text-align: center;
 }
 
@@ -2204,7 +2338,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 .merchant-quantity > small {
   grid-column: 1 / -1;
   color: #757d73;
-  font-size: .48rem;
+  font-size: 0.48rem;
 }
 
 .sell-toolbar {
@@ -2222,18 +2356,18 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
   background: transparent;
   color: #c1a56e;
   font: inherit;
-  font-size: .55rem;
+  font-size: 0.55rem;
   text-decoration: underline;
 }
 
 .sell-toolbar > span {
   color: #88827a;
-  font-size: .55rem;
+  font-size: 0.55rem;
 }
 
 .sell-toolbar > b {
   color: #d8b874;
-  font-size: .65rem;
+  font-size: 0.65rem;
 }
 
 .sell-card {
@@ -2265,14 +2399,15 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .sell-card__select input:checked + span {
   background:
-    linear-gradient(135deg, transparent 38%, #e2c77f 39% 52%, transparent 53%) center / 70% 70% no-repeat,
+    linear-gradient(135deg, transparent 38%, #e2c77f 39% 52%, transparent 53%) center / 70% 70%
+      no-repeat,
     rgb(216 173 99 / 12%);
   border-color: rgb(216 173 99 / 60%);
 }
 
 .sell-card__copy em {
   color: #ba7f75;
-  font-size: .48rem;
+  font-size: 0.48rem;
   font-style: normal;
 }
 
@@ -2301,21 +2436,21 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .buyback-card__copy small {
   color: #928979;
-  font-size: .49rem;
+  font-size: 0.49rem;
   text-transform: uppercase;
 }
 
 .buyback-card__copy strong {
   overflow: hidden;
   color: #ddd4c4;
-  font-size: .67rem;
+  font-size: 0.67rem;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .buyback-card__copy span {
   color: #7f817c;
-  font-size: .52rem;
+  font-size: 0.52rem;
 }
 
 .buyback-card__price {
@@ -2327,12 +2462,12 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
 
 .buyback-card__price small {
   color: #7c756c;
-  font-size: .48rem;
+  font-size: 0.48rem;
 }
 
 .buyback-card__price b {
   color: #d7b874;
-  font-size: .66rem;
+  font-size: 0.66rem;
 }
 
 @media (max-width: 620px) {
@@ -2355,7 +2490,7 @@ async function buyback(item: MerchantBuybackItem): Promise<void> {
     margin: 0 -13px -13px;
     padding: 10px 13px calc(10px + var(--ui-safe-area-bottom));
     background: linear-gradient(180deg, rgb(12 13 15 / 92%), #0a0b0d);
-    box-shadow: 0 -.5rem 1rem rgb(0 0 0 / 24%);
+    box-shadow: 0 -0.5rem 1rem rgb(0 0 0 / 24%);
     backdrop-filter: blur(8px);
   }
 

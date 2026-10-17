@@ -7,6 +7,7 @@ using Elyndor.Core.Combat.Randomness;
 using Elyndor.Core.Content;
 using Elyndor.Core.Items;
 using Elyndor.Core.Professions;
+using Elyndor.Core.World;
 using Elyndor.Infrastructure.Items;
 using Elyndor.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -124,7 +125,7 @@ public sealed partial class ProfessionService(
                     recipe.OutputItemId,
                     recipe.OutputQuantity,
                     recipe.Ingredients,
-                    recipe.RequiredLocationId,
+                    recipe.RequiredLocationId is null ? null : WorldLocationAccess.RequiredLocation(recipe.RequiredLocationId, character.RaceId),
                     recipe.SkillUpUntil,
                     itemById.GetValueOrDefault(recipe.OutputItemId)?.Name,
                     itemById.GetValueOrDefault(recipe.OutputItemId)?.IconId,
@@ -132,10 +133,14 @@ public sealed partial class ProfessionService(
                     recipe.LearningScrollItemId is null || knownRecipes.Contains(recipe.Id), recipe.LearningScrollItemId,
                     recipe.LearningScrollItemId is null ? null : itemById.GetValueOrDefault(recipe.LearningScrollItemId)?.Name))
                 .ToArray(),
-            ProfessionWorkshopCatalog.MaterialSources(package),
+            ProfessionWorkshopCatalog.MaterialSources(package)
+                .Where(source => !contentProvider.GetCurrent().Indexes.LocationsById.TryGetValue(source.LocationId, out var location)
+                    || WorldLocationAccess.CanEnter(location, character.RaceId)).ToArray(),
             (package.Items ?? []).Where(item => item.Type == ItemType.Material)
                 .Select(item => new ProfessionMaterialState(item.Id, item.Name)).ToArray(),
-            definitions, package.ProfessionGatheringNodes ?? [], (package.ProfessionEnchantments ?? []).Select(item =>
+            definitions, (package.ProfessionGatheringNodes ?? [])
+                .Where(node => !contentProvider.GetCurrent().Indexes.LocationsById.TryGetValue(node.LocationId, out var location)
+                    || WorldLocationAccess.CanEnter(location, character.RaceId)).ToArray(), (package.ProfessionEnchantments ?? []).Select(item =>
                 new ProfessionEnchantmentState(item.Id, item.Name, item.ScrollItemId, item.StatId, item.Value, item.Slots.Select(slot => slot.ToString()).ToArray())).ToArray(),
             await MiningCooldownUntilAsync(character.Id, cancellationToken), MaxPrimaryProfessions);
     }
@@ -169,7 +174,7 @@ public sealed partial class ProfessionService(
                 return new ProfessionMutationResult(false, "resource_travelling");
             string? locationId = await dbContext.CharacterLocations.Where(location => location.CharacterId == character.Id)
                 .Select(location => location.LocationId).SingleOrDefaultAsync(cancellationToken);
-            if (locationId != "STARTER_TOWN") return new ProfessionMutationResult(false, ProfessionErrorCodes.WrongWorkshop);
+            if (locationId != WorldLocationAccess.HomeTown(character.RaceId)) return new ProfessionMutationResult(false, ProfessionErrorCodes.WrongWorkshop);
             dbContext.CharacterProfessions.Remove(profession);
             dbContext.CharacterMutations.Add(new(character.Id, mutationId, "PROFESSION_FORGET", fingerprint, now));
             await dbContext.SaveChangesAsync(cancellationToken);

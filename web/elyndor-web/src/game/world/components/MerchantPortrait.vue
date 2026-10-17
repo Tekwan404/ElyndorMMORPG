@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import atlas from '@/assets/npc/market-merchants-atlas.webp'
+import undeadAtlas from '@/assets/npc/undead-town-atlas.png'
+import { useGameSessionStore } from '@/stores/gameSession'
 const props = withDefaults(
   defineProps<{ merchantId: string; name?: string; decorative?: boolean }>(),
   { name: '', decorative: false },
@@ -12,7 +14,12 @@ const positions: Record<string, string> = {
   MARCUS_SUPPLIES: '0% 100%',
   ARENA_QUARTERMASTER: '50% 100%',
 }
-const position = computed(() => positions[props.merchantId] ?? positions.MARCUS_SUPPLIES)
+const session = useGameSessionStore()
+const isUndead = computed(
+  () => props.merchantId.startsWith('UNDEAD_') || session.snapshot?.character?.raceId === 'UNDEAD',
+)
+const baseId = computed(() => props.merchantId.replace(/^UNDEAD_/, ''))
+const position = computed(() => positions[baseId.value] ?? positions.MARCUS_SUPPLIES)
 </script>
 
 <template>
@@ -21,7 +28,10 @@ const position = computed(() => positions[props.merchantId] ?? positions.MARCUS_
     :role="decorative ? 'presentation' : 'img'"
     :aria-label="decorative ? undefined : name"
     :aria-hidden="decorative ? true : undefined"
-    :style="{ backgroundImage: 'url(' + atlas + ')', backgroundPosition: position }"
+    :style="{
+      backgroundImage: 'url(' + (isUndead ? undeadAtlas : atlas) + ')',
+      backgroundPosition: position,
+    }"
   />
 </template>
 

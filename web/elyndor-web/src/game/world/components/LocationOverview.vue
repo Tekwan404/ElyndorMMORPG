@@ -36,40 +36,44 @@ const world = computed(() => session.snapshot?.world ?? null)
 const character = computed(() => session.snapshot?.character ?? null)
 const currentLocation = computed(() => world.value?.currentLocation ?? null)
 const currentLocationId = computed(() => currentLocation.value?.id ?? '')
-const isTravelling = computed(() => world.value?.travel !== null && world.value?.travel !== undefined)
-const isRegion = computed(() => locationKind(currentLocationId.value) === 'region')
-const activeAfkFarm = computed(() => session.snapshot?.afkFarm?.status === 'Active'
-  ? session.snapshot.afkFarm
-  : null)
-const canStartWorldCombat = computed(() =>
-  party.snapshot === null
-    || party.snapshot.leaderCharacterId === character.value?.id,
+const isTravelling = computed(
+  () => world.value?.travel !== null && world.value?.travel !== undefined,
 )
-const presentation = computed(() => locationPresentation(
-  currentLocation.value?.id,
-  currentLocation.value?.displayName,
-))
+const isRegion = computed(() => locationKind(currentLocationId.value) === 'region')
+const activeAfkFarm = computed(() =>
+  session.snapshot?.afkFarm?.status === 'Active' ? session.snapshot.afkFarm : null,
+)
+const canStartWorldCombat = computed(
+  () => party.snapshot === null || party.snapshot.leaderCharacterId === character.value?.id,
+)
+const presentation = computed(() =>
+  locationPresentation(currentLocation.value?.id, currentLocation.value?.displayName),
+)
 const residents = computed(() => location.value?.residents ?? [])
 const loot = computed(() => location.value?.loot ?? [])
 const localContracts = computed(() => {
   const locationId = currentLocation.value?.id
   if (!locationId) return []
-  return world.value?.contracts.filter(contract => contract.offerLocationId === locationId) ?? []
+  return world.value?.contracts.filter((contract) => contract.offerLocationId === locationId) ?? []
 })
-const canExplore = computed(() =>
-  isRegion.value
-  && !isTravelling.value
-  && !combat.isActive
-  && (location.value ?? currentLocation.value)?.dangerLevel !== 'SAFE'
-  && canStartWorldCombat.value,
+const canExplore = computed(
+  () =>
+    isRegion.value &&
+    !isTravelling.value &&
+    !combat.isActive &&
+    (location.value ?? currentLocation.value)?.dangerLevel !== 'SAFE' &&
+    canStartWorldCombat.value,
 )
-const explorePending = computed(() => session.isMutationPending('world:explore') || combat.lifecyclePending)
-const canUseAfkFarm = computed(() =>
-  isRegion.value
-  && !isTravelling.value
-  && !combat.isActive
-  && (location.value ?? currentLocation.value)?.allowAfk === true
-  && activeAfkFarm.value === null,
+const explorePending = computed(
+  () => session.isMutationPending('world:explore') || combat.lifecyclePending,
+)
+const canUseAfkFarm = computed(
+  () =>
+    isRegion.value &&
+    !isTravelling.value &&
+    !combat.isActive &&
+    (location.value ?? currentLocation.value)?.allowAfk === true &&
+    activeAfkFarm.value === null,
 )
 const levelLabel = computed(() => {
   const value = location.value ?? currentLocation.value
@@ -99,10 +103,10 @@ const activityLabels = computed(() => {
   return activities
 })
 
-const worldArtModules = import.meta.glob<string>(
-  '@/assets/world/*.{png,jpg,jpeg,webp,svg}',
-  { eager: true, import: 'default' },
-)
+const worldArtModules = import.meta.glob<string>('@/assets/world/*.{png,jpg,jpeg,webp,svg}', {
+  eager: true,
+  import: 'default',
+})
 const worldArtByStem = new Map<string, string>(
   Object.entries(worldArtModules).map(([path, url]) => {
     const fileName = path.split('/').pop() ?? path
@@ -111,7 +115,10 @@ const worldArtByStem = new Map<string, string>(
 )
 
 function normalizeArtKey(value: string): string {
-  return value.trim().toLowerCase().replace(/[^a-z0-9а-яё]+/gi, '-')
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9а-яё]+/gi, '-')
 }
 
 function resolveWorldArt(artId: string | null | undefined): string | undefined {
@@ -192,9 +199,9 @@ async function loadLocationDetails(): Promise<void> {
 
   loading.value = true
   try {
-    const catalog = await loadLocationCatalog(contentVersion)
+    const catalog = await loadLocationCatalog(contentVersion, character.value?.id)
     if (requestId !== detailsRequestId) return
-    location.value = catalog.find(entry => entry.id === locationId) ?? null
+    location.value = catalog.find((entry) => entry.id === locationId) ?? null
     failed.value = location.value === null
   } catch {
     if (requestId === detailsRequestId) failed.value = true
@@ -232,18 +239,34 @@ watch(
         :can-attack="canExplore && activeAfkFarm === null"
       />
       <div class="location-overview__actions">
-        <UIButton v-if="canUseAfkFarm" data-afk-farming variant="secondary"
-          :disabled="session.mutationPending || combat.pending || explorePending" @click="openAfkFarm">
+        <UIButton
+          v-if="canUseAfkFarm"
+          data-afk-farming
+          variant="secondary"
+          :disabled="session.mutationPending || combat.pending || explorePending"
+          @click="openAfkFarm"
+        >
           Автоматическая охота
         </UIButton>
-        <UIButton v-if="canExplore" data-explore variant="ghost" :loading="explorePending"
-          :disabled="session.mutationPending || combat.pending || activeAfkFarm !== null" @click="explore">
+        <UIButton
+          v-if="canExplore"
+          data-explore
+          variant="ghost"
+          :loading="explorePending"
+          :disabled="session.mutationPending || combat.pending || activeAfkFarm !== null"
+          @click="explore"
+        >
           Случайная встреча
         </UIButton>
       </div>
     </template>
     <div v-else class="location-overview__hero">
-      <img class="location-overview__background" :src="locationBackground" alt="" aria-hidden="true" />
+      <img
+        class="location-overview__background"
+        :src="locationBackground"
+        alt=""
+        aria-hidden="true"
+      />
       <div class="location-overview__shade" />
       <div class="location-overview__hero-copy">
         <div class="location-overview__eyebrow">
@@ -254,23 +277,33 @@ watch(
         <p v-if="location?.description || currentLocation.description">
           {{ location?.description ?? currentLocation.description }}
         </p>
-        <div v-if="activityLabels.length" class="location-overview__activities" aria-label="Доступные активности">
+        <div
+          v-if="activityLabels.length"
+          class="location-overview__activities"
+          aria-label="Доступные активности"
+        >
           <span v-for="activity in activityLabels" :key="activity">{{ activity }}</span>
         </div>
-        <div v-if="canExplore && canStartWorldCombat" class="location-overview__actions" aria-label="Действия локации">
+        <div
+          v-if="canExplore && canStartWorldCombat"
+          class="location-overview__actions"
+          aria-label="Действия локации"
+        >
           <UIButton
             data-explore
             :loading="explorePending"
             :disabled="session.mutationPending || combat.pending || isTravelling"
             @click="explore"
-          >Исследовать</UIButton>
+            >Исследовать</UIButton
+          >
           <UIButton
             v-if="canUseAfkFarm"
             data-afk-farming
             variant="secondary"
             :disabled="session.mutationPending || combat.pending || explorePending"
             @click="openAfkFarm"
-          >Автоматическая охота</UIButton>
+            >Автоматическая охота</UIButton
+          >
         </div>
       </div>
     </div>
@@ -280,7 +313,11 @@ watch(
     <UILoadingState v-if="loading" state="loading" title="Загружаем сведения об области…" />
 
     <template v-else-if="location">
-      <details v-if="residents.length && !props.interactive" class="location-overview__section" data-location-residents>
+      <details
+        v-if="residents.length && !props.interactive"
+        class="location-overview__section"
+        data-location-residents
+      >
         <summary data-location-disclosure="residents">
           <div>
             <small>ОБИТАТЕЛИ</small>
@@ -290,7 +327,11 @@ watch(
         </summary>
 
         <div class="location-overview__residents">
-          <article v-for="resident in residents" :key="resident.monsterId" class="location-overview__resident">
+          <article
+            v-for="resident in residents"
+            :key="resident.monsterId"
+            class="location-overview__resident"
+          >
             <div class="location-overview__resident-art">
               <img
                 v-if="residentArt(resident)"
@@ -303,12 +344,18 @@ watch(
             <div class="location-overview__resident-copy">
               <div>
                 <strong>{{ resident.displayName }}</strong>
-                <span :data-rank="resident.rank">{{ rankLabel(resident.rank) }} · ур. {{ resident.level }}</span>
+                <span :data-rank="resident.rank"
+                  >{{ rankLabel(resident.rank) }} · ур. {{ resident.level }}</span
+                >
               </div>
               <p v-if="resident.description">{{ resident.description }}</p>
               <small>
                 +{{ resident.xpReward }} опыта
-                <template v-if="resident.goldRewardMax > 0"> · {{ formatMoney(resident.goldRewardMin) }}–{{ formatMoney(resident.goldRewardMax) }}</template>
+                <template v-if="resident.goldRewardMax > 0">
+                  · {{ formatMoney(resident.goldRewardMin) }}–{{
+                    formatMoney(resident.goldRewardMax)
+                  }}</template
+                >
               </small>
             </div>
           </article>
@@ -343,7 +390,12 @@ watch(
             </div>
             <div>
               <strong>{{ item.name }}</strong>
-              <small>{{ itemRarityLabel(item.rarity) }}<template v-if="item.requiredLevel > 1"> · ур. {{ item.requiredLevel }}</template></small>
+              <small
+                >{{ itemRarityLabel(item.rarity)
+                }}<template v-if="item.requiredLevel > 1">
+                  · ур. {{ item.requiredLevel }}</template
+                ></small
+              >
             </div>
           </article>
         </div>
@@ -363,7 +415,9 @@ watch(
       title="Подробности области недоступны."
       message="Основные действия локации остаются доступны выше."
     >
-      <UIButton variant="secondary" data-retry-location-details @click="loadLocationDetails">Повторить</UIButton>
+      <UIButton variant="secondary" data-retry-location-details @click="loadLocationDetails"
+        >Повторить</UIButton
+      >
     </UILoadingState>
 
     <UIModal :open="afkOpen" title="Автоматическая охота" @close="afkOpen = false">
@@ -376,7 +430,8 @@ watch(
             :variant="afkDurationMinutes === duration ? 'primary' : 'secondary'"
             :disabled="afkPreviewLoading || session.mutationPending"
             @click="selectAfkDuration(duration)"
-          >{{ duration < 60 ? `${duration} мин` : `${duration / 60} ч` }}</UIButton>
+            >{{ duration < 60 ? `${duration} мин` : `${duration / 60} ч` }}</UIButton
+          >
         </div>
         <label v-if="afkTargets.length" class="location-overview__afk-target">
           <span>Цель</span>
@@ -393,15 +448,24 @@ watch(
         </label>
         <div v-if="afkPreview" class="location-overview__afk-preview">
           <span>Примерно {{ afkPreview.kills }} побед</span>
-          <strong>+{{ afkPreview.estimatedXp }} опыта · +{{ formatMoney(afkPreview.estimatedGold) }}</strong>
-          <small>{{ afkPreview.potentialLootRolls }} возможных розыгрышей добычи · эффективность: {{ afkPreview.efficiencyPercent }}%</small>
+          <strong
+            >+{{ afkPreview.estimatedXp }} опыта · +{{
+              formatMoney(afkPreview.estimatedGold)
+            }}</strong
+          >
+          <small
+            >{{ afkPreview.potentialLootRolls }} возможных розыгрышей добычи · эффективность:
+            {{ afkPreview.efficiencyPercent }}%</small
+          >
         </div>
         <p v-else-if="afkPreviewLoading">Рассчитываем результат…</p>
         <p v-else-if="session.errorCode">Не удалось получить расчёт. Проверьте условия области.</p>
       </div>
       <template #actions>
         <UIButton variant="secondary" @click="afkOpen = false">Отмена</UIButton>
-        <UIButton :loading="session.mutationPending" :disabled="!afkPreview" @click="startAfkFarm">Начать</UIButton>
+        <UIButton :loading="session.mutationPending" :disabled="!afkPreview" @click="startAfkFarm"
+          >Начать</UIButton
+        >
       </template>
     </UIModal>
   </section>
@@ -557,7 +621,7 @@ watch(
   color: #a98b51;
   font-size: 9px;
   font-weight: 800;
-  letter-spacing: .14em;
+  letter-spacing: 0.14em;
 }
 
 .location-overview__section h2 {
@@ -576,7 +640,9 @@ watch(
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .location-overview__section > summary::after { transition: none; }
+  .location-overview__section > summary::after {
+    transition: none;
+  }
 }
 
 .location-overview__residents {
@@ -646,8 +712,12 @@ watch(
   font-size: 10px;
 }
 
-.location-overview__resident-copy span[data-rank='Boss'] { color: #d78a7f; }
-.location-overview__resident-copy span[data-rank='Elite'] { color: #c9a66c; }
+.location-overview__resident-copy span[data-rank='Boss'] {
+  color: #d78a7f;
+}
+.location-overview__resident-copy span[data-rank='Elite'] {
+  color: #c9a66c;
+}
 
 .location-overview__resident-copy p {
   display: -webkit-box;
@@ -693,10 +763,18 @@ watch(
 }
 
 .location-overview__loot--legendary strong,
-.location-overview__loot--unique strong { color: #e9b56a; }
-.location-overview__loot--epic strong { color: #bd91e8; }
-.location-overview__loot--rare strong { color: #83a9e7; }
-.location-overview__loot--uncommon strong { color: #82bd7d; }
+.location-overview__loot--unique strong {
+  color: #e9b56a;
+}
+.location-overview__loot--epic strong {
+  color: #bd91e8;
+}
+.location-overview__loot--rare strong {
+  color: #83a9e7;
+}
+.location-overview__loot--uncommon strong {
+  color: #82bd7d;
+}
 
 .location-overview__afk,
 .location-overview__afk-preview,
@@ -741,19 +819,36 @@ watch(
 }
 
 @media (max-width: 620px) {
-  .location-overview__residents { grid-template-columns: minmax(0, 1fr); }
-  .location-overview__loot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .location-overview__residents {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .location-overview__loot-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 390px) {
-  .location-overview__hero { min-height: 176px; border-radius: 14px; }
-  .location-overview__hero-copy { padding: 14px; }
-  .location-overview__hero-copy > p { font-size: 12px; }
-  .location-overview__resident { grid-template-columns: 64px minmax(0, 1fr); }
-  .location-overview__loot-grid { grid-template-columns: minmax(0, 1fr); }
+  .location-overview__hero {
+    min-height: 176px;
+    border-radius: 14px;
+  }
+  .location-overview__hero-copy {
+    padding: 14px;
+  }
+  .location-overview__hero-copy > p {
+    font-size: 12px;
+  }
+  .location-overview__resident {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+  .location-overview__loot-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 @media (min-width: 760px) {
-  .location-overview__loot-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .location-overview__loot-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 </style>

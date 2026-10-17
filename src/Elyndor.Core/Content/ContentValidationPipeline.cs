@@ -106,7 +106,7 @@ public sealed class CharacterSkinValidator : IContentValidationStage
             if (string.IsNullOrWhiteSpace(skin.Id) || !seen.Add(skin.Id))
                 context.Errors.Add(new("CHARACTER_SKIN_DUPLICATE_ID", path, "Skin id is empty or duplicated."));
             if (string.IsNullOrWhiteSpace(skin.Name) || !(context.Package.ClassProfiles ?? []).Any(item => item.Id == skin.ClassId)
-                || skin.GenderId is not ("FEMALE" or "MALE") || skin.CrystalPrice < 0
+                || skin.GenderId is not ("FEMALE" or "MALE") || skin.RaceId is not ("HUMAN" or "UNDEAD") || skin.CrystalPrice < 0
                 || (skin.Purchasable && skin.CrystalPrice == 0))
                 context.Errors.Add(new("CHARACTER_SKIN_INVALID", path, "Skin name, class, gender or price is invalid."));
             if (string.IsNullOrWhiteSpace(skin.ImageId)

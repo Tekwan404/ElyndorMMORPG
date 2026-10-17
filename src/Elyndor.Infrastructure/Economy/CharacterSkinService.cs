@@ -27,10 +27,11 @@ public sealed class CharacterSkinService(GameDbContext db, IContentSnapshotProvi
         string[] owned = await db.CharacterSkinOwnerships.AsNoTracking()
             .Where(item => item.CharacterId == character.Id).Select(item => item.SkinId).ToArrayAsync(ct);
         CharacterSkinOffer[] skins = (contentProvider.GetCurrent().Package.CharacterSkins ?? [])
-            .Where(item => item.Enabled && item.ClassId == character.ClassId && item.GenderId == character.GenderId)
+            .Where(item => item.Enabled && item.ClassId == character.ClassId && item.GenderId == character.GenderId && item.RaceId == character.RaceId)
             .Select(item => new CharacterSkinOffer(item, !item.Purchasable || owned.Contains(item.Id), true))
             .ToArray();
-        return new(balance, character.ActiveSkinId, skins);
+        string? activeSkinId = skins.Any(skin => skin.Definition.Id == character.ActiveSkinId) ? character.ActiveSkinId : null;
+        return new(balance, activeSkinId, skins);
     }
 
     public Task<CharacterSkinMutationResult> PurchaseAsync(Guid accountId, string skinId, Guid operationId, CancellationToken ct) =>
@@ -41,7 +42,7 @@ public sealed class CharacterSkinService(GameDbContext db, IContentSnapshotProvi
     private async Task<CharacterSkinMutationResult> PurchaseCoreAsync(Guid accountId, string skinId, Guid operationId, CancellationToken ct)
     {
         CharacterSkinDefinition? skin = contentProvider.GetCurrent().Indexes.CharacterSkinsById.GetValueOrDefault(skinId);
-        if (skin is null || !skin.Enabled || !skin.Purchasable || skin.GenderId != "FEMALE")
+        if (skin is null || !skin.Enabled || !skin.Purchasable)
             return CharacterSkinMutationResult.Fail("skin_not_for_sale");
         await using var transaction = await db.Database.BeginTransactionAsync(ct);
         Character? character = await db.Characters.FromSqlInterpolated($"SELECT * FROM game.characters WHERE \"AccountId\" = {accountId} FOR UPDATE")
@@ -57,7 +58,7 @@ public sealed class CharacterSkinService(GameDbContext db, IContentSnapshotProvi
                 .Select(item => item.Balance).SingleAsync(ct);
             return new(true, null, replayBalance, character.ActiveSkinId);
         }
-        if (skin.ClassId != character.ClassId || skin.GenderId != character.GenderId)
+        if (skin.ClassId != character.ClassId || skin.GenderId != character.GenderId || skin.RaceId != character.RaceId)
             return CharacterSkinMutationResult.Fail("skin_incompatible");
         if (await db.CharacterSkinOwnerships.AnyAsync(item => item.CharacterId == character.Id && item.SkinId == skinId, ct))
             return CharacterSkinMutationResult.Fail("skin_already_owned");
@@ -85,7 +86,7 @@ public sealed class CharacterSkinService(GameDbContext db, IContentSnapshotProvi
         if (skinId is not null)
         {
             CharacterSkinDefinition? skin = contentProvider.GetCurrent().Indexes.CharacterSkinsById.GetValueOrDefault(skinId);
-            if (skin is null || !skin.Enabled || skin.ClassId != character.ClassId || skin.GenderId != character.GenderId)
+            if (skin is null || !skin.Enabled || skin.ClassId != character.ClassId || skin.GenderId != character.GenderId || skin.RaceId != character.RaceId)
                 return CharacterSkinMutationResult.Fail("skin_incompatible");
             if (skin.Purchasable && !await db.CharacterSkinOwnerships.AnyAsync(
                     item => item.CharacterId == character.Id && item.SkinId == skinId, ct))

@@ -307,6 +307,9 @@ public sealed class AfkFarmService(
             || !content.Indexes.LocationsById.TryGetValue(locationId, out LocationDefinition? location))
             return (null, AfkFarmErrorCodes.InvalidLocation);
 
+        if (!WorldLocationAccess.CanEnter(location, character.RaceId))
+            return (null, AfkFarmErrorCodes.InvalidLocation);
+
         if (!string.IsNullOrWhiteSpace(location.RequiredContractId)
             && !await dbContext.CharacterContractCompletions.AsNoTracking()
                 .AnyAsync(

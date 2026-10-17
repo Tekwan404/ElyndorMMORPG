@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { defineAsyncComponent, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, ref, watch } from 'vue'
 
-import cityArt from '@/assets/world/elyndor-city-background.webp'
+import humanCityArt from '@/assets/world/elyndor-city-background.webp'
+import undeadCityArt from '@/assets/world/undead-starter-town.webp'
 import guildArt from '@/assets/world/city-guild.webp'
 import adventurersArt from '@/assets/world/city-adventurers.webp'
 import auctionArt from '@/assets/world/city-auction.webp'
@@ -18,6 +19,7 @@ import { useWorldBossStore } from '@/game/worldBoss/worldBossStore'
 import IconGenerator from '@/ui/icons/IconGenerator.vue'
 import type { GlyphName } from '@/ui/icons/icon.types'
 import MarketDistrict from '@/game/world/components/MarketDistrict.vue'
+import { locationPresentation } from '@/game/world/locationPresentation'
 import { UIButton } from '@/ui/components'
 
 const ForgeView = defineAsyncComponent(() => import('@/game/character/views/ForgeView.vue'))
@@ -56,12 +58,20 @@ const emit = defineEmits<{
   'open-world-boss': []
 }>()
 const session = useGameSessionStore()
+const isUndead = computed(() => session.snapshot?.character?.raceId === 'UNDEAD')
+const cityArt = computed(() => (isUndead.value ? undeadCityArt : humanCityArt))
+const cityName = computed(
+  () => locationPresentation(session.snapshot?.world?.currentLocation.id).label,
+)
 const combat = useCombatSessionStore()
 const worldBoss = useWorldBossStore()
 const activeDestination = ref<CityDestination | null>(null)
 const merchantOpen = ref(false)
 const selectedMerchantId = ref('MARCUS_SUPPLIES')
-function openMerchant(id: string): void { selectedMerchantId.value = id; merchantOpen.value = true }
+function openMerchant(id: string): void {
+  selectedMerchantId.value = id
+  merchantOpen.value = true
+}
 const forgeOpen = ref(false)
 const workshopProfessionId = ref<string | null>(null)
 const workshops = [
@@ -157,7 +167,12 @@ function openDestination(id: CityDestination): void {
 }
 
 function returnToCity(): void {
-  activeDestination.value = activeDestination.value === 'professions' ? 'craft' : ['store', 'honor'].includes(activeDestination.value ?? '') ? 'market' : null
+  activeDestination.value =
+    activeDestination.value === 'professions'
+      ? 'craft'
+      : ['store', 'honor'].includes(activeDestination.value ?? '')
+        ? 'market'
+        : null
 }
 
 async function startTraining(): Promise<void> {
@@ -180,11 +195,11 @@ async function startTraining(): Promise<void> {
       :class="{ 'city-map--boss-active': worldBoss.active && worldBoss.active.currentHealth > 0 }"
       data-city-map
     >
-      <img class="city-map__art" :src="cityArt" alt="Стартовый город — улицы, здания и площади" />
+      <img class="city-map__art" :src="cityArt" :alt="cityName + ' — улицы, здания и площади'" />
       <div class="city-map__top-shade" aria-hidden="true" />
       <div class="city-map__heading">
         <small>ELYNDOR · БЕЗОПАСНАЯ ЗОНА</small>
-        <h1>Стартовый город</h1>
+        <h1>{{ cityName }}</h1>
       </div>
       <button
         v-if="worldBoss.active && worldBoss.active.currentHealth > 0"
@@ -227,7 +242,11 @@ async function startTraining(): Promise<void> {
     >
       <header v-if="activeDestination !== 'craft'" class="city-interior__header">
         <UIButton variant="ghost" data-city-back @click="returnToCity">{{
-          activeDestination === 'professions' ? '‹ Квартал' : ['store', 'honor'].includes(activeDestination) ? '‹ Рынок' : '‹ Город'
+          activeDestination === 'professions'
+            ? '‹ Квартал'
+            : ['store', 'honor'].includes(activeDestination)
+              ? '‹ Рынок'
+              : '‹ Город'
         }}</UIButton>
         <h2>
           {{
@@ -257,9 +276,12 @@ async function startTraining(): Promise<void> {
         :initial-profession-id="workshopProfessionId ?? undefined"
       />
 
-      <MarketDistrict v-else-if="activeDestination === 'market'"
-        @open-merchant="openMerchant" @open-honor="activeDestination = 'honor'"
-        @open-store="activeDestination = 'store'" />
+      <MarketDistrict
+        v-else-if="activeDestination === 'market'"
+        @open-merchant="openMerchant"
+        @open-honor="activeDestination = 'honor'"
+        @open-store="activeDestination = 'store'"
+      />
       <HonorShopView v-else-if="activeDestination === 'honor'" />
 
       <section
@@ -269,7 +291,7 @@ async function startTraining(): Promise<void> {
       >
         <img
           class="city-map__art"
-          :src="districtArt"
+          :src="isUndead ? undeadCityArt : districtArt"
           alt="Ремесленный квартал — мастерские вокруг каменной площади"
         />
         <div class="city-map__top-shade" aria-hidden="true" />
@@ -345,7 +367,13 @@ async function startTraining(): Promise<void> {
       </div>
     </div>
 
-    <MerchantShop v-if="merchantOpen" :key="selectedMerchantId" :merchant-id="selectedMerchantId" :open="merchantOpen" @close="merchantOpen = false" />
+    <MerchantShop
+      v-if="merchantOpen"
+      :key="selectedMerchantId"
+      :merchant-id="selectedMerchantId"
+      :open="merchantOpen"
+      @close="merchantOpen = false"
+    />
     <ForgeView v-if="forgeOpen" @close="forgeOpen = false" />
     <AdventurerGuildBoard
       v-if="adventurersOpen"

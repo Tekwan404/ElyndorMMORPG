@@ -91,12 +91,50 @@ public sealed class CharacterSkinServiceTests(PostgresFixture postgres) : IAsync
         });
     }
 
-    private async Task<Guid> CreateAccountAsync(string gender, string classId)
+    [Theory]
+    [InlineData("MALE", "WARRIOR", "WARRIOR_MALE_UNDEAD_GUARDIAN")]
+    [InlineData("FEMALE", "MAGE", "MAGE_FEMALE_UNDEAD_PYROMANCER")]
+    public async Task UndeadCanBuyOwnRaceSkinsAndReplayWithoutDoubleCharge(string gender, string classId, string skinId)
+    {
+        Guid accountId = await CreateAccountAsync(gender, classId, "UNDEAD");
+        await using var db = postgres.CreateDbContext();
+        var provider = new StaticContentSnapshotProvider(await GameContentPackageLoader.LoadAsync(RepositoryContentPath()));
+        await new CrystalWalletService(db, new FixedTimeProvider()).GrantAsync(accountId, Guid.CreateVersion7(),
+            CrystalLedgerEntryType.AdminGrant, 2000, "test", CancellationToken.None);
+        var service = new CharacterSkinService(db, provider, new FixedTimeProvider());
+        var catalog = (await service.GetAsync(accountId, CancellationToken.None))!;
+        Assert.Equal(10, catalog.Skins.Count);
+        Assert.All(catalog.Skins, skin => Assert.Contains("_UNDEAD_", skin.Definition.Id));
+        Guid operation = Guid.CreateVersion7();
+        var purchase = await service.PurchaseAsync(accountId, skinId, operation, CancellationToken.None);
+        Assert.True(purchase.Succeeded, purchase.ErrorCode);
+        var replay = await service.PurchaseAsync(accountId, skinId, operation, CancellationToken.None);
+        Assert.True(replay.Succeeded, replay.ErrorCode);
+        Assert.Equal(purchase.CrystalBalance, replay.CrystalBalance);
+        Assert.True((await service.EquipAsync(accountId, skinId, CancellationToken.None)).Succeeded);
+        Assert.Single(db.CharacterSkinOwnerships);
+    }
+
+    [Theory]
+    [InlineData("HUMAN", "MAGE_FEMALE_UNDEAD_PYROMANCER")]
+    [InlineData("UNDEAD", "MAGE_FEMALE_FIRE")]
+    public async Task OtherRaceSkinCannotBeBoughtOrEquipped(string raceId, string skinId)
+    {
+        Guid accountId = await CreateAccountAsync("FEMALE", "MAGE", raceId);
+        await using var db = postgres.CreateDbContext();
+        var service = new CharacterSkinService(db,
+            new StaticContentSnapshotProvider(await GameContentPackageLoader.LoadAsync(RepositoryContentPath())), new FixedTimeProvider());
+        Assert.Equal("skin_incompatible", (await service.PurchaseAsync(accountId, skinId, Guid.CreateVersion7(), CancellationToken.None)).ErrorCode);
+        Assert.Equal("skin_incompatible", (await service.EquipAsync(accountId, skinId, CancellationToken.None)).ErrorCode);
+        Assert.Empty(db.CharacterSkinOwnerships);
+    }
+
+    private async Task<Guid> CreateAccountAsync(string gender, string classId, string raceId = "HUMAN")
     {
         Guid accountId = Guid.CreateVersion7();
         await using GameDbContext db = postgres.CreateDbContext();
         db.Accounts.Add(new Account(accountId, Random.Shared.NextInt64(1, long.MaxValue), Now));
-        db.Characters.Add(new Character(Guid.CreateVersion7(), accountId, Guid.CreateVersion7(), "Buyer", "BUYER00000000001", "HUMAN", gender, classId, Now));
+        db.Characters.Add(new Character(Guid.CreateVersion7(), accountId, Guid.CreateVersion7(), "Buyer", "BUYER00000000001", raceId, gender, classId, Now));
         await db.SaveChangesAsync();
         return accountId;
     }

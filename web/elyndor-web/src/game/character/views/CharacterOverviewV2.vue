@@ -68,46 +68,142 @@ interface ItemStatRow {
 
 const characterArt = computed(() => {
   const current = character.value
-  return current ? resolveCharacterArt(current.classId, current.genderId, 'transparent', current.activeSkinId) : null
+  return current
+    ? resolveCharacterArt(
+        current.classId,
+        current.genderId,
+        'transparent',
+        current.activeSkinId,
+        current.raceId,
+      )
+    : null
 })
 
 const equipment = computed<PaperdollSlot[]>(() => {
   const equipped = character.value?.inventory.equipped
   return [
-    { id: 'head', inventorySlot: 'Head', label: 'Шлем', item: equipped?.head ?? null, glyph: 'helmet', side: 'left' },
-    { id: 'shoulders', inventorySlot: 'Shoulders', label: 'Наплечники', item: equipped?.shoulders ?? null, glyph: 'armor', side: 'left' },
-    { id: 'cloak', inventorySlot: 'Cloak', label: 'Плащ', item: equipped?.cloak ?? null, glyph: 'scroll', side: 'left' },
-    { id: 'hands', inventorySlot: 'Hands', label: 'Перчатки', item: equipped?.hands ?? null, glyph: 'armor', side: 'left' },
-    { id: 'mainHand', inventorySlot: 'MainHand', label: 'Оружие', item: equipped?.mainHand ?? null, glyph: 'sword', side: 'left' },
-    { id: 'ring1', inventorySlot: 'Ring1', label: 'Кольцо I', item: equipped?.ring1 ?? null, glyph: 'ring', side: 'left' },
-    { id: 'chest', inventorySlot: 'Chest', label: 'Нагрудник', item: equipped?.chest ?? null, glyph: 'armor', side: 'right' },
-    { id: 'amulet', inventorySlot: 'Amulet', label: 'Амулет', item: equipped?.amulet ?? null, glyph: 'star', side: 'right' },
-    { id: 'legs', inventorySlot: 'Legs', label: 'Поножи', item: equipped?.legs ?? null, glyph: 'armor', side: 'right' },
-    { id: 'feet', inventorySlot: 'Feet', label: 'Обувь', item: equipped?.feet ?? null, glyph: 'boots', side: 'right' },
-    { id: 'offHand', inventorySlot: 'OffHand', label: 'Вторая рука', item: equipped?.offHand ?? null, glyph: 'shield', side: 'right' },
-    { id: 'ring2', inventorySlot: 'Ring2', label: 'Кольцо II', item: equipped?.ring2 ?? null, glyph: 'ring', side: 'right' },
+    {
+      id: 'head',
+      inventorySlot: 'Head',
+      label: 'Шлем',
+      item: equipped?.head ?? null,
+      glyph: 'helmet',
+      side: 'left',
+    },
+    {
+      id: 'shoulders',
+      inventorySlot: 'Shoulders',
+      label: 'Наплечники',
+      item: equipped?.shoulders ?? null,
+      glyph: 'armor',
+      side: 'left',
+    },
+    {
+      id: 'cloak',
+      inventorySlot: 'Cloak',
+      label: 'Плащ',
+      item: equipped?.cloak ?? null,
+      glyph: 'scroll',
+      side: 'left',
+    },
+    {
+      id: 'hands',
+      inventorySlot: 'Hands',
+      label: 'Перчатки',
+      item: equipped?.hands ?? null,
+      glyph: 'armor',
+      side: 'left',
+    },
+    {
+      id: 'mainHand',
+      inventorySlot: 'MainHand',
+      label: 'Оружие',
+      item: equipped?.mainHand ?? null,
+      glyph: 'sword',
+      side: 'left',
+    },
+    {
+      id: 'ring1',
+      inventorySlot: 'Ring1',
+      label: 'Кольцо I',
+      item: equipped?.ring1 ?? null,
+      glyph: 'ring',
+      side: 'left',
+    },
+    {
+      id: 'chest',
+      inventorySlot: 'Chest',
+      label: 'Нагрудник',
+      item: equipped?.chest ?? null,
+      glyph: 'armor',
+      side: 'right',
+    },
+    {
+      id: 'amulet',
+      inventorySlot: 'Amulet',
+      label: 'Амулет',
+      item: equipped?.amulet ?? null,
+      glyph: 'star',
+      side: 'right',
+    },
+    {
+      id: 'legs',
+      inventorySlot: 'Legs',
+      label: 'Поножи',
+      item: equipped?.legs ?? null,
+      glyph: 'armor',
+      side: 'right',
+    },
+    {
+      id: 'feet',
+      inventorySlot: 'Feet',
+      label: 'Обувь',
+      item: equipped?.feet ?? null,
+      glyph: 'boots',
+      side: 'right',
+    },
+    {
+      id: 'offHand',
+      inventorySlot: 'OffHand',
+      label: 'Вторая рука',
+      item: equipped?.offHand ?? null,
+      glyph: 'shield',
+      side: 'right',
+    },
+    {
+      id: 'ring2',
+      inventorySlot: 'Ring2',
+      label: 'Кольцо II',
+      item: equipped?.ring2 ?? null,
+      glyph: 'ring',
+      side: 'right',
+    },
   ]
 })
 
-const leftEquipment = computed(() => equipment.value.filter(slot => slot.side === 'left'))
-const rightEquipment = computed(() => equipment.value.filter(slot => slot.side === 'right'))
-const equippedCount = computed(() => equipment.value.filter(slot => slot.item).length)
+const leftEquipment = computed(() => equipment.value.filter((slot) => slot.side === 'left'))
+const rightEquipment = computed(() => equipment.value.filter((slot) => slot.side === 'right'))
+const equippedCount = computed(() => equipment.value.filter((slot) => slot.item).length)
 
 function breakdownValue(id: string): number | null {
-  const breakdown = character.value?.statBreakdown as Record<string, { finalValue: number }> | undefined
+  const breakdown = character.value?.statBreakdown as
+    Record<string, { finalValue: number }> | undefined
   return breakdown?.[id]?.finalValue ?? null
 }
 
 function formatNumber(value: number): string {
   const rounded = Math.round(value * 100) / 100
-  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')
+  return Number.isInteger(rounded)
+    ? String(rounded)
+    : rounded.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')
 }
 
 function formatPercent(value: number): string {
   return `${formatNumber(value)}%`
 }
 
-function primaryAttributeId(): keyof Pick<CharacterStats, 'strength' | 'agility' | 'intellect'> | null {
+function primaryAttributeId():
+  keyof Pick<CharacterStats, 'strength' | 'agility' | 'intellect'> | null {
   const current = character.value
   if (!current) return null
   if (current.primaryAttribute === 'STRENGTH') return 'strength'
@@ -138,13 +234,15 @@ const statSections = computed<CharacterStatSection[]>(() => {
       id: 'armor',
       label: 'Броня',
       value: formatNumber(stats.armor),
-      effective: armorReduction === null ? undefined : `${formatPercent(armorReduction)} физ. снижения`,
+      effective:
+        armorReduction === null ? undefined : `${formatPercent(armorReduction)} физ. снижения`,
     },
     {
       id: 'magicResistance',
       label: 'Сопротивление магии',
       value: formatNumber(stats.magicResistance),
-      effective: magicReduction === null ? undefined : `${formatPercent(magicReduction)} маг. снижения`,
+      effective:
+        magicReduction === null ? undefined : `${formatPercent(magicReduction)} маг. снижения`,
     },
     { id: 'dodge', label: 'Уклонение', value: formatPercent(stats.dodge) },
   ]
@@ -165,11 +263,34 @@ const statSections = computed<CharacterStatSection[]>(() => {
       id: 'primary',
       title: 'Основные',
       rows: [
-        { id: 'hp', label: 'Здоровье', value: `${formatNumber(current.vitals.currentHp)} / ${formatNumber(current.vitals.maxHp)}` },
-        { id: 'resource', label: resourceLabel(current.vitals.resourceType), value: `${formatNumber(current.vitals.currentResource)} / ${formatNumber(current.vitals.maxResource)}` },
-        { id: 'strength', label: 'Сила', value: formatNumber(stats.strength), primary: primary === 'strength' },
-        { id: 'agility', label: 'Ловкость', value: formatNumber(stats.agility), primary: primary === 'agility' },
-        { id: 'intellect', label: 'Интеллект', value: formatNumber(stats.intellect), primary: primary === 'intellect' },
+        {
+          id: 'hp',
+          label: 'Здоровье',
+          value: `${formatNumber(current.vitals.currentHp)} / ${formatNumber(current.vitals.maxHp)}`,
+        },
+        {
+          id: 'resource',
+          label: resourceLabel(current.vitals.resourceType),
+          value: `${formatNumber(current.vitals.currentResource)} / ${formatNumber(current.vitals.maxResource)}`,
+        },
+        {
+          id: 'strength',
+          label: 'Сила',
+          value: formatNumber(stats.strength),
+          primary: primary === 'strength',
+        },
+        {
+          id: 'agility',
+          label: 'Ловкость',
+          value: formatNumber(stats.agility),
+          primary: primary === 'agility',
+        },
+        {
+          id: 'intellect',
+          label: 'Интеллект',
+          value: formatNumber(stats.intellect),
+          primary: primary === 'intellect',
+        },
         { id: 'stamina', label: 'Выносливость', value: formatNumber(stats.stamina) },
       ],
     },
@@ -182,9 +303,21 @@ const statSections = computed<CharacterStatSection[]>(() => {
         { id: 'criticalChance', label: 'Крит. шанс', value: formatPercent(stats.criticalChance) },
         { id: 'criticalDamage', label: 'Крит. урон', value: formatPercent(stats.criticalDamage) },
         { id: 'accuracy', label: 'Меткость', value: formatPercent(stats.accuracy) },
-        { id: 'armorPenetration', label: 'Пробивание брони', value: formatPercent(stats.armorPenetration) },
-        { id: 'magicPenetration', label: 'Пробивание магии', value: formatPercent(stats.magicPenetration) },
-        { id: 'attackSpeed', label: 'Скорость атаки', value: `${formatNumber(stats.attackSpeed)}×` },
+        {
+          id: 'armorPenetration',
+          label: 'Пробивание брони',
+          value: formatPercent(stats.armorPenetration),
+        },
+        {
+          id: 'magicPenetration',
+          label: 'Пробивание магии',
+          value: formatPercent(stats.magicPenetration),
+        },
+        {
+          id: 'attackSpeed',
+          label: 'Скорость атаки',
+          value: `${formatNumber(stats.attackSpeed)}×`,
+        },
       ],
     },
     { id: 'defense', title: 'Защита', rows: defenseRows },
@@ -227,9 +360,11 @@ async function unequipSelected(): Promise<void> {
 
 function equipmentErrorMessage(code: string | null): string | null {
   if (!code) return null
-  if (code === 'inventory_equipment_change_in_combat') return 'Снаряжение нельзя менять во время боя.'
+  if (code === 'inventory_equipment_change_in_combat')
+    return 'Снаряжение нельзя менять во время боя.'
   if (code === 'inventory_invalid_slot') return 'Сервер не распознал слот снаряжения.'
-  if (code === 'inventory_item_transaction_locked') return 'Предмет занят другой операцией. Повторите попытку.'
+  if (code === 'inventory_item_transaction_locked')
+    return 'Предмет занят другой операцией. Повторите попытку.'
   return 'Не удалось изменить снаряжение. Повторите попытку.'
 }
 
@@ -311,8 +446,8 @@ function itemStats(item: InventoryItem): ItemStatRow[] {
   const stats = item.stats as unknown as Record<string, number>
   return Object.entries(itemStatLabels)
     .map(([id, label]) => ({ id, label, raw: stats[id] ?? 0 }))
-    .filter(row => row.raw !== 0)
-    .map(row => ({
+    .filter((row) => row.raw !== 0)
+    .map((row) => ({
       id: row.id,
       label: row.label,
       value: `${row.raw > 0 ? '+' : ''}${formatNumber(row.raw)}${percentItemStats.has(row.id) ? '%' : ''}`,
@@ -381,7 +516,16 @@ function affixLabel(statId: string): string {
 }
 
 function affixValue(statId: string, value: number): string {
-  const percentStats = ['CRITICAL_CHANCE', 'CRITICAL_DAMAGE', 'ACCURACY', 'DODGE', 'ARMOR_PENETRATION', 'MAGIC_PENETRATION', 'ATTACK_SPEED', 'BLOCK_CHANCE']
+  const percentStats = [
+    'CRITICAL_CHANCE',
+    'CRITICAL_DAMAGE',
+    'ACCURACY',
+    'DODGE',
+    'ARMOR_PENETRATION',
+    'MAGIC_PENETRATION',
+    'ATTACK_SPEED',
+    'BLOCK_CHANCE',
+  ]
   return `+${formatNumber(value)}${percentStats.includes(statId.toUpperCase()) ? '%' : ''}`
 }
 </script>
@@ -394,7 +538,10 @@ function affixValue(statId: string, value: number): string {
           <p class="eyebrow">Персонаж</p>
           <h1>{{ character.name }}</h1>
           <p v-if="character.profileTitle" class="profile-title">{{ character.profileTitle }}</p>
-          <p>{{ raceLabel(character.raceId) }} · {{ classLabel(character.classId) }} · ур. {{ character.level }}</p>
+          <p>
+            {{ raceLabel(character.raceId) }} · {{ classLabel(character.classId) }} · ур.
+            {{ character.level }}
+          </p>
         </div>
         <div class="hero-card__status" aria-label="Заполненные слоты экипировки">
           <span>{{ equippedCount }}/{{ equipment.length }}</span>
@@ -417,10 +564,22 @@ function affixValue(statId: string, value: number): string {
             @click="openEquipmentSlot(slot)"
           >
             <span class="equipment-slot__icon">
-              <ItemIcon v-if="slot.item" :icon-id="slot.item.iconId" :item-id="slot.item.id" :name="slot.item.name" :type="slot.item.type" :equipment-slot="slot.item.slot" :rarity="slot.item.rarity" />
+              <ItemIcon
+                v-if="slot.item"
+                :icon-id="slot.item.iconId"
+                :item-id="slot.item.id"
+                :name="slot.item.name"
+                :type="slot.item.type"
+                :equipment-slot="slot.item.slot"
+                :rarity="slot.item.rarity"
+              />
               <IconGenerator
                 v-else
-                :config="{ id: `paperdoll-v2-${slot.id}`, glyph: slot.glyph, category: 'equipment' }"
+                :config="{
+                  id: `paperdoll-v2-${slot.id}`,
+                  glyph: slot.glyph,
+                  category: 'equipment',
+                }"
               />
             </span>
             <small>{{ slot.label }}</small>
@@ -430,7 +589,9 @@ function affixValue(statId: string, value: number): string {
         <div class="hero-figure">
           <ProfileFrame class="hero-figure__art" :style-id="character.profileFrameStyle">
             <img v-if="characterArt" :src="characterArt" :alt="classLabel(character.classId)" />
-            <div v-else class="hero-figure__fallback">{{ character.name.slice(0, 1).toUpperCase() }}</div>
+            <div v-else class="hero-figure__fallback">
+              {{ character.name.slice(0, 1).toUpperCase() }}
+            </div>
           </ProfileFrame>
           <strong>{{ classLabel(character.classId) }}</strong>
           <small>Уровень {{ character.level }}</small>
@@ -450,10 +611,22 @@ function affixValue(statId: string, value: number): string {
             @click="openEquipmentSlot(slot)"
           >
             <span class="equipment-slot__icon">
-              <ItemIcon v-if="slot.item" :icon-id="slot.item.iconId" :item-id="slot.item.id" :name="slot.item.name" :type="slot.item.type" :equipment-slot="slot.item.slot" :rarity="slot.item.rarity" />
+              <ItemIcon
+                v-if="slot.item"
+                :icon-id="slot.item.iconId"
+                :item-id="slot.item.id"
+                :name="slot.item.name"
+                :type="slot.item.type"
+                :equipment-slot="slot.item.slot"
+                :rarity="slot.item.rarity"
+              />
               <IconGenerator
                 v-else
-                :config="{ id: `paperdoll-v2-${slot.id}`, glyph: slot.glyph, category: 'equipment' }"
+                :config="{
+                  id: `paperdoll-v2-${slot.id}`,
+                  glyph: slot.glyph,
+                  category: 'equipment',
+                }"
               />
             </span>
             <small>{{ slot.label }}</small>
@@ -473,10 +646,21 @@ function affixValue(statId: string, value: number): string {
       </header>
 
       <div class="stat-sections">
-        <section v-for="section in statSections" :key="section.id" class="stat-section" :data-stat-section="section.id">
+        <section
+          v-for="section in statSections"
+          :key="section.id"
+          class="stat-section"
+          :data-stat-section="section.id"
+        >
           <h3>{{ section.title }}</h3>
           <dl>
-            <div v-for="row in section.rows" :key="row.id" class="stat-row" :class="{ primary: row.primary }" :data-stat="row.id">
+            <div
+              v-for="row in section.rows"
+              :key="row.id"
+              class="stat-row"
+              :class="{ primary: row.primary }"
+              :data-stat="row.id"
+            >
               <dt>
                 {{ row.label }}
                 <small v-if="row.primary">основная</small>
@@ -492,9 +676,20 @@ function affixValue(statId: string, value: number): string {
     </section>
 
     <UIToast v-if="equipmentNotice" tone="success">{{ equipmentNotice }}</UIToast>
-    <UIModal :open="selectedItem !== null" :title="selectedItem?.name ?? ''" :busy="equipmentPending" @close="closeItem">
+    <UIModal
+      :open="selectedItem !== null"
+      :title="selectedItem?.name ?? ''"
+      :busy="equipmentPending"
+      @close="closeItem"
+    >
       <article v-if="selectedItem" class="item-detail">
-        <ItemIdentity :item="selectedItem" :show-quantity="false" :subtitle="[slotLabel(selectedItem.slot), categoryLabel(selectedItem)].filter(Boolean).join(' · ')" />
+        <ItemIdentity
+          :item="selectedItem"
+          :show-quantity="false"
+          :subtitle="
+            [slotLabel(selectedItem.slot), categoryLabel(selectedItem)].filter(Boolean).join(' · ')
+          "
+        />
 
         <section class="item-meta" aria-label="Требования предмета">
           <div>
@@ -503,7 +698,9 @@ function affixValue(statId: string, value: number): string {
           </div>
           <div>
             <span>Требуется уровень</span>
-            <strong :class="{ danger: character.level < selectedItem.requiredLevel }">{{ selectedItem.requiredLevel }}</strong>
+            <strong :class="{ danger: character.level < selectedItem.requiredLevel }">{{
+              selectedItem.requiredLevel
+            }}</strong>
           </div>
           <div v-if="bindLabel(selectedItem)">
             <span>Состояние</span>
@@ -521,19 +718,37 @@ function affixValue(statId: string, value: number): string {
           </dl>
         </section>
 
-        <section v-if="weaponDamage(selectedItem) || selectedItem.weaponBaseAttackIntervalSeconds" class="item-section">
+        <section
+          v-if="weaponDamage(selectedItem) || selectedItem.weaponBaseAttackIntervalSeconds"
+          class="item-section"
+        >
           <h3>Оружие</h3>
           <dl class="item-stat-list">
-            <div v-if="weaponDamage(selectedItem)"><dt>Урон оружия</dt><dd>{{ weaponDamage(selectedItem) }}</dd></div>
-            <div v-if="selectedItem.weaponBaseAttackIntervalSeconds"><dt>Базовый интервал атаки</dt><dd>{{ formatNumber(selectedItem.weaponBaseAttackIntervalSeconds) }} сек.</dd></div>
+            <div v-if="weaponDamage(selectedItem)">
+              <dt>Урон оружия</dt>
+              <dd>{{ weaponDamage(selectedItem) }}</dd>
+            </div>
+            <div v-if="selectedItem.weaponBaseAttackIntervalSeconds">
+              <dt>Базовый интервал атаки</dt>
+              <dd>{{ formatNumber(selectedItem.weaponBaseAttackIntervalSeconds) }} сек.</dd>
+            </div>
           </dl>
         </section>
 
-        <section v-if="blockChance(selectedItem) > 0 || blockValue(selectedItem)" class="item-section item-section--shield">
+        <section
+          v-if="blockChance(selectedItem) > 0 || blockValue(selectedItem)"
+          class="item-section item-section--shield"
+        >
           <h3>Блок</h3>
           <dl class="item-stat-list">
-            <div v-if="blockChance(selectedItem) > 0"><dt>Шанс блока</dt><dd class="accent">{{ formatPercent(blockChance(selectedItem)) }}</dd></div>
-            <div v-if="blockValue(selectedItem)"><dt>Сила блока</dt><dd class="accent">{{ blockValue(selectedItem) }}</dd></div>
+            <div v-if="blockChance(selectedItem) > 0">
+              <dt>Шанс блока</dt>
+              <dd class="accent">{{ formatPercent(blockChance(selectedItem)) }}</dd>
+            </div>
+            <div v-if="blockValue(selectedItem)">
+              <dt>Сила блока</dt>
+              <dd class="accent">{{ blockValue(selectedItem) }}</dd>
+            </div>
           </dl>
         </section>
 
@@ -543,9 +758,21 @@ function affixValue(statId: string, value: number): string {
             <span v-if="selectedItem.generatedItem.isPerfect">Идеальный ролл</span>
           </div>
           <dl class="item-stat-list">
-            <div><dt>Сила предмета</dt><dd>{{ formatNumber(selectedItem.generatedItem.itemPower) }} / {{ formatNumber(selectedItem.generatedItem.maxItemPower) }}</dd></div>
-            <div><dt>Качество ролла</dt><dd>{{ formatPercent(selectedItem.generatedItem.rollQuality) }}</dd></div>
-            <div><dt>Звёзды</dt><dd>{{ selectedItem.generatedItem.stars }} / 5</dd></div>
+            <div>
+              <dt>Сила предмета</dt>
+              <dd>
+                {{ formatNumber(selectedItem.generatedItem.itemPower) }} /
+                {{ formatNumber(selectedItem.generatedItem.maxItemPower) }}
+              </dd>
+            </div>
+            <div>
+              <dt>Качество ролла</dt>
+              <dd>{{ formatPercent(selectedItem.generatedItem.rollQuality) }}</dd>
+            </div>
+            <div>
+              <dt>Звёзды</dt>
+              <dd>{{ selectedItem.generatedItem.stars }} / 5</dd>
+            </div>
           </dl>
 
           <div v-if="selectedItem.generatedItem.affixes.length" class="affix-list">
@@ -553,12 +780,19 @@ function affixValue(statId: string, value: number): string {
             <div v-for="affix in selectedItem.generatedItem.affixes" :key="affix.slotKey">
               <span>{{ affixLabel(affix.statId) }}</span>
               <strong>{{ affixValue(affix.statId, affix.value) }}</strong>
-              <small>Тир {{ affix.affixTier }}<template v-if="affix.isGuaranteed"> · гарантированный</template></small>
+              <small
+                >Тир {{ affix.affixTier
+                }}<template v-if="affix.isGuaranteed"> · гарантированный</template></small
+              >
             </div>
           </div>
         </section>
 
-        <ItemSetSummary v-if="selectedItem.setId" :set-id="selectedItem.setId" :items="character.inventory.items" />
+        <ItemSetSummary
+          v-if="selectedItem.setId"
+          :set-id="selectedItem.setId"
+          :items="character.inventory.items"
+        />
 
         <section v-if="selectedItem.description" class="item-section item-section--description">
           <h3>Описание</h3>
@@ -566,7 +800,8 @@ function affixValue(statId: string, value: number): string {
         </section>
 
         <p v-if="itemLevel(selectedItem) === null" class="item-note">
-          У этого экземпляра сервер пока не передал Item Level. Required Level показан отдельно и не используется как подмена уровня предмета.
+          У этого экземпляра сервер пока не передал Item Level. Required Level показан отдельно и не
+          используется как подмена уровня предмета.
         </p>
         <p v-if="character.level < selectedItem.requiredLevel" class="item-warning">
           Требуется {{ selectedItem.requiredLevel }} уровень. Сейчас у героя {{ character.level }}.
@@ -602,7 +837,9 @@ function affixValue(statId: string, value: number): string {
 </template>
 
 <style scoped>
-.profile-title { color: #d1b2e9 !important; }
+.profile-title {
+  color: #d1b2e9 !important;
+}
 .overview-v2 {
   display: grid;
   width: min(100%, var(--ui-content-width));
@@ -654,9 +891,9 @@ function affixValue(statId: string, value: number): string {
 
 .eyebrow {
   color: #bcb6ff;
-  font-size: .6rem;
+  font-size: 0.6rem;
   font-weight: 800;
-  letter-spacing: .11em;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
 }
 
@@ -673,7 +910,7 @@ function affixValue(statId: string, value: number): string {
 
 .hero-card__status small {
   color: var(--ui-color-text-muted);
-  font-size: .62rem;
+  font-size: 0.62rem;
 }
 
 .paperdoll-v2 {
@@ -700,26 +937,35 @@ function affixValue(statId: string, value: number): string {
   border: 1px solid var(--ui-color-border);
   border-radius: var(--ui-radius-md);
   background:
-    radial-gradient(circle at 50% 18%, rgb(255 255 255 / 4%), transparent 60%),
-    rgb(4 8 14 / 90%);
+    radial-gradient(circle at 50% 18%, rgb(255 255 255 / 4%), transparent 60%), rgb(4 8 14 / 90%);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 2%);
   color: var(--ui-color-text-muted);
   font: inherit;
 }
 
 .equipment-slot:not(.filled) {
-  opacity: .5;
+  opacity: 0.5;
 }
 
 .equipment-slot.filled {
   color: var(--ui-color-text-primary);
 }
 
-.equipment-slot[data-rarity='Uncommon'] { border-color: color-mix(in srgb, var(--ui-color-success) 68%, var(--ui-color-border)); }
-.equipment-slot[data-rarity='Rare'] { border-color: #4d8ee8; }
-.equipment-slot[data-rarity='Epic'] { border-color: #9a70e8; box-shadow: 0 0 12px rgb(154 112 232 / 12%); }
+.equipment-slot[data-rarity='Uncommon'] {
+  border-color: color-mix(in srgb, var(--ui-color-success) 68%, var(--ui-color-border));
+}
+.equipment-slot[data-rarity='Rare'] {
+  border-color: #4d8ee8;
+}
+.equipment-slot[data-rarity='Epic'] {
+  border-color: #9a70e8;
+  box-shadow: 0 0 12px rgb(154 112 232 / 12%);
+}
 .equipment-slot[data-rarity='Legendary'],
-.equipment-slot[data-rarity='Unique'] { border-color: var(--ui-color-gold); box-shadow: 0 0 14px rgb(232 200 102 / 14%); }
+.equipment-slot[data-rarity='Unique'] {
+  border-color: var(--ui-color-gold);
+  box-shadow: 0 0 14px rgb(232 200 102 / 14%);
+}
 
 .equipment-slot__icon {
   display: grid;
@@ -740,7 +986,7 @@ function affixValue(statId: string, value: number): string {
 .equipment-slot small {
   width: 100%;
   overflow: hidden;
-  font-size: .43rem;
+  font-size: 0.43rem;
   font-weight: 800;
   text-align: center;
   text-overflow: ellipsis;
@@ -828,7 +1074,7 @@ function affixValue(statId: string, value: number): string {
 
 .combat-sheet__heading small {
   color: var(--ui-color-text-muted);
-  font-size: .62rem;
+  font-size: 0.62rem;
 }
 
 .combat-sheet__heading button {
@@ -860,8 +1106,8 @@ function affixValue(statId: string, value: number): string {
   padding: 8px var(--ui-space-3);
   border-bottom: 1px solid var(--ui-color-border);
   color: var(--ui-color-text-secondary);
-  font-size: .62rem;
-  letter-spacing: .08em;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -899,7 +1145,7 @@ function affixValue(statId: string, value: number): string {
 .stat-row dt small {
   margin-left: 5px;
   color: #bcb6ff;
-  font-size: .53rem;
+  font-size: 0.53rem;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -920,7 +1166,7 @@ function affixValue(statId: string, value: number): string {
 
 .stat-row dd small {
   color: var(--ui-color-success);
-  font-size: .58rem;
+  font-size: 0.58rem;
   white-space: nowrap;
 }
 
@@ -928,7 +1174,6 @@ function affixValue(statId: string, value: number): string {
   display: grid;
   gap: var(--ui-space-3);
 }
-
 
 .item-meta {
   display: grid;
@@ -949,7 +1194,7 @@ function affixValue(statId: string, value: number): string {
 
 .item-meta span {
   color: var(--ui-color-text-muted);
-  font-size: .58rem;
+  font-size: 0.58rem;
   text-transform: uppercase;
 }
 
@@ -983,8 +1228,8 @@ function affixValue(statId: string, value: number): string {
 
 .item-section h3 {
   color: var(--ui-color-text-secondary);
-  font-size: .68rem;
-  letter-spacing: .07em;
+  font-size: 0.68rem;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
 }
 
@@ -1015,7 +1260,7 @@ function affixValue(statId: string, value: number): string {
 
 .item-section__title-row span {
   color: var(--ui-color-gold);
-  font-size: .56rem;
+  font-size: 0.56rem;
   font-weight: 800;
   text-transform: uppercase;
 }
@@ -1029,7 +1274,7 @@ function affixValue(statId: string, value: number): string {
 .affix-list h4 {
   padding: 8px var(--ui-space-3) 5px;
   color: var(--ui-color-text-muted);
-  font-size: .6rem;
+  font-size: 0.6rem;
   text-transform: uppercase;
 }
 
@@ -1054,7 +1299,7 @@ function affixValue(statId: string, value: number): string {
 .affix-list small {
   grid-column: 1 / -1;
   color: var(--ui-color-text-muted);
-  font-size: .55rem;
+  font-size: 0.55rem;
 }
 
 .item-section--set {

@@ -14,6 +14,25 @@ import { useGameSessionStore } from '@/stores/gameSession'
 describe('MerchantShop', () => {
   beforeEach(() => setActivePinia(createPinia()))
 
+  it('uses undead supply labels throughout buying and selling', async () => {
+    const session = useGameSessionStore()
+    const bootstrap = snapshot([])
+    bootstrap.character!.raceId = 'UNDEAD'
+    session.snapshot = bootstrap
+    vi.spyOn(session, 'getMerchant').mockResolvedValue({
+      ...merchantSnapshot(), id: 'UNDEAD_MARCUS_SUPPLIES', name: 'Снабженец Морт',
+    })
+    const wrapper = mount(MerchantShop, {
+      props: { open: true },
+      global: { stubs: { Teleport: true } },
+    })
+    await flushPromises()
+    expect(wrapper.text()).toContain('Снабженец Морт')
+    expect(wrapper.text()).not.toMatch(/маркус/i)
+    await wrapper.get('[data-merchant-tab="sell"]').trigger('click')
+    expect(wrapper.text()).not.toMatch(/маркус/i)
+  })
+
   it('loads offers when mounted already open from the city', async () => {
     const session = useGameSessionStore()
     session.snapshot = snapshot([])

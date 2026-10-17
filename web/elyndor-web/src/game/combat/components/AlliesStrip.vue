@@ -24,6 +24,7 @@ function art(actor: CombatActorSnapshot): string | null {
     actor.genderId ?? (local ? session.snapshot?.character?.genderId : null) ?? 'MALE',
     'transparent',
     local ? (session.snapshot?.character?.activeSkinId ?? actor.skinId) : actor.skinId,
+    local ? session.snapshot?.character?.raceId : undefined,
   )
 }
 

@@ -100,6 +100,28 @@ public sealed class ArenaSettlementTests(PostgresFixture postgres) : IAsyncLifet
     }
 
     [Fact]
+    public async Task HumanAndUndeadMatchUsesOneLeaderboard()
+    {
+        Guid first, second, matchId;
+        await using (var db = postgres.CreateDbContext())
+        {
+            first = AddPlayer(db, "Human");
+            second = AddPlayer(db, "Undead", "UNDEAD");
+            var match = new ArenaMatch(Guid.NewGuid(), first, second, Now);
+            match.Complete(ArenaMatchOutcome.WinnerB, Now.AddMinutes(2), true);
+            db.ArenaMatches.Add(match);
+            await db.SaveChangesAsync();
+            matchId = match.Id;
+        }
+        await using (var db = postgres.CreateDbContext())
+            Assert.True((await new ArenaSettlementService(db, TimeProvider.System).SettleAsync(matchId, default)).Applied);
+        await using var readDb = postgres.CreateDbContext();
+        var leaderboard = await new ArenaReadService(readDb).LeaderboardAsync(default);
+        Assert.Equal([second, first], leaderboard.Select(entry => entry.CharacterId));
+        Assert.Equal(1012, leaderboard[0].Rating);
+    }
+
+    [Fact]
     public async Task CompleteAndSettleFinishesAnActiveMatchOnceAndIsReplaySafe()
     {
         Guid matchId, first;
@@ -240,13 +262,13 @@ public sealed class ArenaSettlementTests(PostgresFixture postgres) : IAsyncLifet
         return (match.Id, first, second);
     }
 
-    private static Guid AddPlayer(GameDbContext db, string name)
+    private static Guid AddPlayer(GameDbContext db, string name, string raceId = "HUMAN")
     {
         Guid accountId = Guid.NewGuid();
         Guid characterId = Guid.NewGuid();
         db.Accounts.Add(new Account(accountId, Random.Shared.NextInt64(1, long.MaxValue), Now));
         db.Characters.Add(new Character(characterId, accountId, Guid.NewGuid(), name,
-            $"{name}{characterId:N}"[..16].ToUpperInvariant(), "HUMAN", "MALE", "WARRIOR", Now));
+            $"{name}{characterId:N}"[..16].ToUpperInvariant(), raceId, "MALE", "WARRIOR", Now));
         return characterId;
     }
 }

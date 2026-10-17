@@ -98,6 +98,9 @@ public sealed class CommerceTransaction(GameDbContext db, IContentSnapshotProvid
 
     public async Task EligibleAsync(Guid[] ids, CancellationToken ct)
     {
+        if (await db.Characters.Where(character => ids.Contains(character.Id))
+                .Select(character => character.RaceId).Distinct().CountAsync(ct) > 1)
+            throw new CommerceRuleException("trade_faction_restricted");
         if (await db.ActiveCombatSessions.AnyAsync(x => ids.Contains(x.CharacterId), ct)
             || await db.CharacterVitals.AnyAsync(x => ids.Contains(x.CharacterId) && x.CurrentHp <= 0, ct)
             || await db.CharacterTravelStates.AnyAsync(x => ids.Contains(x.CharacterId), ct))

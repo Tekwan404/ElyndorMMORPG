@@ -64,7 +64,7 @@ public sealed class WorldContractService(
                 WorldContractErrorCodes.Travelling);
         }
 
-        GameContentPackage content = contentProvider.GetCurrent().Package;
+        GameContentPackage content = QuestCatalog.ForRace(contentProvider.GetCurrent().Package, character.RaceId);
         WorldContractDefinition? contract = (content.WorldContracts ?? [])
             .SingleOrDefault(candidate =>
                 string.Equals(candidate.Id, contractId, StringComparison.Ordinal));

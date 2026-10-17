@@ -42,6 +42,13 @@ public static partial class GameContentPackageValidator
                         "Location display name is required."));
                 }
 
+                if (location.RequiredRaceId is not null and not "HUMAN" and not "UNDEAD")
+                {
+                    errors.Add(new ContentValidationError(
+                        "INVALID_LOCATION_REQUIRED_RACE", $"{path}.requiredRaceId",
+                        "Location race restriction must be HUMAN or UNDEAD."));
+                }
+
                 if (!AllowedDangerLevels.Contains(location.DangerLevel))
                 {
                     errors.Add(new ContentValidationError(

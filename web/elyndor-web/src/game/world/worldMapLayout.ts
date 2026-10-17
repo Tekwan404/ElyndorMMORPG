@@ -1,8 +1,10 @@
+import { baseLocationId } from './undeadHomeland'
 export interface MapPoint {
   x: number
   y: number
 }
 
+export const DEAD_KINGDOMS_MAP_ID = 'DEAD_KINGDOMS'
 export const BORDERLANDS_MAP_ID = 'BORDERLANDS'
 export const OUTER_REACHES_MAP_ID = 'OUTER_REACHES'
 
@@ -39,15 +41,42 @@ export const OUTER_REACHES_MAP_POSITIONS: Record<string, MapPoint> = {
   DEAD_REACHES: { x: 82, y: 61 },
 }
 
+export const DEAD_KINGDOMS_MAP_POSITIONS: Record<string, MapPoint> = {
+  STARTER_TOWN: { x: 52, y: 40 },
+  WHISPERING_FOREST: { x: 71, y: 32 },
+  FLOWER_MEADOW: { x: 75, y: 45 },
+  DEEP_FOREST: { x: 83, y: 26 },
+  OLD_ROAD: { x: 30, y: 46 },
+  STONE_SPURS: { x: 26, y: 26 },
+  BLIGHTED_GROVE: { x: 76, y: 55 },
+  ASHEN_BORDER: { x: 37, y: 20 },
+  MOON_ASH_MARSHES: { x: 63, y: 63 },
+  ECLIPSE_OUTSKIRTS: { x: 63, y: 19 },
+  SHATTERED_LANDS: { x: 25, y: 36 },
+  BLACKSTONE_HIGHLANDS: { x: 50, y: 10 },
+  CRIMSON_WASTELAND: { x: 29, y: 63 },
+  OBSIDIAN_EDGE: { x: 56, y: 74 },
+  ANCIENT_MINE: { x: 15, y: 20 },
+  ECLIPSED_CITADEL: { x: 82, y: 12 },
+  SHATTERED_ORDER_CITADEL_TEST: { x: 38, y: 11 },
+  HEART_OF_BLIGHTED_GROVE: { x: 82, y: 64 },
+  SHATTERED_ORDER_CITADEL: { x: 15, y: 58 },
+  BLACK_BASTION: { x: 40, y: 82 },
+  BROODMOTHER_LAIR: { x: 89, y: 41 },
+}
+
 export function worldMapPosition(
   locationId: string,
   fallbackIndex: number,
   mapId = BORDERLANDS_MAP_ID,
 ): MapPoint {
-  const positions = mapId === OUTER_REACHES_MAP_ID
-    ? OUTER_REACHES_MAP_POSITIONS
-    : WORLD_MAP_POSITIONS
-  const authoredPoint = positions[locationId]
+  const positions =
+    mapId === DEAD_KINGDOMS_MAP_ID
+      ? DEAD_KINGDOMS_MAP_POSITIONS
+      : mapId === OUTER_REACHES_MAP_ID
+        ? OUTER_REACHES_MAP_POSITIONS
+        : WORLD_MAP_POSITIONS
+  const authoredPoint = positions[baseLocationId(locationId)]
   if (authoredPoint) return authoredPoint
 
   const column = fallbackIndex % 5

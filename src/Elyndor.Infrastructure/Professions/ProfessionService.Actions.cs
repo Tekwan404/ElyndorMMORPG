@@ -2,6 +2,7 @@ using System.Data;
 using Elyndor.Core.Characters;
 using Elyndor.Core.Items;
 using Elyndor.Core.Professions;
+using Elyndor.Core.World;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
@@ -121,9 +122,17 @@ public sealed partial class ProfessionService
     private bool ShouldIncreaseProfessionSkill(int currentSkill, int requiredSkill, int skillUpUntil) =>
         ProfessionSkillRules.ShouldIncrease(professionRandom, currentSkill, requiredSkill, skillUpUntil);
 
-    private async Task<bool> IsAtLocationAsync(Guid characterId, string locationId, CancellationToken cancellationToken) =>
-        await dbContext.CharacterLocations.AnyAsync(item => item.CharacterId == characterId && item.LocationId == locationId, cancellationToken)
-        && !await dbContext.CharacterTravelStates.AnyAsync(item => item.CharacterId == characterId, cancellationToken);
+    private async Task<bool> IsAtLocationAsync(Guid characterId, string locationId, CancellationToken cancellationToken)
+    {
+        if (locationId == WorldLocationIds.StarterTown)
+        {
+            string raceId = await dbContext.Characters.Where(character => character.Id == characterId)
+                .Select(character => character.RaceId).SingleAsync(cancellationToken);
+            locationId = WorldLocationAccess.RequiredLocation(locationId, raceId);
+        }
+        return await dbContext.CharacterLocations.AnyAsync(item => item.CharacterId == characterId && item.LocationId == locationId, cancellationToken)
+            && !await dbContext.CharacterTravelStates.AnyAsync(item => item.CharacterId == characterId, cancellationToken);
+    }
 
     private async Task<ProfessionMutationResult?> ReplayAsync(Guid characterId, Guid mutationId, string operation, string fingerprint, CancellationToken cancellationToken)
     {

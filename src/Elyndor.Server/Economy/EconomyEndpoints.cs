@@ -44,7 +44,7 @@ public static class EconomyEndpoints
         return store is null ? Results.NotFound() : Results.Ok(new CharacterSkinStoreResponse(store.CrystalBalance,
             store.ActiveSkinId, store.Skins.Select(item => new CharacterSkinOfferResponse(item.Definition.Id,
                 item.Definition.Name, item.Definition.ClassId, item.Definition.GenderId, item.Definition.ImageId,
-                item.Definition.CrystalPrice, item.Owned, item.Eligible, item.Definition.Purchasable)).ToArray()));
+                item.Definition.CrystalPrice, item.Owned, item.Eligible, item.Definition.Purchasable, item.Definition.RaceId)).ToArray()));
     }
 
     private static async Task<IResult> PurchaseSkinAsync(CharacterSkinPurchaseRequest request, ClaimsPrincipal user,
