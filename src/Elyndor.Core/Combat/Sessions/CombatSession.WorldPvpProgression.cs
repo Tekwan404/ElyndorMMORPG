@@ -46,6 +46,13 @@ public sealed partial class CombatSession
             || _worldPvpDefeats.Any(d => d.VictimId == ev.ActorId)) return;
         var damage = _worldPvpDamage.Where(pair => pair.Key.Victim == ev.ActorId).ToArray();
         if (!damage.Any(hit => hit.Value > 0)) return;
+        // A real PvP kill counts even when anti-farm rules deny rating and currency.
+        // Use the same highest-damage attribution as reward victories, excluding fled actors.
+        Guid? killerId = damage
+            .Where(pair => pair.Value > 0 && _participantRoster.GetStatus(pair.Key.Source)
+                != Elyndor.Core.Combat.Participants.CombatParticipantStatus.Fled)
+            .OrderByDescending(pair => pair.Value).ThenBy(pair => pair.Key.Source)
+            .Select(pair => (Guid?)pair.Key.Source).FirstOrDefault();
         var contributions = new Dictionary<Guid, WorldPvpContribution>();
         bool qualified = _worldPvpFirstHit.TryGetValue(ev.ActorId, out var first)
             && ev.OccurredAtUtc - first >= WorldPvpBalance.MinimumFightDuration
@@ -68,6 +75,6 @@ public sealed partial class CombatSession
                 _worldPvpSupport.Remove(heal.Key);
             }
         }
-        _worldPvpDefeats.Add(new(ev.ActorId, ev.OccurredAtUtc, contributions.Values.ToArray()));
+        _worldPvpDefeats.Add(new(ev.ActorId, ev.OccurredAtUtc, contributions.Values.ToArray(), killerId));
     }
 }
