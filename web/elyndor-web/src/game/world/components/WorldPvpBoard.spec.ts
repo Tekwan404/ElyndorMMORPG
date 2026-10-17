@@ -88,7 +88,7 @@ describe('WorldPvpBoard', () => {
     await flushPromises()
     expect(wrapper.text()).toContain('Полевая честь: 5')
     expect(wrapper.text()).toContain('Воин')
-    expect(wrapper.get('[data-world-pvp-ranking]').exists()).toBe(true)
+    expect(wrapper.find('[data-world-pvp-ranking]').exists()).toBe(true)
     expect(wrapper.get('[role="alert"]').text()).toContain('Магазин временно недоступен')
     expect(wrapper.find('[data-buy-honor]').exists()).toBe(false)
     wrapper.unmount()

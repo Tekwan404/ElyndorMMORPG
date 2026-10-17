@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import MoneyAmount from '@/ui/components/MoneyAmount.vue'
 import { useGameSessionStore } from '@/stores/gameSession'
 import WorldPvpLeaderboard from './WorldPvpLeaderboard.vue'
 import WorldPvpRewardShop from './WorldPvpRewardShop.vue'
@@ -45,6 +46,7 @@ function changeRace(value: string): void {
         <div><small>Смерти</small><strong>{{ overview.self.deaths }}</strong></div>
       </div>
       <div class="war-board__balances" aria-label="Валюта войны">
+        <p>За убийство: <MoneyAmount :amount="overview.rewards?.goldPerKill ?? 0" /> · За помощь: <MoneyAmount :amount="overview.rewards?.goldPerAssist ?? 0" /></p>
         <p>Полевая честь: <strong>{{ overview.fieldHonor }}</strong></p>
         <p>Кровавые жетоны: <strong>{{ overview.bloodyTokens }}</strong></p>
       </div>

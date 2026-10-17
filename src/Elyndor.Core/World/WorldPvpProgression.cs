@@ -84,4 +84,4 @@ public sealed class WorldPvpWallet
 // One immutable receipt per victim and battle, including rejected progression.
 public sealed record WorldPvpDeathReceipt(Guid SessionId, Guid VictimId, DateTimeOffset AtUtc);
 public sealed record WorldPvpRewardReceipt(Guid SessionId, Guid VictimId, Guid CharacterId,
-    DateTimeOffset AtUtc, int Season, int Rating, long FieldHonor, long BloodyTokens);
+    DateTimeOffset AtUtc, int Season, int Rating, long FieldHonor, long BloodyTokens, long GoldEarned = 0);

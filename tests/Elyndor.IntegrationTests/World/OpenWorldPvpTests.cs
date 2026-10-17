@@ -8,6 +8,7 @@ using Elyndor.Core.Content;
 using Elyndor.Core.World;
 using Elyndor.Infrastructure.Combat;
 using Elyndor.Infrastructure.World;
+using Elyndor.Infrastructure.Persistence;
 using Elyndor.IntegrationTests.Postgres;
 using Elyndor.Server.Identity;
 using Microsoft.AspNetCore.Hosting;
@@ -49,7 +50,20 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
         var attacker = await SeedAsync("HUMAN");
         var target = await SeedAsync("UNDEAD");
         var ally = await SeedAsync("HUMAN");
-        await using var host = CreateFactory();
+        await using var host = CreateFactory(freezeCombat: true);
+        using (var healthScope = host.Services.CreateScope())
+        {
+            var healthDb = healthScope.ServiceProvider.GetRequiredService<GameDbContext>();
+            var derivedService = healthScope.ServiceProvider.GetRequiredService<Elyndor.Infrastructure.Characters.CharacterDerivedStateService>();
+            foreach (var id in new[] { attacker.Character, target.Character, ally.Character })
+            {
+                var character = await healthDb.Characters.SingleAsync(c => c.Id == id);
+                var derived = await derivedService.ResolveAsync(id, character.ClassId, character.Level, CancellationToken.None);
+                var vitals = await healthDb.CharacterVitals.SingleAsync(v => v.CharacterId == id);
+                vitals.BeginContext(derived.Stats.MaxHp, 0, healthScope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow());
+            }
+            await healthDb.SaveChangesAsync();
+        }
         using var first = Client(host, attacker.Account);
         using var second = Client(host, target.Account);
         using var third = Client(host, ally.Account);
@@ -68,6 +82,7 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
         Assert.Equal(attacker.Character, defender.Snapshot.Enemy.ActorId);
         var retry = await EnterAsync(first, target.Character);
         Assert.False(retry.Succeeded);
+        Assert.True(registry.IsOpenWorldCombat(attacker.Account), "Attacker must still have an active fight before ally admission.");
         var joined = await EnterAsync(third, attacker.Character, attack: false);
         Assert.True(joined.Succeeded, $"Joining open-world duel failed: {joined.ErrorCode}");
         Assert.Equal(started.Snapshot.SessionId, joined.Snapshot!.SessionId);
@@ -383,9 +398,12 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
         return (await response.Content.ReadFromJsonAsync<CombatUpdateResponse>())!;
     }
 
-    private WebApplicationFactory<Program> CreateFactory() => new WebApplicationFactory<Program>()
+    private WebApplicationFactory<Program> CreateFactory(bool freezeCombat = false) => new WebApplicationFactory<Program>()
         .WithWebHostBuilder(builder =>
         {
+            // Admission assertions must not race live auto-attacks on slow CI hosts.
+            if (freezeCombat)
+                builder.ConfigureServices(services => services.AddSingleton<TimeProvider>(new FixedTime(DateTimeOffset.UtcNow)));
             builder.UseEnvironment("Development");
             builder.UseSetting("ConnectionStrings:game", postgres.ConnectionString);
             builder.UseSetting("Authentication:Issuer", "Elyndor.Tests");
@@ -394,6 +412,29 @@ public sealed class OpenWorldPvpTests(PostgresFixture postgres) : IAsyncLifetime
             builder.UseSetting("Authentication:Telegram:BotToken", "123456:TEST_TOKEN");
             builder.UseSetting("Authentication:Development:Enabled", "false");
         });
+
+    [Fact]
+    public async Task ConfiguredKillAndAssistGoldAreAtomicAndCannotBeReplayedOrPairFarmed()
+    {
+        var human = await SeedAsync("HUMAN");
+        var enemy = await SeedAsync("UNDEAD");
+        var ally = await SeedAsync("HUMAN");
+        await using var host = CreateFactory();
+        using var client = host.CreateClient();
+        var snapshot = await ProgressionSnapshotAsync(host, human, enemy);
+        snapshot = snapshot with { WorldPvpDefeats = [new(enemy.Character, snapshot.ServerTimeUtc,
+            [new(human.Character, 100, 0), new(ally.Character, 0, 40)], human.Character)] };
+        var rewards = new WorldPvpRewardProfile(25000, 5000);
+        await using var first = postgres.CreateDbContext();
+        await using var second = postgres.CreateDbContext();
+        await Task.WhenAll(new WorldPvpSettlementService(first, TimeProvider.System).ApplyAsync(snapshot, CancellationToken.None, rewards),
+            new WorldPvpSettlementService(second, TimeProvider.System).ApplyAsync(snapshot, CancellationToken.None, rewards));
+        await new WorldPvpSettlementService(first, TimeProvider.System).ApplyAsync(snapshot with { SessionId = Guid.NewGuid() }, CancellationToken.None, rewards);
+        await using var verify = postgres.CreateDbContext();
+        Assert.Equal(25000, (await verify.Characters.SingleAsync(c => c.Id == human.Character)).Gold);
+        Assert.Equal(5000, (await verify.Characters.SingleAsync(c => c.Id == ally.Character)).Gold);
+        Assert.Equal(30000, await verify.WorldPvpRewardReceipts.SumAsync(r => r.GoldEarned));
+    }
 
     private static HttpClient Client(WebApplicationFactory<Program> host, Guid account)
     {

@@ -4,6 +4,14 @@ namespace Elyndor.UnitTests.Combat;
 
 public sealed class WorldPvpProgressionTests
 {
+    [Theory]
+    [InlineData(0, true)]
+    [InlineData(25000, true)]
+    [InlineData(-1, false)]
+    [InlineData(1000000001, false)]
+    public void MoneyRewardsRequireBoundedNonnegativeBronze(long amount, bool expected) =>
+        Assert.Equal(expected, new WorldPvpRewardProfile(amount, amount).IsValid());
+
     [Fact]
     public void ContributionCreditsDamageAndSupportWithoutLastHitBonus()
     {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import AdminClassProfileForm from '@/admin/AdminClassProfileForm.vue'
+import AdminWorldPvpRewards from '@/admin/AdminWorldPvpRewards.vue'
 import AdminCombatSimulator from '@/admin/AdminCombatSimulator.vue'
 import AdminEntityForm from '@/admin/AdminEntityForm.vue'
 import AdminLocationForm from '@/admin/AdminLocationForm.vue'
@@ -111,6 +112,10 @@ const globalSearchInput = ref<HTMLInputElement | null>(null)
 let localDraftSaveTimer: ReturnType<typeof setTimeout> | null = null
 
 const draftPackage = computed<JsonRecord | null>(() => parseRecord(draftJson.value))
+function updateWorldPvpRewards(value: { goldPerKill: number; goldPerAssist: number }): void {
+  if (!draftPackage.value) return
+  draftJson.value = JSON.stringify({ ...draftPackage.value, worldPvpRewards: value }, null, 2)
+}
 const entityList = computed<JsonRecord[]>(() => {
   const value = draftPackage.value?.[selectedSection.value]
   return Array.isArray(value) ? value.filter(isRecord) : []
@@ -1059,6 +1064,7 @@ function localizedSection(key: string): string {
       </section>
 
       <section class="global-search">
+        <AdminWorldPvpRewards :profile="draftPackage?.worldPvpRewards" @update="updateWorldPvpRewards" />
         <label>
           <span>Поиск по всему контенту · Ctrl/⌘ + K</span>
           <input

@@ -13,6 +13,7 @@ export interface WorldPvpRank {
   deaths: number
 }
 export interface WorldPvpOverview {
+  rewards?: { goldPerKill: number; goldPerAssist: number }
   season: number
   endsAtUtc: string
   self: WorldPvpRank

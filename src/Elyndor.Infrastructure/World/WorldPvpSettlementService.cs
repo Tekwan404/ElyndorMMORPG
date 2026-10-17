@@ -13,8 +13,10 @@ public sealed class WorldPvpSettlementService(GameDbContext db, TimeProvider tim
         LoggerMessage.Define<Guid, Guid, DateTimeOffset, DateTimeOffset>(LogLevel.Warning,
             new EventId(4201, "WORLD_PVP_FUTURE_DEFEAT_TIME"),
             "World PvP future defeat timestamp clamped for session {SessionId}, victim {VictimId}; event {EventAt}, server {Now}.");
-    public async Task ApplyAsync(CombatSessionSnapshot snapshot, CancellationToken ct)
+    public async Task ApplyAsync(CombatSessionSnapshot snapshot, CancellationToken ct, WorldPvpRewardProfile? rewards = null)
     {
+        rewards ??= new();
+        if (!rewards.IsValid()) throw new ArgumentOutOfRangeException(nameof(rewards));
         if (!snapshot.OpenWorldPvp || snapshot.Status == CombatSessionStatus.Active
             || snapshot.WorldPvpDefeats is not { Count: > 0 } defeats) return;
         var settled = await db.WorldPvpDeathReceipts.AsNoTracking().Where(r => r.SessionId == snapshot.SessionId)
@@ -86,8 +88,10 @@ public sealed class WorldPvpSettlementService(GameDbContext db, TimeProvider tim
                     var wallet = await db.WorldPvpWallets.SingleOrDefaultAsync(w => w.CharacterId == player.Id, ct);
                     if (wallet is null) { wallet = new(player.Id); db.WorldPvpWallets.Add(wallet); }
                     wallet.Grant(honor, tokens);
+                    long gold = credit.Victory ? rewards.GoldPerKill : rewards.GoldPerAssist;
+                    player.AddGold(gold);
                     db.WorldPvpRewardReceipts.Add(new(snapshot.SessionId, victim.Id, player.Id, at, season,
-                        rating, honor, tokens));
+                        rating, honor, tokens, gold));
                 }
                 await db.SaveChangesAsync(ct);
                 await tx.CommitAsync(ct);
