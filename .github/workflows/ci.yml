@@ -95,7 +95,7 @@ jobs:
 
       - name: Generate optimized character shop thumbnails
         run: |
-          .artifacts/asset-tool-venv/bin/python tools/assets/generate-skin-thumbnails.py
+          .artifacts/asset-tool-venv/bin/python tools/assets/generate_skin_thumbnails.py
 
       - name: Install frontend dependencies
         working-directory: web/elyndor-web
