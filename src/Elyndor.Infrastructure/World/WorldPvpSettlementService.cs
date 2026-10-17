@@ -9,6 +9,10 @@ namespace Elyndor.Infrastructure.World;
 public sealed class WorldPvpSettlementService(GameDbContext db, TimeProvider time,
     ILogger<WorldPvpSettlementService>? logger = null)
 {
+    private static readonly Action<ILogger, Guid, Guid, DateTimeOffset, DateTimeOffset, Exception?> FutureDefeatTime =
+        LoggerMessage.Define<Guid, Guid, DateTimeOffset, DateTimeOffset>(LogLevel.Warning,
+            new EventId(4201, "WORLD_PVP_FUTURE_DEFEAT_TIME"),
+            "World PvP future defeat timestamp clamped for session {SessionId}, victim {VictimId}; event {EventAt}, server {Now}.");
     public async Task ApplyAsync(CombatSessionSnapshot snapshot, CancellationToken ct)
     {
         if (!snapshot.OpenWorldPvp || snapshot.Status == CombatSessionStatus.Active
@@ -32,8 +36,8 @@ public sealed class WorldPvpSettlementService(GameDbContext db, TimeProvider tim
                 DateTimeOffset now = time.GetUtcNow();
                 if (at > now)
                 {
-                    logger?.LogWarning("World PvP future defeat timestamp clamped for session {SessionId}, victim {VictimId}; event {EventAt}, server {Now}.",
-                        snapshot.SessionId, defeat.VictimId, at, now);
+                    if (logger is not null)
+                        FutureDefeatTime(logger, snapshot.SessionId, defeat.VictimId, at, now, null);
                     at = now;
                 }
                 int season = WorldPvpBalance.Season(at);
